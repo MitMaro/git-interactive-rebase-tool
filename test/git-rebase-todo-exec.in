@@ -1,0 +1,1 @@
+exec git commit --amend -m "Foo bar"

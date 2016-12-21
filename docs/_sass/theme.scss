@@ -1,0 +1,147 @@
+body {
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	font: 14px/1.5 "OpenSansRegular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	color: #ffffff;
+	font-weight: normal;
+	background: #250e20;
+	background: linear-gradient(to bottom, #1a0d16, #250e20);
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+}
+
+p, ul, table, pre {
+	margin: 0 0 20px;
+}
+
+h1, h2, h3, h4 {
+	text-shadow: 5px 5px 0 #000;
+	font-family: 'Inconsolata', monospace;
+	margin: 0 0 10px;
+	font-weight: bold;
+	line-height: 1.1;
+}
+
+h1 {
+	color: #f7c863;
+	font-size: 52px;
+	text-align: center;
+	line-height: 58px;
+	text-transform: uppercase;
+}
+
+h2 {
+	color: #f0c163;
+	text-align: center;
+	font-size: 36px;
+	margin-top: 25px;
+	padding: 0 0 8px 0;
+	border-bottom: 1px dashed #ad9044;
+}
+
+h3 {
+	color: #d4a85c;
+	font-size: 24px;
+	line-height: 32px;
+}
+
+h4 {
+	color: #cda25c;
+	font-size: 18px;
+	line-height: 32px;
+}
+
+a {
+	color: #B58900;
+	font-weight: 400;
+	text-decoration: none;
+	&:hover {
+		color: #ffcc00;
+	}
+}
+
+ul {
+	list-style-type: square;
+}
+
+.wrapper {
+	max-width:760px;
+	margin:0 auto;
+	padding: 0 10px;
+}
+
+code {
+	font-family: Bitstream Vera Sans Mono, 'Lucida Sans', Monaco, Lucida Console, Terminal, monospace;
+	color: #f0e1b4;
+	font-size:13px;
+	margin: 0 4px;
+	padding: 4px 6px;
+	border-radius: 2px;
+}
+
+pre {
+	padding: 8px 15px;
+	background: #191919;
+	border-radius: 2px;
+	border: 1px solid #121212;
+	box-shadow: inset 0 1px 3px rgba(0,0,0,.3);
+	overflow: auto;
+	overflow-y: hidden;
+	code {
+		color: #efefef;
+		text-shadow: 0 1px 0 #000;
+		margin: 0;
+		padding: 0;
+	}
+}
+
+hr {
+	border: none;
+	border-bottom: 1px solid rgba(0,0,0,0.5);
+	border-top: 1px solid rgba(255,255,255,0.08);
+	outline: none;
+	height: 1px;
+	margin: 0 0 15px;
+}
+
+.credits {
+	font-size: 11px;
+	font-weight: normal;
+	color: #696969;
+	margin-top: -10px;
+	&.left {
+		float: left;
+	}
+	&.right {
+		float: right;
+	}
+}
+
+section {
+	max-width: 760px;
+	padding: 30px 0;
+	&.title {
+		border: none;
+		outline: none;
+		p {
+			color: #ffffff;
+			font-weight: normal;
+			font-size: 18px;
+			text-align: center;
+		}
+	}
+	&.demo {
+		border-top: none;
+	}
+	img {
+		max-width: 100%;
+		padding: 2px;
+		background: #000000;
+		border: 1px solid #FFFFFF;
+		border-radius: 3px;
+		display: block;
+		margin: 0 auto;
+		box-shadow: 1px 1px 2px #000000;
+	}
+}

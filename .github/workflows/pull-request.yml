@@ -1,0 +1,48 @@
+name: Pull Request
+
+on: [pull_request]
+
+jobs:
+  linux:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
+      - name: Test
+        run: cargo test --
+      - name: Build
+        run: cargo build --release
+      - name: Test Run
+        run: cargo run --release -- --version
+      - name: Lint
+        run: "./scripts/lint.bash"
+      - name: Format
+        run: "./scripts/format.bash"
+  macos:
+    name: MacOS
+    runs-on: [macos]
+    steps:
+      - uses: actions/checkout@v1
+      # Install Rust until actions/virtual-environments#6 is resolved
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Test
+        run: cargo test --
+      - name: Build
+        run: cargo build --release
+      - name: Test Run
+        run: cargo run --release -- --version
+  windows:
+    name: Windows Test
+    runs-on: [windows-latest]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Test
+        run: cargo test --target x86_64-pc-windows-msvc --release --
+      - name: Build
+        run: cargo build --target x86_64-pc-windows-msvc --release
+      - name: Test Run
+        run: cargo run --target x86_64-pc-windows-msvc --release -- --version

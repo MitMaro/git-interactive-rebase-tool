@@ -1,0 +1,47 @@
+.\" Manpage for interactive-rebase-tool.
+
+.TH INTERACTIVE\-REBASE\-TOOL 1 "" "" ""
+
+.SH NAME
+interactive-rebase-tool \- full featured sequence editor for git
+
+.SH SYNOPSIS
+
+.B interactive-rebase-tool
+<\fIrebase-todo-filepath\fR>
+.br
+.B interactive-rebase-tool
+[\fIoptions\fR]
+
+.SH DESCRIPTION
+Native cross platform full feature terminal based sequence editor for git interactive rebase.
+
+To configure git to use it by default for interactive rebasing (i.e. with \fBgit rebase \-\-interactive\fR), use:
+.sp
+.nf
+.in 16
+git config --global sequence.editor interactive-rebase-tool
+.fi
+.in 8
+.sp
+
+.SH OPTIONS
+.TP
+\fB\-\-help\fR
+Prints help information
+.TP
+\fB\-\-version\fR
+Prints version information
+
+.SH ON-LINE HELP
+
+Press \fB?\fR during use for a summary of commands.
+
+.SH SEE ALSO
+git(1)
+
+.SH BUGS
+See: <https://github.com/MitMaro/git-interactive-rebase-tool/issues>
+
+.SH AUTHOR
+Tim Oram (dev@mitmaro.ca)
