@@ -1,0 +1,7 @@
+[package]
+name = "git-interactive-tool"
+version = "0.1.0"
+authors = ["Tim Oram <mitmaro@gmail.com>"]
+
+[dependencies]
+pancurses = "0.7"
