@@ -1,0 +1,39 @@
+pick 7e675db Moved to the ISC license
+pick 8fafded Added npm ignore file. closes #6
+pick ad4242d Version bump to 1.0.2
+pick e93bd8d Added note about version 1.x
+pick 51bd901 Added plugin system
+pick 4705d56 Updated README with Combokeys stopCallback support
+pick 3d7e02a Bump version to 2.0.0-beta1
+pick a63aa91 Added eslint and jscs config files
+pick 384952c Fixed linter errors
+pick bf70031 Saucelabs timeout to 60 seconds
+pick 2739b6d Moved cross-browser to the npm version
+pick 00f5682 Fixed combokeys compatibiility section in the readme
+pick a2202f8 Use container-based travis
+pick 50ecfc4 Updated dependencies
+
+pick ba7273d Pin grunt to version 0.4 in Travis build
+pick f66e6c9 chore(package): update shelljs to version 0.7.0
+pick 2459537 Added master branch to travisci and removed SauceLabs tests
+pick 3f7db8e Updated mocha to version 2.5.3
+
+# Rebase 03abd68..3f7db8e onto 03abd68 (18 command(s))
+#
+# Commands:
+# p, pick = use commit
+# r, reword = use commit, but edit the commit message
+# e, edit = use commit, but stop for amending
+# s, squash = use commit, but meld into previous commit
+# f, fixup = like "squash", but discard this commit's log message
+# x, exec = run command (the rest of the line) using shell
+# d, drop = remove commit
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+# However, if you remove everything, the rebase will be aborted.
+#
+# Note that empty commits are commented out
+
