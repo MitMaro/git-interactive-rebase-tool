@@ -167,12 +167,12 @@ fn main() {
 	}
 	
 	// Create a path to the desired file
-	let outfilepath = Path::new("git-rebase-output.txt");
-	let outfiledisplay = path.display();
-	
+//	let outfilepath = Path::new("git-rebase-output.txt");
+//	let outfiledisplay = path.display();
+
 	// Open a file in write-only mode, returns `io::Result<File>`
-	let mut outfile = match File::create(outfilepath) {
-		Err(why) => panic!("couldn't create {}: {}", outfiledisplay, why.description()),
+	let mut outfile = match File::create(path) {
+		Err(why) => panic!("couldn't create {}: {}", display, why.description()),
 		Ok(outfile) => outfile,
 	};
 	
