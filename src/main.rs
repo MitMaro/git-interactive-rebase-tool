@@ -10,14 +10,15 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-const COLOR_TABLE: [i16; 7] = [
+const COLOR_TABLE: [i16; 8] = [
 	COLOR_WHITE,
 	COLOR_YELLOW,
 	COLOR_BLUE,
 	COLOR_GREEN,
 	COLOR_CYAN,
 	COLOR_MAGENTA,
-	COLOR_RED
+	COLOR_RED,
+	COLOR_BLACK
 ];
 
 // Prints each argument on a separate line
@@ -58,9 +59,10 @@ fn main() {
 	if has_colors() {
 		start_color();
 	}
-	
+
+	use_default_colors();
 	for (i, color) in COLOR_TABLE.into_iter().enumerate() {
-		init_pair(i as i16, *color, COLOR_BLACK);
+		init_pair(i as i16, *color, -1);
 	}
 	
 	let mut selected_line: i16 = 0;
@@ -83,7 +85,7 @@ fn main() {
 			} else if ss[0] == "exec" {
 				window.attrset(COLOR_PAIR(6));
 			} else if ss[0] == "drop" {
-				window.attrset(COLOR_PAIR(7) | A_BOLD);
+				window.attrset(COLOR_PAIR(7));
 			}
 			if i == selected_line {
 				window.attron(A_STANDOUT);
