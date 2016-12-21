@@ -2,15 +2,15 @@ pick 7e675db Moved to the ISC license
 pick 8fafded Added npm ignore file. closes #6
 pick ad4242d Version bump to 1.0.2
 pick e93bd8d Added note about version 1.x
-pick 51bd901 Added plugin system
-pick 4705d56 Updated README with Combokeys stopCallback support
-pick 3d7e02a Bump version to 2.0.0-beta1
+reword 51bd901 Added plugin system
+drop 4705d56 Updated README with Combokeys stopCallback support
+edit 3d7e02a Bump version to 2.0.0-beta1
 pick a63aa91 Added eslint and jscs config files
-pick 384952c Fixed linter errors
+squash 384952c Fixed linter errors
 pick bf70031 Saucelabs timeout to 60 seconds
-pick 2739b6d Moved cross-browser to the npm version
+fixup 2739b6d Moved cross-browser to the npm version
 pick 00f5682 Fixed combokeys compatibiility section in the readme
-pick a2202f8 Use container-based travis
+exec a2202f8 Use container-based travis
 pick 50ecfc4 Updated dependencies
 
 pick ba7273d Pin grunt to version 0.4 in Travis build
