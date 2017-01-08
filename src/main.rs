@@ -1,12 +1,190 @@
+// TODO:
+// - Add execute command
+// - Scroll on large input
 extern crate pancurses;
 
+use std::cmp;
 use std::env;
-
-// open.rs
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::process;
+use pancurses::Input;
+
+macro_rules! print_err {
+	($($arg:tt)*) => (
+		{
+			use std::io::prelude::*;
+			if let Err(e) = write!(&mut ::std::io::stderr(), "{}\n", format_args!($($arg)*)) {
+				panic!(
+					"Failed to write to stderr.\n\
+					Original error output: {}\n\
+					Secondary error writing to stderr: {}", format!($($arg)*), e
+				);
+			}
+		}
+	)
+}
+
+enum Action {
+	Pick,
+	Reword,
+	Edit,
+	Squash,
+	Fixup,
+	Drop
+}
+
+
+fn action_from_str(s: &str) -> Action {
+	match s {
+		"pick" | "p" => Action::Pick,
+		"reword" | "r" => Action::Reword,
+		"edit" | "e" => Action::Edit,
+		"squash" | "s" => Action::Squash,
+		"fixup" | "f" => Action::Fixup,
+		"drop" | "d" => Action::Drop,
+		_ => Action::Pick
+	}
+}
+
+fn action_to_str(action: &Action) -> String {
+	String::from(match action {
+		&Action::Pick => "pick",
+		&Action::Reword => "reword",
+		&Action::Edit => "edit",
+		&Action::Squash => "squash",
+		&Action::Fixup => "fixup",
+		&Action::Drop => "drop"
+	})
+}
+
+struct Line {
+	action: Action,
+	hash: String,
+	comment: String
+}
+
+impl Line {
+	fn new(input_line: &str) -> Result<Self, String> {
+		let input: Vec<&str> = input_line.splitn(3, " ").collect();
+		match input.len() {
+			3 => Ok(Line {
+				action: action_from_str(input[0]),
+				hash: String::from(input[1]),
+				comment: String::from(input[2])
+			}),
+			_ => Err(format!(
+				"Invalid line {}", input_line
+			))
+		}
+	}
+}
+
+struct GitInteractive<'a> {
+	filepath: &'a Path,
+	lines: Vec<Line>,
+	selected_line: usize
+}
+
+impl<'a> GitInteractive<'a> {
+	fn from_filepath(filepath: &'a str) -> Result<Self, String> {
+		let path = Path::new(filepath);
+		
+		let mut file = match File::open(path) {
+			Ok(file) => file,
+			Err(why) => {
+				return Err(format!(
+					"Error opening file, {}\n\
+					Reason: {}", path.display(), why.description()
+				));
+			}
+		};
+		
+		let mut s = String::new();
+		match file.read_to_string(&mut s) {
+			Ok(_) => {},
+			Err(why) => {
+				return Err(format!(
+					"Error reading file, {}\n\
+					Reason: {}", path.display(), why.description()
+				));
+			}
+		}
+		
+		let lines: Vec<Line> = s
+			.lines()
+			.filter(|l| !l.starts_with("#") && !l.is_empty())
+			.map(|l| match Line::new(l) {
+				Ok(line) => line,
+				Err(e) => panic!("{}", e)
+			})
+			.collect();
+		
+		Ok(
+			GitInteractive {
+				filepath: path,
+				lines: lines,
+				selected_line: 1
+			}
+		)
+	}
+	
+	fn write_file(&self) -> Result<(), String> {
+		let path = Path::new(self.filepath);
+		
+		let mut file = match File::create(path) {
+			Ok(file) => file,
+			Err(why) => {
+				return Err(format!(
+					"Error opening file, {}\n\
+					Reason: {}", path.display(), why.description()
+				));
+			}
+		};
+		
+		for line in &self.lines {
+			match writeln!(file, "{} {} {}", action_to_str(&line.action), line.hash, line.comment) {
+				Ok(_) => {},
+				Err(why) => {
+					return Err(format!(
+						"Error writing to file, {}", why.description()
+					));
+				}
+			}
+		}
+		Ok(())
+	}
+	
+	fn move_cursor_up(&mut self) {
+		self.selected_line = cmp::max(self.selected_line - 1, 1);
+	}
+	
+	fn move_cursor_down(&mut self) {
+		self.selected_line = cmp::min(self.selected_line + 1, self.lines.len());
+	}
+	
+	fn swap_selected_up(&mut self) {
+		if self.selected_line == 1 {
+			return
+		}
+		self.lines.swap(self.selected_line - 1, self.selected_line - 2);
+		self.move_cursor_up();
+	}
+	
+	fn swap_selected_down(&mut self) {
+		if self.selected_line == self.lines.len() {
+			return
+		}
+		self.lines.swap(self.selected_line - 1, self.selected_line);
+		self.move_cursor_down();
+	}
+	
+	fn set_selected_line_action(&mut self, action: Action) {
+		self.lines[self.selected_line - 1].action = action;
+	}
+}
 
 const COLOR_TABLE: [i16; 8] = [
 	pancurses::COLOR_WHITE,
@@ -19,209 +197,230 @@ const COLOR_TABLE: [i16; 8] = [
 	pancurses::COLOR_BLACK
 ];
 
-// Prints each argument on a separate line
+enum Color {
+	White,
+	Yellow,
+	Blue,
+	Green,
+	Cyan,
+	Magenta,
+	Red,
+	Black
+}
+
+struct Window {
+	window: pancurses::Window
+}
+
+impl Window {
+	fn new() -> Self {
+		let window = pancurses::initscr();
+		
+		pancurses::curs_set(0);
+		pancurses::noecho();
+		
+		window.keypad(true);
+		
+		if pancurses::has_colors() {
+			pancurses::start_color();
+		}
+		pancurses::use_default_colors();
+		for (i, color) in COLOR_TABLE.into_iter().enumerate() {
+			pancurses::init_pair(i as i16, *color, -1);
+		}
+		
+		Window{
+			window: window
+		}
+	}
+	fn draw(&self, git_interactive: &GitInteractive) {
+		self.window.clear();
+		self.draw_title();
+		
+		let mut index: usize = 1;
+		for line in &git_interactive.lines {
+			self.draw_line(&line, index == git_interactive.selected_line);
+			index += 1;
+		}
+		self.draw_footer();
+		self.window.refresh();
+	}
+	
+	fn draw_title(&self) {
+		self.set_color(Color::White);
+		self.set_dim(true);
+		self.set_underline(true);
+		self.window.addstr("Git Interactive Rebase                       ? for help\n\n");
+		self.set_underline(false);
+		self.set_dim(false);
+	}
+	
+	fn draw_line(&self, line: &Line, selected: bool) {
+		self.set_color(Color::White);
+		if selected {
+			self.window.addstr(" > ");
+		}
+			else {
+				self.window.addstr("   ");
+			}
+		match line.action {
+			Action::Pick => self.set_color(Color::Green),
+			Action::Reword => self.set_color(Color::Yellow),
+			Action::Edit => self.set_color(Color::Blue),
+			Action::Squash => self.set_color(Color::Cyan),
+			Action::Fixup => self.set_color(Color::Magenta),
+			Action::Drop => self.set_color(Color::Red)
+		}
+		self.window.addstr(&format!("{:6}", action_to_str(&line.action)).as_ref());
+		self.set_color(Color::White);
+		self.window.addstr(&format!(" {} {}\n", line.hash, line.comment).as_ref());
+	}
+	
+	fn draw_footer(&self) {
+		self.set_color(Color::White);
+		self.set_dim(true);
+		self.window.addstr("\nActions: [ up, down, q, w, j, k, p, r, e, s, f, d, ? ]\n");
+		self.set_dim(false);
+	}
+	
+	fn draw_help(&self) {
+		self.window.clear();
+		self.draw_title();
+		self.set_color(Color::White);
+		self.window.addstr(" Up and Down arrow keys to move selection\n");
+		self.window.addstr(" q, abort interactive rebase\n");
+		self.window.addstr(" Q, abort interactive rebase, without confirm\n");
+		self.window.addstr(" w, write and continue interactive rebase\n");
+		self.window.addstr(" W, write and continue interactive rebase, without confirm\n");
+		self.window.addstr(" ?, show this help message\n");
+		self.window.addstr(" j, move selected commit up\n");
+		self.window.addstr(" k, move selected commit down\n");
+		self.window.addstr(" p, pick: use commit\n");
+		self.window.addstr(" r, reword: use commit, but edit the commit message\n");
+		self.window.addstr(" e, edit: use commit, but stop for amending\n");
+		self.window.addstr(" s, squash: use commit, but meld into previous commit\n");
+		self.window.addstr(" f, fixup: like 'squash', but discard this commit's log message\n");
+		self.window.addstr(" d, drop: remove commit\n");
+		self.window.addstr("\n\nHit any key to close help");
+		self.window.refresh();
+		self.window.getch();
+	}
+	
+	fn set_color(&self, color: Color) {
+		match color {
+			Color::White => self.window.attrset(pancurses::COLOR_PAIR(0)),
+			Color::Yellow => self.window.attrset(pancurses::COLOR_PAIR(1)),
+			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(2)),
+			Color::Green => self.window.attrset(pancurses::COLOR_PAIR(3)),
+			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(4)),
+			Color::Magenta => self.window.attrset(pancurses::COLOR_PAIR(5)),
+			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(6)),
+			Color::Black => self.window.attrset(pancurses::COLOR_PAIR(7)),
+		};
+	}
+	
+	fn set_dim(&self, on: bool) {
+		if on {
+			self.window.attron(pancurses::A_DIM);
+		}
+			else {
+				self.window.attroff(pancurses::A_DIM);
+			}
+	}
+	
+	fn set_underline(&self, on: bool) {
+		if on {
+			self.window.attron(pancurses::A_UNDERLINE);
+		}
+			else {
+				self.window.attroff(pancurses::A_UNDERLINE);
+			}
+	}
+	
+	fn confirm(&self, message: &str) -> bool  {
+		self.window.clear();
+		self.draw_title();
+		self.window.addstr(&format!("{} (y/n)?", message));
+		match self.window.getch() {
+			Some(pancurses::Input::Character(c)) if c == 'y' || c == 'Y' => true,
+			_ => false
+		}
+	}
+	
+	fn endwin(&self) {
+		self.window.clear();
+		self.window.refresh();
+		pancurses::curs_set(1);
+		pancurses::endwin();
+	}
+}
+
 fn main() {
-	let args: Vec<String> = env::args().collect();
 	
-	// Create a path to the desired file
-	let path = Path::new(&args[1]);
-	let display = path.display();
-	
-	// Open the path in read-only mode, returns `io::Result<File>`
-	let mut file = match File::open(&path) {
-		Err(why) => panic!("couldn't open {}: {}", display, why.description()),
-		Ok(file) => file,
+	let filepath = match env::args().nth(1) {
+		Some(filepath) => filepath,
+		None => {
+			print_err!(
+				"Must provide a filepath.\n\n\
+				Usage: git-interactive <filepath>"
+			);
+			process::exit(1);
+		}
 	};
 	
-	// Read the file contents into a string, returns `io::Result<usize>`
-	let mut s = String::new();
-	match file.read_to_string(&mut s) {
-		Err(why) => panic!("couldn't read {}: {}", display, why.description()),
-		Ok(_) => {},
-	}
+	let mut git_interactive = match GitInteractive::from_filepath(&filepath)
+		{
+			Ok(gi) => gi,
+			Err(msg) => {
+				print_err!("{}", msg);
+				process::exit(1);
+			}
+		};
 	
-	let mut v: Vec<Vec<&str>> = s
-		.lines()
-		.filter(|l| !l.starts_with("#") && !l.is_empty())
-		.map(|l| l.splitn(3, " ").collect())
-		.collect();
-	
-	let v_len: i16 = v.len() as i16;
-	
-	/* Setup pancurses. */
-	let window = pancurses::initscr();
-	
-	pancurses::curs_set(0);
-	pancurses::noecho();
-	window.keypad(true);
-	
-	if pancurses::has_colors() {
-		pancurses::start_color();
-	}
-	
-	pancurses::use_default_colors();
-	for (i, color) in COLOR_TABLE.into_iter().enumerate() {
-		pancurses::init_pair(i as i16, *color, -1);
-	}
-	
-	let mut selected_line: i16 = 0;
+	let window = Window::new();
 	
 	loop {
-		window.clear();
-		window.attrset(pancurses::COLOR_PAIR(0));
-		window.addstr("Git Interactive Rebase       Type ? for help\n\n");
-		window.attrset(pancurses::COLOR_PAIR(0));
-		window.refresh();
-		let mut i: i16 = 0;
-		for ss in &v {
-			if ss[0] == "pick" {
-				window.attrset(pancurses::COLOR_PAIR(0));
-			} else if ss[0] == "reword" {
-				window.attrset(pancurses::COLOR_PAIR(1));
-			} else if ss[0] == "edit" {
-				window.attrset(pancurses::COLOR_PAIR(2));
-			} else if ss[0] == "squash" {
-				window.attrset(pancurses::COLOR_PAIR(4));
-			} else if ss[0] == "fixup" {
-				window.attrset(pancurses::COLOR_PAIR(5));
-			} else if ss[0] == "exec" {
-				window.attrset(pancurses::COLOR_PAIR(6));
-			} else if ss[0] == "drop" {
-				window.attrset(pancurses::COLOR_PAIR(7));
-			}
-			if i == selected_line {
-				window.attrset(pancurses::COLOR_PAIR(0));
-				window.attron(pancurses::A_STANDOUT);
-			}
-			window.addstr(&format!(" {:6} {} {}\n", &ss[0], &ss[1], &ss[2]).as_ref());
-			window.attroff(pancurses::A_STANDOUT);
-			i += 1;
-		}
-		window.attrset(pancurses::COLOR_PAIR(0));
-		window.refresh();
-		match window.getch() {
-			Some(pancurses::Input::Character(q)) if q == 'q' || q == 'Q' => {
-				window.clear();
-				window.attrset(pancurses::COLOR_PAIR(0));
-				window.addstr("Git Interactive Rebase - Abort Rebase\n\n");
-				window.addstr("Are you sure you want to abort? (y/n)");
-				window.refresh();
-				match window.getch() {
-					Some(pancurses::Input::Character(c)) if c == 'y' || c == 'Y' => {
-						pancurses::curs_set(1);
-						pancurses::endwin();
-						// empty file
-						v.clear();
-						break;
-					},
-					_ => {}
+		window.draw(&git_interactive);
+		match window.window.getch() {
+			Some(Input::Character(c)) if c == 'q' => {
+				if window.confirm("Are you sure you want to abort") {
+					git_interactive.lines.clear();
+					break;
 				}
 			},
-			Some(pancurses::Input::Character(q)) if q == 'w' || q == 'W' => {
-				window.clear();
-				window.attrset(pancurses::COLOR_PAIR(0));
-				window.addstr("Git Interactive Rebase - Confirm Rebase\n\n");
-				window.addstr("Are you sure you want to rebase? (y/n)");
-				window.refresh();
-				match window.getch() {
-					Some(pancurses::Input::Character(c)) if c == 'y' || c == 'Y' => {
-						pancurses::curs_set(1);
-						pancurses::endwin();
-						break;
-					},
-					_ => {}
+			Some(Input::Character(c)) if c == 'Q' => {
+				git_interactive.lines.clear();
+				break;
+			},
+			Some(Input::Character(c)) if c == 'w' => {
+				if window.confirm("Are you sure you want to rebase") {
+					break;
 				}
 			},
-			Some(pancurses::Input::Character(c)) if c == '?' || c == 'h' || c == 'H' => {
-				window.clear();
-				window.attrset(pancurses::COLOR_PAIR(0));
-				window.addstr("Git Interactive Rebase - Help\n\n");
-				window.addstr(" Up and Down arrow keys to move selection\n");
-				window.addstr(" q, abort interactive rebase\n");
-				window.addstr(" w, write and continue interactive rebase\n");
-				window.addstr(" ?, show this help message\n");
-				window.addstr(" j, move selected commit up\n");
-				window.addstr(" k, move selected commit down\n");
-				window.addstr(" p, pick: use commit\n");
-				window.addstr(" r, reword: use commit, but edit the commit message\n");
-				window.addstr(" e, edit: use commit, but stop for amending\n");
-				window.addstr(" s, squash: use commit, but meld into previous commit\n");
-				window.addstr(" f, fixup: like 'squash', but discard this commit's log message\n");
-				window.addstr(" x, exec: run command (the rest of the line) using shell\n");
-				window.addstr(" d, drop: remove commit\n");
-				window.addstr("\n\nHit any key to close help");
-				window.refresh();
-				window.getch();
+			Some    (Input::Character(c)) if c == 'W' => {
+				break;
 			},
-			Some(pancurses::Input::Character(c)) if c == 'p' || c == 'P' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "pick");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'r' || c == 'R' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "reword");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'e' || c == 'E' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "edit");
-			},
-			Some(pancurses::Input::Character(c)) if c == 's' || c == 'S' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "squash");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'f' || c == 'F' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "fixup");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'x' || c == 'X' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "exec");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'd' || c == 'D' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "drop");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'd' || c == 'D' => {
-				v[selected_line as usize].remove(0);
-				v[selected_line as usize].insert(0, "drop");
-			},
-			Some(pancurses::Input::Character(c)) if c == 'j' || c == 'J' => {
-				if selected_line != 0 {
-					v.swap(selected_line as usize, selected_line as usize - 1);
-					selected_line -= 1;
-				}
-			},
-			Some(pancurses::Input::Character(c)) if c == 'k' || c == 'K' => {
-				if selected_line != v_len - 1 {
-					v.swap(selected_line as usize, selected_line as usize + 1);
-					selected_line += 1;
-				}
-			},
-			Some(pancurses::Input::KeyUp) => {
-				selected_line -= 1;
-				if selected_line < 0 {
-					selected_line = 0;
-				}
-			},
-			Some(pancurses::Input::KeyDown) => {
-				selected_line += 1;
-				if selected_line > v_len - 1 {
-					selected_line = v_len - 1;
-				}
-			},
+			Some(Input::Character(c)) if c == '?' => window.draw_help(),
+			Some(Input::Character(c)) if c == 'p' => git_interactive.set_selected_line_action(Action::Pick),
+			Some(Input::Character(c)) if c == 'r' => git_interactive.set_selected_line_action(Action::Reword),
+			Some(Input::Character(c)) if c == 'e' => git_interactive.set_selected_line_action(Action::Edit),
+			Some(Input::Character(c)) if c == 's' => git_interactive.set_selected_line_action(Action::Squash),
+			Some(Input::Character(c)) if c == 'f' => git_interactive.set_selected_line_action(Action::Fixup),
+			Some(Input::Character(c)) if c == 'd' => git_interactive.set_selected_line_action(Action::Drop),
+			Some(Input::Character(c)) if c == 'j' => git_interactive.swap_selected_down(),
+			Some(Input::Character(c)) if c == 'k' => git_interactive.swap_selected_up(),
+			Some(pancurses::Input::KeyUp) => git_interactive.move_cursor_up(),
+			Some(pancurses::Input::KeyDown) => git_interactive.move_cursor_down(),
 			_ => {}
 		}
 	}
 	
-	let mut outfile = match File::create(path) {
-		Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-		Ok(outfile) => outfile,
-	};
-
-	for ss in &v {
-		if let Err(e) = writeln!(outfile, "{} {} {}", &ss[0], &ss[1], &ss[2]) {
-			println!("{}", e);
+	window.endwin();
+	match git_interactive.write_file() {
+		Ok(_) => {},
+		Err(msg) => {
+			print_err!("{}", msg);
+			process::exit(1);
 		}
-	}
+	};
 }
-
