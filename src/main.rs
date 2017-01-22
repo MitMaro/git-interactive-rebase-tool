@@ -279,7 +279,7 @@ impl Window {
 	fn draw_footer(&self) {
 		self.set_color(Color::White);
 		self.set_dim(true);
-		self.window.addstr("\nActions: [ up, down, q, w, j, k, p, r, e, s, f, d, ? ]\n");
+		self.window.addstr("\nActions: [ up, down, q/Q, w/W, j, k, p, r, e, s, f, d, ? ]\n");
 		self.set_dim(false);
 	}
 	
@@ -287,23 +287,33 @@ impl Window {
 		self.window.clear();
 		self.draw_title();
 		self.set_color(Color::White);
-		self.window.addstr(" Up and Down arrow keys to move selection\n");
-		self.window.addstr(" q, abort interactive rebase\n");
-		self.window.addstr(" Q, abort interactive rebase, without confirm\n");
-		self.window.addstr(" w, write and continue interactive rebase\n");
-		self.window.addstr(" W, write and continue interactive rebase, without confirm\n");
-		self.window.addstr(" ?, show this help message\n");
-		self.window.addstr(" j, move selected commit up\n");
-		self.window.addstr(" k, move selected commit down\n");
-		self.window.addstr(" p, pick: use commit\n");
-		self.window.addstr(" r, reword: use commit, but edit the commit message\n");
-		self.window.addstr(" e, edit: use commit, but stop for amending\n");
-		self.window.addstr(" s, squash: use commit, but meld into previous commit\n");
-		self.window.addstr(" f, fixup: like 'squash', but discard this commit's log message\n");
-		self.window.addstr(" d, drop: remove commit\n");
+		self.window.addstr(" Key        Action\n");
+		self.window.addstr(" --------------------------------------------------\n");
+		self.draw_help_command("Up", "Move selection up");
+		self.draw_help_command("Down", "Move selection Down");
+		self.draw_help_command("q", "Abort interactive rebase");
+		self.draw_help_command("Q", "Immediately abort interactive rebase");
+		self.draw_help_command("w", "Write interactive rebase file");
+		self.draw_help_command("W", "Immediately write interactive rebase file");
+		self.draw_help_command("?", "Show help");
+		self.draw_help_command("j", "Move selected commit up");
+		self.draw_help_command("k", "Move selected commit down");
+		self.draw_help_command("p", "Set selected commit to be picked");
+		self.draw_help_command("r", "Set selected commit to be reworded");
+		self.draw_help_command("e", "Set selected commit to be edited");
+		self.draw_help_command("s", "Set selected commit to be squashed");
+		self.draw_help_command("f", "Set selected commit to be fixed-up");
+		self.draw_help_command("d", "Set selected commit to be dropped");
 		self.window.addstr("\n\nHit any key to close help");
 		self.window.refresh();
 		self.window.getch();
+	}
+	
+	fn draw_help_command(&self, command: &str, help: &str) {
+		self.set_color(Color::Blue);
+		self.window.addstr(&format!(" {:4}    ", command));
+		self.set_color(Color::White);
+		self.window.addstr(&format!("{}\n", help));
 	}
 	
 	fn set_color(&self, color: Color) {

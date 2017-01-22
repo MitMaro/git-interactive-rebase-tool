@@ -1,6 +1,6 @@
 [root]
-name = "git-interactive-tool"
-version = "0.1.0"
+name = "git-interactive-rebase-tool"
+version = "0.3.0"
 dependencies = [
  "pancurses 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
