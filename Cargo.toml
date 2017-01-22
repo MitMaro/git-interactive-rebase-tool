@@ -1,6 +1,6 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Tim Oram <mitmaro@gmail.com>"]
 license = "ISC"
 description = "Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."
@@ -10,3 +10,17 @@ readme = "README.md"
 
 [dependencies]
 pancurses = "0.7"
+
+[package.metadata.deb]
+maintainer = "Tim Oram <me@mitmaro.ca>"
+copyright = "Tim Oram <me@mitmaro.ca>"
+license_file = ["LICENSE", "2"]
+extended_description = """\
+Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/git-interactive-tool", "usr/bin/interactive-rebase-tool", "755"],
+    ["README.md", "usr/share/doc/cargo-deb/README", "644"],
+]
