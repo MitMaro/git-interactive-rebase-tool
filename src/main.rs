@@ -296,8 +296,8 @@ impl Window {
 		self.draw_help_command("w", "Write interactive rebase file");
 		self.draw_help_command("W", "Immediately write interactive rebase file");
 		self.draw_help_command("?", "Show help");
-		self.draw_help_command("j", "Move selected commit up");
-		self.draw_help_command("k", "Move selected commit down");
+		self.draw_help_command("j", "Move selected commit down");
+		self.draw_help_command("k", "Move selected commit up");
 		self.draw_help_command("p", "Set selected commit to be picked");
 		self.draw_help_command("r", "Set selected commit to be reworded");
 		self.draw_help_command("e", "Set selected commit to be edited");
