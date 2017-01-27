@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for scrolling
 
+### Fixed
+- Crash on noop rebases
+
 ## [0.3.0] - 2017-01-21
 ### Changed
 - Cleaned up help
