@@ -245,6 +245,11 @@ impl Window {
 		// 4 removed for other UI lines
 		let window_height = (self.window.get_max_y() - 4) as usize;
 		
+		if self.top > 0 {
+			self.draw_more_indicator(self.top);
+		}
+		self.window.addstr(&"\n");
+		
 		let mut index: usize = self.top + 1;
 		for line in git_interactive
 			.lines
@@ -255,15 +260,28 @@ impl Window {
 			self.draw_line(&line, index == git_interactive.selected_line);
 			index += 1;
 		}
+		if window_height < git_interactive.lines.len() - self.top {
+			self.draw_more_indicator((git_interactive.lines.len() - window_height - self.top) as usize);
+		}
+		self.window.addstr(&"\n");
 		self.draw_footer();
 		self.window.refresh();
+	}
+	
+	fn draw_more_indicator(&self, remaining: usize) {
+		self.set_color(Color::White);
+		self.window.attron(pancurses::A_DIM);
+		self.window.attron(pancurses::A_REVERSE);
+		self.window.addstr(&format!("  -- {} --  ", remaining));
+		self.window.attroff(pancurses::A_REVERSE);
+		self.window.attroff(pancurses::A_DIM);
 	}
 	
 	fn draw_title(&self) {
 		self.set_color(Color::White);
 		self.set_dim(true);
 		self.set_underline(true);
-		self.window.addstr("Git Interactive Rebase                       ? for help\n\n");
+		self.window.addstr("Git Interactive Rebase                       ? for help\n");
 		self.set_underline(false);
 		self.set_dim(false);
 	}
@@ -382,7 +400,7 @@ impl Window {
 			s if s <= self.top => s - 1,
 			s if s >= self.top + window_height => s - window_height + 1,
 			_ => self.top
-		}
+		};
 	}
 	
 	fn endwin(&self) {
