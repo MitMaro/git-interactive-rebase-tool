@@ -1,4 +1,4 @@
-# Git Interactive Tool
+# Git Interactive Rebase Tool
 
 Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses.
 
@@ -14,7 +14,7 @@ Download the `.deb` file from the releases page and install. The executable will
 
 Download the `interactive-rebase-tool` from the releases page and copy it to a location on your `PATH`.
 
-## Configure Git
+### Configure Git
 
 In your command line run:
 
@@ -29,10 +29,10 @@ The tool has built in help that can be accessed by hitting the `?` key.
 
 ### Key Bindings
 
-| Key   | Description |
-| ----- | ----------- |
-|  Up   | Move selection up |
-|  Down | Move selection Down |
+| Key     | Description |
+| ------- | ----------- |
+|  Up     | Move selection up |
+|  Down   | Move selection Down |
 |  `q`    | Abort interactive rebase |
 |  `Q`    | Immediately abort interactive rebase |
 |  `w`    | Write interactive rebase file |
