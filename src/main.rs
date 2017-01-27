@@ -1,6 +1,5 @@
 // TODO:
 // - Add execute command
-// - Scroll on large input
 extern crate pancurses;
 
 use std::cmp;
@@ -209,7 +208,8 @@ enum Color {
 }
 
 struct Window {
-	window: pancurses::Window
+	window: pancurses::Window,
+	top: usize
 }
 
 impl Window {
@@ -230,15 +230,23 @@ impl Window {
 		}
 		
 		Window{
-			window: window
+			window: window,
+			top: 0
 		}
 	}
 	fn draw(&self, git_interactive: &GitInteractive) {
 		self.window.clear();
 		self.draw_title();
+		// 4 removed for other UI lines
+		let window_height = (self.window.get_max_y() - 4) as usize;
 		
-		let mut index: usize = 1;
-		for line in &git_interactive.lines {
+		let mut index: usize = self.top + 1;
+		for line in git_interactive
+			.lines
+			.iter()
+			.skip(self.top)
+			.take(window_height)
+		{
 			self.draw_line(&line, index == git_interactive.selected_line);
 			index += 1;
 		}
@@ -279,7 +287,11 @@ impl Window {
 	fn draw_footer(&self) {
 		self.set_color(Color::White);
 		self.set_dim(true);
-		self.window.addstr("\nActions: [ up, down, q/Q, w/W, j, k, p, r, e, s, f, d, ? ]\n");
+		self.window.mvaddstr(
+			self.window.get_max_y() - 1,
+			0,
+			"Actions: [ up, down, q/Q, w/W, j, k, p, r, e, s, f, d, ? ]"
+		);
 		self.set_dim(false);
 	}
 	
@@ -357,6 +369,18 @@ impl Window {
 		}
 	}
 	
+	fn set_top(&mut self, git_interactive: &GitInteractive) {
+		// 4 removed for other UI lines
+		let window_height = (self.window.get_max_y() - 4) as usize;
+		
+		self.top = match git_interactive.selected_line {
+			s if s == git_interactive.lines.len() => self.top,
+			s if s <= self.top => s - 1,
+			s if s >= self.top + window_height => s - window_height + 1,
+			_ => self.top
+		}
+	}
+	
 	fn endwin(&self) {
 		self.window.clear();
 		self.window.refresh();
@@ -387,7 +411,7 @@ fn main() {
 			}
 		};
 	
-	let window = Window::new();
+	let mut window = Window::new();
 	
 	loop {
 		window.draw(&git_interactive);
@@ -417,10 +441,23 @@ fn main() {
 			Some(Input::Character(c)) if c == 's' => git_interactive.set_selected_line_action(Action::Squash),
 			Some(Input::Character(c)) if c == 'f' => git_interactive.set_selected_line_action(Action::Fixup),
 			Some(Input::Character(c)) if c == 'd' => git_interactive.set_selected_line_action(Action::Drop),
-			Some(Input::Character(c)) if c == 'j' => git_interactive.swap_selected_down(),
-			Some(Input::Character(c)) if c == 'k' => git_interactive.swap_selected_up(),
-			Some(pancurses::Input::KeyUp) => git_interactive.move_cursor_up(),
-			Some(pancurses::Input::KeyDown) => git_interactive.move_cursor_down(),
+			Some(Input::Character(c)) if c == 'j' => {
+				git_interactive.swap_selected_down();
+				window.set_top(&git_interactive);
+			},
+			Some(Input::Character(c)) if c == 'k' => {
+				git_interactive.swap_selected_up();
+				window.set_top(&git_interactive);
+			},
+			Some(pancurses::Input::KeyUp) => {
+				git_interactive.move_cursor_up();
+				window.set_top(&git_interactive);
+			},
+			Some(pancurses::Input::KeyDown) => {
+				git_interactive.move_cursor_down();
+				window.set_top(&git_interactive);
+			},
+			Some(pancurses::Input::KeyResize) => window.set_top(&git_interactive),
 			_ => {}
 		}
 	}
