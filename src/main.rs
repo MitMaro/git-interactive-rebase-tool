@@ -242,8 +242,11 @@ impl Window {
 	fn draw(&self, git_interactive: &GitInteractive) {
 		self.window.clear();
 		self.draw_title();
-		// 4 removed for other UI lines
-		let window_height = (self.window.get_max_y() - 4) as usize;
+		let window_height = match self.window.get_max_y() {
+			// 4 removed for other UI lines
+			x if x >= 4 => x - 4,
+			_ => 4
+		} as usize;
 		
 		if self.top > 0 {
 			self.draw_more_indicator(self.top);
