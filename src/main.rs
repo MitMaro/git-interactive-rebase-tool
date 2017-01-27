@@ -192,18 +192,16 @@ impl<'a> GitInteractive<'a> {
 	}
 }
 
-const COLOR_TABLE: [i16; 8] = [
+const COLOR_TABLE: [i16; 7] = [
 	pancurses::COLOR_WHITE,
 	pancurses::COLOR_YELLOW,
 	pancurses::COLOR_BLUE,
 	pancurses::COLOR_GREEN,
 	pancurses::COLOR_CYAN,
 	pancurses::COLOR_MAGENTA,
-	pancurses::COLOR_RED,
-	pancurses::COLOR_BLACK
+	pancurses::COLOR_RED
 ];
 
-#[allow(dead_code)]
 enum Color {
 	White,
 	Yellow,
@@ -211,8 +209,7 @@ enum Color {
 	Green,
 	Cyan,
 	Magenta,
-	Red,
-	Black
+	Red
 }
 
 struct Window {
@@ -276,9 +273,9 @@ impl Window {
 		if selected {
 			self.window.addstr(" > ");
 		}
-			else {
-				self.window.addstr("   ");
-			}
+		else {
+			self.window.addstr("   ");
+		}
 		match line.action {
 			Action::Pick => self.set_color(Color::Green),
 			Action::Reword => self.set_color(Color::Yellow),
@@ -344,8 +341,7 @@ impl Window {
 			Color::Green => self.window.attrset(pancurses::COLOR_PAIR(3)),
 			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(4)),
 			Color::Magenta => self.window.attrset(pancurses::COLOR_PAIR(5)),
-			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(6)),
-			Color::Black => self.window.attrset(pancurses::COLOR_PAIR(7)),
+			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(6))
 		};
 	}
 	
@@ -353,18 +349,18 @@ impl Window {
 		if on {
 			self.window.attron(pancurses::A_DIM);
 		}
-			else {
-				self.window.attroff(pancurses::A_DIM);
-			}
+		else {
+			self.window.attroff(pancurses::A_DIM);
+		}
 	}
 	
 	fn set_underline(&self, on: bool) {
 		if on {
 			self.window.attron(pancurses::A_UNDERLINE);
 		}
-			else {
-				self.window.attroff(pancurses::A_UNDERLINE);
-			}
+		else {
+			self.window.attroff(pancurses::A_UNDERLINE);
+		}
 	}
 	
 	fn confirm(&self, message: &str) -> bool  {
