@@ -88,7 +88,7 @@ struct GitInteractive<'a> {
 }
 
 impl<'a> GitInteractive<'a> {
-	fn from_filepath(filepath: &'a str) -> Result<Self, String> {
+	fn from_filepath(filepath: &'a str) -> Result<Option<Self>, String> {
 		let path = Path::new(filepath);
 		
 		let mut file = match File::open(path) {
@@ -112,22 +112,29 @@ impl<'a> GitInteractive<'a> {
 			}
 		}
 		
-		let lines: Vec<Line> = s
+		if s.starts_with("noop") {
+			return Ok(None)
+		}
+		
+		let parsed_result: Result<Vec<Line>, String> = s
 			.lines()
 			.filter(|l| !l.starts_with("#") && !l.is_empty())
-			.map(|l| match Line::new(l) {
-				Ok(line) => line,
-				Err(e) => panic!("{}", e)
-			})
+			.map(|l| Line::new(l))
 			.collect();
 		
-		Ok(
-			GitInteractive {
-				filepath: path,
-				lines: lines,
-				selected_line: 1
-			}
-		)
+		match parsed_result {
+			Ok(lines) => Ok(
+				Some(GitInteractive {
+					filepath: path,
+					lines: lines,
+					selected_line: 1
+				})
+			),
+			Err(e) => Err(format!(
+				"Error reading file, {}\n\
+				Reason: {}", path.display(), e
+			))
+		}
 	}
 	
 	fn write_file(&self) -> Result<(), String> {
@@ -196,6 +203,7 @@ const COLOR_TABLE: [i16; 8] = [
 	pancurses::COLOR_BLACK
 ];
 
+#[allow(dead_code)]
 enum Color {
 	White,
 	Yellow,
@@ -402,14 +410,21 @@ fn main() {
 		}
 	};
 	
-	let mut git_interactive = match GitInteractive::from_filepath(&filepath)
-		{
-			Ok(gi) => gi,
-			Err(msg) => {
-				print_err!("{}", msg);
-				process::exit(1);
+	let mut git_interactive = match GitInteractive::from_filepath(&filepath) {
+		Ok(gi) => {
+			match gi {
+				Some(git_interactive) => git_interactive,
+				None => {
+					print_err!("{}", &"Nothing to edit");
+					process::exit(0);
+				}
 			}
-		};
+		},
+		Err(msg) => {
+			print_err!("{}", msg);
+			process::exit(1);
+		}
+	};
 	
 	let mut window = Window::new();
 	
@@ -431,7 +446,7 @@ fn main() {
 					break;
 				}
 			},
-			Some    (Input::Character(c)) if c == 'W' => {
+			Some(Input::Character(c)) if c == 'W' => {
 				break;
 			},
 			Some(Input::Character(c)) if c == '?' => window.draw_help(),
