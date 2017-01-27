@@ -21,6 +21,6 @@ depends = "$auto"
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/git-interactive-tool", "usr/bin/interactive-rebase-tool", "755"],
+    ["target/release/git-interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
     ["README.md", "usr/share/doc/cargo-deb/README", "644"],
 ]
