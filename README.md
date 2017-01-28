@@ -29,23 +29,25 @@ The tool has built in help that can be accessed by hitting the `?` key.
 
 ### Key Bindings
 
-| Key     | Description |
-| ------- | ----------- |
-|  Up     | Move selection up |
-|  Down   | Move selection Down |
-|  `q`    | Abort interactive rebase |
-|  `Q`    | Immediately abort interactive rebase |
-|  `w`    | Write interactive rebase file |
-|  `W`    | Immediately write interactive rebase file |
-|  `?`    | Show help |
-|  `j`    | Move selected commit down |
-|  `k`    | Move selected commit up |
-|  `p`    | Set selected commit to be picked |
-|  `r`    | Set selected commit to be reworded |
-|  `e`    | Set selected commit to be edited |
-|  `s`    | Set selected commit to be squashed |
-|  `f`    | Set selected commit to be fixed-up |
-|  `d`    | Set selected commit to be dropped |
+| Key          | Description |
+| ------------ | ----------- |
+|  Up          | Move selection up |
+|  Down        | Move selection down |
+|  Page Up     | Move selection up five lines |
+|  Page Down   | Move selection down five lines |
+|  `q`         | Abort interactive rebase |
+|  `Q`         | Immediately abort interactive rebase |
+|  `w`         | Write interactive rebase file |
+|  `W`         | Immediately write interactive rebase file |
+|  `?`         | Show help |
+|  `j`         | Move selected commit down |
+|  `k`         | Move selected commit up |
+|  `p`         | Set selected commit to be picked |
+|  `r`         | Set selected commit to be reworded |
+|  `e`         | Set selected commit to be edited |
+|  `s`         | Set selected commit to be squashed |
+|  `f`         | Set selected commit to be fixed-up |
+|  `d`         | Set selected commit to be dropped |
 
 ## License
 
