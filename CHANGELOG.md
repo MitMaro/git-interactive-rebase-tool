@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Support for scrolling
+- Support for page up and page down
 
 ### Fixed
 - Crash on noop rebases

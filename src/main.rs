@@ -162,13 +162,16 @@ impl<'a> GitInteractive<'a> {
 		}
 		Ok(())
 	}
-	
-	fn move_cursor_up(&mut self) {
-		self.selected_line = cmp::max(self.selected_line - 1, 1);
+	 
+	fn move_cursor_up(&mut self, amount: usize) {
+		self.selected_line = match amount {
+			a if a >= self.selected_line => 1,
+			_ => self.selected_line - amount
+		}
 	}
 	
-	fn move_cursor_down(&mut self) {
-		self.selected_line = cmp::min(self.selected_line + 1, self.lines.len());
+	fn move_cursor_down(&mut self, amount: usize) {
+		self.selected_line = cmp::min(self.selected_line + amount, self.lines.len());
 	}
 	
 	fn swap_selected_up(&mut self) {
@@ -176,7 +179,7 @@ impl<'a> GitInteractive<'a> {
 			return
 		}
 		self.lines.swap(self.selected_line - 1, self.selected_line - 2);
-		self.move_cursor_up();
+		self.move_cursor_up(1);
 	}
 	
 	fn swap_selected_down(&mut self) {
@@ -184,7 +187,7 @@ impl<'a> GitInteractive<'a> {
 			return
 		}
 		self.lines.swap(self.selected_line - 1, self.selected_line);
-		self.move_cursor_down();
+		self.move_cursor_down(1);
 	}
 	
 	fn set_selected_line_action(&mut self, action: Action) {
@@ -328,7 +331,9 @@ impl Window {
 		self.window.addstr(" Key        Action\n");
 		self.window.addstr(" --------------------------------------------------\n");
 		self.draw_help_command("Up", "Move selection up");
-		self.draw_help_command("Down", "Move selection Down");
+		self.draw_help_command("Down", "Move selection down");
+		self.draw_help_command("Page Up", "Move selection up 5 lines");
+		self.draw_help_command("Page Down", "Move selection down 5 lines");
 		self.draw_help_command("q", "Abort interactive rebase");
 		self.draw_help_command("Q", "Immediately abort interactive rebase");
 		self.draw_help_command("w", "Write interactive rebase file");
@@ -399,9 +404,9 @@ impl Window {
 		let window_height = (self.window.get_max_y() - 4) as usize;
 		
 		self.top = match git_interactive.selected_line {
-			s if s == git_interactive.lines.len() => self.top,
-			s if s <= self.top => s - 1,
-			s if s >= self.top + window_height => s - window_height + 1,
+			s if s == git_interactive.lines.len() => git_interactive.lines.len() - window_height,
+			s if self.top + 1 > s => s - 1,
+			s if self.top + window_height <= s => s - window_height + 1,
 			_ => self.top
 		};
 	}
@@ -415,7 +420,6 @@ impl Window {
 }
 
 fn main() {
-	
 	let filepath = match env::args().nth(1) {
 		Some(filepath) => filepath,
 		None => {
@@ -482,11 +486,19 @@ fn main() {
 				window.set_top(&git_interactive);
 			},
 			Some(pancurses::Input::KeyUp) => {
-				git_interactive.move_cursor_up();
+				git_interactive.move_cursor_up(1);
+				window.set_top(&git_interactive);
+			},
+			Some(pancurses::Input::KeyPPage) => {
+				git_interactive.move_cursor_up(5);
 				window.set_top(&git_interactive);
 			},
 			Some(pancurses::Input::KeyDown) => {
-				git_interactive.move_cursor_down();
+				git_interactive.move_cursor_down(1);
+				window.set_top(&git_interactive);
+			},
+			Some(pancurses::Input::KeyNPage) => {
+				git_interactive.move_cursor_down(5);
 				window.set_top(&git_interactive);
 			},
 			Some(pancurses::Input::KeyResize) => window.set_top(&git_interactive),
