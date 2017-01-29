@@ -245,11 +245,7 @@ impl Window {
 	fn draw(&self, git_interactive: &GitInteractive) {
 		self.window.clear();
 		self.draw_title();
-		let window_height = match self.window.get_max_y() {
-			// 4 removed for other UI lines
-			x if x >= 4 => x - 4,
-			_ => 4
-		} as usize;
+		let window_height = self.get_window_height();
 		
 		if self.top > 0 {
 			self.draw_more_indicator(self.top);
@@ -400,15 +396,23 @@ impl Window {
 	}
 	
 	fn set_top(&mut self, git_interactive: &GitInteractive) {
-		// 4 removed for other UI lines
-		let window_height = (self.window.get_max_y() - 4) as usize;
+		let window_height = self.get_window_height();
 		
 		self.top = match git_interactive.selected_line {
+			_ if git_interactive.lines.len() <= window_height => 0,
 			s if s == git_interactive.lines.len() => git_interactive.lines.len() - window_height,
 			s if self.top + 1 > s => s - 1,
 			s if self.top + window_height <= s => s - window_height + 1,
 			_ => self.top
 		};
+	}
+	
+	fn get_window_height(&self) -> usize {
+		return match self.window.get_max_y() {
+			// 4 removed for other UI lines
+			x if x >= 4 => x - 4,
+			_ => 4
+		} as usize;
 	}
 	
 	fn endwin(&self) {
