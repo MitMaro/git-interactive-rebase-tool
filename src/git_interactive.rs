@@ -9,6 +9,7 @@ use action::Action;
 use line::Line;
 
 pub struct GitInteractive {
+	git_root: PathBuf,
 	filepath: PathBuf,
 	lines: Vec<Line>,
 	selected_line_index: usize
@@ -17,7 +18,7 @@ pub struct GitInteractive {
 impl GitInteractive {
 	pub fn new_from_filepath(filepath: &str) -> Result<Self, String> {
 		let path = PathBuf::from(filepath);
-		
+
 		let mut file = match File::open(&path) {
 			Ok(file) => file,
 			Err(why) => {
@@ -27,7 +28,7 @@ impl GitInteractive {
 				));
 			}
 		};
-		
+
 		let mut s = String::new();
 		match file.read_to_string(&mut s) {
 			Ok(_) => {},
@@ -38,7 +39,10 @@ impl GitInteractive {
 				));
 			}
 		}
-		
+
+		let mut git_root = PathBuf::from(filepath);
+		git_root.pop();
+
 		// catch noop rebases
 		let parsed_result = match s.lines().nth(0) {
 			Some("noop") => Ok(Vec::new()),
@@ -53,6 +57,7 @@ impl GitInteractive {
 		match parsed_result {
 			Ok(lines) => Ok(
 				GitInteractive {
+					git_root: git_root,
 					filepath: path,
 					lines: lines,
 					selected_line_index: 1
@@ -124,8 +129,16 @@ impl GitInteractive {
 		self.lines[self.selected_line_index - 1].set_action(action);
 	}
 	
+	pub fn get_selected_line_hash(&self) -> &String {
+		self.lines[self.selected_line_index - 1].get_hash()
+	}
+	
 	pub fn get_selected_line_index(&self) -> &usize {
 		&self.selected_line_index
+	}
+	
+	pub fn get_git_root(&self) -> &PathBuf {
+		&self.git_root
 	}
 	
 	pub fn get_lines(&self) -> &Vec<Line> {

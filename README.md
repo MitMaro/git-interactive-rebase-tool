@@ -39,6 +39,7 @@ The tool has built in help that can be accessed by hitting the `?` key.
 |  `w`         | Write interactive rebase file |
 |  `W`         | Immediately write interactive rebase file |
 |  `?`         | Show help |
+|  `c`         | Show commit information |
 |  `j`         | Move selected commit down |
 |  `k`         | Move selected commit up |
 |  `p`         | Set selected commit to be picked |

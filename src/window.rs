@@ -1,3 +1,10 @@
+use std::cmp;
+use std::path::PathBuf;
+use std::process::{
+	Command
+};
+use std::error::Error;
+use pad::{PadStr, Alignment};
 
 #[cfg(not(test))]
 use pancurses as pancurses;
@@ -12,6 +19,8 @@ use action::{
 	action_to_str
 };
 use line::Line;
+
+use commit::Commit;
 
 const COLOR_TABLE: [i16; 7] = [
 	pancurses::COLOR_WHITE,
@@ -135,11 +144,87 @@ impl Window {
 		self.window.mvaddstr(
 			self.window.get_max_y() - 1,
 			0,
-			"Actions: [ up, down, q/Q, w/W, j, k, p, r, e, s, f, d, ? ]"
+			"Actions: [ up, down, q/Q, w/W, c, j, k, p, r, e, s, f, d, ? ]"
 		);
 		self.set_dim(false);
 	}
-
+	
+	pub fn draw_show_commit(&self, commit: &str, git_root: &PathBuf) {
+		let result = Command::new("git")
+			.current_dir(git_root)
+			.args(&[
+				"diff-tree",
+				"--numstat",
+				"--format=%aN%x1E%aE%x1E%ad%x1E%s%x1E%b%x1E",
+				commit
+			])
+			.output()
+		;
+		
+		self.window.clear();
+		self.draw_title();
+		match result {
+			Ok(output) => {
+				self.set_color(Color::White);
+				match Commit::new(&String::from_utf8_lossy(&output.stdout)) {
+					Ok(commit_data) => {
+						self.set_color(Color::Yellow);
+						self.window.addstr(&format!("\nCommit: {}\n", commit));
+						self.set_color(Color::White);
+						self.window.addstr(&format!(
+							"Author: {} <{}>\n", commit_data.get_author_name(), commit_data.get_author_email()
+						));
+						self.window.addstr(&format!(
+							"Date: {}\n",
+							commit_data.get_date()
+						));
+						
+						self.window.addstr(&format!(
+							"\n{}\n\n{}\n",
+							commit_data.get_subject(),
+							commit_data.get_body()
+						));
+						let max_add_change_length = commit_data
+							.get_file_stats()
+							.iter()
+							.fold(0, |a, x| cmp::max(a, x.get_added().len()));
+						
+						let max_remove_change_length = commit_data
+							.get_file_stats()
+							.iter()
+							.fold(0, |a, x| cmp::max(a, x.get_added().len()));
+						
+						for file_stat in commit_data.get_file_stats() {
+							self.set_color(Color::Green);
+							self.window.addstr(
+								&file_stat.get_added().pad_to_width_with_alignment(max_add_change_length, Alignment::Right)
+							);
+							self.set_color(Color::White);
+							self.window.addstr(" | ");
+							self.set_color(Color::Red);
+							self.window.addstr(
+								&file_stat.get_removed().pad_to_width_with_alignment(max_remove_change_length, Alignment::Left)
+							);
+							self.set_color(Color::White);
+							self.window.addstr(&format!("  {}\n", &file_stat.get_name()));
+						}
+					},
+					Err(msg) => {
+						self.set_color(Color::Red);
+						self.window.addstr(&msg);
+					}
+				}
+			},
+			Err(msg) => {
+				self.set_color(Color::Red);
+				self.window.addstr(msg.description());
+			}
+		}
+		self.set_color(Color::Yellow);
+		self.window.addstr("\n\nHit any key to close");
+		self.window.refresh();
+	}
+	
 	pub fn draw_help(&self) {
 		self.window.clear();
 		self.draw_title();
@@ -155,6 +240,7 @@ impl Window {
 		self.draw_help_command("w", "Write interactive rebase file");
 		self.draw_help_command("W", "Immediately write interactive rebase file");
 		self.draw_help_command("?", "Show help");
+		self.draw_help_command("c", "Show commit information");
 		self.draw_help_command("j", "Move selected commit down");
 		self.draw_help_command("k", "Move selected commit up");
 		self.draw_help_command("p", "Set selected commit to be picked");
@@ -166,7 +252,7 @@ impl Window {
 		self.window.addstr("\n\nHit any key to close help");
 		self.window.refresh();
 	}
-
+	
 	fn draw_help_command(&self, command: &str, help: &str) {
 		self.set_color(Color::Blue);
 		self.window.addstr(&format!(" {:9}    ", command));

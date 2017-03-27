@@ -2,6 +2,7 @@
 name = "git-interactive-rebase-tool"
 version = "0.4.0"
 dependencies = [
+ "pad 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "pancurses 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -29,6 +30,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "pad"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "unicode-width 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "pancurses"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -48,10 +57,17 @@ dependencies = [
  "libc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
+[[package]]
+name = "unicode-width"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
 [metadata]
 "checksum gcc 0.3.40 (registry+https://github.com/rust-lang/crates.io-index)" = "872db9e59486ef2b14f8e8c10e9ef02de2bccef6363d7f34835dedb386b3d950"
 "checksum libc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "a51822fc847e7a8101514d1d44e354ba2ffa7d4c194dcab48870740e327cac70"
 "checksum log 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "ab83497bf8bf4ed2a74259c1c802351fcd67a65baa86394b6ba73c36f4838054"
 "checksum ncurses 5.84.0 (registry+https://github.com/rust-lang/crates.io-index)" = "30beffce9ed08187ec156a5d78c501b6ae20ee39eba7d1abf9fdfe522c86ae89"
+"checksum pad 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "d1bf3336e626b898e7263790d432a711d4277e22faea20dd9f70e0cab268fa58"
 "checksum pancurses 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8d50e310b2bd745bbafc0138019729791c6c67bff8094d9136e85fd76e696709"
 "checksum pdcurses-sys 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "27a3bc0e02f0e4b38c3225e5ead84f7d529d44048076bb49980f76edcff7d6f1"
+"checksum unicode-width 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "bf3a113775714a22dcb774d8ea3655c53a32debae63a063acc00a91cc586245f"
