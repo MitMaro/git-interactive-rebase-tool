@@ -1,10 +1,12 @@
 // TODO:
 // - Add execute command
 extern crate pancurses;
+extern crate pad;
 
 use std::env;
 use std::process;
 
+mod commit;
 mod action;
 mod application;
 mod git_interactive;
@@ -20,6 +22,7 @@ use git_interactive::GitInteractive;
 use window::Window;
 
 fn main() {
+	
 	let filepath = match env::args().nth(1) {
 		Some(filepath) => filepath,
 		None => {
@@ -30,7 +33,7 @@ fn main() {
 			process::exit(1);
 		}
 	};
-
+	
 	let git_interactive = match GitInteractive::new_from_filepath(&filepath) {
 		Ok(gi) => gi,
 		Err(msg) => {
@@ -38,21 +41,21 @@ fn main() {
 			process::exit(1);
 		}
 	};
-	
+
 	if git_interactive.get_lines().is_empty() {
 		print_err!("{}", &"Nothing to rebase");
 		process::exit(0);
 	}
-	
+
 	let window = Window::new();
-	
+
 	let mut application = Application::new(git_interactive, window);
-	
+
 	while application.exit_code == None {
 		application.draw();
 		application.process_input()
 	}
-	
+
 	match application.end() {
 		Ok(_) => {},
 		Err(msg) => {

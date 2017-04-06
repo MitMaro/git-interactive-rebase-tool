@@ -10,6 +10,7 @@ readme = "README.md"
 
 [dependencies]
 pancurses = "0.7"
+pad = "0.1.4"
 
 [package.metadata.deb]
 maintainer = "Tim Oram <me@mitmaro.ca>"

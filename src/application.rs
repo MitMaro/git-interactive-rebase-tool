@@ -9,8 +9,10 @@ use window::{
 const EXIT_CODE_GOOD: i32 = 0;
 const EXIT_CODE_WRITE_ERROR: i32 = 8;
 
+#[derive(PartialEq, Debug)]
 pub enum State {
 	List,
+	ShowCommit,
 	Help
 }
 
@@ -34,6 +36,7 @@ impl Application {
 	pub fn process_input(&mut self) {
 		match self.state {
 			State::List => self.process_list_input(),
+			State::ShowCommit => self.process_show_commit_input(),
 			State::Help => self.process_help_input()
 		}
 	}
@@ -44,6 +47,12 @@ impl Application {
 				self.window.draw(
 					self.git_interactive.get_lines(),
 					self.git_interactive.get_selected_line_index()
+				);
+			},
+			State::ShowCommit => {
+				self.window.draw_show_commit(
+					self.git_interactive.get_selected_line_hash(),
+					self.git_interactive.get_git_root()
 				);
 			},
 			State::Help => {
@@ -78,10 +87,18 @@ impl Application {
 		self.state = State::List;
 	}
 	
+	fn process_show_commit_input(&mut self) {
+		self.window.window.getch();
+		self.state = State::List;
+	}
+	
 	fn process_list_input(&mut self) {
 		match self.window.window.getch() {
 			Some(Input::Character(c)) if c == '?' => {
 				self.state = State::Help;
+			},
+			Some(Input::Character(c)) if c == 'c' => {
+				self.state = State::ShowCommit;
 			},
 			Some(Input::Character(c))
 				if (c == 'Q') || (c == 'q' && self.window.confirm("Are you sure you want to abort"))
@@ -139,11 +156,11 @@ impl Application {
 	}
 }
 
-
 #[cfg(test)]
 mod tests {
 	use super::{
 		Application,
+		State
 	};
 	use git_interactive::GitInteractive;
 	use window::{
@@ -158,6 +175,27 @@ mod tests {
 		let window = Window::new();
 		let mut app = Application::new(gi, window);
 		assert_eq!(app.git_interactive.get_lines().len(), 12);
+	}
+	
+	#[test]
+	fn application_show_help() {
+		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in").unwrap();
+		let window = Window::new();
+		let mut app = Application::new(gi, window);
+		app.window.window.next_char = Input::Character('?');
+		app.process_input();
+		assert_eq!(app.state, State::Help);
+	}
+	
+	#[test]
+	fn application_show_commit() {
+		// first commit in
+		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-show-commit.in").unwrap();
+		let window = Window::new();
+		let mut app = Application::new(gi, window);
+		app.window.window.next_char = Input::Character('c');
+		app.process_input();
+		assert_eq!(app.state, State::ShowCommit);
 	}
 	
 	#[test]
