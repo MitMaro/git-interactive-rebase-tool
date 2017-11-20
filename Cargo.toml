@@ -9,7 +9,7 @@ keywords = [ "git", "editor", "tool", "rebase", "interactive", "ncurses" ]
 readme = "README.md"
 
 [dependencies]
-pancurses = "0.7"
+pancurses = "0.13"
 pad = "0.1.4"
 
 [package.metadata.deb]
