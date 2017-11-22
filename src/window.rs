@@ -100,7 +100,7 @@ impl Window {
 	}
 
 	fn draw_more_indicator(&self, remaining: usize) {
-		self.set_color(Color::White);
+		self.set_color(&Color::White);
 		self.window.attron(pancurses::A_DIM);
 		self.window.attron(pancurses::A_REVERSE);
 		self.window.addstr(&format!("  -- {} --  ", remaining));
@@ -109,7 +109,7 @@ impl Window {
 	}
 
 	fn draw_title(&self) {
-		self.set_color(Color::White);
+		self.set_color(&Color::White);
 		self.set_dim(true);
 		self.set_underline(true);
 		self.window.addstr("Git Interactive Rebase                       ? for help\n");
@@ -118,7 +118,7 @@ impl Window {
 	}
 
 	fn draw_line(&self, line: &Line, selected: bool) {
-		self.set_color(Color::White);
+		self.set_color(&Color::White);
 		if selected {
 			self.window.addstr(" > ");
 		}
@@ -126,20 +126,20 @@ impl Window {
 			self.window.addstr("   ");
 		}
 		match *line.get_action() {
-			Action::Pick => self.set_color(Color::Green),
-			Action::Reword => self.set_color(Color::Yellow),
-			Action::Edit => self.set_color(Color::Blue),
-			Action::Squash => self.set_color(Color::Cyan),
-			Action::Fixup => self.set_color(Color::Magenta),
-			Action::Drop => self.set_color(Color::Red)
+			Action::Pick => self.set_color(&Color::Green),
+			Action::Reword => self.set_color(&Color::Yellow),
+			Action::Edit => self.set_color(&Color::Blue),
+			Action::Squash => self.set_color(&Color::Cyan),
+			Action::Fixup => self.set_color(&Color::Magenta),
+			Action::Drop => self.set_color(&Color::Red)
 		}
-		self.window.addstr(&format!("{:6}", action_to_str(&line.get_action())));
-		self.set_color(Color::White);
+		self.window.addstr(&format!("{:6}", action_to_str(line.get_action())));
+		self.set_color(&Color::White);
 		self.window.addstr(&format!(" {} {}\n", line.get_hash(), line.get_comment()));
 	}
 
 	fn draw_footer(&self) {
-		self.set_color(Color::White);
+		self.set_color(&Color::White);
 		self.set_dim(true);
 		self.window.mvaddstr(
 			self.window.get_max_y() - 1,
@@ -165,12 +165,12 @@ impl Window {
 		self.draw_title();
 		match result {
 			Ok(output) => {
-				self.set_color(Color::White);
+				self.set_color(&Color::White);
 				match Commit::new(&String::from_utf8_lossy(&output.stdout)) {
 					Ok(commit_data) => {
-						self.set_color(Color::Yellow);
+						self.set_color(&Color::Yellow);
 						self.window.addstr(&format!("\nCommit: {}\n", commit));
-						self.set_color(Color::White);
+						self.set_color(&Color::White);
 						self.window.addstr(&format!(
 							"Author: {} <{}>\n", commit_data.get_author_name(), commit_data.get_author_email()
 						));
@@ -195,32 +195,32 @@ impl Window {
 							.fold(0, |a, x| cmp::max(a, x.get_added().len()));
 						
 						for file_stat in commit_data.get_file_stats() {
-							self.set_color(Color::Green);
+							self.set_color(&Color::Green);
 							self.window.addstr(
 								&file_stat.get_added().pad_to_width_with_alignment(max_add_change_length, Alignment::Right)
 							);
-							self.set_color(Color::White);
+							self.set_color(&Color::White);
 							self.window.addstr(" | ");
-							self.set_color(Color::Red);
+							self.set_color(&Color::Red);
 							self.window.addstr(
 								&file_stat.get_removed().pad_to_width_with_alignment(max_remove_change_length, Alignment::Left)
 							);
-							self.set_color(Color::White);
+							self.set_color(&Color::White);
 							self.window.addstr(&format!("  {}\n", &file_stat.get_name()));
 						}
 					},
 					Err(msg) => {
-						self.set_color(Color::Red);
+						self.set_color(&Color::Red);
 						self.window.addstr(&msg);
 					}
 				}
 			},
 			Err(msg) => {
-				self.set_color(Color::Red);
+				self.set_color(&Color::Red);
 				self.window.addstr(msg.description());
 			}
 		}
-		self.set_color(Color::Yellow);
+		self.set_color(&Color::Yellow);
 		self.window.addstr("\n\nHit any key to close");
 		self.window.refresh();
 	}
@@ -228,7 +228,7 @@ impl Window {
 	pub fn draw_help(&self) {
 		self.window.clear();
 		self.draw_title();
-		self.set_color(Color::White);
+		self.set_color(&Color::White);
 		self.window.addstr("\n Key        Action\n");
 		self.window.addstr(" --------------------------------------------------\n");
 		self.draw_help_command("Up", "Move selection up");
@@ -254,14 +254,14 @@ impl Window {
 	}
 	
 	fn draw_help_command(&self, command: &str, help: &str) {
-		self.set_color(Color::Blue);
+		self.set_color(&Color::Blue);
 		self.window.addstr(&format!(" {:9}    ", command));
-		self.set_color(Color::White);
+		self.set_color(&Color::White);
 		self.window.addstr(&format!("{}\n", help));
 	}
 
-	fn set_color(&self, color: Color) {
-		match color {
+	fn set_color(&self, color: &Color) {
+		match *color {
 			Color::White => self.window.attrset(pancurses::COLOR_PAIR(0)),
 			Color::Yellow => self.window.attrset(pancurses::COLOR_PAIR(1)),
 			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(2)),

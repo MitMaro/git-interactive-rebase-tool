@@ -26,8 +26,8 @@ pub struct Application {
 impl Application {
 	pub fn new(git_interactive: GitInteractive, window: Window) -> Self {
 		Application {
-			git_interactive: git_interactive,
-			window: window,
+			git_interactive,
+			window,
 			exit_code: None,
 			state: State::List
 		}
@@ -173,7 +173,7 @@ mod tests {
 	fn application_read_all_actions() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in").unwrap();
 		let window = Window::new();
-		let mut app = Application::new(gi, window);
+		let app = Application::new(gi, window);
 		assert_eq!(app.git_interactive.get_lines().len(), 12);
 	}
 	

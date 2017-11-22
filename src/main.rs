@@ -1,5 +1,9 @@
 // TODO:
 // - Add execute command
+
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+
 extern crate pancurses;
 extern crate pad;
 
@@ -11,8 +15,6 @@ mod action;
 mod application;
 mod git_interactive;
 mod line;
-#[macro_use]
-mod utils;
 mod window;
 #[cfg(test)]
 mod mocks;
@@ -26,24 +28,24 @@ fn main() {
 	let filepath = match env::args().nth(1) {
 		Some(filepath) => filepath,
 		None => {
-			print_err!(
+			eprintln!(
 				"Must provide a filepath.\n\n\
 				Usage: git-interactive <filepath>"
 			);
-			process::exit(1);
+			process::exit(1)
 		}
 	};
 	
 	let git_interactive = match GitInteractive::new_from_filepath(&filepath) {
 		Ok(gi) => gi,
 		Err(msg) => {
-			print_err!("{}", msg);
-			process::exit(1);
+			eprintln!("{}", msg);
+			process::exit(1)
 		}
 	};
 
 	if git_interactive.get_lines().is_empty() {
-		print_err!("{}", &"Nothing to rebase");
+		eprintln!("{}", &"Nothing to rebase");
 		process::exit(0);
 	}
 
@@ -59,7 +61,7 @@ fn main() {
 	match application.end() {
 		Ok(_) => {},
 		Err(msg) => {
-			print_err!("{}", msg);
+			eprintln!("{}", msg);
 			process::exit(1);
 		}
 	};

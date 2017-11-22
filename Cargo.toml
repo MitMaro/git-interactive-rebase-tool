@@ -9,8 +9,12 @@ keywords = [ "git", "editor", "tool", "rebase", "interactive", "ncurses" ]
 readme = "README.md"
 
 [dependencies]
+clippy = {version = "*", optional = true}
 pancurses = "0.13"
 pad = "0.1.4"
+
+[features]
+default = []
 
 [package.metadata.deb]
 maintainer = "Tim Oram <me@mitmaro.ca>"
