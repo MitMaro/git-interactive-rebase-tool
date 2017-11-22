@@ -7,3 +7,8 @@ matrix:
   allow_failures:
     - rust: nightly
 
+jobs:
+  include:
+    - stage: lint
+      script: cargo test --features "clippy"
+      rust: nightly
