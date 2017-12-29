@@ -87,7 +87,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "git-interactive-rebase-tool"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "clippy 0.0.173 (registry+https://github.com/rust-lang/crates.io-index)",
  "pad 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",

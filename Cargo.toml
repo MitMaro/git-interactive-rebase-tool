@@ -1,12 +1,19 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Tim Oram <mitmaro@gmail.com>"]
 license = "ISC"
 description = "Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."
 repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
 keywords = [ "git", "editor", "tool", "rebase", "interactive", "ncurses" ]
 readme = "README.md"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+]
 
 [dependencies]
 clippy = {version = "*", optional = true}
