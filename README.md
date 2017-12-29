@@ -22,6 +22,10 @@ In your command line run:
 
 ## Usage
 
+```shell
+interactive-rebase-tool --version | -v | <rebase-todo-filepath>
+```
+
 ### Getting Help
 
 The tool has built in help that can be accessed by hitting the `?` key.
