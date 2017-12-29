@@ -24,9 +24,16 @@ use git_interactive::GitInteractive;
 use window::Window;
 
 fn main() {
-	
 	let filepath = match env::args().nth(1) {
-		Some(filepath) => filepath,
+		Some(arg) => {
+			match arg.as_ref() {
+				"--version" | "-v" => {
+					println!("v0.5.0");
+					process::exit(0);
+				},
+				_ => arg
+			}
+		},
 		None => {
 			eprintln!(
 				"Must provide a filepath.\n\n\
