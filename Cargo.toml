@@ -35,4 +35,5 @@ priority = "optional"
 assets = [
     ["target/release/git-interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
     ["README.md", "usr/share/doc/cargo-deb/README", "644"],
+    ["interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
 ]
