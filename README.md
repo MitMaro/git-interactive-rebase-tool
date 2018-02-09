@@ -89,8 +89,7 @@ Use cargo to build and run the project. From the project project root run:
 
 Cargo Deb has not been released to creates.io so it will need to be installed from the GitHub repository.
 
-    cargo install --git https://github.com/mmstick/cargo-deb
-
+    cargo install cargo-deb
 
 ##### Building
 
