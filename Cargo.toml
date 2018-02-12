@@ -1,7 +1,11 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "0.5.0"
-authors = ["Tim Oram <mitmaro@gmail.com>"]
+version = "0.6.0"
+authors = [
+    "Tim Oram <me@mitmaro.ca>",
+    "Mark Stacey <markjstacey@gmail.com>",
+    "Peter Deal <pdeal@nl.rogers.com>"
+]
 license = "ISC"
 description = "Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."
 repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
@@ -16,7 +20,7 @@ include = [
 ]
 
 [dependencies]
-clippy = {version = "0.0.177", optional = true}
+clippy = {version = "0.0.186", optional = true}
 pancurses = "0.13"
 pad = "0.1.4"
 
@@ -24,10 +28,10 @@ pad = "0.1.4"
 default = []
 
 [package.metadata.deb]
-maintainer = "Tim Oram <me@mitmaro.ca>"
-copyright = "Tim Oram <me@mitmaro.ca>"
-license_file = ["LICENSE", "2"]
-extended_description = """\
+maintainer = "Tim Oram <dev@mitmaro.ca>"
+copyright = "Tim Oram <dev@mitmaro.ca>"
+license-file = ["LICENSE", "2"]
+extended-description = """\
 Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."""
 depends = "$auto"
 section = "utility"
