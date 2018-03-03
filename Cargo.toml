@@ -20,7 +20,7 @@ include = [
 ]
 
 [dependencies]
-clippy = {version = "0.0.186", optional = true}
+clippy = {version = "0.0.187", optional = true}
 pancurses = "0.13"
 pad = "0.1.4"
 
