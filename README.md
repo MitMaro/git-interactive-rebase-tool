@@ -1,6 +1,11 @@
+[![Crates.io](https://img.shields.io/crates/v/git-interactive-rebase-tool.svg)][crates-io]
+[![Build Status](https://travis-ci.org/MitMaro/git-interactive-rebase-tool.svg?branch=master)][travis-build]
+[![Build status](https://ci.appveyor.com/api/projects/status/3a6j6n4o5x6aa763/branch/master?svg=true)][appveyor-build]
+[![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)][license]
+
 # Git Interactive Rebase Tool
 
-Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses.
+Native cross platform full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses.
 
 ![Image](git-interactive-tool.gif?raw=true)
 
@@ -8,17 +13,26 @@ Full feature terminal based sequence editor for git interactive rebase. Written 
 
 #### Debian and derivatives
 
-Download the `.deb` file from the releases page and install. The executable will be installed to `/usr/bin`.
+Download the `.deb` file from the [releases page][releases] and install. The executable will be installed to `/usr/bin`.
 
 #### MacOS and OSX
 
-Download the `interactive-rebase-tool` from the releases page and copy it to a location on your `PATH`.
+Download the `macos-git-interactive-rebase-tool` from the [releases page][releases] and copy it as
+`interactive-rebase-tool` to a location on your `PATH`.
+
+#### Windows
+
+Download the `macos-git-interactive-rebase-tool` from the [releases page][releases] and save it to a known location.
 
 ### Configure Git
 
-In your command line run:
+For Linux and MacOS users in your command line run:
 
     git config --global sequence.editor interactive-rebase-tool
+
+For Windows users:
+
+    git config --global core.editor "'C:/path/to/interactive-rebase-tool'"
 
 ## Usage
 
@@ -98,6 +112,21 @@ Cargo Deb has not been released to creates.io so it will need to be installed fr
 
 A deb file will be written to `target/debian/git-interactive-rebase-tool_*.deb`.
 
+## TODO
+
+ - [ ] Support for `exec` command
+ - [ ] Insert commit
+
+## Related Projects
+
+* [rebase-editor](https://github.com/sjurba/rebase-editor) is a very similar project but is [not fully cross platform](https://github.com/sjurba/rebase-editor/issues/7) and requires NodeJS to be installed.
+
 ## License
 
 Git Interactive Rebase Tool is released under the ISC license. See [LICENSE](LICENSE).
+
+[crates-io]:https://crates.io/crates/git-interactive-rebase-tool
+[travis-build]:https://travis-ci.org/MitMaro/git-interactive-rebase-tool
+[appveyor-build]:https://ci.appveyor.com/project/MitMaro/git-interactive-rebase-tool/branch/master
+[license]:https://raw.githubusercontent.com/MitMaro/git-interactive-rebase-tool/master/LICENSE
+[releases]:https://github.com/MitMaro/git-interactive-rebase-tool/releases
