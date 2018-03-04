@@ -23,12 +23,14 @@ use application::Application;
 use git_interactive::GitInteractive;
 use window::Window;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 fn main() {
 	let filepath = match env::args().nth(1) {
 		Some(arg) => {
 			match arg.as_ref() {
 				"--version" | "-v" => {
-					println!("v0.5.0");
+					println!("v{}", VERSION);
 					process::exit(0);
 				},
 				_ => arg
