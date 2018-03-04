@@ -13,24 +13,37 @@ Native cross platform full feature terminal based sequence editor for git intera
 
 #### Debian and derivatives
 
+##### Install
+
 Download the `.deb` file from the [releases page][releases] and install. The executable will be installed to `/usr/bin`.
 
+##### Configure Git
+
+    git config --global sequence.editor interactive-rebase-tool
+
 #### MacOS and OSX
+
+##### Install
 
 Download the `macos-git-interactive-rebase-tool` from the [releases page][releases] and copy it as
 `interactive-rebase-tool` to a location on your `PATH`.
 
-#### Windows
-
-Download the `macos-git-interactive-rebase-tool` from the [releases page][releases] and save it to a known location.
-
-### Configure Git
-
-For Linux and MacOS users in your command line run:
+##### Configure Git
 
     git config --global sequence.editor interactive-rebase-tool
 
-For Windows users:
+#### Windows
+
+*Note: Windows binaries are not fully tested. If you are having issues please report them.*
+
+##### Install
+
+Download the tool from the [releases page][releases] and save it to a known location. There are builds that use the GNU
+toolchain, tagged `gnu`, and builds that use the Microsoft toolchain, tagged `msvc`. There are 32 and 64 bit versions
+for each tool chain. If you are unsure which binary to download, you probably want the 64 bit Microsoft toolchain
+build.
+
+##### Configure Git
 
     git config --global core.editor "'C:/path/to/interactive-rebase-tool'"
 
@@ -116,6 +129,7 @@ A deb file will be written to `target/debian/git-interactive-rebase-tool_*.deb`.
 
  - [ ] Support for `exec` command
  - [ ] Insert commit
+ - [ ] Configure key bindings
 
 ## Related Projects
 
