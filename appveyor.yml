@@ -11,8 +11,9 @@ environment:
 
   matrix:
     # MinGW
-    - TARGET: i686-pc-windows-gnu
-    - TARGET: x86_64-pc-windows-gnu
+    # GNU builds are broken for some reason
+    # - TARGET: i686-pc-windows-gnu
+    # - TARGET: x86_64-pc-windows-gnu
 
     # MSVC
     - TARGET: i686-pc-windows-msvc
@@ -42,7 +43,7 @@ test_script:
     )
 
 before_deploy:
-  - cargo rustc --target %TARGET% --release --bin git-interactive-rebase-tool -- -C lto
+  - cargo rustc --target %TARGET% --release --bin interactive-rebase-tool -- -C lto
   - ps: ci\before-deploy.ps1
 
 deploy:
@@ -58,7 +59,6 @@ deploy:
 cache:
   - C:\Users\appveyor\.cargo\registry
   - target
-
 
 branches:
   only:

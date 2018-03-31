@@ -25,7 +25,7 @@ Download the `.deb` file from the [releases page][releases] and install. The exe
 
 ##### Install
 
-Download the `macos-git-interactive-rebase-tool` from the [releases page][releases] and copy it as
+Download the `macos-interactive-rebase-tool` from the [releases page][releases] and copy it as
 `interactive-rebase-tool` to a location on your `PATH`.
 
 ##### Configure Git
@@ -140,7 +140,7 @@ Cargo Deb has not been released to creates.io so it will need to be installed fr
     cargo build --release
     cargo deb
 
-A deb file will be written to `target/debian/git-interactive-rebase-tool_*.deb`.
+A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
 ## TODO
 
