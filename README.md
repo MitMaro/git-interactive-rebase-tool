@@ -46,6 +46,23 @@ build.
 ##### Configure Git
 
     git config --global core.editor "'C:/path/to/interactive-rebase-tool'"
+    
+#### From source
+
+##### Install
+
+With Rust's package manager [cargo](https://github.com/rust-lang/cargo), you can install *git-interactive-rebase-tool
+* via:
+
+```shell
+cargo install git-interactive-rebase-tool
+```
+
+##### Configure Git
+
+Cargo adds *git-interactive-rebase-tool* automatically to your PATH, so you can simply run:
+
+    git config --global sequence.editor interactive-rebase-tool    
 
 ## Usage
 
