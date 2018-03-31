@@ -11,8 +11,9 @@ environment:
 
   matrix:
     # MinGW
-    - TARGET: i686-pc-windows-gnu
-    - TARGET: x86_64-pc-windows-gnu
+    # GNU builds are broken for some reason
+    # - TARGET: i686-pc-windows-gnu
+    # - TARGET: x86_64-pc-windows-gnu
 
     # MSVC
     - TARGET: i686-pc-windows-msvc
@@ -58,7 +59,6 @@ deploy:
 cache:
   - C:\Users\appveyor\.cargo\registry
   - target
-
 
 branches:
   only:
