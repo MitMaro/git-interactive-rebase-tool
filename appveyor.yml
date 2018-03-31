@@ -42,7 +42,7 @@ test_script:
     )
 
 before_deploy:
-  - cargo rustc --target %TARGET% --release --bin git-interactive-rebase-tool -- -C lto
+  - cargo rustc --target %TARGET% --release --bin interactive-rebase-tool -- -C lto
   - ps: ci\before-deploy.ps1
 
 deploy:

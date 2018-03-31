@@ -36,7 +36,7 @@ fn main() {
 		None => {
 			eprintln!(
 				"Must provide a filepath.\n\n\
-				Usage: git-interactive <filepath>"
+				Usage: interactive-rebase-tool <filepath>"
 			);
 			process::exit(1)
 		}

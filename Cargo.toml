@@ -19,8 +19,12 @@ include = [
     "README.md"
 ]
 
+[[bin]]
+name = "interactive-rebase-tool"
+path = "src/main.rs"
+
 [dependencies]
-clippy = {version = "0.0.187", optional = true}
+clippy = {version = "0.0.191", optional = true}
 pancurses = "0.13"
 pad = "0.1.4"
 
@@ -28,6 +32,7 @@ pad = "0.1.4"
 default = []
 
 [package.metadata.deb]
+name = "interactive-rebase-tool"
 maintainer = "Tim Oram <dev@mitmaro.ca>"
 copyright = "Tim Oram <dev@mitmaro.ca>"
 license-file = ["LICENSE", "2"]
@@ -37,7 +42,7 @@ depends = "$auto"
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/git-interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
+    ["target/release/interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
     ["README.md", "usr/share/doc/cargo-deb/README", "644"],
-    ["interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
+    ["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
 ]
