@@ -62,12 +62,14 @@ cargo install git-interactive-rebase-tool
 
 Cargo adds *git-interactive-rebase-tool* automatically to your PATH, so you can simply run:
 
-    git config --global sequence.editor interactive-rebase-tool    
+    git config --global sequence.editor interactive-rebase-tool
 
 ## Usage
 
 ```shell
-interactive-rebase-tool --version | -v | <rebase-todo-filepath>
+interactive-rebase-tool <rebase-todo-filepath>
+interactive-rebase-tool --help
+interactive-rebase-tool --version
 ```
 
 ### Getting Help
