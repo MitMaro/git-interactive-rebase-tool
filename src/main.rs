@@ -1,15 +1,14 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
-extern crate pancurses;
+extern crate clap;
 extern crate pad;
+extern crate pancurses;
 
-use std::env;
-use std::process;
-
-mod commit;
 mod action;
 mod application;
+mod cli;
+mod commit;
 mod git_interactive;
 mod line;
 mod window;
@@ -18,31 +17,15 @@ mod mocks;
 
 use application::Application;
 use git_interactive::GitInteractive;
+use std::process;
 use window::Window;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-
 fn main() {
-	let filepath = match env::args().nth(1) {
-		Some(arg) => {
-			match arg.as_ref() {
-				"--version" | "-v" => {
-					println!("v{}", VERSION);
-					process::exit(0);
-				},
-				_ => arg
-			}
-		},
-		None => {
-			eprintln!(
-				"Must provide a filepath.\n\n\
-				Usage: interactive-rebase-tool <filepath>"
-			);
-			process::exit(1)
-		}
-	};
+	let matches = cli::build_cli().get_matches();
+
+	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 	
-	let git_interactive = match GitInteractive::new_from_filepath(&filepath) {
+	let git_interactive = match GitInteractive::new_from_filepath(filepath) {
 		Ok(gi) => gi,
 		Err(msg) => {
 			eprintln!("{}", msg);

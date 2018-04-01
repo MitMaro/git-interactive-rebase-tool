@@ -67,7 +67,7 @@ impl Window {
 		
 
 		Window {
-			window: window,
+			window,
 			top: 0
 		}
 	}
