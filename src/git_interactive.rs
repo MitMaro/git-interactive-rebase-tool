@@ -57,9 +57,9 @@ impl GitInteractive {
 		match parsed_result {
 			Ok(lines) => Ok(
 				GitInteractive {
-					git_root: git_root,
+					git_root,
 					filepath: path,
-					lines: lines,
+					lines,
 					selected_line_index: 1
 				}
 			),

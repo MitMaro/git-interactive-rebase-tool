@@ -1,15 +1,12 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
-extern crate pancurses;
 extern crate pad;
+extern crate pancurses;
 
-use std::env;
-use std::process;
-
-mod commit;
 mod action;
 mod application;
+mod commit;
 mod git_interactive;
 mod line;
 mod window;
@@ -18,9 +15,11 @@ mod mocks;
 
 use application::Application;
 use git_interactive::GitInteractive;
+use std::env;
+use std::process;
 use window::Window;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
 	let filepath = match env::args().nth(1) {

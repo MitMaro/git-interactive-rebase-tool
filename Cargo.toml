@@ -25,8 +25,8 @@ path = "src/main.rs"
 
 [dependencies]
 clippy = {version = "0.0.191", optional = true}
-pancurses = "0.13"
-pad = "0.1.4"
+pancurses = "0.15.0"
+pad = "0.1.5"
 
 [features]
 default = []
