@@ -16,7 +16,7 @@ pub struct GitInteractive {
 }
 
 impl GitInteractive {
-	pub fn new_from_filepath(filepath: &str) -> Result<Self, String> {
+	pub fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
 		let path = PathBuf::from(filepath);
 
 		let mut file = match File::open(&path) {
@@ -48,7 +48,7 @@ impl GitInteractive {
 			Some("noop") => Ok(Vec::new()),
 			_ => {
 				s.lines()
-					.filter(|l| !l.starts_with('#') && !l.is_empty())
+					.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
 					.map(|l| Line::new(l))
 					.collect()
 			}
