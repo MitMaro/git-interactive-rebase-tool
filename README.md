@@ -98,6 +98,7 @@ The tool has built in help that can be accessed by hitting the `?` key.
 |  `s`         | Set selected commit to be squashed |
 |  `f`         | Set selected commit to be fixed-up |
 |  `d`         | Set selected commit to be dropped |
+|  `v`         | View diff at this commit |
 
 
 ## Development
