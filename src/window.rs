@@ -148,17 +148,17 @@ impl Window {
 	}
 	
 	pub fn draw_view_diff(&self, commit: &str, git_root: &PathBuf) {
-        let child = Command::new("git")
-            .current_dir(git_root)
-            .args(&[
-                  "diff",
-                  commit
-            ])
-            .status()
-        ;
-    }
+		let child = Command::new("git")
+			.current_dir(git_root)
+			.args(&[
+				  "diff",
+				  commit
+			])
+			.status()
+		;
+	}
 
-    pub fn draw_show_commit(&self, commit: &str, git_root: &PathBuf) {
+	pub fn draw_show_commit(&self, commit: &str, git_root: &PathBuf) {
 		let result = Command::new("git")
 			.current_dir(git_root)
 			.args(&[
@@ -258,7 +258,7 @@ impl Window {
 		self.draw_help_command("s", "Set selected commit to be squashed");
 		self.draw_help_command("f", "Set selected commit to be fixed-up");
 		self.draw_help_command("d", "Set selected commit to be dropped");
-        self.draw_help_command("v", "View diff at this commit");
+		self.draw_help_command("v", "View diff at this commit");
 		self.window.addstr("\n\nHit any key to close help");
 		self.window.refresh();
 	}
