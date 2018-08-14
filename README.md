@@ -117,6 +117,7 @@ a release. They can be installed using `apt-get`:
 
     sudo apt-get install build-essential libncurses5-dev
     sudo apt-get install pkg-config liblzma-dev
+    sudo apt-get install cmake libssl-dev
 
 
 ### Build and run
