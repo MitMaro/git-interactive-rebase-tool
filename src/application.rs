@@ -13,7 +13,8 @@ const EXIT_CODE_WRITE_ERROR: i32 = 8;
 pub enum State {
 	List,
 	ShowCommit,
-	Help
+	Help,
+    ViewDiff
 }
 
 pub struct Application {
@@ -37,7 +38,8 @@ impl Application {
 		match self.state {
 			State::List => self.process_list_input(),
 			State::ShowCommit => self.process_show_commit_input(),
-			State::Help => self.process_help_input()
+			State::Help => self.process_help_input(),
+            State::ViewDiff => self.process_view_diff_input()
 		}
 	}
 	
@@ -57,7 +59,13 @@ impl Application {
 			},
 			State::Help => {
 				self.window.draw_help();
-			}
+			},
+            State::ViewDiff => {
+                self.window.draw_view_diff(
+                    self.git_interactive.get_selected_line_hash(),
+                    self.git_interactive.get_git_root()
+                );
+            }
 		}
 	}
 
@@ -91,9 +99,16 @@ impl Application {
 		self.window.window.getch();
 		self.state = State::List;
 	}
+
+    fn process_view_diff_input(&mut self) {
+        self.state = State::List
+    }
 	
-	fn process_list_input(&mut self) {
+    fn process_list_input(&mut self) {
 		match self.window.window.getch() {
+            Some(Input::Character(c)) if c == 'v' => {
+                self.state = State::ViewDiff;
+            },
 			Some(Input::Character(c)) if c == '?' => {
 				self.state = State::Help;
 			},
