@@ -72,7 +72,7 @@ impl Window {
 		}
 	}
 	
-	pub fn draw(&self, lines: &[Line], selected_index: &usize) {
+	pub fn draw(&self, lines: &[Line], selected_index: usize) {
 		self.window.clear();
 		self.draw_title();
 		let window_height = self.get_window_height();
@@ -88,7 +88,7 @@ impl Window {
 			.skip(self.top)
 			.take(window_height)
 		{
-			self.draw_line(line, index == *selected_index);
+			self.draw_line(line, index == selected_index);
 			index += 1;
 		}
 		if window_height < lines.len() - self.top {
