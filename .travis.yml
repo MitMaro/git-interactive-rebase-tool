@@ -32,7 +32,7 @@ jobs:
     - stage: lint
       rust: nightly
       os: linux
-      script: cargo test --features "clippy"
+      script: rustup component add clippy-preview && cargo clippy --all-features -- -D warnings -A clippy::new_ret_no_self
     - stage: build-deb
       rust: stable
       os: linux

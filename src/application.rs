@@ -46,7 +46,7 @@ impl Application {
 			State::List => {
 				self.window.draw(
 					self.git_interactive.get_lines(),
-					self.git_interactive.get_selected_line_index()
+					*self.git_interactive.get_selected_line_index()
 				);
 			},
 			State::ShowCommit => {
@@ -145,7 +145,6 @@ impl Application {
 			Some(Input::KeyResize) => self.reset_top(),
 			_ => {}
 		}
-		()
 	}
 	
 	fn reset_top(&mut self) {

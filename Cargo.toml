@@ -20,11 +20,10 @@ name = "interactive-rebase-tool"
 path = "src/main.rs"
 
 [dependencies]
-clippy = {version = "0.0.191", optional = true}
-pancurses = "0.15.0"
-pad = "0.1.5"
-clap = "2.31.2"
+clap = "2.32.0"
 git2 = "0.7.2"
+pad = "0.1.5"
+pancurses = "0.16.0"
 
 [features]
 default = []

@@ -13,18 +13,18 @@ impl GitConfig {
 
 		match cfg {
 			Ok(mut config) => {
-				match env::var_os("GIT_DIR") {
-					Some(val) => match val.into_string() {
+				if let Some(val) = env::var_os("GIT_DIR") {
+					match val.into_string() {
 						Ok(s) => {
 							let mut p = s.to_owned();
 							p.push_str("/config");
 							match config.add_file(Path::new(&p), ConfigLevel::Local, false) {
-								Ok(_v) => {}, Err(_e) => {}
+								Ok(_v) => {},
+								Err(_e) => {}
 							}
 						},
 						Err(_e) => {}
-					},
-					None => {}
+					}
 				}
 
 				Ok(GitConfig {
