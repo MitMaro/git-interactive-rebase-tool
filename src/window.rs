@@ -127,13 +127,14 @@ impl Window {
 			Action::Pick => self.set_color(&self.config.pick_color),
 			Action::Reword => self.set_color(&self.config.reword_color),
 			Action::Edit => self.set_color(&self.config.edit_color),
+			Action::Exec => self.set_color(&self.config.exec_color),
 			Action::Squash => self.set_color(&self.config.squash_color),
 			Action::Fixup => self.set_color(&self.config.fixup_color),
 			Action::Drop => self.set_color(&self.config.drop_color)
 		}
 		self.window.addstr(&format!("{:6}", action_to_str(line.get_action())));
 		self.set_color(&self.config.foreground_color);
-		self.window.addstr(&format!(" {} {}\n", line.get_hash(), line.get_comment()));
+		self.window.addstr(&format!(" {} {}\n", line.get_hash_or_command(), line.get_comment()));
 	}
 
 	fn draw_footer(&self) {
