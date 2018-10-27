@@ -1,6 +1,7 @@
 
 pub mod mockcurses {
 	pub use pancurses::{
+		COLOR_BLACK,
 		COLOR_WHITE,
 		COLOR_YELLOW,
 		COLOR_BLUE,

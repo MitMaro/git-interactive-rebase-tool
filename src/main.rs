@@ -9,7 +9,9 @@ extern crate pancurses;
 mod action;
 mod application;
 mod cli;
+mod color;
 mod commit;
+mod config;
 mod git_config;
 mod git_interactive;
 mod line;
@@ -22,6 +24,7 @@ use git_config::GitConfig;
 use git_interactive::GitInteractive;
 use std::process;
 use window::Window;
+use config::Config;
 
 fn main() {
 	let matches = cli::build_cli().get_matches();
@@ -36,6 +39,8 @@ fn main() {
 		}
 	};
 
+	let config = Config::new(&git_config);
+
 	let git_interactive = match GitInteractive::new_from_filepath(filepath, &git_config.comment_char) {
 		Ok(gi) => gi,
 		Err(msg) => {
@@ -49,7 +54,7 @@ fn main() {
 		process::exit(0);
 	}
 
-	let window = Window::new();
+	let window = Window::new(config);
 
 	let mut application = Application::new(git_interactive, window);
 

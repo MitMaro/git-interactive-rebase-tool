@@ -21,35 +21,28 @@ use action::{
 use line::Line;
 
 use commit::Commit;
+use color::Color;
+use config::Config;
 
-const COLOR_TABLE: [i16; 7] = [
+const COLOR_TABLE: [i16; 8] = [
+	pancurses::COLOR_BLACK,
+	pancurses::COLOR_BLUE,
+	pancurses::COLOR_CYAN,
+	pancurses::COLOR_GREEN,
+	pancurses::COLOR_MAGENTA,
+	pancurses::COLOR_RED,
 	pancurses::COLOR_WHITE,
 	pancurses::COLOR_YELLOW,
-	pancurses::COLOR_BLUE,
-	pancurses::COLOR_GREEN,
-	pancurses::COLOR_CYAN,
-	pancurses::COLOR_MAGENTA,
-	pancurses::COLOR_RED
 ];
 
-pub enum Color {
-	White,
-	Yellow,
-	Blue,
-	Green,
-	Cyan,
-	Magenta,
-	Red
-}
-
 pub struct Window {
+	config: Config,
 	pub window: pancurses::Window,
 	top: usize
 }
 
 impl Window {
-	pub fn new() -> Self {
-
+	pub fn new(config: Config) -> Self {
 		let window = pancurses::initscr();
 		window.keypad(true);
 
@@ -67,6 +60,7 @@ impl Window {
 		
 
 		Window {
+			config,
 			window,
 			top: 0
 		}
@@ -100,7 +94,7 @@ impl Window {
 	}
 
 	fn draw_more_indicator(&self, remaining: usize) {
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		self.window.attron(pancurses::A_DIM);
 		self.window.attron(pancurses::A_REVERSE);
 		self.window.addstr(&format!("  -- {} --  ", remaining));
@@ -109,7 +103,7 @@ impl Window {
 	}
 
 	fn draw_title(&self) {
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		self.set_dim(true);
 		self.set_underline(true);
 		self.window.addstr("Git Interactive Rebase                       ? for help\n");
@@ -118,7 +112,7 @@ impl Window {
 	}
 
 	fn draw_line(&self, line: &Line, selected: bool) {
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		if selected {
 			self.window.addstr(" > ");
 		}
@@ -126,20 +120,20 @@ impl Window {
 			self.window.addstr("   ");
 		}
 		match *line.get_action() {
-			Action::Pick => self.set_color(&Color::Green),
-			Action::Reword => self.set_color(&Color::Yellow),
-			Action::Edit => self.set_color(&Color::Blue),
-			Action::Squash => self.set_color(&Color::Cyan),
-			Action::Fixup => self.set_color(&Color::Magenta),
-			Action::Drop => self.set_color(&Color::Red)
+			Action::Pick => self.set_color(&self.config.pick_color),
+			Action::Reword => self.set_color(&self.config.reword_color),
+			Action::Edit => self.set_color(&self.config.edit_color),
+			Action::Squash => self.set_color(&self.config.squash_color),
+			Action::Fixup => self.set_color(&self.config.fixup_color),
+			Action::Drop => self.set_color(&self.config.drop_color)
 		}
 		self.window.addstr(&format!("{:6}", action_to_str(line.get_action())));
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		self.window.addstr(&format!(" {} {}\n", line.get_hash(), line.get_comment()));
 	}
 
 	fn draw_footer(&self) {
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		self.set_dim(true);
 		self.window.mvaddstr(
 			self.window.get_max_y() - 1,
@@ -165,12 +159,12 @@ impl Window {
 		self.draw_title();
 		match result {
 			Ok(output) => {
-				self.set_color(&Color::White);
+				self.set_color(&self.config.foreground_color);
 				match Commit::new(&String::from_utf8_lossy(&output.stdout)) {
 					Ok(commit_data) => {
-						self.set_color(&Color::Yellow);
+						self.set_color(&self.config.indicator_color);
 						self.window.addstr(&format!("\nCommit: {}\n", commit));
-						self.set_color(&Color::White);
+						self.set_color(&self.config.foreground_color);
 						self.window.addstr(&format!(
 							"Author: {} <{}>\n", commit_data.get_author_name(), commit_data.get_author_email()
 						));
@@ -195,32 +189,32 @@ impl Window {
 							.fold(0, |a, x| cmp::max(a, x.get_added().len()));
 						
 						for file_stat in commit_data.get_file_stats() {
-							self.set_color(&Color::Green);
+							self.set_color(&self.config.diff_add_color);
 							self.window.addstr(
 								&file_stat.get_added().pad_to_width_with_alignment(max_add_change_length, Alignment::Right)
 							);
-							self.set_color(&Color::White);
+							self.set_color(&self.config.foreground_color);
 							self.window.addstr(" | ");
-							self.set_color(&Color::Red);
+							self.set_color(&self.config.diff_remove_color);
 							self.window.addstr(
 								&file_stat.get_removed().pad_to_width_with_alignment(max_remove_change_length, Alignment::Left)
 							);
-							self.set_color(&Color::White);
+							self.set_color(&self.config.foreground_color);
 							self.window.addstr(&format!("  {}\n", &file_stat.get_name()));
 						}
 					},
 					Err(msg) => {
-						self.set_color(&Color::Red);
+						self.set_color(&self.config.error_color);
 						self.window.addstr(&msg);
 					}
 				}
 			},
 			Err(msg) => {
-				self.set_color(&Color::Red);
+				self.set_color(&self.config.error_color);
 				self.window.addstr(msg.description());
 			}
 		}
-		self.set_color(&Color::Yellow);
+		self.set_color(&self.config.indicator_color);
 		self.window.addstr("\n\nHit any key to close");
 		self.window.refresh();
 	}
@@ -228,7 +222,7 @@ impl Window {
 	pub fn draw_help(&self) {
 		self.window.clear();
 		self.draw_title();
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		self.window.addstr("\n Key        Action\n");
 		self.window.addstr(" --------------------------------------------------\n");
 		self.draw_help_command("Up", "Move selection up");
@@ -249,26 +243,28 @@ impl Window {
 		self.draw_help_command("s", "Set selected commit to be squashed");
 		self.draw_help_command("f", "Set selected commit to be fixed-up");
 		self.draw_help_command("d", "Set selected commit to be dropped");
+		self.set_color(&self.config.indicator_color);
 		self.window.addstr("\n\nHit any key to close help");
 		self.window.refresh();
 	}
 	
 	fn draw_help_command(&self, command: &str, help: &str) {
-		self.set_color(&Color::Blue);
+		self.set_color(&self.config.indicator_color);
 		self.window.addstr(&format!(" {:9}    ", command));
-		self.set_color(&Color::White);
+		self.set_color(&self.config.foreground_color);
 		self.window.addstr(&format!("{}\n", help));
 	}
 
 	fn set_color(&self, color: &Color) {
 		match *color {
-			Color::White => self.window.attrset(pancurses::COLOR_PAIR(0)),
-			Color::Yellow => self.window.attrset(pancurses::COLOR_PAIR(1)),
-			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(2)),
+			Color::Black => self.window.attrset(pancurses::COLOR_PAIR(0)),
+			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(1)),
+			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(2)),
 			Color::Green => self.window.attrset(pancurses::COLOR_PAIR(3)),
-			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(4)),
-			Color::Magenta => self.window.attrset(pancurses::COLOR_PAIR(5)),
-			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(6))
+			Color::Magenta => self.window.attrset(pancurses::COLOR_PAIR(4)),
+			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(5)),
+			Color::White => self.window.attrset(pancurses::COLOR_PAIR(6)),
+			Color::Yellow => self.window.attrset(pancurses::COLOR_PAIR(7))
 		};
 	}
 
@@ -326,4 +322,3 @@ impl Window {
 		pancurses::endwin();
 	}
 }
-

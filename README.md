@@ -99,6 +99,37 @@ The tool has built in help that can be accessed by hitting the `?` key.
 |  `f`         | Set selected commit to be fixed-up |
 |  `d`         | Set selected commit to be dropped |
 
+### Configuration
+
+The tool can be configured using the [git config](https://git-scm.com/docs/git-config) command. Invalid values are
+ignored and the default used instead. String values are case-insensitive.
+
+#### Example
+
+```bash
+git config --global interactive-rebase-tool.foregroundColor black
+```
+
+#### Options
+
+| Key                | Default | Type  | Description |
+| ------------------ | ------- | ----- | ----------- |
+| `foregroundColor`  | white   | Color | Color used for most text and the UI |
+| `indicatorColor`   | yellow  | Color | Color used for text the indicates or needs to standout  |
+| `errorColor`       | red     | Color | Color used for showing error messages  |
+| `diffAddColor`     | green   | Color | Color used for lines added in a diff |
+| `diffRemoveColor`  | red     | Color | Color used for lines removed in a diff |
+| `pickColor`        | green   | Color | Color used for the pick action |
+| `rewordColor`      | yellow  | Color | Color used for the reword action |
+| `editColor`        | blue    | Color | Color used for the edit action |
+| `squashColor`      | cyan    | Color | Color used for the squash action |
+| `fixupColor`       | magenta | Color | Color used for the fixup action |
+| `dropColor`        | red     | Color | Color used for the drop action |
+
+#### Valid Color Values
+
+The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are black, blue, cyan, green, magenta, red,
+white and yellow. Each terminal controls the exact color for these color names.
 
 ## Development
 
@@ -158,6 +189,7 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
 Git Interactive Rebase Tool is released under the ISC license. See [LICENSE](LICENSE).
 
+[ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
 [crates-io]:https://crates.io/crates/git-interactive-rebase-tool
 [travis-build]:https://travis-ci.org/MitMaro/git-interactive-rebase-tool
 [appveyor-build]:https://ci.appveyor.com/project/MitMaro/git-interactive-rebase-tool/branch/master
