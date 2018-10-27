@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Windows creating a new window on run (hopefully)
+- Resize not handled in all cases
 
 ## [0.6.0] - 2018-02-08
 

@@ -142,7 +142,10 @@ impl Application {
 				self.git_interactive.move_cursor_down(5);
 				self.reset_top();
 			},
-			Some(Input::KeyResize) => self.reset_top(),
+			Some(Input::KeyResize) => {
+				self.window.resize_term();
+				self.reset_top()
+			},
 			_ => {}
 		}
 	}
