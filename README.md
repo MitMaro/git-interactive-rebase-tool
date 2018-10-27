@@ -38,10 +38,8 @@ Download the `macos-interactive-rebase-tool` from the [releases page][releases] 
 
 ##### Install
 
-Download the tool from the [releases page][releases] and save it to a known location. There are builds that use the GNU
-toolchain, tagged `gnu`, and builds that use the Microsoft toolchain, tagged `msvc`. There are 32 and 64 bit versions
-for each tool chain. If you are unsure which binary to download, you probably want the 64 bit Microsoft toolchain
-build.
+Download the tool from the [releases page][releases] and save it to a known location. There are 32-bit and 64-bit
+versions if you are unsure which binary to download, you probably want the 64-bit build.
 
 ##### Configure Git
 
