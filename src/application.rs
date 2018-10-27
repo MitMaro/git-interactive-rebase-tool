@@ -167,11 +167,14 @@ mod tests {
 		Input
 	};
 	use action::Action;
-	
+	use config::Config;
+	use git_config::GitConfig;
+
 	#[test]
 	fn application_read_all_actions() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let app = Application::new(gi, window);
 		assert_eq!(app.git_interactive.get_lines().len(), 12);
 	}
@@ -179,7 +182,8 @@ mod tests {
 	#[test]
 	fn application_show_help() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('?');
 		app.process_input();
@@ -190,7 +194,8 @@ mod tests {
 	fn application_show_commit() {
 		// first commit in
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-show-commit.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('c');
 		app.process_input();
@@ -200,7 +205,8 @@ mod tests {
 	#[test]
 	fn application_scroll_basic() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-long.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::KeyDown;
 		app.process_input();
@@ -219,7 +225,8 @@ mod tests {
 	#[test]
 	fn application_scroll_limits() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-short.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::KeyUp;
 		app.process_input();
@@ -241,7 +248,8 @@ mod tests {
 	#[test]
 	fn application_set_pick() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		// first item is already pick
 		app.window.window.next_char = Input::KeyDown;
@@ -254,7 +262,8 @@ mod tests {
 	#[test]
 	fn application_set_reword() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('r');
 		app.process_input();
@@ -264,7 +273,8 @@ mod tests {
 	#[test]
 	fn application_set_edit() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('e');
 		app.process_input();
@@ -274,7 +284,8 @@ mod tests {
 	#[test]
 	fn application_set_squash() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('s');
 		app.process_input();
@@ -284,7 +295,8 @@ mod tests {
 	#[test]
 	fn application_set_drop() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('d');
 		app.process_input();
@@ -294,7 +306,8 @@ mod tests {
 	#[test]
 	fn application_swap_down() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('j');
 		app.process_input();
@@ -306,7 +319,8 @@ mod tests {
 	#[test]
 	fn application_swap_up() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::KeyDown;
 		app.process_input();
@@ -320,7 +334,8 @@ mod tests {
 	#[test]
 	fn application_quit() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('Q');
 		app.process_input();
@@ -331,7 +346,8 @@ mod tests {
 	#[test]
 	fn application_finish() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('W');
 		app.process_input();
@@ -342,7 +358,8 @@ mod tests {
 	#[test]
 	fn application_alternative_comment_character() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-alternative-comment-character.in", "%").unwrap();
-		let window = Window::new();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('W');
 		app.process_input();
