@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Configuration of colors
 
+### Fixed
+- Windows creating a new window on run (hopefully)
+
 ## [0.6.0] - 2018-02-08
 
 ### Added

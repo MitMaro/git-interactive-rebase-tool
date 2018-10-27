@@ -23,7 +23,10 @@ path = "src/main.rs"
 clap = "2.32.0"
 git2 = "0.7.2"
 pad = "0.1.5"
-pancurses = "0.16.0"
+
+[dependencies.pancurses]
+version = "0.16"
+features = ["win32"]
 
 [features]
 default = []
