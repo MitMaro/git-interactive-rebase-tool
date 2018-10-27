@@ -65,6 +65,10 @@ impl Window {
 			top: 0
 		}
 	}
+
+	pub fn resize_term(&self) {
+		pancurses::resize_term(0, 0);
+	}
 	
 	pub fn draw(&self, lines: &[Line], selected_index: usize) {
 		self.window.clear();
