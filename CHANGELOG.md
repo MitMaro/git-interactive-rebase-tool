@@ -4,12 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.7.0] - [Unreleased]
+## [0.7.0] - 2018-10-28
 
 ### Added
+- Support git `core.commentChar` option
 - Configuration of colors
 - Support for the exec action
 - Auto-select next line configuration
+- Prepend application name to error messages
 
 ### Fixed
 - Windows creating a new window on run (hopefully)
@@ -63,7 +65,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.3.0...0.4.0
