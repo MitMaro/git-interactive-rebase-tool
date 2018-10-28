@@ -32,7 +32,6 @@ features = ["win32"]
 default = []
 
 [package.metadata.deb]
-name = "interactive-rebase-tool"
 maintainer = "Tim Oram <dev@mitmaro.ca>"
 copyright = "Tim Oram <dev@mitmaro.ca>"
 license-file = ["LICENSE", "2"]
