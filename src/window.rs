@@ -317,10 +317,14 @@ impl Window {
 		}
 	}
 
-	pub fn draw_confirm(&self, message: &str) {
+	pub fn draw_prompt(&self, message: &str) {
 		self.window.clear();
 		self.draw_title();
-		self.window.addstr(&format!("\n{} (y/n)? ", message));
+		self.window.addstr(&format!("\n{} ", message));
+	}
+
+	pub fn draw_confirm(&self, message: &str) {
+		self.draw_prompt(&format!("{}(y/n)? ", message));
 	}
 
 	pub fn get_confirm(&self) -> bool {
