@@ -1,7 +1,6 @@
 use std::cmp;
 use std::fs::File;
 use std::path::PathBuf;
-use std::error::Error;
 use std::io::Read;
 use std::io::Write;
 
@@ -24,7 +23,7 @@ impl GitInteractive {
 			Err(why) => {
 				return Err(format!(
 					"Error opening file, {}\n\
-					Reason: {}", path.display(), why.description()
+					Reason: {}", path.display(), why
 				));
 			}
 		};
@@ -35,7 +34,7 @@ impl GitInteractive {
 			Err(why) => {
 				return Err(format!(
 					"Error reading file, {}\n\
-					Reason: {}", path.display(), why.description()
+					Reason: {}", path.display(), why
 				));
 			}
 		}
@@ -76,7 +75,7 @@ impl GitInteractive {
 			Err(why) => {
 				return Err(format!(
 					"Error opening file, {}\n\
-					Reason: {}", self.filepath.display(), why.description()
+					Reason: {}", self.filepath.display(), why
 				));
 			}
 		};
@@ -86,7 +85,7 @@ impl GitInteractive {
 				Ok(_) => {},
 				Err(why) => {
 					return Err(format!(
-						"Error writing to file, {}", why.description()
+						"Error writing to file, {}", why
 					));
 				}
 			}
