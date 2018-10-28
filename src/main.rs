@@ -12,6 +12,7 @@ mod cli;
 mod color;
 mod commit;
 mod config;
+mod constants;
 mod git_config;
 mod git_interactive;
 mod input;
@@ -26,6 +27,12 @@ use git_interactive::GitInteractive;
 use std::process;
 use window::Window;
 use config::Config;
+use constants::NAME;
+
+fn error_handler(msg: &str, code: i32) -> ! {
+	eprintln!("{}: {}", NAME, msg);
+	process::exit(code)
+}
 
 fn main() {
 	let matches = cli::build_cli().get_matches();
@@ -34,25 +41,18 @@ fn main() {
 
 	let git_config = match GitConfig::new() {
 		Ok(gc) => gc,
-		Err(msg) => {
-			eprintln!("{}", msg);
-			process::exit(1)
-		}
+		Err(msg) => error_handler(&msg, 1),
 	};
 
 	let config = Config::new(&git_config);
 
 	let git_interactive = match GitInteractive::new_from_filepath(filepath, &git_config.comment_char) {
 		Ok(gi) => gi,
-		Err(msg) => {
-			eprintln!("{}", msg);
-			process::exit(1)
-		}
+		Err(msg) => error_handler(&msg, 1),
 	};
 
 	if git_interactive.get_lines().is_empty() {
-		eprintln!("{}", &"Nothing to rebase");
-		process::exit(0);
+		error_handler("Nothing to rebase", 1);
 	}
 
 	let window = Window::new(config);
@@ -66,11 +66,9 @@ fn main() {
 
 	match application.end() {
 		Ok(_) => {},
-		Err(msg) => {
-			eprintln!("{}", msg);
-			process::exit(1);
-		}
+		Err(msg) => error_handler(&msg, 1),
 	};
+
 	process::exit(match application.exit_code {
 		None => 0,
 		Some(code) => code
