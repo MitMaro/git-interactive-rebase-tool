@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Configuration of colors
 - Support for the exec action
+- Auto-select next line configuration
 
 ### Fixed
 - Windows creating a new window on run (hopefully)

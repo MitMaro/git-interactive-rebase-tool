@@ -3,6 +3,7 @@ use git2::Config;
 use std::env;
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct GitConfig {
 	pub comment_char: String,
 	pub foreground_color: String,
@@ -17,6 +18,7 @@ pub struct GitConfig {
 	pub squash_color: String,
 	pub fixup_color: String,
 	pub drop_color: String,
+	pub auto_select_next: bool,
 }
 
 impl GitConfig {
@@ -91,6 +93,10 @@ impl GitConfig {
 					drop_color: match config.get_string("interactive-rebase-tool.dropColor") {
 						Ok(drop_color_value) => drop_color_value.to_lowercase(),
 						Err(_msg) => String::from("")
+					},
+					auto_select_next: match config.get_bool("interactive-rebase-tool.autoSelectNext") {
+						Ok(auto_select_next_value) => auto_select_next_value,
+						Err(_msg) => false
 					},
 				})
 			},

@@ -1,6 +1,7 @@
 use color::Color;
 use git_config::GitConfig;
 
+#[derive(Debug, Copy, Clone)]
 pub struct Config {
 	pub foreground_color: Color,
 	pub indicator_color: Color,
@@ -14,6 +15,7 @@ pub struct Config {
 	pub squash_color: Color,
 	pub fixup_color: Color,
 	pub drop_color: Color,
+	pub auto_select_next: bool,
 }
 
 fn string_to_color(color_string: &str, default_color: Color) -> Color {
@@ -45,6 +47,7 @@ impl Config {
 			squash_color: string_to_color(git_config.squash_color.as_ref(), Color::Cyan),
 			fixup_color: string_to_color(git_config.fixup_color.as_ref(), Color::Magenta),
 			drop_color: string_to_color(git_config.drop_color.as_ref(), Color::Red),
+			auto_select_next: git_config.auto_select_next,
 		}
 	}
 }

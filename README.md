@@ -122,6 +122,7 @@ git config --global interactive-rebase-tool.foregroundColor black
 
 | Key                | Default | Type  | Description |
 | ------------------ | ------- | ----- | ----------- |
+| `autoSelectNext`   | false   | bool  | If true, auto select the next line after action modification |
 | `foregroundColor`  | white   | Color | Color used for most text and the UI |
 | `indicatorColor`   | yellow  | Color | Color used for text the indicates or needs to standout  |
 | `errorColor`       | red     | Color | Color used for showing error messages  |
