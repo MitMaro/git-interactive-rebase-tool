@@ -99,6 +99,14 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 |  `f`         | Set selected commit to be fixed-up |
 |  `d`         | Set selected commit to be dropped |
 
+
+### Temporary Override
+
+You can temporarily use a different sequence editor by using the `GIT_SEQUENCE_EDITOR` environment variable:
+
+    GIT_SEQUENCE_EDITOR=emacs git rebase -i [<upstream> [<branch>]]
+
+
 ### Configuration
 
 The tool can be configured using the [git config][git-config] command. Invalid values are ignored and the default used
