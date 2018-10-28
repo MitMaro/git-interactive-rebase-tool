@@ -13,6 +13,7 @@ pub struct GitConfig {
 	pub pick_color: String,
 	pub reword_color: String,
 	pub edit_color: String,
+	pub exec_color: String,
 	pub squash_color: String,
 	pub fixup_color: String,
 	pub drop_color: String,
@@ -73,6 +74,10 @@ impl GitConfig {
 					},
 					edit_color: match config.get_string("interactive-rebase-tool.editColor") {
 						Ok(edit_color_value) => edit_color_value.to_lowercase(),
+						Err(_msg) => String::from("")
+					},
+					exec_color: match config.get_string("interactive-rebase-tool.execColor") {
+						Ok(exec_color_value) => exec_color_value.to_lowercase(),
 						Err(_msg) => String::from("")
 					},
 					squash_color: match config.get_string("interactive-rebase-tool.squashColor") {

@@ -7,18 +7,26 @@ use action::{
 #[derive(PartialEq, Debug)]
 pub struct Line {
 	action: Action,
-	hash: String,
+	hash_or_command: String,
 	comment: String,
 	mutated: bool
 }
 
 impl Line {
 	pub fn new(input_line: &str) -> Result<Self, String> {
-		let input: Vec<&str> = input_line.splitn(3, ' ').collect();
+		let split_count = if input_line.starts_with("exec") || input_line.starts_with('x') {2} else {3};
+
+		let input: Vec<&str> = input_line.splitn(split_count, ' ').collect();
 		match input.len() {
+			2 => Ok(Line {
+				action: action_from_str(input[0])?,
+				hash_or_command: String::from(input[1]),
+				comment: String::from(""),
+				mutated: false
+			}),
 			3 => Ok(Line {
 				action: action_from_str(input[0])?,
-				hash: String::from(input[1]),
+				hash_or_command: String::from(input[1]),
 				comment: String::from(input[2]),
 				mutated: false
 			}),
@@ -38,15 +46,15 @@ impl Line {
 	pub fn get_action(&self) -> &Action {
 		&self.action
 	}
-	pub fn get_hash(&self) -> &String {
-		&self.hash
+	pub fn get_hash_or_command(&self) -> &String {
+		&self.hash_or_command
 	}
 	pub fn get_comment(&self) -> &String {
 		&self.comment
 	}
 	
 	pub fn to_text(&self) -> String {
-		format!("{} {} {}", action_to_str(&self.action), self.hash, self.comment)
+		format!("{} {} {}", action_to_str(&self.action), self.hash_or_command, self.comment)
 	}
 }
 
@@ -59,7 +67,7 @@ mod tests {
 	fn new_with_valid_line() {
 		let line = Line::new("pick aaa comment").unwrap();
 		assert_eq!(line.action, Action::Pick);
-		assert_eq!(line.hash, "aaa");
+		assert_eq!(line.hash_or_command, "aaa");
 		assert_eq!(line.comment, "comment");
 		assert_eq!(line.mutated, false);
 	}
@@ -86,7 +94,7 @@ mod tests {
 	fn getters() {
 		let line = Line::new("pick aaa comment").unwrap();
 		assert_eq!(line.get_action(), &Action::Pick);
-		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_hash_or_command(), &"aaa");
 		assert_eq!(line.get_comment(), &"comment");
 	}
 	

@@ -126,11 +126,13 @@ impl GitInteractive {
 	}
 	
 	pub fn set_selected_line_action(&mut self, action: Action) {
-		self.lines[self.selected_line_index - 1].set_action(action);
+		if *self.lines[self.selected_line_index - 1].get_action() != Action::Exec {
+			self.lines[self.selected_line_index - 1].set_action(action);
+		}
 	}
 	
 	pub fn get_selected_line_hash(&self) -> &String {
-		self.lines[self.selected_line_index - 1].get_hash()
+		self.lines[self.selected_line_index - 1].get_hash_or_command()
 	}
 	
 	pub fn get_selected_line_index(&self) -> &usize {

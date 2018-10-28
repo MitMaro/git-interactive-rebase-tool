@@ -179,7 +179,7 @@ mod tests {
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
 		let app = Application::new(gi, window);
-		assert_eq!(app.git_interactive.get_lines().len(), 12);
+		assert_eq!(app.git_interactive.get_lines().len(), 14);
 	}
 	
 	#[test]
@@ -283,7 +283,33 @@ mod tests {
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Edit);
 	}
-	
+
+	#[test]
+	fn application_not_set_exec_action() {
+		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-exec.in", "#").unwrap();
+		let config = Config::new(&GitConfig::new().unwrap());
+		let window = Window::new(config);
+		let mut app = Application::new(gi, window);
+		app.window.window.next_char = Input::Character('p');
+		app.process_input();
+		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		app.window.window.next_char = Input::Character('r');
+		app.process_input();
+		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		app.window.window.next_char = Input::Character('e');
+		app.process_input();
+		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		app.window.window.next_char = Input::Character('s');
+		app.process_input();
+		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		app.window.window.next_char = Input::Character('f');
+		app.process_input();
+		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		app.window.window.next_char = Input::Character('d');
+		app.process_input();
+		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+	}
+
 	#[test]
 	fn application_set_squash() {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
@@ -314,8 +340,8 @@ mod tests {
 		let mut app = Application::new(gi, window);
 		app.window.window.next_char = Input::Character('j');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_hash(), "bbb");
-		assert_eq!(*app.git_interactive.get_lines()[1].get_hash(), "aaa");
+		assert_eq!(*app.git_interactive.get_lines()[0].get_hash_or_command(), "bbb");
+		assert_eq!(*app.git_interactive.get_lines()[1].get_hash_or_command(), "aaa");
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 2);
 	}
 	
@@ -329,8 +355,8 @@ mod tests {
 		app.process_input();
 		app.window.window.next_char = Input::Character('k');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_hash(), "bbb");
-		assert_eq!(*app.git_interactive.get_lines()[1].get_hash(), "aaa");
+		assert_eq!(*app.git_interactive.get_lines()[0].get_hash_or_command(), "bbb");
+		assert_eq!(*app.git_interactive.get_lines()[1].get_hash_or_command(), "aaa");
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 1);
 	}
 	

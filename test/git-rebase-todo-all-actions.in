@@ -2,12 +2,14 @@
 pick aaa Added tests
 reword bbb Added tests
 edit ccc Added tests
+exec git commit --amend -m "Foo bar"
 squash ddd Added tests
 fixup eee Added tests
 drop fff Added tests
 p 111 Added tests
 r 222 Added tests
 e 333 Added tests
+x git commit --amend -m "Foo bar"
 s 444 Added tests
 f 555 Added tests
 d 666 Added tests
