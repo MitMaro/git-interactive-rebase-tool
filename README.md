@@ -5,7 +5,8 @@
 
 # Git Interactive Rebase Tool
 
-Native cross platform full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses.
+Native cross-platform full feature terminal based sequence editor for git interactive rebase. Written in Rust using
+ncurses.
 
 ![Image](git-interactive-tool.gif?raw=true)
 
@@ -25,8 +26,8 @@ Download the `.deb` file from the [releases page][releases] and install. The exe
 
 ##### Install
 
-Download the `macos-interactive-rebase-tool` from the [releases page][releases] and copy it as
-`interactive-rebase-tool` to a location on your `PATH`.
+Download the `macos-interactive-rebase-tool` from the [releases page][releases] and copy it as `interactive-rebase-tool`
+to a location on your `PATH`.
 
 ##### Configure Git
 
@@ -49,8 +50,7 @@ versions if you are unsure which binary to download, you probably want the 64-bi
 
 ##### Install
 
-With Rust's package manager [cargo](https://github.com/rust-lang/cargo), you can install *git-interactive-rebase-tool
-* via:
+With Rust's package manager [cargo], you can install *git-interactive-rebase-tool* via:
 
 ```shell
 cargo install git-interactive-rebase-tool
@@ -72,7 +72,7 @@ interactive-rebase-tool --version
 
 ### Getting Help
 
-The tool has built in help that can be accessed by hitting the `?` key.
+The tool has built-in help that can be accessed by hitting the `?` key.
 
 ### Key Bindings
 
@@ -99,12 +99,12 @@ The tool has built in help that can be accessed by hitting the `?` key.
 
 ### Configuration
 
-The tool can be configured using the [git config](https://git-scm.com/docs/git-config) command. Invalid values are
-ignored and the default used instead. String values are case-insensitive.
+The tool can be configured using the [git config][git-config] command. Invalid values are ignored and the default used
+instead. String values are case-insensitive.
 
 #### Example
 
-```bash
+```
 git config --global interactive-rebase-tool.foregroundColor black
 ```
 
@@ -133,16 +133,16 @@ white and yellow. Each terminal controls the exact color for these color names.
 
 ### Install Rust
 
-To start developing the project you will need to [install Rust](https://doc.rust-lang.org/book/getting-started.html),
-which can generally be done using [rustup](https://www.rustup.rs/).
+To start developing the project you will need to [install Rust][install-rust], which can generally be done using
+[rustup].
+
 
 ### Setup
 
 #### Debian and derivatives
 
-You will need `build-essential` and `libncurses5-dev` to build the project.
-Additionally you will need `pkg-config` and `liblzma-dev` if you wish to build
-a release. They can be installed using `apt-get`:
+You will need `build-essential` and `libncurses5-dev` to build the project. Additionally, you will need `pkg-config` and
+`liblzma-dev` if you wish to build a release. They can be installed using `apt-get`:
 
     sudo apt-get install build-essential libncurses5-dev
     sudo apt-get install pkg-config liblzma-dev
@@ -150,7 +150,7 @@ a release. They can be installed using `apt-get`:
 
 ### Build and run
 
-Use cargo to build and run the project. From the project project root run:
+Use cargo to build and run the project. From the project root run:
 
     # only build
     cargo build --release
@@ -161,8 +161,6 @@ Use cargo to build and run the project. From the project project root run:
 ### Release
 
 ##### Install Cargo Deb
-
-Cargo Deb has not been released to creates.io so it will need to be installed from the GitHub repository.
 
     cargo install cargo-deb
 
@@ -175,21 +173,27 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
 ## TODO
 
- - [ ] Support for `exec` command
- - [ ] Insert commit
+ - [ ] Full support for `exec` action
+ - [ ] Insert action
  - [ ] Configure key bindings
 
 ## Related Projects
 
-* [rebase-editor](https://github.com/sjurba/rebase-editor) is a very similar project but is [not fully cross platform](https://github.com/sjurba/rebase-editor/issues/7) and requires NodeJS to be installed.
+* [rebase-editor] is a very similar project but is [not fully cross-platform][rebase-editor-issue-7] and uses Node.js.
 
 ## License
 
 Git Interactive Rebase Tool is released under the ISC license. See [LICENSE](LICENSE).
 
 [ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
-[crates-io]:https://crates.io/crates/git-interactive-rebase-tool
-[travis-build]:https://travis-ci.org/MitMaro/git-interactive-rebase-tool
 [appveyor-build]:https://ci.appveyor.com/project/MitMaro/git-interactive-rebase-tool/branch/master
+[cargo]:https://github.com/rust-lang/cargo
+[crates-io]:https://crates.io/crates/git-interactive-rebase-tool
+[git-config]:https://git-scm.com/docs/git-config
+[install-rust]:https://doc.rust-lang.org/book/getting-started.html
 [license]:https://raw.githubusercontent.com/MitMaro/git-interactive-rebase-tool/master/LICENSE
+[rebase-editor-issue-7]:https://github.com/sjurba/rebase-editor/issues/7
+[rebase-editor]:https://github.com/sjurba/rebase-editor
 [releases]:https://github.com/MitMaro/git-interactive-rebase-tool/releases
+[rustup]:https://www.rustup.rs/
+[travis-build]:https://travis-ci.org/MitMaro/git-interactive-rebase-tool
