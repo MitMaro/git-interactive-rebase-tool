@@ -1,8 +1,6 @@
-
 use clap::{App};
-
-const NAME: &str = "interactive-rebase-tool";
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+use constants::NAME;
+use constants::VERSION;
 
 pub fn build_cli() -> App<'static, 'static> {
 	App::new(NAME)
