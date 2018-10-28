@@ -2,47 +2,63 @@ use action::Action;
 use git_interactive::GitInteractive;
 
 use window::{
-	Input,
 	Window
 };
+use input::Input;
+use config::Config;
 
 const EXIT_CODE_GOOD: i32 = 0;
 const EXIT_CODE_WRITE_ERROR: i32 = 8;
 
 #[derive(PartialEq, Debug)]
 pub enum State {
+	ConfirmAbort,
+	ConfirmRebase,
+	Help,
 	List,
 	ShowCommit,
-	Help
 }
 
 pub struct Application {
+	config: Config,
 	pub exit_code: Option<i32>,
-	window: Window,
 	git_interactive: GitInteractive,
-	state: State
+	state: State,
+	window: Window,
 }
 
 impl Application {
-	pub fn new(git_interactive: GitInteractive, window: Window) -> Self {
+	pub fn new(git_interactive: GitInteractive, window: Window, config: Config) -> Self {
 		Application {
-			git_interactive,
-			window,
+			config,
 			exit_code: None,
-			state: State::List
+			git_interactive,
+			state: State::List,
+			window,
 		}
 	}
 	
 	pub fn process_input(&mut self) {
 		match self.state {
+			State::ConfirmAbort => self.process_confirm_abort(),
+			State::ConfirmRebase => self.process_confirm_rebase(),
+			State::Help => self.process_help_input(),
 			State::List => self.process_list_input(),
 			State::ShowCommit => self.process_show_commit_input(),
-			State::Help => self.process_help_input()
 		}
 	}
 	
 	pub fn draw(&self) {
 		match self.state {
+			State::ConfirmAbort => {
+				self.window.draw_confirm("Are you sure you want to abort");
+			},
+			State::ConfirmRebase => {
+				self.window.draw_confirm("Are you sure you want to rebase");
+			}
+			State::Help => {
+				self.window.draw_help();
+			},
 			State::List => {
 				self.window.draw(
 					self.git_interactive.get_lines(),
@@ -55,9 +71,6 @@ impl Application {
 					self.git_interactive.get_git_root()
 				);
 			},
-			State::Help => {
-				self.window.draw_help();
-			}
 		}
 	}
 
@@ -83,78 +96,91 @@ impl Application {
 	}
 	
 	fn process_help_input(&mut self) {
-		self.window.window.getch();
+		self.window.get_input();
 		self.state = State::List;
 	}
 	
 	fn process_show_commit_input(&mut self) {
-		self.window.window.getch();
+		self.window.get_input();
 		self.state = State::List;
 	}
-	
+
+	fn process_confirm_abort(&mut self) {
+		if self.window.get_confirm() {
+			self.abort();
+		}
+		else {
+			self.state = State::List;
+		}
+	}
+
+	fn process_confirm_rebase(&mut self) {
+		if self.window.get_confirm() {
+			self.finish();
+		}
+		else {
+			self.state = State::List;
+		}
+	}
+
 	fn process_list_input(&mut self) {
-		match self.window.window.getch() {
-			Some(Input::Character(c)) if c == '?' => {
-				self.state = State::Help;
-			},
-			Some(Input::Character(c)) if c == 'c' => {
-				self.state = State::ShowCommit;
-			},
-			Some(Input::Character(c))
-				if (c == 'Q') || (c == 'q' && self.window.confirm("Are you sure you want to abort"))
-					=> self.abort(),
-			Some(Input::Character(c))
-				if (c == 'W') || (c == 'w' && self.window.confirm("Are you sure you want to rebase"))
-					=> self.finish(),
-			Some(Input::Character(c))
-				if c == 'p' => self.git_interactive.set_selected_line_action(Action::Pick),
-			Some(Input::Character(c))
-				if c == 'r' => self.git_interactive.set_selected_line_action(Action::Reword),
-			Some(Input::Character(c))
-				if c == 'e' => self.git_interactive.set_selected_line_action(Action::Edit),
-			Some(Input::Character(c))
-				if c == 's' => self.git_interactive.set_selected_line_action(Action::Squash),
-			Some(Input::Character(c))
-				if c == 'f' => self.git_interactive.set_selected_line_action(Action::Fixup),
-			Some(Input::Character(c))
-				if c == 'd' => self.git_interactive.set_selected_line_action(Action::Drop),
-			Some(Input::Character(c)) if c == 'j' => {
+		match self.window.get_input() {
+			Input::Help => self.state = State::Help,
+			Input::ShowCommit => self.state = State::ShowCommit,
+			Input::Abort => self.state = State::ConfirmAbort,
+			Input::ForceAbort => self.abort(),
+			Input::Rebase => self.state = State::ConfirmRebase,
+			Input::ForceRebase => self.finish(),
+			Input::Drop => self.set_selected_line_action(Action::Drop),
+			Input::Edit => self.set_selected_line_action(Action::Edit),
+			Input::Fixup => self.set_selected_line_action(Action::Fixup),
+			Input::Pick => self.set_selected_line_action(Action::Pick),
+			Input::Reword => self.set_selected_line_action(Action::Reword),
+			Input::Squash => self.set_selected_line_action(Action::Squash),
+			Input::SwapSelectedDown => {
 				self.git_interactive.swap_selected_down();
 				self.reset_top();
 			},
-			Some(Input::Character(c)) if c == 'k' => {
+			Input::SwapSelectedUp => {
 				self.git_interactive.swap_selected_up();
 				self.reset_top();
 			},
-			Some(Input::KeyDown) => {
+			Input::MoveCursorDown => {
 				self.git_interactive.move_cursor_down(1);
 				self.reset_top();
 			},
-			Some(Input::KeyUp) => {
+			Input::MoveCursorUp => {
 				self.git_interactive.move_cursor_up(1);
 				self.reset_top();
 			},
-			Some(Input::KeyPPage) => {
-				self.git_interactive.move_cursor_up(5);
-				self.reset_top();
-			},
-			Some(Input::KeyNPage) => {
+			Input::MoveCursorPageDown => {
 				self.git_interactive.move_cursor_down(5);
 				self.reset_top();
 			},
-			Some(Input::KeyResize) => {
+			Input::MoveCursorPageUp => {
+				self.git_interactive.move_cursor_up(5);
+				self.reset_top();
+			},
+			Input::Resize => {
 				self.window.resize_term();
 				self.reset_top()
 			},
-			_ => {}
+			Input::Other => {}
 		}
 	}
-	
+
 	fn reset_top(&mut self) {
 		self.window.set_top(
 			self.git_interactive.get_lines().len(),
 			*self.git_interactive.get_selected_line_index()
 		)
+	}
+
+	fn set_selected_line_action(&mut self, action: Action) {
+		self.git_interactive.set_selected_line_action(action);
+		if self.config.auto_select_next {
+			self.git_interactive.move_cursor_down(1);
+		}
 	}
 }
 
@@ -167,7 +193,7 @@ mod tests {
 	use git_interactive::GitInteractive;
 	use window::{
 		Window,
-		Input
+		PancursesInput
 	};
 	use action::Action;
 	use config::Config;
@@ -178,7 +204,7 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let app = Application::new(gi, window);
+		let app = Application::new(gi, window, config);
 		assert_eq!(app.git_interactive.get_lines().len(), 14);
 	}
 	
@@ -187,8 +213,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('?');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('?');
 		app.process_input();
 		assert_eq!(app.state, State::Help);
 	}
@@ -199,8 +225,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-show-commit.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('c');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('c');
 		app.process_input();
 		assert_eq!(app.state, State::ShowCommit);
 	}
@@ -210,17 +236,17 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-long.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::KeyDown;
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::KeyDown;
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 2);
-		app.window.window.next_char = Input::KeyUp;
+		app.window.window.next_char = PancursesInput::KeyUp;
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 1);
-		app.window.window.next_char = Input::KeyNPage;
+		app.window.window.next_char = PancursesInput::KeyNPage;
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 6);
-		app.window.window.next_char = Input::KeyPPage;
+		app.window.window.next_char = PancursesInput::KeyPPage;
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 1);
 	}
@@ -230,20 +256,20 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-short.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::KeyUp;
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::KeyUp;
 		app.process_input();
 		app.process_input();
-		app.window.window.next_char = Input::KeyPPage;
+		app.window.window.next_char = PancursesInput::KeyPPage;
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 1);
-		app.window.window.next_char = Input::KeyDown;
+		app.window.window.next_char = PancursesInput::KeyDown;
 		app.process_input();
 		app.process_input();
 		app.process_input();
 		app.process_input();
 		app.process_input();
-		app.window.window.next_char = Input::KeyNPage;
+		app.window.window.next_char = PancursesInput::KeyNPage;
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_selected_line_index(), 3);
 	}
@@ -253,11 +279,11 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
+		let mut app = Application::new(gi, window, config);
 		// first item is already pick
-		app.window.window.next_char = Input::KeyDown;
+		app.window.window.next_char = PancursesInput::KeyDown;
 		app.process_input();
-		app.window.window.next_char = Input::Character('p');
+		app.window.window.next_char = PancursesInput::Character('p');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[1].get_action(), Action::Pick);
 	}
@@ -267,8 +293,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('r');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('r');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Reword);
 	}
@@ -278,8 +304,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('e');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('e');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Edit);
 	}
@@ -289,23 +315,23 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-exec.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('p');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('p');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
-		app.window.window.next_char = Input::Character('r');
+		app.window.window.next_char = PancursesInput::Character('r');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
-		app.window.window.next_char = Input::Character('e');
+		app.window.window.next_char = PancursesInput::Character('e');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
-		app.window.window.next_char = Input::Character('s');
+		app.window.window.next_char = PancursesInput::Character('s');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
-		app.window.window.next_char = Input::Character('f');
+		app.window.window.next_char = PancursesInput::Character('f');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
-		app.window.window.next_char = Input::Character('d');
+		app.window.window.next_char = PancursesInput::Character('d');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 	}
@@ -315,8 +341,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('s');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('s');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Squash);
 	}
@@ -326,8 +352,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('d');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('d');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Drop);
 	}
@@ -337,8 +363,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('j');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('j');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_hash_or_command(), "bbb");
 		assert_eq!(*app.git_interactive.get_lines()[1].get_hash_or_command(), "aaa");
@@ -350,10 +376,10 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::KeyDown;
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::KeyDown;
 		app.process_input();
-		app.window.window.next_char = Input::Character('k');
+		app.window.window.next_char = PancursesInput::Character('k');
 		app.process_input();
 		assert_eq!(*app.git_interactive.get_lines()[0].get_hash_or_command(), "bbb");
 		assert_eq!(*app.git_interactive.get_lines()[1].get_hash_or_command(), "aaa");
@@ -365,8 +391,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('Q');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('Q');
 		app.process_input();
 		assert_eq!(app.exit_code.unwrap(), 0);
 		assert!(app.git_interactive.get_lines().is_empty());
@@ -377,8 +403,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-todo-all-actions.in", "#").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('W');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('W');
 		app.process_input();
 		assert_eq!(app.exit_code.unwrap(), 0);
 		assert!(!app.git_interactive.get_lines().is_empty());
@@ -389,8 +415,8 @@ mod tests {
 		let gi = GitInteractive::new_from_filepath("test/git-rebase-alternative-comment-character.in", "%").unwrap();
 		let config = Config::new(&GitConfig::new().unwrap());
 		let window = Window::new(config);
-		let mut app = Application::new(gi, window);
-		app.window.window.next_char = Input::Character('W');
+		let mut app = Application::new(gi, window, config);
+		app.window.window.next_char = PancursesInput::Character('W');
 		app.process_input();
 		assert_eq!(app.exit_code.unwrap(), 0);
 		assert!(!app.git_interactive.get_lines().is_empty());

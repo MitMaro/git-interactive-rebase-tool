@@ -14,6 +14,7 @@ mod commit;
 mod config;
 mod git_config;
 mod git_interactive;
+mod input;
 mod line;
 mod window;
 #[cfg(test)]
@@ -56,7 +57,7 @@ fn main() {
 
 	let window = Window::new(config);
 
-	let mut application = Application::new(git_interactive, window);
+	let mut application = Application::new(git_interactive, window, config);
 
 	while application.exit_code == None {
 		application.draw();

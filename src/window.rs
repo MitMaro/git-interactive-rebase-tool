@@ -12,7 +12,7 @@ use pancurses as pancurses;
 #[cfg(test)]
 use mocks::mockcurses as pancurses;
 
-pub use pancurses::Input as Input;
+pub use pancurses::Input as PancursesInput;
 
 use action::{
 	Action,
@@ -23,6 +23,7 @@ use line::Line;
 use commit::Commit;
 use color::Color;
 use config::Config;
+use input::Input;
 
 const COLOR_TABLE: [i16; 8] = [
 	pancurses::COLOR_BLACK,
@@ -98,7 +99,7 @@ impl Window {
 	}
 
 	fn draw_more_indicator(&self, remaining: usize) {
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		self.window.attron(pancurses::A_DIM);
 		self.window.attron(pancurses::A_REVERSE);
 		self.window.addstr(&format!("  -- {} --  ", remaining));
@@ -107,7 +108,7 @@ impl Window {
 	}
 
 	fn draw_title(&self) {
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		self.set_dim(true);
 		self.set_underline(true);
 		self.window.addstr("Git Interactive Rebase                       ? for help\n");
@@ -116,7 +117,7 @@ impl Window {
 	}
 
 	fn draw_line(&self, line: &Line, selected: bool) {
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		if selected {
 			self.window.addstr(" > ");
 		}
@@ -124,21 +125,21 @@ impl Window {
 			self.window.addstr("   ");
 		}
 		match *line.get_action() {
-			Action::Pick => self.set_color(&self.config.pick_color),
-			Action::Reword => self.set_color(&self.config.reword_color),
-			Action::Edit => self.set_color(&self.config.edit_color),
-			Action::Exec => self.set_color(&self.config.exec_color),
-			Action::Squash => self.set_color(&self.config.squash_color),
-			Action::Fixup => self.set_color(&self.config.fixup_color),
-			Action::Drop => self.set_color(&self.config.drop_color)
+			Action::Pick => self.set_color(self.config.pick_color),
+			Action::Reword => self.set_color(self.config.reword_color),
+			Action::Edit => self.set_color(self.config.edit_color),
+			Action::Exec => self.set_color(self.config.exec_color),
+			Action::Squash => self.set_color(self.config.squash_color),
+			Action::Fixup => self.set_color(self.config.fixup_color),
+			Action::Drop => self.set_color(self.config.drop_color)
 		}
 		self.window.addstr(&format!("{:6}", action_to_str(line.get_action())));
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		self.window.addstr(&format!(" {} {}\n", line.get_hash_or_command(), line.get_comment()));
 	}
 
 	fn draw_footer(&self) {
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		self.set_dim(true);
 		self.window.mvaddstr(
 			self.window.get_max_y() - 1,
@@ -164,12 +165,12 @@ impl Window {
 		self.draw_title();
 		match result {
 			Ok(output) => {
-				self.set_color(&self.config.foreground_color);
+				self.set_color(self.config.foreground_color);
 				match Commit::new(&String::from_utf8_lossy(&output.stdout)) {
 					Ok(commit_data) => {
-						self.set_color(&self.config.indicator_color);
+						self.set_color(self.config.indicator_color);
 						self.window.addstr(&format!("\nCommit: {}\n", commit));
-						self.set_color(&self.config.foreground_color);
+						self.set_color(self.config.foreground_color);
 						self.window.addstr(&format!(
 							"Author: {} <{}>\n", commit_data.get_author_name(), commit_data.get_author_email()
 						));
@@ -194,32 +195,32 @@ impl Window {
 							.fold(0, |a, x| cmp::max(a, x.get_added().len()));
 						
 						for file_stat in commit_data.get_file_stats() {
-							self.set_color(&self.config.diff_add_color);
+							self.set_color(self.config.diff_add_color);
 							self.window.addstr(
 								&file_stat.get_added().pad_to_width_with_alignment(max_add_change_length, Alignment::Right)
 							);
-							self.set_color(&self.config.foreground_color);
+							self.set_color(self.config.foreground_color);
 							self.window.addstr(" | ");
-							self.set_color(&self.config.diff_remove_color);
+							self.set_color(self.config.diff_remove_color);
 							self.window.addstr(
 								&file_stat.get_removed().pad_to_width_with_alignment(max_remove_change_length, Alignment::Left)
 							);
-							self.set_color(&self.config.foreground_color);
+							self.set_color(self.config.foreground_color);
 							self.window.addstr(&format!("  {}\n", &file_stat.get_name()));
 						}
 					},
 					Err(msg) => {
-						self.set_color(&self.config.error_color);
+						self.set_color(self.config.error_color);
 						self.window.addstr(&msg);
 					}
 				}
 			},
 			Err(msg) => {
-				self.set_color(&self.config.error_color);
+				self.set_color(self.config.error_color);
 				self.window.addstr(msg.description());
 			}
 		}
-		self.set_color(&self.config.indicator_color);
+		self.set_color(self.config.indicator_color);
 		self.window.addstr("\n\nHit any key to close");
 		self.window.refresh();
 	}
@@ -227,7 +228,7 @@ impl Window {
 	pub fn draw_help(&self) {
 		self.window.clear();
 		self.draw_title();
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		self.window.addstr("\n Key        Action\n");
 		self.window.addstr(" --------------------------------------------------\n");
 		self.draw_help_command("Up", "Move selection up");
@@ -248,20 +249,20 @@ impl Window {
 		self.draw_help_command("s", "Set selected commit to be squashed");
 		self.draw_help_command("f", "Set selected commit to be fixed-up");
 		self.draw_help_command("d", "Set selected commit to be dropped");
-		self.set_color(&self.config.indicator_color);
+		self.set_color(self.config.indicator_color);
 		self.window.addstr("\n\nHit any key to close help");
 		self.window.refresh();
 	}
 	
 	fn draw_help_command(&self, command: &str, help: &str) {
-		self.set_color(&self.config.indicator_color);
+		self.set_color(self.config.indicator_color);
 		self.window.addstr(&format!(" {:9}    ", command));
-		self.set_color(&self.config.foreground_color);
+		self.set_color(self.config.foreground_color);
 		self.window.addstr(&format!("{}\n", help));
 	}
 
-	fn set_color(&self, color: &Color) {
-		match *color {
+	fn set_color(&self, color: Color) {
+		match color {
 			Color::Black => self.window.attrset(pancurses::COLOR_PAIR(0)),
 			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(1)),
 			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(2)),
@@ -291,12 +292,40 @@ impl Window {
 		}
 	}
 
-	pub fn confirm(&self, message: &str) -> bool  {
+	pub fn get_input(&self) -> Input {
+		match self.window.getch() {
+			Some(PancursesInput::Character(c)) if c == '?' => Input::Help,
+			Some(PancursesInput::Character(c)) if c == 'c' => Input::ShowCommit,
+			Some(PancursesInput::Character(c)) if c == 'q' => Input::Abort,
+			Some(PancursesInput::Character(c)) if c == 'Q' => Input::ForceAbort,
+			Some(PancursesInput::Character(c)) if c == 'w' => Input::Rebase,
+			Some(PancursesInput::Character(c)) if c == 'W' => Input::ForceRebase,
+			Some(PancursesInput::Character(c)) if c == 'p' => Input::Pick,
+			Some(PancursesInput::Character(c)) if c == 'r' => Input::Reword,
+			Some(PancursesInput::Character(c)) if c == 'e' => Input::Edit,
+			Some(PancursesInput::Character(c)) if c == 's' => Input::Squash,
+			Some(PancursesInput::Character(c)) if c == 'f' => Input::Fixup,
+			Some(PancursesInput::Character(c)) if c == 'd' => Input::Drop,
+			Some(PancursesInput::Character(c)) if c == 'j' => Input::SwapSelectedDown,
+			Some(PancursesInput::Character(c)) if c == 'k' => Input::SwapSelectedUp,
+			Some(PancursesInput::KeyDown) => Input::MoveCursorDown,
+			Some(PancursesInput::KeyUp) => Input::MoveCursorUp,
+			Some(PancursesInput::KeyPPage) => Input::MoveCursorPageUp,
+			Some(PancursesInput::KeyNPage) => Input::MoveCursorPageDown,
+			Some(PancursesInput::KeyResize) => Input::Resize,
+			_ => Input::Other,
+		}
+	}
+
+	pub fn draw_confirm(&self, message: &str) {
 		self.window.clear();
 		self.draw_title();
 		self.window.addstr(&format!("\n{} (y/n)? ", message));
+	}
+
+	pub fn get_confirm(&self) -> bool {
 		match self.window.getch() {
-			Some(Input::Character(c)) if c == 'y' || c == 'Y' => true,
+			Some(PancursesInput::Character(c)) if c == 'y' || c == 'Y' => true,
 			_ => false
 		}
 	}
