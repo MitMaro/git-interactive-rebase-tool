@@ -5,10 +5,11 @@
 
 # Git Interactive Rebase Tool
 
-Native cross-platform full feature terminal based sequence editor for git interactive rebase. Written in Rust using
-ncurses.
+Native cross-platform full feature terminal based [sequence editor][git-sequence-editor] for interactive rebase in
+Git 1.7.8+. Written in Rust using ncurses.
 
 ![Image](git-interactive-tool.gif?raw=true)
+
 
 ## Install
 
@@ -73,6 +74,7 @@ interactive-rebase-tool --version
 ### Getting Help
 
 The tool has built-in help that can be accessed by hitting the `?` key.
+
 
 ### Key Bindings
 
@@ -190,6 +192,7 @@ Git Interactive Rebase Tool is released under the ISC license. See [LICENSE](LIC
 [cargo]:https://github.com/rust-lang/cargo
 [crates-io]:https://crates.io/crates/git-interactive-rebase-tool
 [git-config]:https://git-scm.com/docs/git-config
+[git-sequence-editor]:https://git-scm.com/docs/git-config#git-config-sequenceeditor
 [install-rust]:https://doc.rust-lang.org/book/getting-started.html
 [license]:https://raw.githubusercontent.com/MitMaro/git-interactive-rebase-tool/master/LICENSE
 [rebase-editor-issue-7]:https://github.com/sjurba/rebase-editor/issues/7
