@@ -41,7 +41,7 @@ fn main() {
 
 	let git_config = match GitConfig::new() {
 		Ok(gc) => gc,
-		Err(msg) => error_handler(&msg, 1),
+		Err(msg) => error_handler(&format!("Error reading git config: {}", msg), 1),
 	};
 
 	let config = Config::new(&git_config);
