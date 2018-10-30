@@ -51,7 +51,7 @@ jobs:
         skip_cleanup: true
     - stage: build-macos
       rust: stable
-      os: linux
+      os: osx
       if: tag IS present
       script: cargo build --release
       before_deploy: "cp target/release/interactive-rebase-tool target/release/macos-interactive-rebase-tool"
