@@ -1,3 +1,5 @@
+use std::ffi::OsString;
+use std::env;
 use git2;
 
 #[derive(Debug)]
@@ -16,6 +18,7 @@ pub struct GitConfig {
 	pub fixup_color: String,
 	pub drop_color: String,
 	pub auto_select_next: bool,
+	pub editor: OsString,
 }
 
 impl GitConfig {
@@ -39,6 +42,8 @@ impl GitConfig {
 				Ok(auto_select_next_value) => auto_select_next_value,
 				Err(_msg) => false
 			},
+			editor: get_string(&config, "core.editor")?.map_or_else(
+				editor_from_env, OsString::from),
 		})
 	}
 }
@@ -55,4 +60,10 @@ fn get_color(config: &git2::Config, name: &str) -> Result<String, git2::Error> {
 	// TODO: could make colors in GitConfig an Option<String> and move this to config.rs
 	Ok(get_string(config, name)?.map(|s| s.to_lowercase())
 		.unwrap_or_default())
+}
+
+fn editor_from_env() -> OsString {
+	env::var_os("VISUAL")
+		.or_else(|| env::var_os("EDITOR"))
+		.unwrap_or_else(|| OsString::from("vi"))
 }

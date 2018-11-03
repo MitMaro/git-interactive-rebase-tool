@@ -1,5 +1,6 @@
 use color::Color;
 use git_config::GitConfig;
+use std::ffi::OsString;
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -17,6 +18,7 @@ pub struct Config {
 	pub fixup_color: Color,
 	pub drop_color: Color,
 	pub auto_select_next: bool,
+	pub editor: OsString,
 }
 
 fn string_to_color(color_string: &str, default_color: Color) -> Color {
@@ -50,6 +52,7 @@ impl Config {
 			fixup_color: string_to_color(git_config.fixup_color.as_ref(), Color::Magenta),
 			drop_color: string_to_color(git_config.drop_color.as_ref(), Color::Red),
 			auto_select_next: git_config.auto_select_next,
+			editor: git_config.editor,
 		}
 	}
 }

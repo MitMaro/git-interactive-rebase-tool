@@ -69,7 +69,7 @@ impl GitInteractive {
 		}
 	}
 	
-	pub fn write_file(&self) -> Result<(), String> {
+	pub fn write_file(&self) -> Result<String, String> {
 		let mut file = match File::create(&self.filepath) {
 			Ok(file) => file,
 			Err(why) => {
@@ -90,7 +90,9 @@ impl GitInteractive {
 				}
 			}
 		}
-		Ok(())
+		// Return the path to the todo file. Since it was constructed from str originally,
+		// converting back should be safe...
+		Ok(self.filepath.to_str().map(String::from).unwrap())
 	}
 	
 	pub fn clear(&mut self) {

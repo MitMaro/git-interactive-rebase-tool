@@ -144,7 +144,7 @@ impl Window {
 		self.window.mvaddstr(
 			self.window.get_max_y() - 1,
 			0,
-			"Actions: [ up, down, q/Q, w/W, c, j, k, p, r, e, s, f, d, ? ]"
+			"Actions: [ up, down, q/Q, w/W, c, j, k, p, r, e, s, f, d, !, ? ]"
 		);
 		self.set_dim(false);
 	}
@@ -249,6 +249,7 @@ impl Window {
 		self.draw_help_command("s", "Set selected commit to be squashed");
 		self.draw_help_command("f", "Set selected commit to be fixed-up");
 		self.draw_help_command("d", "Set selected commit to be dropped");
+		self.draw_help_command("!", "Open the todo file in the default editor");
 		self.set_color(self.config.indicator_color);
 		self.window.addstr("\n\nHit any key to close help");
 		self.window.refresh();
@@ -313,6 +314,7 @@ impl Window {
 			Some(PancursesInput::KeyPPage) => Input::MoveCursorPageUp,
 			Some(PancursesInput::KeyNPage) => Input::MoveCursorPageDown,
 			Some(PancursesInput::KeyResize) => Input::Resize,
+			Some(PancursesInput::Character(c)) if c == '!' => Input::OpenInEditor,
 			_ => Input::Other,
 		}
 	}
@@ -351,6 +353,16 @@ impl Window {
 			x if x >= 4 => (x - 4) as usize,
 			_ => 4
 		}
+	}
+
+	/// Leaves curses mode, runs the specified callback, and re-enables curses.
+	pub fn leave_temporarily<F, T>(callback: F) -> T
+		where F: FnOnce() -> T {
+		pancurses::def_prog_mode();
+		pancurses::endwin();
+		let rv = callback();
+		pancurses::reset_prog_mode();
+		rv
 	}
 
 	pub fn end(&self) {
