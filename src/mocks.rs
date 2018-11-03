@@ -19,6 +19,7 @@ pub mod mockcurses {
 	};
 
 	pub fn curs_set(_visibility: i32) {}
+	pub fn def_prog_mode() -> i32 {0}
 	pub fn endwin() {}
 	pub fn has_colors() -> bool {
 		false
@@ -31,6 +32,7 @@ pub mod mockcurses {
 		}
 	}
 	pub fn noecho() {}
+	pub fn reset_prog_mode() -> i32 {0}
 	pub fn resize_term(_nlines: i32, _ncols: i32) {}
 	pub fn start_color() {}
 	pub fn use_default_colors() {}

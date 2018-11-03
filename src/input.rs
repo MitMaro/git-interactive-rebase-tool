@@ -18,5 +18,6 @@ pub enum Input {
 	MoveCursorPageDown,
 	MoveCursorPageUp,
 	Resize,
+	OpenInEditor,
 	Other,
 }

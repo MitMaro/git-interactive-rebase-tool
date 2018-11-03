@@ -165,6 +165,19 @@ impl Application {
 				self.window.resize_term();
 				self.reset_top()
 			},
+			Input::OpenInEditor => {
+				match self.run_editor() {
+					Ok(Some(new_gi)) => {
+						self.git_interactive = new_gi
+					},
+					Ok(None) => {},
+					Err(e) => {
+						self.window.draw_prompt(format!("{}\n\nPress any key to continue.", e).as_str());
+						self.window.window.getch();
+					},
+				}
+				self.reset_top();
+			},
 			Input::Other => {}
 		}
 	}
@@ -181,6 +194,30 @@ impl Application {
 		if self.config.auto_select_next {
 			self.git_interactive.move_cursor_down(1);
 		}
+	}
+
+	fn run_editor(&self) -> Result<Option<GitInteractive>, String> {
+		let filepath = self.git_interactive.write_file()?;
+		let exit_status = Window::leave_temporarily(|| -> Result<std::process::ExitStatus, String> {
+			use std::process::Command;
+			// TODO: This doesn't handle editor with arguments (e.g. EDITOR="edit --arg")
+			Command::new(&self.config.editor)
+				.arg(&filepath)
+				.status()
+				.map_err(|e| format!("Unable to run editor ({}):\n{}",
+					self.config.editor.to_string_lossy(), e.to_string()))
+		})?;
+		if !exit_status.success() {
+			self.window.draw_confirm("Editor returned non-zero exit status.\n\
+				Reload the todo file anyway");
+			if !self.window.get_confirm() {
+				return Ok(None)
+			}
+		}
+		Ok(Some(
+			GitInteractive::new_from_filepath(filepath.as_str(),
+				&(self.config.comment_char))?
+		))
 	}
 }
 
