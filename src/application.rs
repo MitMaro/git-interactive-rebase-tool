@@ -201,8 +201,8 @@ mod tests {
 
 	fn test_setup(todo_file: &str, comment_char: &str) -> Application {
 		let gi = GitInteractive::new_from_filepath(todo_file, comment_char).unwrap();
-		let config = Config::new(&GitConfig::new().unwrap());
-		let window = Window::new(config);
+		let config = Config::new(GitConfig::new().unwrap());
+		let window = Window::new(config.clone());
 		Application::new(gi, window, config)
 	}
 

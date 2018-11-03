@@ -44,8 +44,6 @@ fn main() {
 		Err(msg) => error_handler(&format!("Error reading git config: {}", msg), 1),
 	};
 
-	let config = Config::new(&git_config);
-
 	let git_interactive = match GitInteractive::new_from_filepath(filepath, &git_config.comment_char) {
 		Ok(gi) => gi,
 		Err(msg) => error_handler(&msg, 1),
@@ -55,7 +53,8 @@ fn main() {
 		error_handler("Nothing to rebase", 1);
 	}
 
-	let window = Window::new(config);
+	let config = Config::new(git_config);
+	let window = Window::new(config.clone()); // TODO: shouldn't need two copies of `config`
 
 	let mut application = Application::new(git_interactive, window, config);
 

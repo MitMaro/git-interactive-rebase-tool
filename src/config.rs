@@ -1,8 +1,9 @@
 use color::Color;
 use git_config::GitConfig;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Config {
+	pub comment_char: String,
 	pub foreground_color: Color,
 	pub indicator_color: Color,
 	pub error_color: Color,
@@ -33,8 +34,9 @@ fn string_to_color(color_string: &str, default_color: Color) -> Color {
 }
 
 impl Config {
-	pub fn new(git_config: &GitConfig) -> Self {
+	pub fn new(git_config: GitConfig) -> Self {
 		Config {
+			comment_char: git_config.comment_char,
 			foreground_color: string_to_color(git_config.foreground_color.as_ref(), Color::White),
 			indicator_color: string_to_color(git_config.indicator_color.as_ref(), Color::Yellow),
 			error_color: string_to_color(git_config.error_color.as_ref(), Color::Red),
