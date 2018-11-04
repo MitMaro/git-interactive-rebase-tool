@@ -26,13 +26,13 @@ use config::Config;
 use input::Input;
 
 const COLOR_TABLE: [i16; 8] = [
+	pancurses::COLOR_WHITE,
 	pancurses::COLOR_BLACK,
 	pancurses::COLOR_BLUE,
 	pancurses::COLOR_CYAN,
 	pancurses::COLOR_GREEN,
 	pancurses::COLOR_MAGENTA,
 	pancurses::COLOR_RED,
-	pancurses::COLOR_WHITE,
 	pancurses::COLOR_YELLOW,
 ];
 
@@ -263,13 +263,13 @@ impl Window {
 
 	fn set_color(&self, color: Color) {
 		match color {
-			Color::Black => self.window.attrset(pancurses::COLOR_PAIR(0)),
-			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(1)),
-			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(2)),
-			Color::Green => self.window.attrset(pancurses::COLOR_PAIR(3)),
-			Color::Magenta => self.window.attrset(pancurses::COLOR_PAIR(4)),
-			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(5)),
-			Color::White => self.window.attrset(pancurses::COLOR_PAIR(6)),
+			Color::White => self.window.attrset(pancurses::COLOR_PAIR(0)),
+			Color::Black => self.window.attrset(pancurses::COLOR_PAIR(1)),
+			Color::Blue => self.window.attrset(pancurses::COLOR_PAIR(2)),
+			Color::Cyan => self.window.attrset(pancurses::COLOR_PAIR(3)),
+			Color::Green => self.window.attrset(pancurses::COLOR_PAIR(4)),
+			Color::Magenta => self.window.attrset(pancurses::COLOR_PAIR(5)),
+			Color::Red => self.window.attrset(pancurses::COLOR_PAIR(6)),
 			Color::Yellow => self.window.attrset(pancurses::COLOR_PAIR(7))
 		};
 	}
