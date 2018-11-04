@@ -21,12 +21,16 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.32.0"
-git2 = "0.7.2"
 pad = "0.1.5"
 
 [dependencies.pancurses]
 version = "0.16"
 features = ["win32"]
+
+[dependencies.git2]
+version = "0.7.2"
+default-features = false
+features = []
 
 [features]
 default = []
@@ -37,11 +41,12 @@ copyright = "Tim Oram <dev@mitmaro.ca>"
 license-file = ["LICENSE", "2"]
 extended-description = """\
 Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."""
-depends = "$auto"
+depends = "libncurses5 (>= 6), libgcc1 (>= 1:6), libtinfo5 (>= 6), zlib1g (>= 1:1), libc6 (>= 2)"
 section = "utility"
 priority = "optional"
 assets = [
     ["target/release/interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
     ["README.md", "usr/share/doc/cargo-deb/README", "644"],
+    ["CHANGELOG.md", "usr/share/doc/cargo-deb/CHANGELOG", "644"],
     ["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
 ]

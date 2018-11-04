@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: mitmaro/git-rebase-tool-circleci
+    steps:
+      - checkout
+      - restore_cache:
+          key: project-cache
+      - run:
+          name: Lint
+          command: "./scripts/lint.bash"
+      - run:
+          name: Test
+          command: "./scripts/test.bash"
+      - run:
+          name: Build
+          command: "./scripts/build-debian.bash"
+      - store_artifacts:
+          path: ./target/release/interactive-rebase-tool
+          destination: debian-interactive-rebase-tool
+      - run:
+          name: Build .deb
+          command: "./scripts/build-deb.bash"
+      - store_artifacts:
+          path: ./target/debian/git-interactive-rebase-tool_latest_amd64.deb
+          destination: debian-interactive-rebase-tool.deb
+      - save_cache:
+          key: project-cache
+          paths:
+            - "~/.cargo"
+            - "./target"
