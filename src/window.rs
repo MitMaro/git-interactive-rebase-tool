@@ -26,7 +26,7 @@ use config::Config;
 use input::Input;
 
 const COLOR_TABLE: [i16; 8] = [
-	pancurses::COLOR_WHITE,
+	pancurses::COLOR_WHITE, // the default foreground color must be the first (see #77)
 	pancurses::COLOR_BLACK,
 	pancurses::COLOR_BLUE,
 	pancurses::COLOR_CYAN,
