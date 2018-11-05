@@ -313,6 +313,7 @@ impl Window {
 			Some(PancursesInput::Character(c)) if c == 'd' => Input::Drop,
 			Some(PancursesInput::Character(c)) if c == 'j' => Input::SwapSelectedDown,
 			Some(PancursesInput::Character(c)) if c == 'k' => Input::SwapSelectedUp,
+			// TODO: ESC to remove multi-selection?
 			Some(PancursesInput::Character(c)) if c == 'V' => Input::ToggleSelection,
 			Some(PancursesInput::KeyDown) => Input::MoveCursorDown,
 			Some(PancursesInput::KeyUp) => Input::MoveCursorUp,

@@ -3,6 +3,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::io::Read;
 use std::io::Write;
+use std::ops::RangeInclusive;
 
 use action::Action;
 use line::Line;
@@ -119,25 +120,46 @@ impl GitInteractive {
 		self.selected_line_index = cmp::min(self.selected_line_index + amount, self.lines.len());
 	}
 	
+	fn get_selected_lines(&self) -> RangeInclusive<usize> { // 1-based
+		let sel = self.selected_line_index;
+		let anc = self.anchor_line_index.unwrap_or(sel);
+		RangeInclusive::new(cmp::min(anc, sel), cmp::max(anc, sel))
+	}
+
 	pub fn swap_selected_up(&mut self) {
-		if self.selected_line_index == 1 {
+		let sel_range = self.get_selected_lines();
+		if *sel_range.start() == 1usize {
 			return
 		}
-		self.lines.swap(self.selected_line_index - 1, self.selected_line_index - 2);
-		self.move_cursor_up(1);
+		for line_index in sel_range {
+			// move each line in the selection one line up
+			self.lines.swap(line_index - 1, line_index - 2);
+		}
+		self.selected_line_index -= 1;
+		if let Some(a) = self.anchor_line_index {
+			self.anchor_line_index = Some(a - 1);
+		}
 	}
 	
 	pub fn swap_selected_down(&mut self) {
-		if self.selected_line_index == self.lines.len() {
+		let sel_range = self.get_selected_lines();
+		if *sel_range.end() == self.lines.len() {
 			return
 		}
-		self.lines.swap(self.selected_line_index - 1, self.selected_line_index);
-		self.move_cursor_down(1);
+		for line_index in sel_range.rev() {
+			self.lines.swap(line_index - 1, line_index);
+		}
+		self.selected_line_index += 1;
+		if let Some(a) = self.anchor_line_index {
+			self.anchor_line_index = Some(a + 1);
+		}
 	}
 	
 	pub fn set_selected_line_action(&mut self, action: Action) {
-		if *self.lines[self.selected_line_index - 1].get_action() != Action::Exec {
-			self.lines[self.selected_line_index - 1].set_action(action);
+		for line_index in self.get_selected_lines() {
+			if *self.lines[line_index - 1].get_action() != Action::Exec {
+				self.lines[line_index - 1].set_action(action);
+			}
 		}
 	}
 	
