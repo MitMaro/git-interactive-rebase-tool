@@ -62,7 +62,8 @@ impl Application {
 			State::List => {
 				self.window.draw(
 					self.git_interactive.get_lines(),
-					*self.git_interactive.get_selected_line_index()
+					*self.git_interactive.get_selected_line_index(),
+					self.git_interactive.get_anchor_line_index(),
 				);
 			},
 			State::ShowCommit => {
@@ -143,6 +144,10 @@ impl Application {
 			},
 			Input::SwapSelectedUp => {
 				self.git_interactive.swap_selected_up();
+				self.reset_top();
+			},
+			Input::ToggleSelection => {
+				self.git_interactive.toggle_selection();
 				self.reset_top();
 			},
 			Input::MoveCursorDown => {

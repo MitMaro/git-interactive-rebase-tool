@@ -13,6 +13,7 @@ pub enum Input {
 	Squash,
 	SwapSelectedDown,
 	SwapSelectedUp,
+	ToggleSelection,
 	MoveCursorDown,
 	MoveCursorUp,
 	MoveCursorPageDown,

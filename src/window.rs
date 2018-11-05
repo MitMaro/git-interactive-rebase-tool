@@ -71,7 +71,7 @@ impl Window {
 		pancurses::resize_term(0, 0);
 	}
 	
-	pub fn draw(&self, lines: &[Line], selected_index: usize) {
+	pub fn draw(&self, lines: &[Line], selected_index: usize, anchor_index: Option<usize>) {
 		self.window.clear();
 		self.draw_title();
 		let window_height = self.get_window_height();
@@ -81,13 +81,19 @@ impl Window {
 		}
 		self.window.addstr("\n");
 
+		let multi_selection_bounds = anchor_index.map(|a|
+			(cmp::min(a, selected_index), cmp::max(a, selected_index))
+		);
+
 		let mut index: usize = self.top + 1;
 		for line in lines
 			.iter()
 			.skip(self.top)
 			.take(window_height)
 		{
-			self.draw_line(line, index == selected_index);
+			self.draw_line(line, index == selected_index,
+				multi_selection_bounds.map(|(l, r)| l <= index && index <= r)
+					.unwrap_or(false));
 			index += 1;
 		}
 		if window_height < lines.len() - self.top {
@@ -116,14 +122,11 @@ impl Window {
 		self.set_dim(false);
 	}
 
-	fn draw_line(&self, line: &Line, selected: bool) {
+	fn draw_line(&self, line: &Line, selected: bool, part_of_group: bool) {
 		self.set_color(self.config.foreground_color);
-		if selected {
-			self.window.addstr(" > ");
-		}
-		else {
-			self.window.addstr("   ");
-		}
+		
+		self.window.addstr(if part_of_group { "|" } else { " " });
+		self.window.addstr(if selected { "> " } else { "  " });
 		match *line.get_action() {
 			Action::Pick => self.set_color(self.config.pick_color),
 			Action::Reword => self.set_color(self.config.reword_color),
@@ -144,7 +147,7 @@ impl Window {
 		self.window.mvaddstr(
 			self.window.get_max_y() - 1,
 			0,
-			"Actions: [ up, down, q/Q, w/W, c, j, k, p, r, e, s, f, d, !, ? ]"
+			"Actions: [ up, down, V, q/Q, w/W, c, j, k, p, r, e, s, f, d, !, ? ]"
 		);
 		self.set_dim(false);
 	}
@@ -235,6 +238,7 @@ impl Window {
 		self.draw_help_command("Down", "Move selection down");
 		self.draw_help_command("Page Up", "Move selection up 5 lines");
 		self.draw_help_command("Page Down", "Move selection down 5 lines");
+		self.draw_help_command("V", "Toggle multi-line selection mode");
 		self.draw_help_command("q", "Abort interactive rebase");
 		self.draw_help_command("Q", "Immediately abort interactive rebase");
 		self.draw_help_command("w", "Write interactive rebase file");
@@ -309,6 +313,7 @@ impl Window {
 			Some(PancursesInput::Character(c)) if c == 'd' => Input::Drop,
 			Some(PancursesInput::Character(c)) if c == 'j' => Input::SwapSelectedDown,
 			Some(PancursesInput::Character(c)) if c == 'k' => Input::SwapSelectedUp,
+			Some(PancursesInput::Character(c)) if c == 'V' => Input::ToggleSelection,
 			Some(PancursesInput::KeyDown) => Input::MoveCursorDown,
 			Some(PancursesInput::KeyUp) => Input::MoveCursorUp,
 			Some(PancursesInput::KeyPPage) => Input::MoveCursorPageUp,

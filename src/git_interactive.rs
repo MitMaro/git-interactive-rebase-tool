@@ -11,7 +11,8 @@ pub struct GitInteractive {
 	git_root: PathBuf,
 	filepath: PathBuf,
 	lines: Vec<Line>,
-	selected_line_index: usize
+	selected_line_index: usize,
+	anchor_line_index: Option<usize>,
 }
 
 impl GitInteractive {
@@ -59,7 +60,8 @@ impl GitInteractive {
 					git_root,
 					filepath: path,
 					lines,
-					selected_line_index: 1
+					selected_line_index: 1,
+					anchor_line_index: None,
 				}
 			),
 			Err(e) => Err(format!(
@@ -99,6 +101,13 @@ impl GitInteractive {
 		self.lines.clear();
 	}
 	
+	pub fn toggle_selection(&mut self) {
+		self.anchor_line_index = match self.anchor_line_index {
+			None => Some(self.selected_line_index),
+			Some(_) => None
+		}
+	}
+
 	pub fn move_cursor_up(&mut self, amount: usize) {
 		self.selected_line_index = match amount {
 			a if a >= self.selected_line_index => 1,
@@ -138,6 +147,10 @@ impl GitInteractive {
 	
 	pub fn get_selected_line_index(&self) -> &usize {
 		&self.selected_line_index
+	}
+
+	pub fn get_anchor_line_index(&self) -> Option<usize> {
+		self.anchor_line_index
 	}
 	
 	pub fn get_git_root(&self) -> &PathBuf {
