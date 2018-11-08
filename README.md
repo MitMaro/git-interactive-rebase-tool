@@ -19,6 +19,8 @@ Git 1.7.8+. Written in Rust using ncurses.
 
 Download the `.deb` file from the [releases page][releases] and install. The executable will be installed to `/usr/bin`.
 
+You may need to install ncurses with `apt-get install libncurses5` if it is not satisfied.
+
 ##### Configure Git
 
     git config --global sequence.editor interactive-rebase-tool
