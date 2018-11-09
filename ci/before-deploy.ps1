@@ -8,9 +8,9 @@ Set-Location $ENV:Temp
 New-Item -Type Directory -Name $STAGE
 Set-Location $STAGE
 
-$ZIP = "$SRC_DIR\$($Env:CRATE_NAME)-$($Env:APPVEYOR_REPO_TAG_NAME)-$($Env:TARGET).zip"
+$ZIP = "$SRC_DIR\$($Env:CRATE_NAME)-$($Env:APPVEYOR_REPO_TAG_NAME)-x86_64-pc-windows-msvc.zip"
 
-Copy-Item "$SRC_DIR\target\$($Env:TARGET)\release\interactive-rebase-tool.exe" '.\'
+Copy-Item "$SRC_DIR\target\x86_64-pc-windows-msvc\release\interactive-rebase-tool.exe" '.\'
 
 7z a "$ZIP" *
 

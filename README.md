@@ -42,8 +42,7 @@ to a location on your `PATH`.
 
 ##### Install
 
-Download the tool from the [releases page][releases] and save it to a known location. There are 32-bit and 64-bit
-versions if you are unsure which binary to download, you probably want the 64-bit build.
+Download the tool from the [releases page][releases] and save it to a known location.
 
 ##### Configure Git
 

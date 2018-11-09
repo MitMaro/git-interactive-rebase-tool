@@ -10,40 +10,26 @@ environment:
     CRATE_NAME: git-interactive-rebase-tool
 
   matrix:
-    # MinGW
-    # GNU builds are broken for some reason
-    # - TARGET: i686-pc-windows-gnu
-    # - TARGET: x86_64-pc-windows-gnu
-
-    # MSVC
-    - TARGET: i686-pc-windows-msvc
     - TARGET: x86_64-pc-windows-msvc
 
 install:
   - ps: >-
-      If ($Env:TARGET -eq 'x86_64-pc-windows-gnu') {
         $Env:PATH += ';C:\msys64\mingw64\bin'
-      } ElseIf ($Env:TARGET -eq 'i686-pc-windows-gnu') {
-        $Env:PATH += ';C:\msys64\mingw32\bin'
-      }
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/
-  - rustup-init.exe -y --default-host %TARGET% --default-toolchain %RUST_VERSION%
+  - rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain %RUST_VERSION%
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - rustc -Vv
   - cargo -V
 
 test_script:
   - if [%APPVEYOR_REPO_TAG%]==[false] (
-      cargo build --target %TARGET% &&
-      cargo build --target %TARGET% --release &&
-      cargo test --target %TARGET% &&
-      cargo test --target %TARGET% --release &&
-      cargo run --target %TARGET% -- --version &&
-      cargo run --target %TARGET% --release -- --version
+      cargo build --target x86_64-pc-windows-msvc --release &&
+      cargo test --target x86_64-pc-windows-msvc --release &&
+      cargo run --target x86_64-pc-windows-msvc --release -- --version
     )
 
 before_deploy:
-  - cargo rustc --target %TARGET% --release --bin interactive-rebase-tool -- -C lto
+  - cargo rustc --target x86_64-pc-windows-msvc --release --bin interactive-rebase-tool -- -C lto
   - ps: ci\before-deploy.ps1
 
 deploy:
