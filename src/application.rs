@@ -316,7 +316,7 @@ mod tests {
 		app.process_input();
 		app.window.window.next_char = PancursesInput::Character('p');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[1].get_action(), Action::Pick);
+		assert_eq!(app.git_interactive.get_lines()[1].get_action(), Action::Pick);
 	}
 	
 	#[test]
@@ -324,7 +324,7 @@ mod tests {
 		let mut app = test_setup("test/git-rebase-todo-all-actions.in", "#");
 		app.window.window.next_char = PancursesInput::Character('r');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Reword);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Reword);
 	}
 	
 	#[test]
@@ -332,7 +332,7 @@ mod tests {
 		let mut app = test_setup("test/git-rebase-todo-all-actions.in", "#");
 		app.window.window.next_char = PancursesInput::Character('e');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Edit);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Edit);
 	}
 
 	#[test]
@@ -340,22 +340,22 @@ mod tests {
 		let mut app = test_setup("test/git-rebase-todo-exec.in", "#");
 		app.window.window.next_char = PancursesInput::Character('p');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 		app.window.window.next_char = PancursesInput::Character('r');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 		app.window.window.next_char = PancursesInput::Character('e');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 		app.window.window.next_char = PancursesInput::Character('s');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 		app.window.window.next_char = PancursesInput::Character('f');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 		app.window.window.next_char = PancursesInput::Character('d');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Exec);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Exec);
 	}
 
 	#[test]
@@ -363,7 +363,7 @@ mod tests {
 		let mut app = test_setup("test/git-rebase-todo-all-actions.in", "#");
 		app.window.window.next_char = PancursesInput::Character('s');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Squash);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Squash);
 	}
 	
 	#[test]
@@ -371,7 +371,7 @@ mod tests {
 		let mut app = test_setup("test/git-rebase-todo-all-actions.in", "#");
 		app.window.window.next_char = PancursesInput::Character('d');
 		app.process_input();
-		assert_eq!(*app.git_interactive.get_lines()[0].get_action(), Action::Drop);
+		assert_eq!(app.git_interactive.get_lines()[0].get_action(), Action::Drop);
 	}
 	
 	#[test]

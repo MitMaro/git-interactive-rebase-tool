@@ -127,7 +127,7 @@ impl Window {
 		
 		self.window.addstr(if part_of_group { "|" } else { " " });
 		self.window.addstr(if selected { "> " } else { "  " });
-		match *line.get_action() {
+		match line.get_action() {
 			Action::Pick => self.set_color(self.config.pick_color),
 			Action::Reword => self.set_color(self.config.reword_color),
 			Action::Edit => self.set_color(self.config.edit_color),

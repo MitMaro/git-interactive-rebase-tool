@@ -23,8 +23,8 @@ pub fn action_from_str(s: &str) -> Result<Action, String> {
 	}
 }
 
-pub fn action_to_str(action: &Action) -> String {
-	String::from(match *action {
+pub fn action_to_str(action: Action) -> String {
+	String::from(match action {
 		Action::Drop => "drop",
 		Action::Edit => "edit",
 		Action::Exec => "exec",
@@ -45,13 +45,13 @@ mod tests {
 
 	#[test]
 	fn action_to_str_all() {
-		assert_eq!(action_to_str(&Action::Drop), "drop");
-		assert_eq!(action_to_str(&Action::Edit), "edit");
-		assert_eq!(action_to_str(&Action::Exec), "exec");
-		assert_eq!(action_to_str(&Action::Fixup), "fixup");
-		assert_eq!(action_to_str(&Action::Pick), "pick");
-		assert_eq!(action_to_str(&Action::Reword), "reword");
-		assert_eq!(action_to_str(&Action::Squash), "squash");
+		assert_eq!(action_to_str(Action::Drop), "drop");
+		assert_eq!(action_to_str(Action::Edit), "edit");
+		assert_eq!(action_to_str(Action::Exec), "exec");
+		assert_eq!(action_to_str(Action::Fixup), "fixup");
+		assert_eq!(action_to_str(Action::Pick), "pick");
+		assert_eq!(action_to_str(Action::Reword), "reword");
+		assert_eq!(action_to_str(Action::Squash), "squash");
 	}
 	
 	#[test]

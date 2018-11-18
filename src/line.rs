@@ -43,8 +43,8 @@ impl Line {
 		}
 	}
 	
-	pub fn get_action(&self) -> &Action {
-		&self.action
+	pub fn get_action(&self) -> Action {
+		self.action
 	}
 	pub fn get_hash_or_command(&self) -> &String {
 		&self.hash_or_command
@@ -54,7 +54,7 @@ impl Line {
 	}
 	
 	pub fn to_text(&self) -> String {
-		format!("{} {} {}", action_to_str(&self.action), self.hash_or_command, self.comment)
+		format!("{} {} {}", action_to_str(self.action), self.hash_or_command, self.comment)
 	}
 }
 
@@ -93,7 +93,7 @@ mod tests {
 	#[test]
 	fn getters() {
 		let line = Line::new("pick aaa comment").unwrap();
-		assert_eq!(line.get_action(), &Action::Pick);
+		assert_eq!(line.get_action(), Action::Pick);
 		assert_eq!(line.get_hash_or_command(), &"aaa");
 		assert_eq!(line.get_comment(), &"comment");
 	}

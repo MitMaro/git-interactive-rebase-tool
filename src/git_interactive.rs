@@ -157,7 +157,7 @@ impl GitInteractive {
 	
 	pub fn set_selected_line_action(&mut self, action: Action) {
 		for line_index in self.get_selected_lines() {
-			if *self.lines[line_index - 1].get_action() != Action::Exec {
+			if self.lines[line_index - 1].get_action() != Action::Exec {
 				self.lines[line_index - 1].set_action(action);
 			}
 		}
