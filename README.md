@@ -29,6 +29,12 @@ You may need to install ncurses with `apt-get install libncurses5` if it is not 
 
 ##### Install
 
+###### With Homebrew
+
+    brew install interactive-rebase-tool
+
+###### Without Homebrew
+
 Download the `macos-interactive-rebase-tool` from the [releases page][releases] and copy it as `interactive-rebase-tool`
 to a location on your `PATH`.
 
