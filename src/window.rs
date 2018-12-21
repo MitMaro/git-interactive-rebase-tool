@@ -72,7 +72,7 @@ impl Window {
 	}
 	
 	pub fn draw(&self, lines: &[Line], selected_index: usize) {
-		self.window.clear();
+		self.window.erase();
 		self.draw_title();
 		let window_height = self.get_window_height();
 		
@@ -161,7 +161,7 @@ impl Window {
 			.output()
 		;
 		
-		self.window.clear();
+		self.window.erase();
 		self.draw_title();
 		match result {
 			Ok(output) => {
@@ -226,7 +226,7 @@ impl Window {
 	}
 	
 	pub fn draw_help(&self) {
-		self.window.clear();
+		self.window.erase();
 		self.draw_title();
 		self.set_color(self.config.foreground_color);
 		self.window.addstr("\n Key        Action\n");
@@ -320,7 +320,7 @@ impl Window {
 	}
 
 	pub fn draw_prompt(&self, message: &str) {
-		self.window.clear();
+		self.window.erase();
 		self.draw_title();
 		self.window.addstr(&format!("\n{} ", message));
 	}
@@ -366,9 +366,6 @@ impl Window {
 	}
 
 	pub fn end(&self) {
-		self.window.clear();
-		self.window.refresh();
-		pancurses::curs_set(1);
 		pancurses::endwin();
 	}
 }
