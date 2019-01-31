@@ -42,6 +42,22 @@ to a location on your `PATH`.
 
     git config --global sequence.editor interactive-rebase-tool
 
+#### FreeBSD
+
+##### Install
+
+###### With pkg
+
+    pkg install interactive_rebase_tool
+
+###### From ports
+
+    cd /usr/ports/devel/interactive_rebase_tool && make install clean
+
+##### Configure Git
+
+    git config --global sequence.editor interactive-rebase-tool
+
 #### Windows
 
 *Note: Windows binaries are not fully tested. If you are having issues please report them.*
