@@ -5,7 +5,7 @@ pub struct Line {
 	action: Action,
 	hash_or_command: String,
 	comment: String,
-	mutated: bool
+	mutated: bool,
 }
 
 impl Line {
@@ -18,33 +18,35 @@ impl Line {
 				action: Action::try_from(input[0])?,
 				hash_or_command: String::from(input[1]),
 				comment: String::from(""),
-				mutated: false
+				mutated: false,
 			}),
 			3 => Ok(Line {
 				action: Action::try_from(input[0])?,
 				hash_or_command: String::from(input[1]),
 				comment: String::from(input[2]),
-				mutated: false
+				mutated: false,
 			}),
 			_ => Err(format!(
 				"Invalid line: {}", input_line
 			))
 		}
 	}
-	
+
 	pub fn set_action(&mut self, action: Action) {
 		if self.action != action {
 			self.mutated = true;
 			self.action = action;
 		}
 	}
-	
+
 	pub fn get_action(&self) -> &Action {
 		&self.action
 	}
+
 	pub fn get_hash_or_command(&self) -> &String {
 		&self.hash_or_command
 	}
+
 	pub fn get_comment(&self) -> &String {
 		&self.comment
 	}

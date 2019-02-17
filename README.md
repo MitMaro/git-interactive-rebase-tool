@@ -147,10 +147,11 @@ git config --global interactive-rebase-tool.foregroundColor black
 | ------------------ | ------- | ----- | ----------- |
 | `autoSelectNext`   | false   | bool  | If true, auto select the next line after action modification |
 | `foregroundColor`  | white   | Color | Color used for most text and the UI |
-| `indicatorColor`   | yellow  | Color | Color used for text the indicates or needs to standout  |
+| `indicatorColor`   | cyan    | Color | Color used for text the indicates or needs to standout  |
 | `errorColor`       | red     | Color | Color used for showing error messages  |
-| `diffAddColor`     | green   | Color | Color used for lines added in a diff |
-| `diffRemoveColor`  | red     | Color | Color used for lines removed in a diff |
+| `diffAddColor`     | green   | Color | Color used for lines and files added in a diff |
+| `diffRemoveColor`  | red     | Color | Color used for lines and files removed in a diff |
+| `diffChangeColor`  | yellow  | Color | Color used for lines and files changed in a diff |
 | `pickColor`        | green   | Color | Color used for the pick action |
 | `rewordColor`      | yellow  | Color | Color used for the reword action |
 | `editColor`        | blue    | Color | Color used for the edit action |
@@ -178,7 +179,7 @@ To start developing the project you will need to [install Rust][install-rust], w
 You will need `build-essential` and `libncurses5-dev` to build the project. Additionally, you will need `pkg-config` and
 `liblzma-dev` if you wish to build a release. They can be installed using `apt-get`:
 
-    sudo apt-get install build-essential libncurses5-dev
+    sudo apt-get install build-essential libncursesw5-dev
     sudo apt-get install pkg-config liblzma-dev
 
 

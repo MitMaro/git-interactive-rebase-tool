@@ -36,6 +36,18 @@ impl Action {
 			Action::Squash => "squash",
 		})
 	}
+
+	pub fn to_abbreviation(&self) -> String {
+		String::from(match self {
+			Action::Drop => "d",
+			Action::Edit => "e",
+			Action::Exec => "x",
+			Action::Fixup => "f",
+			Action::Pick => "p",
+			Action::Reword => "r",
+			Action::Squash => "s",
+		})
+	}
 }
 
 #[cfg(test)]
@@ -152,5 +164,40 @@ mod tests {
 	#[test]
 	fn action_from_str_invalid_action() {
 		assert_eq!(Action::try_from("invalid").unwrap_err(), "Invalid action: invalid");
+	}
+
+	#[test]
+	fn action_to_abbreviation_drop() {
+		assert_eq!(Action::Drop.to_abbreviation(), "d");
+	}
+
+	#[test]
+	fn action_to_abbreviation_edit() {
+		assert_eq!(Action::Edit.to_abbreviation(), "e");
+	}
+
+	#[test]
+	fn action_to_abbreviation_exec() {
+		assert_eq!(Action::Exec.to_abbreviation(), "x");
+	}
+
+	#[test]
+	fn action_to_abbreviation_fixup() {
+		assert_eq!(Action::Fixup.to_abbreviation(), "f");
+	}
+
+	#[test]
+	fn action_to_abbreviation_pick() {
+		assert_eq!(Action::Pick.to_abbreviation(), "p");
+	}
+
+	#[test]
+	fn action_to_abbreviation_reword() {
+		assert_eq!(Action::Reword.to_abbreviation(), "r");
+	}
+
+	#[test]
+	fn action_to_abbreviation_squash() {
+		assert_eq!(Action::Squash.to_abbreviation(), "s");
 	}
 }
