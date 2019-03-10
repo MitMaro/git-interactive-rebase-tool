@@ -14,10 +14,7 @@ use mocks::mockcurses as pancurses;
 
 pub use pancurses::Input as PancursesInput;
 
-use action::{
-	Action,
-	action_to_str
-};
+use action::Action;
 use line::Line;
 
 use commit::Commit;
@@ -133,7 +130,7 @@ impl Window {
 			Action::Fixup => self.set_color(self.config.fixup_color),
 			Action::Drop => self.set_color(self.config.drop_color)
 		}
-		self.window.addstr(&format!("{:6}", action_to_str(line.get_action())));
+		self.window.addstr(&format!("{:6}", line.get_action().as_string()));
 		self.set_color(self.config.foreground_color);
 		self.window.addstr(&format!(" {} {}\n", line.get_hash_or_command(), line.get_comment()));
 	}

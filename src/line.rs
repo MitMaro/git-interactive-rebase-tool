@@ -1,8 +1,4 @@
-use action::{
-	Action,
-	action_from_str,
-	action_to_str
-};
+use action::Action;
 
 #[derive(PartialEq, Debug)]
 pub struct Line {
@@ -19,13 +15,13 @@ impl Line {
 		let input: Vec<&str> = input_line.splitn(split_count, ' ').collect();
 		match input.len() {
 			2 => Ok(Line {
-				action: action_from_str(input[0])?,
+				action: Action::try_from(input[0])?,
 				hash_or_command: String::from(input[1]),
 				comment: String::from(""),
 				mutated: false
 			}),
 			3 => Ok(Line {
-				action: action_from_str(input[0])?,
+				action: Action::try_from(input[0])?,
 				hash_or_command: String::from(input[1]),
 				comment: String::from(input[2]),
 				mutated: false
@@ -54,7 +50,7 @@ impl Line {
 	}
 	
 	pub fn to_text(&self) -> String {
-		format!("{} {} {}", action_to_str(&self.action), self.hash_or_command, self.comment)
+		format!("{} {} {}", self.action.as_string(), self.hash_or_command, self.comment)
 	}
 }
 
