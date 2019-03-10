@@ -22,17 +22,7 @@ pub struct Config {
 }
 
 fn string_to_color(color_string: &str, default_color: Color) -> Color {
-	match color_string {
-		"black" => Color::Black,
-		"blue" => Color::Blue,
-		"cyan" => Color::Cyan,
-		"green" => Color::Green,
-		"magenta" => Color::Magenta,
-		"red" => Color::Red,
-		"white" => Color::White,
-		"yellow" => Color::Yellow,
-		_ => default_color,
-	}
+	Color::try_from(color_string).unwrap_or(default_color)
 }
 
 impl Config {
