@@ -26,7 +26,7 @@ script:
 jobs:
   include:
     - stage: lint
-      rust: nightly
+      rust: stable
       os: linux
       script: "./scripts/lint.bash"
     - stage: build-linux
