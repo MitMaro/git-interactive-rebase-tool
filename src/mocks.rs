@@ -48,7 +48,7 @@ pub mod mockcurses {
 		pub fn attroff(&self, _attributes: chtype) {}
 		pub fn attron(&self, _attributes: chtype) {}
 		pub fn attrset(&self, _attributes: chtype) {}
-		pub fn clear(&self) {}
+		pub fn erase(&self) {}
 		pub fn get_max_y(&self) -> i32 {self.max_y}
 		pub fn getch(&self) -> Option<Input> {Some(self.next_char)}
 		pub fn keypad(&self, _a: bool) {}
