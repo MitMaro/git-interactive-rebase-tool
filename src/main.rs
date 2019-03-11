@@ -13,7 +13,6 @@ mod color;
 mod commit;
 mod config;
 mod constants;
-mod git_config;
 mod git_interactive;
 mod input;
 mod line;
@@ -22,7 +21,6 @@ mod window;
 mod mocks;
 
 use application::Application;
-use git_config::GitConfig;
 use git_interactive::GitInteractive;
 use std::process;
 use window::Window;
@@ -39,12 +37,12 @@ fn main() {
 
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 
-	let git_config = match GitConfig::new() {
-		Ok(gc) => gc,
+	let config = match Config::new() {
+		Ok(c) => c,
 		Err(msg) => error_handler(&format!("Error reading git config: {}", msg), 1),
 	};
 
-	let git_interactive = match GitInteractive::new_from_filepath(filepath, &git_config.comment_char) {
+	let git_interactive = match GitInteractive::new_from_filepath(filepath, &config.comment_char) {
 		Ok(gi) => gi,
 		Err(msg) => error_handler(&msg, 1),
 	};
@@ -53,7 +51,6 @@ fn main() {
 		error_handler("Nothing to rebase", 1);
 	}
 
-	let config = Config::new(git_config);
 	let window = Window::new(config.clone()); // TODO: shouldn't need two copies of `config`
 
 	let mut application = Application::new(git_interactive, window, config);
