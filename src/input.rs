@@ -1,3 +1,4 @@
+#[derive(PartialEq, Debug)]
 pub enum Input {
 	Help,
 	ShowCommit,
