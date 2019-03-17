@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
+
+# `xdotool getactivewindow` to get window for demo
+window_number="$1"
+
+sleep 2
+
 set -x
-xdotool windowactivate 6830112
+xdotool windowactivate "$window_number"
 sleep 0.1
 xdotool type --delay 150 -- 'git rebase -i @~10'
 xdotool key "Return"
