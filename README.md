@@ -8,8 +8,7 @@
 Native cross-platform full feature terminal based [sequence editor][git-sequence-editor] for interactive rebase in
 Git 1.7.8+. Written in Rust using ncurses.
 
-![Image](git-interactive-tool.gif?raw=true)
-
+![Git Interactive Rebase Tool](/docs/assets/images/git-interactive-rebase-demo.gif?raw=true)
 
 ## Install
 
