@@ -1,4 +1,3 @@
-
 #[derive(PartialEq, Debug)]
 pub enum Action {
 	Drop,
@@ -21,7 +20,7 @@ impl Action {
 			"pick" | "p" => Ok(Action::Pick),
 			"reword" | "r" => Ok(Action::Reword),
 			"squash" | "s" => Ok(Action::Squash),
-			_ => Err(format!("Invalid action: {}", s))
+			_ => Err(format!("Invalid action: {}", s)),
 		}
 	}
 
@@ -52,9 +51,7 @@ impl Action {
 
 #[cfg(test)]
 mod tests {
-	use super::{
-		Action,
-	};
+	use super::Action;
 
 	#[test]
 	fn action_to_str_drop() {
@@ -90,7 +87,7 @@ mod tests {
 	fn action_to_str_squash() {
 		assert_eq!(Action::Squash.as_string(), "squash");
 	}
-	
+
 	#[test]
 	fn action_from_str_d() {
 		assert_eq!(Action::try_from("d").unwrap(), Action::Drop);

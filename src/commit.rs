@@ -1,10 +1,5 @@
-use chrono::DateTime;
-use chrono::TimeZone;
-use chrono::Local;
-use git2::{Delta, DiffOptions, DiffFindOptions};
-use git2::Error;
-use git2::Repository;
-
+use chrono::{DateTime, Local, TimeZone};
+use git2::{Delta, DiffFindOptions, DiffOptions, Error, Repository};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct User {
@@ -20,15 +15,15 @@ impl User {
 			Some(n) => {
 				match email {
 					Some(e) => Some(format!("{} <{}>", *n, *e)),
-					None => Some(n.to_string())
+					None => Some(n.to_string()),
 				}
-			}
+			},
 			None => {
 				match email {
 					Some(e) => Some(format!("<{}>", *e)),
-					None => None
+					None => None,
 				}
-			}
+			},
 		}
 	}
 }
@@ -58,9 +53,9 @@ fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 	let author_name = commit.author().name().map(String::from);
 	let author_email = commit.author().email().map(String::from);
 	let committer_name = commit.committer().name().map(String::from);
-	let  committer_email = commit.committer().email().map(String::from);
+	let committer_email = commit.committer().email().map(String::from);
 	let date = Local.timestamp(commit.time().seconds(), 0);
-	let body= commit.message().map(String::from);
+	let body = commit.message().map(String::from);
 
 	let author = User {
 		email: author_email,
@@ -68,7 +63,7 @@ fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 	};
 
 	let committer = User {
-		email:committer_email,
+		email: committer_email,
 		name: committer_name,
 	};
 
@@ -76,7 +71,10 @@ fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 		committer
 	}
 	else {
-		User {email: None, name: None}
+		User {
+			email: None,
+			name: None,
+		}
 	};
 
 	let mut diff_options = DiffOptions::new();
@@ -102,22 +100,34 @@ fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 				// parent exists from check aboe
 				Some(&commit.parent(0)?.tree()?),
 				Some(&commit.tree()?),
-				Some(diff_options)
+				Some(diff_options),
 			)?;
 
 			diff.find_similar(Some(diff_find_options))?;
 
-			Some(diff.deltas().map(|d| FileStat {
-				status: d.status(),
-				from_name: d.old_file().path().map(|p| String::from(p.to_str().unwrap())).unwrap_or_else(|| String::from("unknown")),
-				to_name: d.new_file().path().map(|p| String::from(p.to_str().unwrap())).unwrap_or_else(|| String::from("unknown")),
-			})
-				// unmodified isn't being correctly removed
-				.filter(|d| d.status != Delta::Unmodified)
-				.collect::<Vec<FileStat>>())
-		}
+			Some(
+				diff.deltas()
+					.map(|d| {
+						FileStat {
+							status: d.status(),
+							from_name: d
+								.old_file()
+								.path()
+								.map(|p| String::from(p.to_str().unwrap()))
+								.unwrap_or_else(|| String::from("unknown")),
+							to_name: d
+								.new_file()
+								.path()
+								.map(|p| String::from(p.to_str().unwrap()))
+								.unwrap_or_else(|| String::from("unknown")),
+						}
+					})
+					// unmodified isn't being correctly removed
+					.filter(|d| d.status != Delta::Unmodified)
+					.collect::<Vec<FileStat>>(),
+			)
+		},
 	};
-
 
 	Ok(Commit {
 		author,
@@ -133,11 +143,11 @@ impl FileStat {
 	pub fn get_status(&self) -> &Delta {
 		&self.status
 	}
-	
+
 	pub fn get_to_name(&self) -> &String {
 		&self.to_name
 	}
-	
+
 	pub fn get_from_name(&self) -> &String {
 		&self.from_name
 	}
@@ -167,7 +177,7 @@ impl Commit {
 	pub fn get_body(&self) -> &Option<String> {
 		&self.body
 	}
-	
+
 	pub fn get_file_stats(&self) -> &Option<Vec<FileStat>> {
 		&self.file_stats
 	}
@@ -175,7 +185,7 @@ impl Commit {
 	pub fn get_file_stats_length(&self) -> usize {
 		match &self.file_stats {
 			Some(s) => s.len(),
-			None => 0
+			None => 0,
 		}
 	}
 }

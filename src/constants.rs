@@ -50,6 +50,6 @@ pub const HELP_LINES: &[(&str, &str)] = &[
 pub const EXIT_CODE_GOOD: i32 = 0;
 pub const EXIT_CODE_CONFIG_ERROR: i32 = 1;
 pub const EXIT_CODE_FILE_READ_ERROR: i32 = 2;
-pub const EXIT_CODE_FILE_WRITE_ERROR: i32  = 3;
+pub const EXIT_CODE_FILE_WRITE_ERROR: i32 = 3;
 pub const EXIT_CODE_WRITE_ERROR: i32 = 4;
 pub const EXIT_CODE_STATE_ERROR: i32 = 5;

@@ -1,6 +1,5 @@
-use clap::{App};
-use constants::NAME;
-use constants::VERSION;
+use crate::constants::{NAME, VERSION};
+use clap::App;
 
 pub fn build_cli() -> App<'static, 'static> {
 	App::new(NAME)

@@ -1,11 +1,11 @@
 use pancurses::Input as PancursesInput;
 
-use color::Color;
-use config::Config;
-use input::Input;
+use crate::color::Color;
+use crate::config::Config;
+use crate::input::Input;
 use std::cell::RefCell;
 
-use pancurses as pancurses;
+use pancurses;
 
 const COLOR_TABLE: [i16; 8] = [
 	pancurses::COLOR_WHITE, // the default foreground color must be the first (see #77)
@@ -41,7 +41,7 @@ pub struct Window<'w> {
 	width: RefCell<i32>,
 }
 
-impl <'w> Window<'w> {
+impl<'w> Window<'w> {
 	pub fn new(config: &'w Config) -> Self {
 		let window = pancurses::initscr();
 		window.keypad(true);
@@ -168,8 +168,8 @@ impl <'w> Window<'w> {
 			Some(PancursesInput::KeyNPage) => Input::MoveCursorPageDown,
 			Some(PancursesInput::KeyResize) => {
 				pancurses::resize_term(0, 0);
-				self.height.replace( self.window.get_max_y());
-				self.width.replace( self.window.get_max_x());
+				self.height.replace(self.window.get_max_y());
+				self.width.replace(self.window.get_max_x());
 				Input::Resize
 			},
 			Some(PancursesInput::Character(c)) if c == '!' => Input::OpenInEditor,
@@ -186,16 +186,17 @@ impl <'w> Window<'w> {
 			Some(PancursesInput::Character(c)) if c == 'y' || c == 'Y' => Some(true),
 			Some(PancursesInput::KeyResize) => {
 				pancurses::resize_term(0, 0);
-				self.height.replace( self.window.get_max_y());
-				self.width.replace( self.window.get_max_x());
+				self.height.replace(self.window.get_max_y());
+				self.width.replace(self.window.get_max_x());
 				None
 			},
-			_ => Some(false)
+			_ => Some(false),
 		}
 	}
 
 	/// Leaves curses mode, runs the specified callback, and re-enables curses.
-	pub fn leave_temporarily<F, T>(callback: F) -> T where F: FnOnce() -> T {
+	pub fn leave_temporarily<F, T>(callback: F) -> T
+	where F: FnOnce() -> T {
 		pancurses::def_prog_mode();
 		pancurses::endwin();
 		let rv = callback();
