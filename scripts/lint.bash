@@ -6,4 +6,5 @@ set -o pipefail
 
 rustup update
 rustup component add clippy
-cargo clippy --all-features -- -D warnings -A clippy::new_ret_no_self
+rustup component add rustfmt
+cargo fmt --all -- --check && cargo clippy --all-features -- -D warnings -A clippy::new_ret_no_self
