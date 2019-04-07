@@ -1,8 +1,6 @@
-use window::Window;
-use line::Line;
-use window::WindowColor;
-use unicode_segmentation::UnicodeSegmentation;
-use constants::{
+use crate::action::Action;
+use crate::commit::Commit;
+use crate::constants::{
 	FOOTER_COMPACT,
 	FOOTER_COMPACT_WIDTH,
 	FOOTER_FULL,
@@ -24,10 +22,12 @@ use constants::{
 	TO_FILE_INDICATOR,
 	TO_FILE_INDICATOR_SHORT,
 };
-use action::Action;
-use std::cmp;
-use commit::Commit;
+use crate::line::Line;
+use crate::window::Window;
+use crate::window::WindowColor;
 use git2::Delta;
+use std::cmp;
+use unicode_segmentation::UnicodeSegmentation;
 
 pub struct LineSegment {
 	color: WindowColor,
@@ -69,7 +69,7 @@ pub struct View<'v> {
 	alt_top: usize,
 }
 
-impl <'v> View <'v> {
+impl<'v> View<'v> {
 	pub fn new(window: &'v Window) -> Self {
 		Self {
 			window,
@@ -105,7 +105,7 @@ impl <'v> View <'v> {
 				// not much to do if the window gets too narrow
 				self.window.draw_str("Size!\n");
 			}
-			return
+			return;
 		}
 
 		if window_height <= MINIMUM_WINDOW_HEIGHT {
@@ -139,7 +139,7 @@ impl <'v> View <'v> {
 			let segment_length = graphemes.clone().count();
 
 			if (start + segment_length) >= window_width {
-				let partial_line= graphemes.take(window_width - start).collect::<String>();
+				let partial_line = graphemes.take(window_width - start).collect::<String>();
 				self.window.draw_str(partial_line.as_str());
 				start += segment_length;
 				break;
@@ -170,19 +170,17 @@ impl <'v> View <'v> {
 		let max_position = max_item_count - view_height - 1;
 
 		if position == max_position + 1 {
-			return view_height - 1
+			return view_height - 1;
 		}
 
 		match max_position {
 			// special case for when input range is 0
-			1 => {
-				(0.5 * view_height as f64) as usize
-			},
+			1 => (0.5 * view_height as f64) as usize,
 			_ => {
 				let slope = (view_height as f64 - 2.0 - 1.0) / (max_position as f64 - 1.0);
 				let output = 1.0 + (slope * (position as f64 - 1.0));
 				output.round() as usize
-			}
+			},
 		}
 	}
 
@@ -263,7 +261,8 @@ impl <'v> View <'v> {
 		self.main_top = match selected_index {
 			// show all if list is view height is long enough
 			_ if number_of_lines <= view_height => 0,
-			// last item selected, set top to show bottom of lines, shift top up on because no indicator
+			// last item selected, set top to show bottom of lines, shift top up on because no
+			// indicator
 			s if s > number_of_lines - 1 => number_of_lines - view_height,
 			// if on top two of list set top to top of list
 			s if s < 1 => 0,
@@ -273,7 +272,7 @@ impl <'v> View <'v> {
 			s if self.main_top == 0 && s >= view_height => 1,
 			// if selected item is hidden below, shift top down
 			s if s >= self.main_top + view_height => s - view_height + 1,
-			_ => self.main_top
+			_ => self.main_top,
 		};
 	}
 
@@ -294,7 +293,7 @@ impl <'v> View <'v> {
 		self.window.clear();
 		self.draw_title(true);
 
-		let scroll_indicator_index = self.get_scroll_position(number_of_lines, view_height,self.main_top);
+		let scroll_indicator_index = self.get_scroll_position(number_of_lines, view_height, self.main_top);
 		let show_scroll_bar = view_height < number_of_lines;
 
 		index = self.main_top;
@@ -336,7 +335,8 @@ impl <'v> View <'v> {
 			segments.push(LineSegment::new(if selected { " > " } else { "   " }));
 
 			segments.push(LineSegment::new_with_color(
-				format!("{:6} ", action.as_string()).as_str(), self.get_action_color(action)
+				format!("{:6} ", action.as_string()).as_str(),
+				self.get_action_color(action),
 			));
 
 			segments.push(LineSegment::new(
@@ -346,14 +346,16 @@ impl <'v> View <'v> {
 				else {
 					let max_index = cmp::min(line.get_hash_or_command().len(), 8);
 					format!("{:8} ", line.get_hash_or_command()[0..max_index].to_string())
-				}.as_str()
+				}
+				.as_str(),
 			));
 		}
 		else {
 			segments.push(LineSegment::new(if selected { ">" } else { " " }));
 
 			segments.push(LineSegment::new_with_color(
-				format!("{:1} ", line.get_action().to_abbreviation()).as_str(), self.get_action_color(action)
+				format!("{:1} ", line.get_action().to_abbreviation()).as_str(),
+				self.get_action_color(action),
 			));
 
 			segments.push(LineSegment::new(
@@ -363,20 +365,22 @@ impl <'v> View <'v> {
 				else {
 					let max_index = cmp::min(line.get_hash_or_command().len(), 3);
 					format!("{:3} ", line.get_hash_or_command()[0..max_index].to_string())
-				}.as_str()
+				}
+				.as_str(),
 			));
-
 		}
 		segments.push(LineSegment::new(line.get_comment().as_str()));
 		segments
 	}
 
 	pub fn update_commit_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize) {
-		self.update_alt_top(scroll_up, reset, lines_length, 3); // title + quit lint + extra padding line
+		// title + quit lint + extra padding line
+		self.update_alt_top(scroll_up, reset, lines_length, 3);
 	}
 
 	pub fn update_help_top(&mut self, scroll_up: bool, reset: bool) {
-		self.update_alt_top(scroll_up, reset, HELP_LINES.len(), 3); // title + quit line + header
+		// title + quit line + header
+		self.update_alt_top(scroll_up, reset, HELP_LINES.len(), 3);
 	}
 
 	fn update_alt_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize, padding: usize) {
@@ -395,7 +399,7 @@ impl <'v> View <'v> {
 		let amount = match view_height {
 			h if h > 20 => 6,
 			h if h > 10 => 3,
-			_ => 1
+			_ => 1,
 		};
 
 		if scroll_up {
@@ -421,11 +425,11 @@ impl <'v> View <'v> {
 		let mut view_lines: Vec<ViewLine> = vec![];
 
 		for line in HELP_LINES {
-			view_lines.push(ViewLine{
+			view_lines.push(ViewLine {
 				segments: vec![
 					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
-					LineSegment::new(line.1)
-				]
+					LineSegment::new(line.1),
+				],
 			})
 		}
 
@@ -441,7 +445,7 @@ impl <'v> View <'v> {
 			self.window.draw_str(padding.as_str());
 		}
 
-		let scroll_indicator_index = self.get_scroll_position(HELP_LINES.len(), view_height,self.alt_top);
+		let scroll_indicator_index = self.get_scroll_position(HELP_LINES.len(), view_height, self.alt_top);
 		let show_scroll_bar = view_height < HELP_LINES.len();
 
 		let mut index = 0;
@@ -474,7 +478,6 @@ impl <'v> View <'v> {
 	pub fn draw_exiting(&self) {
 		self.window.draw_str("Exiting...")
 	}
-
 
 	fn get_file_stat_long(&self, status: Delta) -> String {
 		match status {
@@ -571,9 +574,8 @@ impl <'v> View <'v> {
 					LineSegment::new_with_color(status_name.as_str(), color),
 					LineSegment::new_with_color(from_name, color),
 				]
-			}
+			},
 		}
-
 	}
 
 	pub fn draw_show_commit(&self, commit_data: &Option<Commit>) {
@@ -589,8 +591,8 @@ impl <'v> View <'v> {
 			None => {
 				self.draw_error("Not commit data to show");
 				return;
-			}
-			Some(c) => c
+			},
+			Some(c) => c,
 		};
 
 		let full_hash = commit.get_hash();
@@ -603,50 +605,56 @@ impl <'v> View <'v> {
 		let mut lines: Vec<ViewLine> = vec![];
 
 		lines.push(ViewLine {
-			segments: vec![
-				LineSegment::new_with_color(
-					if is_full_width {
-						format!("Commit: {}", full_hash)
-					}
-					else {
-						let max_index = cmp::min(full_hash.len(), 8);
-						format!("{:8} ", full_hash[0..max_index].to_string())
-					}.as_str(),
-					WindowColor::IndicatorColor,
-				),
-			],
+			segments: vec![LineSegment::new_with_color(
+				if is_full_width {
+					format!("Commit: {}", full_hash)
+				}
+				else {
+					let max_index = cmp::min(full_hash.len(), 8);
+					format!("{:8} ", full_hash[0..max_index].to_string())
+				}
+				.as_str(),
+				WindowColor::IndicatorColor,
+			)],
 		});
 
 		lines.push(ViewLine {
-			segments: vec![
-				LineSegment::new(
-					if is_full_width {
-						format!("Date: {}", date.format("%c %z"))
-					}
-					else {
-						format!("{}", date.format("%c %z"))
-					}.as_str()
-				),
-			],
+			segments: vec![LineSegment::new(
+				if is_full_width {
+					format!("Date: {}", date.format("%c %z"))
+				}
+				else {
+					format!("{}", date.format("%c %z"))
+				}
+				.as_str(),
+			)],
 		});
 
 		if let Some(a) = author.to_string() {
 			lines.push(ViewLine {
-				segments: vec![
-					LineSegment::new(
-						if is_full_width {format!("Author: {}", a)} else {format!("A: {}", a)}.as_str(),
-					),
-				],
+				segments: vec![LineSegment::new(
+					if is_full_width {
+						format!("Author: {}", a)
+					}
+					else {
+						format!("A: {}", a)
+					}
+					.as_str(),
+				)],
 			});
 		}
 
 		if let Some(c) = committer.to_string() {
 			lines.push(ViewLine {
-				segments: vec![
-					LineSegment::new(
-						if is_full_width {format!("Committer: {}", c)} else {format!("C: {}", c)}.as_str(),
-					),
-				],
+				segments: vec![LineSegment::new(
+					if is_full_width {
+						format!("Committer: {}", c)
+					}
+					else {
+						format!("C: {}", c)
+					}
+					.as_str(),
+				)],
 			})
 		};
 
@@ -654,16 +662,16 @@ impl <'v> View <'v> {
 			Some(b) => {
 				for line in b.lines() {
 					lines.push(ViewLine {
-						segments: vec![
-							LineSegment::new(line),
-						],
+						segments: vec![LineSegment::new(line)],
 					});
 				}
 			},
 			None => {},
 		};
 
-		lines.push(ViewLine {segments: vec![LineSegment::new("")]});
+		lines.push(ViewLine {
+			segments: vec![LineSegment::new("")],
+		});
 
 		match file_stats {
 			Some(stats) => {
@@ -672,15 +680,15 @@ impl <'v> View <'v> {
 						segments: self.get_stat_item_segments(
 							*stat.get_status(),
 							stat.get_to_name().as_str(),
-							stat.get_from_name().as_str()
-						)
+							stat.get_from_name().as_str(),
+						),
 					})
 				}
 			},
-			None => {}
+			None => {},
 		}
 
-		let scroll_indicator_index = self.get_scroll_position(lines.len(), view_height,self.alt_top);
+		let scroll_indicator_index = self.get_scroll_position(lines.len(), view_height, self.alt_top);
 
 		let show_scroll_bar = view_height < lines.len();
 		let mut index = 0;

@@ -29,9 +29,7 @@ impl Color {
 
 #[cfg(test)]
 mod tests {
-	use super::{
-		Color,
-	};
+	use super::Color;
 
 	#[test]
 	fn action_from_str_black() {

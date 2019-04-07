@@ -1,6 +1,5 @@
-use color::Color;
-use std::ffi::OsString;
-use std::env;
+use crate::color::Color;
+use std::{env, ffi::OsString};
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -65,7 +64,7 @@ fn open_git_config() -> Result<git2::Config, String> {
 		Ok(f) => {
 			match f.config() {
 				Ok(c) => Ok(c),
-				Err(e) => Err(format!("Error reading git config: {}", e))
+				Err(e) => Err(format!("Error reading git config: {}", e)),
 			}
 		},
 		Err(e) => Err(format!("Error reading git config: {}", e)),

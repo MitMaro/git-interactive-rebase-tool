@@ -1,13 +1,13 @@
-use action::Action;
-use git_interactive::GitInteractive;
+use crate::action::Action;
+use crate::git_interactive::GitInteractive;
 
-use window::Window;
-use input::Input;
-use config::Config;
-use constants::{EXIT_CODE_GOOD, EXIT_CODE_STATE_ERROR, EXIT_CODE_WRITE_ERROR};
-use view::View;
-use std::process::ExitStatus;
+use crate::config::Config;
+use crate::constants::{EXIT_CODE_GOOD, EXIT_CODE_STATE_ERROR, EXIT_CODE_WRITE_ERROR};
+use crate::input::Input;
+use crate::view::View;
+use crate::window::Window;
 use std::process::Command;
+use std::process::ExitStatus;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum State {
@@ -35,7 +35,7 @@ pub struct Application<'a> {
 	window: &'a Window<'a>,
 }
 
-impl <'a> Application <'a> {
+impl<'a> Application<'a> {
 	pub fn new(git_interactive: GitInteractive, view: View<'a>, window: &'a Window<'a>, config: &'a Config) -> Self {
 		Application {
 			config,
@@ -49,7 +49,7 @@ impl <'a> Application <'a> {
 		}
 	}
 
-	pub fn run(&mut self) -> Result<Option<i32>, String>{
+	pub fn run(&mut self) -> Result<Option<i32>, String> {
 		self.handle_resize();
 		while self.exit_code == None {
 			// process based on input, allowed to change state
@@ -137,13 +137,11 @@ impl <'a> Application <'a> {
 			State::ExternalEditorError => self.draw_error(),
 			State::ExternalEditorFinish => {},
 			State::Help => self.view.draw_help(),
-			State::List => self.view.draw_main(
-				self.git_interactive.get_lines(),
-				self.get_cursor_index()
-			),
-			State::ShowCommit => self.view.draw_show_commit(
-				self.git_interactive.get_commit_stats(),
-			),
+			State::List => {
+				self.view
+					.draw_main(self.git_interactive.get_lines(), self.get_cursor_index())
+			},
+			State::ShowCommit => self.view.draw_show_commit(self.git_interactive.get_commit_stats()),
 			State::WindowSizeError => self.view.draw_window_size_error(),
 		}
 		self.window.refresh();
@@ -214,36 +212,27 @@ impl <'a> Application <'a> {
 			},
 			_ => {
 				self.state = State::List;
-			}
+			},
 		}
 	}
 
 	fn handle_show_commit_input(&mut self) {
 		match self.get_input() {
 			Input::MoveCursorDown => {
-				self.view.update_commit_top(
-					false,
-					false,
-					self.git_interactive.get_commit_stats_length()
-				);
+				self.view
+					.update_commit_top(false, false, self.git_interactive.get_commit_stats_length());
 			},
 			Input::MoveCursorUp => {
-				self.view.update_commit_top(
-					true,
-					false,
-					self.git_interactive.get_commit_stats_length()
-				);
+				self.view
+					.update_commit_top(true, false, self.git_interactive.get_commit_stats_length());
 			},
 			Input::Resize => {
-				self.view.update_commit_top(
-					true,
-					false,
-					self.git_interactive.get_commit_stats_length()
-				);
+				self.view
+					.update_commit_top(true, false, self.git_interactive.get_commit_stats_length());
 			},
 			_ => {
 				self.state = State::List;
-			}
+			},
 		}
 	}
 
@@ -256,7 +245,7 @@ impl <'a> Application <'a> {
 			Some(false) => {
 				self.state = State::List;
 			},
-			None => {}
+			None => {},
 		}
 	}
 
@@ -269,9 +258,10 @@ impl <'a> Application <'a> {
 			Some(false) => {
 				self.state = State::List;
 			},
-			None => {}
+			None => {},
 		}
 	}
+
 	fn handle_error_input(&mut self) {
 		match self.get_input() {
 			Input::Resize => {},
@@ -279,7 +269,7 @@ impl <'a> Application <'a> {
 				self.error_message = None;
 				self.state = self.previous_state.unwrap_or(State::List);
 				self.previous_state = None;
-			}
+			},
 		}
 	}
 
@@ -290,7 +280,7 @@ impl <'a> Application <'a> {
 				self.error_message = None;
 				self.state = self.previous_state.unwrap_or(State::List);
 				self.previous_state = None;
-			}
+			},
 		}
 	}
 
@@ -342,7 +332,7 @@ impl <'a> Application <'a> {
 			Input::OpenInEditor => {
 				self.state = State::ExternalEditor;
 			},
-			Input::Other => {}
+			Input::Other => {},
 		}
 	}
 
@@ -358,10 +348,13 @@ impl <'a> Application <'a> {
 			Command::new(&self.config.editor)
 				.arg(filepath.as_os_str())
 				.status()
-				.map_err(|e| format!(
-					"Unable to run editor ({}):\n{}",
-					self.config.editor.to_string_lossy(), e.to_string()
-				))
+				.map_err(|e| {
+					format!(
+						"Unable to run editor ({}):\n{}",
+						self.config.editor.to_string_lossy(),
+						e.to_string()
+					)
+				})
 		};
 		let exit_status: ExitStatus = Window::leave_temporarily(callback)?;
 
@@ -398,14 +391,14 @@ impl <'a> Application <'a> {
 		self.exit_code = Some(EXIT_CODE_STATE_ERROR);
 	}
 
-	fn exit_end(&mut self) -> Result<(), String>{
+	fn exit_end(&mut self) -> Result<(), String> {
 		self.window.end();
 		match self.git_interactive.write_file() {
 			Ok(_) => {},
 			Err(msg) => {
 				self.exit_code = Some(EXIT_CODE_WRITE_ERROR);
-				return Err(msg)
-			}
+				return Err(msg);
+			},
 		}
 		Ok(())
 	}

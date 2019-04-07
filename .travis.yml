@@ -29,6 +29,10 @@ jobs:
       rust: stable
       os: linux
       script: "./scripts/lint.bash"
+    - stage: format
+      rust: nightly
+      os: linux
+      script: "./scripts/format.bash"
     - stage: build-linux
       rust: stable
       os: linux

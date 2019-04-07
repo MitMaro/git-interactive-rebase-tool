@@ -1,31 +1,27 @@
 use std::cmp;
 use std::fs::File;
-use std::path::PathBuf;
 use std::io::Read;
 use std::io::Write;
+use std::path::PathBuf;
 
-use action::Action;
-use line::Line;
-use commit::Commit;
+use crate::action::Action;
+use crate::commit::Commit;
+use crate::line::Line;
 
 fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String> {
 	let mut file = match File::open(&path) {
 		Ok(file) => file,
 		Err(why) => {
-			return Err(format!(
-				"Error opening file, {}\nReason: {}", path.display(), why
-			));
-		}
+			return Err(format!("Error opening file, {}\nReason: {}", path.display(), why));
+		},
 	};
 
 	let mut s = String::new();
 	match file.read_to_string(&mut s) {
 		Ok(_) => {},
 		Err(why) => {
-			return Err(format!(
-				"Error reading file, {}\nReason: {}", path.display(), why
-			));
-		}
+			return Err(format!("Error reading file, {}\nReason: {}", path.display(), why));
+		},
 	}
 
 	// catch noop rebases
@@ -37,11 +33,11 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 				.map(|l| {
 					match Line::new(l) {
 						Ok(line) => Ok(line),
-						Err(e) => Err(format!("Error reading file, {}", e))
+						Err(e) => Err(format!("Error reading file, {}", e)),
 					}
 				})
 				.collect()
-		}
+		},
 	}
 }
 
@@ -55,16 +51,14 @@ pub struct GitInteractive {
 impl GitInteractive {
 	pub fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
 		let path = PathBuf::from(filepath);
-		let lines= load_filepath(&path, comment_char)?;
+		let lines = load_filepath(&path, comment_char)?;
 
-		Ok(
-			GitInteractive {
-				filepath: path,
-				lines,
-				selected_commit_stats: None,
-				selected_line_index: 1,
-			}
-		)
+		Ok(GitInteractive {
+			filepath: path,
+			lines,
+			selected_commit_stats: None,
+			selected_line_index: 1,
+		})
 	}
 
 	pub fn write_file(&self) -> Result<(), String> {
@@ -72,26 +66,25 @@ impl GitInteractive {
 			Ok(file) => file,
 			Err(why) => {
 				return Err(format!(
-					"Error opening file, {}\n\
-					Reason: {}", self.filepath.display(), why
+					"Error opening file, {}\nReason: {}",
+					self.filepath.display(),
+					why
 				));
-			}
+			},
 		};
 		for line in self.lines.iter() {
 			match writeln!(file, "{}", line.to_text()) {
 				Ok(_) => {},
 				Err(why) => {
-					return Err(format!(
-						"Error writing to file, {}", why
-					));
-				}
+					return Err(format!("Error writing to file, {}", why));
+				},
 			}
 		}
 		Ok(())
 	}
 
 	pub fn reload_file(&mut self, comment_char: &str) -> Result<(), String> {
-		let lines= load_filepath(&self.filepath, comment_char)?;
+		let lines = load_filepath(&self.filepath, comment_char)?;
 
 		self.lines = lines;
 		Ok(())
@@ -104,7 +97,7 @@ impl GitInteractive {
 	pub fn move_cursor_up(&mut self, amount: usize) {
 		self.selected_line_index = match amount {
 			a if a >= self.selected_line_index => 1,
-			_ => self.selected_line_index - amount
+			_ => self.selected_line_index - amount,
 		};
 	}
 
@@ -114,15 +107,16 @@ impl GitInteractive {
 
 	pub fn swap_selected_up(&mut self) {
 		if self.selected_line_index == 1 {
-			return
+			return;
 		}
-		self.lines.swap(self.selected_line_index - 1, self.selected_line_index - 2);
+		self.lines
+			.swap(self.selected_line_index - 1, self.selected_line_index - 2);
 		self.move_cursor_up(1);
 	}
 
 	pub fn swap_selected_down(&mut self) {
 		if self.selected_line_index == self.lines.len() {
-			return
+			return;
 		}
 		self.lines.swap(self.selected_line_index - 1, self.selected_line_index);
 		self.move_cursor_down(1);
@@ -135,7 +129,7 @@ impl GitInteractive {
 	}
 
 	// TODO this is kind of clunky and might be replaceable with a RefCell
-	pub fn load_commit_stats(&mut self) -> Result<(), String>{
+	pub fn load_commit_stats(&mut self) -> Result<(), String> {
 		self.selected_commit_stats = Some(Commit::from_commit_hash(self.get_selected_line_hash())?);
 		Ok(())
 	}
@@ -153,7 +147,7 @@ impl GitInteractive {
 					Some(b) => {
 						len += b.lines().count();
 					},
-					None => {}
+					None => {},
 				}
 				len + 3 // author + date + commit hash
 			},
