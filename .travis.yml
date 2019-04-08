@@ -11,7 +11,7 @@ cache: cargo
 branches:
   only:
     - "master"
-    - "/^\\d+\\.\\d+\\.\\d+$/"
+    - "/^\\d+\\.\\d+\\.\\d+(?:-rc\\.[0-9]*)?$/"
 
 rust:
   - stable
