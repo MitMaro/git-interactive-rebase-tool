@@ -11,7 +11,7 @@ cache: cargo
 branches:
   only:
     - "master"
-    - "/^\\d+\\.\\d+\\.\\d+(?:-rc\\.[0-9]*)?$/"
+    - "/^\\d+\\.\\d+\\.\\d+(?:-rc\\.[0-9]+)?$/"
 
 rust:
   - stable
@@ -41,7 +41,7 @@ jobs:
       script: "./scripts/build-debian.bash"
       deploy:
         api_key:
-          secure: "nocT72Z+EH9rNypWbm7SStg1ejUQXsuoEMDgfilHvTQ/CKfG28bBYsmfiUkEw0NM3/z9rmtpCJmvncNPPH9NzctOOidyN8c9QSjB+kW4Ewq7tk8I2yxPL/X6Ql7j57qsV6yFdJjo/VcvwuVaS1R7+c3+upOnZcQw1wk6UNhde8PuNFO3Izx+A+KFMsAfTDh3uGRkLhRFVq31uMk53xiQj2swJjlbwY0THnZeWyLzqSneobbQeAAuPnHmw27nwtNbgenSwHlKRHOo6Ly/z9fJR+5oxR/GcHPD4AYcafdmqxSBdC906lB2HYjuvcmbVd0Sr6rV9/9eHIxfrJ777cIwJjuMHa9k8xpPLSvDxmtWAqWR6K1rYEEcv+FhT8Bm1OKHOf28klC+iackAAh4ZmFEj7kZLvHVwtxMyZtylu2HLqQBHwaj3hQtA9dgbqT7p6mlzLRBqnYMcTL+4EBx/5jcH8tNwi08oYoVaaGsdSwinXsJZzHrOC4d9jPdqtPTnG/UHPSLQdVcnIVOMAfd+EhOESPBTiBo8wgTyRUCT645slA+FvjAaYNCiWnrV39KHPPm78Ba0HFz5AMvcGql5rWucR5OSbKvGuqopBlG4B9RTsG6wQGOHgDWUqemdJMNGWaxxlmCJDfUwLqd0QIXZMLLhY1CMSCFmfxTGL36eVdi1Gk="
+          secure: "Kw8h+UisU2k1VBFLc3MqeQMy1Rp0icIEgzSW/BuYYY+xg7p0vQiip2btD6pV5zzVAcL6BrnHiEIksY1M5lc/pKyoy4uYyPFHE6Mfwofcf/3MUpqTzBygd95saiCehQW0RBWzgoYtDbLgyUohywFVxLrckHVLXspwG+8CAvEL5YQNlBAkMQB0I+9j+8/WCSxAKA9hRqvdBRxzn9Fu9goxlYrSnSbQmkeCc3xTnK8o3xXuVwRkvsyKnlQHTQ8nTmbJe3K5FR02UFSDBMe8EYrXntszF3ZQibxrJHT6xutw1ZfIOPJCNOotMhLBnXEXEhPvbfBH3ejUM24VbHB8wmGl+OFQGqHLhr7nSyHK5ObbtSrsa9NHJQGIXPi5lIq3o0+Nq8ZzRc1GbFEi+9Uw0YsRjgL35ASdAOhdplNpOhYPK+MPqPoInbCs9NLPLkcfR7OQefk4WLUrAAVMro6Q6dewBN6u+8ebOuz7OHYgAHoP+Cm3z8SNafqRbwT+jeeYLPkR3T6TmriL4Og3tqnMBGULCwj0Ui/NqmKXU9UDkY8LTKDRoGk05sHxSRzfjchUfmwgn3xcSZAWGf2grskB2WLKRcvTeG+j4GUIoVVyDmF2qZ25wh/vBAwX1k4Y6wlvXdqcL3A94Vy4SXF9vY0y+NH5Nsfd3m0PksYRG4wc1bVKqQ8="
         file: target/debian/interactive-rebase-tool
         on:
           condition: $TRAVIS_RUST_VERSION = stable
@@ -56,7 +56,7 @@ jobs:
       script: "./scripts/build-deb.bash"
       deploy:
         api_key:
-          secure: "nocT72Z+EH9rNypWbm7SStg1ejUQXsuoEMDgfilHvTQ/CKfG28bBYsmfiUkEw0NM3/z9rmtpCJmvncNPPH9NzctOOidyN8c9QSjB+kW4Ewq7tk8I2yxPL/X6Ql7j57qsV6yFdJjo/VcvwuVaS1R7+c3+upOnZcQw1wk6UNhde8PuNFO3Izx+A+KFMsAfTDh3uGRkLhRFVq31uMk53xiQj2swJjlbwY0THnZeWyLzqSneobbQeAAuPnHmw27nwtNbgenSwHlKRHOo6Ly/z9fJR+5oxR/GcHPD4AYcafdmqxSBdC906lB2HYjuvcmbVd0Sr6rV9/9eHIxfrJ777cIwJjuMHa9k8xpPLSvDxmtWAqWR6K1rYEEcv+FhT8Bm1OKHOf28klC+iackAAh4ZmFEj7kZLvHVwtxMyZtylu2HLqQBHwaj3hQtA9dgbqT7p6mlzLRBqnYMcTL+4EBx/5jcH8tNwi08oYoVaaGsdSwinXsJZzHrOC4d9jPdqtPTnG/UHPSLQdVcnIVOMAfd+EhOESPBTiBo8wgTyRUCT645slA+FvjAaYNCiWnrV39KHPPm78Ba0HFz5AMvcGql5rWucR5OSbKvGuqopBlG4B9RTsG6wQGOHgDWUqemdJMNGWaxxlmCJDfUwLqd0QIXZMLLhY1CMSCFmfxTGL36eVdi1Gk="
+          secure: "Kw8h+UisU2k1VBFLc3MqeQMy1Rp0icIEgzSW/BuYYY+xg7p0vQiip2btD6pV5zzVAcL6BrnHiEIksY1M5lc/pKyoy4uYyPFHE6Mfwofcf/3MUpqTzBygd95saiCehQW0RBWzgoYtDbLgyUohywFVxLrckHVLXspwG+8CAvEL5YQNlBAkMQB0I+9j+8/WCSxAKA9hRqvdBRxzn9Fu9goxlYrSnSbQmkeCc3xTnK8o3xXuVwRkvsyKnlQHTQ8nTmbJe3K5FR02UFSDBMe8EYrXntszF3ZQibxrJHT6xutw1ZfIOPJCNOotMhLBnXEXEhPvbfBH3ejUM24VbHB8wmGl+OFQGqHLhr7nSyHK5ObbtSrsa9NHJQGIXPi5lIq3o0+Nq8ZzRc1GbFEi+9Uw0YsRjgL35ASdAOhdplNpOhYPK+MPqPoInbCs9NLPLkcfR7OQefk4WLUrAAVMro6Q6dewBN6u+8ebOuz7OHYgAHoP+Cm3z8SNafqRbwT+jeeYLPkR3T6TmriL4Og3tqnMBGULCwj0Ui/NqmKXU9UDkY8LTKDRoGk05sHxSRzfjchUfmwgn3xcSZAWGf2grskB2WLKRcvTeG+j4GUIoVVyDmF2qZ25wh/vBAwX1k4Y6wlvXdqcL3A94Vy4SXF9vY0y+NH5Nsfd3m0PksYRG4wc1bVKqQ8="
         file_glob: true
         file: target/debian/git-interactive-rebase-tool*.deb
         on:

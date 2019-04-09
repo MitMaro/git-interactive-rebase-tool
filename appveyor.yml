@@ -49,7 +49,8 @@ cache:
 branches:
   only:
     - master
-    - /^\d+\.\d+\.\d+(?:-rc\.[0-9]*)?$/
+    - release-version-1.0.0
+    - /^\d+\.\d+\.\d+(-rc\.[0-9]+)?$/
 
 notifications:
   - provider: Email
