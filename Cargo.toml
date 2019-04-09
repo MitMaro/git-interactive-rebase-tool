@@ -1,6 +1,6 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "0.7.0"
+version = "1.0.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "ISC"
 description = "Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."
@@ -9,10 +9,10 @@ keywords = [ "git", "editor", "tool", "rebase", "interactive" ]
 readme = "README.md"
 include = [
     "**/*.rs",
-    "Cargo.toml",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md"
+    "/Cargo.toml",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/README.md"
 ]
 edition = "2018"
 

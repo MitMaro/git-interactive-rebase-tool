@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [unreleased] - 2019-03-17
+## [1.0.0] - 2019-04-10
 
 ### Added
 - Support for unicode characters
@@ -74,8 +74,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.7.0...HEAD
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.6.0...0.7.0
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.7.0...1.0.0
+[0.7.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.3.0...0.4.0
