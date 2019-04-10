@@ -56,7 +56,6 @@ blank_lines_lower_bound = 0
 hide_parse_errors = true
 color = "Auto"
 unstable_features = true
-license_template_path = ""
-# ignore
+# license_template_path = ""
 normalize_doc_attributes = true
 inline_attribute_width = 0
