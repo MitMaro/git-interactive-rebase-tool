@@ -147,32 +147,40 @@ impl<'w> Window<'w> {
 	}
 
 	pub fn get_input(&self) -> Input {
-		match self.window.getch() {
-			Some(PancursesInput::Character(c)) if c == '?' => Input::Help,
-			Some(PancursesInput::Character(c)) if c == 'c' => Input::ShowCommit,
-			Some(PancursesInput::Character(c)) if c == 'q' => Input::Abort,
-			Some(PancursesInput::Character(c)) if c == 'Q' => Input::ForceAbort,
-			Some(PancursesInput::Character(c)) if c == 'w' => Input::Rebase,
-			Some(PancursesInput::Character(c)) if c == 'W' => Input::ForceRebase,
-			Some(PancursesInput::Character(c)) if c == 'p' => Input::Pick,
-			Some(PancursesInput::Character(c)) if c == 'r' => Input::Reword,
-			Some(PancursesInput::Character(c)) if c == 'e' => Input::Edit,
-			Some(PancursesInput::Character(c)) if c == 's' => Input::Squash,
-			Some(PancursesInput::Character(c)) if c == 'f' => Input::Fixup,
-			Some(PancursesInput::Character(c)) if c == 'd' => Input::Drop,
-			Some(PancursesInput::Character(c)) if c == 'j' => Input::SwapSelectedDown,
-			Some(PancursesInput::Character(c)) if c == 'k' => Input::SwapSelectedUp,
-			Some(PancursesInput::KeyDown) => Input::MoveCursorDown,
-			Some(PancursesInput::KeyUp) => Input::MoveCursorUp,
-			Some(PancursesInput::KeyPPage) => Input::MoveCursorPageUp,
-			Some(PancursesInput::KeyNPage) => Input::MoveCursorPageDown,
-			Some(PancursesInput::KeyResize) => {
+		// ignore None's, since they are not really valid input
+		let c = loop {
+			let c = self.window.getch();
+			if c.is_some() {
+				break c.unwrap();
+			}
+		};
+
+		match c {
+			PancursesInput::Character(c) if c == '?' => Input::Help,
+			PancursesInput::Character(c) if c == 'c' => Input::ShowCommit,
+			PancursesInput::Character(c) if c == 'q' => Input::Abort,
+			PancursesInput::Character(c) if c == 'Q' => Input::ForceAbort,
+			PancursesInput::Character(c) if c == 'w' => Input::Rebase,
+			PancursesInput::Character(c) if c == 'W' => Input::ForceRebase,
+			PancursesInput::Character(c) if c == 'p' => Input::Pick,
+			PancursesInput::Character(c) if c == 'r' => Input::Reword,
+			PancursesInput::Character(c) if c == 'e' => Input::Edit,
+			PancursesInput::Character(c) if c == 's' => Input::Squash,
+			PancursesInput::Character(c) if c == 'f' => Input::Fixup,
+			PancursesInput::Character(c) if c == 'd' => Input::Drop,
+			PancursesInput::Character(c) if c == 'j' => Input::SwapSelectedDown,
+			PancursesInput::Character(c) if c == 'k' => Input::SwapSelectedUp,
+			PancursesInput::KeyDown => Input::MoveCursorDown,
+			PancursesInput::KeyUp => Input::MoveCursorUp,
+			PancursesInput::KeyPPage => Input::MoveCursorPageUp,
+			PancursesInput::KeyNPage => Input::MoveCursorPageDown,
+			PancursesInput::KeyResize => {
 				pancurses::resize_term(0, 0);
 				self.height.replace(self.window.get_max_y());
 				self.width.replace(self.window.get_max_x());
 				Input::Resize
 			},
-			Some(PancursesInput::Character(c)) if c == '!' => Input::OpenInEditor,
+			PancursesInput::Character(c) if c == '!' => Input::OpenInEditor,
 			_ => Input::Other,
 		}
 	}
