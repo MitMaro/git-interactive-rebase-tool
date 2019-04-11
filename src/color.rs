@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Color {
 	White,
@@ -10,9 +12,10 @@ pub enum Color {
 	Yellow,
 }
 
-impl Color {
-	// TODO move into TryFrom once https://github.com/rust-lang/rust/issues/33417 is in stable
-	pub fn try_from(s: &str) -> Result<Self, String> {
+impl TryFrom<&str> for Color {
+	type Error = String;
+
+	fn try_from(s: &str) -> Result<Self, String> {
 		match s {
 			"black" => Ok(Color::Black),
 			"blue" => Ok(Color::Blue),
@@ -30,6 +33,7 @@ impl Color {
 #[cfg(test)]
 mod tests {
 	use super::Color;
+	use super::TryFrom;
 
 	#[test]
 	fn action_from_str_black() {

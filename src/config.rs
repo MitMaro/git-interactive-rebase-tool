@@ -1,4 +1,5 @@
 use crate::color::Color;
+use std::convert::TryFrom;
 use std::{env, ffi::OsString};
 
 #[derive(Debug, Clone)]

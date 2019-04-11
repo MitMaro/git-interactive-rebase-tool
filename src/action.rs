@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 #[derive(PartialEq, Debug)]
 pub enum Action {
 	Drop,
@@ -10,20 +12,6 @@ pub enum Action {
 }
 
 impl Action {
-	// TODO move into TryFrom once https://github.com/rust-lang/rust/issues/33417 is in stable
-	pub fn try_from(s: &str) -> Result<Self, String> {
-		match s {
-			"drop" | "d" => Ok(Action::Drop),
-			"edit" | "e" => Ok(Action::Edit),
-			"exec" | "x" => Ok(Action::Exec),
-			"fixup" | "f" => Ok(Action::Fixup),
-			"pick" | "p" => Ok(Action::Pick),
-			"reword" | "r" => Ok(Action::Reword),
-			"squash" | "s" => Ok(Action::Squash),
-			_ => Err(format!("Invalid action: {}", s)),
-		}
-	}
-
 	pub fn as_string(&self) -> String {
 		String::from(match self {
 			Action::Drop => "drop",
@@ -49,9 +37,28 @@ impl Action {
 	}
 }
 
+impl TryFrom<&str> for Action {
+	type Error = String;
+
+	fn try_from(s: &str) -> Result<Self, String> {
+		match s {
+			"drop" | "d" => Ok(Action::Drop),
+			"edit" | "e" => Ok(Action::Edit),
+			"exec" | "x" => Ok(Action::Exec),
+			"fixup" | "f" => Ok(Action::Fixup),
+			"pick" | "p" => Ok(Action::Pick),
+			"reword" | "r" => Ok(Action::Reword),
+			"squash" | "s" => Ok(Action::Squash),
+			_ => Err(format!("Invalid action: {}", s)),
+		}
+	}
+
+}
+
 #[cfg(test)]
 mod tests {
 	use super::Action;
+	use super::TryFrom;
 
 	#[test]
 	fn action_to_str_drop() {

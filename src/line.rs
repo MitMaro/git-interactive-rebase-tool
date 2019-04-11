@@ -1,4 +1,5 @@
 use crate::action::Action;
+use std::convert::TryFrom;
 
 #[derive(PartialEq, Debug)]
 pub struct Line {
