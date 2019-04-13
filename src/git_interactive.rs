@@ -129,6 +129,22 @@ impl GitInteractive {
 		}
 	}
 
+	pub fn toggle_break(&mut self) {
+		let selected_action = self.lines[self.selected_line_index - 1].get_action();
+		if *selected_action == Action::Break {
+			self.lines.remove(self.selected_line_index - 1);
+			if self.selected_line_index != 1 {
+				self.selected_line_index -= 1;
+			}
+		}
+		else {
+			self.lines.insert(self.selected_line_index, Line::new_break());
+			if self.selected_line_index != self.lines.len() {
+				self.selected_line_index += 1;
+			}
+		}
+	}
+
 	// TODO this is kind of clunky and might be replaceable with a RefCell
 	pub fn load_commit_stats(&mut self) -> Result<(), String> {
 		let selected_action = self.lines[self.selected_line_index - 1].get_action();

@@ -5,10 +5,10 @@ pub const TITLE_SHORT_LENGTH: i32 = 10;
 pub const TITLE_HELP_INDICATOR: &str = "Help: ?";
 pub const TITLE_HELP_INDICATOR_LENGTH: i32 = 7;
 
-pub const FOOTER_FULL: &str = " up, down, q/Q, w/W, c, j, k, p, r, e, s, f, d, !, ?";
-pub const FOOTER_FULL_WIDTH: i32 = 52;
-pub const FOOTER_COMPACT: &str = "up,dn.q/Q,w/W,c,j,k,p,r,e,s,f,d,!,?";
-pub const FOOTER_COMPACT_WIDTH: i32 = 35;
+pub const FOOTER_FULL: &str = " up, down, q/Q, w/W, c, j, k, b, p, r, e, s, f, d, !, ?";
+pub const FOOTER_FULL_WIDTH: i32 = 55;
+pub const FOOTER_COMPACT: &str = "up,dn.q/Q,w/W,c,j,k,b,p,r,e,s,f,d,!,?";
+pub const FOOTER_COMPACT_WIDTH: i32 = 37;
 
 pub const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue\n";
 pub const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: i32 = 45;
@@ -38,6 +38,7 @@ pub const HELP_LINES: &[(&str, &str)] = &[
 	("c", "Show commit information"),
 	("j", "Move selected commit down"),
 	("k", "Move selected commit up"),
+	("b", "Toggle break action"),
 	("p", "Set selected commit to be picked"),
 	("r", "Set selected commit to be reworded"),
 	("e", "Set selected commit to be edited"),

@@ -261,9 +261,8 @@ impl<'v> View<'v> {
 		self.main_top = match selected_index {
 			// show all if list is view height is long enough
 			_ if number_of_lines <= view_height => 0,
-			// last item selected, set top to show bottom of lines, shift top up on because no
-			// indicator
-			s if s > number_of_lines - 1 => number_of_lines - view_height,
+			// last item selected, set top to show bottom of lines
+			s if s >= number_of_lines - 1 => number_of_lines - view_height,
 			// if on top two of list set top to top of list
 			s if s < 1 => 0,
 			// if selected item is hidden above top, shift top up
