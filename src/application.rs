@@ -306,6 +306,7 @@ impl<'a> Application<'a> {
 				self.exit_finish();
 				self.state = State::Exiting;
 			},
+			Input::Break => self.git_interactive.toggle_break(),
 			Input::Drop => self.set_selected_line_action(Action::Drop),
 			Input::Edit => self.set_selected_line_action(Action::Edit),
 			Input::Fixup => self.set_selected_line_action(Action::Fixup),

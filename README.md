@@ -114,6 +114,7 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 |  `c`         | Show commit information |
 |  `j`         | Move selected commit down |
 |  `k`         | Move selected commit up |
+|  `b`         | Toggle break action |
 |  `p`         | Set selected commit to be picked |
 |  `r`         | Set selected commit to be reworded |
 |  `e`         | Set selected commit to be edited |

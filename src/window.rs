@@ -165,6 +165,7 @@ impl<'w> Window<'w> {
 			PancursesInput::Character(c) if c == 'w' => Input::Rebase,
 			PancursesInput::Character(c) if c == 'W' => Input::ForceRebase,
 			PancursesInput::Character(c) if c == 'p' => Input::Pick,
+			PancursesInput::Character(c) if c == 'b' => Input::Break,
 			PancursesInput::Character(c) if c == 'r' => Input::Reword,
 			PancursesInput::Character(c) if c == 'e' => Input::Edit,
 			PancursesInput::Character(c) if c == 's' => Input::Squash,

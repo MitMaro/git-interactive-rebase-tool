@@ -11,19 +11,24 @@ pub struct Line {
 }
 
 impl Line {
+	pub fn new_break() -> Self {
+		Self {
+			action: Action::Break,
+			command: String::from(""),
+			comment: String::from(""),
+			hash: String::from(""),
+			mutated: false,
+		}
+	}
+
 	pub fn new(input_line: &str) -> Result<Self, String> {
 		if input_line.starts_with("break") || input_line.starts_with('b') {
-			return Ok(Line {
-				action: Action::Break,
-				command: String::from(""),
-				comment: String::from(""),
-				hash: String::from(""),
-				mutated: false,
-			});
-		} else if input_line.starts_with("exec") || input_line.starts_with('x') {
+			return Ok(Self::new_break());
+		}
+		else if input_line.starts_with("exec") || input_line.starts_with('x') {
 			let input: Vec<&str> = input_line.splitn(2, ' ').collect();
 			if input.len() == 2 {
-				return Ok(Line {
+				return Ok(Self {
 					action: Action::try_from(input[0])?,
 					hash: String::from(""),
 					command: String::from(input[1]),
@@ -31,16 +36,18 @@ impl Line {
 					mutated: false,
 				});
 			}
-		} else {
+		}
+		else {
 			let input: Vec<&str> = input_line.splitn(3, ' ').collect();
 			if input.len() >= 2 {
-				return Ok(Line {
+				return Ok(Self {
 					action: Action::try_from(input[0])?,
 					hash: String::from(input[1]),
 					command: String::from(""),
 					comment: if input.len() == 3 {
 						String::from(input[2])
-					} else {
+					}
+					else {
 						String::from("")
 					},
 					mutated: false,
