@@ -1,16 +1,18 @@
 # A Commment
-pick aaa Added tests
-reword bbb Added tests
-edit ccc Added tests
+pick aaaaaaaaaaaaaaa Added tests
+reword bbbbbbbbbbbbbbb Added tests
+edit ccccccccccccccc Added tests
 exec git commit --amend -m "Foo bar"
-squash ddd Added tests
-fixup eee Added tests
-drop fff Added tests
-p 111 Added tests
-r 222 Added tests
-e 333 Added tests
+break
+squash ddddddddddddddd Added tests
+fixup eeeeeeeeeeeeeee Added tests
+drop fffffffffffffff Added tests
+p 111111111111111 Added tests
+r 222222222222222 Added tests
+e 333333333333333 Added tests
 x git commit --amend -m "Foo bar"
-s 444 Added tests
-f 555 Added tests
-d 666 Added tests
+b
+s 444444444444444 Added tests
+f 555555555555555 Added tests
+d 666666666666666 Added tests
 # A Commment

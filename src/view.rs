@@ -313,6 +313,7 @@ impl<'v> View<'v> {
 
 	fn get_action_color(&self, action: &Action) -> WindowColor {
 		match action {
+			Action::Break => WindowColor::ActionBreak,
 			Action::Drop => WindowColor::ActionDrop,
 			Action::Edit => WindowColor::ActionEdit,
 			Action::Exec => WindowColor::ActionExec,
@@ -341,11 +342,14 @@ impl<'v> View<'v> {
 
 			segments.push(LineSegment::new(
 				if *action == Action::Exec {
+					line.get_command().clone()
+				}
+				else if *action == Action::Break {
 					String::from("         ")
 				}
 				else {
-					let max_index = cmp::min(line.get_hash_or_command().len(), 8);
-					format!("{:8} ", line.get_hash_or_command()[0..max_index].to_string())
+					let max_index = cmp::min(line.get_hash().len(), 8);
+					format!("{:8} ", line.get_hash()[0..max_index].to_string())
 				}
 				.as_str(),
 			));
@@ -360,16 +364,21 @@ impl<'v> View<'v> {
 
 			segments.push(LineSegment::new(
 				if *action == Action::Exec {
+					line.get_command().clone()
+				}
+				else if *action == Action::Break {
 					String::from("    ")
 				}
 				else {
-					let max_index = cmp::min(line.get_hash_or_command().len(), 3);
-					format!("{:3} ", line.get_hash_or_command()[0..max_index].to_string())
+					let max_index = cmp::min(line.get_hash().len(), 3);
+					format!("{:3} ", line.get_hash()[0..max_index].to_string())
 				}
 				.as_str(),
 			));
 		}
-		segments.push(LineSegment::new(line.get_comment().as_str()));
+		if *action != Action::Exec && *action != Action::Break {
+			segments.push(LineSegment::new(line.get_comment().as_str()));
+		}
 		segments
 	}
 

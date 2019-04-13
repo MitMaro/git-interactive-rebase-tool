@@ -123,15 +123,20 @@ impl GitInteractive {
 	}
 
 	pub fn set_selected_line_action(&mut self, action: Action) {
-		if *self.lines[self.selected_line_index - 1].get_action() != Action::Exec {
+		let selected_action = self.lines[self.selected_line_index - 1].get_action();
+		if *selected_action != Action::Exec && *selected_action != Action::Break {
 			self.lines[self.selected_line_index - 1].set_action(action);
 		}
 	}
 
 	// TODO this is kind of clunky and might be replaceable with a RefCell
 	pub fn load_commit_stats(&mut self) -> Result<(), String> {
-		self.selected_commit_stats = Some(Commit::from_commit_hash(self.get_selected_line_hash())?);
-		Ok(())
+		let selected_action = self.lines[self.selected_line_index - 1].get_action();
+		if *selected_action != Action::Exec && *selected_action != Action::Break {
+			self.selected_commit_stats = Some(Commit::from_commit_hash(self.get_selected_line_hash().as_str())?);
+			return Ok(());
+		}
+		Err(String::from("Cannot load commit for the selected action"))
 	}
 
 	pub fn get_commit_stats(&self) -> &Option<Commit> {
@@ -156,7 +161,7 @@ impl GitInteractive {
 	}
 
 	pub fn get_selected_line_hash(&self) -> &String {
-		self.lines[self.selected_line_index - 1].get_hash_or_command()
+		self.lines[self.selected_line_index - 1].get_hash()
 	}
 
 	pub fn get_selected_line_index(&self) -> &usize {
