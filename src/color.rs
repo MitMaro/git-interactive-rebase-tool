@@ -15,7 +15,7 @@ pub enum Color {
 impl TryFrom<&str> for Color {
 	type Error = String;
 
-	fn try_from(s: &str) -> Result<Self, String> {
+	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
 			"black" => Ok(Color::Black),
 			"blue" => Ok(Color::Blue),

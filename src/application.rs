@@ -291,8 +291,10 @@ impl<'a> Application<'a> {
 				self.state = State::Help
 			},
 			Input::ShowCommit => {
-				self.view.update_commit_top(false, true, 0);
-				self.state = State::ShowCommit
+				if !self.git_interactive.get_selected_line_hash().is_empty() {
+					self.view.update_commit_top(false, true, 0);
+					self.state = State::ShowCommit
+				}
 			},
 			Input::Abort => self.state = State::ConfirmAbort,
 			Input::ForceAbort => {

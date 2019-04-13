@@ -2,6 +2,7 @@ use std::convert::TryFrom;
 
 #[derive(PartialEq, Debug)]
 pub enum Action {
+	Break,
 	Drop,
 	Edit,
 	Exec,
@@ -14,6 +15,7 @@ pub enum Action {
 impl Action {
 	pub fn as_string(&self) -> String {
 		String::from(match self {
+			Action::Break => "break",
 			Action::Drop => "drop",
 			Action::Edit => "edit",
 			Action::Exec => "exec",
@@ -26,6 +28,7 @@ impl Action {
 
 	pub fn to_abbreviation(&self) -> String {
 		String::from(match self {
+			Action::Break => "b",
 			Action::Drop => "d",
 			Action::Edit => "e",
 			Action::Exec => "x",
@@ -40,8 +43,9 @@ impl Action {
 impl TryFrom<&str> for Action {
 	type Error = String;
 
-	fn try_from(s: &str) -> Result<Self, String> {
+	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
+			"break" | "b" => Ok(Action::Break),
 			"drop" | "d" => Ok(Action::Drop),
 			"edit" | "e" => Ok(Action::Edit),
 			"exec" | "x" => Ok(Action::Exec),
@@ -52,13 +56,17 @@ impl TryFrom<&str> for Action {
 			_ => Err(format!("Invalid action: {}", s)),
 		}
 	}
-
 }
 
 #[cfg(test)]
 mod tests {
 	use super::Action;
 	use super::TryFrom;
+
+	#[test]
+	fn action_to_str_break() {
+		assert_eq!(Action::Break.as_string(), "break");
+	}
 
 	#[test]
 	fn action_to_str_drop() {
@@ -93,6 +101,16 @@ mod tests {
 	#[test]
 	fn action_to_str_squash() {
 		assert_eq!(Action::Squash.as_string(), "squash");
+	}
+
+	#[test]
+	fn action_from_str_b() {
+		assert_eq!(Action::try_from("b").unwrap(), Action::Break);
+	}
+
+	#[test]
+	fn action_from_str_break() {
+		assert_eq!(Action::try_from("break").unwrap(), Action::Break);
 	}
 
 	#[test]
@@ -168,6 +186,11 @@ mod tests {
 	#[test]
 	fn action_from_str_invalid_action() {
 		assert_eq!(Action::try_from("invalid").unwrap_err(), "Invalid action: invalid");
+	}
+
+	#[test]
+	fn action_to_abbreviation_break() {
+		assert_eq!(Action::Break.to_abbreviation(), "b");
 	}
 
 	#[test]

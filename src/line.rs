@@ -4,40 +4,51 @@ use std::convert::TryFrom;
 #[derive(PartialEq, Debug)]
 pub struct Line {
 	action: Action,
-	hash_or_command: String,
+	hash: String,
+	command: String,
 	comment: String,
 	mutated: bool,
 }
 
 impl Line {
 	pub fn new(input_line: &str) -> Result<Self, String> {
-		let split_count = if input_line.starts_with("exec") || input_line.starts_with('x') {
-			2
-		}
-		else {
-			3
-		};
-
-		let input: Vec<&str> = input_line.splitn(split_count, ' ').collect();
-		match input.len() {
-			2 => {
-				Ok(Line {
+		if input_line.starts_with("break") || input_line.starts_with('b') {
+			return Ok(Line {
+				action: Action::Break,
+				command: String::from(""),
+				comment: String::from(""),
+				hash: String::from(""),
+				mutated: false,
+			});
+		} else if input_line.starts_with("exec") || input_line.starts_with('x') {
+			let input: Vec<&str> = input_line.splitn(2, ' ').collect();
+			if input.len() == 2 {
+				return Ok(Line {
 					action: Action::try_from(input[0])?,
-					hash_or_command: String::from(input[1]),
+					hash: String::from(""),
+					command: String::from(input[1]),
 					comment: String::from(""),
 					mutated: false,
-				})
-			},
-			3 => {
-				Ok(Line {
+				});
+			}
+		} else {
+			let input: Vec<&str> = input_line.splitn(3, ' ').collect();
+			if input.len() >= 2 {
+				return Ok(Line {
 					action: Action::try_from(input[0])?,
-					hash_or_command: String::from(input[1]),
-					comment: String::from(input[2]),
+					hash: String::from(input[1]),
+					command: String::from(""),
+					comment: if input.len() == 3 {
+						String::from(input[2])
+					} else {
+						String::from("")
+					},
 					mutated: false,
-				})
-			},
-			_ => Err(format!("Invalid line: {}", input_line)),
+				});
+			}
 		}
+
+		Err(format!("Invalid line: {}", input_line))
 	}
 
 	pub fn set_action(&mut self, action: Action) {
@@ -51,8 +62,12 @@ impl Line {
 		&self.action
 	}
 
-	pub fn get_hash_or_command(&self) -> &String {
-		&self.hash_or_command
+	pub fn get_command(&self) -> &String {
+		&self.command
+	}
+
+	pub fn get_hash(&self) -> &String {
+		&self.hash
 	}
 
 	pub fn get_comment(&self) -> &String {
@@ -60,7 +75,11 @@ impl Line {
 	}
 
 	pub fn to_text(&self) -> String {
-		format!("{} {} {}", self.action.as_string(), self.hash_or_command, self.comment)
+		match self.action {
+			Action::Exec => format!("exec {}", self.command),
+			Action::Break => String::from("break"),
+			_ => format!("{} {} {}", self.action.as_string(), self.hash, self.comment),
+		}
 	}
 }
 
@@ -70,11 +89,93 @@ mod tests {
 	use crate::action::Action;
 
 	#[test]
-	fn new_with_valid_line() {
+	fn new_with_pick_action() {
 		let line = Line::new("pick aaa comment").unwrap();
 		assert_eq!(line.action, Action::Pick);
-		assert_eq!(line.hash_or_command, "aaa");
-		assert_eq!(line.comment, "comment");
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"comment");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_reword_action() {
+		let line = Line::new("reword aaa comment").unwrap();
+		assert_eq!(line.action, Action::Reword);
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"comment");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_edit_action() {
+		let line = Line::new("edit aaa comment").unwrap();
+		assert_eq!(line.action, Action::Edit);
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"comment");
+
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_squash_action() {
+		let line = Line::new("squash aaa comment").unwrap();
+		assert_eq!(line.action, Action::Squash);
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"comment");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_fixup_action() {
+		let line = Line::new("fixup aaa comment").unwrap();
+		assert_eq!(line.action, Action::Fixup);
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"comment");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_drop_action() {
+		let line = Line::new("drop aaa comment").unwrap();
+		assert_eq!(line.action, Action::Drop);
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"comment");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_action_without_comment() {
+		let line = Line::new("pick aaa").unwrap();
+		assert_eq!(line.action, Action::Pick);
+		assert_eq!(line.get_hash(), &"aaa");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_exec_action() {
+		let line = Line::new("exec command").unwrap();
+		assert_eq!(line.action, Action::Exec);
+		assert_eq!(line.get_hash(), &"");
+		assert_eq!(line.get_command(), &"command");
+		assert_eq!(line.get_comment(), &"");
+		assert_eq!(line.mutated, false);
+	}
+
+	#[test]
+	fn new_with_break_action() {
+		let line = Line::new("break").unwrap();
+		assert_eq!(line.action, Action::Break);
+		assert_eq!(line.get_hash(), &"");
+		assert_eq!(line.get_command(), &"");
+		assert_eq!(line.get_comment(), &"");
 		assert_eq!(line.mutated, false);
 	}
 
@@ -86,6 +187,13 @@ mod tests {
 	#[test]
 	fn new_with_invalid_line() {
 		assert_eq!(Line::new("invalid").unwrap_err(), "Invalid line: invalid");
+		assert_eq!(Line::new("pick").unwrap_err(), "Invalid line: pick");
+		assert_eq!(Line::new("reword").unwrap_err(), "Invalid line: reword");
+		assert_eq!(Line::new("edit").unwrap_err(), "Invalid line: edit");
+		assert_eq!(Line::new("squash").unwrap_err(), "Invalid line: squash");
+		assert_eq!(Line::new("fixup").unwrap_err(), "Invalid line: fixup");
+		assert_eq!(Line::new("exec").unwrap_err(), "Invalid line: exec");
+		assert_eq!(Line::new("drop").unwrap_err(), "Invalid line: drop");
 	}
 
 	#[test]
@@ -97,16 +205,50 @@ mod tests {
 	}
 
 	#[test]
-	fn getters() {
+	fn to_text_pick_action() {
 		let line = Line::new("pick aaa comment").unwrap();
-		assert_eq!(line.get_action(), &Action::Pick);
-		assert_eq!(line.get_hash_or_command(), &"aaa");
-		assert_eq!(line.get_comment(), &"comment");
+		assert_eq!(line.to_text(), "pick aaa comment");
 	}
 
 	#[test]
-	fn to_text() {
-		let line = Line::new("pick aaa comment").unwrap();
-		assert_eq!(line.to_text(), "pick aaa comment");
+	fn to_text_reword_action() {
+		let line = Line::new("reword aaa comment").unwrap();
+		assert_eq!(line.to_text(), "reword aaa comment");
+	}
+
+	#[test]
+	fn to_text_edit_action() {
+		let line = Line::new("edit aaa comment").unwrap();
+		assert_eq!(line.to_text(), "edit aaa comment");
+	}
+
+	#[test]
+	fn to_text_squash_action() {
+		let line = Line::new("squash aaa comment").unwrap();
+		assert_eq!(line.to_text(), "squash aaa comment");
+	}
+
+	#[test]
+	fn to_text_fixup_action() {
+		let line = Line::new("fixup aaa comment").unwrap();
+		assert_eq!(line.to_text(), "fixup aaa comment");
+	}
+
+	#[test]
+	fn to_text_exec_action() {
+		let line = Line::new("exec command").unwrap();
+		assert_eq!(line.to_text(), "exec command");
+	}
+
+	#[test]
+	fn to_text_break_action() {
+		let line = Line::new("break").unwrap();
+		assert_eq!(line.to_text(), "break");
+	}
+
+	#[test]
+	fn to_text_drop_action() {
+		let line = Line::new("drop aaa comment").unwrap();
+		assert_eq!(line.to_text(), "drop aaa comment");
 	}
 }

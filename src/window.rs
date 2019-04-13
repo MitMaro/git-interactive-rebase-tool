@@ -20,6 +20,7 @@ const COLOR_TABLE: [i16; 8] = [
 
 #[derive(Copy, Clone, Debug)]
 pub enum WindowColor {
+	ActionBreak,
 	ActionDrop,
 	ActionEdit,
 	ActionExec,
@@ -98,6 +99,7 @@ impl<'w> Window<'w> {
 
 	pub fn color(&self, color: WindowColor) {
 		match color {
+			WindowColor::ActionBreak => self.set_color(self.config.break_color),
 			WindowColor::ActionDrop => self.set_color(self.config.drop_color),
 			WindowColor::ActionEdit => self.set_color(self.config.edit_color),
 			WindowColor::ActionExec => self.set_color(self.config.exec_color),

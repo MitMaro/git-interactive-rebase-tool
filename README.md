@@ -151,6 +151,7 @@ git config --global interactive-rebase-tool.foregroundColor black
 | `diffAddColor`     | green   | Color | Color used for lines and files added in a diff |
 | `diffRemoveColor`  | red     | Color | Color used for lines and files removed in a diff |
 | `diffChangeColor`  | yellow  | Color | Color used for lines and files changed in a diff |
+| `breakColor`       | white   | Color | Color used for the break action |
 | `pickColor`        | green   | Color | Color used for the pick action |
 | `rewordColor`      | yellow  | Color | Color used for the reword action |
 | `editColor`        | blue    | Color | Color used for the edit action |
