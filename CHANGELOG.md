@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Add support for the break action
+- The command of an exec action can now be edited
 
 ## [1.0.0] - 2019-04-10
 

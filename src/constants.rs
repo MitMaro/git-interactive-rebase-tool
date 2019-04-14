@@ -5,10 +5,10 @@ pub const TITLE_SHORT_LENGTH: i32 = 10;
 pub const TITLE_HELP_INDICATOR: &str = "Help: ?";
 pub const TITLE_HELP_INDICATOR_LENGTH: i32 = 7;
 
-pub const FOOTER_FULL: &str = " up, down, q/Q, w/W, c, j, k, b, p, r, e, s, f, d, !, ?";
-pub const FOOTER_FULL_WIDTH: i32 = 55;
-pub const FOOTER_COMPACT: &str = "up,dn.q/Q,w/W,c,j,k,b,p,r,e,s,f,d,!,?";
-pub const FOOTER_COMPACT_WIDTH: i32 = 37;
+pub const FOOTER_FULL: &str = " up, down, q/Q, w/W, c, j, k, b, p, r, e, s, f, d, E, !, ?";
+pub const FOOTER_FULL_WIDTH: i32 = 58;
+pub const FOOTER_COMPACT: &str = "up,dn.q/Q,w/W,c,j,k,b,p,r,e,s,f,d,E,!,?";
+pub const FOOTER_COMPACT_WIDTH: i32 = 39;
 
 pub const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue\n";
 pub const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: i32 = 45;
@@ -45,6 +45,7 @@ pub const HELP_LINES: &[(&str, &str)] = &[
 	("s", "Set selected commit to be squashed"),
 	("f", "Set selected commit to be fixed-up"),
 	("d", "Set selected commit to be dropped"),
+	("E", "Edit an exec action's command"),
 	("!", "Open the todo file in the default editor"),
 ];
 

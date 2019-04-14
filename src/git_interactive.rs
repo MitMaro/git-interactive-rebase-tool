@@ -122,6 +122,14 @@ impl GitInteractive {
 		self.move_cursor_down(1);
 	}
 
+	pub fn edit_selected_line(&mut self, content: &str) {
+		self.lines[self.selected_line_index - 1].edit_content(content);
+	}
+
+	pub fn get_selected_line_edit_content(&self) -> &String {
+		self.lines[self.selected_line_index - 1].get_edit_content()
+	}
+
 	pub fn set_selected_line_action(&mut self, action: Action) {
 		let selected_action = self.lines[self.selected_line_index - 1].get_action();
 		if *selected_action != Action::Exec && *selected_action != Action::Break {
@@ -178,6 +186,10 @@ impl GitInteractive {
 
 	pub fn get_selected_line_hash(&self) -> &String {
 		self.lines[self.selected_line_index - 1].get_hash()
+	}
+
+	pub fn get_selected_line_action(&self) -> &Action {
+		self.lines[self.selected_line_index - 1].get_action()
 	}
 
 	pub fn get_selected_line_index(&self) -> &usize {

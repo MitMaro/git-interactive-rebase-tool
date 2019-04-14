@@ -718,4 +718,33 @@ impl<'v> View<'v> {
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
 	}
+
+	pub fn draw_edit(&self, line: &str, pointer: usize) {
+		self.draw_title(false);
+		self.window.set_style(false, true, false);
+		self.window.color(WindowColor::Foreground);
+
+		// this could probably be made way more efficient
+		let graphemes = UnicodeSegmentation::graphemes(line, true);
+		let segment_length = graphemes.clone().count();
+		for (counter, c) in graphemes.enumerate() {
+			if counter == pointer {
+				self.window.set_style(false, true, false);
+				self.window.draw_str(c);
+				self.window.set_style(false, false, false);
+			}
+			else {
+				self.window.draw_str(c);
+			}
+		}
+		if pointer >= segment_length {
+			self.window.set_style(false, true, false);
+			self.window.draw_str(" ");
+			self.window.set_style(false, false, false);
+		}
+
+		self.window.draw_str("\n\n");
+		self.window.color(WindowColor::IndicatorColor);
+		self.window.draw_str("Enter to finish");
+	}
 }
