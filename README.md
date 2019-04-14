@@ -121,6 +121,7 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 |  `s`         | Set selected commit to be squashed |
 |  `f`         | Set selected commit to be fixed-up |
 |  `d`         | Set selected commit to be dropped |
+|  `E`         | Edit the command of an exec action |
 
 
 ### Temporary Override
@@ -209,7 +210,7 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
 ## TODO
 
- - [ ] Full support for `exec` action
+ - [x] Full support for `exec` action
  - [ ] Insert action
  - [ ] Configure key bindings
 
