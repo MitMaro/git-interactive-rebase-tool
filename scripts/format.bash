@@ -4,6 +4,6 @@ set -e
 set -u
 set -o pipefail
 
-rustup update
-rustup component add rustfmt
-cargo fmt --all -- --check
+rustup update nightly
+rustup component add rustfmt --toolchain nightly
+cargo +nightly fmt --all -- --check

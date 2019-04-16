@@ -100,28 +100,29 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 
 ### Key Bindings
 
-| Key          | Description |
-| ------------ | ----------- |
-|  Up          | Move selection up |
-|  Down        | Move selection down |
-|  Page Up     | Move selection up five lines |
-|  Page Down   | Move selection down five lines |
-|  `q`         | Abort interactive rebase |
-|  `Q`         | Immediately abort interactive rebase |
-|  `w`         | Write interactive rebase file |
-|  `W`         | Immediately write interactive rebase file |
-|  `?`         | Show help |
-|  `c`         | Show commit information |
-|  `j`         | Move selected commit down |
-|  `k`         | Move selected commit up |
-|  `b`         | Toggle break action |
-|  `p`         | Set selected commit to be picked |
-|  `r`         | Set selected commit to be reworded |
-|  `e`         | Set selected commit to be edited |
-|  `s`         | Set selected commit to be squashed |
-|  `f`         | Set selected commit to be fixed-up |
-|  `d`         | Set selected commit to be dropped |
-|  `E`         | Edit the command of an exec action |
+| Key          | Mode   | Description |
+| ------------ | ------ | ----------- |
+|  Up          | All    | Move selection up |
+|  Down        | All    | Move selection down |
+|  Page Up     | All    | Move selection up five lines |
+|  Page Down   | All    | Move selection down five lines |
+|  `q`         | Normal | Abort interactive rebase |
+|  `Q`         | Normal | Immediately abort interactive rebase |
+|  `w`         | Normal | Write interactive rebase file |
+|  `W`         | Normal | Immediately write interactive rebase file |
+|  `?`         | All    | Show help |
+|  `c`         | Normal | Show commit information |
+|  `j`         | All    | Move selected commit(s) down |
+|  `k`         | All    | Move selected commit(s) up |
+|  `b`         | Normal | Toggle break action |
+|  `p`         | All    | Set selected commit(s) to be picked |
+|  `r`         | All    | Set selected commit(s) to be reworded |
+|  `e`         | All    | Set selected commit(s) to be edited |
+|  `s`         | All    | Set selected commit(s) to be squashed |
+|  `f`         | All    | Set selected commit(s) to be fixed-up |
+|  `d`         | All    | Set selected commit(s) to be dropped |
+|  `E`         | Normal | Edit the command of an exec action |
+|  `V`         | All    | Enter and exit visual mode |
 
 
 ### Temporary Override

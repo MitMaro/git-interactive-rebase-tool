@@ -200,6 +200,7 @@ impl<'w> Window<'w> {
 			PancursesInput::Character(c) if c == 'f' => Input::ActionFixup,
 			PancursesInput::Character(c) if c == 'd' => Input::ActionDrop,
 			PancursesInput::Character(c) if c == 'E' => Input::Edit,
+			PancursesInput::Character(c) if c == 'v' => Input::ToggleVisualMode,
 			PancursesInput::Character(c) if c == 'j' => Input::SwapSelectedDown,
 			PancursesInput::Character(c) if c == 'k' => Input::SwapSelectedUp,
 			PancursesInput::KeyDown => Input::MoveCursorDown,
