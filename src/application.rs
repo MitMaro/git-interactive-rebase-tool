@@ -2,7 +2,7 @@ use crate::action::Action;
 use crate::git_interactive::GitInteractive;
 
 use crate::config::Config;
-use crate::constants::{EXIT_CODE_GOOD, EXIT_CODE_STATE_ERROR, EXIT_CODE_WRITE_ERROR};
+use crate::constants::{EXIT_CODE_GOOD, EXIT_CODE_STATE_ERROR, EXIT_CODE_WRITE_ERROR, LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::input::Input;
 use crate::view::View;
 use crate::window::Window;
@@ -23,19 +23,21 @@ pub enum State {
 	ExternalEditorFinish,
 	Help,
 	List,
+	VisualMode,
 	ShowCommit,
 	WindowSizeError,
 }
 
 pub struct Application<'a> {
 	config: &'a Config,
-	error_message: Option<String>,
 	edit_content: String,
 	edit_content_cursor: usize,
+	error_message: Option<String>,
 	exit_code: Option<i32>,
 	git_interactive: GitInteractive,
 	previous_state: Option<State>,
 	state: State,
+	help_state: State,
 	view: View<'a>,
 	window: &'a Window<'a>,
 }
@@ -44,13 +46,14 @@ impl<'a> Application<'a> {
 	pub fn new(git_interactive: GitInteractive, view: View<'a>, window: &'a Window<'a>, config: &'a Config) -> Self {
 		Application {
 			config,
-			error_message: None,
 			edit_content: String::from(""),
 			edit_content_cursor: 0,
+			error_message: None,
 			exit_code: None,
 			git_interactive,
 			previous_state: None,
 			state: State::List,
+			help_state: State::List,
 			view,
 			window,
 		}
@@ -87,8 +90,9 @@ impl<'a> Application<'a> {
 			State::ExternalEditorFinish => self.process_external_editor_finish(),
 			State::Help => {},
 			State::List => self.process_list(),
+			State::VisualMode => self.process_list(),
 			State::ShowCommit => self.process_show_commit(),
-			State::WindowSizeError => {},
+			State::WindowSizeError => {}
 		}
 	}
 
@@ -152,11 +156,21 @@ impl<'a> Application<'a> {
 			State::ExternalEditor => {},
 			State::ExternalEditorError => self.draw_error(),
 			State::ExternalEditorFinish => {},
-			State::Help => self.view.draw_help(),
+			State::Help => self.draw_help(),
 			State::List => {
-				self.view
-					.draw_main(self.git_interactive.get_lines(), self.get_cursor_index())
+				self.view.draw_main(
+					self.git_interactive.get_lines(),
+					self.get_cursor_index(),
+					None
+				)
 			},
+			State::VisualMode => {
+				self.view.draw_main(
+					self.git_interactive.get_lines(),
+					self.get_cursor_index(),
+					Some(self.git_interactive.get_visual_start_index() - 1)
+				)
+			}
 			State::ShowCommit => self.view.draw_show_commit(self.git_interactive.get_commit_stats()),
 			State::WindowSizeError => self.view.draw_window_size_error(),
 		}
@@ -169,6 +183,10 @@ impl<'a> Application<'a> {
 			None => "Error...",
 		};
 		self.view.draw_error(message);
+	}
+
+	fn draw_help(&self) {
+		self.view.draw_help(if self.help_state == State::List { LIST_HELP_LINES } else { VISUAL_MODE_HELP_LINES});
 	}
 
 	fn handle_resize(&mut self) {
@@ -212,25 +230,61 @@ impl<'a> Application<'a> {
 			State::ExternalEditorFinish => {},
 			State::Help => self.handle_help_input(),
 			State::List => self.handle_list_input(),
+			State::VisualMode => self.handle_visual_mode_input(),
 			State::ShowCommit => self.handle_show_commit_input(),
 			State::WindowSizeError => self.handle_window_size_error_input(),
 		};
 	}
 
 	fn handle_help_input(&mut self) {
+		let help_lines = if self.help_state == State::List { LIST_HELP_LINES } else { VISUAL_MODE_HELP_LINES};
 		match self.get_input() {
 			Input::MoveCursorDown => {
-				self.view.update_help_top(false, false);
+				self.view.update_help_top(false, false, help_lines);
 			},
 			Input::MoveCursorUp => {
-				self.view.update_help_top(true, false);
+				self.view.update_help_top(true, false, help_lines);
 			},
 			Input::Resize => {
-				self.view.update_help_top(true, true);
+				self.view.update_help_top(true, true, help_lines);
 			},
 			_ => {
+				self.state = self.help_state;
+			},
+		}
+	}
+
+	fn handle_visual_mode_input(&mut self) {
+		match self.get_input() {
+			Input::MoveCursorDown => {
+				self.git_interactive.move_cursor_down(1);
+			},
+			Input::MoveCursorUp => {
+				self.git_interactive.move_cursor_up(1);
+			},
+			Input::MoveCursorPageDown => {
+				self.git_interactive.move_cursor_down(5);
+			},
+			Input::MoveCursorPageUp => {
+				self.git_interactive.move_cursor_up(5);
+			},
+			Input::ActionDrop => self.git_interactive.set_visual_range_action(Action::Drop),
+			Input::ActionEdit => self.git_interactive.set_visual_range_action(Action::Edit),
+			Input::ActionFixup => self.git_interactive.set_visual_range_action(Action::Fixup),
+			Input::ActionPick => self.git_interactive.set_visual_range_action(Action::Pick),
+			Input::ActionReword => self.git_interactive.set_visual_range_action(Action::Reword),
+			Input::ActionSquash => self.git_interactive.set_visual_range_action(Action::Squash),
+			Input::SwapSelectedDown => self.git_interactive.swap_visual_range_down(),
+			Input::SwapSelectedUp => self.git_interactive.swap_visual_range_up(),
+			Input::ToggleVisualMode => {
 				self.state = State::List;
 			},
+			Input::Help => {
+				self.view.update_help_top(false, true, VISUAL_MODE_HELP_LINES);
+				self.help_state = self.state;
+				self.state = State::Help;
+			}
+			_ => {},
 		}
 	}
 
@@ -351,7 +405,8 @@ impl<'a> Application<'a> {
 	fn handle_list_input(&mut self) {
 		match self.get_input() {
 			Input::Help => {
-				self.view.update_help_top(false, true);
+				self.view.update_help_top(false, true, LIST_HELP_LINES);
+				self.help_state = self.state;
 				self.state = State::Help
 			},
 			Input::ShowCommit => {
@@ -384,27 +439,17 @@ impl<'a> Application<'a> {
 					self.state = State::Edit;
 				}
 			}
-			Input::SwapSelectedDown => {
-				self.git_interactive.swap_selected_down();
+			Input::SwapSelectedDown => self.git_interactive.swap_selected_down(),
+			Input::SwapSelectedUp => self.git_interactive.swap_selected_up(),
+			Input::MoveCursorDown => self.git_interactive.move_cursor_down(1),
+			Input::MoveCursorUp => self.git_interactive.move_cursor_up(1),
+			Input::MoveCursorPageDown => self.git_interactive.move_cursor_down(5),
+			Input::MoveCursorPageUp => self.git_interactive.move_cursor_up(5),
+			Input::ToggleVisualMode => {
+				self.git_interactive.start_visual_mode();
+				self.state = State::VisualMode;
 			},
-			Input::SwapSelectedUp => {
-				self.git_interactive.swap_selected_up();
-			},
-			Input::MoveCursorDown => {
-				self.git_interactive.move_cursor_down(1);
-			},
-			Input::MoveCursorUp => {
-				self.git_interactive.move_cursor_up(1);
-			},
-			Input::MoveCursorPageDown => {
-				self.git_interactive.move_cursor_down(5);
-			},
-			Input::MoveCursorPageUp => {
-				self.git_interactive.move_cursor_up(5);
-			},
-			Input::OpenInEditor => {
-				self.state = State::ExternalEditor;
-			},
+			Input::OpenInEditor => self.state = State::ExternalEditor,
 			_ => {},
 		}
 	}

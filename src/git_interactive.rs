@@ -46,6 +46,7 @@ pub struct GitInteractive {
 	lines: Vec<Line>,
 	selected_commit_stats: Option<Commit>,
 	selected_line_index: usize,
+	visual_index_start: usize,
 }
 
 impl GitInteractive {
@@ -58,6 +59,7 @@ impl GitInteractive {
 			lines,
 			selected_commit_stats: None,
 			selected_line_index: 1,
+			visual_index_start: 0,
 		})
 	}
 
@@ -105,6 +107,30 @@ impl GitInteractive {
 		self.selected_line_index = cmp::min(self.selected_line_index + amount, self.lines.len());
 	}
 
+	pub fn start_visual_mode(&mut self) {
+		self.visual_index_start = self.selected_line_index;
+	}
+
+	#[allow(clippy::range_plus_one)]
+	pub fn swap_visual_range_up(&mut self) {
+		if self.selected_line_index == 1 || self.visual_index_start == 1 {
+			return;
+		}
+
+		let range = if self.selected_line_index <= self.visual_index_start {
+			self.selected_line_index..self.visual_index_start
+		}
+		else {
+			self.visual_index_start..self.selected_line_index+1
+		};
+
+		for index in range {
+			self.lines.swap(index - 1, index - 2);
+		}
+		self.visual_index_start -= 1;
+		self.move_cursor_up(1);
+	}
+
 	pub fn swap_selected_up(&mut self) {
 		if self.selected_line_index == 1 {
 			return;
@@ -112,6 +138,26 @@ impl GitInteractive {
 		self.lines
 			.swap(self.selected_line_index - 1, self.selected_line_index - 2);
 		self.move_cursor_up(1);
+	}
+
+	#[allow(clippy::range_plus_one)]
+	pub fn swap_visual_range_down(&mut self) {
+		if self.selected_line_index == self.lines.len() || self.visual_index_start == self.lines.len() {
+			return;
+		}
+
+		let range = if self.selected_line_index <= self.visual_index_start {
+			self.selected_line_index..self.visual_index_start
+		}
+		else {
+			self.visual_index_start..self.selected_line_index+1
+		};
+
+		for index in range.rev() {
+			self.lines.swap(index - 1, index);
+		}
+		self.visual_index_start += 1;
+		self.move_cursor_down(1);
 	}
 
 	pub fn swap_selected_down(&mut self) {
@@ -128,6 +174,23 @@ impl GitInteractive {
 
 	pub fn get_selected_line_edit_content(&self) -> &String {
 		self.lines[self.selected_line_index - 1].get_edit_content()
+	}
+
+	#[allow(clippy::range_plus_one)]
+	pub fn set_visual_range_action(&mut self, action: Action) {
+		let range = if self.selected_line_index <= self.visual_index_start {
+			self.selected_line_index..self.visual_index_start
+		}
+		else {
+			self.visual_index_start..self.selected_line_index+1
+		};
+
+		for index in range {
+			let selected_action = self.lines[index - 1].get_action();
+			if *selected_action != Action::Exec && *selected_action != Action::Break {
+				self.lines[index - 1].set_action(action);
+			}
+		}
 	}
 
 	pub fn set_selected_line_action(&mut self, action: Action) {
@@ -194,6 +257,10 @@ impl GitInteractive {
 
 	pub fn get_selected_line_index(&self) -> &usize {
 		&self.selected_line_index
+	}
+
+	pub fn get_visual_start_index(&self) -> &usize {
+		&self.visual_index_start
 	}
 
 	pub fn get_filepath(&self) -> &PathBuf {

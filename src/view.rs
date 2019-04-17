@@ -1,12 +1,11 @@
 use crate::action::Action;
 use crate::commit::Commit;
 use crate::constants::{
-	FOOTER_COMPACT,
-	FOOTER_COMPACT_WIDTH,
-	FOOTER_FULL,
-	FOOTER_FULL_WIDTH,
+	LIST_FOOTER_COMPACT,
+	LIST_FOOTER_COMPACT_WIDTH,
+	LIST_FOOTER_FULL,
+	LIST_FOOTER_FULL_WIDTH,
 	HEIGHT_ERROR_MESSAGE,
-	HELP_LINES,
 	MINIMUM_COMPACT_WINDOW_WIDTH,
 	MINIMUM_FULL_WINDOW_WIDTH,
 	MINIMUM_WINDOW_HEIGHT,
@@ -21,6 +20,10 @@ use crate::constants::{
 	TITLE_SHORT_LENGTH,
 	TO_FILE_INDICATOR,
 	TO_FILE_INDICATOR_SHORT,
+	VISUAL_MODE_FOOTER_FULL_WIDTH,
+	VISUAL_MODE_FOOTER_FULL,
+	VISUAL_MODE_FOOTER_COMPACT_WIDTH,
+	VISUAL_MODE_FOOTER_COMPACT
 };
 use crate::line::Line;
 use crate::window::Window;
@@ -55,6 +58,16 @@ impl LineSegment {
 			reverse: false,
 			dim: false,
 			underline: false,
+		}
+	}
+
+	pub fn new_with_color_and_style(text: &str, color: WindowColor, dim: bool, underline: bool, reverse: bool) -> Self {
+		Self {
+			text: String::from(text),
+			color,
+			reverse,
+			dim,
+			underline,
 		}
 	}
 }
@@ -238,15 +251,31 @@ impl<'v> View<'v> {
 		}
 	}
 
-	fn draw_footer(&self) {
+	fn draw_visual_mode_footer(&self) {
 		let (window_width, _) = self.window.get_window_size();
 		self.window.color(WindowColor::Foreground);
 		self.window.set_style(true, false, false);
-		if window_width >= FOOTER_FULL_WIDTH {
-			self.window.draw_str(FOOTER_FULL);
+		if window_width >= VISUAL_MODE_FOOTER_FULL_WIDTH {
+			self.window.draw_str(VISUAL_MODE_FOOTER_FULL);
 		}
-		else if window_width >= FOOTER_COMPACT_WIDTH {
-			self.window.draw_str(FOOTER_COMPACT);
+		else if window_width >= VISUAL_MODE_FOOTER_COMPACT_WIDTH {
+			self.window.draw_str(VISUAL_MODE_FOOTER_COMPACT);
+		}
+		else {
+			self.window.draw_str("(Visual) Help: ?");
+		}
+		self.window.set_style(false, false, false);
+	}
+
+	fn draw_list_footer(&self) {
+		let (window_width, _) = self.window.get_window_size();
+		self.window.color(WindowColor::Foreground);
+		self.window.set_style(true, false, false);
+		if window_width >= LIST_FOOTER_FULL_WIDTH {
+			self.window.draw_str(LIST_FOOTER_FULL);
+		}
+		else if window_width >= LIST_FOOTER_COMPACT_WIDTH {
+			self.window.draw_str(LIST_FOOTER_COMPACT);
 		}
 		else {
 			self.window.draw_str("Help: ?");
@@ -275,7 +304,8 @@ impl<'v> View<'v> {
 		};
 	}
 
-	pub fn draw_main(&self, lines: &[Line], selected_index: usize) {
+	#[allow(clippy::nonminimal_bool)]
+	pub fn draw_main(&self, lines: &[Line], selected_index: usize, visual_index_start: Option<usize>) {
 		let number_of_lines = lines.len();
 		let view_height = self.get_main_view_height();
 
@@ -283,8 +313,15 @@ impl<'v> View<'v> {
 
 		let mut index: usize = 0;
 		for l in lines {
+			let is_cursor_line = match visual_index_start {
+				Some(visual_index) => {
+					(visual_index <= selected_index && index >= visual_index && index <= selected_index)
+					|| (visual_index > selected_index && index >= selected_index && index <= visual_index)
+				}
+				None => false
+			};
 			view_lines.push(ViewLine {
-				segments: self.get_todo_line_segments(l, selected_index == index),
+				segments: self.get_todo_line_segments(l, selected_index == index, is_cursor_line)
 			});
 			index += 1;
 		}
@@ -307,10 +344,17 @@ impl<'v> View<'v> {
 		if !show_scroll_bar {
 			self.draw_vertical_spacer((view_height - index) as i32);
 		}
-		self.draw_footer();
+
+		// TODO need something else here
+		if visual_index_start.is_some() {
+			self.draw_visual_mode_footer();
+		}
+		else {
+			self.draw_list_footer();
+		}
 	}
 
-	fn get_action_color(&self, action: &Action) -> WindowColor {
+	fn get_action_color(&self, action: Action) -> WindowColor {
 		match action {
 			Action::Break => WindowColor::ActionBreak,
 			Action::Drop => WindowColor::ActionDrop,
@@ -323,7 +367,7 @@ impl<'v> View<'v> {
 		}
 	}
 
-	pub fn get_todo_line_segments(&self, line: &Line, selected: bool) -> Vec<LineSegment> {
+	pub fn get_todo_line_segments(&self, line: &Line, is_cursor_line: bool, selected: bool) -> Vec<LineSegment> {
 		let (window_width, _) = self.window.get_window_size();
 
 		let mut segments: Vec<LineSegment> = vec![];
@@ -332,11 +376,17 @@ impl<'v> View<'v> {
 
 		self.window.set_style(false, false, false);
 		if window_width >= MINIMUM_FULL_WINDOW_WIDTH {
-			segments.push(LineSegment::new(if selected { " > " } else { "   " }));
+			segments.push(LineSegment::new_with_color_and_style(
+				if is_cursor_line || selected { " > " } else { "   " },
+				WindowColor::Foreground,
+				!is_cursor_line && selected,
+				false,
+				false
+			));
 
 			segments.push(LineSegment::new_with_color(
 				format!("{:6} ", action.as_string()).as_str(),
-				self.get_action_color(action),
+				self.get_action_color(*action),
 			));
 
 			segments.push(LineSegment::new(
@@ -354,11 +404,17 @@ impl<'v> View<'v> {
 			));
 		}
 		else {
-			segments.push(LineSegment::new(if selected { ">" } else { " " }));
+			segments.push(LineSegment::new_with_color_and_style(
+				if is_cursor_line || selected { ">" } else { " " },
+				WindowColor::Foreground,
+				!is_cursor_line && selected,
+				false,
+				false
+			));
 
 			segments.push(LineSegment::new_with_color(
 				format!("{:1} ", line.get_action().to_abbreviation()).as_str(),
-				self.get_action_color(action),
+				self.get_action_color(*action),
 			));
 
 			segments.push(LineSegment::new(
@@ -386,9 +442,9 @@ impl<'v> View<'v> {
 		self.update_alt_top(scroll_up, reset, lines_length, 3);
 	}
 
-	pub fn update_help_top(&mut self, scroll_up: bool, reset: bool) {
+	pub fn update_help_top(&mut self, scroll_up: bool, reset: bool, help_lines: &[(&str, &str)]) {
 		// title + quit line + header
-		self.update_alt_top(scroll_up, reset, HELP_LINES.len(), 3);
+		self.update_alt_top(scroll_up, reset, help_lines.len(), 3);
 	}
 
 	fn update_alt_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize, padding: usize) {
@@ -426,13 +482,13 @@ impl<'v> View<'v> {
 		}
 	}
 
-	pub fn draw_help(&self) {
+	pub fn draw_help(&self, help_lines: &[(&str, &str)]) {
 		let (window_width, window_height) = self.window.get_window_size();
 		let view_height = window_height as usize - 3;
 
 		let mut view_lines: Vec<ViewLine> = vec![];
 
-		for line in HELP_LINES {
+		for line in help_lines {
 			view_lines.push(ViewLine {
 				segments: vec![
 					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
@@ -453,8 +509,8 @@ impl<'v> View<'v> {
 			self.window.draw_str(padding.as_str());
 		}
 
-		let scroll_indicator_index = self.get_scroll_position(HELP_LINES.len(), view_height, self.alt_top);
-		let show_scroll_bar = view_height < HELP_LINES.len();
+		let scroll_indicator_index = self.get_scroll_position(help_lines.len(), view_height, self.alt_top);
+		let show_scroll_bar = view_height < help_lines.len();
 
 		let mut index = 0;
 		for line in view_lines.iter().skip(self.alt_top).take(view_height) {

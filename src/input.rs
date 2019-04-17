@@ -29,4 +29,5 @@ pub enum Input {
 	ShowCommit,
 	SwapSelectedDown,
 	SwapSelectedUp,
+	ToggleVisualMode,
 }
