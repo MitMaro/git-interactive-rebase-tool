@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Input {
 	Abort,
 	ActionBreak,

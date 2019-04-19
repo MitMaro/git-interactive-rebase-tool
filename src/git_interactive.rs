@@ -121,7 +121,7 @@ impl GitInteractive {
 			self.selected_line_index..self.visual_index_start
 		}
 		else {
-			self.visual_index_start..self.selected_line_index+1
+			self.visual_index_start..self.selected_line_index + 1
 		};
 
 		for index in range {
@@ -150,7 +150,7 @@ impl GitInteractive {
 			self.selected_line_index..self.visual_index_start
 		}
 		else {
-			self.visual_index_start..self.selected_line_index+1
+			self.visual_index_start..self.selected_line_index + 1
 		};
 
 		for index in range.rev() {
@@ -182,7 +182,7 @@ impl GitInteractive {
 			self.selected_line_index..self.visual_index_start
 		}
 		else {
-			self.visual_index_start..self.selected_line_index+1
+			self.visual_index_start..self.selected_line_index + 1
 		};
 
 		for index in range {

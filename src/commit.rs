@@ -28,14 +28,14 @@ impl User {
 	}
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug, PartialEq)]
 pub struct FileStat {
 	status: Delta,
 	to_name: String,
 	from_name: String,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Commit {
 	author: User,
 	body: Option<String>,
@@ -105,6 +105,7 @@ fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 
 			diff.find_similar(Some(diff_find_options))?;
 
+			// filter unmodified isn't being correctly removed
 			Some(
 				diff.deltas()
 					.map(|d| {
@@ -122,7 +123,6 @@ fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 								.unwrap_or_else(|| String::from("unknown")),
 						}
 					})
-					// unmodified isn't being correctly removed
 					.filter(|d| d.status != Delta::Unmodified)
 					.collect::<Vec<FileStat>>(),
 			)

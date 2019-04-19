@@ -2,7 +2,7 @@ use crate::color::Color;
 use std::convert::TryFrom;
 use std::{env, ffi::OsString};
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Config {
 	pub comment_char: String,
 	pub foreground_color: Color,

@@ -18,7 +18,7 @@ const COLOR_TABLE: [i16; 8] = [
 	pancurses::COLOR_YELLOW,
 ];
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum WindowColor {
 	ActionBreak,
 	ActionDrop,
@@ -169,9 +169,9 @@ impl<'w> Window<'w> {
 					pancurses::resize_term(0, 0);
 					self.height.replace(self.window.get_max_y());
 					self.width.replace(self.window.get_max_x());
-					break Input::Resize
+					break Input::Resize;
 				},
-				_ => {}
+				_ => {},
 			};
 		}
 	}
