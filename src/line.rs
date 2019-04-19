@@ -1,7 +1,7 @@
 use crate::action::Action;
 use std::convert::TryFrom;
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Line {
 	action: Action,
 	hash: String,
@@ -65,7 +65,7 @@ impl Line {
 		}
 	}
 
-		pub fn edit_content(&mut self, content: &str) {
+	pub fn edit_content(&mut self, content: &str) {
 		if let Action::Exec = self.action {
 			self.command = String::from(content)
 		}
@@ -74,7 +74,7 @@ impl Line {
 	pub fn get_edit_content(&self) -> &String {
 		match self.action {
 			Action::Exec => &self.command,
-			_ => &self.comment
+			_ => &self.comment,
 		}
 	}
 

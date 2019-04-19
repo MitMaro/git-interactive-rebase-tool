@@ -1,11 +1,11 @@
 use crate::action::Action;
 use crate::commit::Commit;
 use crate::constants::{
+	HEIGHT_ERROR_MESSAGE,
 	LIST_FOOTER_COMPACT,
 	LIST_FOOTER_COMPACT_WIDTH,
 	LIST_FOOTER_FULL,
 	LIST_FOOTER_FULL_WIDTH,
-	HEIGHT_ERROR_MESSAGE,
 	MINIMUM_COMPACT_WINDOW_WIDTH,
 	MINIMUM_FULL_WINDOW_WIDTH,
 	MINIMUM_WINDOW_HEIGHT,
@@ -20,10 +20,10 @@ use crate::constants::{
 	TITLE_SHORT_LENGTH,
 	TO_FILE_INDICATOR,
 	TO_FILE_INDICATOR_SHORT,
-	VISUAL_MODE_FOOTER_FULL_WIDTH,
-	VISUAL_MODE_FOOTER_FULL,
+	VISUAL_MODE_FOOTER_COMPACT,
 	VISUAL_MODE_FOOTER_COMPACT_WIDTH,
-	VISUAL_MODE_FOOTER_COMPACT
+	VISUAL_MODE_FOOTER_FULL,
+	VISUAL_MODE_FOOTER_FULL_WIDTH,
 };
 use crate::line::Line;
 use crate::window::Window;
@@ -316,12 +316,12 @@ impl<'v> View<'v> {
 			let is_cursor_line = match visual_index_start {
 				Some(visual_index) => {
 					(visual_index <= selected_index && index >= visual_index && index <= selected_index)
-					|| (visual_index > selected_index && index >= selected_index && index <= visual_index)
-				}
-				None => false
+						|| (visual_index > selected_index && index >= selected_index && index <= visual_index)
+				},
+				None => false,
 			};
 			view_lines.push(ViewLine {
-				segments: self.get_todo_line_segments(l, selected_index == index, is_cursor_line)
+				segments: self.get_todo_line_segments(l, selected_index == index, is_cursor_line),
 			});
 			index += 1;
 		}
@@ -381,7 +381,7 @@ impl<'v> View<'v> {
 				WindowColor::Foreground,
 				!is_cursor_line && selected,
 				false,
-				false
+				false,
 			));
 
 			segments.push(LineSegment::new_with_color(
@@ -409,7 +409,7 @@ impl<'v> View<'v> {
 				WindowColor::Foreground,
 				!is_cursor_line && selected,
 				false,
-				false
+				false,
 			));
 
 			segments.push(LineSegment::new_with_color(
