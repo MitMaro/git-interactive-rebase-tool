@@ -145,22 +145,23 @@ git config --global interactive-rebase-tool.foregroundColor black
 
 #### Options
 
-| Key                | Default | Type  | Description |
-| ------------------ | ------- | ----- | ----------- |
-| `autoSelectNext`   | false   | bool  | If true, auto select the next line after action modification |
-| `foregroundColor`  | white   | Color | Color used for most text and the UI |
-| `indicatorColor`   | cyan    | Color | Color used for text the indicates or needs to standout  |
-| `errorColor`       | red     | Color | Color used for showing error messages  |
-| `diffAddColor`     | green   | Color | Color used for lines and files added in a diff |
-| `diffRemoveColor`  | red     | Color | Color used for lines and files removed in a diff |
-| `diffChangeColor`  | yellow  | Color | Color used for lines and files changed in a diff |
-| `breakColor`       | white   | Color | Color used for the break action |
-| `pickColor`        | green   | Color | Color used for the pick action |
-| `rewordColor`      | yellow  | Color | Color used for the reword action |
-| `editColor`        | blue    | Color | Color used for the edit action |
-| `squashColor`      | cyan    | Color | Color used for the squash action |
-| `fixupColor`       | magenta | Color | Color used for the fixup action |
-| `dropColor`        | red     | Color | Color used for the drop action |
+| Key                        | Default | Type   | Description |
+| -------------------------- | ------- | ------ | ----------- |
+| `autoSelectNext`           | false   | bool   | If true, auto select the next line after action modification |
+| `foregroundColor`          | white   | Color  | Color used for most text and the UI |
+| `indicatorColor`           | cyan    | Color  | Color used for text the indicates or needs to standout  |
+| `errorColor`               | red     | Color  | Color used for showing error messages  |
+| `diffAddColor`             | green   | Color  | Color used for lines and files added in a diff |
+| `diffRemoveColor`          | red     | Color  | Color used for lines and files removed in a diff |
+| `diffChangeColor`          | yellow  | Color  | Color used for lines and files changed in a diff |
+| `breakColor`               | white   | Color  | Color used for the break action |
+| `pickColor`                | green   | Color  | Color used for the pick action |
+| `rewordColor`              | yellow  | Color  | Color used for the reword action |
+| `editColor`                | blue    | Color  | Color used for the edit action |
+| `squashColor`              | cyan    | Color  | Color used for the squash action |
+| `fixupColor`               | magenta | Color  | Color used for the fixup action |
+| `dropColor`                | red     | Color  | Color used for the drop action |
+| `verticalSpacingCharacter` | ~       | String | Vertical spacing character. Can be set to an empty string. |
 
 #### Valid Color Values
 
