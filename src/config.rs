@@ -4,23 +4,24 @@ use std::{env, ffi::OsString};
 
 #[derive(Clone, Debug)]
 pub struct Config {
+	pub auto_select_next: bool,
+	pub break_color: Color,
 	pub comment_char: String,
-	pub foreground_color: Color,
-	pub indicator_color: Color,
-	pub error_color: Color,
 	pub diff_add_color: Color,
 	pub diff_change_color: Color,
 	pub diff_remove_color: Color,
-	pub break_color: Color,
+	pub drop_color: Color,
+	pub edit_color: Color,
+	pub editor: OsString,
+	pub error_color: Color,
+	pub exec_color: Color,
+	pub fixup_color: Color,
+	pub foreground_color: Color,
+	pub indicator_color: Color,
 	pub pick_color: Color,
 	pub reword_color: Color,
-	pub edit_color: Color,
-	pub exec_color: Color,
 	pub squash_color: Color,
-	pub fixup_color: Color,
-	pub drop_color: Color,
-	pub auto_select_next: bool,
-	pub editor: OsString,
+	pub vertical_spacing_character: String,
 }
 
 fn get_string(config: &git2::Config, name: &str, default: &str) -> Result<String, String> {
@@ -77,23 +78,28 @@ impl Config {
 	pub fn new() -> Result<Self, String> {
 		let git_config = open_git_config()?;
 		Ok(Config {
+			auto_select_next: get_bool(&git_config, "interactive-rebase-tool.autoSelectNext", false)?,
+			break_color: get_color(&git_config, "interactive-rebase-tool.breakColor", Color::White)?,
 			comment_char: get_string(&git_config, "core.commentChar", "#")?,
-			foreground_color: get_color(&git_config, "interactive-rebase-tool.foregroundColor", Color::White)?,
-			indicator_color: get_color(&git_config, "interactive-rebase-tool.indicatorColor", Color::Cyan)?,
-			error_color: get_color(&git_config, "interactive-rebase-tool.errorColor", Color::Red)?,
 			diff_add_color: get_color(&git_config, "interactive-rebase-tool.diffAddColor", Color::Green)?,
 			diff_change_color: get_color(&git_config, "interactive-rebase-tool.diffChangeColor", Color::Yellow)?,
 			diff_remove_color: get_color(&git_config, "interactive-rebase-tool.diffRemoveColor", Color::Red)?,
-			break_color: get_color(&git_config, "interactive-rebase-tool.breakColor", Color::White)?,
+			drop_color: get_color(&git_config, "interactive-rebase-tool.dropColor", Color::Red)?,
+			edit_color: get_color(&git_config, "interactive-rebase-tool.editColor", Color::Blue)?,
+			editor: get_os_string(&git_config, "core.editor", editor_from_env())?,
+			error_color: get_color(&git_config, "interactive-rebase-tool.errorColor", Color::Red)?,
+			exec_color: get_color(&git_config, "interactive-rebase-tool.execColor", Color::White)?,
+			fixup_color: get_color(&git_config, "interactive-rebase-tool.fixupColor", Color::Magenta)?,
+			foreground_color: get_color(&git_config, "interactive-rebase-tool.foregroundColor", Color::White)?,
+			indicator_color: get_color(&git_config, "interactive-rebase-tool.indicatorColor", Color::Cyan)?,
 			pick_color: get_color(&git_config, "interactive-rebase-tool.pickColor", Color::Green)?,
 			reword_color: get_color(&git_config, "interactive-rebase-tool.rewordColor", Color::Yellow)?,
-			edit_color: get_color(&git_config, "interactive-rebase-tool.editColor", Color::Blue)?,
-			exec_color: get_color(&git_config, "interactive-rebase-tool.execColor", Color::White)?,
 			squash_color: get_color(&git_config, "interactive-rebase-tool.squashColor", Color::Cyan)?,
-			fixup_color: get_color(&git_config, "interactive-rebase-tool.fixupColor", Color::Magenta)?,
-			drop_color: get_color(&git_config, "interactive-rebase-tool.dropColor", Color::Red)?,
-			auto_select_next: get_bool(&git_config, "interactive-rebase-tool.autoSelectNext", false)?,
-			editor: get_os_string(&git_config, "core.editor", editor_from_env())?,
+			vertical_spacing_character: get_string(
+				&git_config,
+				"interactive-rebase-tool.verticalSpacingCharacter",
+				"~",
+			)?,
 		})
 	}
 }

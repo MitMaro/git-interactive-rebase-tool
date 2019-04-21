@@ -74,6 +74,10 @@ impl<'w> Window<'w> {
 		self.window.addstr(s);
 	}
 
+	pub fn draw_vertical_space_character(&self) {
+		self.draw_str(format!("{}\n", self.config.vertical_spacing_character).as_str());
+	}
+
 	pub fn clear(&self) {
 		self.color(WindowColor::Foreground);
 		self.set_style(false, false, false);

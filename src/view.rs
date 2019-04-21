@@ -247,7 +247,7 @@ impl<'v> View<'v> {
 		self.window.color(WindowColor::Foreground);
 		self.window.set_style(false, false, false);
 		for _x in 0..repeat {
-			self.window.draw_str("~\n");
+			self.window.draw_vertical_space_character();
 		}
 	}
 
