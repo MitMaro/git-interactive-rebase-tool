@@ -135,14 +135,31 @@ impl<'v> View<'v> {
 		}
 	}
 
-	pub fn draw_view_line(&self, line: &ViewLine, padding: i32, scrollbar: bool) {
-		let (window_width, _) = self.window.get_window_size();
-		let window_width = if scrollbar {
-			window_width - padding - 1
+	pub fn draw_view_lines(&self, lines: Vec<ViewLine>, top: usize, height: usize) {
+		let number_of_lines = lines.len();
+
+		let scroll_indicator_index = self.get_scroll_position(number_of_lines, height, top);
+		let show_scroll_bar = height < number_of_lines;
+
+		let mut index: usize = 0;
+		for line in lines.iter().skip(top).take(height) {
+			self.draw_view_line(line, show_scroll_bar);
+			if show_scroll_bar {
+				self.window.color(WindowColor::Foreground);
+				self.window.set_style(scroll_indicator_index != index, false, true);
+				self.window.draw_str(" ");
+			}
+			index += 1;
 		}
-		else {
-			window_width - padding
-		} as usize;
+
+		if height > lines.len() {
+			self.draw_vertical_spacer((height - index) as i32);
+		}
+	}
+
+	pub fn draw_view_line(&self, line: &ViewLine, scrollbar: bool) {
+		let (window_width, _) = self.window.get_window_size();
+		let window_width = if scrollbar { window_width - 1 } else { window_width } as usize;
 
 		let mut start = 0;
 		for segment in &line.segments {
@@ -237,12 +254,6 @@ impl<'v> View<'v> {
 		}
 	}
 
-	fn draw_scroll_bar(&self, indicator: bool) {
-		self.window.color(WindowColor::Foreground);
-		self.window.set_style(indicator, false, true);
-		self.window.draw_str(" ");
-	}
-
 	fn draw_vertical_spacer(&self, repeat: i32) {
 		self.window.color(WindowColor::Foreground);
 		self.window.set_style(false, false, false);
@@ -306,13 +317,11 @@ impl<'v> View<'v> {
 
 	#[allow(clippy::nonminimal_bool)]
 	pub fn draw_main(&self, lines: &[Line], selected_index: usize, visual_index_start: Option<usize>) {
-		let number_of_lines = lines.len();
 		let view_height = self.get_main_view_height();
 
 		let mut view_lines: Vec<ViewLine> = vec![];
 
-		let mut index: usize = 0;
-		for l in lines {
+		for (index, line) in lines.iter().enumerate() {
 			let is_cursor_line = match visual_index_start {
 				Some(visual_index) => {
 					(visual_index <= selected_index && index >= visual_index && index <= selected_index)
@@ -321,29 +330,14 @@ impl<'v> View<'v> {
 				None => false,
 			};
 			view_lines.push(ViewLine {
-				segments: self.get_todo_line_segments(l, selected_index == index, is_cursor_line),
+				segments: self.get_todo_line_segments(line, selected_index == index, is_cursor_line),
 			});
-			index += 1;
 		}
 
 		self.window.clear();
 		self.draw_title(true);
 
-		let scroll_indicator_index = self.get_scroll_position(number_of_lines, view_height, self.main_top);
-		let show_scroll_bar = view_height < number_of_lines;
-
-		index = self.main_top;
-		for line in view_lines.iter().skip(self.main_top).take(view_height) {
-			self.draw_view_line(line, 0, show_scroll_bar);
-			if show_scroll_bar {
-				self.draw_scroll_bar(scroll_indicator_index != index - self.main_top);
-			}
-			index += 1;
-		}
-
-		if !show_scroll_bar {
-			self.draw_vertical_spacer((view_height - index) as i32);
-		}
+		self.draw_view_lines(view_lines, self.main_top, view_height);
 
 		// TODO need something else here
 		if visual_index_start.is_some() {
@@ -509,21 +503,7 @@ impl<'v> View<'v> {
 			self.window.draw_str(padding.as_str());
 		}
 
-		let scroll_indicator_index = self.get_scroll_position(help_lines.len(), view_height, self.alt_top);
-		let show_scroll_bar = view_height < help_lines.len();
-
-		let mut index = 0;
-		for line in view_lines.iter().skip(self.alt_top).take(view_height) {
-			self.draw_view_line(line, 0, show_scroll_bar);
-			if show_scroll_bar {
-				self.draw_scroll_bar(scroll_indicator_index != index);
-			}
-			index += 1;
-		}
-
-		if !show_scroll_bar {
-			self.draw_vertical_spacer((view_height - index) as i32);
-		}
+		self.draw_view_lines(view_lines, self.alt_top, view_height);
 
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
@@ -752,24 +732,7 @@ impl<'v> View<'v> {
 			None => {},
 		}
 
-		let scroll_indicator_index = self.get_scroll_position(lines.len(), view_height, self.alt_top);
-
-		let show_scroll_bar = view_height < lines.len();
-		let mut index = 0;
-
-		for line in lines.iter().skip(self.alt_top).take(view_height) {
-			self.draw_view_line(line, 0, show_scroll_bar);
-			if show_scroll_bar {
-				self.window.color(WindowColor::Foreground);
-				self.window.set_style(scroll_indicator_index != index, false, true);
-				self.window.draw_str(" ");
-			}
-			index += 1;
-		}
-
-		if view_height > lines.len() {
-			self.draw_vertical_spacer((view_height - index) as i32);
-		}
+		self.draw_view_lines(lines, self.alt_top, view_height);
 
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
