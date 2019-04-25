@@ -167,7 +167,9 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
 ## License
 
-Git Interactive Rebase Tool is released under the ISC license. See [LICENSE](LICENSE).
+Git Interactive Rebase Tool is released under the GPLv3 license. See [LICENSE](LICENSE).
+
+See [Third Party Licenses](THIRD_PARTY_LICENSES) for licenses for third-party libraries used by this project.
 
 [ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
 [appveyor-build]:https://ci.appveyor.com/project/MitMaro/git-interactive-rebase-tool/branch/master
