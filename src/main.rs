@@ -11,6 +11,7 @@ mod constants;
 mod git_interactive;
 mod input;
 mod line;
+mod scroll;
 mod view;
 mod window;
 

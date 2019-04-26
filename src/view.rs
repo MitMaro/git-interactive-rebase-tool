@@ -26,6 +26,7 @@ use crate::constants::{
 	VISUAL_MODE_FOOTER_FULL_WIDTH,
 };
 use crate::line::Line;
+use crate::scroll::get_scroll_position;
 use crate::window::Window;
 use crate::window::WindowColor;
 use git2::Delta;
@@ -138,7 +139,7 @@ impl<'v> View<'v> {
 	pub fn draw_view_lines(&self, lines: Vec<ViewLine>, top: usize, height: usize) {
 		let number_of_lines = lines.len();
 
-		let scroll_indicator_index = self.get_scroll_position(number_of_lines, height, top);
+		let scroll_indicator_index = get_scroll_position(top, number_of_lines, height);
 		let show_scroll_bar = height < number_of_lines;
 
 		let mut index: usize = 0;
@@ -183,34 +184,6 @@ impl<'v> View<'v> {
 		if start < window_width {
 			let padding = " ".repeat(window_width - start);
 			self.window.draw_str(padding.as_str());
-		}
-	}
-
-	fn get_scroll_position(&self, max_item_count: usize, view_height: usize, position: usize) -> usize {
-		// no need for a scroll bar here
-		// TODO remove
-		if view_height >= max_item_count {
-			return 0;
-		}
-		// only allow line_index at 0 to show is position is also at 0
-		if position == 0 {
-			return 0;
-		}
-
-		let max_position = max_item_count - view_height - 1;
-
-		if position == max_position + 1 {
-			return view_height - 1;
-		}
-
-		match max_position {
-			// special case for when input range is 0
-			1 => (0.5 * view_height as f64) as usize,
-			_ => {
-				let slope = (view_height as f64 - 2.0 - 1.0) / (max_position as f64 - 1.0);
-				let output = 1.0 + (slope * (position as f64 - 1.0));
-				output.round() as usize
-			},
 		}
 	}
 
