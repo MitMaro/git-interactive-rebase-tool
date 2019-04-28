@@ -26,7 +26,7 @@ use crate::constants::{
 	VISUAL_MODE_FOOTER_FULL_WIDTH,
 };
 use crate::line::Line;
-use crate::scroll::get_scroll_position;
+use crate::scroll::{get_scroll_position, ScrollPosition};
 use crate::window::Window;
 use crate::window::WindowColor;
 use git2::Delta;
@@ -80,7 +80,7 @@ pub struct ViewLine {
 pub struct View<'v> {
 	window: &'v Window<'v>,
 	main_top: usize,
-	alt_top: usize,
+	alt_top: ScrollPosition,
 }
 
 impl<'v> View<'v> {
@@ -88,7 +88,7 @@ impl<'v> View<'v> {
 		Self {
 			window,
 			main_top: 0,
-			alt_top: 0,
+			alt_top: ScrollPosition::new(3, 6, 3),
 		}
 	}
 
@@ -405,47 +405,28 @@ impl<'v> View<'v> {
 	}
 
 	pub fn update_commit_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize) {
-		// title + quit lint + extra padding line
-		self.update_alt_top(scroll_up, reset, lines_length, 3);
-	}
-
-	pub fn update_help_top(&mut self, scroll_up: bool, reset: bool, help_lines: &[(&str, &str)]) {
-		// title + quit line + header
-		self.update_alt_top(scroll_up, reset, help_lines.len(), 3);
-	}
-
-	fn update_alt_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize, padding: usize) {
-		if reset {
-			self.alt_top = 0;
-		}
-
 		let (_, window_height) = self.window.get_window_size();
-		let view_height = window_height as usize - padding;
-
-		if view_height >= lines_length {
-			self.alt_top = 0;
-			return;
+		if reset {
+			self.alt_top.reset();
 		}
-
-		let amount = match view_height {
-			h if h > 20 => 6,
-			h if h > 10 => 3,
-			_ => 1,
-		};
-
-		if scroll_up {
-			if self.alt_top < amount {
-				self.alt_top = 0;
-			}
-			else {
-				self.alt_top -= amount;
-			}
-		}
-		else if self.alt_top + amount + view_height > lines_length {
-			self.alt_top = lines_length - view_height;
+		else if scroll_up {
+			self.alt_top.scroll_up(window_height as usize, lines_length);
 		}
 		else {
-			self.alt_top += amount;
+			self.alt_top.scroll_down(window_height as usize, lines_length);
+		}
+	}
+
+	pub fn update_help_top(&self, scroll_up: bool, reset: bool, help_lines: &[(&str, &str)]) {
+		let (_, window_height) = self.window.get_window_size();
+		if reset {
+			self.alt_top.reset();
+		}
+		else if scroll_up {
+			self.alt_top.scroll_up(window_height as usize, help_lines.len());
+		}
+		else {
+			self.alt_top.scroll_down(window_height as usize, help_lines.len());
 		}
 	}
 
@@ -476,7 +457,7 @@ impl<'v> View<'v> {
 			self.window.draw_str(padding.as_str());
 		}
 
-		self.draw_view_lines(view_lines, self.alt_top, view_height);
+		self.draw_view_lines(view_lines, self.alt_top.get_position(), view_height);
 
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
@@ -705,7 +686,7 @@ impl<'v> View<'v> {
 			None => {},
 		}
 
-		self.draw_view_lines(lines, self.alt_top, view_height);
+		self.draw_view_lines(lines, self.alt_top.get_position(), view_height);
 
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
