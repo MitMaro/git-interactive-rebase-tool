@@ -79,7 +79,7 @@ pub struct ViewLine {
 
 pub struct View<'v> {
 	window: &'v Window<'v>,
-	main_top: usize,
+	main_top: ScrollPosition,
 	alt_top: ScrollPosition,
 }
 
@@ -87,7 +87,7 @@ impl<'v> View<'v> {
 	pub fn new(window: &'v Window) -> Self {
 		Self {
 			window,
-			main_top: 0,
+			main_top: ScrollPosition::new(2, 1, 1),
 			alt_top: ScrollPosition::new(3, 6, 3),
 		}
 	}
@@ -187,11 +187,6 @@ impl<'v> View<'v> {
 		}
 	}
 
-	fn get_main_view_height(&self) -> usize {
-		let (_, window_height) = self.window.get_window_size();
-		window_height as usize - 2
-	}
-
 	fn draw_title(&self, show_help: bool) {
 		self.window.color(WindowColor::Foreground);
 		self.window.set_style(false, true, true);
@@ -268,29 +263,15 @@ impl<'v> View<'v> {
 	}
 
 	pub fn update_main_top(&mut self, number_of_lines: usize, selected_index: usize) {
-		let view_height = self.get_main_view_height();
-
-		// TODO I think this can be simplified
-		self.main_top = match selected_index {
-			// show all if list is view height is long enough
-			_ if number_of_lines <= view_height => 0,
-			// last item selected, set top to show bottom of lines
-			s if s >= number_of_lines - 1 => number_of_lines - view_height,
-			// if on top two of list set top to top of list
-			s if s < 1 => 0,
-			// if selected item is hidden above top, shift top up
-			s if s < self.main_top => s,
-			// if starting scrolling, hide top two
-			s if self.main_top == 0 && s >= view_height => 1,
-			// if selected item is hidden below, shift top down
-			s if s >= self.main_top + view_height => s - view_height + 1,
-			_ => self.main_top,
-		};
+		let (_, window_height) = self.window.get_window_size();
+		self.main_top
+			.ensure_cursor_visible(selected_index, window_height as usize, number_of_lines);
 	}
 
 	#[allow(clippy::nonminimal_bool)]
 	pub fn draw_main(&self, lines: &[Line], selected_index: usize, visual_index_start: Option<usize>) {
-		let view_height = self.get_main_view_height();
+		let (_, window_height) = self.window.get_window_size();
+		let view_height = window_height as usize - 2;
 
 		let mut view_lines: Vec<ViewLine> = vec![];
 
@@ -310,7 +291,7 @@ impl<'v> View<'v> {
 		self.window.clear();
 		self.draw_title(true);
 
-		self.draw_view_lines(view_lines, self.main_top, view_height);
+		self.draw_view_lines(view_lines, self.main_top.get_position(), view_height);
 
 		// TODO need something else here
 		if visual_index_start.is_some() {
