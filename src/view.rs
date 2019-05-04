@@ -78,17 +78,19 @@ pub struct ViewLine {
 }
 
 pub struct View<'v> {
-	window: &'v Window<'v>,
+	commit_top: ScrollPosition,
+	help_top: ScrollPosition,
 	main_top: ScrollPosition,
-	alt_top: ScrollPosition,
+	window: &'v Window<'v>,
 }
 
 impl<'v> View<'v> {
 	pub fn new(window: &'v Window) -> Self {
 		Self {
-			window,
+			commit_top: ScrollPosition::new(3, 6, 3),
+			help_top: ScrollPosition::new(3, 6, 3),
 			main_top: ScrollPosition::new(2, 1, 1),
-			alt_top: ScrollPosition::new(3, 6, 3),
+			window,
 		}
 	}
 
@@ -388,26 +390,26 @@ impl<'v> View<'v> {
 	pub fn update_commit_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize) {
 		let (_, window_height) = self.window.get_window_size();
 		if reset {
-			self.alt_top.reset();
+			self.commit_top.reset();
 		}
 		else if scroll_up {
-			self.alt_top.scroll_up(window_height as usize, lines_length);
+			self.commit_top.scroll_up(window_height as usize, lines_length);
 		}
 		else {
-			self.alt_top.scroll_down(window_height as usize, lines_length);
+			self.commit_top.scroll_down(window_height as usize, lines_length);
 		}
 	}
 
 	pub fn update_help_top(&self, scroll_up: bool, reset: bool, help_lines: &[(&str, &str)]) {
 		let (_, window_height) = self.window.get_window_size();
 		if reset {
-			self.alt_top.reset();
+			self.help_top.reset();
 		}
 		else if scroll_up {
-			self.alt_top.scroll_up(window_height as usize, help_lines.len());
+			self.help_top.scroll_up(window_height as usize, help_lines.len());
 		}
 		else {
-			self.alt_top.scroll_down(window_height as usize, help_lines.len());
+			self.help_top.scroll_down(window_height as usize, help_lines.len());
 		}
 	}
 
@@ -438,7 +440,7 @@ impl<'v> View<'v> {
 			self.window.draw_str(padding.as_str());
 		}
 
-		self.draw_view_lines(view_lines, self.alt_top.get_position(), view_height);
+		self.draw_view_lines(view_lines, self.help_top.get_position(), view_height);
 
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
@@ -667,7 +669,7 @@ impl<'v> View<'v> {
 			None => {},
 		}
 
-		self.draw_view_lines(lines, self.alt_top.get_position(), view_height);
+		self.draw_view_lines(lines, self.commit_top.get_position(), view_height);
 
 		self.window.color(WindowColor::IndicatorColor);
 		self.window.draw_str("Any key to close");
