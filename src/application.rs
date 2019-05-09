@@ -85,70 +85,76 @@ impl<'a> Application<'a> {
 	}
 
 	fn process(&mut self) {
-		match self.state.get() {
-			State::ConfirmAbort => {},
-			State::ConfirmRebase => {},
-			State::Edit => {},
+		if let Some(new_state) = match self.state.get() {
+			State::ConfirmAbort => None,
+			State::ConfirmRebase => None,
+			State::Edit => None,
 			State::EditFinish => self.process_edit_finish(),
-			State::Error => {},
-			State::Exiting => {},
+			State::Error => None,
+			State::Exiting => None,
 			State::ExternalEditor => self.process_external_editor(),
 			State::ExternalEditorError => self.process_external_editor_error(),
 			State::ExternalEditorFinish => self.process_external_editor_finish(),
-			State::Help => {},
+			State::Help => None,
 			State::List => self.process_list(),
 			State::ShowCommit => self.process_show_commit(),
 			State::VisualMode => self.process_list(),
-			State::WindowSizeError => {},
+			State::WindowSizeError => None,
+		} {
+			self.set_state(new_state);
 		}
 	}
 
-	fn process_edit_finish(&mut self) {
+	fn process_edit_finish(&mut self) -> Option<State> {
 		self.git_interactive.edit_selected_line(self.edit_content.as_str());
-		self.set_state(State::List);
+		Some(State::List)
 	}
 
-	fn process_external_editor(&mut self) {
+	fn process_external_editor(&mut self) -> Option<State> {
 		if let Err(e) = self.run_editor() {
 			self.set_error(e, State::ExternalEditorFinish);
-			return;
+			return None;
 		}
-		self.set_state(State::ExternalEditorFinish);
+		Some(State::ExternalEditorFinish)
 	}
 
-	fn process_external_editor_finish(&mut self) {
+	fn process_external_editor_finish(&mut self) -> Option<State> {
 		if let Err(e) = self.git_interactive.reload_file(self.config.comment_char.as_str()) {
 			self.set_error(e, State::ExternalEditorError);
-			return;
+			return None;
 		}
 
 		if self.git_interactive.get_lines().is_empty() {
 			self.set_error(String::from("Rebase empty"), State::ExternalEditorError);
 			// exit will occur in error
-			return;
+			return None;
 		}
-		self.set_state(State::List);
+		Some(State::List)
 	}
 
-	fn process_external_editor_error(&mut self) {
+	fn process_external_editor_error(&mut self) -> Option<State> {
 		self.set_state(State::Exiting);
 		if self.git_interactive.get_lines().is_empty() {
 			self.exit_finish();
-			return;
 		}
-		self.exit_error();
+		else {
+			self.exit_error();
+		}
+		None
 	}
 
-	fn process_list(&mut self) {
+	fn process_list(&mut self) -> Option<State> {
 		let lines = self.git_interactive.get_lines();
 		let selected_index = self.get_cursor_index();
 		self.view.update_main_top(lines.len(), selected_index);
+		None
 	}
 
-	fn process_show_commit(&mut self) {
+	fn process_show_commit(&mut self) -> Option<State> {
 		if let Err(e) = self.git_interactive.load_commit_stats() {
 			self.set_error(e, State::List);
-		};
+		}
+		None
 	}
 
 	fn draw(&self) {
@@ -231,25 +237,27 @@ impl<'a> Application<'a> {
 	}
 
 	fn handle_input(&mut self) {
-		match self.state.get() {
+		if let Some(new_state) = match self.state.get() {
 			State::ConfirmAbort => self.handle_confirm_abort_input(),
 			State::ConfirmRebase => self.handle_confirm_rebase_input(),
 			State::Edit => self.handle_edit(),
-			State::EditFinish => {},
+			State::EditFinish => None,
 			State::Error => self.handle_error_input(),
-			State::Exiting => {},
+			State::Exiting => None,
 			State::ExternalEditor => self.handle_external_editor_input(),
 			State::ExternalEditorError => self.handle_error_input(),
-			State::ExternalEditorFinish => {},
+			State::ExternalEditorFinish => None,
 			State::Help => self.handle_help_input(),
 			State::List => self.handle_list_input(),
 			State::VisualMode => self.handle_visual_mode_input(),
 			State::ShowCommit => self.handle_show_commit_input(),
 			State::WindowSizeError => self.handle_window_size_error_input(),
-		};
+		} {
+			self.set_state(new_state);
+		}
 	}
 
-	fn handle_help_input(&mut self) {
+	fn handle_help_input(&mut self) -> Option<State> {
 		let help_lines = if self.help_state.get() == State::List {
 			LIST_HELP_LINES
 		}
@@ -270,9 +278,10 @@ impl<'a> Application<'a> {
 				self.set_state(self.help_state.get());
 			},
 		}
+		None
 	}
 
-	fn handle_visual_mode_input(&mut self) {
+	fn handle_visual_mode_input(&mut self) -> Option<State> {
 		match self.get_input() {
 			Input::MoveCursorDown => {
 				self.git_interactive.move_cursor_down(1);
@@ -295,18 +304,19 @@ impl<'a> Application<'a> {
 			Input::SwapSelectedDown => self.git_interactive.swap_visual_range_down(),
 			Input::SwapSelectedUp => self.git_interactive.swap_visual_range_up(),
 			Input::ToggleVisualMode => {
-				self.set_state(State::List);
+				return Some(State::List);
 			},
 			Input::Help => {
 				self.view.update_help_top(false, true, VISUAL_MODE_HELP_LINES);
 				self.help_state.replace(self.state.get());
-				self.set_state(State::Help);
+				return Some(State::Help);
 			},
 			_ => {},
 		}
+		None
 	}
 
-	fn handle_show_commit_input(&mut self) {
+	fn handle_show_commit_input(&mut self) -> Option<State> {
 		match self.get_input() {
 			Input::MoveCursorDown => {
 				self.view
@@ -321,38 +331,41 @@ impl<'a> Application<'a> {
 					.update_commit_top(true, false, self.git_interactive.get_commit_stats_length());
 			},
 			_ => {
-				self.set_state(State::List);
+				return Some(State::List);
 			},
 		}
+		None
 	}
 
-	fn handle_confirm_abort_input(&mut self) {
+	fn handle_confirm_abort_input(&mut self) -> Option<State> {
 		match self.get_confirm() {
 			Some(true) => {
 				self.exit_abort();
-				self.set_state(State::Exiting);
+				return Some(State::Exiting);
 			},
 			Some(false) => {
-				self.set_state(State::List);
+				return Some(State::List);
 			},
 			None => {},
 		}
+		None
 	}
 
-	fn handle_confirm_rebase_input(&mut self) {
+	fn handle_confirm_rebase_input(&mut self) -> Option<State> {
 		match self.get_confirm() {
 			Some(true) => {
 				self.exit_finish();
-				self.set_state(State::Exiting);
+				return Some(State::Exiting);
 			},
 			Some(false) => {
-				self.set_state(State::List);
+				return Some(State::List);
 			},
 			None => {},
 		}
+		None
 	}
 
-	fn handle_edit(&mut self) {
+	fn handle_edit(&mut self) -> Option<State> {
 		loop {
 			match self.window.get_character() {
 				Input::Character(c) => {
@@ -402,7 +415,7 @@ impl<'a> Application<'a> {
 						self.edit_content_cursor -= 1;
 					}
 				},
-				Input::Enter => self.set_state(State::EditFinish),
+				Input::Enter => return Some(State::EditFinish),
 				Input::Resize => self.handle_resize(),
 				_ => {
 					continue;
@@ -410,50 +423,53 @@ impl<'a> Application<'a> {
 			}
 			break;
 		}
+		None
 	}
 
-	fn handle_error_input(&mut self) {
+	fn handle_error_input(&mut self) -> Option<State> {
 		match self.get_input() {
 			Input::Resize => {},
 			_ => {
 				self.error_message = None;
-				self.set_state(self.previous_state.get());
+				return Some(self.previous_state.get());
 			},
 		}
+		None
 	}
 
-	fn handle_external_editor_input(&mut self) {
+	fn handle_external_editor_input(&mut self) -> Option<State> {
 		match self.get_input() {
 			Input::Resize => {},
 			_ => {
 				self.error_message = None;
-				self.set_state(self.previous_state.get());
+				return Some(self.previous_state.get());
 			},
 		}
+		None
 	}
 
-	fn handle_list_input(&mut self) {
+	fn handle_list_input(&mut self) -> Option<State> {
 		match self.get_input() {
 			Input::Help => {
 				self.view.update_help_top(false, true, LIST_HELP_LINES);
 				self.help_state.replace(self.state.get());
-				self.set_state(State::Help);
+				return Some(State::Help);
 			},
 			Input::ShowCommit => {
 				if !self.git_interactive.get_selected_line_hash().is_empty() {
 					self.view.update_commit_top(false, true, 0);
-					self.set_state(State::ShowCommit);
+					return Some(State::ShowCommit);
 				}
 			},
-			Input::Abort => self.set_state(State::ConfirmAbort),
+			Input::Abort => return Some(State::ConfirmAbort),
 			Input::ForceAbort => {
 				self.exit_abort();
-				self.set_state(State::Exiting);
+				return Some(State::Exiting);
 			},
-			Input::Rebase => self.set_state(State::ConfirmRebase),
+			Input::Rebase => return Some(State::ConfirmRebase),
 			Input::ForceRebase => {
 				self.exit_finish();
-				self.set_state(State::Exiting);
+				return Some(State::Exiting);
 			},
 			Input::ActionBreak => self.git_interactive.toggle_break(),
 			Input::ActionDrop => self.set_selected_line_action(Action::Drop),
@@ -466,7 +482,7 @@ impl<'a> Application<'a> {
 				if *self.git_interactive.get_selected_line_action() == Action::Exec {
 					self.edit_content = self.git_interactive.get_selected_line_edit_content().clone();
 					self.edit_content_cursor = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true).count();
-					self.set_state(State::Edit);
+					return Some(State::Edit);
 				}
 			},
 			Input::SwapSelectedDown => self.git_interactive.swap_selected_down(),
@@ -477,15 +493,17 @@ impl<'a> Application<'a> {
 			Input::MoveCursorPageUp => self.git_interactive.move_cursor_up(5),
 			Input::ToggleVisualMode => {
 				self.git_interactive.start_visual_mode();
-				self.set_state(State::VisualMode);
+				return Some(State::VisualMode);
 			},
-			Input::OpenInEditor => self.set_state(State::ExternalEditor),
+			Input::OpenInEditor => return Some(State::ExternalEditor),
 			_ => {},
 		}
+		None
 	}
 
-	fn handle_window_size_error_input(&mut self) {
+	fn handle_window_size_error_input(&mut self) -> Option<State> {
 		self.get_input();
+		None
 	}
 
 	fn run_editor(&mut self) -> Result<(), String> {
