@@ -160,34 +160,30 @@ impl<'a> Application<'a> {
 	fn draw(&self) {
 		self.window.clear();
 		match self.state.get() {
-			State::ConfirmAbort => self.view.draw_confirm("Are you sure you want to abort"),
-			State::ConfirmRebase => self.view.draw_confirm("Are you sure you want to rebase"),
-			State::Edit => {
-				self.view
-					.draw_edit(self.edit_content.as_str(), self.edit_content_cursor)
-			},
+			State::ConfirmAbort => self.draw_confirm_abort(),
+			State::ConfirmRebase => self.draw_confirm_rebase(),
+			State::Edit => self.draw_edit(),
 			State::EditFinish => {},
 			State::Error => self.draw_error(),
-			State::Exiting => self.view.draw_exiting(),
+			State::Exiting => self.draw_exiting(),
 			State::ExternalEditor => {},
 			State::ExternalEditorError => self.draw_error(),
 			State::ExternalEditorFinish => {},
 			State::Help => self.draw_help(),
-			State::List => {
-				self.view
-					.draw_main(self.git_interactive.get_lines(), self.get_cursor_index(), None)
-			},
-			State::VisualMode => {
-				self.view.draw_main(
-					self.git_interactive.get_lines(),
-					self.get_cursor_index(),
-					Some(self.git_interactive.get_visual_start_index() - 1),
-				)
-			},
-			State::ShowCommit => self.view.draw_show_commit(self.git_interactive.get_commit_stats()),
-			State::WindowSizeError => self.view.draw_window_size_error(),
+			State::List => self.draw_main(false),
+			State::VisualMode => self.draw_main(false),
+			State::ShowCommit => self.draw_show_commit(),
+			State::WindowSizeError => self.draw_window_size_error(),
 		}
 		self.window.refresh();
+	}
+
+	fn draw_confirm_abort(&self) {
+		self.view.draw_confirm("Are you sure you want to abort");
+	}
+
+	fn draw_confirm_rebase(&self) {
+		self.view.draw_confirm("Are you sure you want to rebase");
 	}
 
 	fn draw_error(&self) {
@@ -196,6 +192,28 @@ impl<'a> Application<'a> {
 			None => "Error...",
 		};
 		self.view.draw_error(message);
+	}
+
+	fn draw_show_commit(&self) {
+		self.view.draw_show_commit(self.git_interactive.get_commit_stats());
+	}
+
+	fn draw_main(&self, visual_mode: bool) {
+		self.view.draw_main(
+			self.git_interactive.get_lines(),
+			self.get_cursor_index(),
+			if visual_mode {
+				Some(self.git_interactive.get_visual_start_index() - 1)
+			}
+			else {
+				None
+			},
+		);
+	}
+
+	fn draw_edit(&self) {
+		self.view
+			.draw_edit(self.edit_content.as_str(), self.edit_content_cursor);
 	}
 
 	fn draw_help(&self) {
@@ -209,6 +227,14 @@ impl<'a> Application<'a> {
 		);
 	}
 
+	fn draw_exiting(&self) {
+		self.view.draw_exiting();
+	}
+
+	fn draw_window_size_error(&self) {
+		self.view.draw_window_size_error();
+	}
+
 	fn handle_resize(&self) {
 		let check = self.view.check_window_size();
 		if !check && self.state.get() != State::WindowSizeError {
@@ -220,7 +246,7 @@ impl<'a> Application<'a> {
 		}
 	}
 
-	pub fn get_input(&self) -> Input {
+	fn get_input(&self) -> Input {
 		let input = self.window.get_input();
 		if let Input::Resize = input {
 			self.handle_resize();
@@ -544,7 +570,7 @@ impl<'a> Application<'a> {
 		self.error_message = Some(msg);
 	}
 
-	pub fn set_state(&self, new_state: State) {
+	fn set_state(&self, new_state: State) {
 		self.state.replace(new_state);
 	}
 
