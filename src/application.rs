@@ -254,11 +254,11 @@ impl<'a> Application<'a> {
 		input
 	}
 
-	fn get_confirm(&mut self) -> Option<bool> {
+	fn get_confirm(&mut self) -> Input {
 		let input = self.window.get_confirm();
-		if input.is_none() {
+		if let Input::Resize = input {
 			self.handle_resize();
-		};
+		}
 		input
 	}
 
@@ -365,28 +365,28 @@ impl<'a> Application<'a> {
 
 	fn handle_confirm_abort_input(&mut self) -> Option<State> {
 		match self.get_confirm() {
-			Some(true) => {
+			Input::Yes => {
 				self.exit_abort();
 				return Some(State::Exiting);
 			},
-			Some(false) => {
+			Input::No => {
 				return Some(State::List);
 			},
-			None => {},
+			_ => {},
 		}
 		None
 	}
 
 	fn handle_confirm_rebase_input(&mut self) -> Option<State> {
 		match self.get_confirm() {
-			Some(true) => {
+			Input::Yes => {
 				self.exit_finish();
 				return Some(State::Exiting);
 			},
-			Some(false) => {
+			Input::No => {
 				return Some(State::List);
 			},
-			None => {},
+			_ => {},
 		}
 		None
 	}

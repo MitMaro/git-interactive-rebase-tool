@@ -226,16 +226,16 @@ impl<'w> Window<'w> {
 		(*self.width.borrow(), *self.height.borrow())
 	}
 
-	pub fn get_confirm(&self) -> Option<bool> {
+	pub fn get_confirm(&self) -> Input {
 		match self.window.getch() {
-			Some(PancursesInput::Character(c)) if c == 'y' || c == 'Y' => Some(true),
+			Some(PancursesInput::Character(c)) if c == 'y' || c == 'Y' => Input::Yes,
 			Some(PancursesInput::KeyResize) => {
 				pancurses::resize_term(0, 0);
 				self.height.replace(self.window.get_max_y());
 				self.width.replace(self.window.get_max_x());
-				None
+				Input::Resize
 			},
-			_ => Some(false),
+			_ => Input::No,
 		}
 	}
 
