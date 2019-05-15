@@ -1,8 +1,7 @@
-use pancurses::Input as PancursesInput;
+use pancurses::Input;
 
 use crate::color::Color;
 use crate::config::Config;
-use crate::input::Input;
 use std::cell::RefCell;
 
 use pancurses;
@@ -152,91 +151,19 @@ impl<'w> Window<'w> {
 		}
 	}
 
-	pub fn get_character(&self) -> Input {
-		loop {
-			let c = loop {
-				let c = self.window.getch();
-				if c.is_some() {
-					break c.unwrap();
-				}
-			};
+	pub fn getch(&self) -> Option<Input> {
+		let input = self.window.getch();
 
-			match c {
-				PancursesInput::Character(c) if c == '\n' => break Input::Enter,
-				PancursesInput::Character(c) => break Input::Character(c),
-				PancursesInput::KeyEnter => break Input::Enter,
-				PancursesInput::KeyBackspace => break Input::Backspace,
-				PancursesInput::KeyDC => break Input::Delete,
-				PancursesInput::KeyRight => break Input::MoveCursorRight,
-				PancursesInput::KeyLeft => break Input::MoveCursorLeft,
-				PancursesInput::KeyResize => {
-					pancurses::resize_term(0, 0);
-					self.height.replace(self.window.get_max_y());
-					self.width.replace(self.window.get_max_x());
-					break Input::Resize;
-				},
-				_ => {},
-			};
+		if let Some(Input::KeyResize) = input {
+			pancurses::resize_term(0, 0);
+			self.height.replace(self.window.get_max_y());
+			self.width.replace(self.window.get_max_x());
 		}
-	}
-
-	pub fn get_input(&self) -> Input {
-		// ignore None's, since they are not really valid input
-		let c = loop {
-			let c = self.window.getch();
-			if c.is_some() {
-				break c.unwrap();
-			}
-		};
-
-		match c {
-			PancursesInput::Character(c) if c == '?' => Input::Help,
-			PancursesInput::Character(c) if c == 'c' => Input::ShowCommit,
-			PancursesInput::Character(c) if c == 'q' => Input::Abort,
-			PancursesInput::Character(c) if c == 'Q' => Input::ForceAbort,
-			PancursesInput::Character(c) if c == 'w' => Input::Rebase,
-			PancursesInput::Character(c) if c == 'W' => Input::ForceRebase,
-			PancursesInput::Character(c) if c == 'p' => Input::ActionPick,
-			PancursesInput::Character(c) if c == 'b' => Input::ActionBreak,
-			PancursesInput::Character(c) if c == 'r' => Input::ActionReword,
-			PancursesInput::Character(c) if c == 'e' => Input::ActionEdit,
-			PancursesInput::Character(c) if c == 's' => Input::ActionSquash,
-			PancursesInput::Character(c) if c == 'f' => Input::ActionFixup,
-			PancursesInput::Character(c) if c == 'd' => Input::ActionDrop,
-			PancursesInput::Character(c) if c == 'E' => Input::Edit,
-			PancursesInput::Character(c) if c == 'v' => Input::ToggleVisualMode,
-			PancursesInput::Character(c) if c == 'j' => Input::SwapSelectedDown,
-			PancursesInput::Character(c) if c == 'k' => Input::SwapSelectedUp,
-			PancursesInput::KeyDown => Input::MoveCursorDown,
-			PancursesInput::KeyUp => Input::MoveCursorUp,
-			PancursesInput::KeyPPage => Input::MoveCursorPageUp,
-			PancursesInput::KeyNPage => Input::MoveCursorPageDown,
-			PancursesInput::KeyResize => {
-				pancurses::resize_term(0, 0);
-				self.height.replace(self.window.get_max_y());
-				self.width.replace(self.window.get_max_x());
-				Input::Resize
-			},
-			PancursesInput::Character(c) if c == '!' => Input::OpenInEditor,
-			_ => Input::Other,
-		}
+		input
 	}
 
 	pub fn get_window_size(&self) -> (i32, i32) {
 		(*self.width.borrow(), *self.height.borrow())
-	}
-
-	pub fn get_confirm(&self) -> Input {
-		match self.window.getch() {
-			Some(PancursesInput::Character(c)) if c == 'y' || c == 'Y' => Input::Yes,
-			Some(PancursesInput::KeyResize) => {
-				pancurses::resize_term(0, 0);
-				self.height.replace(self.window.get_max_y());
-				self.width.replace(self.window.get_max_x());
-				Input::Resize
-			},
-			_ => Input::No,
-		}
 	}
 
 	/// Leaves curses mode, runs the specified callback, and re-enables curses.

@@ -19,6 +19,7 @@ use crate::application::Application;
 use crate::config::Config;
 use crate::constants::{EXIT_CODE_CONFIG_ERROR, EXIT_CODE_FILE_READ_ERROR, EXIT_CODE_FILE_WRITE_ERROR};
 use crate::git_interactive::GitInteractive;
+use crate::input::InputHandler;
 use crate::view::View;
 use crate::window::Window;
 use std::process;
@@ -72,7 +73,10 @@ fn try_main() -> Result<i32, Exit> {
 
 	let window = Window::new(&config);
 
-	let mut application = Application::new(git_interactive, View::new(&window), &window, &config);
+	let input_handler = InputHandler::new(&window);
+
+	let mut application = Application::new(git_interactive, View::new(&window), &input_handler, &config);
+
 	let result = application.run();
 	window.end();
 
