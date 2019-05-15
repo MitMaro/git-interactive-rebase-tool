@@ -588,7 +588,6 @@ impl<'a> Application<'a> {
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
-		self.window.end();
 		match self.git_interactive.write_file() {
 			Ok(_) => {},
 			Err(msg) => {

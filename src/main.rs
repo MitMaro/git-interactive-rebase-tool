@@ -73,8 +73,10 @@ fn try_main() -> Result<i32, Exit> {
 	let window = Window::new(&config);
 
 	let mut application = Application::new(git_interactive, View::new(&window), &window, &config);
+	let result = application.run();
+	window.end();
 
-	let exit_code = match application.run() {
+	let exit_code = match result {
 		Ok(c) => c,
 		Err(message) => {
 			return Err(Exit {
