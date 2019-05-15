@@ -158,7 +158,7 @@ impl<'a> Application<'a> {
 	}
 
 	fn draw(&self) {
-		self.window.clear();
+		self.view.clear();
 		match self.state.get() {
 			State::ConfirmAbort => self.draw_confirm_abort(),
 			State::ConfirmRebase => self.draw_confirm_rebase(),
@@ -175,7 +175,7 @@ impl<'a> Application<'a> {
 			State::ShowCommit => self.draw_show_commit(),
 			State::WindowSizeError => self.draw_window_size_error(),
 		}
-		self.window.refresh();
+		self.view.refresh();
 	}
 
 	fn draw_confirm_abort(&self) {
