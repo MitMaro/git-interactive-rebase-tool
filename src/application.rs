@@ -9,7 +9,7 @@ use crate::constants::{
 	LIST_HELP_LINES,
 	VISUAL_MODE_HELP_LINES,
 };
-use crate::input::Input;
+use crate::input::{Input, InputHandler};
 use crate::view::View;
 use crate::window::Window;
 use std::cell::Cell;
@@ -43,15 +43,21 @@ pub struct Application<'a> {
 	exit_code: Option<i32>,
 	git_interactive: GitInteractive,
 	help_state: Cell<State>,
+	input_handler: &'a InputHandler<'a>,
 	previous_state: Cell<State>,
 	state: Cell<State>,
 	view: View<'a>,
-	window: &'a Window<'a>,
 }
 
 impl<'a> Application<'a> {
-	pub fn new(git_interactive: GitInteractive, view: View<'a>, window: &'a Window<'a>, config: &'a Config) -> Self {
-		Application {
+	pub fn new(
+		git_interactive: GitInteractive,
+		view: View<'a>,
+		input_handler: &'a InputHandler<'a>,
+		config: &'a Config,
+	) -> Self
+	{
+		Self {
 			config,
 			edit_content: String::from(""),
 			edit_content_cursor: 0,
@@ -59,10 +65,10 @@ impl<'a> Application<'a> {
 			exit_code: None,
 			git_interactive,
 			help_state: Cell::new(State::List),
+			input_handler,
 			previous_state: Cell::new(State::List),
 			state: Cell::new(State::List),
 			view,
-			window,
 		}
 	}
 
@@ -158,7 +164,7 @@ impl<'a> Application<'a> {
 	}
 
 	fn draw(&self) {
-		self.window.clear();
+		self.view.clear();
 		match self.state.get() {
 			State::ConfirmAbort => self.draw_confirm_abort(),
 			State::ConfirmRebase => self.draw_confirm_rebase(),
@@ -175,7 +181,7 @@ impl<'a> Application<'a> {
 			State::ShowCommit => self.draw_show_commit(),
 			State::WindowSizeError => self.draw_window_size_error(),
 		}
-		self.window.refresh();
+		self.view.refresh();
 	}
 
 	fn draw_confirm_abort(&self) {
@@ -247,7 +253,7 @@ impl<'a> Application<'a> {
 	}
 
 	fn get_input(&self) -> Input {
-		let input = self.window.get_input();
+		let input = self.input_handler.get_input();
 		if let Input::Resize = input {
 			self.handle_resize();
 		}
@@ -255,7 +261,7 @@ impl<'a> Application<'a> {
 	}
 
 	fn get_confirm(&mut self) -> Input {
-		let input = self.window.get_confirm();
+		let input = self.input_handler.get_confirm();
 		if let Input::Resize = input {
 			self.handle_resize();
 		}
@@ -393,7 +399,7 @@ impl<'a> Application<'a> {
 
 	fn handle_edit(&mut self) -> Option<State> {
 		loop {
-			match self.window.get_character() {
+			match self.input_handler.get_character() {
 				Input::Character(c) => {
 					let start = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
 						.take(self.edit_content_cursor)
@@ -442,7 +448,6 @@ impl<'a> Application<'a> {
 					}
 				},
 				Input::Enter => return Some(State::EditFinish),
-				Input::Resize => self.handle_resize(),
 				_ => {
 					continue;
 				},
@@ -588,7 +593,6 @@ impl<'a> Application<'a> {
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
-		self.window.end();
 		match self.git_interactive.write_file() {
 			Ok(_) => {},
 			Err(msg) => {

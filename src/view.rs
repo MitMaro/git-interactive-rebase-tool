@@ -109,6 +109,14 @@ impl<'v> View<'v> {
 		self.window.draw_str("Press any key to continue");
 	}
 
+	pub fn clear(&self) {
+		self.window.clear();
+	}
+
+	pub fn refresh(&self) {
+		self.window.refresh();
+	}
+
 	pub fn draw_window_size_error(&self) {
 		let (window_width, window_height) = self.window.get_window_size();
 
