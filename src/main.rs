@@ -8,6 +8,7 @@ mod color;
 mod commit;
 mod config;
 mod constants;
+mod exit_status;
 mod git_interactive;
 mod input;
 mod line;
@@ -17,7 +18,7 @@ mod window;
 
 use crate::application::Application;
 use crate::config::Config;
-use crate::constants::{EXIT_CODE_CONFIG_ERROR, EXIT_CODE_FILE_READ_ERROR, EXIT_CODE_FILE_WRITE_ERROR};
+use crate::exit_status::ExitStatus;
 use crate::git_interactive::GitInteractive;
 use crate::input::InputHandler;
 use crate::view::View;
@@ -26,20 +27,20 @@ use std::process;
 
 struct Exit {
 	message: String,
-	code: i32,
+	status: ExitStatus,
 }
 
 fn main() {
 	match try_main() {
-		Ok(code) => process::exit(code),
+		Ok(code) => process::exit(code.to_code()),
 		Err(err) => {
 			eprintln!("{}", err.message);
-			process::exit(err.code);
+			process::exit(err.status.to_code());
 		},
 	}
 }
 
-fn try_main() -> Result<i32, Exit> {
+fn try_main() -> Result<ExitStatus, Exit> {
 	let matches = cli::build_cli().get_matches();
 
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
@@ -49,7 +50,7 @@ fn try_main() -> Result<i32, Exit> {
 		Err(message) => {
 			return Err(Exit {
 				message,
-				code: EXIT_CODE_CONFIG_ERROR,
+				status: ExitStatus::ConfigError,
 			});
 		},
 	};
@@ -59,7 +60,7 @@ fn try_main() -> Result<i32, Exit> {
 		Err(message) => {
 			return Err(Exit {
 				message,
-				code: EXIT_CODE_FILE_READ_ERROR,
+				status: ExitStatus::FileReadError,
 			});
 		},
 	};
@@ -67,7 +68,7 @@ fn try_main() -> Result<i32, Exit> {
 	if git_interactive.get_lines().is_empty() {
 		return Err(Exit {
 			message: String::from("Nothing to rebase"),
-			code: EXIT_CODE_FILE_READ_ERROR,
+			status: ExitStatus::FileReadError,
 		});
 	}
 
@@ -85,10 +86,10 @@ fn try_main() -> Result<i32, Exit> {
 		Err(message) => {
 			return Err(Exit {
 				message,
-				code: EXIT_CODE_FILE_WRITE_ERROR,
+				status: ExitStatus::FileWriteError,
 			});
 		},
 	};
 
-	Ok(exit_code.unwrap_or(0))
+	Ok(exit_code.unwrap_or(ExitStatus::Good))
 }
