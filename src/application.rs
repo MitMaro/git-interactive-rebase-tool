@@ -2,19 +2,14 @@ use crate::action::Action;
 use crate::git_interactive::GitInteractive;
 
 use crate::config::Config;
-use crate::constants::{
-	EXIT_CODE_GOOD,
-	EXIT_CODE_STATE_ERROR,
-	EXIT_CODE_WRITE_ERROR,
-	LIST_HELP_LINES,
-	VISUAL_MODE_HELP_LINES,
-};
+use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
+use crate::exit_status::ExitStatus;
 use crate::input::{Input, InputHandler};
 use crate::view::View;
 use crate::window::Window;
 use std::cell::Cell;
 use std::process::Command;
-use std::process::ExitStatus;
+use std::process::ExitStatus as ProcessExitStatus;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -40,7 +35,7 @@ pub struct Application<'a> {
 	edit_content: String,
 	edit_content_cursor: usize,
 	error_message: Option<String>,
-	exit_code: Option<i32>,
+	exit_status: Option<ExitStatus>,
 	git_interactive: GitInteractive,
 	help_state: Cell<State>,
 	input_handler: &'a InputHandler<'a>,
@@ -62,7 +57,7 @@ impl<'a> Application<'a> {
 			edit_content: String::from(""),
 			edit_content_cursor: 0,
 			error_message: None,
-			exit_code: None,
+			exit_status: None,
 			git_interactive,
 			help_state: Cell::new(State::List),
 			input_handler,
@@ -72,9 +67,9 @@ impl<'a> Application<'a> {
 		}
 	}
 
-	pub fn run(&mut self) -> Result<Option<i32>, String> {
+	pub fn run(&mut self) -> Result<Option<ExitStatus>, String> {
 		self.handle_resize();
-		while self.exit_code == None {
+		while self.exit_status.is_none() {
 			// process based on input, allowed to change state
 			self.process();
 			// draw output for state, including state change from process
@@ -83,7 +78,7 @@ impl<'a> Application<'a> {
 			self.handle_input();
 		}
 		self.exit_end()?;
-		Ok(self.exit_code)
+		Ok(self.exit_status)
 	}
 
 	fn get_cursor_index(&self) -> usize {
@@ -540,7 +535,7 @@ impl<'a> Application<'a> {
 	fn run_editor(&mut self) -> Result<(), String> {
 		self.git_interactive.write_file()?;
 		let filepath = self.git_interactive.get_filepath();
-		let callback = || -> Result<ExitStatus, String> {
+		let callback = || -> Result<ProcessExitStatus, String> {
 			// TODO: This doesn't handle editor with arguments (e.g. EDITOR="edit --arg")
 			Command::new(&self.config.editor)
 				.arg(filepath.as_os_str())
@@ -553,7 +548,7 @@ impl<'a> Application<'a> {
 					)
 				})
 		};
-		let exit_status: ExitStatus = Window::leave_temporarily(callback)?;
+		let exit_status: ProcessExitStatus = Window::leave_temporarily(callback)?;
 
 		if !exit_status.success() {
 			return Err(String::from("Editor returned non-zero exit status."));
@@ -585,18 +580,18 @@ impl<'a> Application<'a> {
 	}
 
 	fn exit_finish(&mut self) {
-		self.exit_code = Some(EXIT_CODE_GOOD);
+		self.exit_status = Some(ExitStatus::Good);
 	}
 
 	fn exit_error(&mut self) {
-		self.exit_code = Some(EXIT_CODE_STATE_ERROR);
+		self.exit_status = Some(ExitStatus::StateError);
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
 		match self.git_interactive.write_file() {
 			Ok(_) => {},
 			Err(msg) => {
-				self.exit_code = Some(EXIT_CODE_WRITE_ERROR);
+				self.exit_status = Some(ExitStatus::FileWriteError);
 				return Err(msg);
 			},
 		}
