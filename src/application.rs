@@ -7,27 +7,28 @@ use crate::exit_status::ExitStatus;
 use crate::input::{Input, InputHandler};
 use crate::view::View;
 use crate::window::Window;
-use std::cell::Cell;
+use core::borrow::Borrow;
+use std::cell::RefCell;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum State {
 	ConfirmAbort,
 	ConfirmRebase,
 	Edit,
 	EditFinish,
-	Error,
+	Error(Box<State>),
 	Exiting,
-	ExternalEditor,
+	ExternalEditor(Box<State>),
 	ExternalEditorError,
-	ExternalEditorFinish,
-	Help,
+	ExternalEditorFinish(Box<State>),
+	Help(Box<State>),
 	List,
 	ShowCommit,
 	VisualMode,
-	WindowSizeError,
+	WindowSizeError(Box<State>),
 }
 
 pub struct Application<'a> {
@@ -37,10 +38,8 @@ pub struct Application<'a> {
 	error_message: Option<String>,
 	exit_status: Option<ExitStatus>,
 	git_interactive: GitInteractive,
-	help_state: Cell<State>,
 	input_handler: &'a InputHandler<'a>,
-	previous_state: Cell<State>,
-	state: Cell<State>,
+	state: RefCell<State>,
 	view: View<'a>,
 }
 
@@ -59,10 +58,8 @@ impl<'a> Application<'a> {
 			error_message: None,
 			exit_status: None,
 			git_interactive,
-			help_state: Cell::new(State::List),
 			input_handler,
-			previous_state: Cell::new(State::List),
-			state: Cell::new(State::List),
+			state: RefCell::new(State::List),
 			view,
 		}
 	}
@@ -86,21 +83,21 @@ impl<'a> Application<'a> {
 	}
 
 	fn process(&mut self) {
-		if let Some(new_state) = match self.state.get() {
+		if let Some(new_state) = match self.get_state() {
 			State::ConfirmAbort => None,
 			State::ConfirmRebase => None,
 			State::Edit => None,
 			State::EditFinish => self.process_edit_finish(),
-			State::Error => None,
+			State::Error(_) => None,
 			State::Exiting => None,
-			State::ExternalEditor => self.process_external_editor(),
+			State::ExternalEditor(return_state) => self.process_external_editor(return_state.borrow()),
 			State::ExternalEditorError => self.process_external_editor_error(),
-			State::ExternalEditorFinish => self.process_external_editor_finish(),
-			State::Help => None,
+			State::ExternalEditorFinish(_) => self.process_external_editor_finish(),
+			State::Help(_) => None,
 			State::List => self.process_list(),
 			State::ShowCommit => self.process_show_commit(),
 			State::VisualMode => self.process_list(),
-			State::WindowSizeError => None,
+			State::WindowSizeError(_) => None,
 		} {
 			self.set_state(new_state);
 		}
@@ -111,12 +108,12 @@ impl<'a> Application<'a> {
 		Some(State::List)
 	}
 
-	fn process_external_editor(&mut self) -> Option<State> {
+	fn process_external_editor(&mut self, return_state: &State) -> Option<State> {
 		if let Err(e) = self.run_editor() {
-			self.set_error(e, State::ExternalEditorFinish);
+			self.set_error(e, State::ExternalEditorFinish(Box::new(return_state.clone())));
 			return None;
 		}
-		Some(State::ExternalEditorFinish)
+		Some(State::ExternalEditorFinish(Box::new(return_state.clone())))
 	}
 
 	fn process_external_editor_finish(&mut self) -> Option<State> {
@@ -160,21 +157,21 @@ impl<'a> Application<'a> {
 
 	fn draw(&self) {
 		self.view.clear();
-		match self.state.get() {
+		match self.get_state() {
 			State::ConfirmAbort => self.draw_confirm_abort(),
 			State::ConfirmRebase => self.draw_confirm_rebase(),
 			State::Edit => self.draw_edit(),
 			State::EditFinish => {},
-			State::Error => self.draw_error(),
+			State::Error(_) => self.draw_error(),
 			State::Exiting => self.draw_exiting(),
-			State::ExternalEditor => {},
+			State::ExternalEditor(_) => {},
 			State::ExternalEditorError => self.draw_error(),
-			State::ExternalEditorFinish => {},
-			State::Help => self.draw_help(),
+			State::ExternalEditorFinish(_) => {},
+			State::Help(help_state) => self.draw_help(help_state.borrow()),
 			State::List => self.draw_main(false),
 			State::VisualMode => self.draw_main(false),
 			State::ShowCommit => self.draw_show_commit(),
-			State::WindowSizeError => self.draw_window_size_error(),
+			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
 		self.view.refresh();
 	}
@@ -217,9 +214,9 @@ impl<'a> Application<'a> {
 			.draw_edit(self.edit_content.as_str(), self.edit_content_cursor);
 	}
 
-	fn draw_help(&self) {
+	fn draw_help(&self, help_state: &State) {
 		self.view.draw_help(
-			if self.help_state.get() == State::List {
+			if *help_state == State::List {
 				LIST_HELP_LINES
 			}
 			else {
@@ -238,12 +235,14 @@ impl<'a> Application<'a> {
 
 	fn handle_resize(&self) {
 		let check = self.view.check_window_size();
-		if !check && self.state.get() != State::WindowSizeError {
-			self.previous_state.replace(self.state.get());
-			self.set_state(State::WindowSizeError);
+		let state = self.get_state();
+		if let State::WindowSizeError(return_state) = state {
+			if check {
+				self.set_state(*return_state);
+			}
 		}
-		else if check && self.state.get() == State::WindowSizeError {
-			self.set_state(self.previous_state.get());
+		else if !check {
+			self.set_state(State::WindowSizeError(Box::new(self.get_state())));
 		}
 	}
 
@@ -264,28 +263,28 @@ impl<'a> Application<'a> {
 	}
 
 	fn handle_input(&mut self) {
-		if let Some(new_state) = match self.state.get() {
+		if let Some(new_state) = match self.get_state() {
 			State::ConfirmAbort => self.handle_confirm_abort_input(),
 			State::ConfirmRebase => self.handle_confirm_rebase_input(),
 			State::Edit => self.handle_edit(),
 			State::EditFinish => None,
-			State::Error => self.handle_error_input(),
+			State::Error(return_state) => self.handle_error_input(return_state.borrow()),
 			State::Exiting => None,
-			State::ExternalEditor => self.handle_external_editor_input(),
-			State::ExternalEditorError => self.handle_error_input(),
-			State::ExternalEditorFinish => None,
-			State::Help => self.handle_help_input(),
+			State::ExternalEditor(return_state) => self.handle_external_editor_input(return_state.borrow()),
+			State::ExternalEditorError => None,
+			State::ExternalEditorFinish(_) => None,
+			State::Help(help_state) => self.handle_help_input(help_state.borrow()),
 			State::List => self.handle_list_input(),
 			State::VisualMode => self.handle_visual_mode_input(),
 			State::ShowCommit => self.handle_show_commit_input(),
-			State::WindowSizeError => self.handle_window_size_error_input(),
+			State::WindowSizeError(_) => self.handle_window_size_error_input(),
 		} {
 			self.set_state(new_state);
 		}
 	}
 
-	fn handle_help_input(&mut self) -> Option<State> {
-		let help_lines = if self.help_state.get() == State::List {
+	fn handle_help_input(&mut self, help_state: &State) -> Option<State> {
+		let help_lines = if *help_state == State::List {
 			LIST_HELP_LINES
 		}
 		else {
@@ -302,7 +301,7 @@ impl<'a> Application<'a> {
 				self.view.update_help_top(true, true, help_lines);
 			},
 			_ => {
-				self.set_state(self.help_state.get());
+				self.set_state(help_state.clone());
 			},
 		}
 		None
@@ -335,8 +334,7 @@ impl<'a> Application<'a> {
 			},
 			Input::Help => {
 				self.view.update_help_top(false, true, VISUAL_MODE_HELP_LINES);
-				self.help_state.replace(self.state.get());
-				return Some(State::Help);
+				return Some(State::Help(Box::new(self.get_state())));
 			},
 			_ => {},
 		}
@@ -452,23 +450,23 @@ impl<'a> Application<'a> {
 		None
 	}
 
-	fn handle_error_input(&mut self) -> Option<State> {
+	fn handle_error_input(&mut self, return_state: &State) -> Option<State> {
 		match self.get_input() {
 			Input::Resize => {},
 			_ => {
 				self.error_message = None;
-				return Some(self.previous_state.get());
+				return Some(return_state.clone());
 			},
 		}
 		None
 	}
 
-	fn handle_external_editor_input(&mut self) -> Option<State> {
+	fn handle_external_editor_input(&mut self, return_state: &State) -> Option<State> {
 		match self.get_input() {
 			Input::Resize => {},
 			_ => {
 				self.error_message = None;
-				return Some(self.previous_state.get());
+				return Some(return_state.clone());
 			},
 		}
 		None
@@ -478,8 +476,7 @@ impl<'a> Application<'a> {
 		match self.get_input() {
 			Input::Help => {
 				self.view.update_help_top(false, true, LIST_HELP_LINES);
-				self.help_state.replace(self.state.get());
-				return Some(State::Help);
+				return Some(State::Help(Box::new(self.get_state())));
 			},
 			Input::ShowCommit => {
 				if !self.git_interactive.get_selected_line_hash().is_empty() {
@@ -521,7 +518,7 @@ impl<'a> Application<'a> {
 				self.git_interactive.start_visual_mode();
 				return Some(State::VisualMode);
 			},
-			Input::OpenInEditor => return Some(State::ExternalEditor),
+			Input::OpenInEditor => return Some(State::ExternalEditor(Box::new(self.get_state()))),
 			_ => {},
 		}
 		None
@@ -565,9 +562,12 @@ impl<'a> Application<'a> {
 	}
 
 	fn set_error(&mut self, msg: String, next_state: State) {
-		self.previous_state.replace(next_state);
-		self.set_state(State::Error);
+		self.set_state(State::Error(Box::new(next_state)));
 		self.error_message = Some(msg);
+	}
+
+	fn get_state(&self) -> State {
+		self.state.borrow().clone()
 	}
 
 	fn set_state(&self, new_state: State) {
