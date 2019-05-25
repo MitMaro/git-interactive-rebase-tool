@@ -19,7 +19,7 @@ pub enum State {
 	ConfirmRebase,
 	Edit,
 	EditFinish,
-	Error(Box<State>),
+	Error { return_state: Box<State>, message: String },
 	Exiting,
 	ExternalEditor(Box<State>),
 	ExternalEditorError,
@@ -35,7 +35,6 @@ pub struct Application<'a> {
 	config: &'a Config,
 	edit_content: String,
 	edit_content_cursor: usize,
-	error_message: Option<String>,
 	exit_status: Option<ExitStatus>,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
@@ -55,7 +54,6 @@ impl<'a> Application<'a> {
 			config,
 			edit_content: String::from(""),
 			edit_content_cursor: 0,
-			error_message: None,
 			exit_status: None,
 			git_interactive,
 			input_handler,
@@ -88,7 +86,7 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => None,
 			State::Edit => None,
 			State::EditFinish => self.process_edit_finish(),
-			State::Error(_) => None,
+			State::Error { .. } => None,
 			State::Exiting => None,
 			State::ExternalEditor(return_state) => self.process_external_editor(return_state.borrow()),
 			State::ExternalEditorError => self.process_external_editor_error(),
@@ -162,10 +160,10 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => self.draw_confirm_rebase(),
 			State::Edit => self.draw_edit(),
 			State::EditFinish => {},
-			State::Error(_) => self.draw_error(),
+			State::Error { message, .. } => self.draw_error(message.as_str()),
 			State::Exiting => self.draw_exiting(),
 			State::ExternalEditor(_) => {},
-			State::ExternalEditorError => self.draw_error(),
+			State::ExternalEditorError => {},
 			State::ExternalEditorFinish(_) => {},
 			State::Help(help_state) => self.draw_help(help_state.borrow()),
 			State::List => self.draw_main(false),
@@ -184,12 +182,8 @@ impl<'a> Application<'a> {
 		self.view.draw_confirm("Are you sure you want to rebase");
 	}
 
-	fn draw_error(&self) {
-		let message = match self.error_message {
-			Some(ref msg) => msg.as_str(),
-			None => "Error...",
-		};
-		self.view.draw_error(message);
+	fn draw_error(&self, error_message: &str) {
+		self.view.draw_error(error_message);
 	}
 
 	fn draw_show_commit(&self) {
@@ -268,7 +262,7 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => self.handle_confirm_rebase_input(),
 			State::Edit => self.handle_edit(),
 			State::EditFinish => None,
-			State::Error(return_state) => self.handle_error_input(return_state.borrow()),
+			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
 			State::Exiting => None,
 			State::ExternalEditor(return_state) => self.handle_external_editor_input(return_state.borrow()),
 			State::ExternalEditorError => None,
@@ -454,7 +448,6 @@ impl<'a> Application<'a> {
 		match self.get_input() {
 			Input::Resize => {},
 			_ => {
-				self.error_message = None;
 				return Some(return_state.clone());
 			},
 		}
@@ -465,7 +458,6 @@ impl<'a> Application<'a> {
 		match self.get_input() {
 			Input::Resize => {},
 			_ => {
-				self.error_message = None;
 				return Some(return_state.clone());
 			},
 		}
@@ -562,8 +554,10 @@ impl<'a> Application<'a> {
 	}
 
 	fn set_error(&mut self, msg: String, next_state: State) {
-		self.set_state(State::Error(Box::new(next_state)));
-		self.error_message = Some(msg);
+		self.set_state(State::Error {
+			return_state: Box::new(next_state),
+			message: msg,
+		});
 	}
 
 	fn get_state(&self) -> State {
