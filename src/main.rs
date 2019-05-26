@@ -12,6 +12,7 @@ mod exit_status;
 mod git_interactive;
 mod input;
 mod line;
+mod process;
 mod scroll;
 mod view;
 mod window;
@@ -23,7 +24,6 @@ use crate::git_interactive::GitInteractive;
 use crate::input::InputHandler;
 use crate::view::View;
 use crate::window::Window;
-use std::process;
 
 struct Exit {
 	message: String,
@@ -32,10 +32,10 @@ struct Exit {
 
 fn main() {
 	match try_main() {
-		Ok(code) => process::exit(code.to_code()),
+		Ok(code) => std::process::exit(code.to_code()),
 		Err(err) => {
 			eprintln!("{}", err.message);
-			process::exit(err.status.to_code());
+			std::process::exit(err.status.to_code());
 		},
 	}
 }
