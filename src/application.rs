@@ -5,6 +5,7 @@ use crate::config::Config;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::exit_status::ExitStatus;
 use crate::input::{Input, InputHandler};
+use crate::process::State;
 use crate::view::View;
 use crate::window::Window;
 use core::borrow::Borrow;
@@ -12,24 +13,6 @@ use std::cell::RefCell;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
 use unicode_segmentation::UnicodeSegmentation;
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum State {
-	ConfirmAbort,
-	ConfirmRebase,
-	Edit,
-	EditFinish,
-	Error { return_state: Box<State>, message: String },
-	Exiting,
-	ExternalEditor(Box<State>),
-	ExternalEditorError,
-	ExternalEditorFinish(Box<State>),
-	Help(Box<State>),
-	List,
-	ShowCommit,
-	VisualMode,
-	WindowSizeError(Box<State>),
-}
 
 pub struct Application<'a> {
 	config: &'a Config,
