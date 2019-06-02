@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::exit_status::ExitStatus;
 use crate::input::{Input, InputHandler};
-use crate::process::State;
+use crate::process::{ProcessResult, ProcessResultBuilder, State};
 use crate::view::View;
 use crate::window::Window;
 use core::borrow::Borrow;
@@ -64,76 +64,92 @@ impl<'a> Application<'a> {
 	}
 
 	fn process(&mut self) {
-		if let Some(new_state) = match self.get_state() {
-			State::ConfirmAbort => None,
-			State::ConfirmRebase => None,
-			State::Edit => None,
+		let process_result = match self.get_state() {
+			State::ConfirmAbort => ProcessResult::new(),
+			State::ConfirmRebase => ProcessResult::new(),
+			State::Edit => ProcessResult::new(),
 			State::EditFinish => self.process_edit_finish(),
-			State::Error { .. } => None,
-			State::Exiting => None,
+			State::Error { .. } => ProcessResult::new(),
+			State::Exiting => ProcessResult::new(),
 			State::ExternalEditor(return_state) => self.process_external_editor(return_state.borrow()),
 			State::ExternalEditorError => self.process_external_editor_error(),
 			State::ExternalEditorFinish(_) => self.process_external_editor_finish(),
-			State::Help(_) => None,
+			State::Help(_) => ProcessResult::new(),
 			State::List => self.process_list(),
 			State::ShowCommit => self.process_show_commit(),
 			State::VisualMode => self.process_list(),
-			State::WindowSizeError(_) => None,
-		} {
+			State::WindowSizeError(_) => ProcessResult::new(),
+		};
+
+		if let Some(exit_status) = process_result.exit_status {
+			self.exit_status = Some(exit_status);
+		}
+
+		if let Some(new_state) = process_result.state {
 			self.set_state(new_state);
 		}
 	}
 
-	fn process_edit_finish(&mut self) -> Option<State> {
+	fn process_edit_finish(&mut self) -> ProcessResult {
 		self.git_interactive.edit_selected_line(self.edit_content.as_str());
-		Some(State::List)
+		ProcessResultBuilder::new().state(State::List).build()
 	}
 
-	fn process_external_editor(&mut self, return_state: &State) -> Option<State> {
-		if let Err(e) = self.run_editor() {
-			self.set_error(e, State::ExternalEditorFinish(Box::new(return_state.clone())));
-			return None;
-		}
-		Some(State::ExternalEditorFinish(Box::new(return_state.clone())))
-	}
+	fn process_external_editor(&mut self, return_state: &State) -> ProcessResult {
+		let mut result = ProcessResultBuilder::new();
 
-	fn process_external_editor_finish(&mut self) -> Option<State> {
-		if let Err(e) = self.git_interactive.reload_file(self.config.comment_char.as_str()) {
-			self.set_error(e, State::ExternalEditorError);
-			return None;
-		}
-
-		if self.git_interactive.get_lines().is_empty() {
-			self.set_error(String::from("Rebase empty"), State::ExternalEditorError);
-			// exit will occur in error
-			return None;
-		}
-		Some(State::List)
-	}
-
-	fn process_external_editor_error(&mut self) -> Option<State> {
-		self.set_state(State::Exiting);
-		if self.git_interactive.get_lines().is_empty() {
-			self.exit_finish();
+		result = if let Err(e) = self.run_editor() {
+			result.error(e.as_str(), State::ExternalEditorError)
 		}
 		else {
-			self.exit_error();
-		}
-		None
+			result.state(State::ExternalEditorFinish(Box::new(return_state.clone())))
+		};
+
+		result.build()
 	}
 
-	fn process_list(&mut self) -> Option<State> {
+	fn process_external_editor_finish(&mut self) -> ProcessResult {
+		let mut result = ProcessResultBuilder::new();
+		result = if let Err(e) = self.git_interactive.reload_file(self.config.comment_char.as_str()) {
+			result.error(e.as_str(), State::List)
+		}
+		else if self.git_interactive.get_lines().is_empty() {
+			result.error("Rebase empty", State::List)
+		}
+		else {
+			result.state(State::List)
+		};
+
+		result.build()
+	}
+
+	fn process_external_editor_error(&mut self) -> ProcessResult {
+		ProcessResultBuilder::new()
+			.state(State::Exiting)
+			.exit_status(
+				if self.git_interactive.get_lines().is_empty() {
+					ExitStatus::Good
+				}
+				else {
+					ExitStatus::StateError
+				},
+			)
+			.build()
+	}
+
+	fn process_list(&mut self) -> ProcessResult {
 		let lines = self.git_interactive.get_lines();
 		let selected_index = self.get_cursor_index();
 		self.view.update_main_top(lines.len(), selected_index);
-		None
+		ProcessResult::new()
 	}
 
-	fn process_show_commit(&mut self) -> Option<State> {
+	fn process_show_commit(&mut self) -> ProcessResult {
+		let mut result = ProcessResultBuilder::new();
 		if let Err(e) = self.git_interactive.load_commit_stats() {
-			self.set_error(e, State::List);
+			result = result.error(e.as_str(), State::List);
 		}
-		None
+		result.build()
 	}
 
 	fn draw(&self) {
@@ -536,13 +552,6 @@ impl<'a> Application<'a> {
 		}
 	}
 
-	fn set_error(&mut self, msg: String, next_state: State) {
-		self.set_state(State::Error {
-			return_state: Box::new(next_state),
-			message: msg,
-		});
-	}
-
 	fn get_state(&self) -> State {
 		self.state.borrow().clone()
 	}
@@ -558,10 +567,6 @@ impl<'a> Application<'a> {
 
 	fn exit_finish(&mut self) {
 		self.exit_status = Some(ExitStatus::Good);
-	}
-
-	fn exit_error(&mut self) {
-		self.exit_status = Some(ExitStatus::StateError);
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
