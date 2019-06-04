@@ -3,13 +3,18 @@ use crate::git_interactive::GitInteractive;
 
 use crate::config::Config;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
-use crate::exit_status::ExitStatus;
 use crate::input::{Input, InputHandler};
-use crate::process::{HandleInputResult, HandleInputResultBuilder, ProcessResult, ProcessResultBuilder, State};
+use crate::process::{
+	ExitStatus,
+	HandleInputResult,
+	HandleInputResultBuilder,
+	ProcessResult,
+	ProcessResultBuilder,
+	State,
+};
 use crate::view::View;
 use crate::window::Window;
 use core::borrow::Borrow;
-use std::cell::RefCell;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
 use unicode_segmentation::UnicodeSegmentation;
@@ -18,10 +23,8 @@ pub struct Application<'a> {
 	config: &'a Config,
 	edit_content: String,
 	edit_content_cursor: usize,
-	exit_status: Option<ExitStatus>,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
-	state: RefCell<State>,
 	view: View<'a>,
 }
 
@@ -37,34 +40,56 @@ impl<'a> Application<'a> {
 			config,
 			edit_content: String::from(""),
 			edit_content_cursor: 0,
-			exit_status: None,
 			git_interactive,
 			input_handler,
-			state: RefCell::new(State::List),
 			view,
 		}
-	}
-
-	pub fn run(&mut self) -> Result<Option<ExitStatus>, String> {
-		self.handle_resize();
-		while self.exit_status.is_none() {
-			// process based on input, allowed to change state
-			self.process();
-			// draw output for state, including state change from process
-			self.draw();
-			// handle input for state
-			self.handle_input();
-		}
-		self.exit_end()?;
-		Ok(self.exit_status)
 	}
 
 	fn get_cursor_index(&self) -> usize {
 		*self.git_interactive.get_selected_line_index() - 1
 	}
 
-	fn process(&mut self) {
-		let process_result = match self.get_state() {
+	pub fn activate(&mut self, state: State) {
+		match state {
+			State::ConfirmAbort => {},
+			State::ConfirmRebase => {},
+			State::Edit => {},
+			State::EditFinish => {},
+			State::Error { .. } => {},
+			State::Exiting => {},
+			State::ExternalEditor(_) => {},
+			State::ExternalEditorError => {},
+			State::ExternalEditorFinish(_) => {},
+			State::Help(_) => {},
+			State::List => {},
+			State::ShowCommit => {},
+			State::VisualMode => {},
+			State::WindowSizeError(_) => {},
+		}
+	}
+
+	pub fn deactivate(&mut self, state: State) {
+		match state {
+			State::ConfirmAbort => {},
+			State::ConfirmRebase => {},
+			State::Edit => {},
+			State::EditFinish => {},
+			State::Error { .. } => {},
+			State::Exiting => {},
+			State::ExternalEditor(_) => {},
+			State::ExternalEditorError => {},
+			State::ExternalEditorFinish(_) => {},
+			State::Help(_) => {},
+			State::List => {},
+			State::ShowCommit => {},
+			State::VisualMode => {},
+			State::WindowSizeError(_) => {},
+		}
+	}
+
+	pub fn process(&mut self, state: State) -> ProcessResult {
+		match state {
 			State::ConfirmAbort => ProcessResult::new(),
 			State::ConfirmRebase => ProcessResult::new(),
 			State::Edit => ProcessResult::new(),
@@ -79,23 +104,15 @@ impl<'a> Application<'a> {
 			State::ShowCommit => self.process_show_commit(),
 			State::VisualMode => self.process_list(),
 			State::WindowSizeError(_) => ProcessResult::new(),
-		};
-
-		if let Some(exit_status) = process_result.exit_status {
-			self.exit_status = Some(exit_status);
-		}
-
-		if let Some(new_state) = process_result.state {
-			self.set_state(new_state);
 		}
 	}
 
-	fn process_edit_finish(&mut self) -> ProcessResult {
+	pub fn process_edit_finish(&mut self) -> ProcessResult {
 		self.git_interactive.edit_selected_line(self.edit_content.as_str());
 		ProcessResultBuilder::new().state(State::List).build()
 	}
 
-	fn process_external_editor(&mut self, return_state: &State) -> ProcessResult {
+	pub fn process_external_editor(&mut self, return_state: &State) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 
 		result = if let Err(e) = self.run_editor() {
@@ -108,7 +125,7 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn process_external_editor_finish(&mut self) -> ProcessResult {
+	pub fn process_external_editor_finish(&mut self) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 		result = if let Err(e) = self.git_interactive.reload_file(self.config.comment_char.as_str()) {
 			result.error(e.as_str(), State::List)
@@ -123,7 +140,7 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn process_external_editor_error(&mut self) -> ProcessResult {
+	pub fn process_external_editor_error(&mut self) -> ProcessResult {
 		ProcessResultBuilder::new()
 			.state(State::Exiting)
 			.exit_status(
@@ -137,14 +154,14 @@ impl<'a> Application<'a> {
 			.build()
 	}
 
-	fn process_list(&mut self) -> ProcessResult {
+	pub fn process_list(&mut self) -> ProcessResult {
 		let lines = self.git_interactive.get_lines();
 		let selected_index = self.get_cursor_index();
 		self.view.update_main_top(lines.len(), selected_index);
 		ProcessResult::new()
 	}
 
-	fn process_show_commit(&mut self) -> ProcessResult {
+	pub fn process_show_commit(&mut self) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 		if let Err(e) = self.git_interactive.load_commit_stats() {
 			result = result.error(e.as_str(), State::List);
@@ -152,9 +169,13 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn draw(&self) {
+	pub fn check_window_size(&self) -> bool {
+		self.view.check_window_size()
+	}
+
+	pub fn render(&self, state: State) {
 		self.view.clear();
-		match self.get_state() {
+		match state {
 			State::ConfirmAbort => self.draw_confirm_abort(),
 			State::ConfirmRebase => self.draw_confirm_rebase(),
 			State::Edit => self.draw_edit(),
@@ -166,11 +187,11 @@ impl<'a> Application<'a> {
 			State::ExternalEditorFinish(_) => {},
 			State::Help(help_state) => self.draw_help(help_state.borrow()),
 			State::List => self.draw_main(false),
-			State::VisualMode => self.draw_main(false),
+			State::VisualMode => self.draw_main(true),
 			State::ShowCommit => self.draw_show_commit(),
 			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
-		self.view.refresh();
+		self.view.refresh()
 	}
 
 	fn draw_confirm_abort(&self) {
@@ -226,19 +247,6 @@ impl<'a> Application<'a> {
 		self.view.draw_window_size_error();
 	}
 
-	fn handle_resize(&self) {
-		let check = self.view.check_window_size();
-		let state = self.get_state();
-		if let State::WindowSizeError(return_state) = state {
-			if check {
-				self.set_state(*return_state);
-			}
-		}
-		else if !check {
-			self.set_state(State::WindowSizeError(Box::new(self.get_state())));
-		}
-	}
-
 	fn get_input(&self) -> Input {
 		self.input_handler.get_input()
 	}
@@ -251,34 +259,22 @@ impl<'a> Application<'a> {
 		self.input_handler.get_character()
 	}
 
-	fn handle_input(&mut self) {
-		let result = match self.get_state() {
+	pub fn handle_input(&mut self, state: State) -> HandleInputResult {
+		match state {
 			State::ConfirmAbort => self.handle_confirm_abort_input(),
 			State::ConfirmRebase => self.handle_confirm_rebase_input(),
 			State::Edit => self.handle_edit(),
-			State::EditFinish => return,
+			State::EditFinish => HandleInputResult::new(Input::Other),
 			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
-			State::Exiting => return,
+			State::Exiting => HandleInputResult::new(Input::Other),
 			State::ExternalEditor(return_state) => self.handle_external_editor_input(return_state.borrow()),
-			State::ExternalEditorError => return,
-			State::ExternalEditorFinish(_) => return,
+			State::ExternalEditorError => HandleInputResult::new(Input::Other),
+			State::ExternalEditorFinish(_) => HandleInputResult::new(Input::Other),
 			State::Help(help_state) => self.handle_help_input(help_state.borrow()),
 			State::List => self.handle_list_input(),
 			State::VisualMode => self.handle_visual_mode_input(),
 			State::ShowCommit => self.handle_show_commit_input(),
 			State::WindowSizeError(_) => self.handle_window_size_error_input(),
-		};
-
-		if let Some(exit_status) = result.exit_status {
-			self.exit_status = Some(exit_status);
-		}
-
-		if let Some(new_state) = result.state {
-			self.set_state(new_state);
-		}
-
-		if let Input::Resize = result.input {
-			self.handle_resize();
 		}
 	}
 
@@ -466,7 +462,7 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn handle_error_input(&mut self, return_state: &State) -> HandleInputResult {
+	pub fn handle_error_input(&mut self, return_state: &State) -> HandleInputResult {
 		let input = self.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
@@ -478,7 +474,7 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn handle_external_editor_input(&mut self, return_state: &State) -> HandleInputResult {
+	pub fn handle_external_editor_input(&mut self, return_state: &State) -> HandleInputResult {
 		let input = self.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
@@ -490,7 +486,7 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn handle_list_input(&mut self) -> HandleInputResult {
+	pub fn handle_list_input(&mut self) -> HandleInputResult {
 		let input = self.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
@@ -541,17 +537,17 @@ impl<'a> Application<'a> {
 				self.git_interactive.start_visual_mode();
 				result = result.state(State::VisualMode);
 			},
-			Input::OpenInEditor => result = result.state(State::ExternalEditor(Box::new(self.get_state()))),
+			Input::OpenInEditor => result = result.state(State::ExternalEditor(Box::new(State::List))),
 			_ => {},
 		}
 		result.build()
 	}
 
-	fn handle_window_size_error_input(&mut self) -> HandleInputResult {
+	pub fn handle_window_size_error_input(&mut self) -> HandleInputResult {
 		HandleInputResult::new(self.get_input())
 	}
 
-	fn run_editor(&mut self) -> Result<(), String> {
+	pub fn run_editor(&mut self) -> Result<(), String> {
 		self.git_interactive.write_file()?;
 		let filepath = self.git_interactive.get_filepath();
 		let callback = || -> Result<ProcessExitStatus, String> {
@@ -576,29 +572,14 @@ impl<'a> Application<'a> {
 		Ok(())
 	}
 
+	pub fn write_file(&self) -> Result<(), String> {
+		self.git_interactive.write_file()
+	}
+
 	fn set_selected_line_action(&mut self, action: Action) {
 		self.git_interactive.set_selected_line_action(action);
 		if self.config.auto_select_next {
 			self.git_interactive.move_cursor_down(1);
 		}
-	}
-
-	fn get_state(&self) -> State {
-		self.state.borrow().clone()
-	}
-
-	fn set_state(&self, new_state: State) {
-		self.state.replace(new_state);
-	}
-
-	fn exit_end(&mut self) -> Result<(), String> {
-		match self.git_interactive.write_file() {
-			Ok(_) => {},
-			Err(msg) => {
-				self.exit_status = Some(ExitStatus::FileWriteError);
-				return Err(msg);
-			},
-		}
-		Ok(())
 	}
 }

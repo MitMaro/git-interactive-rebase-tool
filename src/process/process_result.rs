@@ -1,5 +1,4 @@
-use crate::exit_status::ExitStatus;
-use crate::process::State;
+use crate::process::{ExitStatus, State};
 
 #[derive(Debug)]
 pub struct ProcessResult {
