@@ -8,7 +8,6 @@ mod color;
 mod commit;
 mod config;
 mod constants;
-mod exit_status;
 mod git_interactive;
 mod input;
 mod line;
@@ -19,9 +18,9 @@ mod window;
 
 use crate::application::Application;
 use crate::config::Config;
-use crate::exit_status::ExitStatus;
 use crate::git_interactive::GitInteractive;
 use crate::input::InputHandler;
+use crate::process::{ExitStatus, Process};
 use crate::view::View;
 use crate::window::Window;
 
@@ -78,7 +77,8 @@ fn try_main() -> Result<ExitStatus, Exit> {
 
 	let mut application = Application::new(git_interactive, View::new(&window), &input_handler, &config);
 
-	let result = application.run();
+	let mut process = Process::new(&mut application);
+	let result = process.run();
 	window.end();
 
 	let exit_code = match result {

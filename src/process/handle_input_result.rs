@@ -1,6 +1,5 @@
-use crate::exit_status::ExitStatus;
 use crate::input::Input;
-use crate::process::State;
+use crate::process::{ExitStatus, State};
 
 pub struct HandleInputResult {
 	pub exit_status: Option<ExitStatus>,
