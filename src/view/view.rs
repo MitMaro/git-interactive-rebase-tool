@@ -27,55 +27,12 @@ use crate::constants::{
 };
 use crate::line::Line;
 use crate::scroll::{get_scroll_position, ScrollPosition};
+use crate::view::{LineSegment, ViewLine};
 use crate::window::Window;
 use crate::window::WindowColor;
 use git2::Delta;
 use std::cmp;
 use unicode_segmentation::UnicodeSegmentation;
-
-pub struct LineSegment {
-	color: WindowColor,
-	dim: bool,
-	reverse: bool,
-	text: String,
-	underline: bool,
-}
-
-impl LineSegment {
-	pub fn new(text: &str) -> Self {
-		Self {
-			text: String::from(text),
-			color: WindowColor::Foreground,
-			reverse: false,
-			dim: false,
-			underline: false,
-		}
-	}
-
-	pub fn new_with_color(text: &str, color: WindowColor) -> Self {
-		Self {
-			text: String::from(text),
-			color,
-			reverse: false,
-			dim: false,
-			underline: false,
-		}
-	}
-
-	pub fn new_with_color_and_style(text: &str, color: WindowColor, dim: bool, underline: bool, reverse: bool) -> Self {
-		Self {
-			text: String::from(text),
-			color,
-			reverse,
-			dim,
-			underline,
-		}
-	}
-}
-
-pub struct ViewLine {
-	segments: Vec<LineSegment>,
-}
 
 pub struct View<'v> {
 	commit_top: ScrollPosition,
@@ -174,20 +131,9 @@ impl<'v> View<'v> {
 
 		let mut start = 0;
 		for segment in &line.segments {
-			self.window.color(segment.color);
-			self.window.set_style(segment.dim, segment.underline, segment.reverse);
-			let graphemes = UnicodeSegmentation::graphemes(segment.text.as_str(), true);
-			let segment_length = graphemes.clone().count();
-
-			if (start + segment_length) >= window_width {
-				let partial_line = graphemes.take(window_width - start).collect::<String>();
-				self.window.draw_str(partial_line.as_str());
-				start += segment_length;
+			start += segment.draw(window_width - start, &self.window);
+			if start >= window_width {
 				break;
-			}
-			else {
-				self.window.draw_str(segment.text.as_str());
-				start += segment_length;
 			}
 		}
 
