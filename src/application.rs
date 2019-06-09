@@ -8,10 +8,12 @@ use crate::process::{
 	ExitStatus,
 	HandleInputResult,
 	HandleInputResultBuilder,
+	ProcessModule,
 	ProcessResult,
 	ProcessResultBuilder,
 	State,
 };
+use crate::show_commit::ShowCommit;
 use crate::view::View;
 use crate::window::Window;
 use core::borrow::Borrow;
@@ -25,6 +27,7 @@ pub struct Application<'a> {
 	edit_content_cursor: usize,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
+	show_commit: ShowCommit,
 	view: View<'a>,
 }
 
@@ -42,6 +45,7 @@ impl<'a> Application<'a> {
 			edit_content_cursor: 0,
 			git_interactive,
 			input_handler,
+			show_commit: ShowCommit::new(),
 			view,
 		}
 	}
@@ -63,7 +67,7 @@ impl<'a> Application<'a> {
 			State::ExternalEditorFinish(_) => {},
 			State::Help(_) => {},
 			State::List => {},
-			State::ShowCommit => {},
+			State::ShowCommit => self.show_commit.activate(state, &self.git_interactive),
 			State::VisualMode => {},
 			State::WindowSizeError(_) => {},
 		}
@@ -82,7 +86,7 @@ impl<'a> Application<'a> {
 			State::ExternalEditorFinish(_) => {},
 			State::Help(_) => {},
 			State::List => {},
-			State::ShowCommit => {},
+			State::ShowCommit => self.show_commit.deactivate(),
 			State::VisualMode => {},
 			State::WindowSizeError(_) => {},
 		}
@@ -101,7 +105,7 @@ impl<'a> Application<'a> {
 			State::ExternalEditorFinish(_) => self.process_external_editor_finish(),
 			State::Help(_) => ProcessResult::new(),
 			State::List => self.process_list(),
-			State::ShowCommit => self.process_show_commit(),
+			State::ShowCommit => self.show_commit.process(&mut self.git_interactive),
 			State::VisualMode => self.process_list(),
 			State::WindowSizeError(_) => ProcessResult::new(),
 		}
@@ -161,14 +165,6 @@ impl<'a> Application<'a> {
 		ProcessResult::new()
 	}
 
-	pub fn process_show_commit(&mut self) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
-		if let Err(e) = self.git_interactive.load_commit_stats() {
-			result = result.error(e.as_str(), State::List);
-		}
-		result.build()
-	}
-
 	pub fn check_window_size(&self) -> bool {
 		self.view.check_window_size()
 	}
@@ -188,7 +184,7 @@ impl<'a> Application<'a> {
 			State::Help(help_state) => self.draw_help(help_state.borrow()),
 			State::List => self.draw_main(false),
 			State::VisualMode => self.draw_main(true),
-			State::ShowCommit => self.draw_show_commit(),
+			State::ShowCommit => self.show_commit.render(&self.view, &self.git_interactive),
 			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
 		self.view.refresh()
@@ -204,10 +200,6 @@ impl<'a> Application<'a> {
 
 	fn draw_error(&self, error_message: &str) {
 		self.view.draw_error(error_message);
-	}
-
-	fn draw_show_commit(&self) {
-		self.view.draw_show_commit(self.git_interactive.get_commit_stats());
 	}
 
 	fn draw_main(&self, visual_mode: bool) {
@@ -247,15 +239,15 @@ impl<'a> Application<'a> {
 		self.view.draw_window_size_error();
 	}
 
-	fn get_input(&self) -> Input {
+	pub fn get_input(&self) -> Input {
 		self.input_handler.get_input()
 	}
 
-	fn get_confirm(&mut self) -> Input {
+	pub fn get_confirm(&mut self) -> Input {
 		self.input_handler.get_confirm()
 	}
 
-	fn get_character(&self) -> Input {
+	pub fn get_character(&self) -> Input {
 		self.input_handler.get_character()
 	}
 
@@ -273,7 +265,10 @@ impl<'a> Application<'a> {
 			State::Help(help_state) => self.handle_help_input(help_state.borrow()),
 			State::List => self.handle_list_input(),
 			State::VisualMode => self.handle_visual_mode_input(),
-			State::ShowCommit => self.handle_show_commit_input(),
+			State::ShowCommit => {
+				self.show_commit
+					.handle_input_with_view(&self.input_handler, &mut self.git_interactive, &self.view)
+			},
 			State::WindowSizeError(_) => self.handle_window_size_error_input(),
 		}
 	}
@@ -336,29 +331,6 @@ impl<'a> Application<'a> {
 				result = result.help(State::VisualMode);
 			},
 			_ => {},
-		}
-		result.build()
-	}
-
-	fn handle_show_commit_input(&mut self) -> HandleInputResult {
-		let input = self.get_input();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::MoveCursorDown => {
-				self.view
-					.update_commit_top(false, false, self.git_interactive.get_commit_stats_length());
-			},
-			Input::MoveCursorUp => {
-				self.view
-					.update_commit_top(true, false, self.git_interactive.get_commit_stats_length());
-			},
-			Input::Resize => {
-				self.view
-					.update_commit_top(true, false, self.git_interactive.get_commit_stats_length());
-			},
-			_ => {
-				result = result.state(State::List);
-			},
 		}
 		result.build()
 	}
@@ -496,7 +468,6 @@ impl<'a> Application<'a> {
 			},
 			Input::ShowCommit => {
 				if !self.git_interactive.get_selected_line_hash().is_empty() {
-					self.view.update_commit_top(false, true, 0);
 					result = result.state(State::ShowCommit);
 				}
 			},
