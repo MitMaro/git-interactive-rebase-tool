@@ -13,6 +13,7 @@ mod input;
 mod line;
 mod process;
 mod scroll;
+mod show_commit;
 mod view;
 mod window;
 

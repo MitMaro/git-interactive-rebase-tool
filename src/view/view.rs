@@ -1,5 +1,4 @@
 use crate::action::Action;
-use crate::commit::Commit;
 use crate::constants::{
 	HEIGHT_ERROR_MESSAGE,
 	LIST_FOOTER_COMPACT,
@@ -18,8 +17,6 @@ use crate::constants::{
 	TITLE_LENGTH,
 	TITLE_SHORT,
 	TITLE_SHORT_LENGTH,
-	TO_FILE_INDICATOR,
-	TO_FILE_INDICATOR_SHORT,
 	VISUAL_MODE_FOOTER_COMPACT,
 	VISUAL_MODE_FOOTER_COMPACT_WIDTH,
 	VISUAL_MODE_FOOTER_FULL,
@@ -30,12 +27,10 @@ use crate::scroll::{get_scroll_position, ScrollPosition};
 use crate::view::{LineSegment, ViewLine};
 use crate::window::Window;
 use crate::window::WindowColor;
-use git2::Delta;
 use std::cmp;
 use unicode_segmentation::UnicodeSegmentation;
 
 pub struct View<'v> {
-	commit_top: ScrollPosition,
 	help_top: ScrollPosition,
 	main_top: ScrollPosition,
 	window: &'v Window<'v>,
@@ -44,11 +39,18 @@ pub struct View<'v> {
 impl<'v> View<'v> {
 	pub fn new(window: &'v Window) -> Self {
 		Self {
-			commit_top: ScrollPosition::new(3, 6, 3),
 			help_top: ScrollPosition::new(3, 6, 3),
 			main_top: ScrollPosition::new(2, 1, 1),
 			window,
 		}
+	}
+
+	pub fn draw_str(&self, s: &str) {
+		self.window.draw_str(s);
+	}
+
+	pub fn set_color(&self, color: WindowColor) {
+		self.window.color(color);
 	}
 
 	pub fn check_window_size(&self) -> bool {
@@ -68,6 +70,11 @@ impl<'v> View<'v> {
 
 	pub fn clear(&self) {
 		self.window.clear();
+	}
+
+	pub fn get_view_size(&self) -> (usize, usize) {
+		let (view_width, view_height) = self.window.get_window_size();
+		(view_width as usize, view_height as usize)
 	}
 
 	pub fn refresh(&self) {
@@ -130,7 +137,7 @@ impl<'v> View<'v> {
 		let window_width = if scrollbar { window_width - 1 } else { window_width } as usize;
 
 		let mut start = 0;
-		for segment in &line.segments {
+		for segment in line.get_segments() {
 			start += segment.draw(window_width - start, &self.window);
 			if start >= window_width {
 				break;
@@ -143,7 +150,7 @@ impl<'v> View<'v> {
 		}
 	}
 
-	fn draw_title(&self, show_help: bool) {
+	pub fn draw_title(&self, show_help: bool) {
 		self.window.color(WindowColor::Foreground);
 		self.window.set_style(false, true, true);
 		let (window_width, _) = self.window.get_window_size();
@@ -239,9 +246,11 @@ impl<'v> View<'v> {
 				},
 				None => false,
 			};
-			view_lines.push(ViewLine {
-				segments: self.get_todo_line_segments(line, selected_index == index, is_cursor_line),
-			});
+			view_lines.push(ViewLine::new(self.get_todo_line_segments(
+				line,
+				selected_index == index,
+				is_cursor_line,
+			)));
 		}
 
 		self.window.clear();
@@ -273,13 +282,14 @@ impl<'v> View<'v> {
 
 	pub fn get_todo_line_segments(&self, line: &Line, is_cursor_line: bool, selected: bool) -> Vec<LineSegment> {
 		let (window_width, _) = self.window.get_window_size();
+		let view_width = window_width as usize;
 
 		let mut segments: Vec<LineSegment> = vec![];
 
 		let action = line.get_action();
 
 		self.window.set_style(false, false, false);
-		if window_width >= MINIMUM_FULL_WINDOW_WIDTH {
+		if view_width >= MINIMUM_FULL_WINDOW_WIDTH {
 			segments.push(LineSegment::new_with_color_and_style(
 				if is_cursor_line || selected { " > " } else { "   " },
 				WindowColor::Foreground,
@@ -341,19 +351,6 @@ impl<'v> View<'v> {
 		segments
 	}
 
-	pub fn update_commit_top(&mut self, scroll_up: bool, reset: bool, lines_length: usize) {
-		let (_, window_height) = self.window.get_window_size();
-		if reset {
-			self.commit_top.reset();
-		}
-		else if scroll_up {
-			self.commit_top.scroll_up(window_height as usize, lines_length);
-		}
-		else {
-			self.commit_top.scroll_down(window_height as usize, lines_length);
-		}
-	}
-
 	pub fn update_help_top(&self, scroll_up: bool, reset: bool, help_lines: &[(&str, &str)]) {
 		let (_, window_height) = self.window.get_window_size();
 		if reset {
@@ -374,12 +371,10 @@ impl<'v> View<'v> {
 		let mut view_lines: Vec<ViewLine> = vec![];
 
 		for line in help_lines {
-			view_lines.push(ViewLine {
-				segments: vec![
-					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
-					LineSegment::new(line.1),
-				],
-			})
+			view_lines.push(ViewLine::new(vec![
+				LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
+				LineSegment::new(line.1),
+			]));
 		}
 
 		self.window.set_style(false, false, false);
@@ -412,221 +407,6 @@ impl<'v> View<'v> {
 
 	pub fn draw_exiting(&self) {
 		self.window.draw_str("Exiting...")
-	}
-
-	fn get_file_stat_long(&self, status: Delta) -> String {
-		match status {
-			Delta::Added => format!("{:>8}: ", "added"),
-			Delta::Copied => format!("{:>8}: ", "copied"),
-			Delta::Deleted => format!("{:>8}: ", "deleted"),
-			Delta::Modified => format!("{:>8}: ", "modified"),
-			Delta::Renamed => format!("{:>8}: ", "renamed"),
-			Delta::Typechange => format!("{:>8}: ", "changed"),
-
-			// these should never happen in a rebase
-			Delta::Conflicted => format!("{:>8}: ", "unknown"),
-			Delta::Ignored => format!("{:>8}: ", "unknown"),
-			Delta::Unmodified => format!("{:>8}: ", "unknown"),
-			Delta::Unreadable => format!("{:>8}: ", "unknown"),
-			Delta::Untracked => format!("{:>8}: ", "unknown"),
-		}
-	}
-
-	fn get_file_stat_abbreviated(&self, status: Delta) -> String {
-		match status {
-			Delta::Added => String::from("A "),
-			Delta::Copied => String::from("C "),
-			Delta::Deleted => String::from("D "),
-			Delta::Modified => String::from("M "),
-			Delta::Renamed => String::from("R "),
-			Delta::Typechange => String::from("T "),
-
-			// these should never happen in a rebase
-			Delta::Conflicted => String::from("X "),
-			Delta::Ignored => String::from("X "),
-			Delta::Unmodified => String::from("X "),
-			Delta::Unreadable => String::from("X "),
-			Delta::Untracked => String::from("X "),
-		}
-	}
-
-	fn get_file_stat_color(&self, status: Delta) -> WindowColor {
-		match status {
-			Delta::Added => WindowColor::DiffAddColor,
-			Delta::Copied => WindowColor::DiffAddColor,
-			Delta::Deleted => WindowColor::DiffRemoveColor,
-			Delta::Modified => WindowColor::DiffChangeColor,
-			Delta::Renamed => WindowColor::DiffChangeColor,
-			Delta::Typechange => WindowColor::DiffChangeColor,
-
-			// these should never happen in a rebase
-			Delta::Conflicted => WindowColor::Foreground,
-			Delta::Ignored => WindowColor::Foreground,
-			Delta::Unmodified => WindowColor::Foreground,
-			Delta::Unreadable => WindowColor::Foreground,
-			Delta::Untracked => WindowColor::Foreground,
-		}
-	}
-
-	fn get_stat_item_segments(&self, status: Delta, to_name: &str, from_name: &str) -> Vec<LineSegment> {
-		let (window_width, _) = self.window.get_window_size();
-
-		let status_name = if window_width >= MINIMUM_FULL_WINDOW_WIDTH {
-			self.get_file_stat_long(status)
-		}
-		else {
-			self.get_file_stat_abbreviated(status)
-		};
-
-		let color = self.get_file_stat_color(status);
-
-		let to_file_indicator = if window_width >= MINIMUM_FULL_WINDOW_WIDTH {
-			TO_FILE_INDICATOR
-		}
-		else {
-			TO_FILE_INDICATOR_SHORT
-		};
-
-		match status {
-			Delta::Copied => {
-				vec![
-					LineSegment::new_with_color(status_name.clone().as_str(), color),
-					LineSegment::new_with_color(to_name, WindowColor::Foreground),
-					LineSegment::new(to_file_indicator),
-					LineSegment::new_with_color(from_name, WindowColor::DiffAddColor),
-				]
-			},
-			Delta::Renamed => {
-				vec![
-					LineSegment::new_with_color(status_name.as_str(), color),
-					LineSegment::new_with_color(to_name, WindowColor::DiffRemoveColor),
-					LineSegment::new(to_file_indicator),
-					LineSegment::new_with_color(from_name, WindowColor::DiffAddColor),
-				]
-			},
-			_ => {
-				vec![
-					LineSegment::new_with_color(status_name.as_str(), color),
-					LineSegment::new_with_color(from_name, color),
-				]
-			},
-		}
-	}
-
-	pub fn draw_show_commit(&self, commit_data: &Option<Commit>) {
-		let (window_width, window_height) = self.window.get_window_size();
-		let view_height = window_height as usize - 2;
-
-		let is_full_width = window_width >= MINIMUM_FULL_WINDOW_WIDTH;
-
-		self.window.clear();
-		self.draw_title(false);
-
-		let commit = match commit_data {
-			None => {
-				self.draw_error("Not commit data to show");
-				return;
-			},
-			Some(c) => c,
-		};
-
-		let full_hash = commit.get_hash();
-		let author = commit.get_author();
-		let committer = commit.get_committer();
-		let date = commit.get_date();
-		let body = commit.get_body();
-		let file_stats = commit.get_file_stats();
-
-		let mut lines: Vec<ViewLine> = vec![];
-
-		lines.push(ViewLine {
-			segments: vec![LineSegment::new_with_color(
-				if is_full_width {
-					format!("Commit: {}", full_hash)
-				}
-				else {
-					let max_index = cmp::min(full_hash.len(), 8);
-					format!("{:8} ", full_hash[0..max_index].to_string())
-				}
-				.as_str(),
-				WindowColor::IndicatorColor,
-			)],
-		});
-
-		lines.push(ViewLine {
-			segments: vec![LineSegment::new(
-				if is_full_width {
-					format!("Date: {}", date.format("%c %z"))
-				}
-				else {
-					format!("{}", date.format("%c %z"))
-				}
-				.as_str(),
-			)],
-		});
-
-		if let Some(a) = author.to_string() {
-			lines.push(ViewLine {
-				segments: vec![LineSegment::new(
-					if is_full_width {
-						format!("Author: {}", a)
-					}
-					else {
-						format!("A: {}", a)
-					}
-					.as_str(),
-				)],
-			});
-		}
-
-		if let Some(c) = committer.to_string() {
-			lines.push(ViewLine {
-				segments: vec![LineSegment::new(
-					if is_full_width {
-						format!("Committer: {}", c)
-					}
-					else {
-						format!("C: {}", c)
-					}
-					.as_str(),
-				)],
-			})
-		};
-
-		match body {
-			Some(b) => {
-				for line in b.lines() {
-					lines.push(ViewLine {
-						segments: vec![LineSegment::new(line)],
-					});
-				}
-			},
-			None => {},
-		};
-
-		lines.push(ViewLine {
-			segments: vec![LineSegment::new("")],
-		});
-
-		match file_stats {
-			Some(stats) => {
-				for stat in stats {
-					lines.push(ViewLine {
-						segments: self.get_stat_item_segments(
-							*stat.get_status(),
-							stat.get_to_name().as_str(),
-							stat.get_from_name().as_str(),
-						),
-					})
-				}
-			},
-			None => {},
-		}
-
-		self.draw_view_lines(lines, self.commit_top.get_position(), view_height);
-
-		self.window.color(WindowColor::IndicatorColor);
-		self.window.draw_str("Any key to close");
 	}
 
 	pub fn draw_edit(&self, line: &str, pointer: usize) {

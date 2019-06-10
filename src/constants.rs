@@ -22,10 +22,7 @@ pub const SHORT_ERROR_MESSAGE_WIDTH: i32 = 16;
 
 pub const MINIMUM_WINDOW_HEIGHT: i32 = 5; // title + pad top + line + pad bottom + help
 pub const MINIMUM_COMPACT_WINDOW_WIDTH: i32 = 20; //">s ccc mmmmmmmmmmmmm".len()
-pub const MINIMUM_FULL_WINDOW_WIDTH: i32 = 34; // " > squash cccccccc mmmmmmmmmmmmm %".len()
-
-pub const TO_FILE_INDICATOR: &str = " -> ";
-pub const TO_FILE_INDICATOR_SHORT: &str = ">";
+pub const MINIMUM_FULL_WINDOW_WIDTH: usize = 34; // " > squash cccccccc mmmmmmmmmmmmm %".len()
 
 pub const NAME: &str = "interactive-rebase-tool";
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

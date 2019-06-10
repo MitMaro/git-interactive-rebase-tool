@@ -1,5 +1,5 @@
 # A Commment
-pick aaaaaaaaaaaaaaa Added tests
+pick 166a8bc53895a340625c781bb5dbc2f9794a3a23 Added tests
 reword bbbbbbbbbbbbbbb Added tests
 edit ccccccccccccccc Added tests
 exec git commit --amend -m "Foo bar"
