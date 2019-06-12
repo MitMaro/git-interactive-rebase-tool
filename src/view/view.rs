@@ -28,7 +28,6 @@ use crate::view::{LineSegment, ViewLine};
 use crate::window::Window;
 use crate::window::WindowColor;
 use std::cmp;
-use unicode_segmentation::UnicodeSegmentation;
 
 pub struct View<'v> {
 	help_top: ScrollPosition,
@@ -51,6 +50,10 @@ impl<'v> View<'v> {
 
 	pub fn set_color(&self, color: WindowColor) {
 		self.window.color(color);
+	}
+
+	pub fn set_style(&self, dim: bool, underline: bool, reverse: bool) {
+		self.window.set_style(dim, underline, reverse);
 	}
 
 	pub fn check_window_size(&self) -> bool {
@@ -407,34 +410,5 @@ impl<'v> View<'v> {
 
 	pub fn draw_exiting(&self) {
 		self.window.draw_str("Exiting...")
-	}
-
-	pub fn draw_edit(&self, line: &str, pointer: usize) {
-		self.draw_title(false);
-		self.window.set_style(false, true, false);
-		self.window.color(WindowColor::Foreground);
-
-		// this could probably be made way more efficient
-		let graphemes = UnicodeSegmentation::graphemes(line, true);
-		let segment_length = graphemes.clone().count();
-		for (counter, c) in graphemes.enumerate() {
-			if counter == pointer {
-				self.window.set_style(false, true, false);
-				self.window.draw_str(c);
-				self.window.set_style(false, false, false);
-			}
-			else {
-				self.window.draw_str(c);
-			}
-		}
-		if pointer >= segment_length {
-			self.window.set_style(false, true, false);
-			self.window.draw_str(" ");
-			self.window.set_style(false, false, false);
-		}
-
-		self.window.draw_str("\n\n");
-		self.window.color(WindowColor::IndicatorColor);
-		self.window.draw_str("Enter to finish");
 	}
 }

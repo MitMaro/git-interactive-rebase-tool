@@ -3,6 +3,7 @@ use crate::git_interactive::GitInteractive;
 
 use crate::config::Config;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
+use crate::edit::Edit;
 use crate::input::{Input, InputHandler};
 use crate::process::{
 	ExitStatus,
@@ -19,12 +20,10 @@ use crate::window::Window;
 use core::borrow::Borrow;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
-use unicode_segmentation::UnicodeSegmentation;
 
 pub struct Application<'a> {
 	config: &'a Config,
-	edit_content: String,
-	edit_content_cursor: usize,
+	edit: Edit,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
 	show_commit: ShowCommit,
@@ -41,8 +40,7 @@ impl<'a> Application<'a> {
 	{
 		Self {
 			config,
-			edit_content: String::from(""),
-			edit_content_cursor: 0,
+			edit: Edit::new(),
 			git_interactive,
 			input_handler,
 			show_commit: ShowCommit::new(),
@@ -58,8 +56,7 @@ impl<'a> Application<'a> {
 		match state {
 			State::ConfirmAbort => {},
 			State::ConfirmRebase => {},
-			State::Edit => {},
-			State::EditFinish => {},
+			State::Edit => self.edit.activate(state, &self.git_interactive),
 			State::Error { .. } => {},
 			State::Exiting => {},
 			State::ExternalEditor(_) => {},
@@ -77,8 +74,7 @@ impl<'a> Application<'a> {
 		match state {
 			State::ConfirmAbort => {},
 			State::ConfirmRebase => {},
-			State::Edit => {},
-			State::EditFinish => {},
+			State::Edit => self.edit.deactivate(),
 			State::Error { .. } => {},
 			State::Exiting => {},
 			State::ExternalEditor(_) => {},
@@ -96,8 +92,7 @@ impl<'a> Application<'a> {
 		match state {
 			State::ConfirmAbort => ProcessResult::new(),
 			State::ConfirmRebase => ProcessResult::new(),
-			State::Edit => ProcessResult::new(),
-			State::EditFinish => self.process_edit_finish(),
+			State::Edit => self.edit.process(&mut self.git_interactive),
 			State::Error { .. } => ProcessResult::new(),
 			State::Exiting => ProcessResult::new(),
 			State::ExternalEditor(return_state) => self.process_external_editor(return_state.borrow()),
@@ -109,11 +104,6 @@ impl<'a> Application<'a> {
 			State::VisualMode => self.process_list(),
 			State::WindowSizeError(_) => ProcessResult::new(),
 		}
-	}
-
-	pub fn process_edit_finish(&mut self) -> ProcessResult {
-		self.git_interactive.edit_selected_line(self.edit_content.as_str());
-		ProcessResultBuilder::new().state(State::List).build()
 	}
 
 	pub fn process_external_editor(&mut self, return_state: &State) -> ProcessResult {
@@ -174,8 +164,7 @@ impl<'a> Application<'a> {
 		match state {
 			State::ConfirmAbort => self.draw_confirm_abort(),
 			State::ConfirmRebase => self.draw_confirm_rebase(),
-			State::Edit => self.draw_edit(),
-			State::EditFinish => {},
+			State::Edit => self.edit.render(&self.view, &self.git_interactive),
 			State::Error { message, .. } => self.draw_error(message.as_str()),
 			State::Exiting => self.draw_exiting(),
 			State::ExternalEditor(_) => {},
@@ -215,11 +204,6 @@ impl<'a> Application<'a> {
 		);
 	}
 
-	fn draw_edit(&self) {
-		self.view
-			.draw_edit(self.edit_content.as_str(), self.edit_content_cursor);
-	}
-
 	fn draw_help(&self, help_state: &State) {
 		self.view.draw_help(
 			if *help_state == State::List {
@@ -247,16 +231,11 @@ impl<'a> Application<'a> {
 		self.input_handler.get_confirm()
 	}
 
-	pub fn get_character(&self) -> Input {
-		self.input_handler.get_character()
-	}
-
 	pub fn handle_input(&mut self, state: State) -> HandleInputResult {
 		match state {
 			State::ConfirmAbort => self.handle_confirm_abort_input(),
 			State::ConfirmRebase => self.handle_confirm_rebase_input(),
-			State::Edit => self.handle_edit(),
-			State::EditFinish => HandleInputResult::new(Input::Other),
+			State::Edit => self.edit.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
 			State::Exiting => HandleInputResult::new(Input::Other),
 			State::ExternalEditor(return_state) => self.handle_external_editor_input(return_state.borrow()),
@@ -368,72 +347,6 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	fn handle_edit(&mut self) -> HandleInputResult {
-		let mut input;
-		let mut result;
-		loop {
-			input = self.get_character();
-			result = HandleInputResultBuilder::new(input);
-			match input {
-				Input::Character(c) => {
-					let start = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
-						.take(self.edit_content_cursor)
-						.collect::<String>();
-					let end = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
-						.skip(self.edit_content_cursor)
-						.collect::<String>();
-					self.edit_content = format!("{}{}{}", start, c, end);
-					self.edit_content_cursor += 1;
-				},
-				Input::Backspace => {
-					if self.edit_content_cursor == 0 {
-						break;
-					}
-					let start = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
-						.take(self.edit_content_cursor - 1)
-						.collect::<String>();
-					let end = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
-						.skip(self.edit_content_cursor)
-						.collect::<String>();
-					self.edit_content = format!("{}{}", start, end);
-					self.edit_content_cursor -= 1;
-				},
-				Input::Delete => {
-					let length = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true).count();
-					if self.edit_content_cursor == length {
-						break;
-					}
-					let start = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
-						.take(self.edit_content_cursor)
-						.collect::<String>();
-					let end = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true)
-						.skip(self.edit_content_cursor + 1)
-						.collect::<String>();
-					self.edit_content = format!("{}{}", start, end);
-				},
-				Input::MoveCursorRight => {
-					let length = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true).count();
-					if self.edit_content_cursor < length {
-						self.edit_content_cursor += 1;
-					}
-				},
-				Input::MoveCursorLeft => {
-					if self.edit_content_cursor != 0 {
-						self.edit_content_cursor -= 1;
-					}
-				},
-				Input::Enter => {
-					result = result.state(State::EditFinish);
-				},
-				_ => {
-					continue;
-				},
-			}
-			break;
-		}
-		result.build()
-	}
-
 	pub fn handle_error_input(&mut self, return_state: &State) -> HandleInputResult {
 		let input = self.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
@@ -493,8 +406,6 @@ impl<'a> Application<'a> {
 			Input::ActionSquash => self.set_selected_line_action(Action::Squash),
 			Input::Edit => {
 				if *self.git_interactive.get_selected_line_action() == Action::Exec {
-					self.edit_content = self.git_interactive.get_selected_line_edit_content().clone();
-					self.edit_content_cursor = UnicodeSegmentation::graphemes(self.edit_content.as_str(), true).count();
 					result = result.state(State::Edit);
 				}
 			},
