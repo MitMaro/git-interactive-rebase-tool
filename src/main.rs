@@ -8,6 +8,7 @@ mod color;
 mod commit;
 mod config;
 mod constants;
+mod edit;
 mod git_interactive;
 mod input;
 mod line;

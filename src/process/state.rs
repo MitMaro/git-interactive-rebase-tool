@@ -3,7 +3,6 @@ pub enum State {
 	ConfirmAbort,
 	ConfirmRebase,
 	Edit,
-	EditFinish,
 	Error { return_state: Box<State>, message: String },
 	Exiting,
 	ExternalEditor(Box<State>),
