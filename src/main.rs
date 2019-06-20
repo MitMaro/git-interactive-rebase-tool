@@ -7,6 +7,7 @@ mod cli;
 mod color;
 mod commit;
 mod config;
+mod confirm_abort;
 mod constants;
 mod edit;
 mod git_interactive;

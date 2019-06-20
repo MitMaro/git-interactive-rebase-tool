@@ -2,6 +2,7 @@ use crate::action::Action;
 use crate::git_interactive::GitInteractive;
 
 use crate::config::Config;
+use crate::confirm_abort::ConfirmAbort;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::edit::Edit;
 use crate::input::{Input, InputHandler};
@@ -23,6 +24,7 @@ use std::process::ExitStatus as ProcessExitStatus;
 
 pub struct Application<'a> {
 	config: &'a Config,
+	confirm_abort: ConfirmAbort,
 	edit: Edit,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
@@ -40,6 +42,7 @@ impl<'a> Application<'a> {
 	{
 		Self {
 			config,
+			confirm_abort: ConfirmAbort::new(),
 			edit: Edit::new(),
 			git_interactive,
 			input_handler,
@@ -54,7 +57,7 @@ impl<'a> Application<'a> {
 
 	pub fn activate(&mut self, state: State) {
 		match state {
-			State::ConfirmAbort => {},
+			State::ConfirmAbort => self.confirm_abort.activate(state, &self.git_interactive),
 			State::ConfirmRebase => {},
 			State::Edit => self.edit.activate(state, &self.git_interactive),
 			State::Error { .. } => {},
@@ -72,7 +75,7 @@ impl<'a> Application<'a> {
 
 	pub fn deactivate(&mut self, state: State) {
 		match state {
-			State::ConfirmAbort => {},
+			State::ConfirmAbort => self.confirm_abort.deactivate(),
 			State::ConfirmRebase => {},
 			State::Edit => self.edit.deactivate(),
 			State::Error { .. } => {},
@@ -90,7 +93,7 @@ impl<'a> Application<'a> {
 
 	pub fn process(&mut self, state: State) -> ProcessResult {
 		match state {
-			State::ConfirmAbort => ProcessResult::new(),
+			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive),
 			State::ConfirmRebase => ProcessResult::new(),
 			State::Edit => self.edit.process(&mut self.git_interactive),
 			State::Error { .. } => ProcessResult::new(),
@@ -162,7 +165,7 @@ impl<'a> Application<'a> {
 	pub fn render(&self, state: State) {
 		self.view.clear();
 		match state {
-			State::ConfirmAbort => self.draw_confirm_abort(),
+			State::ConfirmAbort => self.confirm_abort.render(&self.view, &self.git_interactive),
 			State::ConfirmRebase => self.draw_confirm_rebase(),
 			State::Edit => self.edit.render(&self.view, &self.git_interactive),
 			State::Error { message, .. } => self.draw_error(message.as_str()),
@@ -177,10 +180,6 @@ impl<'a> Application<'a> {
 			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
 		self.view.refresh()
-	}
-
-	fn draw_confirm_abort(&self) {
-		self.view.draw_confirm("Are you sure you want to abort");
 	}
 
 	fn draw_confirm_rebase(&self) {
@@ -233,7 +232,10 @@ impl<'a> Application<'a> {
 
 	pub fn handle_input(&mut self, state: State) -> HandleInputResult {
 		match state {
-			State::ConfirmAbort => self.handle_confirm_abort_input(),
+			State::ConfirmAbort => {
+				self.confirm_abort
+					.handle_input(self.input_handler, &mut self.git_interactive)
+			},
 			State::ConfirmRebase => self.handle_confirm_rebase_input(),
 			State::Edit => self.edit.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
@@ -311,23 +313,6 @@ impl<'a> Application<'a> {
 			},
 			_ => {},
 		}
-		result.build()
-	}
-
-	fn handle_confirm_abort_input(&mut self) -> HandleInputResult {
-		let input = self.get_confirm();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::Yes => {
-				self.git_interactive.clear();
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
-			},
-			Input::No => {
-				result = result.state(State::List);
-			},
-			_ => {},
-		}
-
 		result.build()
 	}
 
