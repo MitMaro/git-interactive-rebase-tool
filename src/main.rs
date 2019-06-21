@@ -8,6 +8,7 @@ mod color;
 mod commit;
 mod config;
 mod confirm_abort;
+mod confirm_rebase;
 mod constants;
 mod edit;
 mod git_interactive;
