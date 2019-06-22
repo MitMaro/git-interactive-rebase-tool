@@ -3,6 +3,7 @@ use crate::git_interactive::GitInteractive;
 
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
+use crate::confirm_rebase::ConfirmRebase;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::edit::Edit;
 use crate::input::{Input, InputHandler};
@@ -25,6 +26,7 @@ use std::process::ExitStatus as ProcessExitStatus;
 pub struct Application<'a> {
 	config: &'a Config,
 	confirm_abort: ConfirmAbort,
+	confirm_rebase: ConfirmRebase,
 	edit: Edit,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
@@ -43,6 +45,7 @@ impl<'a> Application<'a> {
 		Self {
 			config,
 			confirm_abort: ConfirmAbort::new(),
+			confirm_rebase: ConfirmRebase::new(),
 			edit: Edit::new(),
 			git_interactive,
 			input_handler,
@@ -58,7 +61,7 @@ impl<'a> Application<'a> {
 	pub fn activate(&mut self, state: State) {
 		match state {
 			State::ConfirmAbort => self.confirm_abort.activate(state, &self.git_interactive),
-			State::ConfirmRebase => {},
+			State::ConfirmRebase => self.confirm_rebase.activate(state, &self.git_interactive),
 			State::Edit => self.edit.activate(state, &self.git_interactive),
 			State::Error { .. } => {},
 			State::Exiting => {},
@@ -76,7 +79,7 @@ impl<'a> Application<'a> {
 	pub fn deactivate(&mut self, state: State) {
 		match state {
 			State::ConfirmAbort => self.confirm_abort.deactivate(),
-			State::ConfirmRebase => {},
+			State::ConfirmRebase => self.confirm_rebase.deactivate(),
 			State::Edit => self.edit.deactivate(),
 			State::Error { .. } => {},
 			State::Exiting => {},
@@ -94,7 +97,7 @@ impl<'a> Application<'a> {
 	pub fn process(&mut self, state: State) -> ProcessResult {
 		match state {
 			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive),
-			State::ConfirmRebase => ProcessResult::new(),
+			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive),
 			State::Edit => self.edit.process(&mut self.git_interactive),
 			State::Error { .. } => ProcessResult::new(),
 			State::Exiting => ProcessResult::new(),
@@ -166,7 +169,7 @@ impl<'a> Application<'a> {
 		self.view.clear();
 		match state {
 			State::ConfirmAbort => self.confirm_abort.render(&self.view, &self.git_interactive),
-			State::ConfirmRebase => self.draw_confirm_rebase(),
+			State::ConfirmRebase => self.confirm_rebase.render(&self.view, &self.git_interactive),
 			State::Edit => self.edit.render(&self.view, &self.git_interactive),
 			State::Error { message, .. } => self.draw_error(message.as_str()),
 			State::Exiting => self.draw_exiting(),
@@ -180,10 +183,6 @@ impl<'a> Application<'a> {
 			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
 		self.view.refresh()
-	}
-
-	fn draw_confirm_rebase(&self) {
-		self.view.draw_confirm("Are you sure you want to rebase");
 	}
 
 	fn draw_error(&self, error_message: &str) {
@@ -226,17 +225,16 @@ impl<'a> Application<'a> {
 		self.input_handler.get_input()
 	}
 
-	pub fn get_confirm(&mut self) -> Input {
-		self.input_handler.get_confirm()
-	}
-
 	pub fn handle_input(&mut self, state: State) -> HandleInputResult {
 		match state {
 			State::ConfirmAbort => {
 				self.confirm_abort
 					.handle_input(self.input_handler, &mut self.git_interactive)
 			},
-			State::ConfirmRebase => self.handle_confirm_rebase_input(),
+			State::ConfirmRebase => {
+				self.confirm_rebase
+					.handle_input(self.input_handler, &mut self.git_interactive)
+			},
 			State::Edit => self.edit.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
 			State::Exiting => HandleInputResult::new(Input::Other),
@@ -313,22 +311,6 @@ impl<'a> Application<'a> {
 			},
 			_ => {},
 		}
-		result.build()
-	}
-
-	fn handle_confirm_rebase_input(&mut self) -> HandleInputResult {
-		let input = self.get_confirm();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::Yes => {
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
-			},
-			Input::No => {
-				result = result.state(State::List);
-			},
-			_ => {},
-		}
-
 		result.build()
 	}
 
