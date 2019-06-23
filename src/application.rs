@@ -6,28 +6,19 @@ use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::edit::Edit;
+use crate::external_editor::ExternalEditor;
 use crate::input::{Input, InputHandler};
-use crate::process::{
-	ExitStatus,
-	HandleInputResult,
-	HandleInputResultBuilder,
-	ProcessModule,
-	ProcessResult,
-	ProcessResultBuilder,
-	State,
-};
+use crate::process::{ExitStatus, HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
 use crate::show_commit::ShowCommit;
 use crate::view::View;
-use crate::window::Window;
 use core::borrow::Borrow;
-use std::process::Command;
-use std::process::ExitStatus as ProcessExitStatus;
 
 pub struct Application<'a> {
 	config: &'a Config,
 	confirm_abort: ConfirmAbort,
 	confirm_rebase: ConfirmRebase,
 	edit: Edit,
+	external_editor: ExternalEditor<'a>,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
 	show_commit: ShowCommit,
@@ -47,6 +38,7 @@ impl<'a> Application<'a> {
 			confirm_abort: ConfirmAbort::new(),
 			confirm_rebase: ConfirmRebase::new(),
 			edit: Edit::new(),
+			external_editor: ExternalEditor::new(config),
 			git_interactive,
 			input_handler,
 			show_commit: ShowCommit::new(),
@@ -65,9 +57,7 @@ impl<'a> Application<'a> {
 			State::Edit => self.edit.activate(state, &self.git_interactive),
 			State::Error { .. } => {},
 			State::Exiting => {},
-			State::ExternalEditor(_) => {},
-			State::ExternalEditorError => {},
-			State::ExternalEditorFinish(_) => {},
+			State::ExternalEditor => self.external_editor.activate(state, &self.git_interactive),
 			State::Help(_) => {},
 			State::List => {},
 			State::ShowCommit => self.show_commit.activate(state, &self.git_interactive),
@@ -83,9 +73,7 @@ impl<'a> Application<'a> {
 			State::Edit => self.edit.deactivate(),
 			State::Error { .. } => {},
 			State::Exiting => {},
-			State::ExternalEditor(_) => {},
-			State::ExternalEditorError => {},
-			State::ExternalEditorFinish(_) => {},
+			State::ExternalEditor => self.external_editor.deactivate(),
 			State::Help(_) => {},
 			State::List => {},
 			State::ShowCommit => self.show_commit.deactivate(),
@@ -101,57 +89,13 @@ impl<'a> Application<'a> {
 			State::Edit => self.edit.process(&mut self.git_interactive),
 			State::Error { .. } => ProcessResult::new(),
 			State::Exiting => ProcessResult::new(),
-			State::ExternalEditor(return_state) => self.process_external_editor(return_state.borrow()),
-			State::ExternalEditorError => self.process_external_editor_error(),
-			State::ExternalEditorFinish(_) => self.process_external_editor_finish(),
+			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive),
 			State::Help(_) => ProcessResult::new(),
 			State::List => self.process_list(),
 			State::ShowCommit => self.show_commit.process(&mut self.git_interactive),
 			State::VisualMode => self.process_list(),
 			State::WindowSizeError(_) => ProcessResult::new(),
 		}
-	}
-
-	pub fn process_external_editor(&mut self, return_state: &State) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
-
-		result = if let Err(e) = self.run_editor() {
-			result.error(e.as_str(), State::ExternalEditorError)
-		}
-		else {
-			result.state(State::ExternalEditorFinish(Box::new(return_state.clone())))
-		};
-
-		result.build()
-	}
-
-	pub fn process_external_editor_finish(&mut self) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
-		result = if let Err(e) = self.git_interactive.reload_file(self.config.comment_char.as_str()) {
-			result.error(e.as_str(), State::List)
-		}
-		else if self.git_interactive.get_lines().is_empty() {
-			result.error("Rebase empty", State::List)
-		}
-		else {
-			result.state(State::List)
-		};
-
-		result.build()
-	}
-
-	pub fn process_external_editor_error(&mut self) -> ProcessResult {
-		ProcessResultBuilder::new()
-			.state(State::Exiting)
-			.exit_status(
-				if self.git_interactive.get_lines().is_empty() {
-					ExitStatus::Good
-				}
-				else {
-					ExitStatus::StateError
-				},
-			)
-			.build()
 	}
 
 	pub fn process_list(&mut self) -> ProcessResult {
@@ -173,9 +117,7 @@ impl<'a> Application<'a> {
 			State::Edit => self.edit.render(&self.view, &self.git_interactive),
 			State::Error { message, .. } => self.draw_error(message.as_str()),
 			State::Exiting => self.draw_exiting(),
-			State::ExternalEditor(_) => {},
-			State::ExternalEditorError => {},
-			State::ExternalEditorFinish(_) => {},
+			State::ExternalEditor => self.external_editor.render(&self.view, &self.git_interactive),
 			State::Help(help_state) => self.draw_help(help_state.borrow()),
 			State::List => self.draw_main(false),
 			State::VisualMode => self.draw_main(true),
@@ -238,9 +180,10 @@ impl<'a> Application<'a> {
 			State::Edit => self.edit.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
 			State::Exiting => HandleInputResult::new(Input::Other),
-			State::ExternalEditor(return_state) => self.handle_external_editor_input(return_state.borrow()),
-			State::ExternalEditorError => HandleInputResult::new(Input::Other),
-			State::ExternalEditorFinish(_) => HandleInputResult::new(Input::Other),
+			State::ExternalEditor => {
+				self.external_editor
+					.handle_input(&self.input_handler, &mut self.git_interactive)
+			},
 			State::Help(help_state) => self.handle_help_input(help_state.borrow()),
 			State::List => self.handle_list_input(),
 			State::VisualMode => self.handle_visual_mode_input(),
@@ -326,18 +269,6 @@ impl<'a> Application<'a> {
 		result.build()
 	}
 
-	pub fn handle_external_editor_input(&mut self, return_state: &State) -> HandleInputResult {
-		let input = self.get_input();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::Resize => {},
-			_ => {
-				result = result.state(return_state.clone());
-			},
-		}
-		result.build()
-	}
-
 	pub fn handle_list_input(&mut self) -> HandleInputResult {
 		let input = self.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
@@ -386,7 +317,7 @@ impl<'a> Application<'a> {
 				self.git_interactive.start_visual_mode();
 				result = result.state(State::VisualMode);
 			},
-			Input::OpenInEditor => result = result.state(State::ExternalEditor(Box::new(State::List))),
+			Input::OpenInEditor => result = result.state(State::ExternalEditor),
 			_ => {},
 		}
 		result.build()
@@ -394,31 +325,6 @@ impl<'a> Application<'a> {
 
 	pub fn handle_window_size_error_input(&mut self) -> HandleInputResult {
 		HandleInputResult::new(self.get_input())
-	}
-
-	pub fn run_editor(&mut self) -> Result<(), String> {
-		self.git_interactive.write_file()?;
-		let filepath = self.git_interactive.get_filepath();
-		let callback = || -> Result<ProcessExitStatus, String> {
-			// TODO: This doesn't handle editor with arguments (e.g. EDITOR="edit --arg")
-			Command::new(&self.config.editor)
-				.arg(filepath.as_os_str())
-				.status()
-				.map_err(|e| {
-					format!(
-						"Unable to run editor ({}):\n{}",
-						self.config.editor.to_string_lossy(),
-						e.to_string()
-					)
-				})
-		};
-		let exit_status: ProcessExitStatus = Window::leave_temporarily(callback)?;
-
-		if !exit_status.success() {
-			return Err(String::from("Editor returned non-zero exit status."));
-		}
-
-		Ok(())
 	}
 
 	pub fn write_file(&self) -> Result<(), String> {
