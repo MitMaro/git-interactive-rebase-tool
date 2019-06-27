@@ -6,6 +6,7 @@ use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::edit::Edit;
+use crate::error::Error;
 use crate::external_editor::ExternalEditor;
 use crate::input::{Input, InputHandler};
 use crate::process::{ExitStatus, HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
@@ -18,6 +19,7 @@ pub struct Application<'a> {
 	confirm_abort: ConfirmAbort,
 	confirm_rebase: ConfirmRebase,
 	edit: Edit,
+	error: Error,
 	external_editor: ExternalEditor<'a>,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
@@ -38,6 +40,7 @@ impl<'a> Application<'a> {
 			confirm_abort: ConfirmAbort::new(),
 			confirm_rebase: ConfirmRebase::new(),
 			edit: Edit::new(),
+			error: Error::new(),
 			external_editor: ExternalEditor::new(config),
 			git_interactive,
 			input_handler,
@@ -55,7 +58,7 @@ impl<'a> Application<'a> {
 			State::ConfirmAbort => self.confirm_abort.activate(state, &self.git_interactive),
 			State::ConfirmRebase => self.confirm_rebase.activate(state, &self.git_interactive),
 			State::Edit => self.edit.activate(state, &self.git_interactive),
-			State::Error { .. } => {},
+			State::Error { .. } => self.error.activate(state, &self.git_interactive),
 			State::Exiting => {},
 			State::ExternalEditor => self.external_editor.activate(state, &self.git_interactive),
 			State::Help(_) => {},
@@ -71,7 +74,7 @@ impl<'a> Application<'a> {
 			State::ConfirmAbort => self.confirm_abort.deactivate(),
 			State::ConfirmRebase => self.confirm_rebase.deactivate(),
 			State::Edit => self.edit.deactivate(),
-			State::Error { .. } => {},
+			State::Error { .. } => self.error.deactivate(),
 			State::Exiting => {},
 			State::ExternalEditor => self.external_editor.deactivate(),
 			State::Help(_) => {},
@@ -87,7 +90,7 @@ impl<'a> Application<'a> {
 			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive),
 			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive),
 			State::Edit => self.edit.process(&mut self.git_interactive),
-			State::Error { .. } => ProcessResult::new(),
+			State::Error { .. } => self.error.process(&mut self.git_interactive),
 			State::Exiting => ProcessResult::new(),
 			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive),
 			State::Help(_) => ProcessResult::new(),
@@ -115,7 +118,7 @@ impl<'a> Application<'a> {
 			State::ConfirmAbort => self.confirm_abort.render(&self.view, &self.git_interactive),
 			State::ConfirmRebase => self.confirm_rebase.render(&self.view, &self.git_interactive),
 			State::Edit => self.edit.render(&self.view, &self.git_interactive),
-			State::Error { message, .. } => self.draw_error(message.as_str()),
+			State::Error { .. } => self.error.render(&self.view, &self.git_interactive),
 			State::Exiting => self.draw_exiting(),
 			State::ExternalEditor => self.external_editor.render(&self.view, &self.git_interactive),
 			State::Help(help_state) => self.draw_help(help_state.borrow()),
@@ -125,10 +128,6 @@ impl<'a> Application<'a> {
 			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
 		self.view.refresh()
-	}
-
-	fn draw_error(&self, error_message: &str) {
-		self.view.draw_error(error_message);
 	}
 
 	fn draw_main(&self, visual_mode: bool) {
@@ -178,7 +177,7 @@ impl<'a> Application<'a> {
 					.handle_input(self.input_handler, &mut self.git_interactive)
 			},
 			State::Edit => self.edit.handle_input(&self.input_handler, &mut self.git_interactive),
-			State::Error { return_state, .. } => self.handle_error_input(return_state.borrow()),
+			State::Error { .. } => self.error.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::Exiting => HandleInputResult::new(Input::Other),
 			State::ExternalEditor => {
 				self.external_editor
@@ -253,18 +252,6 @@ impl<'a> Application<'a> {
 				result = result.help(State::VisualMode);
 			},
 			_ => {},
-		}
-		result.build()
-	}
-
-	pub fn handle_error_input(&mut self, return_state: &State) -> HandleInputResult {
-		let input = self.get_input();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::Resize => {},
-			_ => {
-				result = result.state(return_state.clone());
-			},
 		}
 		result.build()
 	}
