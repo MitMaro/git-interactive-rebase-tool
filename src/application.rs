@@ -1,13 +1,13 @@
 use crate::action::Action;
-use crate::git_interactive::GitInteractive;
-
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
 use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::edit::Edit;
 use crate::error::Error;
+use crate::exiting::Exiting;
 use crate::external_editor::ExternalEditor;
+use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::process::{ExitStatus, HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
 use crate::show_commit::ShowCommit;
@@ -20,6 +20,7 @@ pub struct Application<'a> {
 	confirm_rebase: ConfirmRebase,
 	edit: Edit,
 	error: Error,
+	exiting: Exiting,
 	external_editor: ExternalEditor<'a>,
 	git_interactive: GitInteractive,
 	input_handler: &'a InputHandler<'a>,
@@ -41,6 +42,7 @@ impl<'a> Application<'a> {
 			confirm_rebase: ConfirmRebase::new(),
 			edit: Edit::new(),
 			error: Error::new(),
+			exiting: Exiting::new(),
 			external_editor: ExternalEditor::new(config),
 			git_interactive,
 			input_handler,
@@ -59,7 +61,7 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => self.confirm_rebase.activate(state, &self.git_interactive),
 			State::Edit => self.edit.activate(state, &self.git_interactive),
 			State::Error { .. } => self.error.activate(state, &self.git_interactive),
-			State::Exiting => {},
+			State::Exiting => self.exiting.activate(state, &self.git_interactive),
 			State::ExternalEditor => self.external_editor.activate(state, &self.git_interactive),
 			State::Help(_) => {},
 			State::List => {},
@@ -75,7 +77,7 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => self.confirm_rebase.deactivate(),
 			State::Edit => self.edit.deactivate(),
 			State::Error { .. } => self.error.deactivate(),
-			State::Exiting => {},
+			State::Exiting => self.exiting.deactivate(),
 			State::ExternalEditor => self.external_editor.deactivate(),
 			State::Help(_) => {},
 			State::List => {},
@@ -91,7 +93,7 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive),
 			State::Edit => self.edit.process(&mut self.git_interactive),
 			State::Error { .. } => self.error.process(&mut self.git_interactive),
-			State::Exiting => ProcessResult::new(),
+			State::Exiting => self.exiting.process(&mut self.git_interactive),
 			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive),
 			State::Help(_) => ProcessResult::new(),
 			State::List => self.process_list(),
@@ -119,7 +121,7 @@ impl<'a> Application<'a> {
 			State::ConfirmRebase => self.confirm_rebase.render(&self.view, &self.git_interactive),
 			State::Edit => self.edit.render(&self.view, &self.git_interactive),
 			State::Error { .. } => self.error.render(&self.view, &self.git_interactive),
-			State::Exiting => self.draw_exiting(),
+			State::Exiting => self.exiting.render(&self.view, &self.git_interactive),
 			State::ExternalEditor => self.external_editor.render(&self.view, &self.git_interactive),
 			State::Help(help_state) => self.draw_help(help_state.borrow()),
 			State::List => self.draw_main(false),
@@ -154,10 +156,6 @@ impl<'a> Application<'a> {
 		);
 	}
 
-	fn draw_exiting(&self) {
-		self.view.draw_exiting();
-	}
-
 	fn draw_window_size_error(&self) {
 		self.view.draw_window_size_error();
 	}
@@ -178,7 +176,10 @@ impl<'a> Application<'a> {
 			},
 			State::Edit => self.edit.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::Error { .. } => self.error.handle_input(&self.input_handler, &mut self.git_interactive),
-			State::Exiting => HandleInputResult::new(Input::Other),
+			State::Exiting => {
+				self.exiting
+					.handle_input(&self.input_handler, &mut self.git_interactive)
+			},
 			State::ExternalEditor => {
 				self.external_editor
 					.handle_input(&self.input_handler, &mut self.git_interactive)

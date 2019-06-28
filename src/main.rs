@@ -12,6 +12,7 @@ mod confirm_rebase;
 mod constants;
 mod edit;
 mod error;
+mod exiting;
 mod external_editor;
 mod git_interactive;
 mod input;

@@ -407,8 +407,4 @@ impl<'v> View<'v> {
 	pub fn draw_confirm(&self, message: &str) {
 		self.draw_prompt(&format!("{} (y/n)? ", message));
 	}
-
-	pub fn draw_exiting(&self) {
-		self.window.draw_str("Exiting...")
-	}
 }
