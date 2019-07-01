@@ -19,7 +19,7 @@ impl ProcessModule for ConfirmRebase {
 				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
 			},
 			Input::No => {
-				result = result.state(State::List);
+				result = result.state(State::List(false));
 			},
 			_ => {},
 		}

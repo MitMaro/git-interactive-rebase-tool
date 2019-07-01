@@ -49,7 +49,7 @@ impl Error {
 	pub fn new() -> Self {
 		Self {
 			error_message: String::from(""),
-			return_state: State::List,
+			return_state: State::List(false),
 		}
 	}
 }

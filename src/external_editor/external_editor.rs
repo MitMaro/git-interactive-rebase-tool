@@ -110,7 +110,7 @@ impl<'e> ExternalEditor<'e> {
 			self.state = ExternalEditorState::Error;
 		}
 		else {
-			result = result.state(State::List);
+			result = result.state(State::List(false));
 		}
 		result.build()
 	}
@@ -133,7 +133,7 @@ impl<'e> ExternalEditor<'e> {
 		match input {
 			Input::Resize => {},
 			_ => {
-				result = result.state(State::List);
+				result = result.state(State::List(false));
 			},
 		}
 		result.build()

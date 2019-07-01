@@ -6,14 +6,14 @@ pub const TITLE_HELP_INDICATOR: &str = "Help: ?";
 pub const TITLE_HELP_INDICATOR_LENGTH: i32 = 7;
 
 pub const LIST_FOOTER_FULL: &str = " up, down, q/Q, w/W, c, j, k, b, p, r, e, s, f, d, E, !, ?";
-pub const LIST_FOOTER_FULL_WIDTH: i32 = 58;
+pub const LIST_FOOTER_FULL_WIDTH: usize = 58;
 pub const LIST_FOOTER_COMPACT: &str = "up,dn.q/Q,w/W,c,j,k,b,p,r,e,s,f,d,E,!,?";
-pub const LIST_FOOTER_COMPACT_WIDTH: i32 = 39;
+pub const LIST_FOOTER_COMPACT_WIDTH: usize = 39;
 
 pub const VISUAL_MODE_FOOTER_FULL: &str = "(VISUAL) up, down, j, k, p, r, e, s, f, d, ?";
-pub const VISUAL_MODE_FOOTER_FULL_WIDTH: i32 = 44;
+pub const VISUAL_MODE_FOOTER_FULL_WIDTH: usize = 44;
 pub const VISUAL_MODE_FOOTER_COMPACT: &str = "(V) up,down,j,k,p,r,e,s,f,d,?";
-pub const VISUAL_MODE_FOOTER_COMPACT_WIDTH: i32 = 29;
+pub const VISUAL_MODE_FOOTER_COMPACT_WIDTH: usize = 29;
 
 pub const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue\n";
 pub const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: i32 = 45;

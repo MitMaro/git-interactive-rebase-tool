@@ -59,7 +59,7 @@ impl GitInteractive {
 			lines,
 			selected_commit_stats: None,
 			selected_line_index: 1,
-			visual_index_start: 0,
+			visual_index_start: 1,
 		})
 	}
 

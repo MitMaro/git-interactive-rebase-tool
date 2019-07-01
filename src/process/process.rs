@@ -14,7 +14,7 @@ impl<'r> Process<'r> {
 		Self {
 			application,
 			exit_status: None,
-			state: RefCell::new(State::List),
+			state: RefCell::new(State::List(false)),
 		}
 	}
 
