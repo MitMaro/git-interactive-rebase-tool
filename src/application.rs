@@ -1,32 +1,17 @@
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
-use crate::constants::{LIST_HELP_LINES, VISUAL_MODE_HELP_LINES};
 use crate::edit::Edit;
 use crate::error::Error;
 use crate::exiting::Exiting;
 use crate::external_editor::ExternalEditor;
 use crate::git_interactive::GitInteractive;
+use crate::help::Help;
 use crate::input::{Input, InputHandler};
 use crate::list::List;
-use crate::process::{HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
+use crate::process::{HandleInputResult, ProcessModule, ProcessResult, State};
 use crate::show_commit::ShowCommit;
 use crate::view::View;
-use core::borrow::Borrow;
-
-fn get_help_lines(help_state: &State) -> &[(&str, &str)] {
-	if let State::List(visual_mode) = *help_state {
-		if visual_mode {
-			LIST_HELP_LINES
-		}
-		else {
-			VISUAL_MODE_HELP_LINES
-		}
-	}
-	else {
-		&[]
-	}
-}
 
 pub struct Application<'a> {
 	confirm_abort: ConfirmAbort,
@@ -36,6 +21,7 @@ pub struct Application<'a> {
 	exiting: Exiting,
 	external_editor: ExternalEditor<'a>,
 	git_interactive: GitInteractive,
+	help: Help,
 	input_handler: &'a InputHandler<'a>,
 	list: List<'a>,
 	show_commit: ShowCommit,
@@ -58,6 +44,7 @@ impl<'a> Application<'a> {
 			exiting: Exiting::new(),
 			external_editor: ExternalEditor::new(config),
 			git_interactive,
+			help: Help::new(),
 			input_handler,
 			list: List::new(config),
 			show_commit: ShowCommit::new(),
@@ -73,7 +60,7 @@ impl<'a> Application<'a> {
 			State::Error { .. } => self.error.activate(state, &self.git_interactive),
 			State::Exiting => self.exiting.activate(state, &self.git_interactive),
 			State::ExternalEditor => self.external_editor.activate(state, &self.git_interactive),
-			State::Help(_) => {},
+			State::Help(_) => self.help.activate(state, &self.git_interactive),
 			State::List(_) => self.list.activate(state, &self.git_interactive),
 			State::ShowCommit => self.show_commit.activate(state, &self.git_interactive),
 			State::WindowSizeError(_) => {},
@@ -88,7 +75,7 @@ impl<'a> Application<'a> {
 			State::Error { .. } => self.error.deactivate(),
 			State::Exiting => self.exiting.deactivate(),
 			State::ExternalEditor => self.external_editor.deactivate(),
-			State::Help(_) => {},
+			State::Help(_) => self.help.deactivate(),
 			State::List(_) => self.list.deactivate(),
 			State::ShowCommit => self.show_commit.deactivate(),
 			State::WindowSizeError(_) => {},
@@ -103,7 +90,7 @@ impl<'a> Application<'a> {
 			State::Error { .. } => self.error.process(&mut self.git_interactive),
 			State::Exiting => self.exiting.process(&mut self.git_interactive),
 			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive),
-			State::Help(_) => ProcessResult::new(),
+			State::Help(_) => self.help.process(&mut self.git_interactive),
 			State::List(_) => self.list.process_with_view(&mut self.git_interactive, &self.view),
 			State::ShowCommit => self.show_commit.process(&mut self.git_interactive),
 			State::WindowSizeError(_) => ProcessResult::new(),
@@ -123,16 +110,12 @@ impl<'a> Application<'a> {
 			State::Error { .. } => self.error.render(&self.view, &self.git_interactive),
 			State::Exiting => self.exiting.render(&self.view, &self.git_interactive),
 			State::ExternalEditor => self.external_editor.render(&self.view, &self.git_interactive),
-			State::Help(help_state) => self.draw_help(help_state.borrow()),
+			State::Help(_) => self.help.render(&self.view, &self.git_interactive),
 			State::List(_) => self.list.render(&self.view, &self.git_interactive),
 			State::ShowCommit => self.show_commit.render(&self.view, &self.git_interactive),
 			State::WindowSizeError(_) => self.draw_window_size_error(),
 		}
 		self.view.refresh()
-	}
-
-	fn draw_help(&self, help_state: &State) {
-		self.view.draw_help(get_help_lines(help_state))
 	}
 
 	fn draw_window_size_error(&self) {
@@ -163,37 +146,17 @@ impl<'a> Application<'a> {
 				self.external_editor
 					.handle_input(&self.input_handler, &mut self.git_interactive)
 			},
-			State::Help(help_state) => self.handle_help_input(help_state.borrow()),
-			State::List(_) => {
-				self.list
+			State::Help(_) => {
+				self.help
 					.handle_input_with_view(&self.input_handler, &mut self.git_interactive, &self.view)
 			},
+			State::List(_) => self.list.handle_input(&self.input_handler, &mut self.git_interactive),
 			State::ShowCommit => {
 				self.show_commit
 					.handle_input_with_view(&self.input_handler, &mut self.git_interactive, &self.view)
 			},
 			State::WindowSizeError(_) => self.handle_window_size_error_input(),
 		}
-	}
-
-	fn handle_help_input(&mut self, help_state: &State) -> HandleInputResult {
-		let input = self.get_input();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::MoveCursorDown => {
-				self.view.update_help_top(false, false, get_help_lines(help_state));
-			},
-			Input::MoveCursorUp => {
-				self.view.update_help_top(true, false, get_help_lines(help_state));
-			},
-			Input::Resize => {
-				self.view.update_help_top(true, true, get_help_lines(help_state));
-			},
-			_ => {
-				result = result.state(help_state.clone());
-			},
-		}
-		result.build()
 	}
 
 	pub fn handle_window_size_error_input(&mut self) -> HandleInputResult {

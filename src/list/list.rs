@@ -5,13 +5,11 @@ use crate::constants::{
 	LIST_FOOTER_COMPACT_WIDTH,
 	LIST_FOOTER_FULL,
 	LIST_FOOTER_FULL_WIDTH,
-	LIST_HELP_LINES,
 	MINIMUM_FULL_WINDOW_WIDTH,
 	VISUAL_MODE_FOOTER_COMPACT,
 	VISUAL_MODE_FOOTER_COMPACT_WIDTH,
 	VISUAL_MODE_FOOTER_FULL,
 	VISUAL_MODE_FOOTER_FULL_WIDTH,
-	VISUAL_MODE_HELP_LINES,
 };
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
@@ -36,6 +34,18 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler,
+		git_interactive: &mut GitInteractive,
+	) -> HandleInputResult
+	{
+		match self.state {
+			ListState::Normal => self.handle_normal_mode_input(input_handler, git_interactive),
+			ListState::Visual => self.handle_visual_mode_input(input_handler, git_interactive),
+		}
+	}
+
 	#[allow(clippy::nonminimal_bool)]
 	fn render(&self, view: &View, git_interactive: &GitInteractive) {
 		let (view_width, view_height) = view.get_view_size();
@@ -113,31 +123,16 @@ impl<'l> List<'l> {
 		ProcessResult::new()
 	}
 
-	pub fn handle_input_with_view(
-		&mut self,
-		input_handler: &InputHandler,
-		git_interactive: &mut GitInteractive,
-		view: &View,
-	) -> HandleInputResult
-	{
-		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(input_handler, git_interactive, view),
-			ListState::Visual => self.handle_visual_mode_input(input_handler, git_interactive, view),
-		}
-	}
-
 	fn handle_normal_mode_input(
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
-		view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::Help => {
-				view.update_help_top(false, true, LIST_HELP_LINES);
 				result = result.help(State::List(false));
 			},
 			Input::ShowCommit => {
@@ -191,14 +186,12 @@ impl<'l> List<'l> {
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
-		view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::Help => {
-				view.update_help_top(false, true, VISUAL_MODE_HELP_LINES);
 				result = result.help(State::List(true));
 			},
 			Input::MoveCursorDown => {

@@ -12,22 +12,18 @@ use crate::constants::{
 	TITLE_SHORT,
 	TITLE_SHORT_LENGTH,
 };
-use crate::scroll::{get_scroll_position, ScrollPosition};
-use crate::view::{LineSegment, ViewLine};
+use crate::scroll::get_scroll_position;
+use crate::view::ViewLine;
 use crate::window::Window;
 use crate::window::WindowColor;
 
 pub struct View<'v> {
-	help_top: ScrollPosition,
 	window: &'v Window<'v>,
 }
 
 impl<'v> View<'v> {
 	pub fn new(window: &'v Window) -> Self {
-		Self {
-			help_top: ScrollPosition::new(3, 6, 3),
-			window,
-		}
+		Self { window }
 	}
 
 	pub fn draw_str(&self, s: &str) {
@@ -180,50 +176,6 @@ impl<'v> View<'v> {
 		for _x in 0..repeat {
 			self.window.draw_vertical_space_character();
 		}
-	}
-
-	pub fn update_help_top(&self, scroll_up: bool, reset: bool, help_lines: &[(&str, &str)]) {
-		let (_, window_height) = self.window.get_window_size();
-		if reset {
-			self.help_top.reset();
-		}
-		else if scroll_up {
-			self.help_top.scroll_up(window_height as usize, help_lines.len());
-		}
-		else {
-			self.help_top.scroll_down(window_height as usize, help_lines.len());
-		}
-	}
-
-	pub fn draw_help(&self, help_lines: &[(&str, &str)]) {
-		let (window_width, window_height) = self.window.get_window_size();
-		let view_height = window_height as usize - 3;
-
-		let mut view_lines: Vec<ViewLine> = vec![];
-
-		for line in help_lines {
-			view_lines.push(ViewLine::new(vec![
-				LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
-				LineSegment::new(line.1),
-			]));
-		}
-
-		self.window.set_style(false, false, false);
-		self.window.clear();
-		self.draw_title(false);
-
-		self.window.color(WindowColor::Foreground);
-		self.window.set_style(false, true, false);
-		self.window.draw_str(" Key   Action");
-		if window_width as usize > 13 {
-			let padding = " ".repeat(window_width as usize - 13);
-			self.window.draw_str(padding.as_str());
-		}
-
-		self.draw_view_lines(view_lines, self.help_top.get_position(), view_height);
-
-		self.window.color(WindowColor::IndicatorColor);
-		self.window.draw_str("Any key to close");
 	}
 
 	pub fn draw_prompt(&self, message: &str) {
