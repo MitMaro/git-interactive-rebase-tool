@@ -16,12 +16,12 @@ pub const VISUAL_MODE_FOOTER_COMPACT: &str = "(V) up,down,j,k,p,r,e,s,f,d,?";
 pub const VISUAL_MODE_FOOTER_COMPACT_WIDTH: usize = 29;
 
 pub const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue\n";
-pub const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: i32 = 45;
+pub const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
 pub const SHORT_ERROR_MESSAGE: &str = "Window too small\n";
-pub const SHORT_ERROR_MESSAGE_WIDTH: i32 = 16;
+pub const SHORT_ERROR_MESSAGE_WIDTH: usize = 16;
 
-pub const MINIMUM_WINDOW_HEIGHT: i32 = 5; // title + pad top + line + pad bottom + help
-pub const MINIMUM_COMPACT_WINDOW_WIDTH: i32 = 20; //">s ccc mmmmmmmmmmmmm".len()
+pub const MINIMUM_WINDOW_HEIGHT: usize = 5; // title + pad top + line + pad bottom + help
+pub const MINIMUM_COMPACT_WINDOW_WIDTH: usize = 20; //">s ccc mmmmmmmmmmmmm".len()
 pub const MINIMUM_FULL_WINDOW_WIDTH: usize = 34; // " > squash cccccccc mmmmmmmmmmmmm %".len()
 
 pub const NAME: &str = "interactive-rebase-tool";

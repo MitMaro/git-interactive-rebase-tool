@@ -24,6 +24,7 @@ mod scroll;
 mod show_commit;
 mod view;
 mod window;
+mod window_size_error;
 
 use crate::application::Application;
 use crate::config::Config;

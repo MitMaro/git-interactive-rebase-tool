@@ -1,10 +1,6 @@
 use crate::constants::{
-	HEIGHT_ERROR_MESSAGE,
 	MINIMUM_COMPACT_WINDOW_WIDTH,
 	MINIMUM_WINDOW_HEIGHT,
-	MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH,
-	SHORT_ERROR_MESSAGE,
-	SHORT_ERROR_MESSAGE_WIDTH,
 	TITLE,
 	TITLE_HELP_INDICATOR,
 	TITLE_HELP_INDICATOR_LENGTH,
@@ -39,7 +35,7 @@ impl<'v> View<'v> {
 	}
 
 	pub fn check_window_size(&self) -> bool {
-		let (window_width, window_height) = self.window.get_window_size();
+		let (window_width, window_height) = self.get_view_size();
 		!(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT)
 	}
 
@@ -64,35 +60,6 @@ impl<'v> View<'v> {
 
 	pub fn refresh(&self) {
 		self.window.refresh();
-	}
-
-	pub fn draw_window_size_error(&self) {
-		let (window_width, window_height) = self.window.get_window_size();
-
-		self.window.color(WindowColor::Foreground);
-		if window_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
-			if window_width >= SHORT_ERROR_MESSAGE_WIDTH {
-				self.window.draw_str(SHORT_ERROR_MESSAGE);
-			}
-			else {
-				// not much to do if the window gets too narrow
-				self.window.draw_str("Size!\n");
-			}
-			return;
-		}
-
-		if window_height <= MINIMUM_WINDOW_HEIGHT {
-			if window_width >= MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH {
-				self.window.draw_str(HEIGHT_ERROR_MESSAGE);
-			}
-			else if window_width >= SHORT_ERROR_MESSAGE_WIDTH {
-				self.window.draw_str(SHORT_ERROR_MESSAGE);
-			}
-			else {
-				// not much to do if the window gets too narrow
-				self.window.draw_str("Size!\n");
-			}
-		}
 	}
 
 	pub fn draw_view_lines(&self, lines: Vec<ViewLine>, top: usize, height: usize) {

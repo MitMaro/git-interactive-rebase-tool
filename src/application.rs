@@ -7,11 +7,12 @@ use crate::exiting::Exiting;
 use crate::external_editor::ExternalEditor;
 use crate::git_interactive::GitInteractive;
 use crate::help::Help;
-use crate::input::{Input, InputHandler};
+use crate::input::InputHandler;
 use crate::list::List;
 use crate::process::{HandleInputResult, ProcessModule, ProcessResult, State};
 use crate::show_commit::ShowCommit;
 use crate::view::View;
+use crate::window_size_error::WindowSizeError;
 
 pub struct Application<'a> {
 	confirm_abort: ConfirmAbort,
@@ -26,6 +27,7 @@ pub struct Application<'a> {
 	list: List<'a>,
 	show_commit: ShowCommit,
 	view: View<'a>,
+	window_size_error: WindowSizeError,
 }
 
 impl<'a> Application<'a> {
@@ -49,6 +51,7 @@ impl<'a> Application<'a> {
 			list: List::new(config),
 			show_commit: ShowCommit::new(),
 			view,
+			window_size_error: WindowSizeError::new(),
 		}
 	}
 
@@ -63,7 +66,7 @@ impl<'a> Application<'a> {
 			State::Help(_) => self.help.activate(state, &self.git_interactive),
 			State::List(_) => self.list.activate(state, &self.git_interactive),
 			State::ShowCommit => self.show_commit.activate(state, &self.git_interactive),
-			State::WindowSizeError(_) => {},
+			State::WindowSizeError(_) => self.window_size_error.activate(state, &self.git_interactive),
 		}
 	}
 
@@ -78,7 +81,7 @@ impl<'a> Application<'a> {
 			State::Help(_) => self.help.deactivate(),
 			State::List(_) => self.list.deactivate(),
 			State::ShowCommit => self.show_commit.deactivate(),
-			State::WindowSizeError(_) => {},
+			State::WindowSizeError(_) => self.window_size_error.deactivate(),
 		}
 	}
 
@@ -93,7 +96,7 @@ impl<'a> Application<'a> {
 			State::Help(_) => self.help.process(&mut self.git_interactive),
 			State::List(_) => self.list.process_with_view(&mut self.git_interactive, &self.view),
 			State::ShowCommit => self.show_commit.process(&mut self.git_interactive),
-			State::WindowSizeError(_) => ProcessResult::new(),
+			State::WindowSizeError(_) => self.window_size_error.process(&mut self.git_interactive),
 		}
 	}
 
@@ -113,17 +116,9 @@ impl<'a> Application<'a> {
 			State::Help(_) => self.help.render(&self.view, &self.git_interactive),
 			State::List(_) => self.list.render(&self.view, &self.git_interactive),
 			State::ShowCommit => self.show_commit.render(&self.view, &self.git_interactive),
-			State::WindowSizeError(_) => self.draw_window_size_error(),
+			State::WindowSizeError(_) => self.window_size_error.render(&self.view, &self.git_interactive),
 		}
 		self.view.refresh()
-	}
-
-	fn draw_window_size_error(&self) {
-		self.view.draw_window_size_error();
-	}
-
-	pub fn get_input(&self) -> Input {
-		self.input_handler.get_input()
 	}
 
 	pub fn handle_input(&mut self, state: State) -> HandleInputResult {
@@ -155,12 +150,11 @@ impl<'a> Application<'a> {
 				self.show_commit
 					.handle_input_with_view(&self.input_handler, &mut self.git_interactive, &self.view)
 			},
-			State::WindowSizeError(_) => self.handle_window_size_error_input(),
+			State::WindowSizeError(_) => {
+				self.window_size_error
+					.handle_input(&self.input_handler, &mut self.git_interactive)
+			},
 		}
-	}
-
-	pub fn handle_window_size_error_input(&mut self) -> HandleInputResult {
-		HandleInputResult::new(self.get_input())
 	}
 
 	pub fn write_file(&self) -> Result<(), String> {
