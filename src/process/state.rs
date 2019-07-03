@@ -7,8 +7,7 @@ pub enum State {
 	Exiting,
 	ExternalEditor,
 	Help(Box<State>),
-	List,
+	List(bool), // TODO refactor help to not require visual mode boolean
 	ShowCommit,
-	VisualMode,
 	WindowSizeError(Box<State>),
 }

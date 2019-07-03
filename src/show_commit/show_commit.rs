@@ -27,7 +27,7 @@ impl ProcessModule for ShowCommit {
 	fn process(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 		if let Err(e) = git_interactive.load_commit_stats() {
-			result = result.error(e.as_str(), State::List);
+			result = result.error(e.as_str(), State::List(false));
 		}
 		result.build()
 	}
@@ -168,7 +168,7 @@ impl ShowCommit {
 					.scroll_up(window_height as usize, git_interactive.get_commit_stats_length());
 			},
 			_ => {
-				result = result.state(State::List);
+				result = result.state(State::List(false));
 			},
 		}
 		result.build()

@@ -35,7 +35,7 @@ impl ProcessModule for Edit {
 			EditState::Active => {},
 			EditState::Finish => {
 				git_interactive.edit_selected_line(self.content.as_str());
-				result = result.state(State::List);
+				result = result.state(State::List(false));
 			},
 		};
 		result.build()
