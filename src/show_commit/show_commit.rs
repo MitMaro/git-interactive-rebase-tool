@@ -24,10 +24,41 @@ impl ProcessModule for ShowCommit {
 		self.scroll_position.reset();
 	}
 
-	fn process(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
+	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 		if let Err(e) = git_interactive.load_commit_stats() {
 			result = result.error(e.as_str(), State::List(false));
+		}
+		result.build()
+	}
+
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler,
+		git_interactive: &mut GitInteractive,
+		view: &View,
+	) -> HandleInputResult
+	{
+		let (_, window_height) = view.get_view_size();
+
+		let input = input_handler.get_input();
+		let mut result = HandleInputResultBuilder::new(input);
+		match input {
+			Input::MoveCursorDown => {
+				self.scroll_position
+					.scroll_down(window_height, git_interactive.get_commit_stats_length())
+			},
+			Input::MoveCursorUp => {
+				self.scroll_position
+					.scroll_up(window_height, git_interactive.get_commit_stats_length())
+			},
+			Input::Resize => {
+				self.scroll_position
+					.scroll_up(window_height as usize, git_interactive.get_commit_stats_length());
+			},
+			_ => {
+				result = result.state(State::List(false));
+			},
 		}
 		result.build()
 	}
@@ -141,36 +172,5 @@ impl ShowCommit {
 		Self {
 			scroll_position: ScrollPosition::new(3, 6, 3),
 		}
-	}
-
-	pub fn handle_input_with_view(
-		&mut self,
-		input_handler: &InputHandler,
-		git_interactive: &mut GitInteractive,
-		view: &View,
-	) -> HandleInputResult
-	{
-		let (_, window_height) = view.get_view_size();
-
-		let input = input_handler.get_input();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::MoveCursorDown => {
-				self.scroll_position
-					.scroll_down(window_height, git_interactive.get_commit_stats_length())
-			},
-			Input::MoveCursorUp => {
-				self.scroll_position
-					.scroll_up(window_height, git_interactive.get_commit_stats_length())
-			},
-			Input::Resize => {
-				self.scroll_position
-					.scroll_up(window_height as usize, git_interactive.get_commit_stats_length());
-			},
-			_ => {
-				result = result.state(State::List(false));
-			},
-		}
-		result.build()
 	}
 }

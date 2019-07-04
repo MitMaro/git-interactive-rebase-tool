@@ -36,6 +36,35 @@ impl ProcessModule for Help {
 		}
 	}
 
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler,
+		_git_interactive: &mut GitInteractive,
+		view: &View,
+	) -> HandleInputResult
+	{
+		let (_, window_height) = view.get_view_size();
+		let input = input_handler.get_input();
+		let mut result = HandleInputResultBuilder::new(input);
+		match input {
+			Input::MoveCursorDown => {
+				self.scroll_position
+					.scroll_down(window_height, get_help_lines(&self.return_state).len());
+			},
+			Input::MoveCursorUp => {
+				self.scroll_position
+					.scroll_up(window_height, get_help_lines(&self.return_state).len());
+			},
+			Input::Resize => {
+				self.scroll_position.reset();
+			},
+			_ => {
+				result = result.state(self.return_state.clone());
+			},
+		}
+		result.build()
+	}
+
 	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
 		let (view_width, view_height) = view.get_view_size();
 
@@ -71,35 +100,5 @@ impl Help {
 			return_state: State::List(false),
 			scroll_position: ScrollPosition::new(3, 6, 3),
 		}
-	}
-
-	// TODO refactor to remove need for view
-	pub fn handle_input_with_view(
-		&mut self,
-		input_handler: &InputHandler,
-		_git_interactive: &mut GitInteractive,
-		view: &View,
-	) -> HandleInputResult
-	{
-		let (_, window_height) = view.get_view_size();
-		let input = input_handler.get_input();
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::MoveCursorDown => {
-				self.scroll_position
-					.scroll_down(window_height, get_help_lines(&self.return_state).len());
-			},
-			Input::MoveCursorUp => {
-				self.scroll_position
-					.scroll_up(window_height, get_help_lines(&self.return_state).len());
-			},
-			Input::Resize => {
-				self.scroll_position.reset();
-			},
-			_ => {
-				result = result.state(self.return_state.clone());
-			},
-		}
-		result.build()
 	}
 }

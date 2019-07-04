@@ -2,7 +2,6 @@
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
 mod action;
-mod application;
 mod cli;
 mod color;
 mod commit;
@@ -26,7 +25,6 @@ mod view;
 mod window;
 mod window_size_error;
 
-use crate::application::Application;
 use crate::config::Config;
 use crate::git_interactive::GitInteractive;
 use crate::input::InputHandler;
@@ -85,9 +83,10 @@ fn try_main() -> Result<ExitStatus, Exit> {
 
 	let input_handler = InputHandler::new(&window);
 
-	let mut application = Application::new(git_interactive, View::new(&window), &input_handler, &config);
+	let view = View::new(&window);
 
-	let mut process = Process::new(&mut application);
+	let mut process = Process::new(git_interactive, &view, &input_handler, &config);
+
 	let result = process.run();
 	window.end();
 

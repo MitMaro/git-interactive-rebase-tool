@@ -27,6 +27,7 @@ impl ProcessModule for Error {
 		&mut self,
 		input_handler: &InputHandler,
 		_git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input();

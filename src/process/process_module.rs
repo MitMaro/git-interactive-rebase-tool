@@ -8,7 +8,7 @@ pub trait ProcessModule {
 
 	fn deactivate(&mut self) {}
 
-	fn process(&mut self, _git_interactive: &mut GitInteractive) -> ProcessResult {
+	fn process(&mut self, _git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
 		ProcessResult::new()
 	}
 
@@ -16,6 +16,7 @@ pub trait ProcessModule {
 		&mut self,
 		_input_handler: &InputHandler,
 		_git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		HandleInputResult::new(Input::Other)

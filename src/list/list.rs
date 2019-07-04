@@ -34,10 +34,20 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
+	fn process(&mut self, git_interactive: &mut GitInteractive, view: &View) -> ProcessResult {
+		let (_, view_height) = view.get_view_size();
+		let lines = git_interactive.get_lines();
+		let selected_index = *git_interactive.get_selected_line_index() - 1;
+		self.scroll_position
+			.ensure_cursor_visible(selected_index, view_height, lines.len());
+		ProcessResult::new()
+	}
+
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		match self.state {
@@ -112,15 +122,6 @@ impl<'l> List<'l> {
 		if self.config.auto_select_next {
 			git_interactive.move_cursor_down(1);
 		}
-	}
-
-	pub fn process_with_view(&mut self, git_interactive: &mut GitInteractive, view: &View) -> ProcessResult {
-		let (_, view_height) = view.get_view_size();
-		let lines = git_interactive.get_lines();
-		let selected_index = *git_interactive.get_selected_line_index() - 1;
-		self.scroll_position
-			.ensure_cursor_visible(selected_index, view_height, lines.len());
-		ProcessResult::new()
 	}
 
 	fn handle_normal_mode_input(
