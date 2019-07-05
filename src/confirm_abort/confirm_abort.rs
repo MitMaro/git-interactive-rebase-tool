@@ -10,6 +10,7 @@ impl ProcessModule for ConfirmAbort {
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_confirm();

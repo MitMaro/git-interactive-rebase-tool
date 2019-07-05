@@ -10,6 +10,7 @@ impl ProcessModule for ConfirmRebase {
 		&mut self,
 		input_handler: &InputHandler,
 		_git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_confirm();

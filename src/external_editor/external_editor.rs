@@ -31,7 +31,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		self.state = ExternalEditorState::Active;
 	}
 
-	fn process(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
+	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
 		match self.state {
 			ExternalEditorState::Active => self.process_active(git_interactive),
 			ExternalEditorState::Error => self.process_error(git_interactive),
@@ -43,6 +43,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		&mut self,
 		input_handler: &InputHandler,
 		_git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		match self.state {

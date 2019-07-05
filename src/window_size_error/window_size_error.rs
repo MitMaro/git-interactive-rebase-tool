@@ -19,6 +19,7 @@ impl ProcessModule for WindowSizeError {
 		&mut self,
 		input_handler: &InputHandler,
 		_git_interactive: &mut GitInteractive,
+		_view: &View,
 	) -> HandleInputResult
 	{
 		HandleInputResult::new(input_handler.get_input())
