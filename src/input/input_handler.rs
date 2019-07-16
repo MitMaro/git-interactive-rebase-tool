@@ -1,14 +1,22 @@
 use crate::input::Input;
 use crate::window::Window;
+use crate::Config;
 use pancurses::Input as PancursesInput;
 
 pub struct InputHandler<'i> {
+	config: &'i Config,
+	confirm_yes_input: char,
 	window: &'i Window<'i>,
 }
 
 impl<'i> InputHandler<'i> {
-	pub fn new(window: &'i Window) -> Self {
-		Self { window }
+	pub fn new(window: &'i Window, config: &'i Config) -> Self {
+		let confirm_yes_input = config.input_confirm_yes.to_lowercase().chars().next().unwrap_or('y');
+		Self {
+			config,
+			confirm_yes_input,
+			window,
+		}
 	}
 
 	pub fn get_input(&self) -> Input {
@@ -20,37 +28,54 @@ impl<'i> InputHandler<'i> {
 			}
 		};
 
-		match c {
-			PancursesInput::Character(c) if c == '?' => Input::Help,
-			PancursesInput::Character(c) if c == 'c' => Input::ShowCommit,
-			PancursesInput::Character(c) if c == 'q' => Input::Abort,
-			PancursesInput::Character(c) if c == 'Q' => Input::ForceAbort,
-			PancursesInput::Character(c) if c == 'w' => Input::Rebase,
-			PancursesInput::Character(c) if c == 'W' => Input::ForceRebase,
-			PancursesInput::Character(c) if c == 'p' => Input::ActionPick,
-			PancursesInput::Character(c) if c == 'b' => Input::ActionBreak,
-			PancursesInput::Character(c) if c == 'r' => Input::ActionReword,
-			PancursesInput::Character(c) if c == 'e' => Input::ActionEdit,
-			PancursesInput::Character(c) if c == 's' => Input::ActionSquash,
-			PancursesInput::Character(c) if c == 'f' => Input::ActionFixup,
-			PancursesInput::Character(c) if c == 'd' => Input::ActionDrop,
-			PancursesInput::Character(c) if c == 'E' => Input::Edit,
-			PancursesInput::Character(c) if c == 'v' => Input::ToggleVisualMode,
-			PancursesInput::Character(c) if c == 'j' => Input::SwapSelectedDown,
-			PancursesInput::Character(c) if c == 'k' => Input::SwapSelectedUp,
-			PancursesInput::KeyDown => Input::MoveCursorDown,
-			PancursesInput::KeyUp => Input::MoveCursorUp,
-			PancursesInput::KeyPPage => Input::MoveCursorPageUp,
-			PancursesInput::KeyNPage => Input::MoveCursorPageDown,
-			PancursesInput::KeyResize => Input::Resize,
-			PancursesInput::Character(c) if c == '!' => Input::OpenInEditor,
+		let input = match c {
+			PancursesInput::Character(c) => c.to_string(),
+			PancursesInput::KeyDown => String::from("Down"),
+			PancursesInput::KeyUp => String::from("Up"),
+			PancursesInput::KeyPPage => String::from("PageUp"),
+			PancursesInput::KeyNPage => String::from("PageDown"),
+			PancursesInput::KeyResize => String::from("Resize"),
+			_ => String::from("Other"),
+		};
+
+		match input.as_str() {
+			i if i == self.config.input_abort.as_str() => Input::Abort,
+			i if i == self.config.input_action_break.as_str() => Input::ActionBreak,
+			i if i == self.config.input_action_drop.as_str() => Input::ActionDrop,
+			i if i == self.config.input_action_drop.as_str() => Input::Help,
+			i if i == self.config.input_action_edit.as_str() => Input::ActionEdit,
+			i if i == self.config.input_action_fixup.as_str() => Input::ActionFixup,
+			i if i == self.config.input_action_pick.as_str() => Input::ActionPick,
+			i if i == self.config.input_action_reword.as_str() => Input::ActionReword,
+			i if i == self.config.input_action_squash.as_str() => Input::ActionSquash,
+			i if i == self.config.input_edit.as_str() => Input::Edit,
+			i if i == self.config.input_force_abort.as_str() => Input::ForceAbort,
+			i if i == self.config.input_force_rebase.as_str() => Input::ForceRebase,
+			i if i == self.config.input_move_down.as_str() => Input::MoveCursorDown,
+			i if i == self.config.input_move_selection_down.as_str() => Input::SwapSelectedDown,
+			i if i == self.config.input_move_selection_up.as_str() => Input::SwapSelectedUp,
+			i if i == self.config.input_move_up.as_str() => Input::MoveCursorUp,
+			i if i == self.config.input_open_in_external_editor.as_str() => Input::OpenInEditor,
+			i if i == self.config.input_rebase.as_str() => Input::Rebase,
+			i if i == self.config.input_show_commit.as_str() => Input::ShowCommit,
+			i if i == self.config.input_toggle_visual_mode.as_str() => Input::ToggleVisualMode,
+			"PageUp" => Input::MoveCursorPageUp,
+			"PageDown" => Input::MoveCursorPageDown,
+			"Resize" => Input::Resize,
 			_ => Input::Other,
 		}
 	}
 
 	pub fn get_confirm(&self) -> Input {
 		match self.window.getch() {
-			Some(PancursesInput::Character(c)) if c == 'y' || c == 'Y' => Input::Yes,
+			Some(PancursesInput::Character(c)) => {
+				if c.to_lowercase().next().unwrap() == self.confirm_yes_input {
+					Input::Yes
+				}
+				else {
+					Input::No
+				}
+			},
 			Some(PancursesInput::KeyResize) => Input::Resize,
 			_ => Input::No,
 		}

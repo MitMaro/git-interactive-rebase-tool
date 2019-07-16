@@ -1,20 +1,16 @@
 use crate::action::Action;
 use crate::config::Config;
-use crate::constants::{
-	LIST_FOOTER_COMPACT,
-	LIST_FOOTER_COMPACT_WIDTH,
-	LIST_FOOTER_FULL,
-	LIST_FOOTER_FULL_WIDTH,
-	MINIMUM_FULL_WINDOW_WIDTH,
-	VISUAL_MODE_FOOTER_COMPACT,
-	VISUAL_MODE_FOOTER_COMPACT_WIDTH,
-	VISUAL_MODE_FOOTER_FULL,
-	VISUAL_MODE_FOOTER_FULL_WIDTH,
-};
+use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::line::Line;
-use crate::list::get_action_color;
+use crate::list::utils::{
+	get_action_color,
+	get_normal_footer_compact,
+	get_normal_footer_full,
+	get_visual_footer_compact,
+	get_visual_footer_full,
+};
 use crate::process::{ExitStatus, HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
 use crate::scroll::ScrollPosition;
 use crate::view::{LineSegment, View, ViewLine};
@@ -29,8 +25,12 @@ enum ListState {
 
 pub struct List<'l> {
 	config: &'l Config,
+	normal_footer_compact: String,
+	normal_footer_full: String,
 	scroll_position: ScrollPosition,
 	state: ListState,
+	visual_footer_compact: String,
+	visual_footer_full: String,
 }
 
 impl<'l> ProcessModule for List<'l> {
@@ -85,24 +85,24 @@ impl<'l> ProcessModule for List<'l> {
 		view.set_color(WindowColor::Foreground);
 		view.set_style(true, false, false);
 		if is_visual_mode {
-			if view_width >= VISUAL_MODE_FOOTER_FULL_WIDTH {
-				view.draw_str(VISUAL_MODE_FOOTER_FULL);
+			if view_width >= self.visual_footer_full.len() {
+				view.draw_str(self.visual_footer_full.as_str());
 			}
-			else if view_width >= VISUAL_MODE_FOOTER_COMPACT_WIDTH {
-				view.draw_str(VISUAL_MODE_FOOTER_COMPACT);
+			else if view_width >= self.visual_footer_compact.len() {
+				view.draw_str(self.visual_footer_compact.as_str());
 			}
 			else {
-				view.draw_str("(Visual) Help: ?");
+				view.draw_str(format!("(Visual) Help: {}", self.config.input_help).as_str());
 			}
 		}
-		else if view_width >= LIST_FOOTER_FULL_WIDTH {
-			view.draw_str(LIST_FOOTER_FULL);
+		else if view_width >= self.normal_footer_full.len() {
+			view.draw_str(self.normal_footer_full.as_str());
 		}
-		else if view_width >= LIST_FOOTER_COMPACT_WIDTH {
-			view.draw_str(LIST_FOOTER_COMPACT);
+		else if view_width >= self.normal_footer_compact.len() {
+			view.draw_str(self.normal_footer_compact.as_str());
 		}
 		else {
-			view.draw_str("Help: ?");
+			view.draw_str(format!("Help: {}", self.config.input_help).as_str());
 		}
 		view.set_style(false, false, false);
 	}
@@ -112,8 +112,12 @@ impl<'l> List<'l> {
 	pub fn new(config: &'l Config) -> Self {
 		Self {
 			config,
+			normal_footer_compact: get_normal_footer_compact(config),
+			normal_footer_full: get_normal_footer_full(config),
 			scroll_position: ScrollPosition::new(2, 1, 1),
 			state: ListState::Normal,
+			visual_footer_compact: get_visual_footer_compact(config),
+			visual_footer_full: get_visual_footer_full(config),
 		}
 	}
 

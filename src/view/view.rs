@@ -2,7 +2,6 @@ use crate::constants::{
 	MINIMUM_COMPACT_WINDOW_WIDTH,
 	MINIMUM_WINDOW_HEIGHT,
 	TITLE,
-	TITLE_HELP_INDICATOR,
 	TITLE_HELP_INDICATOR_LENGTH,
 	TITLE_LENGTH,
 	TITLE_SHORT,
@@ -12,14 +11,16 @@ use crate::scroll::get_scroll_position;
 use crate::view::ViewLine;
 use crate::window::Window;
 use crate::window::WindowColor;
+use crate::Config;
 
 pub struct View<'v> {
+	config: &'v Config,
 	window: &'v Window<'v>,
 }
 
 impl<'v> View<'v> {
-	pub fn new(window: &'v Window) -> Self {
-		Self { window }
+	pub fn new(window: &'v Window, config: &'v Config) -> Self {
+		Self { window, config }
 	}
 
 	pub fn draw_str(&self, s: &str) {
@@ -116,7 +117,8 @@ impl<'v> View<'v> {
 					self.window.draw_str(padding.as_str());
 				}
 				if show_help {
-					self.window.draw_str(TITLE_HELP_INDICATOR);
+					self.window
+						.draw_str(format!("Help: {}", self.config.input_help).as_str());
 				}
 				else {
 					let padding = " ".repeat(TITLE_HELP_INDICATOR_LENGTH as usize);
@@ -152,6 +154,9 @@ impl<'v> View<'v> {
 	}
 
 	pub fn draw_confirm(&self, message: &str) {
-		self.draw_prompt(&format!("{} (y/n)? ", message));
+		self.draw_prompt(&format!(
+			"{} ({}/{})? ",
+			message, self.config.input_confirm_yes, self.config.input_confirm_no
+		));
 	}
 }

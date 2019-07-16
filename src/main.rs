@@ -81,9 +81,9 @@ fn try_main() -> Result<ExitStatus, Exit> {
 
 	let window = Window::new(&config);
 
-	let input_handler = InputHandler::new(&window);
+	let input_handler = InputHandler::new(&window, &config);
 
-	let view = View::new(&window);
+	let view = View::new(&window, &config);
 
 	let mut process = Process::new(git_interactive, &view, &input_handler, &config);
 
