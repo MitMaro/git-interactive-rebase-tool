@@ -1,7 +1,7 @@
 [![Crates.io](https://img.shields.io/crates/v/git-interactive-rebase-tool.svg)][crates-io]
 [![Build Status](https://travis-ci.org/MitMaro/git-interactive-rebase-tool.svg?branch=master)][travis-build]
 [![Build status](https://ci.appveyor.com/api/projects/status/3a6j6n4o5x6aa763/branch/master?svg=true)][appveyor-build]
-[![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)][license]
+[![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)][license]
 
 # Git Interactive Rebase Tool
 
@@ -194,11 +194,11 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
  - [x] Full support for `exec` action
  - [ ] Insert action
- - [ ] Configure key bindings
+ - [x] Configure key bindings
 
 ## Related Projects
 
-* [rebase-editor] is a very similar project but is [not fully cross-platform][rebase-editor-issue-7] and uses Node.js.
+* [rebase-editor] is a very similar project written in Node.js.
 
 ## License
 
