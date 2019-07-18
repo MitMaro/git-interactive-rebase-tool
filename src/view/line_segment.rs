@@ -40,20 +40,25 @@ impl LineSegment {
 		}
 	}
 
-	pub fn draw(&self, max_width: usize, window: &Window) -> usize {
+	pub fn draw(&self, left: usize, max_width: usize, window: &Window) -> (usize, usize) {
 		window.color(self.color);
 		window.set_style(self.dim, self.underline, self.reverse);
 		let segment_length = UnicodeSegmentation::graphemes(self.text.as_str(), true).count();
 
-		if segment_length >= max_width {
+		if segment_length <= left {
+			(0, segment_length)
+		}
+		else if segment_length - left >= max_width {
 			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
-			let partial_line = graphemes.take(max_width).collect::<String>();
+			let partial_line = graphemes.skip(left).take(max_width).collect::<String>();
 			window.draw_str(partial_line.as_str());
-			max_width
+			(max_width, segment_length)
 		}
 		else {
-			window.draw_str(self.text.as_str());
-			segment_length
+			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
+			let partial_line = graphemes.skip(left).collect::<String>();
+			window.draw_str(partial_line.as_str());
+			(segment_length - left, segment_length)
 		}
 	}
 }

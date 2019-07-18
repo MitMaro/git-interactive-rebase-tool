@@ -30,6 +30,8 @@ impl<'i> InputHandler<'i> {
 
 		let input = match c {
 			PancursesInput::Character(c) => c.to_string(),
+			PancursesInput::KeyLeft => String::from("Left"),
+			PancursesInput::KeyRight => String::from("Right"),
 			PancursesInput::KeyDown => String::from("Down"),
 			PancursesInput::KeyUp => String::from("Up"),
 			PancursesInput::KeyPPage => String::from("PageUp"),
@@ -52,6 +54,8 @@ impl<'i> InputHandler<'i> {
 			i if i == self.config.input_force_abort.as_str() => Input::ForceAbort,
 			i if i == self.config.input_force_rebase.as_str() => Input::ForceRebase,
 			i if i == self.config.input_move_down.as_str() => Input::MoveCursorDown,
+			i if i == self.config.input_move_left.as_str() => Input::MoveCursorLeft,
+			i if i == self.config.input_move_right.as_str() => Input::MoveCursorRight,
 			i if i == self.config.input_move_selection_down.as_str() => Input::SwapSelectedDown,
 			i if i == self.config.input_move_selection_up.as_str() => Input::SwapSelectedUp,
 			i if i == self.config.input_move_up.as_str() => Input::MoveCursorUp,

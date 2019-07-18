@@ -2,23 +2,26 @@ use std::cell::RefCell;
 
 pub struct ScrollPosition {
 	big_scroll: usize,
+	left_value: RefCell<usize>,
 	padding: usize,
 	small_scroll: usize,
-	value: RefCell<usize>,
+	top_value: RefCell<usize>,
 }
 
 impl ScrollPosition {
 	pub fn new(padding: usize, big_scroll: usize, small_scroll: usize) -> Self {
 		Self {
 			big_scroll,
+			left_value: RefCell::new(0 as usize),
 			padding,
 			small_scroll,
-			value: RefCell::new(0 as usize),
+			top_value: RefCell::new(0 as usize),
 		}
 	}
 
 	pub fn reset(&self) {
-		self.value.replace(0);
+		self.left_value.replace(0);
+		self.top_value.replace(0);
 	}
 
 	pub fn scroll_up(&self, window_height: usize, lines_length: usize) {
@@ -29,13 +32,39 @@ impl ScrollPosition {
 		self.update_top(false, window_height, lines_length);
 	}
 
+	pub fn scroll_left(&self, view_width: usize, max_line_width: usize) {
+		let current_value = *self.left_value.borrow();
+		if current_value != 0 {
+			self.set_horizontal_scroll(current_value - 1, view_width, max_line_width);
+		}
+	}
+
+	pub fn scroll_right(&self, view_width: usize, max_line_width: usize) {
+		let current_value = *self.left_value.borrow();
+		self.set_horizontal_scroll(current_value + 1, view_width, max_line_width);
+	}
+
+	fn set_horizontal_scroll(&self, new_value: usize, view_width: usize, max_line_width: usize) {
+		if (new_value + view_width) > max_line_width {
+			if view_width > max_line_width {
+				self.left_value.replace(0);
+			}
+			else {
+				self.left_value.replace(max_line_width - view_width);
+			}
+		}
+		else {
+			self.left_value.replace(new_value);
+		}
+	}
+
 	pub fn ensure_cursor_visible(&self, cursor: usize, window_height: usize, lines_length: usize) {
 		let view_height = window_height as usize - self.padding;
 
-		let current_value = *self.value.borrow();
+		let current_value = *self.top_value.borrow();
 
 		// TODO I think this can be simplified
-		self.value.replace(match cursor {
+		self.top_value.replace(match cursor {
 			// show all if list is view height is long enough
 			_ if lines_length <= view_height => 0,
 			// last item selected, set top to show bottom of lines
@@ -52,8 +81,12 @@ impl ScrollPosition {
 		});
 	}
 
-	pub fn get_position(&self) -> usize {
-		*self.value.borrow()
+	pub fn get_top_position(&self) -> usize {
+		*self.top_value.borrow()
+	}
+
+	pub fn get_left_position(&self) -> usize {
+		*self.left_value.borrow()
 	}
 
 	fn update_top(&self, scroll_up: bool, window_height: usize, lines_length: usize) {
@@ -70,21 +103,21 @@ impl ScrollPosition {
 			_ => 1,
 		};
 
-		let current_value = *self.value.borrow();
+		let current_value = *self.top_value.borrow();
 
 		if scroll_up {
 			if current_value < amount {
 				self.reset();
 			}
 			else {
-				self.value.replace(current_value - amount);
+				self.top_value.replace(current_value - amount);
 			}
 		}
 		else if current_value + amount + view_height > lines_length {
-			self.value.replace(lines_length - view_height);
+			self.top_value.replace(lines_length - view_height);
 		}
 		else {
-			self.value.replace(current_value + amount);
+			self.top_value.replace(current_value + amount);
 		}
 	}
 }

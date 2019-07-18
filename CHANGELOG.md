@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Visual mode - change action and reorder with multiple selections
 - Configuration option for vertical spacing character
 - Configurable key bindings
+- Horizontal scrolling
 
 ## [1.0.0] - 2019-04-10
 

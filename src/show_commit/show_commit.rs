@@ -1,3 +1,4 @@
+use crate::commit::Commit;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
@@ -14,6 +15,7 @@ use crate::show_commit::util::get_stat_item_segments;
 use crate::view::{LineSegment, View, ViewLine};
 use crate::window::WindowColor;
 use std::cmp;
+use unicode_segmentation::UnicodeSegmentation;
 
 pub struct ShowCommit {
 	scroll_position: ScrollPosition,
@@ -39,22 +41,46 @@ impl ProcessModule for ShowCommit {
 		view: &View,
 	) -> HandleInputResult
 	{
-		let (_, window_height) = view.get_view_size();
+		let (view_width, view_height) = view.get_view_size();
 
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
+			Input::MoveCursorLeft => {
+				self.scroll_position.scroll_left(
+					view_width,
+					self.get_max_line_length(
+						git_interactive.get_commit_stats(),
+						view_height >= MINIMUM_FULL_WINDOW_WIDTH,
+					),
+				)
+			},
+			Input::MoveCursorRight => {
+				self.scroll_position.scroll_right(
+					view_width,
+					self.get_max_line_length(
+						git_interactive.get_commit_stats(),
+						view_height >= MINIMUM_FULL_WINDOW_WIDTH,
+					),
+				)
+			},
 			Input::MoveCursorDown => {
-				self.scroll_position
-					.scroll_down(window_height, git_interactive.get_commit_stats_length())
+				self.scroll_position.scroll_down(
+					view_height,
+					self.get_commit_stats_length(git_interactive.get_commit_stats()),
+				)
 			},
 			Input::MoveCursorUp => {
-				self.scroll_position
-					.scroll_up(window_height, git_interactive.get_commit_stats_length())
+				self.scroll_position.scroll_up(
+					view_height,
+					self.get_commit_stats_length(git_interactive.get_commit_stats()),
+				)
 			},
 			Input::Resize => {
-				self.scroll_position
-					.scroll_up(window_height as usize, git_interactive.get_commit_stats_length());
+				self.scroll_position.scroll_up(
+					view_height as usize,
+					self.get_commit_stats_length(git_interactive.get_commit_stats()),
+				);
 			},
 			_ => {
 				result = result.state(State::List(false));
@@ -160,7 +186,12 @@ impl ProcessModule for ShowCommit {
 			None => {},
 		}
 
-		view.draw_view_lines(lines, self.scroll_position.get_position(), view_height);
+		view.draw_view_lines(
+			lines,
+			self.scroll_position.get_top_position(),
+			self.scroll_position.get_left_position(),
+			view_height,
+		);
 
 		view.set_color(WindowColor::IndicatorColor);
 		view.draw_str("Any key to close");
@@ -171,6 +202,108 @@ impl ShowCommit {
 	pub fn new() -> Self {
 		Self {
 			scroll_position: ScrollPosition::new(3, 6, 3),
+		}
+	}
+
+	fn get_commit_stats_length(&self, commit: &Option<Commit>) -> usize {
+		match commit {
+			Some(c) => {
+				let mut len = c.get_file_stats_length();
+
+				match c.get_body() {
+					Some(b) => {
+						len += b.lines().count();
+					},
+					None => {},
+				}
+				len + 3 // author + date + commit hash
+			},
+			None => 0,
+		}
+	}
+
+	fn get_max_line_length(&self, commit: &Option<Commit>, is_full_width: bool) -> usize {
+		match commit {
+			Some(c) => {
+				let full_hash = c.get_hash();
+				let author = c.get_author();
+				let committer = c.get_committer();
+				let body = c.get_body();
+				let file_stats = c.get_file_stats();
+
+				let mut max_line_length = if is_full_width {
+					full_hash.len() + 8 // 8 = "Commit: "
+				}
+				else {
+					cmp::min(full_hash.len(), 8)
+				};
+
+				max_line_length = cmp::max(
+					if is_full_width {
+						35 // "Date: Sun Jul 8 00:34:60 2001+09:30"
+					}
+					else {
+						29 // "Sun Jul 8 00:34:60 2001+09:30"
+					},
+					max_line_length,
+				);
+
+				if let Some(a) = author.to_string() {
+					max_line_length = cmp::max(
+						if is_full_width {
+							UnicodeSegmentation::graphemes(a.as_str(), true).count() + 8 // 8 = "Author: "
+						}
+						else {
+							UnicodeSegmentation::graphemes(a.as_str(), true).count() + 3 // 3 = "A: "
+						},
+						max_line_length,
+					);
+				}
+
+				if let Some(c) = committer.to_string() {
+					max_line_length = cmp::max(
+						if is_full_width {
+							UnicodeSegmentation::graphemes(c.as_str(), true).count() + 11 // 11 = "Committer: "
+						}
+						else {
+							UnicodeSegmentation::graphemes(c.as_str(), true).count() + 3 // 3 = "C: "
+						},
+						max_line_length,
+					);
+				};
+
+				if let Some(b) = body {
+					for line in b.lines() {
+						let line_length = UnicodeSegmentation::graphemes(line, true).count();
+						if line_length > max_line_length {
+							max_line_length = line_length;
+						}
+					}
+				}
+
+				if let Some(stats) = file_stats {
+					let additional_line_length = if is_full_width {
+						13 // stat name + arrow
+					}
+					else {
+						3 // stat name + arrow
+					};
+
+					for stat in stats {
+						let stat_line_length =
+							UnicodeSegmentation::graphemes(stat.get_to_name().as_str(), true).count()
+								+ UnicodeSegmentation::graphemes(stat.get_from_name().as_str(), true).count()
+								+ additional_line_length;
+
+						if stat_line_length > max_line_length {
+							max_line_length = stat_line_length;
+						}
+					}
+				}
+
+				max_line_length
+			},
+			None => 0,
 		}
 	}
 }

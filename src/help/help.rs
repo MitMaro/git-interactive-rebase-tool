@@ -1,5 +1,9 @@
 use crate::git_interactive::GitInteractive;
-use crate::help::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines};
+use crate::help::utils::{
+	get_list_normal_mode_help_lines,
+	get_list_visual_mode_help_lines,
+	get_max_help_description_length,
+};
 use crate::input::{Input, InputHandler};
 use crate::process::{HandleInputResult, HandleInputResultBuilder, ProcessModule, State};
 use crate::scroll::ScrollPosition;
@@ -9,9 +13,11 @@ use crate::Config;
 
 pub struct Help<'h> {
 	normal_mode_help_lines: [(String, &'h str); 21],
+	normal_mode_max_help_line_length: usize,
 	return_state: State,
 	scroll_position: ScrollPosition,
 	visual_mode_help_lines: [(String, &'h str); 13],
+	visual_mode_max_help_line_length: usize,
 }
 
 impl<'h> ProcessModule for Help<'h> {
@@ -32,17 +38,24 @@ impl<'h> ProcessModule for Help<'h> {
 		view: &View,
 	) -> HandleInputResult
 	{
-		let (_, window_height) = view.get_view_size();
+		let (view_width, view_height) = view.get_view_size();
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
+			Input::MoveCursorLeft => {
+				self.scroll_position
+					.scroll_left(view_width, self.get_max_help_line_length())
+			},
+			Input::MoveCursorRight => {
+				self.scroll_position
+					.scroll_right(view_width, self.get_max_help_line_length())
+			},
 			Input::MoveCursorDown => {
 				self.scroll_position
-					.scroll_down(window_height, self.get_help_lines().len());
+					.scroll_down(view_height, self.get_help_lines().len());
 			},
 			Input::MoveCursorUp => {
-				self.scroll_position
-					.scroll_up(window_height, self.get_help_lines().len());
+				self.scroll_position.scroll_up(view_height, self.get_help_lines().len());
 			},
 			Input::Resize => {
 				self.scroll_position.reset();
@@ -60,10 +73,13 @@ impl<'h> ProcessModule for Help<'h> {
 		let mut view_lines: Vec<ViewLine> = vec![];
 
 		for line in self.get_help_lines() {
-			view_lines.push(ViewLine::new(vec![
-				LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
-				LineSegment::new(line.1),
-			]));
+			view_lines.push(ViewLine::new_with_pinned_segments(
+				vec![
+					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
+					LineSegment::new(line.1),
+				],
+				1,
+			));
 		}
 
 		view.draw_title(false);
@@ -76,7 +92,12 @@ impl<'h> ProcessModule for Help<'h> {
 			view.draw_str(padding.as_str());
 		}
 
-		view.draw_view_lines(view_lines, self.scroll_position.get_position(), view_height - 3);
+		view.draw_view_lines(
+			view_lines,
+			self.scroll_position.get_top_position(),
+			self.scroll_position.get_left_position(),
+			view_height - 3,
+		);
 
 		view.set_color(WindowColor::IndicatorColor);
 		view.draw_str("Any key to close");
@@ -85,11 +106,17 @@ impl<'h> ProcessModule for Help<'h> {
 
 impl<'h> Help<'h> {
 	pub fn new(config: &'h Config) -> Self {
+		let normal_mode_help_lines = get_list_normal_mode_help_lines(config);
+		let normal_mode_max_help_line_length = get_max_help_description_length(&normal_mode_help_lines);
+		let visual_mode_help_lines = get_list_visual_mode_help_lines(config);
+		let visual_mode_max_help_line_length = get_max_help_description_length(&visual_mode_help_lines);
 		Self {
-			normal_mode_help_lines: get_list_normal_mode_help_lines(config),
+			normal_mode_help_lines,
+			normal_mode_max_help_line_length,
 			return_state: State::List(false),
 			scroll_position: ScrollPosition::new(3, 6, 3),
-			visual_mode_help_lines: get_list_visual_mode_help_lines(config),
+			visual_mode_help_lines,
+			visual_mode_max_help_line_length,
 		}
 	}
 
@@ -104,6 +131,20 @@ impl<'h> Help<'h> {
 		}
 		else {
 			&[]
+		}
+	}
+
+	pub fn get_max_help_line_length(&self) -> usize {
+		if let State::List(visual_mode) = self.return_state {
+			if visual_mode {
+				self.visual_mode_max_help_line_length + 6
+			}
+			else {
+				self.normal_mode_max_help_line_length + 6
+			}
+		}
+		else {
+			4
 		}
 	}
 }
