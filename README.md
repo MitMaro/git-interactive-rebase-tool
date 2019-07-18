@@ -194,11 +194,11 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 
  - [x] Full support for `exec` action
  - [ ] Insert action
- - [ ] Configure key bindings
+ - [x] Configure key bindings
 
 ## Related Projects
 
-* [rebase-editor] is a very similar project but is [not fully cross-platform][rebase-editor-issue-7] and uses Node.js.
+* [rebase-editor] is a very similar project written in Node.js.
 
 ## License
 
