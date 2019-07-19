@@ -1,4 +1,5 @@
 use crate::Config;
+use unicode_segmentation::UnicodeSegmentation;
 
 pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 21] {
 	[
@@ -87,4 +88,15 @@ pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 13] 
 			"Set selected commits to be dropped",
 		),
 	]
+}
+
+pub fn get_max_help_description_length(lines: &[(String, &str)]) -> usize {
+	let mut max_length = 0;
+	for (_, desc) in lines {
+		let len = UnicodeSegmentation::graphemes(*desc, true).count();
+		if len > max_length {
+			max_length = len;
+		}
+	}
+	max_length
 }

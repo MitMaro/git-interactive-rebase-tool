@@ -63,7 +63,7 @@ impl<'v> View<'v> {
 		self.window.refresh();
 	}
 
-	pub fn draw_view_lines(&self, lines: Vec<ViewLine>, top: usize, height: usize) {
+	pub fn draw_view_lines(&self, lines: Vec<ViewLine>, top: usize, left: usize, height: usize) {
 		let number_of_lines = lines.len();
 
 		let scroll_indicator_index = get_scroll_position(top, number_of_lines, height);
@@ -71,7 +71,7 @@ impl<'v> View<'v> {
 
 		let mut index: usize = 0;
 		for line in lines.iter().skip(top).take(height) {
-			self.draw_view_line(line, show_scroll_bar);
+			self.draw_view_line(line, left, show_scroll_bar);
 			if show_scroll_bar {
 				self.window.color(WindowColor::Foreground);
 				self.window.set_style(scroll_indicator_index != index, false, true);
@@ -85,15 +85,27 @@ impl<'v> View<'v> {
 		}
 	}
 
-	pub fn draw_view_line(&self, line: &ViewLine, scrollbar: bool) {
+	pub fn draw_view_line(&self, line: &ViewLine, left: usize, scrollbar: bool) {
 		let (window_width, _) = self.window.get_window_size();
 		let window_width = if scrollbar { window_width - 1 } else { window_width } as usize;
 
 		let mut start = 0;
-		for segment in line.get_segments() {
-			start += segment.draw(window_width - start, &self.window);
+		let mut left_start = 0;
+		for (i, segment) in line.get_segments().iter().enumerate() {
+			// set left on first non-pinned segment
+			if i == line.get_number_of_pinned_segment() {
+				left_start = left;
+			}
+			let (amount_drawn, segment_size) = segment.draw(left_start, window_width - start, &self.window);
+			start += amount_drawn;
 			if start >= window_width {
 				break;
+			}
+			if amount_drawn > 0 {
+				left_start = 0;
+			}
+			else {
+				left_start -= segment_size;
 			}
 		}
 

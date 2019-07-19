@@ -16,6 +16,7 @@ use crate::scroll::ScrollPosition;
 use crate::view::{LineSegment, View, ViewLine};
 use crate::window::WindowColor;
 use std::cmp;
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, PartialEq)]
 enum ListState {
@@ -33,6 +34,37 @@ pub struct List<'l> {
 	visual_footer_full: String,
 }
 
+fn get_maximum_line_length(is_full_width: bool, lines: &[Line]) -> usize {
+	let mut length = 0;
+	if is_full_width {
+		for line in lines {
+			let line_length = match *line.get_action() {
+				Action::Exec => UnicodeSegmentation::graphemes(line.get_command().as_str(), true).count(),
+				Action::Break => 0,
+				_ => 9 + UnicodeSegmentation::graphemes(line.get_comment().as_str(), true).count(),
+			} + 10;
+
+			if line_length > length {
+				length = line_length;
+			}
+		}
+	}
+	else {
+		for line in lines {
+			let line_length = match *line.get_action() {
+				Action::Exec => UnicodeSegmentation::graphemes(line.get_command().as_str(), true).count(),
+				Action::Break => 0,
+				_ => 4 + UnicodeSegmentation::graphemes(line.get_comment().as_str(), true).count(),
+			} + 3;
+
+			if line_length > length {
+				length = line_length;
+			}
+		}
+	}
+	length
+}
+
 impl<'l> ProcessModule for List<'l> {
 	fn process(&mut self, git_interactive: &mut GitInteractive, view: &View) -> ProcessResult {
 		let (_, view_height) = view.get_view_size();
@@ -40,6 +72,7 @@ impl<'l> ProcessModule for List<'l> {
 		let selected_index = *git_interactive.get_selected_line_index() - 1;
 		self.scroll_position
 			.ensure_cursor_visible(selected_index, view_height, lines.len());
+
 		ProcessResult::new()
 	}
 
@@ -47,12 +80,12 @@ impl<'l> ProcessModule for List<'l> {
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
-		_view: &View,
+		view: &View,
 	) -> HandleInputResult
 	{
 		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(input_handler, git_interactive),
-			ListState::Visual => self.handle_visual_mode_input(input_handler, git_interactive),
+			ListState::Normal => self.handle_normal_mode_input(input_handler, git_interactive, view),
+			ListState::Visual => self.handle_visual_mode_input(input_handler, git_interactive, view),
 		}
 	}
 
@@ -68,19 +101,27 @@ impl<'l> ProcessModule for List<'l> {
 		let selected_index = *git_interactive.get_selected_line_index() - 1;
 
 		for (index, line) in git_interactive.get_lines().iter().enumerate() {
-			view_lines.push(ViewLine::new(self.get_todo_line_segments(
-				line,
-				selected_index == index,
-				is_visual_mode
-					&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
-						|| (visual_index > selected_index && index >= selected_index && index <= visual_index)),
-				view_width,
-			)));
+			view_lines.push(ViewLine::new_with_pinned_segments(
+				self.get_todo_line_segments(
+					line,
+					selected_index == index,
+					is_visual_mode
+						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
+							|| (visual_index > selected_index && index >= selected_index && index <= visual_index)),
+					view_width,
+				),
+				if *line.get_action() == Action::Exec { 2 } else { 3 },
+			));
 		}
 
 		view.draw_title(true);
 
-		view.draw_view_lines(view_lines, self.scroll_position.get_position(), view_height - 2);
+		view.draw_view_lines(
+			view_lines,
+			self.scroll_position.get_top_position(),
+			self.scroll_position.get_left_position(),
+			view_height - 2,
+		);
 
 		view.set_color(WindowColor::Foreground);
 		view.set_style(true, false, false);
@@ -132,10 +173,12 @@ impl<'l> List<'l> {
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
+		view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
+		let (view_width, _) = view.get_view_size();
 		match input {
 			Input::Help => {
 				result = result.help(State::List(false));
@@ -172,6 +215,18 @@ impl<'l> List<'l> {
 			},
 			Input::SwapSelectedDown => git_interactive.swap_selected_down(),
 			Input::SwapSelectedUp => git_interactive.swap_selected_up(),
+			Input::MoveCursorLeft => {
+				self.scroll_position.scroll_left(
+					view_width,
+					get_maximum_line_length(view_width >= MINIMUM_FULL_WINDOW_WIDTH, git_interactive.get_lines()),
+				)
+			},
+			Input::MoveCursorRight => {
+				self.scroll_position.scroll_right(
+					view_width,
+					get_maximum_line_length(view_width >= MINIMUM_FULL_WINDOW_WIDTH, git_interactive.get_lines()),
+				)
+			},
 			Input::MoveCursorDown => git_interactive.move_cursor_down(1),
 			Input::MoveCursorUp => git_interactive.move_cursor_up(1),
 			Input::MoveCursorPageDown => git_interactive.move_cursor_down(5),
@@ -191,13 +246,27 @@ impl<'l> List<'l> {
 		&mut self,
 		input_handler: &InputHandler,
 		git_interactive: &mut GitInteractive,
+		view: &View,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
+		let (view_width, _) = view.get_view_size();
 		match input {
 			Input::Help => {
 				result = result.help(State::List(true));
+			},
+			Input::MoveCursorLeft => {
+				self.scroll_position.scroll_left(
+					view_width,
+					get_maximum_line_length(view_width >= MINIMUM_FULL_WINDOW_WIDTH, git_interactive.get_lines()),
+				)
+			},
+			Input::MoveCursorRight => {
+				self.scroll_position.scroll_right(
+					view_width,
+					get_maximum_line_length(view_width >= MINIMUM_FULL_WINDOW_WIDTH, git_interactive.get_lines()),
+				)
 			},
 			Input::MoveCursorDown => {
 				git_interactive.move_cursor_down(1);
@@ -259,7 +328,7 @@ impl<'l> List<'l> {
 					line.get_command().clone()
 				}
 				else if *action == Action::Break {
-					String::from("         ")
+					String::from("")
 				}
 				else {
 					let max_index = cmp::min(line.get_hash().len(), 8);

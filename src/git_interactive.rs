@@ -230,23 +230,6 @@ impl GitInteractive {
 		&self.selected_commit_stats
 	}
 
-	pub fn get_commit_stats_length(&self) -> usize {
-		match &self.selected_commit_stats {
-			Some(s) => {
-				let mut len = s.get_file_stats_length();
-
-				match s.get_body() {
-					Some(b) => {
-						len += b.lines().count();
-					},
-					None => {},
-				}
-				len + 3 // author + date + commit hash
-			},
-			None => 0,
-		}
-	}
-
 	pub fn get_selected_line_hash(&self) -> &String {
 		self.lines[self.selected_line_index - 1].get_hash()
 	}
