@@ -1,3 +1,4 @@
+use crate::input::utils::curses_input_to_string;
 use crate::input::Input;
 use crate::window::Window;
 use crate::Config;
@@ -20,31 +21,15 @@ impl<'i> InputHandler<'i> {
 	}
 
 	pub fn get_input(&self) -> Input {
-		// ignore None's, since they are not really valid input
-		let c = loop {
-			let c = self.window.getch();
-			if c.is_some() {
-				break c.unwrap();
-			}
-		};
+		let c = self.get_next_input();
 
-		let input = match c {
-			PancursesInput::Character(c) => c.to_string(),
-			PancursesInput::KeyLeft => String::from("Left"),
-			PancursesInput::KeyRight => String::from("Right"),
-			PancursesInput::KeyDown => String::from("Down"),
-			PancursesInput::KeyUp => String::from("Up"),
-			PancursesInput::KeyPPage => String::from("PageUp"),
-			PancursesInput::KeyNPage => String::from("PageDown"),
-			PancursesInput::KeyResize => String::from("Resize"),
-			_ => String::from("Other"),
-		};
+		let input = curses_input_to_string(c);
 
 		match input.as_str() {
 			i if i == self.config.input_abort.as_str() => Input::Abort,
 			i if i == self.config.input_action_break.as_str() => Input::ActionBreak,
 			i if i == self.config.input_action_drop.as_str() => Input::ActionDrop,
-			i if i == self.config.input_action_drop.as_str() => Input::Help,
+			i if i == self.config.input_help.as_str() => Input::Help,
 			i if i == self.config.input_action_edit.as_str() => Input::ActionEdit,
 			i if i == self.config.input_action_fixup.as_str() => Input::ActionFixup,
 			i if i == self.config.input_action_pick.as_str() => Input::ActionPick,
@@ -63,8 +48,8 @@ impl<'i> InputHandler<'i> {
 			i if i == self.config.input_rebase.as_str() => Input::Rebase,
 			i if i == self.config.input_show_commit.as_str() => Input::ShowCommit,
 			i if i == self.config.input_toggle_visual_mode.as_str() => Input::ToggleVisualMode,
-			"PageUp" => Input::MoveCursorPageUp,
-			"PageDown" => Input::MoveCursorPageDown,
+			i if i == self.config.input_move_up_step.as_str() => Input::MoveCursorPageUp,
+			i if i == self.config.input_move_down_step.as_str() => Input::MoveCursorPageDown,
 			"Resize" => Input::Resize,
 			_ => Input::Other,
 		}
@@ -87,12 +72,7 @@ impl<'i> InputHandler<'i> {
 
 	pub fn get_character(&self) -> Input {
 		loop {
-			let c = loop {
-				let c = self.window.getch();
-				if c.is_some() {
-					break c.unwrap();
-				}
-			};
+			let c = self.get_next_input();
 
 			match c {
 				PancursesInput::Character(c) if c == '\n' => break Input::Enter,
@@ -105,6 +85,15 @@ impl<'i> InputHandler<'i> {
 				PancursesInput::KeyResize => break Input::Resize,
 				_ => {},
 			};
+		}
+	}
+
+	fn get_next_input(&self) -> PancursesInput {
+		loop {
+			let c = self.window.getch();
+			if c.is_some() {
+				break c.unwrap();
+			}
 		}
 	}
 }

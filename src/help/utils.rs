@@ -1,51 +1,102 @@
 use crate::Config;
 use unicode_segmentation::UnicodeSegmentation;
 
+fn get_input_short_name(input: &str) -> String {
+	if input == "PageUp" {
+		String::from("PgUp")
+	}
+	else if input == "PageDown" {
+		String::from("PgDn")
+	}
+	else if input == "Resize" {
+		String::from("Rsze")
+	}
+	else if input == "Other" {
+		String::from("Oth")
+	}
+	else {
+		String::from(input)
+	}
+}
+
 pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 21] {
 	[
-		(String::from("Up"), "Move selection up"),
-		(String::from("Down"), "Move selection down"),
-		(String::from("PgUp"), "Move selection up 5 lines"),
-		(String::from("PgDn"), "Move selection down 5 lines"),
-		(config.input_abort.to_string(), "Abort interactive rebase"),
+		(get_input_short_name(config.input_move_up.as_str()), "Move selection up"),
 		(
-			config.input_force_abort.to_string(),
+			get_input_short_name(config.input_move_down.as_str()),
+			"Move selection down",
+		),
+		(
+			get_input_short_name(config.input_move_up_step.as_str()),
+			"Move selection up 5 lines",
+		),
+		(
+			get_input_short_name(config.input_move_down_step.as_str()),
+			"Move selection down 5 lines",
+		),
+		(
+			get_input_short_name(config.input_abort.as_str()),
+			"Abort interactive rebase",
+		),
+		(
+			get_input_short_name(config.input_force_abort.as_str()),
 			"Immediately abort interactive rebase",
 		),
-		(config.input_rebase.to_string(), "Write interactive rebase file"),
 		(
-			config.input_force_rebase.to_string(),
+			get_input_short_name(config.input_rebase.as_str()),
+			"Write interactive rebase file",
+		),
+		(
+			get_input_short_name(config.input_force_rebase.as_str()),
 			"Immediately write interactive rebase file",
 		),
-		(config.input_help.to_string(), "Show help"),
-		(config.input_show_commit.to_string(), "Show commit information"),
+		(get_input_short_name(config.input_help.as_str()), "Show help"),
 		(
-			config.input_move_selection_down.to_string(),
+			get_input_short_name(config.input_show_commit.as_str()),
+			"Show commit information",
+		),
+		(
+			get_input_short_name(config.input_move_selection_down.as_str()),
 			"Move selected commit down",
 		),
-		(config.input_move_selection_up.to_string(), "Move selected commit up"),
-		(config.input_action_break.to_string(), "Toggle break action"),
-		(config.input_action_pick.to_string(), "Set selected commit to be picked"),
 		(
-			config.input_action_reword.to_string(),
+			get_input_short_name(config.input_move_selection_up.as_str()),
+			"Move selected commit up",
+		),
+		(
+			get_input_short_name(config.input_action_break.as_str()),
+			"Toggle break action",
+		),
+		(
+			get_input_short_name(config.input_action_pick.as_str()),
+			"Set selected commit to be picked",
+		),
+		(
+			get_input_short_name(config.input_action_reword.as_str()),
 			"Set selected commit to be reworded",
 		),
-		(config.input_action_edit.to_string(), "Set selected commit to be edited"),
 		(
-			config.input_action_squash.to_string(),
+			get_input_short_name(config.input_action_edit.as_str()),
+			"Set selected commit to be edited",
+		),
+		(
+			get_input_short_name(config.input_action_squash.as_str()),
 			"Set selected commit to be squashed",
 		),
 		(
-			config.input_action_fixup.to_string(),
+			get_input_short_name(config.input_action_fixup.as_str()),
 			"Set selected commit to be fixed-up",
 		),
 		(
-			config.input_action_drop.to_string(),
+			get_input_short_name(config.input_action_drop.as_str()),
 			"Set selected commit to be dropped",
 		),
-		(config.input_edit.to_string(), "Edit an exec action's command"),
 		(
-			config.input_open_in_external_editor.to_string(),
+			get_input_short_name(config.input_edit.as_str()),
+			"Edit an exec action's command",
+		),
+		(
+			get_input_short_name(config.input_open_in_external_editor.as_str()),
 			"Open the todo file in the default editor",
 		),
 	]
@@ -53,38 +104,50 @@ pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 21] 
 
 pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 13] {
 	[
-		(String::from("Up"), "Move selection up"),
-		(String::from("Down"), "Move selection down"),
-		(String::from("PgUp"), "Move selection up 5 lines"),
-		(String::from("PgDn"), "Move selection down 5 lines"),
-		(config.input_help.to_string(), "Show help"),
+		(get_input_short_name(config.input_move_up.as_str()), "Move selection up"),
 		(
-			config.input_move_selection_down.to_string(),
+			get_input_short_name(config.input_move_down.as_str()),
+			"Move selection down",
+		),
+		(
+			get_input_short_name(config.input_move_up_step.as_str()),
+			"Move selection up 5 lines",
+		),
+		(
+			get_input_short_name(config.input_move_down_step.as_str()),
+			"Move selection down 5 lines",
+		),
+		(get_input_short_name(config.input_help.as_str()), "Show help"),
+		(
+			get_input_short_name(config.input_move_selection_down.as_str()),
 			"Move selected commits down",
 		),
-		(config.input_move_selection_up.to_string(), "Move selected commits up"),
 		(
-			config.input_action_pick.to_string(),
+			get_input_short_name(config.input_move_selection_up.as_str()),
+			"Move selected commits up",
+		),
+		(
+			get_input_short_name(config.input_action_pick.as_str()),
 			"Set selected commits to be picked",
 		),
 		(
-			config.input_action_reword.to_string(),
+			get_input_short_name(config.input_action_reword.as_str()),
 			"Set selected commits to be reworded",
 		),
 		(
-			config.input_action_edit.to_string(),
+			get_input_short_name(config.input_action_edit.as_str()),
 			"Set selected commits to be edited",
 		),
 		(
-			config.input_action_squash.to_string(),
+			get_input_short_name(config.input_action_squash.as_str()),
 			"Set selected commits to be squashed",
 		),
 		(
-			config.input_action_fixup.to_string(),
+			get_input_short_name(config.input_action_fixup.as_str()),
 			"Set selected commits to be fixed-up",
 		),
 		(
-			config.input_action_drop.to_string(),
+			get_input_short_name(config.input_action_drop.as_str()),
 			"Set selected commits to be dropped",
 		),
 	]

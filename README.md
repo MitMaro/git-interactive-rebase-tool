@@ -92,56 +92,60 @@ git config --global interactive-rebase-tool.foregroundColor black
 
 #### Options
 
-| Key                        | Default | Type   | Description |
-| -------------------------- | ------- | ------ | ----------- |
-| `autoSelectNext`           | false   | bool   | If true, auto select the next line after action modification |
-| `breakColor`               | white   | Color  | Color used for the break action |
-| `diffAddColor`             | green   | Color  | Color used for lines and files added in a diff |
-| `diffChangeColor`          | yellow  | Color  | Color used for lines and files changed in a diff |
-| `diffRemoveColor`          | red     | Color  | Color used for lines and files removed in a diff |
-| `dropColor`                | red     | Color  | Color used for the drop action |
-| `editColor`                | blue    | Color  | Color used for the edit action |
-| `errorColor`               | red     | Color  | Color used for showing error messages  |
-| `fixupColor`               | magenta | Color  | Color used for the fixup action |
-| `foregroundColor`          | white   | Color  | Color used for most text and the UI |
-| `indicatorColor`           | cyan    | Color  | Color used for text the indicates or needs to standout  |
-| `inputAbort`               | q       | String | Key for abort rebase with prompt |
-| `inputActionBreak`         | b       | String | Key for setting action to rebase |
-| `inputActionDrop`          | d       | String | Key for setting action to drop |
-| `inputActionEdit`          | e       | String | Key for setting action to edit |
-| `inputActionFixup`         | f       | String | Key for setting action to fixup |
-| `inputActionPick`          | p       | String | Key for setting action to pick |
-| `inputActionReword`        | r       | String | Key for setting action to reword |
-| `inputActionSquash`        | s       | String | Key for setting action to squash |
-| `inputConfirmNo`           | n       | String | Key for rejecting a confirmation |
-| `inputConfirmYes`          | y       | String | Key for confirming a confirmation |
-| `inputEdit`                | E       | String | Key for entering edit mode |
-| `inputForceAbort`          | Q       | String | Key for forcing an abort of the rebase |
-| `inputForceRebase`         | W       | String | Key for forcing a rebase |
-| `inputHelp`                | ?       | String | Key for showing the help |
-| `inputMoveDown`            | Down    | String | Key for moving the selected line(s) down |
-| `inputMoveLeft`            | Left    | String | Key for moving the selected line(s) down |
-| `inputMoveRight`           | Right   | String | Key for moving the selected line(s) down |
-| `inputMoveSelectionDown`   | j       | String | Key for moving the selected line(s) down |
-| `inputMoveSelectionUp`     | k       | String | Key for moving the selected line(s) up |
-| `inputMoveUp`              | Up      | String | Key for moving the selected line(s) up |
-| `inputOpenInExternalEditor`| !       | String | Key for opening the external editor |
-| `inputRebase`              | w       | String | Key for rebasing with confirmation |
-| `inputShowCommit`          | c       | String | Key for showing the selected commit |
-| `inputToggleVisualMode`    | v       | String | Key for toggling visual mode |
-| `pickColor`                | green   | Color  | Color used for the pick action |
-| `rewordColor`              | yellow  | Color  | Color used for the reword action |
-| `squashColor`              | cyan    | Color  | Color used for the squash action |
-| `verticalSpacingCharacter` | ~       | String | Vertical spacing character. Can be set to an empty string. |
+| Key                        | Default  | Type   | Description |
+| -------------------------- | -------- | ------ | ----------- |
+| `autoSelectNext`           | false    | bool   | If true, auto select the next line after action modification |
+| `breakColor`               | white    | Color  | Color used for the break action |
+| `diffAddColor`             | green    | Color  | Color used for lines and files added in a diff |
+| `diffChangeColor`          | yellow   | Color  | Color used for lines and files changed in a diff |
+| `diffRemoveColor`          | red      | Color  | Color used for lines and files removed in a diff |
+| `dropColor`                | red      | Color  | Color used for the drop action |
+| `editColor`                | blue     | Color  | Color used for the edit action |
+| `errorColor`               | red      | Color  | Color used for showing error messages  |
+| `fixupColor`               | magenta  | Color  | Color used for the fixup action |
+| `foregroundColor`          | white    | Color  | Color used for most text and the UI |
+| `indicatorColor`           | cyan     | Color  | Color used for text the indicates or needs to standout  |
+| `inputAbort`               | q        | String | Key for abort rebase with prompt |
+| `inputActionBreak`         | b        | String | Key for setting action to rebase |
+| `inputActionDrop`          | d        | String | Key for setting action to drop |
+| `inputActionEdit`          | e        | String | Key for setting action to edit |
+| `inputActionFixup`         | f        | String | Key for setting action to fixup |
+| `inputActionPick`          | p        | String | Key for setting action to pick |
+| `inputActionReword`        | r        | String | Key for setting action to reword |
+| `inputActionSquash`        | s        | String | Key for setting action to squash |
+| `inputConfirmNo`           | n        | String | Key for rejecting a confirmation |
+| `inputConfirmYes`          | y        | String | Key for confirming a confirmation |
+| `inputEdit`                | E        | String | Key for entering edit mode |
+| `inputForceAbort`          | Q        | String | Key for forcing an abort of the rebase |
+| `inputForceRebase`         | W        | String | Key for forcing a rebase |
+| `inputHelp`                | ?        | String | Key for showing the help |
+| `inputMoveDownStep`        | PageDown | String | Key for moving the cursor down by a large step |
+| `inputMoveDown`            | Down     | String | Key for moving the cursor down |
+| `inputMoveLeft`            | Left     | String | Key for moving the cursor left |
+| `inputMoveRight`           | Right    | String | Key for moving the cursor right |
+| `inputMoveSelectionDown`   | j        | String | Key for moving the selected line(s) down |
+| `inputMoveSelectionUp`     | k        | String | Key for moving the selected line(s) up |
+| `inputMoveUp`              | Up       | String | Key for moving the cursor up |
+| `inputMoveUpStep`          | PageUp   | String | Key for moving the cursor up  by a large step|
+| `inputOpenInExternalEditor`| !        | String | Key for opening the external editor |
+| `inputRebase`              | w        | String | Key for rebasing with confirmation |
+| `inputShowCommit`          | c        | String | Key for showing the selected commit |
+| `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
+| `pickColor`                | green    | Color  | Color used for the pick action |
+| `rewordColor`              | yellow   | Color  | Color used for the reword action |
+| `squashColor`              | cyan     | Color  | Color used for the squash action |
+| `verticalSpacingCharacter` | ~        | String | Vertical spacing character. Can be set to an empty string. |
 
 #### Special Keys
 
-| Key     | Description |
-| ------- | ----------- |
-| `Down`  | Down arrow key |
-| `Left`  | Left arrow key |
-| `Right` | Right arrow key |
-| `Up`    | Up arrow key |
+| Key        | Description |
+| ---------- | ----------- |
+| `PageDown` | Page Down key |
+| `Down`     | Down arrow key |
+| `Left`     | Left arrow key |
+| `Right`    | Right arrow key |
+| `Up`       | Up arrow key |
+| `PageUp`   | Page Up key |
 
 #### Valid Color Values
 
