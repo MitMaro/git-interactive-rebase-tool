@@ -36,37 +36,46 @@ mod tests {
 	use super::TryFrom;
 
 	#[test]
-	fn action_from_str_black() {
+	fn action_try_from_str_black() {
 		assert_eq!(Color::try_from("black").unwrap(), Color::Black);
 	}
 
 	#[test]
-	fn action_from_str_blue() {
+	fn action_try_from_str_blue() {
 		assert_eq!(Color::try_from("blue").unwrap(), Color::Blue);
 	}
 
 	#[test]
-	fn action_from_str_cyan() {
+	fn action_try_from_str_cyan() {
 		assert_eq!(Color::try_from("cyan").unwrap(), Color::Cyan);
 	}
 
 	#[test]
-	fn action_from_str_green() {
+	fn action_try_from_str_green() {
 		assert_eq!(Color::try_from("green").unwrap(), Color::Green);
 	}
 
 	#[test]
-	fn action_from_str_magenta() {
+	fn action_try_from_str_magenta() {
 		assert_eq!(Color::try_from("magenta").unwrap(), Color::Magenta);
 	}
 
 	#[test]
-	fn action_from_str_red() {
+	fn action_try_from_str_red() {
 		assert_eq!(Color::try_from("red").unwrap(), Color::Red);
 	}
 
 	#[test]
-	fn action_from_str_yellow() {
+	fn action_try_from_str_white() {
+		assert_eq!(Color::try_from("white").unwrap(), Color::White);
+	}
+
+	#[test]
+	fn action_try_from_str_yellow() {
 		assert_eq!(Color::try_from("yellow").unwrap(), Color::Yellow);
+	}
+	#[test]
+	fn action_try_from_str_invalid() {
+		assert_eq!(Color::try_from("invalid").unwrap_err(), "Invalid color string: invalid");
 	}
 }
