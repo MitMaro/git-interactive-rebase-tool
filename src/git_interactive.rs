@@ -25,20 +25,15 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 	}
 
 	// catch noop rebases
-	match s.lines().nth(0) {
-		Some("noop") => Ok(Vec::new()),
-		_ => {
-			s.lines()
-				.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
-				.map(|l| {
-					match Line::new(l) {
-						Ok(line) => Ok(line),
-						Err(e) => Err(format!("Error reading file, {}", e)),
-					}
-				})
-				.collect()
-		},
-	}
+	s.lines()
+		.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
+		.map(|l| {
+			match Line::new(l) {
+				Ok(line) => Ok(line),
+				Err(e) => Err(format!("Error reading file, {}", e)),
+			}
+		})
+		.collect()
 }
 
 pub struct GitInteractive {
@@ -224,6 +219,10 @@ impl GitInteractive {
 			return Ok(());
 		}
 		Err(String::from("Cannot load commit for the selected action"))
+	}
+
+	pub fn is_noop(&self) -> bool {
+		!self.lines.is_empty() && *self.lines[0].get_action() == Action::Noop
 	}
 
 	pub fn get_commit_stats(&self) -> &Option<Commit> {

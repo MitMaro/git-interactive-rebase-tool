@@ -11,6 +11,16 @@ pub struct Line {
 }
 
 impl Line {
+	pub fn new_noop() -> Self {
+		Self {
+			action: Action::Noop,
+			command: String::from(""),
+			comment: String::from(""),
+			hash: String::from(""),
+			mutated: false,
+		}
+	}
+
 	pub fn new_break() -> Self {
 		Self {
 			action: Action::Break,
@@ -22,7 +32,10 @@ impl Line {
 	}
 
 	pub fn new(input_line: &str) -> Result<Self, String> {
-		if input_line.starts_with("break") || input_line.starts_with('b') {
+		if input_line.starts_with("noop") {
+			return Ok(Self::new_noop());
+		}
+		else if input_line.starts_with("break") || input_line.starts_with('b') {
 			return Ok(Self::new_break());
 		}
 		else if input_line.starts_with("exec") || input_line.starts_with('x') {

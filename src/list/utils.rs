@@ -39,6 +39,7 @@ pub fn get_action_color(action: Action) -> WindowColor {
 		Action::Edit => WindowColor::ActionEdit,
 		Action::Exec => WindowColor::ActionExec,
 		Action::Fixup => WindowColor::ActionFixup,
+		Action::Noop => WindowColor::Foreground,
 		Action::Pick => WindowColor::ActionPick,
 		Action::Reword => WindowColor::ActionReword,
 		Action::Squash => WindowColor::ActionSquash,

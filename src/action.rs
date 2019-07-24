@@ -7,6 +7,7 @@ pub enum Action {
 	Edit,
 	Exec,
 	Fixup,
+	Noop,
 	Pick,
 	Reword,
 	Squash,
@@ -20,6 +21,7 @@ impl Action {
 			Action::Edit => "edit",
 			Action::Exec => "exec",
 			Action::Fixup => "fixup",
+			Action::Noop => "noop",
 			Action::Pick => "pick",
 			Action::Reword => "reword",
 			Action::Squash => "squash",
@@ -33,6 +35,7 @@ impl Action {
 			Action::Edit => "e",
 			Action::Exec => "x",
 			Action::Fixup => "f",
+			Action::Noop => "n",
 			Action::Pick => "p",
 			Action::Reword => "r",
 			Action::Squash => "s",
@@ -50,6 +53,7 @@ impl TryFrom<&str> for Action {
 			"edit" | "e" => Ok(Action::Edit),
 			"exec" | "x" => Ok(Action::Exec),
 			"fixup" | "f" => Ok(Action::Fixup),
+			"noop" | "n" => Ok(Action::Noop),
 			"pick" | "p" => Ok(Action::Pick),
 			"reword" | "r" => Ok(Action::Reword),
 			"squash" | "s" => Ok(Action::Squash),
@@ -86,6 +90,11 @@ mod tests {
 	#[test]
 	fn action_to_str_fixup() {
 		assert_eq!(Action::Fixup.as_string(), "fixup");
+	}
+
+	#[test]
+	fn action_to_str_noop() {
+		assert_eq!(Action::Noop.as_string(), "noop");
 	}
 
 	#[test]
@@ -151,6 +160,16 @@ mod tests {
 	#[test]
 	fn action_from_str_fixup() {
 		assert_eq!(Action::try_from("fixup").unwrap(), Action::Fixup);
+	}
+
+	#[test]
+	fn action_from_str_n() {
+		assert_eq!(Action::try_from("n").unwrap(), Action::Noop);
+	}
+
+	#[test]
+	fn action_from_str_noop() {
+		assert_eq!(Action::try_from("noop").unwrap(), Action::Noop);
 	}
 
 	#[test]
