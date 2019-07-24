@@ -72,9 +72,16 @@ fn try_main() -> Result<ExitStatus, Exit> {
 		},
 	};
 
+	if git_interactive.is_noop() {
+		return Err(Exit {
+			message: String::from("A noop rebase was provided, skipping editing"),
+			status: ExitStatus::Good,
+		});
+	}
+
 	if git_interactive.get_lines().is_empty() {
 		return Err(Exit {
-			message: String::from("Nothing to rebase"),
+			message: String::from("An empty rebase was provided, nothing to edit"),
 			status: ExitStatus::FileReadError,
 		});
 	}
