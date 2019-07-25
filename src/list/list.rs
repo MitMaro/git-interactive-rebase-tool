@@ -256,6 +256,19 @@ impl<'l> List<'l> {
 			Input::Help => {
 				result = result.help(State::List(true));
 			},
+			Input::Abort => {
+				result = result.state(State::ConfirmAbort);
+			},
+			Input::ForceAbort => {
+				git_interactive.clear();
+				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+			},
+			Input::Rebase => {
+				result = result.state(State::ConfirmRebase);
+			},
+			Input::ForceRebase => {
+				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+			},
 			Input::MoveCursorLeft => {
 				self.scroll_position.scroll_left(
 					view_width,

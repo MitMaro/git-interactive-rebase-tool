@@ -73,9 +73,13 @@ pub fn get_normal_footer_full(config: &Config) -> String {
 
 pub fn get_visual_footer_full(config: &Config) -> String {
 	format!(
-		" {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+		" {}, {}, {}/{}, {}/{}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
 		config.input_move_up,
 		config.input_move_down,
+		config.input_abort,
+		config.input_force_abort,
+		config.input_rebase,
+		config.input_force_rebase,
 		config.input_move_selection_down,
 		config.input_move_selection_up,
 		config.input_action_pick,
@@ -115,9 +119,13 @@ pub fn get_normal_footer_compact(config: &Config) -> String {
 
 pub fn get_visual_footer_compact(config: &Config) -> String {
 	format!(
-		"{},{},{},{},{},{},{},{},{},{},{}",
+		"{},{},{}/{},{}/{},{},{},{},{},{},{},{},{},{}",
 		get_input_short_name(config.input_move_up.as_str()),
 		get_input_short_name(config.input_move_down.as_str()),
+		get_input_short_name(config.input_abort.as_str()),
+		get_input_short_name(config.input_force_abort.as_str()),
+		get_input_short_name(config.input_rebase.as_str()),
+		get_input_short_name(config.input_force_rebase.as_str()),
 		get_input_short_name(config.input_move_selection_down.as_str()),
 		get_input_short_name(config.input_move_selection_up.as_str()),
 		get_input_short_name(config.input_action_pick.as_str()),
