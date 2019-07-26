@@ -24,6 +24,8 @@ script:
   - cargo test --release
 
 jobs:
+  allow_failures:
+    - rust: nightly
   include:
     - stage: lint
       rust: stable
@@ -79,6 +81,18 @@ jobs:
           tags: true
         provider: releases
         skip_cleanup: true
+    - stage: debian-latest-push
+      rust: stable
+      os: linux
+      if: branch = master
+      before_script: cargo install --force cargo-deb
+      script: "OS=debian ./scripts/push-latest-release.bash"
+    - stage: macos-latest-push
+      rust: stable
+      os: osx
+      if: branch = master
+      before_script: "cp target/release/interactive-rebase-tool target/release/macos-interactive-rebase-tool"
+      script: "OS=mac ./scripts/push-latest-release.bash"
 
 notifications:
   email:
