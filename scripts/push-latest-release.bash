@@ -39,7 +39,7 @@ while read name id; do
         curl -X DELETE \
          -H "accept: application/vnd.github.dorian-preview+json"  \
          -H "authorization: token $GITHUB_ACCESS_TOKEN" \
-         "https://api.github.com/repos/$REPOSITORY/releases/assets/$assetid" # >/dev/null 2>&1
+         "https://api.github.com/repos/$REPOSITORY/releases/assets/$assetid"
     fi
 done <<< "$assets"
 
@@ -66,4 +66,4 @@ curl -X PATCH \
  -H "content-type: application/json" \
  -H "authorization: token $GITHUB_ACCESS_TOKEN" \
  -d "{\"sha\": \"$master_ref\", \"force\": true}" \
- "https://api.github.com/repos/$REPOSITORY/git/refs/tags/latest" >/dev/null 2>&1
+ "https://api.github.com/repos/$REPOSITORY/git/refs/tags/latest"
