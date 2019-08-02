@@ -1,4 +1,5 @@
-[![Crates.io](https://img.shields.io/crates/v/git-interactive-rebase-tool.svg)][crates-io]
+[![Crates.io](https://img.shields.io/crates/v/git-interactive-rebase-tool.svg)][![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMitMaro%2Fgit-interactive-rebase-tool.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FMitMaro%2Fgit-interactive-rebase-tool?ref=badge_shield)
+[crates-io]
 [![Build Status](https://travis-ci.org/MitMaro/git-interactive-rebase-tool.svg?branch=master)][travis-build]
 [![Build status](https://ci.appveyor.com/api/projects/status/3a6j6n4o5x6aa763/branch/master?svg=true)][appveyor-build]
 [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)][license]
@@ -223,3 +224,6 @@ See [Third Party Licenses](THIRD_PARTY_LICENSES) for licenses for third-party li
 [releases]:https://github.com/MitMaro/git-interactive-rebase-tool/releases
 [rustup]:https://www.rustup.rs/
 [travis-build]:https://travis-ci.org/MitMaro/git-interactive-rebase-tool
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMitMaro%2Fgit-interactive-rebase-tool.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FMitMaro%2Fgit-interactive-rebase-tool?ref=badge_large)
