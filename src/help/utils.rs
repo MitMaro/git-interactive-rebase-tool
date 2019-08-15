@@ -19,7 +19,7 @@ fn get_input_short_name(input: &str) -> String {
 	}
 }
 
-pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 21] {
+pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 22] {
 	[
 		(get_input_short_name(config.input_move_up.as_str()), "Move selection up"),
 		(
@@ -49,6 +49,10 @@ pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 21] 
 		(
 			get_input_short_name(config.input_force_rebase.as_str()),
 			"Immediately write interactive rebase file",
+		),
+		(
+			get_input_short_name(config.input_toggle_visual_mode.as_str()),
+			"Enter visual mode",
 		),
 		(get_input_short_name(config.input_help.as_str()), "Show help"),
 		(
@@ -102,7 +106,7 @@ pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 21] 
 	]
 }
 
-pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 13] {
+pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 14] {
 	[
 		(get_input_short_name(config.input_move_up.as_str()), "Move selection up"),
 		(
@@ -149,6 +153,10 @@ pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 13] 
 		(
 			get_input_short_name(config.input_action_drop.as_str()),
 			"Set selected commits to be dropped",
+		),
+		(
+			get_input_short_name(config.input_toggle_visual_mode.as_str()),
+			"Exit visual mode",
 		),
 	]
 }
