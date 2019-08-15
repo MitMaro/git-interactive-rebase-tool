@@ -12,11 +12,11 @@ use crate::window::WindowColor;
 use crate::Config;
 
 pub struct Help<'h> {
-	normal_mode_help_lines: [(String, &'h str); 21],
+	normal_mode_help_lines: [(String, &'h str); 22],
 	normal_mode_max_help_line_length: usize,
 	return_state: State,
 	scroll_position: ScrollPosition,
-	visual_mode_help_lines: [(String, &'h str); 13],
+	visual_mode_help_lines: [(String, &'h str); 14],
 	visual_mode_max_help_line_length: usize,
 }
 
