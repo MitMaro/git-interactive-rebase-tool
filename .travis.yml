@@ -84,13 +84,13 @@ jobs:
     - stage: debian-latest-push
       rust: stable
       os: linux
-      if: branch = master
+      if: branch = master && type != pull_request
       before_script: cargo install --force cargo-deb
       script: "OS=debian ./scripts/push-latest-release.bash &>/dev/null"
     - stage: macos-latest-push
       rust: stable
       os: osx
-      if: branch = master
+      if: branch = master && type != pull_request
       before_script: "cp target/release/interactive-rebase-tool target/release/macos-interactive-rebase-tool"
       script: "OS=mac ./scripts/push-latest-release.bash &>/dev/null"
 
