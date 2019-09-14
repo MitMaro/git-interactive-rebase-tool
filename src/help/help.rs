@@ -1,3 +1,4 @@
+use crate::display::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::help::utils::{
 	get_list_normal_mode_help_lines,
@@ -8,7 +9,6 @@ use crate::input::{Input, InputHandler};
 use crate::process::{HandleInputResult, HandleInputResultBuilder, ProcessModule, State};
 use crate::scroll::ScrollPosition;
 use crate::view::{LineSegment, View, ViewLine};
-use crate::window::WindowColor;
 use crate::Config;
 
 pub struct Help<'h> {
@@ -75,7 +75,7 @@ impl<'h> ProcessModule for Help<'h> {
 		for line in self.get_help_lines() {
 			view_lines.push(ViewLine::new_with_pinned_segments(
 				vec![
-					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), WindowColor::IndicatorColor),
+					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), DisplayColor::IndicatorColor),
 					LineSegment::new(line.1),
 				],
 				1,
@@ -84,7 +84,7 @@ impl<'h> ProcessModule for Help<'h> {
 
 		view.draw_title(false);
 
-		view.set_color(WindowColor::Foreground);
+		view.set_color(DisplayColor::Normal, false);
 		view.set_style(false, true, false);
 		view.draw_str(" Key   Action");
 		if view_width > 13 {
@@ -99,7 +99,7 @@ impl<'h> ProcessModule for Help<'h> {
 			view_height - 3,
 		);
 
-		view.set_color(WindowColor::IndicatorColor);
+		view.set_color(DisplayColor::IndicatorColor, false);
 		view.draw_str("Any key to close");
 	}
 }

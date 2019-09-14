@@ -1,8 +1,8 @@
+use crate::display::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::process::{HandleInputResult, ProcessModule, ProcessResult, ProcessResultBuilder, State};
 use crate::view::View;
-use crate::window::WindowColor;
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -118,7 +118,7 @@ impl ProcessModule for Edit {
 
 		view.draw_title(false);
 		view.set_style(false, true, false);
-		view.set_color(WindowColor::Foreground);
+		view.set_color(DisplayColor::Normal, false);
 
 		// this could probably be made way more efficient
 		let graphemes = UnicodeSegmentation::graphemes(line, true);
@@ -140,7 +140,7 @@ impl ProcessModule for Edit {
 		}
 
 		view.draw_str("\n\n");
-		view.set_color(WindowColor::IndicatorColor);
+		view.set_color(DisplayColor::IndicatorColor, false);
 		view.draw_str("Enter to finish");
 	}
 }

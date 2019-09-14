@@ -1,8 +1,8 @@
-use crate::window::{Window, WindowColor};
+use crate::display::{Display, DisplayColor};
 use unicode_segmentation::UnicodeSegmentation;
 
 pub struct LineSegment {
-	color: WindowColor,
+	color: DisplayColor,
 	dim: bool,
 	reverse: bool,
 	text: String,
@@ -13,14 +13,14 @@ impl LineSegment {
 	pub fn new(text: &str) -> Self {
 		Self {
 			text: String::from(text),
-			color: WindowColor::Foreground,
+			color: DisplayColor::Normal,
 			reverse: false,
 			dim: false,
 			underline: false,
 		}
 	}
 
-	pub fn new_with_color(text: &str, color: WindowColor) -> Self {
+	pub fn new_with_color(text: &str, color: DisplayColor) -> Self {
 		Self {
 			text: String::from(text),
 			color,
@@ -30,7 +30,14 @@ impl LineSegment {
 		}
 	}
 
-	pub fn new_with_color_and_style(text: &str, color: WindowColor, dim: bool, underline: bool, reverse: bool) -> Self {
+	pub fn new_with_color_and_style(
+		text: &str,
+		color: DisplayColor,
+		dim: bool,
+		underline: bool,
+		reverse: bool,
+	) -> Self
+	{
 		Self {
 			text: String::from(text),
 			color,
@@ -40,9 +47,9 @@ impl LineSegment {
 		}
 	}
 
-	pub fn draw(&self, left: usize, max_width: usize, window: &Window) -> (usize, usize) {
-		window.color(self.color);
-		window.set_style(self.dim, self.underline, self.reverse);
+	pub fn draw(&self, left: usize, max_width: usize, selected: bool, display: &Display) -> (usize, usize) {
+		display.color(self.color, selected);
+		display.set_style(self.dim, self.underline, self.reverse);
 		let segment_length = UnicodeSegmentation::graphemes(self.text.as_str(), true).count();
 
 		if segment_length <= left {
@@ -51,13 +58,13 @@ impl LineSegment {
 		else if segment_length - left >= max_width {
 			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
 			let partial_line = graphemes.skip(left).take(max_width).collect::<String>();
-			window.draw_str(partial_line.as_str());
+			display.draw_str(partial_line.as_str());
 			(max_width, segment_length)
 		}
 		else {
 			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
 			let partial_line = graphemes.skip(left).collect::<String>();
-			window.draw_str(partial_line.as_str());
+			display.draw_str(partial_line.as_str());
 			(segment_length - left, segment_length)
 		}
 	}

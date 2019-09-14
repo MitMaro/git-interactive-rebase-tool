@@ -6,11 +6,11 @@ use crate::constants::{
 	SHORT_ERROR_MESSAGE,
 	SHORT_ERROR_MESSAGE_WIDTH,
 };
+use crate::display::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::InputHandler;
 use crate::process::{HandleInputResult, ProcessModule};
 use crate::view::View;
-use crate::window::WindowColor;
 
 pub struct WindowSizeError {}
 
@@ -28,7 +28,7 @@ impl ProcessModule for WindowSizeError {
 	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
 		let (window_width, window_height) = view.get_view_size();
 
-		view.set_color(WindowColor::Foreground);
+		view.set_color(DisplayColor::Normal, false);
 		if window_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
 			if window_width >= SHORT_ERROR_MESSAGE_WIDTH {
 				view.draw_str(SHORT_ERROR_MESSAGE);
