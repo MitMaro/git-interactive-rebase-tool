@@ -1,5 +1,6 @@
 use crate::commit::Commit;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
+use crate::display::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::process::{
@@ -13,7 +14,6 @@ use crate::process::{
 use crate::scroll::ScrollPosition;
 use crate::show_commit::util::get_stat_item_segments;
 use crate::view::{LineSegment, View, ViewLine};
-use crate::window::WindowColor;
 use std::cmp;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -124,7 +124,7 @@ impl ProcessModule for ShowCommit {
 				format!("{:8} ", full_hash[0..max_index].to_string())
 			}
 			.as_str(),
-			WindowColor::IndicatorColor,
+			DisplayColor::IndicatorColor,
 		)]));
 
 		lines.push(ViewLine::new(vec![LineSegment::new(
@@ -193,7 +193,7 @@ impl ProcessModule for ShowCommit {
 			view_height,
 		);
 
-		view.set_color(WindowColor::IndicatorColor);
+		view.set_color(DisplayColor::IndicatorColor, false);
 		view.draw_str("Any key to close");
 	}
 }

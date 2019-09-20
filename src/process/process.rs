@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
+use crate::display::Display;
 use crate::edit::Edit;
 use crate::error::Error;
 use crate::exiting::Exiting;
@@ -38,6 +39,7 @@ impl<'r> Process<'r> {
 	pub fn new(
 		git_interactive: GitInteractive,
 		view: &'r View<'r>,
+		display: &'r Display<'r>,
 		input_handler: &'r InputHandler<'r>,
 		config: &'r Config,
 	) -> Self
@@ -49,7 +51,7 @@ impl<'r> Process<'r> {
 			error: Error::new(),
 			exit_status: None,
 			exiting: Exiting::new(),
-			external_editor: ExternalEditor::new(config),
+			external_editor: ExternalEditor::new(display, config),
 			git_interactive,
 			help: Help::new(config),
 			input_handler,

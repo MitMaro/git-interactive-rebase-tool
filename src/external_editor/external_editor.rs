@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::display::Display;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::process::{
@@ -11,7 +12,6 @@ use crate::process::{
 	State,
 };
 use crate::view::View;
-use crate::window::Window;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
 
@@ -22,8 +22,9 @@ enum ExternalEditorState {
 }
 
 pub struct ExternalEditor<'e> {
-	state: ExternalEditorState,
 	config: &'e Config,
+	display: &'e Display<'e>,
+	state: ExternalEditorState,
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
@@ -56,9 +57,10 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 }
 
 impl<'e> ExternalEditor<'e> {
-	pub fn new(config: &'e Config) -> Self {
+	pub fn new(display: &'e Display, config: &'e Config) -> Self {
 		Self {
 			config,
+			display,
 			state: ExternalEditorState::Active,
 		}
 	}
@@ -79,7 +81,7 @@ impl<'e> ExternalEditor<'e> {
 					)
 				})
 		};
-		let exit_status: ProcessExitStatus = Window::leave_temporarily(callback)?;
+		let exit_status: ProcessExitStatus = self.display.leave_temporarily(callback)?;
 
 		if !exit_status.success() {
 			return Err(String::from("Editor returned non-zero exit status."));

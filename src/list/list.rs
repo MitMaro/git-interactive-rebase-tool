@@ -1,6 +1,7 @@
 use crate::action::Action;
 use crate::config::Config;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
+use crate::display::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::line::Line;
@@ -14,7 +15,6 @@ use crate::list::utils::{
 use crate::process::{ExitStatus, HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
 use crate::scroll::ScrollPosition;
 use crate::view::{LineSegment, View, ViewLine};
-use crate::window::WindowColor;
 use std::cmp;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -101,17 +101,16 @@ impl<'l> ProcessModule for List<'l> {
 		let selected_index = *git_interactive.get_selected_line_index() - 1;
 
 		for (index, line) in git_interactive.get_lines().iter().enumerate() {
-			view_lines.push(ViewLine::new_with_pinned_segments(
-				self.get_todo_line_segments(
-					line,
-					selected_index == index,
-					is_visual_mode
-						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
-							|| (visual_index > selected_index && index >= selected_index && index <= visual_index)),
-					view_width,
-				),
-				if *line.get_action() == Action::Exec { 2 } else { 3 },
-			));
+			let selected_line = is_visual_mode
+				&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
+					|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
+			view_lines.push(
+				ViewLine::new_with_pinned_segments(
+					self.get_todo_line_segments(line, selected_index == index, selected_line, view_width),
+					if *line.get_action() == Action::Exec { 2 } else { 3 },
+				)
+				.set_selected(selected_index == index || selected_line),
+			);
 		}
 
 		view.draw_title(true);
@@ -123,7 +122,7 @@ impl<'l> ProcessModule for List<'l> {
 			view_height - 2,
 		);
 
-		view.set_color(WindowColor::Foreground);
+		view.set_color(DisplayColor::Normal, false);
 		view.set_style(true, false, false);
 		if is_visual_mode {
 			if view_width >= self.visual_footer_full.len() {
@@ -325,7 +324,7 @@ impl<'l> List<'l> {
 		if view_width >= MINIMUM_FULL_WINDOW_WIDTH {
 			segments.push(LineSegment::new_with_color_and_style(
 				if is_cursor_line || selected { " > " } else { "   " },
-				WindowColor::Foreground,
+				DisplayColor::Normal,
 				!is_cursor_line && selected,
 				false,
 				false,
@@ -353,7 +352,7 @@ impl<'l> List<'l> {
 		else {
 			segments.push(LineSegment::new_with_color_and_style(
 				if is_cursor_line || selected { ">" } else { " " },
-				WindowColor::Foreground,
+				DisplayColor::Normal,
 				!is_cursor_line && selected,
 				false,
 				false,

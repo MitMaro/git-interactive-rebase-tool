@@ -9,6 +9,7 @@ mod config;
 mod confirm_abort;
 mod confirm_rebase;
 mod constants;
+mod display;
 mod edit;
 mod error;
 mod exiting;
@@ -22,15 +23,14 @@ mod process;
 mod scroll;
 mod show_commit;
 mod view;
-mod window;
 mod window_size_error;
 
 use crate::config::Config;
+use crate::display::{Curses, Display};
 use crate::git_interactive::GitInteractive;
 use crate::input::InputHandler;
 use crate::process::{ExitStatus, Process};
 use crate::view::View;
-use crate::window::Window;
 
 struct Exit {
 	message: String,
@@ -62,6 +62,8 @@ fn try_main() -> Result<ExitStatus, Exit> {
 		},
 	};
 
+	let mut curses = Curses::new();
+
 	let git_interactive = match GitInteractive::new_from_filepath(filepath, config.comment_char.as_str()) {
 		Ok(gi) => gi,
 		Err(message) => {
@@ -86,16 +88,15 @@ fn try_main() -> Result<ExitStatus, Exit> {
 		});
 	}
 
-	let window = Window::new(&config);
+	let display = Display::new(&mut curses, &config);
 
-	let input_handler = InputHandler::new(&window, &config);
+	let input_handler = InputHandler::new(&display, &config);
+	let view = View::new(&display, &config);
 
-	let view = View::new(&window, &config);
-
-	let mut process = Process::new(git_interactive, &view, &input_handler, &config);
+	let mut process = Process::new(git_interactive, &view, &display, &input_handler, &config);
 
 	let result = process.run();
-	window.end();
+	display.end();
 
 	let exit_code = match result {
 		Ok(c) => c,

@@ -1,22 +1,22 @@
+use crate::display::Display;
 use crate::input::utils::curses_input_to_string;
 use crate::input::Input;
-use crate::window::Window;
 use crate::Config;
 use pancurses::Input as PancursesInput;
 
 pub struct InputHandler<'i> {
 	config: &'i Config,
 	confirm_yes_input: char,
-	window: &'i Window<'i>,
+	display: &'i Display<'i>,
 }
 
 impl<'i> InputHandler<'i> {
-	pub fn new(window: &'i Window, config: &'i Config) -> Self {
+	pub fn new(display: &'i Display, config: &'i Config) -> Self {
 		let confirm_yes_input = config.input_confirm_yes.to_lowercase().chars().next().unwrap_or('y');
 		Self {
 			config,
 			confirm_yes_input,
-			window,
+			display,
 		}
 	}
 
@@ -56,7 +56,7 @@ impl<'i> InputHandler<'i> {
 	}
 
 	pub fn get_confirm(&self) -> Input {
-		match self.window.getch() {
+		match self.display.getch() {
 			Some(PancursesInput::Character(c)) => {
 				if c.to_lowercase().next().unwrap() == self.confirm_yes_input {
 					Input::Yes
@@ -90,7 +90,7 @@ impl<'i> InputHandler<'i> {
 
 	fn get_next_input(&self) -> PancursesInput {
 		loop {
-			let c = self.window.getch();
+			let c = self.display.getch();
 			if c.is_some() {
 				break c.unwrap();
 			}

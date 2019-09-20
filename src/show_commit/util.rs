@@ -1,22 +1,22 @@
+use crate::display::DisplayColor;
 use crate::view::LineSegment;
-use crate::window::WindowColor;
 use git2::Delta;
 
-fn get_file_stat_color(status: Delta) -> WindowColor {
+fn get_file_stat_color(status: Delta) -> DisplayColor {
 	match status {
-		Delta::Added => WindowColor::DiffAddColor,
-		Delta::Copied => WindowColor::DiffAddColor,
-		Delta::Deleted => WindowColor::DiffRemoveColor,
-		Delta::Modified => WindowColor::DiffChangeColor,
-		Delta::Renamed => WindowColor::DiffChangeColor,
-		Delta::Typechange => WindowColor::DiffChangeColor,
+		Delta::Added => DisplayColor::DiffAddColor,
+		Delta::Copied => DisplayColor::DiffAddColor,
+		Delta::Deleted => DisplayColor::DiffRemoveColor,
+		Delta::Modified => DisplayColor::DiffChangeColor,
+		Delta::Renamed => DisplayColor::DiffChangeColor,
+		Delta::Typechange => DisplayColor::DiffChangeColor,
 
 		// these should never happen in a rebase
-		Delta::Conflicted => WindowColor::Foreground,
-		Delta::Ignored => WindowColor::Foreground,
-		Delta::Unmodified => WindowColor::Foreground,
-		Delta::Unreadable => WindowColor::Foreground,
-		Delta::Untracked => WindowColor::Foreground,
+		Delta::Conflicted => DisplayColor::Normal,
+		Delta::Ignored => DisplayColor::Normal,
+		Delta::Unmodified => DisplayColor::Normal,
+		Delta::Unreadable => DisplayColor::Normal,
+		Delta::Untracked => DisplayColor::Normal,
 	}
 }
 
@@ -72,17 +72,17 @@ pub fn get_stat_item_segments(status: Delta, to_name: &str, from_name: &str, is_
 		Delta::Copied => {
 			vec![
 				LineSegment::new_with_color(status_name.clone().as_str(), color),
-				LineSegment::new_with_color(to_name, WindowColor::Foreground),
+				LineSegment::new_with_color(to_name, DisplayColor::Normal),
 				LineSegment::new(to_file_indicator),
-				LineSegment::new_with_color(from_name, WindowColor::DiffAddColor),
+				LineSegment::new_with_color(from_name, DisplayColor::DiffAddColor),
 			]
 		},
 		Delta::Renamed => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
-				LineSegment::new_with_color(to_name, WindowColor::DiffRemoveColor),
+				LineSegment::new_with_color(to_name, DisplayColor::DiffRemoveColor),
 				LineSegment::new(to_file_indicator),
-				LineSegment::new_with_color(from_name, WindowColor::DiffAddColor),
+				LineSegment::new_with_color(from_name, DisplayColor::DiffAddColor),
 			]
 		},
 		_ => {

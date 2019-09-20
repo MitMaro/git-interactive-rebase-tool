@@ -104,9 +104,9 @@ git config --global interactive-rebase-tool.foregroundColor black
 | `diffRemoveColor`          | red      | Color  | Color used for lines and files removed in a diff |
 | `dropColor`                | red      | Color  | Color used for the drop action |
 | `editColor`                | blue     | Color  | Color used for the edit action |
-| `errorColor`               | red      | Color  | Color used for showing error messages  |
 | `fixupColor`               | magenta  | Color  | Color used for the fixup action |
 | `foregroundColor`          | white    | Color  | Color used for most text and the UI |
+| `selectedBackgroundColor`  | 35,35,40 | Color  | Color used as the background color for the selected line |
 | `indicatorColor`           | cyan     | Color  | Color used for text the indicates or needs to standout  |
 | `inputAbort`               | q        | String | Key for abort rebase with prompt |
 | `inputActionBreak`         | b        | String | Key for setting action to rebase |
@@ -153,7 +153,10 @@ git config --global interactive-rebase-tool.foregroundColor black
 #### Valid Color Values
 
 The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are black, blue, cyan, green, magenta, red,
-white and yellow. Each terminal controls the exact color for these color names.
+white and yellow. Each terminal controls the exact color for these color names. On terminals that support 256 colors, a
+color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to 255 with
+`255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use
+the default terminal color.
 
 ## Development
 

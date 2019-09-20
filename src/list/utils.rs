@@ -1,5 +1,5 @@
 use crate::action::Action;
-use crate::window::WindowColor;
+use crate::display::DisplayColor;
 use crate::Config;
 
 fn get_input_short_name(input: &str) -> String {
@@ -32,17 +32,17 @@ fn get_input_short_name(input: &str) -> String {
 	}
 }
 
-pub fn get_action_color(action: Action) -> WindowColor {
+pub fn get_action_color(action: Action) -> DisplayColor {
 	match action {
-		Action::Break => WindowColor::ActionBreak,
-		Action::Drop => WindowColor::ActionDrop,
-		Action::Edit => WindowColor::ActionEdit,
-		Action::Exec => WindowColor::ActionExec,
-		Action::Fixup => WindowColor::ActionFixup,
-		Action::Noop => WindowColor::Foreground,
-		Action::Pick => WindowColor::ActionPick,
-		Action::Reword => WindowColor::ActionReword,
-		Action::Squash => WindowColor::ActionSquash,
+		Action::Break => DisplayColor::ActionBreak,
+		Action::Drop => DisplayColor::ActionDrop,
+		Action::Edit => DisplayColor::ActionEdit,
+		Action::Exec => DisplayColor::ActionExec,
+		Action::Fixup => DisplayColor::ActionFixup,
+		Action::Noop => DisplayColor::Normal,
+		Action::Pick => DisplayColor::ActionPick,
+		Action::Reword => DisplayColor::ActionReword,
+		Action::Squash => DisplayColor::ActionSquash,
 	}
 }
 
