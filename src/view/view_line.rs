@@ -23,6 +23,14 @@ impl ViewLine {
 		}
 	}
 
+	pub fn get_length(&self) -> usize {
+		let mut length = 0;
+		for s in self.segments.iter() {
+			length += s.get_length();
+		}
+		length
+	}
+
 	pub fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
 		self

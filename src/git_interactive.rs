@@ -39,7 +39,6 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 pub struct GitInteractive {
 	filepath: PathBuf,
 	lines: Vec<Line>,
-	selected_commit_stats: Option<Commit>,
 	selected_line_index: usize,
 	visual_index_start: usize,
 }
@@ -52,7 +51,6 @@ impl GitInteractive {
 		Ok(GitInteractive {
 			filepath: path,
 			lines,
-			selected_commit_stats: None,
 			selected_line_index: 1,
 			visual_index_start: 1,
 		})
@@ -211,22 +209,16 @@ impl GitInteractive {
 		}
 	}
 
-	// TODO this is kind of clunky and might be replaceable with a RefCell
-	pub fn load_commit_stats(&mut self) -> Result<(), String> {
+	pub fn load_commit_stats(&self) -> Result<Commit, String> {
 		let selected_action = self.lines[self.selected_line_index - 1].get_action();
 		if *selected_action != Action::Exec && *selected_action != Action::Break {
-			self.selected_commit_stats = Some(Commit::from_commit_hash(self.get_selected_line_hash().as_str())?);
-			return Ok(());
+			return Ok(Commit::from_commit_hash(self.get_selected_line_hash().as_str())?);
 		}
 		Err(String::from("Cannot load commit for the selected action"))
 	}
 
 	pub fn is_noop(&self) -> bool {
 		!self.lines.is_empty() && *self.lines[0].get_action() == Action::Noop
-	}
-
-	pub fn get_commit_stats(&self) -> &Option<Commit> {
-		&self.selected_commit_stats
 	}
 
 	pub fn get_selected_line_hash(&self) -> &String {

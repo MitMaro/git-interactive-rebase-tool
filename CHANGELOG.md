@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for 256-color terminals
 - Highlight of selected line(s) on 256-color terminals
 
+### Fixed
+- Performance issue with show commit
+
 ### Removed
 - Unused `errorColor` configuration
 

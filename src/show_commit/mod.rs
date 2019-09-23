@@ -1,3 +1,4 @@
+mod data;
 #[allow(clippy::module_inception)]
 mod show_commit;
 mod util;

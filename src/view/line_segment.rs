@@ -6,6 +6,7 @@ pub struct LineSegment {
 	dim: bool,
 	reverse: bool,
 	text: String,
+	length: usize,
 	underline: bool,
 }
 
@@ -16,6 +17,7 @@ impl LineSegment {
 			color: DisplayColor::Normal,
 			reverse: false,
 			dim: false,
+			length: UnicodeSegmentation::graphemes(text, true).count(),
 			underline: false,
 		}
 	}
@@ -26,6 +28,7 @@ impl LineSegment {
 			color,
 			reverse: false,
 			dim: false,
+			length: UnicodeSegmentation::graphemes(text, true).count(),
 			underline: false,
 		}
 	}
@@ -43,8 +46,13 @@ impl LineSegment {
 			color,
 			reverse,
 			dim,
+			length: UnicodeSegmentation::graphemes(text, true).count(),
 			underline,
 		}
+	}
+
+	pub fn get_length(&self) -> usize {
+		self.length
 	}
 
 	pub fn draw(&self, left: usize, max_width: usize, selected: bool, display: &Display) -> (usize, usize) {

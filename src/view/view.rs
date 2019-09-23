@@ -62,7 +62,7 @@ impl<'v> View<'v> {
 		self.display.refresh();
 	}
 
-	pub fn draw_view_lines(&self, lines: Vec<ViewLine>, top: usize, left: usize, height: usize) {
+	pub fn draw_view_lines(&self, lines: &[ViewLine], top: usize, left: usize, height: usize) {
 		let number_of_lines = lines.len();
 
 		let scroll_indicator_index = get_scroll_position(top, number_of_lines, height);

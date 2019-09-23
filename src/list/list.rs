@@ -116,7 +116,7 @@ impl<'l> ProcessModule for List<'l> {
 		view.draw_title(true);
 
 		view.draw_view_lines(
-			view_lines,
+			&view_lines,
 			self.scroll_position.get_top_position(),
 			self.scroll_position.get_left_position(),
 			view_height - 2,
