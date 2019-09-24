@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Highlight of selected line(s) on 256-color terminals
 
 ### Fixed
+- Missing ncursesw dependency listing for deb build
 - Performance issue with show commit
 
 ### Removed
