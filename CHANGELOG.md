@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Missing ncursesw dependency listing for deb build
 - Performance issue with show commit
+- Visual mode index error when changing action or swapping lines
 
 ### Removed
 - Unused `errorColor` configuration

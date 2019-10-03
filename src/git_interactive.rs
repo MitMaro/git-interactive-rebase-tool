@@ -111,7 +111,7 @@ impl GitInteractive {
 		}
 
 		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..self.visual_index_start
+			self.selected_line_index..self.visual_index_start + 1
 		}
 		else {
 			self.visual_index_start..self.selected_line_index + 1
@@ -140,7 +140,7 @@ impl GitInteractive {
 		}
 
 		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..self.visual_index_start
+			self.selected_line_index..self.visual_index_start + 1
 		}
 		else {
 			self.visual_index_start..self.selected_line_index + 1
@@ -172,7 +172,7 @@ impl GitInteractive {
 	#[allow(clippy::range_plus_one)]
 	pub fn set_visual_range_action(&mut self, action: Action) {
 		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..self.visual_index_start
+			self.selected_line_index..self.visual_index_start + 1
 		}
 		else {
 			self.visual_index_start..self.selected_line_index + 1
