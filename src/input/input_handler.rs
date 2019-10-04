@@ -91,8 +91,8 @@ impl<'i> InputHandler<'i> {
 	fn get_next_input(&self) -> PancursesInput {
 		loop {
 			let c = self.display.getch();
-			if c.is_some() {
-				break c.unwrap();
+			if let Some(input) = c {
+				break input;
 			}
 		}
 	}
