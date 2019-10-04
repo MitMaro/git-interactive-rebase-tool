@@ -21,6 +21,26 @@ it is not satisfied.
 
     sudo dpkg -r git-interactive-rebase-tool
 
+## Archlinux
+
+### Install with yay, or your AUR helper of choice
+
+    yay -S git-interactive-rebase-tool
+
+### Install the old fashioned way
+
+1. Download the package snapshot from `https://aur.archlinux.org/packages/git-interactive-rebase-tool/`
+2. Extract, and open a terminal to the extracted directory
+3. Run `makepkg -si`
+
+#### Troubleshooting
+
+If you receive `error: no default toolchain configured`, run `rustup default stable` and then try installing again. This should only happen if you previously had `rustup` installed, and did not set a default toolchain.
+
+### Remove
+
+    sudo pacman -R git-interactive-rebase-tool
+
 ## FreeBSD
 
 ### With pkg
