@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::display::Display;
+use crate::external_editor::argument_tolkenizer::tolkenize;
 use crate::git_interactive::GitInteractive;
 use crate::input::{Input, InputHandler};
 use crate::process::{
@@ -12,6 +13,7 @@ use crate::process::{
 	State,
 };
 use crate::view::View;
+use std::ffi::OsString;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
 
@@ -66,20 +68,37 @@ impl<'e> ExternalEditor<'e> {
 	}
 
 	pub fn run_editor(&mut self, git_interactive: &GitInteractive) -> Result<(), String> {
+		let mut arguments = match tolkenize(self.config.editor.as_str()) {
+			Some(args) => {
+				if args.is_empty() {
+					return Err(String::from("No editor configured"));
+				}
+				args.into_iter().map(OsString::from)
+			},
+			None => {
+				return Err(format!("Invalid editor: {}", self.config.editor));
+			},
+		};
+
 		git_interactive.write_file()?;
 		let filepath = git_interactive.get_filepath();
 		let callback = || -> Result<ProcessExitStatus, String> {
-			// TODO: This doesn't handle editor with arguments (e.g. EDITOR="edit --arg")
-			Command::new(&self.config.editor)
-				.arg(filepath.as_os_str())
-				.status()
-				.map_err(|e| {
-					format!(
-						"Unable to run editor ({}):\n{}",
-						self.config.editor.to_string_lossy(),
-						e.to_string()
-					)
-				})
+			let mut file_pattern_found = false;
+			let mut cmd = Command::new(arguments.next().unwrap());
+			for arg in arguments {
+				if arg.as_os_str() == "%" {
+					file_pattern_found = true;
+					cmd.arg(filepath.as_os_str());
+				}
+				else {
+					cmd.arg(arg);
+				}
+			}
+			if !file_pattern_found {
+				cmd.arg(filepath.as_os_str());
+			}
+			cmd.status()
+				.map_err(|e| format!("Unable to run editor ({}):\n{}", self.config.editor, e.to_string()))
 		};
 		let exit_status: ProcessExitStatus = self.display.leave_temporarily(callback)?;
 
