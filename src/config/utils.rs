@@ -1,6 +1,6 @@
 use crate::color::Color;
 use std::convert::TryFrom;
-use std::{env, ffi::OsString};
+use std::env;
 
 pub(in crate::config) fn get_input(config: &git2::Config, name: &str, default: &str) -> Result<String, String> {
 	let value = get_string(config, name, default)?;
@@ -32,19 +32,6 @@ pub(in crate::config) fn get_string(config: &git2::Config, name: &str, default: 
 	}
 }
 
-pub(in crate::config) fn get_os_string(
-	config: &git2::Config,
-	name: &str,
-	default: OsString,
-) -> Result<OsString, String>
-{
-	match config.get_string(name) {
-		Ok(v) => Ok(OsString::from(v)),
-		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
-		Err(e) => Err(format!("Error reading git config: {}", e)),
-	}
-}
-
 pub(in crate::config) fn get_bool(config: &git2::Config, name: &str, default: bool) -> Result<bool, String> {
 	match config.get_bool(name) {
 		Ok(v) => Ok(v),
@@ -61,10 +48,10 @@ pub(in crate::config) fn get_color(config: &git2::Config, name: &str, default_co
 	}
 }
 
-pub(in crate::config) fn editor_from_env() -> OsString {
-	env::var_os("VISUAL")
-		.or_else(|| env::var_os("EDITOR"))
-		.unwrap_or_else(|| OsString::from("vi"))
+pub(in crate::config) fn editor_from_env() -> String {
+	env::var("VISUAL")
+		.or_else(|_| env::var("EDITOR"))
+		.unwrap_or_else(|_| String::from("vi"))
 }
 
 pub(in crate::config) fn open_git_config() -> Result<git2::Config, String> {

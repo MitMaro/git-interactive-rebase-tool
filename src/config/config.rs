@@ -1,23 +1,14 @@
 use crate::color::Color;
-use crate::config::utils::{
-	editor_from_env,
-	get_bool,
-	get_color,
-	get_input,
-	get_os_string,
-	get_string,
-	open_git_config,
-};
+use crate::config::utils::{editor_from_env, get_bool, get_color, get_input, get_string, open_git_config};
 use crate::config::Theme;
 use std::convert::TryFrom;
-use std::ffi::OsString;
 
 #[derive(Clone, Debug)]
 pub struct Config {
 	pub theme: Theme,
 	pub auto_select_next: bool,
 	pub comment_char: String,
-	pub editor: OsString,
+	pub editor: String,
 	pub input_abort: String,
 	pub input_action_break: String,
 	pub input_action_drop: String,
@@ -78,7 +69,7 @@ impl Config {
 			},
 			auto_select_next: get_bool(&git_config, "interactive-rebase-tool.autoSelectNext", false)?,
 			comment_char: get_string(&git_config, "core.commentChar", "#")?,
-			editor: get_os_string(&git_config, "core.editor", editor_from_env())?,
+			editor: get_string(&git_config, "core.editor", editor_from_env().as_str())?,
 			input_abort: get_input(&git_config, "interactive-rebase-tool.inputAbort", "q")?,
 			input_action_break: get_input(&git_config, "interactive-rebase-tool.inputActionBreak", "b")?,
 			input_action_drop: get_input(&git_config, "interactive-rebase-tool.inputActionDrop", "d")?,

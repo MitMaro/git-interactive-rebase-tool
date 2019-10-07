@@ -158,6 +158,18 @@ color triplet with the format `<red>,<green>,<blue>` can be used. Each color has
 `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use
 the default terminal color.
 
+
+#### Configuring External Editor
+
+The external editor action will first attempt to start the editor defined by the
+[Git configuration "core.editor"][git-core-editor], followed by the `VISUAL` and
+`EDITOR` environment variables. Finally, if neither is set the external editor
+defaults to using `vi`.
+
+The `%` character in the value will be replaced with the git rebase todo file.
+If the `%` character is not found, then the git rebase todo file will be
+provided as the last argument.
+
 ## Development
 
 ### Install Rust
@@ -221,6 +233,7 @@ See [Third Party Licenses](THIRD_PARTY_LICENSES) for licenses for third-party li
 [cargo]:https://github.com/rust-lang/cargo
 [crates-io]:https://crates.io/crates/git-interactive-rebase-tool
 [git-config]:https://git-scm.com/docs/git-config
+[git-core-editor]:https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration#_code_core_editor_code
 [git-sequence-editor]:https://git-scm.com/docs/git-config#git-config-sequenceeditor
 [install-rust]:https://doc.rust-lang.org/book/getting-started.html
 [license]:https://raw.githubusercontent.com/MitMaro/git-interactive-rebase-tool/master/LICENSE

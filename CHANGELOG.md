@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for 256-color terminals
 - Highlight of selected line(s) on 256-color terminals
+- Full support for external editor
 
 ### Fixed
 - Missing ncursesw dependency listing for deb build
