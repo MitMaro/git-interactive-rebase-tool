@@ -16,6 +16,7 @@ Git 1.7.8+. Written in Rust using ncurses.
 ## Install
 
 * [Cargo](./readme/install.md#cargo-package-manager)
+* [Arch](./readme/install.md#arch-linux)
 * [Debian](./readme/install.md#debian-and-derivatives)
 * [FreeBSD](./readme/install.md#freebsd)
 * MacOS
