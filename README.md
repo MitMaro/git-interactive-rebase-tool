@@ -200,6 +200,15 @@ Use cargo to build and run the project. From the project root run:
     cargo run <path-to-git-rebase-todo-file>
 
 
+### Format
+
+Use rust-fmt format project. **You need to run format with nightly.** The current nightly rust version is
+nightly-2019-09-13. You can find the current nightly rust version in the `scripts/format.bash`.
+
+    # format code before you commit
+    cargo +nightly-2019-09-13 fmt
+
+
 ### Release
 
 ##### Install Cargo Deb
