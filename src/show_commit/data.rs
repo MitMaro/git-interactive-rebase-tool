@@ -140,7 +140,7 @@ impl Data {
 
 	pub fn get_max_line_length(&self, start: usize, end: usize) -> usize {
 		let mut max_length = 0;
-		for len in self.line_lengths[start..=end].iter() {
+		for len in self.line_lengths[start..=end.min(self.line_lengths.len() - 1)].iter() {
 			if *len > max_length {
 				max_length = *len;
 			}
