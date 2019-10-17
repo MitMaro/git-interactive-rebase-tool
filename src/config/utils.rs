@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::display::Color;
 use std::convert::TryFrom;
 use std::env;
 
