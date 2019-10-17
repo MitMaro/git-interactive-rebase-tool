@@ -1,5 +1,5 @@
-use crate::action::Action;
 use crate::display::DisplayColor;
+use crate::list::Action;
 use crate::Config;
 
 fn get_input_short_name(input: &str) -> String {

@@ -1,7 +1,6 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
-mod action;
 mod cli;
 mod commit;
 mod config;

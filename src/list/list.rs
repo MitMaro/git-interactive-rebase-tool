@@ -1,4 +1,3 @@
-use crate::action::Action;
 use crate::config::Config;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::DisplayColor;
@@ -11,7 +10,7 @@ use crate::list::utils::{
 	get_visual_footer_compact,
 	get_visual_footer_full,
 };
-use crate::list::Line;
+use crate::list::{Action, Line};
 use crate::process::{ExitStatus, HandleInputResult, HandleInputResultBuilder, ProcessModule, ProcessResult, State};
 use crate::scroll::ScrollPosition;
 use crate::view::{LineSegment, View, ViewLine};
