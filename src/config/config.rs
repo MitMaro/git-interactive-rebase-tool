@@ -1,6 +1,6 @@
-use crate::color::Color;
 use crate::config::utils::{editor_from_env, get_bool, get_color, get_input, get_string, open_git_config};
 use crate::config::Theme;
+use crate::display::Color;
 use std::convert::TryFrom;
 
 #[derive(Clone, Debug)]

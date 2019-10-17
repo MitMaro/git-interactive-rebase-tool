@@ -3,7 +3,6 @@
 
 mod action;
 mod cli;
-mod color;
 mod commit;
 mod config;
 mod confirm_abort;
