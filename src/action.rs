@@ -233,6 +233,11 @@ mod tests {
 	}
 
 	#[test]
+	fn action_to_abbreviation_noop() {
+		assert_eq!(Action::Noop.to_abbreviation(), "n");
+	}
+
+	#[test]
 	fn action_to_abbreviation_pick() {
 		assert_eq!(Action::Pick.to_abbreviation(), "p");
 	}
