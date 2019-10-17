@@ -1,12 +1,10 @@
+use crate::commit::Commit;
+use crate::list::{Action, Line};
 use std::cmp;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
-
-use crate::action::Action;
-use crate::commit::Commit;
-use crate::list::Line;
 
 fn load_filepath(path: &PathBuf, config_comment_char: &str) -> Result<Vec<Line>, String> {
 	let mut file = match File::open(&path) {

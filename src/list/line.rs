@@ -1,4 +1,4 @@
-use crate::action::Action;
+use crate::list::Action;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq)]
@@ -119,7 +119,7 @@ impl Line {
 #[cfg(test)]
 mod tests {
 	use super::Line;
-	use crate::action::Action;
+	use crate::list::Action;
 
 	#[test]
 	fn new_with_pick_action() {
