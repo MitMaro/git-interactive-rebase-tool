@@ -1,8 +1,8 @@
-use crate::display::DisplayColor;
-use crate::view::LineSegment;
+use crate::display::display_color::DisplayColor;
+use crate::view::line_segment::LineSegment;
 use git2::Delta;
 
-fn get_file_stat_color(status: Delta) -> DisplayColor {
+pub(super) fn get_file_stat_color(status: Delta) -> DisplayColor {
 	match status {
 		Delta::Added => DisplayColor::DiffAddColor,
 		Delta::Copied => DisplayColor::DiffAddColor,
@@ -20,7 +20,7 @@ fn get_file_stat_color(status: Delta) -> DisplayColor {
 	}
 }
 
-fn get_file_stat_abbreviated(status: Delta) -> String {
+pub(super) fn get_file_stat_abbreviated(status: Delta) -> String {
 	match status {
 		Delta::Added => String::from("A "),
 		Delta::Copied => String::from("C "),
@@ -38,7 +38,7 @@ fn get_file_stat_abbreviated(status: Delta) -> String {
 	}
 }
 
-fn get_file_stat_long(status: Delta) -> String {
+pub(super) fn get_file_stat_long(status: Delta) -> String {
 	match status {
 		Delta::Added => format!("{:>8}: ", "added"),
 		Delta::Copied => format!("{:>8}: ", "copied"),
@@ -56,7 +56,13 @@ fn get_file_stat_long(status: Delta) -> String {
 	}
 }
 
-pub fn get_stat_item_segments(status: Delta, to_name: &str, from_name: &str, is_full_width: bool) -> Vec<LineSegment> {
+pub(super) fn get_stat_item_segments(
+	status: Delta,
+	to_name: &str,
+	from_name: &str,
+	is_full_width: bool,
+) -> Vec<LineSegment>
+{
 	let status_name = if is_full_width {
 		get_file_stat_long(status)
 	}

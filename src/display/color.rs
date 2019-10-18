@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Color {
+pub(crate) enum Color {
 	White,
 	Black,
 	Blue,
@@ -55,7 +55,7 @@ impl TryFrom<&str> for Color {
 #[cfg(test)]
 mod tests {
 	use super::Color;
-	use super::TryFrom;
+	use std::convert::TryFrom;
 
 	#[test]
 	fn action_try_from_str_black() {

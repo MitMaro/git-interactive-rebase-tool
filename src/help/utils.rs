@@ -11,7 +11,7 @@ fn get_input_short_name(input: &str) -> String {
 	}
 }
 
-pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 22] {
+pub(super) fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 22] {
 	[
 		(get_input_short_name(config.input_move_up.as_str()), "Move selection up"),
 		(
@@ -98,7 +98,7 @@ pub fn get_list_normal_mode_help_lines(config: &Config) -> [(String, &str); 22] 
 	]
 }
 
-pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 14] {
+pub(super) fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 14] {
 	[
 		(get_input_short_name(config.input_move_up.as_str()), "Move selection up"),
 		(
@@ -153,7 +153,7 @@ pub fn get_list_visual_mode_help_lines(config: &Config) -> [(String, &str); 14] 
 	]
 }
 
-pub fn get_max_help_description_length(lines: &[(String, &str)]) -> usize {
+pub(super) fn get_max_help_description_length(lines: &[(String, &str)]) -> usize {
 	let mut max_length = 0;
 	for (_, desc) in lines {
 		let len = UnicodeSegmentation::graphemes(*desc, true).count();

@@ -1,14 +1,14 @@
 use git2::Delta;
 
 #[derive(Debug, PartialEq)]
-pub struct FileStat {
+pub(crate) struct FileStat {
 	status: Delta,
 	to_name: String,
 	from_name: String,
 }
 
 impl FileStat {
-	pub fn new(from_name: String, to_name: String, status: Delta) -> Self {
+	pub(super) fn new(from_name: String, to_name: String, status: Delta) -> Self {
 		FileStat {
 			status,
 			to_name,
@@ -16,15 +16,15 @@ impl FileStat {
 		}
 	}
 
-	pub fn get_status(&self) -> &Delta {
+	pub(crate) fn get_status(&self) -> &Delta {
 		&self.status
 	}
 
-	pub fn get_to_name(&self) -> &String {
+	pub(crate) fn get_to_name(&self) -> &String {
 		&self.to_name
 	}
 
-	pub fn get_from_name(&self) -> &String {
+	pub(crate) fn get_from_name(&self) -> &String {
 		&self.from_name
 	}
 }

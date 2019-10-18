@@ -1,13 +1,14 @@
-use crate::process::{ExitStatus, State};
+use crate::process::exit_status::ExitStatus;
+use crate::process::state::State;
 
 #[derive(Debug)]
-pub struct ProcessResult {
-	pub exit_status: Option<ExitStatus>,
-	pub state: Option<State>,
+pub(crate) struct ProcessResult {
+	pub(super) exit_status: Option<ExitStatus>,
+	pub(super) state: Option<State>,
 }
 
 impl ProcessResult {
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self {
 			exit_status: None,
 			state: None,
@@ -15,12 +16,12 @@ impl ProcessResult {
 	}
 }
 
-pub struct ProcessResultBuilder {
+pub(crate) struct ProcessResultBuilder {
 	process_result: ProcessResult,
 }
 
 impl ProcessResultBuilder {
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self {
 			process_result: ProcessResult {
 				exit_status: None,
@@ -29,7 +30,7 @@ impl ProcessResultBuilder {
 		}
 	}
 
-	pub fn error(mut self, message: &str, return_state: State) -> Self {
+	pub(crate) fn error(mut self, message: &str, return_state: State) -> Self {
 		self.process_result.state = Some(State::Error {
 			return_state: Box::new(return_state),
 			message: String::from(message),
@@ -37,17 +38,17 @@ impl ProcessResultBuilder {
 		self
 	}
 
-	pub fn exit_status(mut self, status: ExitStatus) -> Self {
+	pub(crate) fn exit_status(mut self, status: ExitStatus) -> Self {
 		self.process_result.exit_status = Some(status);
 		self
 	}
 
-	pub fn state(mut self, new_state: State) -> Self {
+	pub(crate) fn state(mut self, new_state: State) -> Self {
 		self.process_result.state = Some(new_state);
 		self
 	}
 
-	pub fn build(self) -> ProcessResult {
+	pub(crate) fn build(self) -> ProcessResult {
 		self.process_result
 	}
 }

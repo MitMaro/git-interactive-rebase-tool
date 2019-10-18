@@ -1,7 +1,8 @@
-use crate::display::{Display, DisplayColor};
+use crate::display::display_color::DisplayColor;
+use crate::display::Display;
 use unicode_segmentation::UnicodeSegmentation;
 
-pub struct LineSegment {
+pub(crate) struct LineSegment {
 	color: DisplayColor,
 	dim: bool,
 	reverse: bool,
@@ -11,7 +12,7 @@ pub struct LineSegment {
 }
 
 impl LineSegment {
-	pub fn new(text: &str) -> Self {
+	pub(crate) fn new(text: &str) -> Self {
 		Self {
 			text: String::from(text),
 			color: DisplayColor::Normal,
@@ -22,7 +23,7 @@ impl LineSegment {
 		}
 	}
 
-	pub fn new_with_color(text: &str, color: DisplayColor) -> Self {
+	pub(crate) fn new_with_color(text: &str, color: DisplayColor) -> Self {
 		Self {
 			text: String::from(text),
 			color,
@@ -33,7 +34,7 @@ impl LineSegment {
 		}
 	}
 
-	pub fn new_with_color_and_style(
+	pub(crate) fn new_with_color_and_style(
 		text: &str,
 		color: DisplayColor,
 		dim: bool,
@@ -51,11 +52,11 @@ impl LineSegment {
 		}
 	}
 
-	pub fn get_length(&self) -> usize {
+	pub(super) fn get_length(&self) -> usize {
 		self.length
 	}
 
-	pub fn draw(&self, left: usize, max_width: usize, selected: bool, display: &Display) -> (usize, usize) {
+	pub(super) fn draw(&self, left: usize, max_width: usize, selected: bool, display: &Display) -> (usize, usize) {
 		display.color(self.color, selected);
 		display.set_style(self.dim, self.underline, self.reverse);
 		let segment_length = UnicodeSegmentation::graphemes(self.text.as_str(), true).count();

@@ -1,8 +1,8 @@
-use crate::list::Action;
+use crate::list::action::Action;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq)]
-pub struct Line {
+pub(crate) struct Line {
 	action: Action,
 	hash: String,
 	command: String,
@@ -11,7 +11,7 @@ pub struct Line {
 }
 
 impl Line {
-	pub fn new_noop() -> Self {
+	fn new_noop() -> Self {
 		Self {
 			action: Action::Noop,
 			command: String::from(""),
@@ -21,7 +21,7 @@ impl Line {
 		}
 	}
 
-	pub fn new_break() -> Self {
+	pub(crate) fn new_break() -> Self {
 		Self {
 			action: Action::Break,
 			command: String::from(""),
@@ -31,7 +31,7 @@ impl Line {
 		}
 	}
 
-	pub fn new(input_line: &str) -> Result<Self, String> {
+	pub(crate) fn new(input_line: &str) -> Result<Self, String> {
 		if input_line.starts_with("noop") {
 			return Ok(Self::new_noop());
 		}
@@ -71,43 +71,43 @@ impl Line {
 		Err(format!("Invalid line: {}", input_line))
 	}
 
-	pub fn set_action(&mut self, action: Action) {
+	pub(crate) fn set_action(&mut self, action: Action) {
 		if self.action != action {
 			self.mutated = true;
 			self.action = action;
 		}
 	}
 
-	pub fn edit_content(&mut self, content: &str) {
+	pub(crate) fn edit_content(&mut self, content: &str) {
 		if let Action::Exec = self.action {
 			self.command = String::from(content)
 		}
 	}
 
-	pub fn get_edit_content(&self) -> &String {
+	pub(crate) fn get_edit_content(&self) -> &String {
 		match self.action {
 			Action::Exec => &self.command,
 			_ => &self.comment,
 		}
 	}
 
-	pub fn get_action(&self) -> &Action {
+	pub(crate) fn get_action(&self) -> &Action {
 		&self.action
 	}
 
-	pub fn get_command(&self) -> &String {
+	pub(super) fn get_command(&self) -> &String {
 		&self.command
 	}
 
-	pub fn get_hash(&self) -> &String {
+	pub(crate) fn get_hash(&self) -> &String {
 		&self.hash
 	}
 
-	pub fn get_comment(&self) -> &String {
+	pub(super) fn get_comment(&self) -> &String {
 		&self.comment
 	}
 
-	pub fn to_text(&self) -> String {
+	pub(crate) fn to_text(&self) -> String {
 		match self.action {
 			Action::Exec => format!("exec {}", self.command),
 			Action::Break => String::from("break"),
@@ -119,7 +119,7 @@ impl Line {
 #[cfg(test)]
 mod tests {
 	use super::Line;
-	use crate::list::Action;
+	use crate::list::action::Action;
 
 	#[test]
 	fn new_with_pick_action() {

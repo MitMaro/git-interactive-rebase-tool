@@ -1,9 +1,9 @@
-use crate::config::Theme;
+use crate::config::theme::Theme;
+use crate::display::curses::Curses;
 use crate::display::display_color::DisplayColor;
-use crate::display::Curses;
 use pancurses::chtype;
 
-pub(in crate::display) struct ColorManager {
+pub(super) struct ColorManager {
 	action_break: (chtype, chtype),
 	action_drop: (chtype, chtype),
 	action_edit: (chtype, chtype),
@@ -20,7 +20,7 @@ pub(in crate::display) struct ColorManager {
 }
 
 impl ColorManager {
-	pub fn new(theme: &Theme, curses: &mut Curses) -> Self {
+	pub(super) fn new(theme: &Theme, curses: &mut Curses) -> Self {
 		Self {
 			normal: curses.register_selectable_color_pairs(
 				theme.color_foreground,
@@ -90,7 +90,7 @@ impl ColorManager {
 		}
 	}
 
-	pub fn get_color(&self, color: DisplayColor, selected: bool) -> chtype {
+	pub(super) fn get_color(&self, color: DisplayColor, selected: bool) -> chtype {
 		if selected {
 			match color {
 				DisplayColor::ActionBreak => self.action_break.1,

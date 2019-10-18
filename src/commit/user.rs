@@ -1,18 +1,18 @@
 #[derive(Debug, Eq, PartialEq)]
-pub struct User {
+pub(crate) struct User {
 	name: Option<String>,
 	email: Option<String>,
 }
 
 impl User {
-	pub fn new(name: Option<&str>, email: Option<&str>) -> Self {
+	pub(super) fn new(name: Option<&str>, email: Option<&str>) -> Self {
 		User {
 			email: email.map(String::from),
 			name: name.map(String::from),
 		}
 	}
 
-	pub fn to_string(&self) -> Option<String> {
+	pub(crate) fn to_string(&self) -> Option<String> {
 		let name = &self.name;
 		let email = &self.email;
 		match name {

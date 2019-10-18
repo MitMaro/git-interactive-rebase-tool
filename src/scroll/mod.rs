@@ -1,5 +1,2 @@
-mod scroll_position;
-mod utils;
-
-pub use self::scroll_position::*;
-pub use self::utils::*;
+pub(crate) mod scroll_position;
+pub(crate) mod utils;

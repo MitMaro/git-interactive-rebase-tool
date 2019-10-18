@@ -1,4 +1,4 @@
-pub fn get_scroll_position(position: usize, item_count: usize, height: usize) -> usize {
+pub(crate) fn get_scroll_position(position: usize, item_count: usize, height: usize) -> usize {
 	if position == 0 {
 		return 0;
 	}

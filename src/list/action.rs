@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Action {
+pub(crate) enum Action {
 	Break,
 	Drop,
 	Edit,
@@ -14,7 +14,7 @@ pub enum Action {
 }
 
 impl Action {
-	pub fn as_string(self) -> String {
+	pub(crate) fn as_string(self) -> String {
 		String::from(match self {
 			Action::Break => "break",
 			Action::Drop => "drop",
@@ -28,7 +28,7 @@ impl Action {
 		})
 	}
 
-	pub fn to_abbreviation(self) -> String {
+	pub(super) fn to_abbreviation(self) -> String {
 		String::from(match self {
 			Action::Break => "b",
 			Action::Drop => "d",
