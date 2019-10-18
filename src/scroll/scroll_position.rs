@@ -12,10 +12,10 @@ impl ScrollPosition {
 	pub fn new(padding: usize, big_scroll: usize, small_scroll: usize) -> Self {
 		Self {
 			big_scroll,
-			left_value: RefCell::new(0 as usize),
+			left_value: RefCell::new(0),
 			padding,
 			small_scroll,
-			top_value: RefCell::new(0 as usize),
+			top_value: RefCell::new(0),
 		}
 	}
 
@@ -59,7 +59,7 @@ impl ScrollPosition {
 	}
 
 	pub fn ensure_cursor_visible(&self, cursor: usize, window_height: usize, lines_length: usize) {
-		let view_height = window_height as usize - self.padding;
+		let view_height = window_height - self.padding;
 
 		let current_value = *self.top_value.borrow();
 
@@ -90,7 +90,7 @@ impl ScrollPosition {
 	}
 
 	fn update_top(&self, scroll_up: bool, window_height: usize, lines_length: usize) {
-		let view_height = window_height as usize - self.padding;
+		let view_height = window_height - self.padding;
 
 		if view_height >= lines_length {
 			self.reset();
