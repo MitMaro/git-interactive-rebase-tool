@@ -77,7 +77,7 @@ impl ProcessModule for ShowCommit {
 			},
 			Input::Resize => {
 				self.scroll_position
-					.scroll_up(view_height as usize, self.get_commit_stats_length());
+					.scroll_up(view_height, self.get_commit_stats_length());
 			},
 			_ => {
 				result = result.state(State::List(false));

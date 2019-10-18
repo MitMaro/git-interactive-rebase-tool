@@ -8,8 +8,7 @@
 #![allow(missing_docs)]
 #![allow(single_use_lifetimes)]
 #![deny(trivial_casts)]
-// TODO enable this linting rule
-#![allow(trivial_numeric_casts)]
+#![deny(trivial_numeric_casts)]
 // TODO enable this linting rule
 #![allow(unreachable_pub)]
 #![deny(unsafe_code)]
