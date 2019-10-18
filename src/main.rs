@@ -1,3 +1,24 @@
+#![deny(warnings)]
+#![deny(anonymous_parameters)]
+#![deny(bare_trait_objects)]
+#![allow(box_pointers)]
+#![allow(elided_lifetimes_in_paths)]
+#![deny(missing_copy_implementations)]
+#![deny(missing_debug_implementations)]
+#![allow(missing_docs)]
+#![allow(single_use_lifetimes)]
+#![deny(trivial_casts)]
+// TODO enable this linting rule
+#![allow(trivial_numeric_casts)]
+// TODO enable this linting rule
+#![allow(unreachable_pub)]
+#![deny(unsafe_code)]
+#![deny(unused_extern_crates)]
+#![deny(unused_import_braces)]
+#![deny(unused_qualifications)]
+#![allow(unused_results)]
+#![deny(variant_size_differences)]
+
 mod cli;
 mod commit;
 mod config;
