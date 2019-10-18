@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-pub struct ScrollPosition {
+pub(crate) struct ScrollPosition {
 	big_scroll: usize,
 	left_value: RefCell<usize>,
 	padding: usize,
@@ -9,7 +9,7 @@ pub struct ScrollPosition {
 }
 
 impl ScrollPosition {
-	pub fn new(padding: usize, big_scroll: usize, small_scroll: usize) -> Self {
+	pub(crate) fn new(padding: usize, big_scroll: usize, small_scroll: usize) -> Self {
 		Self {
 			big_scroll,
 			left_value: RefCell::new(0),
@@ -19,27 +19,27 @@ impl ScrollPosition {
 		}
 	}
 
-	pub fn reset(&self) {
+	pub(crate) fn reset(&self) {
 		self.left_value.replace(0);
 		self.top_value.replace(0);
 	}
 
-	pub fn scroll_up(&self, window_height: usize, lines_length: usize) {
+	pub(crate) fn scroll_up(&self, window_height: usize, lines_length: usize) {
 		self.update_top(true, window_height, lines_length);
 	}
 
-	pub fn scroll_down(&self, window_height: usize, lines_length: usize) {
+	pub(crate) fn scroll_down(&self, window_height: usize, lines_length: usize) {
 		self.update_top(false, window_height, lines_length);
 	}
 
-	pub fn scroll_left(&self, view_width: usize, max_line_width: usize) {
+	pub(crate) fn scroll_left(&self, view_width: usize, max_line_width: usize) {
 		let current_value = *self.left_value.borrow();
 		if current_value != 0 {
 			self.set_horizontal_scroll(current_value - 1, view_width, max_line_width);
 		}
 	}
 
-	pub fn scroll_right(&self, view_width: usize, max_line_width: usize) {
+	pub(crate) fn scroll_right(&self, view_width: usize, max_line_width: usize) {
 		let current_value = *self.left_value.borrow();
 		self.set_horizontal_scroll(current_value + 1, view_width, max_line_width);
 	}
@@ -58,7 +58,7 @@ impl ScrollPosition {
 		}
 	}
 
-	pub fn ensure_cursor_visible(&self, cursor: usize, window_height: usize, lines_length: usize) {
+	pub(crate) fn ensure_cursor_visible(&self, cursor: usize, window_height: usize, lines_length: usize) {
 		let view_height = window_height - self.padding;
 
 		let current_value = *self.top_value.borrow();
@@ -81,11 +81,11 @@ impl ScrollPosition {
 		});
 	}
 
-	pub fn get_top_position(&self) -> usize {
+	pub(crate) fn get_top_position(&self) -> usize {
 		*self.top_value.borrow()
 	}
 
-	pub fn get_left_position(&self) -> usize {
+	pub(crate) fn get_left_position(&self) -> usize {
 		*self.left_value.borrow()
 	}
 

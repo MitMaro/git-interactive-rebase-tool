@@ -1,4 +1,4 @@
-use crate::display::Color;
+use crate::display::color::Color;
 use pancurses::{
 	chtype,
 	Input,
@@ -13,17 +13,16 @@ use pancurses::{
 };
 use std::collections::HashMap;
 
-pub struct Curses {
+pub(crate) struct Curses {
 	color_lookup: HashMap<(i16, i16, i16), i16>,
 	color_index: i16,
 	color_pair_index: i16,
-	pub number_of_colors: usize,
+	number_of_colors: usize,
 	window: pancurses::Window,
-	pub has_colors: bool,
 }
 
 impl Curses {
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		let window = pancurses::initscr();
 		window.keypad(true);
 
@@ -41,7 +40,6 @@ impl Curses {
 
 		Self {
 			window,
-			has_colors,
 			number_of_colors: pancurses::COLORS() as usize,
 			color_lookup: HashMap::new(),
 			color_index: 8,
@@ -82,7 +80,7 @@ impl Curses {
 		pancurses::COLOR_PAIR(index as chtype)
 	}
 
-	pub fn register_selectable_color_pairs(
+	pub(super) fn register_selectable_color_pairs(
 		&mut self,
 		foreground: Color,
 		background: Color,
@@ -97,51 +95,51 @@ impl Curses {
 		(standard_pair, standard_pair)
 	}
 
-	pub fn erase(&self) {
+	pub(super) fn erase(&self) {
 		self.window.erase();
 	}
 
-	pub fn refresh(&self) {
+	pub(super) fn refresh(&self) {
 		self.window.refresh();
 	}
 
-	pub fn addstr(&self, s: &str) {
+	pub(super) fn addstr(&self, s: &str) {
 		self.window.addstr(s);
 	}
 
-	pub fn attrset<T: Into<chtype>>(&self, attributes: T) {
+	pub(super) fn attrset<T: Into<chtype>>(&self, attributes: T) {
 		self.window.attrset(attributes);
 	}
 
-	pub fn attron<T: Into<chtype>>(&self, attributes: T) {
+	pub(super) fn attron<T: Into<chtype>>(&self, attributes: T) {
 		self.window.attron(attributes);
 	}
 
-	pub fn attroff<T: Into<chtype>>(&self, attributes: T) {
+	pub(super) fn attroff<T: Into<chtype>>(&self, attributes: T) {
 		self.window.attroff(attributes);
 	}
 
-	pub fn getch(&self) -> Option<Input> {
+	pub(super) fn getch(&self) -> Option<Input> {
 		self.window.getch()
 	}
 
-	pub fn get_max_y(&self) -> i32 {
+	pub(super) fn get_max_y(&self) -> i32 {
 		self.window.get_max_y()
 	}
 
-	pub fn get_max_x(&self) -> i32 {
+	pub(super) fn get_max_x(&self) -> i32 {
 		self.window.get_max_x()
 	}
 
-	pub fn def_prog_mode(&self) {
+	pub(super) fn def_prog_mode(&self) {
 		pancurses::def_prog_mode();
 	}
 
-	pub fn reset_prog_mode(&self) {
+	pub(super) fn reset_prog_mode(&self) {
 		pancurses::reset_prog_mode();
 	}
 
-	pub fn endwin(&self) {
+	pub(super) fn endwin(&self) {
 		pancurses::endwin();
 	}
 }

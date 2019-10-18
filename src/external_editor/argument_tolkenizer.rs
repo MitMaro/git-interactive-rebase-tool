@@ -1,3 +1,5 @@
+use std::iter::Iterator;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum State {
 	Normal,
@@ -7,7 +9,7 @@ enum State {
 	WhiteSpace,
 }
 
-pub fn tolkenize(input: &str) -> Option<Vec<String>> {
+pub(super) fn tolkenize(input: &str) -> Option<Vec<String>> {
 	let mut previous_state = State::Normal;
 	let mut state = State::Normal;
 	let mut token_start: usize = 0;

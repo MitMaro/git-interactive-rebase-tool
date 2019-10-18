@@ -1,6 +1,6 @@
 use pancurses::Input;
 
-pub fn curses_input_to_string(input: Input) -> String {
+pub(super) fn curses_input_to_string(input: Input) -> String {
 	match input {
 		Input::Character(c) => c.to_string(),
 		Input::KeyLeft => String::from("Left"),

@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug)]
-pub enum DisplayColor {
+pub(crate) enum DisplayColor {
 	ActionBreak,
 	ActionDrop,
 	ActionEdit,

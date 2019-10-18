@@ -4,14 +4,14 @@ use crate::input::Input;
 use crate::Config;
 use pancurses::Input as PancursesInput;
 
-pub struct InputHandler<'i> {
+pub(crate) struct InputHandler<'i> {
 	config: &'i Config,
 	confirm_yes_input: char,
 	display: &'i Display<'i>,
 }
 
 impl<'i> InputHandler<'i> {
-	pub fn new(display: &'i Display, config: &'i Config) -> Self {
+	pub(crate) fn new(display: &'i Display, config: &'i Config) -> Self {
 		let confirm_yes_input = config.input_confirm_yes.to_lowercase().chars().next().unwrap_or('y');
 		Self {
 			config,
@@ -21,7 +21,7 @@ impl<'i> InputHandler<'i> {
 	}
 
 	#[allow(clippy::cognitive_complexity)]
-	pub fn get_input(&self) -> Input {
+	pub(crate) fn get_input(&self) -> Input {
 		let c = self.get_next_input();
 
 		let input = curses_input_to_string(c);
@@ -56,7 +56,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	pub fn get_confirm(&self) -> Input {
+	pub(crate) fn get_confirm(&self) -> Input {
 		match self.display.getch() {
 			Some(PancursesInput::Character(c)) => {
 				if c.to_lowercase().next().unwrap() == self.confirm_yes_input {
@@ -71,7 +71,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	pub fn get_character(&self) -> Input {
+	pub(crate) fn get_character(&self) -> Input {
 		loop {
 			let c = self.get_next_input();
 

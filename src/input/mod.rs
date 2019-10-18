@@ -1,8 +1,38 @@
-#[allow(clippy::module_inception)]
-mod input;
-mod input_handler;
+pub(crate) mod input_handler;
 mod utils;
 
-pub use self::input::Input;
-pub use self::input_handler::InputHandler;
-pub use self::utils::curses_input_to_string;
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) enum Input {
+	Abort,
+	ActionBreak,
+	ActionDrop,
+	ActionEdit,
+	ActionFixup,
+	ActionPick,
+	ActionReword,
+	ActionSquash,
+	Backspace,
+	Character(char),
+	Delete,
+	Edit,
+	Enter,
+	ForceAbort,
+	ForceRebase,
+	Help,
+	MoveCursorDown,
+	MoveCursorLeft,
+	MoveCursorPageDown,
+	MoveCursorPageUp,
+	MoveCursorRight,
+	MoveCursorUp,
+	No,
+	OpenInEditor,
+	Other,
+	Rebase,
+	Resize,
+	ShowCommit,
+	SwapSelectedDown,
+	SwapSelectedUp,
+	ToggleVisualMode,
+	Yes,
+}

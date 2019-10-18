@@ -1,5 +1,6 @@
 use crate::commit::Commit;
-use crate::list::{Action, Line};
+use crate::list::action::Action;
+use crate::list::line::Line;
 use std::cmp;
 use std::fs::File;
 use std::io::Read;
@@ -40,7 +41,7 @@ fn load_filepath(path: &PathBuf, config_comment_char: &str) -> Result<Vec<Line>,
 		.collect()
 }
 
-pub struct GitInteractive {
+pub(crate) struct GitInteractive {
 	filepath: PathBuf,
 	lines: Vec<Line>,
 	selected_line_index: usize,
@@ -48,7 +49,7 @@ pub struct GitInteractive {
 }
 
 impl GitInteractive {
-	pub fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
+	pub(crate) fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
 		let path = PathBuf::from(filepath);
 		let lines = load_filepath(&path, comment_char)?;
 
@@ -60,7 +61,7 @@ impl GitInteractive {
 		})
 	}
 
-	pub fn write_file(&self) -> Result<(), String> {
+	pub(crate) fn write_file(&self) -> Result<(), String> {
 		let mut file = match File::create(&self.filepath) {
 			Ok(file) => file,
 			Err(why) => {
@@ -82,34 +83,34 @@ impl GitInteractive {
 		Ok(())
 	}
 
-	pub fn reload_file(&mut self, comment_char: &str) -> Result<(), String> {
+	pub(crate) fn reload_file(&mut self, comment_char: &str) -> Result<(), String> {
 		let lines = load_filepath(&self.filepath, comment_char)?;
 
 		self.lines = lines;
 		Ok(())
 	}
 
-	pub fn clear(&mut self) {
+	pub(crate) fn clear(&mut self) {
 		self.lines.clear();
 	}
 
-	pub fn move_cursor_up(&mut self, amount: usize) {
+	pub(crate) fn move_cursor_up(&mut self, amount: usize) {
 		self.selected_line_index = match amount {
 			a if a >= self.selected_line_index => 1,
 			_ => self.selected_line_index - amount,
 		};
 	}
 
-	pub fn move_cursor_down(&mut self, amount: usize) {
+	pub(crate) fn move_cursor_down(&mut self, amount: usize) {
 		self.selected_line_index = cmp::min(self.selected_line_index + amount, self.lines.len());
 	}
 
-	pub fn start_visual_mode(&mut self) {
+	pub(crate) fn start_visual_mode(&mut self) {
 		self.visual_index_start = self.selected_line_index;
 	}
 
 	#[allow(clippy::range_plus_one)]
-	pub fn swap_visual_range_up(&mut self) {
+	pub(crate) fn swap_visual_range_up(&mut self) {
 		if self.selected_line_index == 1 || self.visual_index_start == 1 {
 			return;
 		}
@@ -128,7 +129,7 @@ impl GitInteractive {
 		self.move_cursor_up(1);
 	}
 
-	pub fn swap_selected_up(&mut self) {
+	pub(crate) fn swap_selected_up(&mut self) {
 		if self.selected_line_index == 1 {
 			return;
 		}
@@ -138,7 +139,7 @@ impl GitInteractive {
 	}
 
 	#[allow(clippy::range_plus_one)]
-	pub fn swap_visual_range_down(&mut self) {
+	pub(crate) fn swap_visual_range_down(&mut self) {
 		if self.selected_line_index == self.lines.len() || self.visual_index_start == self.lines.len() {
 			return;
 		}
@@ -157,7 +158,7 @@ impl GitInteractive {
 		self.move_cursor_down(1);
 	}
 
-	pub fn swap_selected_down(&mut self) {
+	pub(crate) fn swap_selected_down(&mut self) {
 		if self.selected_line_index == self.lines.len() {
 			return;
 		}
@@ -165,16 +166,16 @@ impl GitInteractive {
 		self.move_cursor_down(1);
 	}
 
-	pub fn edit_selected_line(&mut self, content: &str) {
+	pub(crate) fn edit_selected_line(&mut self, content: &str) {
 		self.lines[self.selected_line_index - 1].edit_content(content);
 	}
 
-	pub fn get_selected_line_edit_content(&self) -> &String {
+	pub(crate) fn get_selected_line_edit_content(&self) -> &String {
 		self.lines[self.selected_line_index - 1].get_edit_content()
 	}
 
 	#[allow(clippy::range_plus_one)]
-	pub fn set_visual_range_action(&mut self, action: Action) {
+	pub(crate) fn set_visual_range_action(&mut self, action: Action) {
 		let range = if self.selected_line_index <= self.visual_index_start {
 			self.selected_line_index..self.visual_index_start + 1
 		}
@@ -190,14 +191,14 @@ impl GitInteractive {
 		}
 	}
 
-	pub fn set_selected_line_action(&mut self, action: Action) {
+	pub(crate) fn set_selected_line_action(&mut self, action: Action) {
 		let selected_action = self.lines[self.selected_line_index - 1].get_action();
 		if *selected_action != Action::Exec && *selected_action != Action::Break {
 			self.lines[self.selected_line_index - 1].set_action(action);
 		}
 	}
 
-	pub fn toggle_break(&mut self) {
+	pub(crate) fn toggle_break(&mut self) {
 		let selected_action = self.lines[self.selected_line_index - 1].get_action();
 		if *selected_action == Action::Break {
 			self.lines.remove(self.selected_line_index - 1);
@@ -213,7 +214,7 @@ impl GitInteractive {
 		}
 	}
 
-	pub fn load_commit_stats(&self) -> Result<Commit, String> {
+	pub(crate) fn load_commit_stats(&self) -> Result<Commit, String> {
 		let selected_action = self.lines[self.selected_line_index - 1].get_action();
 		if *selected_action != Action::Exec && *selected_action != Action::Break {
 			return Ok(Commit::from_commit_hash(self.get_selected_line_hash().as_str())?);
@@ -221,31 +222,31 @@ impl GitInteractive {
 		Err(String::from("Cannot load commit for the selected action"))
 	}
 
-	pub fn is_noop(&self) -> bool {
+	pub(crate) fn is_noop(&self) -> bool {
 		!self.lines.is_empty() && *self.lines[0].get_action() == Action::Noop
 	}
 
-	pub fn get_selected_line_hash(&self) -> &String {
+	pub(crate) fn get_selected_line_hash(&self) -> &String {
 		self.lines[self.selected_line_index - 1].get_hash()
 	}
 
-	pub fn get_selected_line_action(&self) -> &Action {
+	pub(crate) fn get_selected_line_action(&self) -> &Action {
 		self.lines[self.selected_line_index - 1].get_action()
 	}
 
-	pub fn get_selected_line_index(&self) -> &usize {
+	pub(crate) fn get_selected_line_index(&self) -> &usize {
 		&self.selected_line_index
 	}
 
-	pub fn get_visual_start_index(&self) -> &usize {
+	pub(crate) fn get_visual_start_index(&self) -> &usize {
 		&self.visual_index_start
 	}
 
-	pub fn get_filepath(&self) -> &PathBuf {
+	pub(crate) fn get_filepath(&self) -> &PathBuf {
 		&self.filepath
 	}
 
-	pub fn get_lines(&self) -> &Vec<Line> {
+	pub(crate) fn get_lines(&self) -> &Vec<Line> {
 		&self.lines
 	}
 }

@@ -9,8 +9,7 @@
 #![allow(single_use_lifetimes)]
 #![deny(trivial_casts)]
 #![deny(trivial_numeric_casts)]
-// TODO enable this linting rule
-#![allow(unreachable_pub)]
+#![deny(unreachable_pub)]
 #![deny(unsafe_code)]
 #![deny(unused_extern_crates)]
 #![deny(unused_import_braces)]
@@ -40,10 +39,12 @@ mod view;
 mod window_size_error;
 
 use crate::config::Config;
-use crate::display::{Curses, Display};
+use crate::display::curses::Curses;
+use crate::display::Display;
 use crate::git_interactive::GitInteractive;
-use crate::input::InputHandler;
-use crate::process::{ExitStatus, Process};
+use crate::input::input_handler::InputHandler;
+use crate::process::exit_status::ExitStatus;
+use crate::process::Process;
 use crate::view::View;
 
 struct Exit {

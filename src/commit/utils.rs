@@ -1,10 +1,10 @@
-use crate::commit::commit::Commit;
 use crate::commit::file_stat::FileStat;
 use crate::commit::user::User;
+use crate::commit::Commit;
 use chrono::{Local, TimeZone};
 use git2::{Delta, DiffFindOptions, DiffOptions, Error, Repository};
 
-pub(crate) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
+pub(super) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 	let repo = Repository::open_from_env()?;
 	let commit = repo.find_commit(repo.revparse_single(hash)?.id())?;
 

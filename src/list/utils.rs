@@ -1,5 +1,5 @@
-use crate::display::DisplayColor;
-use crate::list::Action;
+use crate::display::display_color::DisplayColor;
+use crate::list::action::Action;
 use crate::Config;
 
 fn get_input_short_name(input: &str) -> String {
@@ -16,7 +16,7 @@ fn get_input_short_name(input: &str) -> String {
 	}
 }
 
-pub fn get_action_color(action: Action) -> DisplayColor {
+pub(super) fn get_action_color(action: Action) -> DisplayColor {
 	match action {
 		Action::Break => DisplayColor::ActionBreak,
 		Action::Drop => DisplayColor::ActionDrop,
@@ -30,7 +30,7 @@ pub fn get_action_color(action: Action) -> DisplayColor {
 	}
 }
 
-pub fn get_normal_footer_full(config: &Config) -> String {
+pub(super) fn get_normal_footer_full(config: &Config) -> String {
 	format!(
 		" {}, {}, {}/{}, {}/{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
 		config.input_move_up,
@@ -55,7 +55,7 @@ pub fn get_normal_footer_full(config: &Config) -> String {
 	)
 }
 
-pub fn get_visual_footer_full(config: &Config) -> String {
+pub(super) fn get_visual_footer_full(config: &Config) -> String {
 	format!(
 		" {}, {}, {}/{}, {}/{}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
 		config.input_move_up,
@@ -76,7 +76,7 @@ pub fn get_visual_footer_full(config: &Config) -> String {
 	)
 }
 
-pub fn get_normal_footer_compact(config: &Config) -> String {
+pub(super) fn get_normal_footer_compact(config: &Config) -> String {
 	format!(
 		"{},{},{}/{},{}/{},{},{},{},{},{},{},{},{},{},{},{},{},{}",
 		get_input_short_name(config.input_move_up.as_str()),
@@ -101,7 +101,7 @@ pub fn get_normal_footer_compact(config: &Config) -> String {
 	)
 }
 
-pub fn get_visual_footer_compact(config: &Config) -> String {
+pub(super) fn get_visual_footer_compact(config: &Config) -> String {
 	format!(
 		"{},{},{}/{},{}/{},{},{},{},{},{},{},{},{},{}",
 		get_input_short_name(config.input_move_up.as_str()),

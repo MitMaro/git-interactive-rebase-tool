@@ -1,12 +1,13 @@
 use crate::commit::Commit;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
-use crate::display::DisplayColor;
+use crate::display::display_color::DisplayColor;
 use crate::show_commit::util::get_stat_item_segments;
-use crate::view::{LineSegment, ViewLine};
+use crate::view::line_segment::LineSegment;
+use crate::view::view_line::ViewLine;
 use std::cmp;
 use unicode_segmentation::UnicodeSegmentation;
 
-pub struct Data {
+pub(super) struct Data {
 	height: usize,
 	width: usize,
 	lines: Vec<ViewLine>,
@@ -15,7 +16,7 @@ pub struct Data {
 }
 
 impl Data {
-	pub fn new() -> Self {
+	pub(super) fn new() -> Self {
 		Self {
 			height: 0,
 			width: 0,
@@ -25,7 +26,7 @@ impl Data {
 		}
 	}
 
-	pub fn reset(&mut self) {
+	pub(super) fn reset(&mut self) {
 		self.height = 0;
 		self.width = 0;
 		self.lines.clear();
@@ -33,7 +34,7 @@ impl Data {
 		self.max_line_length = 0;
 	}
 
-	pub fn update(&mut self, commit: &Commit, window_width: usize, window_height: usize) {
+	pub(super) fn update(&mut self, commit: &Commit, window_width: usize, window_height: usize) {
 		if window_width != self.width || window_height != self.height {
 			self.reset();
 
@@ -134,11 +135,11 @@ impl Data {
 		}
 	}
 
-	pub fn get_lines(&self) -> &Vec<ViewLine> {
+	pub(super) fn get_lines(&self) -> &Vec<ViewLine> {
 		&self.lines
 	}
 
-	pub fn get_max_line_length(&self, start: usize, end: usize) -> usize {
+	pub(super) fn get_max_line_length(&self, start: usize, end: usize) -> usize {
 		let mut max_length = 0;
 		for len in self.line_lengths[start..=end.min(self.line_lengths.len() - 1)].iter() {
 			if *len > max_length {
