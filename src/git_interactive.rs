@@ -24,16 +24,41 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 		},
 	}
 
-	// catch noop rebases
-	s.lines()
-		.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
-		.map(|l| {
-			match Line::new(l) {
-				Ok(line) => Ok(line),
-				Err(e) => Err(format!("Error reading file, {}", e)),
-			}
-		})
-		.collect()
+	if comment_char.eq("auto") {
+		s.lines()
+			.filter(|l| {
+				!(l.starts_with("#")
+					|| l.starts_with(";")
+					|| l.starts_with("@")
+					|| l.starts_with("!")
+					|| l.starts_with("$")
+					|| l.starts_with("%")
+					|| l.starts_with("^")
+					|| l.starts_with("&")
+					|| l.starts_with("|")
+					|| l.starts_with(":"))
+					&& !l.is_empty()
+			})
+			.map(|l| {
+				match Line::new(l) {
+					Ok(line) => Ok(line),
+					Err(e) => Err(format!("Error reading file, {}", e)),
+				}
+			})
+			.collect()
+	}
+	else {
+		// catch noop rebases when comment_char is clear
+		s.lines()
+			.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
+			.map(|l| {
+				match Line::new(l) {
+					Ok(line) => Ok(line),
+					Err(e) => Err(format!("Error reading file, {}", e)),
+				}
+			})
+			.collect()
+	}
 }
 
 pub struct GitInteractive {
