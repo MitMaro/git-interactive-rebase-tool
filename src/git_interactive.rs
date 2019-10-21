@@ -8,7 +8,7 @@ use crate::action::Action;
 use crate::commit::Commit;
 use crate::line::Line;
 
-fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String> {
+fn load_filepath(path: &PathBuf, config_comment_char: &str) -> Result<Vec<Line>, String> {
 	let mut file = match File::open(&path) {
 		Ok(file) => file,
 		Err(why) => {
@@ -23,6 +23,12 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 			return Err(format!("Error reading file, {}\nReason: {}", path.display(), why));
 		},
 	}
+	let comment_char = if config_comment_char.eq("auto") {
+		"#"
+	}
+	else {
+		config_comment_char
+	};
 
 	// catch noop rebases
 	s.lines()
