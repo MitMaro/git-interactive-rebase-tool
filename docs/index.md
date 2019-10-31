@@ -66,7 +66,7 @@ it is not satisfied.
 
 ### Remove
 
-    pkg install interactive_rebase_tool
+    pkg delete interactive_rebase_tool
 
 ## MacOS via Homebrew
 
