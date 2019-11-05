@@ -3,32 +3,16 @@ use crate::display::DisplayColor;
 use crate::Config;
 
 fn get_input_short_name(input: &str) -> String {
-	if input == "Left" {
-		String::from("lf")
-	}
-	else if input == "Right" {
-		String::from("rt")
-	}
-	else if input == "Down" {
-		String::from("dn")
-	}
-	else if input == "Up" {
-		String::from("up")
-	}
-	else if input == "PageUp" {
-		String::from("pup")
-	}
-	else if input == "PageDown" {
-		String::from("pdn")
-	}
-	else if input == "Resize" {
-		String::from("rz")
-	}
-	else if input == "Other" {
-		String::from("ot")
-	}
-	else {
-		String::from(input)
+	match input {
+		"Left" => String::from("lf"),
+		"Right" => String::from("rt"),
+		"Down" => String::from("dn"),
+		"Up" => String::from("up"),
+		"PageUp" => String::from("pup"),
+		"PageDown" => String::from("pdn"),
+		"Resize" => String::from("rz"),
+		"Other" => String::from("ot"),
+		_ => String::from(input),
 	}
 }
 
