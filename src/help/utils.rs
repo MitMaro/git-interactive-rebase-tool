@@ -2,20 +2,12 @@ use crate::Config;
 use unicode_segmentation::UnicodeSegmentation;
 
 fn get_input_short_name(input: &str) -> String {
-	if input == "PageUp" {
-		String::from("PgUp")
-	}
-	else if input == "PageDown" {
-		String::from("PgDn")
-	}
-	else if input == "Resize" {
-		String::from("Rsze")
-	}
-	else if input == "Other" {
-		String::from("Oth")
-	}
-	else {
-		String::from(input)
+	match input {
+		"PageUp" => String::from("PgUp"),
+		"PageDown" => String::from("PgDn"),
+		"Resize" => String::from("Rsze"),
+		"Other" => String::from("Oth"),
+		_ => String::from(input),
 	}
 }
 
