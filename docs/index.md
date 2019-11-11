@@ -93,6 +93,14 @@ Download the tool from the [releases page][releases] and save it to a known loca
 
 [releases]:https://github.com/MitMaro/git-interactive-rebase-tool/releases
 
+## Windows via Chocolatey
+
+    choco install git-interactive-rebase-tool
+
+### Remove
+
+    choco uninstall git-interactive-rebase-tool
+
 
 ### Debian and derivatives
 
