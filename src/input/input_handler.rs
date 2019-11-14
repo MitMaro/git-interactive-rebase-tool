@@ -20,6 +20,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
+	#[allow(clippy::cognitive_complexity)]
 	pub fn get_input(&self) -> Input {
 		let c = self.get_next_input();
 
