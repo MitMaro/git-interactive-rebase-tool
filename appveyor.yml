@@ -23,8 +23,6 @@ install:
 
 test_script:
   - if [%APPVEYOR_REPO_TAG%]==[false] (
-      cargo build --target x86_64-pc-windows-msvc --release &&
-      cargo test --target x86_64-pc-windows-msvc --release &&
       cargo run --target x86_64-pc-windows-msvc --release -- --version
     )
 
@@ -49,7 +47,6 @@ cache:
 branches:
   only:
     - master
-    - release-version-1.0.0
     - /^\d+\.\d+\.\d+(-rc\.[0-9]+)?$/
 
 notifications:

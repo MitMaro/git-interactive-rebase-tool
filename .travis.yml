@@ -19,22 +19,12 @@ rust:
 before_script:
   - export PATH=$HOME/.cargo/bin:$PATH
 
-script:
-  - cargo test
-  - cargo test --release
+script: echo "Skip"
 
 jobs:
   allow_failures:
     - rust: nightly
   include:
-    - stage: lint
-      rust: stable
-      os: linux
-      script: "./scripts/lint.bash"
-    - stage: format
-      rust: nightly
-      os: linux
-      script: "./scripts/format.bash"
     - stage: build-linux
       rust: stable
       os: linux
