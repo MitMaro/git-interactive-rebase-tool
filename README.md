@@ -32,7 +32,21 @@ Git 1.7.8+. Written in Rust using ncurses.
 
 ### Windows
 
-    git config --global sequence.editor "'C:/path/to/interactive-rebase-tool'"
+#### Standard Command Pompt
+
+    git config --global sequence.editor "'C:/path/to/interactive-rebase-tool.exe'"
+
+#### GitBash
+
+GitBash requires the use of `winpty` in order to work correctly, so to set the editor use:
+
+    git config --global sequence.editor "winpty /c/path/to/interactive-rebase-tool.exe"
+
+#### Notes
+
+Windows before version 10 has [serious rendering issues with saturated darker colors](https://devblogs.microsoft.com/commandline/updating-the-windows-console-colors/),
+such as the blue color, that are completely illegible on modern displays. While it is possible to avoid using the
+saturated colors, a better option is to update the theme using Microsoft's [ColorTool](https://github.com/Microsoft/Terminal/tree/master/src/tools/ColorTool).
 
 ## Usage
 
