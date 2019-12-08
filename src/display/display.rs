@@ -56,7 +56,8 @@ impl<'d> Display<'d> {
 	}
 
 	pub fn set_underline(&self, on: bool) {
-		if on {
+		// Windows uses blue text for underlined words
+		if !cfg!(windows) && on {
 			self.curses.attron(pancurses::A_UNDERLINE);
 		}
 		else {
