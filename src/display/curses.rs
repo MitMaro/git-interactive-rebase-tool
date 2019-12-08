@@ -74,12 +74,27 @@ impl Curses {
 		}
 	}
 
-	pub fn init_color_pair(&mut self, foreground: Color, background: Color) -> i16 {
+	fn init_color_pair(&mut self, foreground: Color, background: Color) -> chtype {
 		let index = self.color_pair_index;
 		self.color_pair_index += 1;
 		pancurses::init_pair(index, self.init_color(foreground), self.init_color(background));
 		// curses seems to init a pair for i16 but read with u64
-		pancurses::COLOR_PAIR(index as chtype) as i16
+		pancurses::COLOR_PAIR(index as chtype)
+	}
+
+	pub fn register_selectable_color_pairs(
+		&mut self,
+		foreground: Color,
+		background: Color,
+		selected_background: Color,
+	) -> (chtype, chtype)
+	{
+		let standard_pair = self.init_color_pair(foreground, background);
+		if self.number_of_colors > 16 {
+			return (standard_pair, self.init_color_pair(foreground, selected_background));
+		}
+		// when there is not enough color pairs to support selected
+		(standard_pair, standard_pair)
 	}
 
 	pub fn erase(&self) {
