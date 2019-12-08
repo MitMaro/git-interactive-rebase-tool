@@ -2,7 +2,7 @@ use crate::config::Config;
 use crate::display::color_manager::ColorManager;
 use crate::display::display_color::DisplayColor;
 use crate::display::Curses;
-use pancurses::{chtype, Input};
+use pancurses::Input;
 use std::cell::RefCell;
 
 pub struct Display<'d> {
@@ -37,9 +37,7 @@ impl<'d> Display<'d> {
 	}
 
 	pub fn color(&self, color: DisplayColor, selected: bool) {
-		let selected = selected && self.curses.number_of_colors > 8;
-		self.curses
-			.attrset(self.color_manager.get_color(color, selected) as chtype);
+		self.curses.attrset(self.color_manager.get_color(color, selected));
 	}
 
 	pub fn set_style(&self, dim: bool, underline: bool, reverse: bool) {

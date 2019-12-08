@@ -1,82 +1,96 @@
 use crate::config::Theme;
 use crate::display::display_color::DisplayColor;
 use crate::display::Curses;
+use pancurses::chtype;
 
 pub(in crate::display) struct ColorManager {
-	action_break: (i16, i16),
-	action_drop: (i16, i16),
-	action_edit: (i16, i16),
-	action_exec: (i16, i16),
-	action_fixup: (i16, i16),
-	action_pick: (i16, i16),
-	action_reword: (i16, i16),
-	action_squash: (i16, i16),
-	diff_add: (i16, i16),
-	diff_change: (i16, i16),
-	diff_remove: (i16, i16),
-	indicator: (i16, i16),
-	normal: (i16, i16),
+	action_break: (chtype, chtype),
+	action_drop: (chtype, chtype),
+	action_edit: (chtype, chtype),
+	action_exec: (chtype, chtype),
+	action_fixup: (chtype, chtype),
+	action_pick: (chtype, chtype),
+	action_reword: (chtype, chtype),
+	action_squash: (chtype, chtype),
+	diff_add: (chtype, chtype),
+	diff_change: (chtype, chtype),
+	diff_remove: (chtype, chtype),
+	indicator: (chtype, chtype),
+	normal: (chtype, chtype),
 }
 
 impl ColorManager {
 	pub fn new(theme: &Theme, curses: &mut Curses) -> Self {
 		Self {
-			normal: (
-				curses.init_color_pair(theme.color_foreground, theme.color_background),
-				curses.init_color_pair(theme.color_foreground, theme.color_selected_background),
+			normal: curses.register_selectable_color_pairs(
+				theme.color_foreground,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			indicator: (
-				curses.init_color_pair(theme.color_indicator, theme.color_background),
-				curses.init_color_pair(theme.color_indicator, theme.color_selected_background),
+			indicator: curses.register_selectable_color_pairs(
+				theme.color_indicator,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_break: (
-				curses.init_color_pair(theme.color_action_break, theme.color_background),
-				curses.init_color_pair(theme.color_action_break, theme.color_selected_background),
+			action_break: curses.register_selectable_color_pairs(
+				theme.color_action_break,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_drop: (
-				curses.init_color_pair(theme.color_action_drop, theme.color_background),
-				curses.init_color_pair(theme.color_action_drop, theme.color_selected_background),
+			action_drop: curses.register_selectable_color_pairs(
+				theme.color_action_drop,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_edit: (
-				curses.init_color_pair(theme.color_action_edit, theme.color_background),
-				curses.init_color_pair(theme.color_action_edit, theme.color_selected_background),
+			action_edit: curses.register_selectable_color_pairs(
+				theme.color_action_edit,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_exec: (
-				curses.init_color_pair(theme.color_action_exec, theme.color_background),
-				curses.init_color_pair(theme.color_action_exec, theme.color_selected_background),
+			action_exec: curses.register_selectable_color_pairs(
+				theme.color_action_exec,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_fixup: (
-				curses.init_color_pair(theme.color_action_fixup, theme.color_background),
-				curses.init_color_pair(theme.color_action_fixup, theme.color_selected_background),
+			action_fixup: curses.register_selectable_color_pairs(
+				theme.color_action_fixup,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_pick: (
-				curses.init_color_pair(theme.color_action_pick, theme.color_background),
-				curses.init_color_pair(theme.color_action_pick, theme.color_selected_background),
+			action_pick: curses.register_selectable_color_pairs(
+				theme.color_action_pick,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_reword: (
-				curses.init_color_pair(theme.color_action_reword, theme.color_background),
-				curses.init_color_pair(theme.color_action_reword, theme.color_selected_background),
+			action_reword: curses.register_selectable_color_pairs(
+				theme.color_action_reword,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			action_squash: (
-				curses.init_color_pair(theme.color_action_squash, theme.color_background),
-				curses.init_color_pair(theme.color_action_squash, theme.color_selected_background),
+			action_squash: curses.register_selectable_color_pairs(
+				theme.color_action_squash,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			diff_add: (
-				curses.init_color_pair(theme.color_diff_add, theme.color_background),
-				curses.init_color_pair(theme.color_diff_add, theme.color_selected_background),
+			diff_add: curses.register_selectable_color_pairs(
+				theme.color_diff_add,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			diff_change: (
-				curses.init_color_pair(theme.color_diff_change, theme.color_background),
-				curses.init_color_pair(theme.color_diff_change, theme.color_selected_background),
+			diff_change: curses.register_selectable_color_pairs(
+				theme.color_diff_change,
+				theme.color_background,
+				theme.color_selected_background,
 			),
-			diff_remove: (
-				curses.init_color_pair(theme.color_diff_remove, theme.color_background),
-				curses.init_color_pair(theme.color_diff_remove, theme.color_selected_background),
+			diff_remove: curses.register_selectable_color_pairs(
+				theme.color_diff_remove,
+				theme.color_background,
+				theme.color_selected_background,
 			),
 		}
 	}
 
-	pub fn get_color(&self, color: DisplayColor, selected: bool) -> i16 {
+	pub fn get_color(&self, color: DisplayColor, selected: bool) -> chtype {
 		if selected {
 			match color {
 				DisplayColor::ActionBreak => self.action_break.1,
