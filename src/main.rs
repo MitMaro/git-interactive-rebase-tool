@@ -76,8 +76,6 @@ fn try_main() -> Result<ExitStatus, Exit> {
 		},
 	};
 
-	let mut curses = Curses::new();
-
 	let git_interactive = match GitInteractive::new_from_filepath(filepath, config.comment_char.as_str()) {
 		Ok(gi) => gi,
 		Err(message) => {
@@ -98,9 +96,11 @@ fn try_main() -> Result<ExitStatus, Exit> {
 	if git_interactive.get_lines().is_empty() {
 		return Err(Exit {
 			message: String::from("An empty rebase was provided, nothing to edit"),
-			status: ExitStatus::FileReadError,
+			status: ExitStatus::Good,
 		});
 	}
+
+	let mut curses = Curses::new();
 
 	let display = Display::new(&mut curses, &config);
 
