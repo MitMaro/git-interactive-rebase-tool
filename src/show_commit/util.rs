@@ -71,7 +71,7 @@ pub fn get_stat_item_segments(status: Delta, to_name: &str, from_name: &str, is_
 	match status {
 		Delta::Copied => {
 			vec![
-				LineSegment::new_with_color(status_name.clone().as_str(), color),
+				LineSegment::new_with_color(status_name.as_str(), color),
 				LineSegment::new_with_color(to_name, DisplayColor::Normal),
 				LineSegment::new(to_file_indicator),
 				LineSegment::new_with_color(from_name, DisplayColor::DiffAddColor),
