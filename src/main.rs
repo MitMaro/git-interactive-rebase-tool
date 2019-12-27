@@ -16,7 +16,6 @@ mod external_editor;
 mod git_interactive;
 mod help;
 mod input;
-mod line;
 mod list;
 mod process;
 mod scroll;

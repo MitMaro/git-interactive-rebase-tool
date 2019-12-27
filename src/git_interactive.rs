@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 use crate::action::Action;
 use crate::commit::Commit;
-use crate::line::Line;
+use crate::list::Line;
 
 fn load_filepath(path: &PathBuf, config_comment_char: &str) -> Result<Vec<Line>, String> {
 	let mut file = match File::open(&path) {
