@@ -17,9 +17,11 @@ use std::ffi::OsString;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
 
+#[derive(Clone, Debug, PartialEq)]
 enum ExternalEditorState {
 	Active,
 	Error,
+	Empty,
 	Finish,
 }
 
@@ -31,13 +33,16 @@ pub struct ExternalEditor<'e> {
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
 	fn activate(&mut self, _state: State, _git_interactive: &GitInteractive) {
-		self.state = ExternalEditorState::Active;
+		if self.state != ExternalEditorState::Empty {
+			self.state = ExternalEditorState::Active;
+		}
 	}
 
 	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
 		match self.state {
 			ExternalEditorState::Active => self.process_active(git_interactive),
 			ExternalEditorState::Error => self.process_error(git_interactive),
+			ExternalEditorState::Empty => ProcessResult::new(),
 			ExternalEditorState::Finish => self.process_finish(git_interactive),
 		}
 	}
@@ -51,11 +56,16 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 	{
 		match self.state {
 			ExternalEditorState::Active => self.handle_input_active(input_handler),
+			ExternalEditorState::Empty => self.handle_input_empty(input_handler),
 			_ => HandleInputResult::new(Input::Other),
 		}
 	}
 
-	fn render(&self, _view: &View, _git_interactive: &GitInteractive) {}
+	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+		if let ExternalEditorState::Empty = self.state {
+			view.draw_confirm("Empty rebase todo file. Do you wish to exit?");
+		}
+	}
 }
 
 impl<'e> ExternalEditor<'e> {
@@ -128,8 +138,7 @@ impl<'e> ExternalEditor<'e> {
 			self.state = ExternalEditorState::Error;
 		}
 		else if git_interactive.get_lines().is_empty() {
-			result = result.error("Rebase TODO list is empty", State::ExternalEditor);
-			self.state = ExternalEditorState::Error;
+			self.state = ExternalEditorState::Empty;
 		}
 		else {
 			result = result.state(State::List(false));
@@ -149,7 +158,7 @@ impl<'e> ExternalEditor<'e> {
 		result.build()
 	}
 
-	pub fn handle_input_active(&self, input_handler: &InputHandler) -> HandleInputResult {
+	fn handle_input_active(&self, input_handler: &InputHandler) -> HandleInputResult {
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
@@ -157,6 +166,22 @@ impl<'e> ExternalEditor<'e> {
 			_ => {
 				result = result.state(State::List(false));
 			},
+		}
+		result.build()
+	}
+
+	fn handle_input_empty(&mut self, input_handler: &InputHandler) -> HandleInputResult {
+		let input = input_handler.get_confirm();
+		let mut result = HandleInputResultBuilder::new(input);
+		match input {
+			Input::Yes => {
+				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+			},
+			Input::No => {
+				self.state = ExternalEditorState::Active;
+				result = result.state(State::ExternalEditor);
+			},
+			_ => {},
 		}
 		result.build()
 	}
