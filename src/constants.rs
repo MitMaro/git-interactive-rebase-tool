@@ -14,4 +14,8 @@ pub(crate) const MINIMUM_COMPACT_WINDOW_WIDTH: usize = 20; // ">s ccc mmmmmmmmmm
 pub(crate) const MINIMUM_FULL_WINDOW_WIDTH: usize = 34; // " > squash cccccccc mmmmmmmmmmmmm %".len()
 
 pub(crate) const NAME: &str = "interactive-rebase-tool";
+
+#[cfg(not(feature = "nightly"))]
 pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
+#[cfg(feature = "nightly")]
+pub(crate) const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "-nightly");

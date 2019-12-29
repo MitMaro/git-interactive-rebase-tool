@@ -7,7 +7,7 @@ set -o pipefail
 REPOSITORY="MitMaro/git-interactive-rebase-tool"
 TARGET_RELEASE_ID=18843342
 
-cargo build --release
+cargo build --release --features nightly
 
 echo "Pushing release for $OS"
 
