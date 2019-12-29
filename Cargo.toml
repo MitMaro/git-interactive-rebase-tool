@@ -49,6 +49,7 @@ features = []
 
 [features]
 default = []
+nightly = []
 
 [package.metadata.deb]
 maintainer = "Tim Oram <dev@mitmaro.ca>"
