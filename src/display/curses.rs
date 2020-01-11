@@ -12,13 +12,14 @@ use pancurses::{
 	COLOR_YELLOW,
 };
 use std::collections::HashMap;
+use std::env::var;
 
 pub(crate) struct Curses {
 	color_lookup: HashMap<(i16, i16, i16), i16>,
 	color_index: i16,
 	color_pair_index: i16,
-	number_of_colors: usize,
 	window: pancurses::Window,
+	selected_line_enabled: bool,
 }
 
 impl Curses {
@@ -38,12 +39,15 @@ impl Curses {
 		// pair zero should always be default
 		pancurses::init_pair(0, -1, -1);
 
+		let number_of_colors = pancurses::COLORS() as usize;
+
 		Self {
 			window,
-			number_of_colors: pancurses::COLORS() as usize,
 			color_lookup: HashMap::new(),
 			color_index: 8,
 			color_pair_index: 1,
+			// Terminal.app on MacOS doesn't not properly support the color pairs needed for selected line
+			selected_line_enabled: number_of_colors > 16 && var("TERM_PROGRAM").unwrap_or_default() != "Apple_Terminal",
 		}
 	}
 
@@ -88,7 +92,7 @@ impl Curses {
 	) -> (chtype, chtype)
 	{
 		let standard_pair = self.init_color_pair(foreground, background);
-		if self.number_of_colors > 16 {
+		if self.selected_line_enabled {
 			return (standard_pair, self.init_color_pair(foreground, selected_background));
 		}
 		// when there is not enough color pairs to support selected
