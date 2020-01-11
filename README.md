@@ -121,7 +121,6 @@ git config --global interactive-rebase-tool.foregroundColor black
 | `editColor`                | blue     | Color  | Color used for the edit action |
 | `fixupColor`               | magenta  | Color  | Color used for the fixup action |
 | `foregroundColor`          | white    | Color  | Color used for most text and the UI |
-| `selectedBackgroundColor`  | 35,35,40 | Color  | Color used as the background color for the selected line |
 | `indicatorColor`           | cyan     | Color  | Color used for text the indicates or needs to standout  |
 | `inputAbort`               | q        | String | Key for abort rebase with prompt |
 | `inputActionBreak`         | b        | String | Key for setting action to rebase |
@@ -137,20 +136,21 @@ git config --global interactive-rebase-tool.foregroundColor black
 | `inputForceAbort`          | Q        | String | Key for forcing an abort of the rebase |
 | `inputForceRebase`         | W        | String | Key for forcing a rebase |
 | `inputHelp`                | ?        | String | Key for showing the help |
-| `inputMoveDownStep`        | PageDown | String | Key for moving the cursor down by a large step |
 | `inputMoveDown`            | Down     | String | Key for moving the cursor down |
 | `inputMoveLeft`            | Left     | String | Key for moving the cursor left |
 | `inputMoveRight`           | Right    | String | Key for moving the cursor right |
 | `inputMoveSelectionDown`   | j        | String | Key for moving the selected line(s) down |
 | `inputMoveSelectionUp`     | k        | String | Key for moving the selected line(s) up |
+| `inputMoveStepDown`        | PageDown | String | Key for moving the cursor down by a large step |
+| `inputMoveStepUp`          | PageUp   | String | Key for moving the cursor up  by a large step|
 | `inputMoveUp`              | Up       | String | Key for moving the cursor up |
-| `inputMoveUpStep`          | PageUp   | String | Key for moving the cursor up  by a large step|
 | `inputOpenInExternalEditor`| !        | String | Key for opening the external editor |
 | `inputRebase`              | w        | String | Key for rebasing with confirmation |
 | `inputShowCommit`          | c        | String | Key for showing the selected commit |
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
 | `pickColor`                | green    | Color  | Color used for the pick action |
 | `rewordColor`              | yellow   | Color  | Color used for the reword action |
+| `selectedBackgroundColor`  | 35,35,40 | Color  | Color used as the background color for the selected line |
 | `squashColor`              | cyan     | Color  | Color used for the squash action |
 | `verticalSpacingCharacter` | ~        | String | Vertical spacing character. Can be set to an empty string. |
 
