@@ -45,6 +45,8 @@ impl ScrollPosition {
 	}
 
 	fn set_horizontal_scroll(&self, new_value: usize, view_width: usize, max_line_width: usize) {
+		// shrink view for a possible scroll bar
+		let view_width = view_width - 1;
 		if (new_value + view_width) > max_line_width {
 			if view_width > max_line_width {
 				self.left_value.replace(0);
