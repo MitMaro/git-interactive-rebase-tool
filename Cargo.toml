@@ -1,6 +1,6 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "1.1.0"
+version = "1.2.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Full feature terminal based sequence editor for git interactive rebase. Written in Rust using ncurses."

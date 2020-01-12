@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] - 2019-08-15
+## [1.2.0] - 2020-01-11
 
 ### Added
 - Support for 256-color terminals
@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Performance issue with show commit
 - Visual mode index error when changing action or swapping lines
 - Fixed crash with scrolling to max length
+- A empty rebase file now returns a zero exit code
+- External editing loop when an external editor returns an empty file
 
 ### Removed
 - Unused `errorColor` configuration
@@ -103,7 +105,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.7.0...1.0.0
 [0.7.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.6.0...0.7.0
