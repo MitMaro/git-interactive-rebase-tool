@@ -77,6 +77,11 @@ to a location on your `PATH`.
 
 Delete the copied `interactive-rebase-tool`.
 
+### Notes
+
+On MacOS, Terminal.app does not support highlighting the selected line(s). If you want this feature you will need to use
+a terminal emulator like [iTerm2](https://iterm2.com/index.html).
+
 ## Windows
 
 ### With [Chocolatey](https://chocolatey.org/)
