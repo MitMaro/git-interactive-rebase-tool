@@ -108,20 +108,41 @@ instead. String values are case-insensitive.
 git config --global interactive-rebase-tool.foregroundColor black
 ```
 
-#### Options
+#### General
+
+| Key                        | Default | Type   | Description |
+| -------------------------- | ------- | ------ | ----------- |
+| `autoSelectNext`           | false   | bool   | If true, auto select the next line after action modification |
+| `verticalSpacingCharacter` | ~       | String | Vertical spacing character. Can be set to an empty string. |
+
+#### Colors
+
+The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `black`, `blue`, `cyan`, `green`,
+`magenta`, `red`, `white` and `yellow`. Each terminal controls the exact color for these color names. On terminals that
+support 256 colors, a color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to
+255 with `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used
+to use the default terminal color.
+
+| Key                       | Default  | Type  | Description |
+| ------------------------- | -------- | ----- | ----------- |
+| `breakColor`              | white    | Color | Color used for the break action |
+| `diffAddColor`            | green    | Color | Color used for lines and files added in a diff |
+| `diffChangeColor`         | yellow   | Color | Color used for lines and files changed in a diff |
+| `diffRemoveColor`         | red      | Color | Color used for lines and files removed in a diff |
+| `dropColor`               | red      | Color | Color used for the drop action |
+| `editColor`               | blue     | Color | Color used for the edit action |
+| `fixupColor`              | magenta  | Color | Color used for the fixup action |
+| `foregroundColor`         | white    | Color | Color used for most text and the UI |
+| `indicatorColor`          | cyan     | Color | Color used for text the indicates or needs to standout  |
+| `pickColor`               | green    | Color | Color used for the pick action |
+| `rewordColor`             | yellow   | Color | Color used for the reword action |
+| `selectedBackgroundColor` | 35,35,40 | Color | Color used as the background color for the selected line |
+| `squashColor`             | cyan     | Color | Color used for the squash action |
+
+#### Key Bindings
 
 | Key                        | Default  | Type   | Description |
 | -------------------------- | -------- | ------ | ----------- |
-| `autoSelectNext`           | false    | bool   | If true, auto select the next line after action modification |
-| `breakColor`               | white    | Color  | Color used for the break action |
-| `diffAddColor`             | green    | Color  | Color used for lines and files added in a diff |
-| `diffChangeColor`          | yellow   | Color  | Color used for lines and files changed in a diff |
-| `diffRemoveColor`          | red      | Color  | Color used for lines and files removed in a diff |
-| `dropColor`                | red      | Color  | Color used for the drop action |
-| `editColor`                | blue     | Color  | Color used for the edit action |
-| `fixupColor`               | magenta  | Color  | Color used for the fixup action |
-| `foregroundColor`          | white    | Color  | Color used for most text and the UI |
-| `indicatorColor`           | cyan     | Color  | Color used for text the indicates or needs to standout  |
 | `inputAbort`               | q        | String | Key for abort rebase with prompt |
 | `inputActionBreak`         | b        | String | Key for setting action to rebase |
 | `inputActionDrop`          | d        | String | Key for setting action to drop |
@@ -148,13 +169,8 @@ git config --global interactive-rebase-tool.foregroundColor black
 | `inputRebase`              | w        | String | Key for rebasing with confirmation |
 | `inputShowCommit`          | c        | String | Key for showing the selected commit |
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
-| `pickColor`                | green    | Color  | Color used for the pick action |
-| `rewordColor`              | yellow   | Color  | Color used for the reword action |
-| `selectedBackgroundColor`  | 35,35,40 | Color  | Color used as the background color for the selected line |
-| `squashColor`              | cyan     | Color  | Color used for the squash action |
-| `verticalSpacingCharacter` | ~        | String | Vertical spacing character. Can be set to an empty string. |
 
-#### Special Keys
+##### Special Keys
 
 | Key        | Description |
 | ---------- | ----------- |
@@ -164,15 +180,6 @@ git config --global interactive-rebase-tool.foregroundColor black
 | `Right`    | Right arrow key |
 | `Up`       | Up arrow key |
 | `PageUp`   | Page Up key |
-
-#### Valid Color Values
-
-The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are black, blue, cyan, green, magenta, red,
-white and yellow. Each terminal controls the exact color for these color names. On terminals that support 256 colors, a
-color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to 255 with
-`255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use
-the default terminal color.
-
 
 #### Configuring External Editor
 
