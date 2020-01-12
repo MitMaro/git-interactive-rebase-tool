@@ -10,8 +10,8 @@ Git 1.7.8+. Written in Rust using ncurses.
 
 ![Git Interactive Rebase Tool](/docs/assets/images/git-interactive-rebase-demo.gif?raw=true)
 
-**This is the documentation for version 1.2.0. For the previous release please use the
-[1.1.0 documentation](https://github.com/MitMaro/git-interactive-rebase-tool/tree/1.1.0/README.md).**
+**This is the documentation for the development build. For the current stable release please use the
+[1.2.x documentation](https://github.com/MitMaro/git-interactive-rebase-tool/tree/1.2.0/README.md).**
 
 ## Install
 
