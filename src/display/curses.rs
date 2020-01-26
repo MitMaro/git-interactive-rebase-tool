@@ -1,4 +1,6 @@
 use crate::display::color::Color;
+use crate::display::color_mode::ColorMode;
+use crate::display::utils::detect_color_mode;
 use pancurses::{
 	chtype,
 	Input,
@@ -12,14 +14,13 @@ use pancurses::{
 	COLOR_YELLOW,
 };
 use std::collections::HashMap;
-use std::env::var;
 
 pub(crate) struct Curses {
-	color_lookup: HashMap<(i16, i16, i16), i16>,
 	color_index: i16,
+	color_lookup: HashMap<(i16, i16, i16), i16>,
+	color_mode: ColorMode,
 	color_pair_index: i16,
 	window: pancurses::Window,
-	selected_line_enabled: bool,
 }
 
 impl Curses {
@@ -33,45 +34,151 @@ impl Curses {
 		let has_colors = pancurses::has_colors();
 		if has_colors {
 			pancurses::start_color();
+			pancurses::use_default_colors();
+
+			// pair zero should always be default
+			pancurses::init_pair(0, -1, -1);
 		}
-		pancurses::use_default_colors();
 
-		// pair zero should always be default
-		pancurses::init_pair(0, -1, -1);
-
-		let number_of_colors = pancurses::COLORS() as usize;
+		let color_mode = if has_colors {
+			detect_color_mode(pancurses::COLORS() as i16)
+		}
+		else {
+			ColorMode::TwoTone
+		};
 
 		Self {
+			color_index: 16, // we only create new colors in true color mode
 			window,
+			color_pair_index: 16, // skip the default color pairs
 			color_lookup: HashMap::new(),
-			color_index: 8,
-			color_pair_index: 1,
-			// Terminal.app on MacOS doesn't not properly support the color pairs needed for selected line
-			selected_line_enabled: number_of_colors > 16 && var("TERM_PROGRAM").unwrap_or_default() != "Apple_Terminal",
+			color_mode,
 		}
 	}
 
-	fn init_color(&mut self, color: Color) -> i16 {
+	fn init_color(&mut self, red: i16, green: i16, blue: i16) -> i16 {
+		match self.color_lookup.get(&(red, green, blue)) {
+			Some(index) => *index,
+			None => {
+				let index = self.color_index;
+				self.color_index += 1;
+				pancurses::init_color(
+					index,
+					// convert from 0-255 range to 0 - 1000
+					((f64::from(red) / 255.0) * 1000.0) as i16,
+					((f64::from(green) / 255.0) * 1000.0) as i16,
+					((f64::from(blue) / 255.0) * 1000.0) as i16,
+				);
+				self.color_lookup.insert((red, green, blue), index);
+				index
+			},
+		}
+	}
+
+	// Modified version from gyscos/cursive (https://github.com/gyscos/cursive)
+	// Copyright (c) 2015 Alexandre Bury - MIT License
+	fn find_color(&mut self, color: Color) -> i16 {
 		match color {
-			Color::Black => COLOR_BLACK,
-			Color::Blue => COLOR_BLUE,
-			Color::Cyan => COLOR_CYAN,
-			Color::Green => COLOR_GREEN,
-			Color::Magenta => COLOR_MAGENTA,
-			Color::Red => COLOR_RED,
-			Color::Yellow => COLOR_YELLOW,
-			Color::White => COLOR_WHITE,
 			Color::Default => -1,
-			Color::RGB { red, green, blue } => {
-				match self.color_lookup.get(&(red, green, blue)) {
-					Some(index) => *index,
-					None => {
-						pancurses::init_color(self.color_index, red, green, blue);
-						let index = self.color_index;
-						self.color_index += 1;
-						index
-					},
+			Color::LightBlack => COLOR_BLACK,
+			Color::LightBlue => COLOR_BLUE,
+			Color::LightCyan => COLOR_CYAN,
+			Color::LightGreen => COLOR_GREEN,
+			Color::LightMagenta => COLOR_MAGENTA,
+			Color::LightRed => COLOR_RED,
+			Color::LightYellow => COLOR_YELLOW,
+			Color::LightWhite => COLOR_WHITE,
+			// for dark colors, just the light color when there isn't deep enough color support
+			Color::DarkBlack => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_BLACK + 8
 				}
+				else {
+					COLOR_BLACK
+				}
+			},
+			Color::DarkBlue => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_BLUE + 8
+				}
+				else {
+					COLOR_BLUE
+				}
+			},
+			Color::DarkCyan => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_CYAN + 8
+				}
+				else {
+					COLOR_CYAN
+				}
+			},
+			Color::DarkGreen => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_GREEN + 8
+				}
+				else {
+					COLOR_GREEN
+				}
+			},
+			Color::DarkMagenta => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_MAGENTA + 8
+				}
+				else {
+					COLOR_MAGENTA
+				}
+			},
+			Color::DarkRed => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_RED + 8
+				}
+				else {
+					COLOR_RED
+				}
+			},
+			Color::DarkYellow => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_YELLOW + 8
+				}
+				else {
+					COLOR_YELLOW
+				}
+			},
+			Color::DarkWhite => {
+				if self.color_mode.has_minimum_four_bit_color() {
+					COLOR_WHITE + 8
+				}
+				else {
+					COLOR_WHITE
+				}
+			},
+			// for indexed colored we assume 8bit color
+			Color::Index(i) => i,
+			Color::RGB { red, green, blue } if self.color_mode.has_true_color() => self.init_color(red, green, blue),
+			Color::RGB { red, green, blue } if self.color_mode.has_minimum_four_bit_color() => {
+				// If red, green and blue are equal then we assume a grey scale color
+				// shades less than 8 should go to pure black, while shades greater than 247 should go to pure white
+				if red == green && green == blue && red >= 8 && red < 247 {
+					// The grayscale palette says the colors 232 + n are: (red = green = blue) = 8 + 10 * n
+					// With 0 <= n <= 23. This gives: (red - 8) / 10 = n
+					let n = (red - 8) / 10;
+					232 + n
+				}
+				else {
+					// Generic RGB
+					let r = 6 * red / 256;
+					let g = 6 * green / 256;
+					let b = 6 * blue / 256;
+					16 + 36 * r + 6 * g + b
+				}
+			},
+			Color::RGB { red, green, blue } => {
+				// Have to hack it down to 8 colors.
+				let r = if red > 127 { 1 } else { 0 };
+				let g = if green > 127 { 1 } else { 0 };
+				let b = if blue > 127 { 1 } else { 0 };
+				(r + 2 * g + 4 * b) as i16
 			},
 		}
 	}
@@ -79,7 +186,7 @@ impl Curses {
 	fn init_color_pair(&mut self, foreground: Color, background: Color) -> chtype {
 		let index = self.color_pair_index;
 		self.color_pair_index += 1;
-		pancurses::init_pair(index, self.init_color(foreground), self.init_color(background));
+		pancurses::init_pair(index, self.find_color(foreground), self.find_color(background));
 		// curses seems to init a pair for i16 but read with u64
 		pancurses::COLOR_PAIR(index as chtype)
 	}
@@ -92,7 +199,7 @@ impl Curses {
 	) -> (chtype, chtype)
 	{
 		let standard_pair = self.init_color_pair(foreground, background);
-		if self.selected_line_enabled {
+		if self.color_mode.has_minimum_four_bit_color() {
 			return (standard_pair, self.init_color_pair(foreground, selected_background));
 		}
 		// when there is not enough color pairs to support selected

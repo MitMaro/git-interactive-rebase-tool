@@ -18,7 +18,6 @@ pub(super) fn tolkenize(input: &str) -> Option<Vec<String>> {
 
 	let mut tokens = vec![];
 	for (i, c) in input.chars().enumerate() {
-		// 		eprintln!("'{}' '{}'", i, c);
 		match state {
 			State::Normal => {
 				if c == '\\' {
