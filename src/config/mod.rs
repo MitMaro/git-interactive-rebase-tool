@@ -4,7 +4,6 @@ mod utils;
 use crate::config::theme::Theme;
 use crate::config::utils::{editor_from_env, get_bool, get_color, get_input, get_string, open_git_config};
 use crate::display::color::Color;
-use std::convert::TryFrom;
 
 #[derive(Clone, Debug)]
 pub(crate) struct Config {
@@ -45,25 +44,29 @@ impl Config {
 		let git_config = open_git_config()?;
 		Ok(Config {
 			theme: Theme {
-				color_foreground: get_color(&git_config, "interactive-rebase-tool.foregroundColor", Color::White)?,
+				color_foreground: get_color(&git_config, "interactive-rebase-tool.foregroundColor", Color::Default)?,
 				color_background: get_color(&git_config, "interactive-rebase-tool.backgroundColor", Color::Default)?,
 				color_selected_background: get_color(
 					&git_config,
 					"interactive-rebase-tool.selectedBackgroundColor",
-					Color::try_from("35,35,40").unwrap(),
+					Color::Index(237),
 				)?,
-				color_indicator: get_color(&git_config, "interactive-rebase-tool.indicatorColor", Color::Cyan)?,
-				color_action_break: get_color(&git_config, "interactive-rebase-tool.breakColor", Color::White)?,
-				color_action_drop: get_color(&git_config, "interactive-rebase-tool.dropColor", Color::Red)?,
-				color_action_edit: get_color(&git_config, "interactive-rebase-tool.editColor", Color::Blue)?,
-				color_action_exec: get_color(&git_config, "interactive-rebase-tool.execColor", Color::White)?,
-				color_action_fixup: get_color(&git_config, "interactive-rebase-tool.fixupColor", Color::Magenta)?,
-				color_action_pick: get_color(&git_config, "interactive-rebase-tool.pickColor", Color::Green)?,
-				color_action_reword: get_color(&git_config, "interactive-rebase-tool.rewordColor", Color::Yellow)?,
-				color_action_squash: get_color(&git_config, "interactive-rebase-tool.squashColor", Color::Cyan)?,
-				color_diff_add: get_color(&git_config, "interactive-rebase-tool.diffAddColor", Color::Green)?,
-				color_diff_change: get_color(&git_config, "interactive-rebase-tool.diffChangeColor", Color::Yellow)?,
-				color_diff_remove: get_color(&git_config, "interactive-rebase-tool.diffRemoveColor", Color::Red)?,
+				color_indicator: get_color(&git_config, "interactive-rebase-tool.indicatorColor", Color::LightCyan)?,
+				color_action_break: get_color(&git_config, "interactive-rebase-tool.breakColor", Color::LightWhite)?,
+				color_action_drop: get_color(&git_config, "interactive-rebase-tool.dropColor", Color::LightRed)?,
+				color_action_edit: get_color(&git_config, "interactive-rebase-tool.editColor", Color::LightBlue)?,
+				color_action_exec: get_color(&git_config, "interactive-rebase-tool.execColor", Color::LightWhite)?,
+				color_action_fixup: get_color(&git_config, "interactive-rebase-tool.fixupColor", Color::LightMagenta)?,
+				color_action_pick: get_color(&git_config, "interactive-rebase-tool.pickColor", Color::LightGreen)?,
+				color_action_reword: get_color(&git_config, "interactive-rebase-tool.rewordColor", Color::LightYellow)?,
+				color_action_squash: get_color(&git_config, "interactive-rebase-tool.squashColor", Color::LightCyan)?,
+				color_diff_add: get_color(&git_config, "interactive-rebase-tool.diffAddColor", Color::LightGreen)?,
+				color_diff_change: get_color(
+					&git_config,
+					"interactive-rebase-tool.diffChangeColor",
+					Color::LightYellow,
+				)?,
+				color_diff_remove: get_color(&git_config, "interactive-rebase-tool.diffRemoveColor", Color::LightRed)?,
 				character_vertical_spacing: get_string(
 					&git_config,
 					"interactive-rebase-tool.verticalSpacingCharacter",

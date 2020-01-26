@@ -1,7 +1,9 @@
 pub(crate) mod color;
 mod color_manager;
+mod color_mode;
 pub(crate) mod curses;
 pub(crate) mod display_color;
+mod utils;
 
 use crate::config::Config;
 use crate::display::color_manager::ColorManager;
