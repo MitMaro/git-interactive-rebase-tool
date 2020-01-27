@@ -59,7 +59,7 @@ dependencies = [
 
 [[package]]
 name = "git-interactive-rebase-tool"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
