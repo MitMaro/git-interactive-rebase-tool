@@ -4,20 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.1] - 2020-01-26
+
+### Fixed
+- ANSI color support broken on MacOS ([#219](https://github.com/MitMaro/git-interactive-rebase-tool/issues/219)) 
+
 ## [1.2.0] - 2020-01-11
 
 ### Added
 - Support for 256-color terminals
-- Highlight of selected line(s) on 256-color terminals
-- Full support for external editor
+- Highlight of selected line(s) on 256-color terminals ([#148](https://github.com/MitMaro/git-interactive-rebase-tool/issues/148)
+- Full support for external editor ([#60](https://github.com/MitMaro/git-interactive-rebase-tool/issues/60))
 
 ### Fixed
-- Missing ncursesw dependency listing for deb build
-- Performance issue with show commit
-- Visual mode index error when changing action or swapping lines
+- Missing ncursesw dependency listing for deb build ([#170](https://github.com/MitMaro/git-interactive-rebase-tool/issues/170))
+- Performance issue with show commit ([#167](https://github.com/MitMaro/git-interactive-rebase-tool/issues/167))
+- Visual mode index error when changing action or swapping lines ([195](https://github.com/MitMaro/git-interactive-rebase-tool/issues/195)))
 - Fixed crash with scrolling to max length
-- A empty rebase file now returns a zero exit code
-- External editing loop when an external editor returns an empty file
+- A empty rebase file now returns a zero exit code ([#197](https://github.com/MitMaro/git-interactive-rebase-tool/issues/197))
+- External editing loop when an external editor returns an empty file ([#196](https://github.com/MitMaro/git-interactive-rebase-tool/issues/196))
 
 ### Removed
 - Unused `errorColor` configuration
@@ -105,7 +110,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.1...HEAD
+[1.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/0.7.0...1.0.0
