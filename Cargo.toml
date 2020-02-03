@@ -47,6 +47,9 @@ version = "0.7.2"
 default-features = false
 features = []
 
+[dev-dependencies]
+serial_test = "*"
+
 [features]
 default = []
 nightly = []

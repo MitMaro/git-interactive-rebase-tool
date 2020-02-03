@@ -10,7 +10,7 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
       - name: Test
-        run: cargo test -- --test-threads=1
+        run: cargo test --
       - name: Build
         run: cargo build --release
       - name: Test Run
@@ -30,7 +30,7 @@ jobs:
         with:
           toolchain: stable
       - name: Test
-        run: cargo test -- --test-threads=1
+        run: cargo test --
       - name: Build
         run: cargo build --release
       - name: Test Run
@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Test
-        run: cargo test --target x86_64-pc-windows-msvc --release -- --test-threads=1
+        run: cargo test --target x86_64-pc-windows-msvc --release --
       - name: Build
         run: cargo build --target x86_64-pc-windows-msvc --release
       - name: Test Run

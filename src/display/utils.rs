@@ -69,6 +69,7 @@ mod tests {
 mod tests {
 	use crate::display::color_mode::ColorMode;
 	use crate::display::utils::detect_color_mode;
+	use serial_test::serial;
 	use std::env::{remove_var, set_var};
 
 	fn clear_env() {
@@ -79,54 +80,63 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_2_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(2), ColorMode::TwoTone);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_8_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(8), ColorMode::ThreeBit);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_less_8_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(7), ColorMode::TwoTone);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_16_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(16), ColorMode::FourBit);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_less_16_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(15), ColorMode::ThreeBit);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_256_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(256), ColorMode::EightBit);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_less_256_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(255), ColorMode::FourBit);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_no_env_more_256_colors() {
 		clear_env();
 		assert_eq!(detect_color_mode(257), ColorMode::EightBit);
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_term_env_no_256() {
 		clear_env();
 		set_var("TERM", "XTERM");
@@ -134,6 +144,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_term_env_with_256() {
 		clear_env();
 		set_var("TERM", "XTERM-256");
@@ -141,6 +152,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_term_program_env_apple_terminal() {
 		clear_env();
 		set_var("TERM_PROGRAM", "Apple_Terminal");
@@ -148,6 +160,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_term_program_env_iterm() {
 		clear_env();
 		set_var("TERM_PROGRAM", "iTerm.app");
@@ -155,6 +168,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_term_program_env_other() {
 		clear_env();
 		set_var("TERM_PROGRAM", "other");
@@ -162,6 +176,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_vte_version_0_36_00() {
 		clear_env();
 		set_var("VTE_VERSION", "3600");
@@ -169,6 +184,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_vte_version_greater_0_36_00() {
 		clear_env();
 		set_var("VTE_VERSION", "3601");
@@ -176,6 +192,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_vte_version_less_0_36_00() {
 		clear_env();
 		set_var("VTE_VERSION", "1");
@@ -183,12 +200,14 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_vte_version_0() {
 		clear_env();
 		set_var("VTE_VERSION", "0");
 		assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
 	}
 	#[test]
+	#[serial]
 	fn detect_color_mode_vte_version_invalid() {
 		clear_env();
 		set_var("VTE_VERSION", "invalid");
@@ -196,6 +215,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_colorterm_env_is_truecolor() {
 		clear_env();
 		set_var("COLORTERM", "truecolor");
@@ -203,6 +223,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_colorterm_env_is_24bit() {
 		clear_env();
 		set_var("COLORTERM", "24bit");
@@ -210,6 +231,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn detect_color_mode_colorterm_env_is_other() {
 		clear_env();
 		set_var("COLORTERM", "other");
