@@ -23,7 +23,7 @@ install:
 
 test_script:
   - if [%APPVEYOR_REPO_TAG%]==[false] (
-      cargo test --target x86_64-pc-windows-msvc -- --test-threads=1 &&
+      cargo test --target x86_64-pc-windows-msvc -- &&
       cargo run --target x86_64-pc-windows-msvc --release -- --version
     )
 

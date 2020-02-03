@@ -83,6 +83,7 @@ mod tests {
 	// we test what is possible
 	use crate::commit::utils::load_commit_state;
 	use git2::Delta;
+	use serial_test::serial;
 	use std::env::set_var;
 	use std::path::Path;
 
@@ -99,6 +100,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_hash() {
 		set_git_dir("simple");
 		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
@@ -106,6 +108,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_author() {
 		set_git_dir("simple");
 		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
@@ -113,6 +116,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_date() {
 		set_git_dir("simple");
 		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
@@ -120,6 +124,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_body() {
 		set_git_dir("simple");
 		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
@@ -130,6 +135,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_committer_match_author() {
 		set_git_dir("simple");
 		let commit = load_commit_state("ac950e31a96660e55d8034948b5d9b985c97692d").unwrap();
@@ -137,6 +143,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_committer_not_match_author() {
 		set_git_dir("simple");
 		let commit = load_commit_state("2836dcdcbd040f9157652dd3db0d584a44d4793d").unwrap();
@@ -147,6 +154,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_modified_file() {
 		set_git_dir("simple");
 		let commit = load_commit_state("1cc0456637cb220155e957c641f483e60724c581").unwrap();
@@ -157,6 +165,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_added_file() {
 		set_git_dir("simple");
 		let commit = load_commit_state("c1ac7f2c32f9e00012f409572d223c9457ae497b").unwrap();
@@ -167,6 +176,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_deleted_file() {
 		set_git_dir("simple");
 		let commit = load_commit_state("d85479638307e4db37e1f1f2c3c807f7ff36a0ff").unwrap();
@@ -177,6 +187,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_renamed_file() {
 		set_git_dir("simple");
 		let commit = load_commit_state("aed0fd1db3e73c0e568677ae8903a11c5fbc5659").unwrap();
@@ -188,6 +199,7 @@ mod tests {
 	}
 
 	#[test]
+	#[serial]
 	fn commit_utils_load_commit_state_load_copied_file() {
 		set_git_dir("simple");
 		let commit = load_commit_state("c028f42bdb2a5a9f80adea23d95eb240b994a6c2").unwrap();
