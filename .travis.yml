@@ -22,8 +22,6 @@ before_script:
 script: echo "Skip"
 
 jobs:
-  allow_failures:
-    - rust: nightly
   include:
     - stage: build-linux
       rust: stable
@@ -40,22 +38,7 @@ jobs:
           tags: true
         provider: releases
         skip_cleanup: true
-    - stage: build-deb
-      rust: stable
-      os: linux
-      if: tag IS present
-      before_script: cargo install --force cargo-deb
-      script: "./scripts/build-deb.bash"
-      deploy:
-        api_key:
-          secure: "Kw8h+UisU2k1VBFLc3MqeQMy1Rp0icIEgzSW/BuYYY+xg7p0vQiip2btD6pV5zzVAcL6BrnHiEIksY1M5lc/pKyoy4uYyPFHE6Mfwofcf/3MUpqTzBygd95saiCehQW0RBWzgoYtDbLgyUohywFVxLrckHVLXspwG+8CAvEL5YQNlBAkMQB0I+9j+8/WCSxAKA9hRqvdBRxzn9Fu9goxlYrSnSbQmkeCc3xTnK8o3xXuVwRkvsyKnlQHTQ8nTmbJe3K5FR02UFSDBMe8EYrXntszF3ZQibxrJHT6xutw1ZfIOPJCNOotMhLBnXEXEhPvbfBH3ejUM24VbHB8wmGl+OFQGqHLhr7nSyHK5ObbtSrsa9NHJQGIXPi5lIq3o0+Nq8ZzRc1GbFEi+9Uw0YsRjgL35ASdAOhdplNpOhYPK+MPqPoInbCs9NLPLkcfR7OQefk4WLUrAAVMro6Q6dewBN6u+8ebOuz7OHYgAHoP+Cm3z8SNafqRbwT+jeeYLPkR3T6TmriL4Og3tqnMBGULCwj0Ui/NqmKXU9UDkY8LTKDRoGk05sHxSRzfjchUfmwgn3xcSZAWGf2grskB2WLKRcvTeG+j4GUIoVVyDmF2qZ25wh/vBAwX1k4Y6wlvXdqcL3A94Vy4SXF9vY0y+NH5Nsfd3m0PksYRG4wc1bVKqQ8="
-        file_glob: true
-        file: target/debian/git-interactive-rebase-tool*.deb
-        on:
-          condition: $TRAVIS_RUST_VERSION = stable
-          tags: true
-        provider: releases
-        skip_cleanup: true
+
     - stage: build-macos
       rust: stable
       os: osx
@@ -71,12 +54,14 @@ jobs:
           tags: true
         provider: releases
         skip_cleanup: true
+
     - stage: debian-latest-push
       rust: stable
       os: linux
       if: branch = master && type != pull_request
       before_script: cargo install --force cargo-deb
       script: "OS=debian ./scripts/push-latest-release.bash &>/dev/null"
+
     - stage: macos-latest-push
       rust: stable
       os: osx
