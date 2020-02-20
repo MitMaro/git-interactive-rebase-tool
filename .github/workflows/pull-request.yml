@@ -6,7 +6,7 @@ jobs:
   linux:
     runs-on: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Install dependencies
         run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
       - name: Test
@@ -23,7 +23,7 @@ jobs:
     name: MacOS
     runs-on: [macos]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       # Install Rust until actions/virtual-environments#6 is resolved
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -39,7 +39,7 @@ jobs:
     name: Windows Test
     runs-on: [windows-latest]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Test
         run: cargo test --target x86_64-pc-windows-msvc --release --
       - name: Build

@@ -1,0 +1,58 @@
+name: Release Latest
+
+on:
+    push:
+        branches:
+            - master
+jobs:
+  ubuntu:
+    name: Ubuntu
+    runs-on: [ubuntu-latest]
+    env:
+        TARGET_RELEASE_ID: 18843342
+        GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        REPOSITORY: "MitMaro/git-interactive-rebase-tool"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: "System Setup"
+        run: |
+            sudo apt-get update;
+            sudo apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
+            cargo install --force cargo-deb
+      - name: "Build Deb"
+        run: cargo +stable deb --output "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb"
+      - name: Upload
+        env:
+            FILE_PATH: "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb"
+            ASSET_NAME: git-interactive-rebase-tool-ubuntu_amd64.deb
+            CONTENT_TYPE: "application/vnd.debian.binary-package"
+        run: "./.github/scripts/push-latest-release.bash"
+      - name: "Update Tag and Title"
+        env:
+            DEFAULT_BRANCH: "master"
+        run: "./.github/scripts/update-tag.bash"
+  macos:
+    name: MacOS
+    runs-on: [macos]
+    env:
+        TARGET_RELEASE_ID: 18843342
+        GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        REPOSITORY: "MitMaro/git-interactive-rebase-tool"
+    steps:
+        - uses: actions/checkout@v2
+        - name: Install Rust
+          uses: actions-rs/toolchain@v1
+          with:
+              toolchain: stable
+        - name: "Build"
+          run: cargo build --release
+        - name: Upload
+          env:
+              FILE_PATH: "target/release/interactive-rebase-tool"
+              ASSET_NAME: macos-interactive-rebase-tool
+              CONTENT_TYPE: "application/x-mach-binary"
+          run: "./.github/scripts/push-latest-release.bash"
