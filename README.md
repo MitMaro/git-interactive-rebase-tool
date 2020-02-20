@@ -1,6 +1,4 @@
 [![Crates.io](https://img.shields.io/crates/v/git-interactive-rebase-tool.svg)][crates-io]
-[![Build Status](https://travis-ci.org/MitMaro/git-interactive-rebase-tool.svg?branch=master)][travis-build]
-[![Build status](https://ci.appveyor.com/api/projects/status/3a6j6n4o5x6aa763/branch/master?svg=true)][appveyor-build]
 [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)][license]
 
 # Git Interactive Rebase Tool

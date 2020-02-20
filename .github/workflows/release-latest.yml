@@ -20,7 +20,7 @@ jobs:
           toolchain: stable
       - name: "System Setup"
         run: |
-            sudo apt-get update;
+            sudo apt-get update || true;
             sudo apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
             cargo install --force cargo-deb
       - name: "Build Deb"
