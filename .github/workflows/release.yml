@@ -1,0 +1,107 @@
+name: Release Packages
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    build-ubuntu:
+        strategy:
+            matrix:
+                version: ['14.04', '16.04', '18.04', '19.10', '20.04']
+        runs-on: ubuntu-latest
+        container:
+            image: 'docker://ubuntu:${{ matrix.version }}'
+        steps:
+            - name: "Get Tag Name"
+              id: ref
+              shell: bash
+              run: |
+                  ref="${{ github.ref }}";
+                  ref="${ref//refs\/heads\//}";
+                  ref="${ref//refs\/tags\//}";
+                  ref="${ref//master/dev}";
+                  echo "$ref";
+                  echo "::set-output name=name::$ref"
+            - name: "Checkout project"
+              uses: actions/checkout@v2
+            - name: "System Setup"
+              run: |
+                  apt-get update;
+                  apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
+                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs  | sh -s -- --default-toolchain stable -y;
+                  $HOME/.cargo/bin/cargo install --force cargo-deb
+            - name: "Build Deb"
+              run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-ubuntu-${{ matrix.version }}_amd64.deb"
+            - name: "Upload Release"
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      target/debian/*.deb
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    build-debian:
+        strategy:
+            matrix:
+                version: ['8', '9', '10', 'bullseye', 'sid']
+        runs-on: ubuntu-latest
+        container:
+            image: 'docker://debian:${{ matrix.version }}-slim'
+        steps:
+            - name: "Get Tag Name"
+              id: ref
+              shell: bash
+              run: |
+                  ref="${{ github.ref }}";
+                  ref="${ref//refs\/heads\//}";
+                  ref="${ref//refs\/tags\//}";
+                  ref="${ref//master/dev}";
+                  echo "$ref";
+                  echo "::set-output name=name::$ref"
+            - name: "Checkout project"
+              uses: actions/checkout@v2
+            - name: "System Setup"
+              run: |
+                  apt-get update;
+                  apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
+                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs  | sh -s -- --default-toolchain stable -y;
+                  $HOME/.cargo/bin/cargo install --force cargo-deb
+            - name: "Build Deb"
+              run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-debian-${{ matrix.version }}_amd64.deb"
+            - name: "Upload Release"
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      target/debian/*.deb
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    build-macos:
+        runs-on: [macos]
+        steps:
+            - name: "Checkout project"
+              uses: actions/checkout@v2
+            - name: "Build"
+              run: "cargo build --release"
+            - name: "Rename"
+              run: "cp target/release/interactive-rebase-tool target/release/macos-interactive-rebase-tool"
+            - name: "Upload Release"
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: target/release/macos-interactive-rebase-tool
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    build-windows:
+        runs-on: [windows-latest]
+        steps:
+            - name: "Checkout project"
+              uses: actions/checkout@v2
+            - name: "Build"
+              run: "cargo rustc --target x86_64-pc-windows-msvc --release --bin interactive-rebase-tool -- -C lto"
+            - name: "Upload Release"
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: target\x86_64-pc-windows-msvc\release\interactive-rebase-tool.exe
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
