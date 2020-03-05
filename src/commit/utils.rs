@@ -1,8 +1,9 @@
 use crate::commit::file_stat::FileStat;
+use crate::commit::status::Status;
 use crate::commit::user::User;
 use crate::commit::Commit;
 use chrono::{Local, TimeZone};
-use git2::{Delta, DiffFindOptions, DiffOptions, Error, Repository};
+use git2::{DiffFindOptions, DiffOptions, Error, Repository};
 
 /// Load commit information from a commit hash.
 pub(super) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
@@ -44,7 +45,7 @@ pub(super) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 		0 => None,
 		_ => {
 			let mut diff = repo.diff_tree_to_tree(
-				// parent exists from check aboe
+				// parent exists from check above
 				Some(&commit.parent(0)?.tree()?),
 				Some(&commit.tree()?),
 				Some(diff_options),
@@ -55,6 +56,7 @@ pub(super) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 			// filter unmodified isn't being correctly removed
 			Some(
 				diff.deltas()
+					.filter(|d| d.status() != git2::Delta::Unmodified)
 					.map(|d| {
 						FileStat::new(
 							d.old_file()
@@ -65,10 +67,9 @@ pub(super) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 								.path()
 								.map(|p| String::from(p.to_str().unwrap()))
 								.unwrap_or_else(|| String::from("unknown")),
-							d.status(),
+							Status::new_from_git_delta(d.status()),
 						)
 					})
-					.filter(|d| *d.get_status() != Delta::Unmodified)
 					.collect::<Vec<FileStat>>(),
 			)
 		},
@@ -81,8 +82,8 @@ pub(super) fn load_commit_state(hash: &str) -> Result<Commit, Error> {
 mod tests {
 	// some of this file is difficult to test because it would require a non-standard git repo, so
 	// we test what is possible
+	use crate::commit::status::Status;
 	use crate::commit::utils::load_commit_state;
-	use git2::Delta;
 	use serial_test::serial;
 	use std::env::set_var;
 	use std::path::Path;
@@ -160,7 +161,7 @@ mod tests {
 		let commit = load_commit_state("1cc0456637cb220155e957c641f483e60724c581").unwrap();
 		let file_stat = commit.get_file_stats().as_ref().unwrap().first().unwrap();
 		// 		file_stat.get_status()
-		assert_eq!(*file_stat.get_status(), Delta::Modified);
+		assert_eq!(*file_stat.get_status(), Status::Modified);
 		assert_eq!(file_stat.get_from_name(), "a");
 	}
 
@@ -171,7 +172,7 @@ mod tests {
 		let commit = load_commit_state("c1ac7f2c32f9e00012f409572d223c9457ae497b").unwrap();
 		let file_stat = commit.get_file_stats().as_ref().unwrap().first().unwrap();
 		// 		file_stat.get_status()
-		assert_eq!(*file_stat.get_status(), Delta::Added);
+		assert_eq!(*file_stat.get_status(), Status::Added);
 		assert_eq!(file_stat.get_from_name(), "e");
 	}
 
@@ -182,7 +183,7 @@ mod tests {
 		let commit = load_commit_state("d85479638307e4db37e1f1f2c3c807f7ff36a0ff").unwrap();
 		let file_stat = commit.get_file_stats().as_ref().unwrap().first().unwrap();
 		// 		file_stat.get_status()
-		assert_eq!(*file_stat.get_status(), Delta::Deleted);
+		assert_eq!(*file_stat.get_status(), Status::Deleted);
 		assert_eq!(file_stat.get_from_name(), "b");
 	}
 
@@ -193,7 +194,7 @@ mod tests {
 		let commit = load_commit_state("aed0fd1db3e73c0e568677ae8903a11c5fbc5659").unwrap();
 		let file_stat = commit.get_file_stats().as_ref().unwrap().first().unwrap();
 		// 		file_stat.get_status()
-		assert_eq!(*file_stat.get_status(), Delta::Renamed);
+		assert_eq!(*file_stat.get_status(), Status::Renamed);
 		assert_eq!(file_stat.get_from_name(), "c");
 		assert_eq!(file_stat.get_to_name(), "f");
 	}
@@ -205,7 +206,7 @@ mod tests {
 		let commit = load_commit_state("c028f42bdb2a5a9f80adea23d95eb240b994a6c2").unwrap();
 		let file_stat = commit.get_file_stats().as_ref().unwrap().first().unwrap();
 		// 		file_stat.get_status()
-		assert_eq!(*file_stat.get_status(), Delta::Copied);
+		assert_eq!(*file_stat.get_status(), Status::Copied);
 		assert_eq!(file_stat.get_from_name(), "d");
 		assert_eq!(file_stat.get_to_name(), "g");
 	}

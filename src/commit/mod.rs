@@ -1,4 +1,5 @@
 mod file_stat;
+pub(crate) mod status;
 mod user;
 mod utils;
 
