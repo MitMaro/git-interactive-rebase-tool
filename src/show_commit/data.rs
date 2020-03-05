@@ -121,7 +121,7 @@ impl Data {
 						let stat_to_name = stat.get_to_name();
 						let stat_from_name = stat.get_from_name();
 						let stat_view_line = ViewLine::new(get_stat_item_segments(
-							*stat.get_status(),
+							stat.get_status(),
 							stat_to_name.as_str(),
 							stat_from_name.as_str(),
 							is_full_width,

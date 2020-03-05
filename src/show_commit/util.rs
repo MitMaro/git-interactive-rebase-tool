@@ -1,81 +1,66 @@
+use crate::commit::status::Status;
 use crate::display::display_color::DisplayColor;
 use crate::view::line_segment::LineSegment;
-use git2::Delta;
 
-pub(super) fn get_file_stat_color(status: Delta) -> DisplayColor {
+pub(super) fn get_file_stat_color(status: &Status) -> DisplayColor {
 	match status {
-		Delta::Added => DisplayColor::DiffAddColor,
-		Delta::Copied => DisplayColor::DiffAddColor,
-		Delta::Deleted => DisplayColor::DiffRemoveColor,
-		Delta::Modified => DisplayColor::DiffChangeColor,
-		Delta::Renamed => DisplayColor::DiffChangeColor,
-		Delta::Typechange => DisplayColor::DiffChangeColor,
-
-		// these should never happen in a rebase
-		Delta::Conflicted => DisplayColor::Normal,
-		Delta::Ignored => DisplayColor::Normal,
-		Delta::Unmodified => DisplayColor::Normal,
-		Delta::Unreadable => DisplayColor::Normal,
-		Delta::Untracked => DisplayColor::Normal,
+		Status::Added => DisplayColor::DiffAddColor,
+		Status::Copied => DisplayColor::DiffAddColor,
+		Status::Deleted => DisplayColor::DiffRemoveColor,
+		Status::Modified => DisplayColor::DiffChangeColor,
+		Status::Renamed => DisplayColor::DiffChangeColor,
+		Status::Typechange => DisplayColor::DiffChangeColor,
+		// this should never happen in a rebase
+		Status::Other => DisplayColor::Normal,
 	}
 }
 
-pub(super) fn get_file_stat_abbreviated(status: Delta) -> String {
+pub(super) fn get_file_stat_abbreviated(status: &Status) -> String {
 	match status {
-		Delta::Added => String::from("A "),
-		Delta::Copied => String::from("C "),
-		Delta::Deleted => String::from("D "),
-		Delta::Modified => String::from("M "),
-		Delta::Renamed => String::from("R "),
-		Delta::Typechange => String::from("T "),
-
-		// these should never happen in a rebase
-		Delta::Conflicted => String::from("X "),
-		Delta::Ignored => String::from("X "),
-		Delta::Unmodified => String::from("X "),
-		Delta::Unreadable => String::from("X "),
-		Delta::Untracked => String::from("X "),
+		Status::Added => String::from("A "),
+		Status::Copied => String::from("C "),
+		Status::Deleted => String::from("D "),
+		Status::Modified => String::from("M "),
+		Status::Renamed => String::from("R "),
+		Status::Typechange => String::from("T "),
+		// this should never happen in a rebase
+		Status::Other => String::from("X "),
 	}
 }
 
-pub(super) fn get_file_stat_long(status: Delta) -> String {
+pub(super) fn get_file_stat_long(status: &Status) -> String {
 	match status {
-		Delta::Added => format!("{:>8}: ", "added"),
-		Delta::Copied => format!("{:>8}: ", "copied"),
-		Delta::Deleted => format!("{:>8}: ", "deleted"),
-		Delta::Modified => format!("{:>8}: ", "modified"),
-		Delta::Renamed => format!("{:>8}: ", "renamed"),
-		Delta::Typechange => format!("{:>8}: ", "changed"),
-
-		// these should never happen in a rebase
-		Delta::Conflicted => format!("{:>8}: ", "unknown"),
-		Delta::Ignored => format!("{:>8}: ", "unknown"),
-		Delta::Unmodified => format!("{:>8}: ", "unknown"),
-		Delta::Unreadable => format!("{:>8}: ", "unknown"),
-		Delta::Untracked => format!("{:>8}: ", "unknown"),
+		Status::Added => format!("{:>8}: ", "added"),
+		Status::Copied => format!("{:>8}: ", "copied"),
+		Status::Deleted => format!("{:>8}: ", "deleted"),
+		Status::Modified => format!("{:>8}: ", "modified"),
+		Status::Renamed => format!("{:>8}: ", "renamed"),
+		Status::Typechange => format!("{:>8}: ", "changed"),
+		// this should never happen in a rebase
+		Status::Other => format!("{:>8}: ", "unknown"),
 	}
 }
 
 pub(super) fn get_stat_item_segments(
-	status: Delta,
+	status: &Status,
 	to_name: &str,
 	from_name: &str,
 	is_full_width: bool,
 ) -> Vec<LineSegment>
 {
 	let status_name = if is_full_width {
-		get_file_stat_long(status)
+		get_file_stat_long(&status)
 	}
 	else {
-		get_file_stat_abbreviated(status)
+		get_file_stat_abbreviated(&status)
 	};
 
-	let color = get_file_stat_color(status);
+	let color = get_file_stat_color(&status);
 
 	let to_file_indicator = if is_full_width { " -> " } else { ">" };
 
 	match status {
-		Delta::Copied => {
+		Status::Copied => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
 				LineSegment::new_with_color(to_name, DisplayColor::Normal),
@@ -83,7 +68,7 @@ pub(super) fn get_stat_item_segments(
 				LineSegment::new_with_color(from_name, DisplayColor::DiffAddColor),
 			]
 		},
-		Delta::Renamed => {
+		Status::Renamed => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
 				LineSegment::new_with_color(to_name, DisplayColor::DiffRemoveColor),

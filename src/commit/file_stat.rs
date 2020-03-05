@@ -1,9 +1,9 @@
-use git2::Delta;
+use crate::commit::status::Status;
 
 /// Represents a file change within a Git repository
 #[derive(Debug, PartialEq)]
 pub(crate) struct FileStat {
-	status: Delta,
+	status: Status,
 	to_name: String,
 	from_name: String,
 }
@@ -13,7 +13,7 @@ impl FileStat {
 	///
 	/// The `from_name` should be the source file name, the `to_name` the destination file name.
 	/// When the file change is not a copy or rename, `from_name` and `to_name` should be equal.
-	pub(super) fn new(from_name: String, to_name: String, status: Delta) -> Self {
+	pub(super) fn new(from_name: String, to_name: String, status: Status) -> Self {
 		FileStat {
 			status,
 			to_name,
@@ -22,7 +22,7 @@ impl FileStat {
 	}
 
 	/// Get the status of this file change
-	pub(crate) fn get_status(&self) -> &Delta {
+	pub(crate) fn get_status(&self) -> &Status {
 		&self.status
 	}
 
@@ -40,12 +40,12 @@ impl FileStat {
 #[cfg(test)]
 mod tests {
 	use crate::commit::file_stat::FileStat;
-	use git2::Delta;
+	use crate::commit::status::Status;
 
 	#[test]
 	fn commit_user_file_stat() {
-		let file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Delta::Renamed);
-		assert_eq!(*file_stat.get_status(), Delta::Renamed);
+		let file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Status::Renamed);
+		assert_eq!(*file_stat.get_status(), Status::Renamed);
 		assert_eq!(file_stat.get_from_name(), "/from/path");
 		assert_eq!(file_stat.get_to_name(), "/to/path");
 	}
