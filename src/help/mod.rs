@@ -64,6 +64,12 @@ impl<'h> ProcessModule for Help<'h> {
 			Input::MoveCursorUp => {
 				self.scroll_position.scroll_up(view_height, self.get_help_lines().len());
 			},
+			Input::MoveCursorPageDown => {
+				self.scroll_position.page_down(view_height, self.get_help_lines().len());
+			},
+			Input::MoveCursorPageUp => {
+				self.scroll_position.page_up(view_height, self.get_help_lines().len());
+			},
 			Input::Resize => {
 				self.scroll_position.reset();
 			},
@@ -121,7 +127,7 @@ impl<'h> Help<'h> {
 			normal_mode_help_lines,
 			normal_mode_max_help_line_length,
 			return_state: State::List(false),
-			scroll_position: ScrollPosition::new(3, 6, 3),
+			scroll_position: ScrollPosition::new(3),
 			visual_mode_help_lines,
 			visual_mode_max_help_line_length,
 		}

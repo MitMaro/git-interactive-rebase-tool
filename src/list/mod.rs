@@ -165,7 +165,7 @@ impl<'l> List<'l> {
 			config,
 			normal_footer_compact: get_normal_footer_compact(config),
 			normal_footer_full: get_normal_footer_full(config),
-			scroll_position: ScrollPosition::new(2, 1, 1),
+			scroll_position: ScrollPosition::new(2),
 			state: ListState::Normal,
 			visual_footer_compact: get_visual_footer_compact(config),
 			visual_footer_full: get_visual_footer_full(config),
@@ -188,7 +188,7 @@ impl<'l> List<'l> {
 	{
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
-		let (view_width, _) = view.get_view_size();
+		let (view_width, view_height) = view.get_view_size();
 		match input {
 			Input::Help => {
 				result = result.help(State::List(false));
@@ -239,8 +239,8 @@ impl<'l> List<'l> {
 			},
 			Input::MoveCursorDown => git_interactive.move_cursor_down(1),
 			Input::MoveCursorUp => git_interactive.move_cursor_up(1),
-			Input::MoveCursorPageDown => git_interactive.move_cursor_down(5),
-			Input::MoveCursorPageUp => git_interactive.move_cursor_up(5),
+			Input::MoveCursorPageDown => git_interactive.move_cursor_down(view_height / 2),
+			Input::MoveCursorPageUp => git_interactive.move_cursor_up(view_height / 2),
 			Input::ToggleVisualMode => {
 				git_interactive.start_visual_mode();
 				self.state = ListState::Visual;
@@ -261,7 +261,7 @@ impl<'l> List<'l> {
 	{
 		let input = input_handler.get_input();
 		let mut result = HandleInputResultBuilder::new(input);
-		let (view_width, _) = view.get_view_size();
+		let (view_width, view_height) = view.get_view_size();
 		match input {
 			Input::Help => {
 				result = result.help(State::List(true));
@@ -298,10 +298,10 @@ impl<'l> List<'l> {
 				git_interactive.move_cursor_up(1);
 			},
 			Input::MoveCursorPageDown => {
-				git_interactive.move_cursor_down(5);
+				git_interactive.move_cursor_down(view_height / 2);
 			},
 			Input::MoveCursorPageUp => {
-				git_interactive.move_cursor_up(5);
+				git_interactive.move_cursor_up(view_height / 2);
 			},
 			Input::ActionDrop => git_interactive.set_visual_range_action(Action::Drop),
 			Input::ActionEdit => git_interactive.set_visual_range_action(Action::Edit),
