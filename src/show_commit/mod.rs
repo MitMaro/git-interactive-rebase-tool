@@ -75,6 +75,14 @@ impl ProcessModule for ShowCommit {
 				self.scroll_position
 					.scroll_up(view_height, self.get_commit_stats_length())
 			},
+			Input::MoveCursorPageDown => {
+				self.scroll_position
+					.page_down(view_height, self.get_commit_stats_length())
+			},
+			Input::MoveCursorPageUp => {
+				self.scroll_position
+					.page_up(view_height, self.get_commit_stats_length())
+			},
 			Input::Resize => {
 				self.scroll_position
 					.scroll_up(view_height, self.get_commit_stats_length());
@@ -117,7 +125,7 @@ impl ShowCommit {
 		Self {
 			commit: None,
 			data: Data::new(),
-			scroll_position: ScrollPosition::new(3, 6, 3),
+			scroll_position: ScrollPosition::new(3),
 		}
 	}
 

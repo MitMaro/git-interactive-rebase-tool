@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] - 2020-03-14
+
+### Added
+- Added page up and down to help view
+- Added page up and down to show commit
+
+### Changed
+- Change page up and page down to scroll half the height of the view area
+
 ## [1.2.1] - 2020-01-26
 
 ### Fixed
