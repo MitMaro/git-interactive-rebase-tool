@@ -8,7 +8,7 @@ use crate::help::utils::{
 	get_list_visual_mode_help_lines,
 	get_max_help_description_length,
 };
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
@@ -46,7 +46,7 @@ impl<'h> ProcessModule for Help<'h> {
 	) -> HandleInputResult
 	{
 		let (view_width, view_height) = view.get_view_size();
-		let input = input_handler.get_input();
+		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::MoveCursorLeft => {

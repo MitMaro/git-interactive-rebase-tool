@@ -6,7 +6,7 @@ use crate::config::Config;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::action::Action;
 use crate::list::line::Line;
@@ -186,7 +186,7 @@ impl<'l> List<'l> {
 		view: &View,
 	) -> HandleInputResult
 	{
-		let input = input_handler.get_input();
+		let input = input_handler.get_input(InputMode::List);
 		let mut result = HandleInputResultBuilder::new(input);
 		let (view_width, view_height) = view.get_view_size();
 		match input {
@@ -259,7 +259,7 @@ impl<'l> List<'l> {
 		view: &View,
 	) -> HandleInputResult
 	{
-		let input = input_handler.get_input();
+		let input = input_handler.get_input(InputMode::List);
 		let mut result = HandleInputResultBuilder::new(input);
 		let (view_width, view_height) = view.get_view_size();
 		match input {

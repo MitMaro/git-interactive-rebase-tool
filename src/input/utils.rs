@@ -10,6 +10,9 @@ pub(super) fn curses_input_to_string(input: Input) -> String {
 		Input::KeyPPage => String::from("PageUp"),
 		Input::KeyNPage => String::from("PageDown"),
 		Input::KeyResize => String::from("Resize"),
+		Input::KeyEnter => String::from("Enter"),
+		Input::KeyBackspace => String::from("Backspace"),
+		Input::KeyDC => String::from("Delete"),
 		_ => String::from("Other"),
 	}
 }

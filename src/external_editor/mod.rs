@@ -4,7 +4,7 @@ use crate::config::Config;
 use crate::display::Display;
 use crate::external_editor::argument_tolkenizer::tolkenize;
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
@@ -158,7 +158,7 @@ impl<'e> ExternalEditor<'e> {
 	}
 
 	fn handle_input_active(&self, input_handler: &InputHandler) -> HandleInputResult {
-		let input = input_handler.get_input();
+		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::Resize => {},
@@ -170,7 +170,7 @@ impl<'e> ExternalEditor<'e> {
 	}
 
 	fn handle_input_empty(&mut self, input_handler: &InputHandler) -> HandleInputResult {
-		let input = input_handler.get_confirm();
+		let input = input_handler.get_input(InputMode::Confirm);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::Yes => {

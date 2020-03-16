@@ -1,5 +1,5 @@
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
@@ -17,7 +17,7 @@ impl ProcessModule for ConfirmRebase {
 		_view: &View,
 	) -> HandleInputResult
 	{
-		let input = input_handler.get_confirm();
+		let input = input_handler.get_input(InputMode::Confirm);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::Yes => {
