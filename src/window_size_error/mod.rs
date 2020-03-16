@@ -8,7 +8,7 @@ use crate::constants::{
 };
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::process::handle_input_result::HandleInputResult;
 use crate::process::process_module::ProcessModule;
 use crate::view::View;
@@ -23,7 +23,7 @@ impl ProcessModule for WindowSizeError {
 		_view: &View,
 	) -> HandleInputResult
 	{
-		HandleInputResult::new(input_handler.get_input())
+		HandleInputResult::new(input_handler.get_input(InputMode::Default))
 	}
 
 	fn render(&self, view: &View, _git_interactive: &GitInteractive) {

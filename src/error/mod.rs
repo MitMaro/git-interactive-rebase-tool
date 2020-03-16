@@ -1,5 +1,5 @@
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
@@ -33,7 +33,7 @@ impl ProcessModule for Error {
 		_view: &View,
 	) -> HandleInputResult
 	{
-		let input = input_handler.get_input();
+		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::Resize => {},

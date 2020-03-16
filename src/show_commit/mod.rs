@@ -4,7 +4,7 @@ mod util;
 use crate::commit::Commit;
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
@@ -56,7 +56,7 @@ impl ProcessModule for ShowCommit {
 	{
 		let (view_width, view_height) = view.get_view_size();
 
-		let input = input_handler.get_input();
+		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::MoveCursorLeft => {

@@ -1,6 +1,6 @@
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
-use crate::input::input_handler::InputHandler;
+use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::handle_input_result::HandleInputResult;
 use crate::process::process_module::ProcessModule;
@@ -57,7 +57,7 @@ impl ProcessModule for Edit {
 		}
 		let mut input;
 		loop {
-			input = input_handler.get_character();
+			input = input_handler.get_input(InputMode::Raw);
 			match input {
 				Input::Character(c) => {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
