@@ -85,7 +85,7 @@ Key bindings can be configured, see [configuration](#configuration) for more inf
 |  `f`         | All    | Set selected commit(s) to be fixed-up |
 |  `d`         | All    | Set selected commit(s) to be dropped |
 |  `E`         | Normal | Edit the command of an exec action |
-|  `V`         | All    | Enter and exit visual mode |
+|  `v`         | All    | Enter and exit visual mode |
 
 
 ### Temporary Override
