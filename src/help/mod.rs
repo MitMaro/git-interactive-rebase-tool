@@ -7,6 +7,7 @@ use crate::help::utils::{
 	get_list_normal_mode_help_lines,
 	get_list_visual_mode_help_lines,
 	get_max_help_description_length,
+	get_max_help_key_length,
 };
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
@@ -19,12 +20,14 @@ use crate::view::view_line::ViewLine;
 use crate::view::View;
 
 pub(crate) struct Help<'h> {
-	normal_mode_help_lines: [(String, &'h str); 22],
-	normal_mode_max_help_line_length: usize,
+	normal_mode_help_lines: [(&'h str, &'h str); 22],
+	normal_mode_max_help_line_desc_length: usize,
+	normal_mode_max_help_line_key_length: usize,
 	return_state: State,
 	scroll_position: ScrollPosition,
-	visual_mode_help_lines: [(String, &'h str); 14],
-	visual_mode_max_help_line_length: usize,
+	visual_mode_help_lines: [(&'h str, &'h str); 14],
+	visual_mode_max_help_line_desc_length: usize,
+	visual_mode_max_help_line_key_length: usize,
 }
 
 impl<'h> ProcessModule for Help<'h> {
@@ -88,7 +91,10 @@ impl<'h> ProcessModule for Help<'h> {
 		for line in self.get_help_lines() {
 			view_lines.push(ViewLine::new_with_pinned_segments(
 				vec![
-					LineSegment::new_with_color(format!(" {:4} ", line.0).as_str(), DisplayColor::IndicatorColor),
+					LineSegment::new_with_color(
+						format!(" {0:width$} ", line.0, width = self.get_max_help_key_length()).as_str(),
+						DisplayColor::IndicatorColor,
+					),
 					LineSegment::new(line.1),
 				],
 				1,
@@ -120,20 +126,24 @@ impl<'h> ProcessModule for Help<'h> {
 impl<'h> Help<'h> {
 	pub(crate) fn new(config: &'h Config) -> Self {
 		let normal_mode_help_lines = get_list_normal_mode_help_lines(config);
-		let normal_mode_max_help_line_length = get_max_help_description_length(&normal_mode_help_lines);
+		let normal_mode_max_help_line_desc_length = get_max_help_description_length(&normal_mode_help_lines);
+		let normal_mode_max_help_line_key_length = get_max_help_key_length(&normal_mode_help_lines);
 		let visual_mode_help_lines = get_list_visual_mode_help_lines(config);
-		let visual_mode_max_help_line_length = get_max_help_description_length(&visual_mode_help_lines);
+		let visual_mode_max_help_line_desc_length = get_max_help_description_length(&visual_mode_help_lines);
+		let visual_mode_max_help_line_key_length = get_max_help_key_length(&visual_mode_help_lines);
 		Self {
 			normal_mode_help_lines,
-			normal_mode_max_help_line_length,
+			normal_mode_max_help_line_desc_length,
+			normal_mode_max_help_line_key_length,
 			return_state: State::List(false),
 			scroll_position: ScrollPosition::new(3),
 			visual_mode_help_lines,
-			visual_mode_max_help_line_length,
+			visual_mode_max_help_line_desc_length,
+			visual_mode_max_help_line_key_length,
 		}
 	}
 
-	fn get_help_lines(&self) -> &[(String, &str)] {
+	fn get_help_lines(&self) -> &[(&str, &str)] {
 		if let State::List(visual_mode) = self.return_state {
 			if visual_mode {
 				&self.visual_mode_help_lines
@@ -147,13 +157,27 @@ impl<'h> Help<'h> {
 		}
 	}
 
+	fn get_max_help_key_length(&self) -> usize {
+		if let State::List(visual_mode) = self.return_state {
+			if visual_mode {
+				self.visual_mode_max_help_line_key_length
+			}
+			else {
+				self.normal_mode_max_help_line_key_length
+			}
+		}
+		else {
+			4
+		}
+	}
+
 	fn get_max_help_line_length(&self) -> usize {
 		if let State::List(visual_mode) = self.return_state {
 			if visual_mode {
-				self.visual_mode_max_help_line_length + 6
+				self.visual_mode_max_help_line_desc_length + self.visual_mode_max_help_line_key_length + 1
 			}
 			else {
-				self.normal_mode_max_help_line_length + 6
+				self.normal_mode_max_help_line_desc_length + self.normal_mode_max_help_line_key_length + 1
 			}
 		}
 		else {

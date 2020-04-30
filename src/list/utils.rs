@@ -1,20 +1,7 @@
 use crate::display::display_color::DisplayColor;
+use crate::input::utils::get_input_short_name;
 use crate::list::action::Action;
 use crate::Config;
-
-fn get_input_short_name(input: &str) -> String {
-	match input {
-		"Left" => String::from("lf"),
-		"Right" => String::from("rt"),
-		"Down" => String::from("dn"),
-		"Up" => String::from("up"),
-		"PageUp" => String::from("pup"),
-		"PageDown" => String::from("pdn"),
-		"Resize" => String::from("rz"),
-		"Other" => String::from("ot"),
-		_ => String::from(input),
-	}
-}
 
 pub(super) fn get_action_color(action: Action) -> DisplayColor {
 	match action {

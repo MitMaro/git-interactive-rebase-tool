@@ -1,5 +1,5 @@
 pub(crate) mod input_handler;
-mod utils;
+pub(crate) mod utils;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) enum Input {

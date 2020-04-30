@@ -124,12 +124,15 @@ impl<'v> View<'v> {
 		self.display.set_style(false, true, false);
 		let (window_width, _) = self.display.get_window_size();
 
+		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + self.config.input_help.len() as i32;
+
 		if window_width >= TITLE_LENGTH {
 			self.display.draw_str(TITLE);
 			// only draw help if there is room
-			if window_width > TITLE_LENGTH + TITLE_HELP_INDICATOR_LENGTH {
-				if (window_width - TITLE_LENGTH - TITLE_HELP_INDICATOR_LENGTH) > 0 {
-					let padding = " ".repeat((window_width - TITLE_LENGTH - TITLE_HELP_INDICATOR_LENGTH) as usize);
+			if window_width > TITLE_LENGTH + title_help_indicator_total_length {
+				if (window_width - TITLE_LENGTH - title_help_indicator_total_length) > 0 {
+					let padding =
+						" ".repeat((window_width - TITLE_LENGTH - title_help_indicator_total_length) as usize);
 					self.display.draw_str(padding.as_str());
 				}
 				if show_help {
@@ -137,7 +140,7 @@ impl<'v> View<'v> {
 						.draw_str(format!("Help: {}", self.config.input_help).as_str());
 				}
 				else {
-					let padding = " ".repeat(TITLE_HELP_INDICATOR_LENGTH as usize);
+					let padding = " ".repeat(title_help_indicator_total_length as usize);
 					self.display.draw_str(padding.as_str());
 				}
 			}
