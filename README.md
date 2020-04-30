@@ -137,7 +137,7 @@ to use the default terminal color.
 | `selectedBackgroundColor` | 35,35,40 | Color | Color used as the background color for the selected line |
 | `squashColor`             | cyan     | Color | Color used for the squash action |
 
-#### Key Bindings
+#### Default Key Bindings
 
 | Key                        | Default  | Type   | Description |
 | -------------------------- | -------- | ------ | ----------- |
@@ -168,16 +168,64 @@ to use the default terminal color.
 | `inputShowCommit`          | c        | String | Key for showing the selected commit |
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
 
-##### Special Keys
+##### Changing Key Bindings
 
-| Key        | Description |
-| ---------- | ----------- |
-| `PageDown` | Page Down key |
-| `Down`     | Down arrow key |
-| `Left`     | Left arrow key |
-| `Right`    | Right arrow key |
-| `Up`       | Up arrow key |
-| `PageUp`   | Page Up key |
+Most keys can be changed to any printable character or supported special character. It is possible to provide
+conflicting keybindings, which will result in undefined behaviour. The `inputConfirmYes` bindings has a special
+behaviour in that it responds to both the uppercase and lowercase letter of the value set, if the variant exist.
+
+###### Example
+
+```
+git config --global interactive-rebase-tool.inputRebase S
+```
+
+###### Supported Special Keys
+
+Keys that do not have easily printable characters, such as the arrow keys, are set using the special values defined
+in the table below. Some special keys do not work correctly on some setups.
+
+**Note: If a special key does not exist, please open an issue to request it to be added.**
+
+| Key            | Description |
+| -------------- | ----------- |
+| `Backspace`    | Backspace key |
+| `Delete`       | Delete key
+| `Down`         | Down arrow key |
+| `End`          | End key |
+| `Enter`        | Enter key |
+| `F0`           | Function 0 key |
+| `F1`           | Function 1 key |
+| `F2`           | Function 2 key |
+| `F3`           | Function 3 key |
+| `F4`           | Function 4 key |
+| `F5`           | Function 5 key |
+| `F6`           | Function 6 key |
+| `F7`           | Function 7 key |
+| `F8`           | Function 8 key |
+| `F9`           | Function 9 key |
+| `F10`          | Function 10 key |
+| `F11`          | Function 11 key |
+| `F12`          | Function 12 key |
+| `F13`          | Function 13 key (shift + F1 on some keyboards) |
+| `F14`          | Function 14 key (shift + F2 on some keyboards) |
+| `F15`          | Function 15 key (shift + F3 on some keyboards) |
+| `Home`         | Home key |
+| `Insert`       | The insert key |
+| `Left`         | Left arrow key |
+| `PageDown`     | Page Down key |
+| `PageUp`       | Page Up key |
+| `Right`        | Right arrow key |
+| `Shift+Delete` | Shift key plus delete key
+| `Shift+Down`   | Shift key plus down arrow key |
+| `Shift+End`    | Shift key plus end key |
+| `Shift+Home`   | Shift key plus home key |
+| `Shift+Left`   | Shift key plus left arrow key |
+| `Shift+Right`  | Shift key plus right arrow key |
+| `Shift+Tab`    | Shift key plus Shift key plus tab key |
+| `Shift+Up`     | Shift key plus up arrow key |
+| `Tab`          | Tab key |
+| `Up`           | Up arrow key |
 
 #### Configuring External Editor
 
