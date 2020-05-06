@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Added page up and down to help view
 - Added page up and down to show commit
+- Most missing key bindings for special keys
 
 ### Changed
 - Change page up and page down to scroll half the height of the view area

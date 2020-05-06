@@ -46,6 +46,7 @@ pub(super) fn curses_input_to_string(input: Input) -> String {
 		Input::KeySLeft => String::from("ShiftLeft"),
 		Input::KeySR => String::from("ShiftUp"),
 		Input::KeySRight => String::from("ShiftRight"),
+		Input::KeyUp => String::from("Up"),
 		_ => String::from("Other"),
 	}
 }
