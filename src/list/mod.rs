@@ -81,6 +81,7 @@ impl<'l> ProcessModule for List<'l> {
 		let (_, view_height) = view.get_view_size();
 		let lines = git_interactive.get_lines();
 		let selected_index = *git_interactive.get_selected_line_index() - 1;
+		// TODO move this to handle_input
 		self.scroll_position
 			.ensure_cursor_visible(selected_index, view_height, lines.len());
 
