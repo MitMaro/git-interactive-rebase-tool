@@ -74,7 +74,12 @@ impl<'h> ProcessModule for Help<'h> {
 				self.scroll_position.page_up(view_height, self.get_help_lines().len());
 			},
 			Input::Resize => {
-				self.scroll_position.reset();
+				self.scroll_position.view_resize(
+					view_height,
+					view_width,
+					self.get_help_lines().len(),
+					self.get_max_help_line_length(),
+				);
 			},
 			_ => {
 				result = result.state(self.return_state.clone());

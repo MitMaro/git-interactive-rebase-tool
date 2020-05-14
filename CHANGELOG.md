@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Change page up and page down to scroll half the height of the view area
 
+### Fixed
+- Scroll position resetting on resize
+
 ## [1.2.1] - 2020-01-26
 
 ### Fixed

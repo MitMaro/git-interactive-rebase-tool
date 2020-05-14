@@ -54,9 +54,8 @@ impl ProcessModule for ShowCommit {
 		view: &View,
 	) -> HandleInputResult
 	{
-		let (view_width, view_height) = view.get_view_size();
-
 		let input = input_handler.get_input(InputMode::Default);
+		let (view_width, view_height) = view.get_view_size();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::MoveCursorLeft => {
@@ -84,8 +83,12 @@ impl ProcessModule for ShowCommit {
 					.page_up(view_height, self.get_commit_stats_length())
 			},
 			Input::Resize => {
-				self.scroll_position
-					.scroll_up(view_height, self.get_commit_stats_length());
+				self.scroll_position.view_resize(
+					view_height,
+					view_width,
+					self.get_commit_stats_length(),
+					self.get_max_line_length(view_height),
+				)
 			},
 			_ => {
 				result = result.state(State::List(false));
