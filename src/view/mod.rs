@@ -80,6 +80,8 @@ impl<'v> View<'v> {
 				self.display.set_style(scroll_indicator_index != index, false, true);
 				self.display.draw_str(" ");
 			}
+			self.display.color(DisplayColor::Normal, false);
+			self.display.set_style(false, false, false);
 			index += 1;
 		}
 
@@ -99,17 +101,23 @@ impl<'v> View<'v> {
 			if i == line.get_number_of_pinned_segment() {
 				left_start = left;
 			}
-			let (amount_drawn, segment_size) =
-				segment.draw(left_start, window_width - start, line.get_selected(), &self.display);
-			start += amount_drawn;
-			if start >= window_width {
-				break;
-			}
-			if amount_drawn > 0 {
+
+			let partial = segment.get_partial_segment(left_start, window_width - start);
+
+			if partial.get_length() > 0 {
+				self.display.color(segment.get_color(), line.get_selected());
+				self.display
+					.set_style(segment.is_dimmed(), segment.is_underlined(), segment.is_reversed());
+				self.display.draw_str(partial.get_content());
+
+				start += partial.get_length();
+				if start >= window_width {
+					break;
+				}
 				left_start = 0;
 			}
 			else {
-				left_start -= segment_size;
+				left_start -= segment.get_length();
 			}
 		}
 
