@@ -21,7 +21,7 @@ jobs:
         run: "./scripts/format.bash"
   macos:
     name: MacOS
-    runs-on: [macos]
+    runs-on: [macos-latest]
     steps:
       - uses: actions/checkout@v2
       # Install Rust until actions/virtual-environments#6 is resolved
