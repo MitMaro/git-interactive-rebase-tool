@@ -1,4 +1,5 @@
 pub(crate) mod line_segment;
+pub(super) mod utils;
 pub(crate) mod view_line;
 
 use crate::constants::{
@@ -12,7 +13,7 @@ use crate::constants::{
 };
 use crate::display::display_color::DisplayColor;
 use crate::display::Display;
-use crate::scroll::utils::get_scroll_position;
+use crate::view::utils::get_scroll_position_index;
 use crate::view::view_line::ViewLine;
 use crate::Config;
 
@@ -69,7 +70,7 @@ impl<'v> View<'v> {
 	pub(crate) fn draw_view_lines(&self, lines: &[ViewLine], top: usize, left: usize, height: usize) {
 		let number_of_lines = lines.len();
 
-		let scroll_indicator_index = get_scroll_position(top, number_of_lines, height);
+		let scroll_indicator_index = get_scroll_position_index(top, number_of_lines, height);
 		let show_scroll_bar = height < number_of_lines;
 
 		let mut index: usize = 0;
