@@ -14,8 +14,8 @@ use crate::input::Input;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
 use crate::process::state::State;
-use crate::scroll::scroll_position::ScrollPosition;
 use crate::view::line_segment::LineSegment;
+use crate::view::scroll_position::ScrollPosition;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
 

@@ -10,8 +10,8 @@ use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBu
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
 use crate::process::state::State;
-use crate::scroll::scroll_position::ScrollPosition;
 use crate::show_commit::data::Data;
+use crate::view::scroll_position::ScrollPosition;
 use crate::view::View;
 
 pub(crate) struct ShowCommit {
