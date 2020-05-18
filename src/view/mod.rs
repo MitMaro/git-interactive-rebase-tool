@@ -1,4 +1,5 @@
 pub(crate) mod line_segment;
+pub(crate) mod scroll_position;
 pub(super) mod utils;
 pub(crate) mod view_line;
 

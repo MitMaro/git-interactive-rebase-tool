@@ -33,7 +33,6 @@ mod help;
 mod input;
 mod list;
 mod process;
-mod scroll;
 mod show_commit;
 mod view;
 mod window_size_error;
