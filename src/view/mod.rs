@@ -74,6 +74,9 @@ impl<'v> View<'v> {
 		let scroll_indicator_index = get_scroll_position_index(top, number_of_lines, height);
 		let show_scroll_bar = height < number_of_lines;
 
+		self.display.color(DisplayColor::Normal, false);
+		self.display.set_style(false, false, false);
+
 		let mut index: usize = 0;
 		for line in lines.iter().skip(top).take(height) {
 			self.draw_view_line(line, left, show_scroll_bar);
