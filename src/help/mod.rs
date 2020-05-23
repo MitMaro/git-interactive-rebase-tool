@@ -48,8 +48,8 @@ impl<'h> ProcessModule for Help<'h> {
 		view: &View,
 	) -> HandleInputResult
 	{
-		let (view_width, view_height) = view.get_view_size();
 		let input = input_handler.get_input(InputMode::Default);
+		let (view_width, view_height) = view.get_view_size();
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
 			Input::MoveCursorLeft => {
@@ -93,16 +93,18 @@ impl<'h> ProcessModule for Help<'h> {
 
 		let mut view_lines: Vec<ViewLine> = vec![];
 
+		let max_key_length = self.get_max_help_key_length();
 		for line in self.get_help_lines() {
 			view_lines.push(ViewLine::new_with_pinned_segments(
 				vec![
 					LineSegment::new_with_color(
-						format!(" {0:width$} ", line.0, width = self.get_max_help_key_length()).as_str(),
+						format!(" {0:width$}", line.0, width = max_key_length).as_str(),
 						DisplayColor::IndicatorColor,
 					),
+					LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
 					LineSegment::new(line.1),
 				],
-				1,
+				2,
 			));
 		}
 
@@ -110,9 +112,10 @@ impl<'h> ProcessModule for Help<'h> {
 
 		view.set_color(DisplayColor::Normal, false);
 		view.set_style(false, true, false);
-		view.draw_str(" Key   Action");
-		if view_width > 13 {
-			let padding = " ".repeat(view_width - 13);
+		let header = format!(" {0:width$} Action", "Key", width = max_key_length);
+		view.draw_str(header.as_str());
+		if view_width > header.len() {
+			let padding = " ".repeat(view_width - header.len());
 			view.draw_str(padding.as_str());
 		}
 
