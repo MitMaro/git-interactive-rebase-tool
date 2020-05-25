@@ -12,6 +12,11 @@ impl ViewLine {
 		Self::new_with_pinned_segments(segments, 0)
 	}
 
+	pub(crate) fn new_pinned(segments: Vec<LineSegment>) -> Self {
+		let segments_length = segments.len();
+		Self::new_with_pinned_segments(segments, segments_length)
+	}
+
 	pub(crate) fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
 		let length = segments.iter().fold(0, |len, seg| len + seg.get_length());
 
@@ -70,6 +75,20 @@ mod tests {
 		assert_eq!(view_line.get_length(), 6);
 	}
 
+	#[test]
+	fn view_line_new_pinned() {
+		let view_line = ViewLine::new_pinned(vec![
+			LineSegment::new("foo"),
+			LineSegment::new("bar"),
+			LineSegment::new("baz"),
+			LineSegment::new("foobar"),
+		]);
+
+		assert_eq!(view_line.get_number_of_pinned_segment(), 4);
+		assert_eq!(view_line.get_segments().len(), 4);
+		assert_eq!(view_line.get_selected(), false);
+		assert_eq!(view_line.get_length(), 15);
+	}
 	#[test]
 	fn view_line_new_with_pinned_segments() {
 		let view_line = ViewLine::new_with_pinned_segments(
