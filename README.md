@@ -18,8 +18,8 @@ Git 1.7.8+. Written in Rust using ncurses.
 * [Debian](./readme/install.md#debian-and-derivatives)
 * [FreeBSD](./readme/install.md#freebsd)
 * MacOS
-  * [Homebrew](./readme/install.md#macos-via-homebrew)
-  * [Manual](./readme/install.md#macos-manual-install)
+  * [Homebrew](./readme/install.md#with-homebrew)
+  * [Manual](./readme/install.md#manual-install-1)
 * [Windows](./readme/install.md#windows)
 
 ## Configure
