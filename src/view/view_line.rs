@@ -1,10 +1,14 @@
+use crate::display::display_color::DisplayColor;
 use crate::view::line_segment::LineSegment;
 
 pub(crate) struct ViewLine {
 	pinned_segments: usize,
 	segments: Vec<LineSegment>,
 	selected: bool,
-	length: usize,
+	padding_color: DisplayColor,
+	padding_dim: bool,
+	padding_reverse: bool,
+	padding_underline: bool,
 }
 
 impl ViewLine {
@@ -18,18 +22,34 @@ impl ViewLine {
 	}
 
 	pub(crate) fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
-		let length = segments.iter().fold(0, |len, seg| len + seg.get_length());
-
 		Self {
 			selected: false,
 			segments,
 			pinned_segments,
-			length,
+			padding_color: DisplayColor::Normal,
+			padding_dim: false,
+			padding_reverse: false,
+			padding_underline: false,
 		}
 	}
 
 	pub(crate) fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
+		self
+	}
+
+	pub(crate) fn set_padding_color_and_style(
+		mut self,
+		color: DisplayColor,
+		dim: bool,
+		underline: bool,
+		reverse: bool,
+	) -> Self
+	{
+		self.padding_color = color;
+		self.padding_dim = dim;
+		self.padding_underline = underline;
+		self.padding_reverse = reverse;
 		self
 	}
 
@@ -45,13 +65,26 @@ impl ViewLine {
 		self.selected
 	}
 
-	pub(crate) fn get_length(&self) -> usize {
-		self.length
+	pub(super) fn get_padding_color(&self) -> DisplayColor {
+		self.padding_color
+	}
+
+	pub(super) fn is_padding_dimmed(&self) -> bool {
+		self.padding_dim
+	}
+
+	pub(super) fn is_padding_underlined(&self) -> bool {
+		self.padding_underline
+	}
+
+	pub(super) fn is_padding_reversed(&self) -> bool {
+		self.padding_reverse
 	}
 }
 
 #[cfg(test)]
 mod tests {
+	use crate::display::display_color::DisplayColor;
 	use crate::view::line_segment::LineSegment;
 	use crate::view::view_line::ViewLine;
 
@@ -62,7 +95,6 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 2);
 		assert_eq!(view_line.get_selected(), false);
-		assert_eq!(view_line.get_length(), 6);
 	}
 
 	#[test]
@@ -72,7 +104,6 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 2);
 		assert_eq!(view_line.get_selected(), true);
-		assert_eq!(view_line.get_length(), 6);
 	}
 
 	#[test]
@@ -87,7 +118,6 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 4);
 		assert_eq!(view_line.get_segments().len(), 4);
 		assert_eq!(view_line.get_selected(), false);
-		assert_eq!(view_line.get_length(), 15);
 	}
 	#[test]
 	fn view_line_new_with_pinned_segments() {
@@ -104,6 +134,16 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 2);
 		assert_eq!(view_line.get_segments().len(), 4);
 		assert_eq!(view_line.get_selected(), false);
-		assert_eq!(view_line.get_length(), 15);
+	}
+
+	#[test]
+	fn view_line_set_padding_color_and_style() {
+		let view_line = ViewLine::new(vec![LineSegment::new("foo")]);
+		let view_line = view_line.set_padding_color_and_style(DisplayColor::IndicatorColor, true, true, true);
+
+		assert_eq!(view_line.get_padding_color(), DisplayColor::IndicatorColor);
+		assert_eq!(view_line.is_padding_dimmed(), true);
+		assert_eq!(view_line.is_padding_underlined(), true);
+		assert_eq!(view_line.is_padding_reversed(), true);
 	}
 }

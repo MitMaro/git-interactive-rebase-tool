@@ -65,11 +65,4 @@ impl Commit {
 	pub(crate) fn get_file_stats(&self) -> &Option<Vec<FileStat>> {
 		&self.file_stats
 	}
-
-	pub(crate) fn get_file_stats_length(&self) -> usize {
-		match &self.file_stats {
-			Some(s) => s.len(),
-			None => 0,
-		}
-	}
 }
