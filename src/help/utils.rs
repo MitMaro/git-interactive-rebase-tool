@@ -81,14 +81,3 @@ pub(super) fn get_max_help_key_length(lines: &[(&str, &str)]) -> usize {
 	}
 	max_length
 }
-
-pub(super) fn get_max_help_description_length(lines: &[(&str, &str)]) -> usize {
-	let mut max_length = 0;
-	for (_, desc) in lines {
-		let len = UnicodeSegmentation::graphemes(*desc, true).count();
-		if len > max_length {
-			max_length = len;
-		}
-	}
-	max_length
-}

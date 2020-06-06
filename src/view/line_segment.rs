@@ -56,6 +56,10 @@ impl LineSegment {
 		}
 	}
 
+	pub(super) fn get_content(&self) -> &str {
+		self.text.as_str()
+	}
+
 	pub(super) fn get_color(&self) -> DisplayColor {
 		self.color
 	}
@@ -185,6 +189,13 @@ mod tests {
 		assert_eq!(line_segment.is_dimmed(), false);
 		assert_eq!(line_segment.is_underlined(), false);
 		assert_eq!(line_segment.is_reversed(), true);
+	}
+
+	#[test]
+	fn line_segment_case_get_content() {
+		let line_segment = LineSegment::new("1234567890");
+
+		assert_eq!(line_segment.get_content(), "1234567890");
 	}
 
 	#[test]

@@ -140,7 +140,7 @@ impl<'r> Process<'r> {
 		}
 	}
 
-	fn render(&self) {
+	fn render(&mut self) {
 		self.view.clear();
 		match self.get_state() {
 			State::ConfirmAbort => self.confirm_abort.render(&self.view, &self.git_interactive),
@@ -149,9 +149,18 @@ impl<'r> Process<'r> {
 			State::Error { .. } => self.error.render(&self.view, &self.git_interactive),
 			State::Exiting => self.exiting.render(&self.view, &self.git_interactive),
 			State::ExternalEditor => self.external_editor.render(&self.view, &self.git_interactive),
-			State::Help(_) => self.help.render(&self.view, &self.git_interactive),
-			State::List(_) => self.list.render(&self.view, &self.git_interactive),
-			State::ShowCommit => self.show_commit.render(&self.view, &self.git_interactive),
+			State::Help(_) => {
+				let view_data = self.help.build_view_data(&self.view, &self.git_interactive);
+				self.view.draw_view_data(view_data);
+			},
+			State::List(_) => {
+				self.view
+					.draw_view_data(self.list.build_view_data(&self.view, &self.git_interactive))
+			},
+			State::ShowCommit => {
+				self.view
+					.draw_view_data(self.show_commit.build_view_data(&self.view, &self.git_interactive))
+			},
 			State::WindowSizeError(_) => self.window_size_error.render(&self.view, &self.git_interactive),
 		};
 		self.view.refresh()
