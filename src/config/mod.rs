@@ -42,6 +42,15 @@ pub(crate) struct Config {
 impl Config {
 	pub(crate) fn new() -> Result<Self, String> {
 		let git_config = open_git_config()?;
+
+		let comment_char = get_string(&git_config, "core.commentChar", "#")?;
+		let comment_char = if comment_char.as_str().eq("auto") {
+			String::from("#")
+		}
+		else {
+			comment_char
+		};
+
 		Ok(Config {
 			theme: Theme {
 				color_foreground: get_color(&git_config, "interactive-rebase-tool.foregroundColor", Color::Default)?,
@@ -74,7 +83,7 @@ impl Config {
 				)?,
 			},
 			auto_select_next: get_bool(&git_config, "interactive-rebase-tool.autoSelectNext", false)?,
-			comment_char: get_string(&git_config, "core.commentChar", "#")?,
+			comment_char,
 			editor: get_string(&git_config, "core.editor", editor_from_env().as_str())?,
 			input_abort: get_input(&git_config, "interactive-rebase-tool.inputAbort", "q")?,
 			input_action_break: get_input(&git_config, "interactive-rebase-tool.inputActionBreak", "b")?,

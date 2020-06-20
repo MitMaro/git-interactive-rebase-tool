@@ -132,7 +132,7 @@ impl<'e> ExternalEditor<'e> {
 
 	fn process_finish(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
-		if let Err(e) = git_interactive.reload_file(self.config.comment_char.as_str()) {
+		if let Err(e) = git_interactive.reload_file() {
 			result = result.error(e.as_str(), State::ExternalEditor);
 			self.state = ExternalEditorState::Error;
 		}

@@ -7,7 +7,7 @@ use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
 
-fn load_filepath(path: &PathBuf, config_comment_char: &str) -> Result<Vec<Line>, String> {
+fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String> {
 	let mut file = match File::open(&path) {
 		Ok(file) => file,
 		Err(why) => {
@@ -22,13 +22,6 @@ fn load_filepath(path: &PathBuf, config_comment_char: &str) -> Result<Vec<Line>,
 			return Err(format!("Error reading file, {}\nReason: {}", path.display(), why));
 		},
 	}
-	let comment_char = if config_comment_char.eq("auto") {
-		"#"
-	}
-	else {
-		config_comment_char
-	};
-
 	// catch noop rebases
 	s.lines()
 		.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
@@ -46,6 +39,7 @@ pub(crate) struct GitInteractive {
 	lines: Vec<Line>,
 	selected_line_index: usize,
 	visual_index_start: usize,
+	comment_char: String,
 }
 
 impl GitInteractive {
@@ -58,6 +52,7 @@ impl GitInteractive {
 			lines,
 			selected_line_index: 1,
 			visual_index_start: 1,
+			comment_char: String::from(comment_char),
 		})
 	}
 
@@ -83,8 +78,8 @@ impl GitInteractive {
 		Ok(())
 	}
 
-	pub(crate) fn reload_file(&mut self, comment_char: &str) -> Result<(), String> {
-		let lines = load_filepath(&self.filepath, comment_char)?;
+	pub(crate) fn reload_file(&mut self) -> Result<(), String> {
+		let lines = load_filepath(&self.filepath, self.comment_char.as_str())?;
 
 		self.lines = lines;
 		Ok(())
