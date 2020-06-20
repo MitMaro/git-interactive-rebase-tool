@@ -1,6 +1,5 @@
 mod argument_tolkenizer;
 
-use crate::config::Config;
 use crate::display::Display;
 use crate::external_editor::argument_tolkenizer::tolkenize;
 use crate::git_interactive::GitInteractive;
@@ -25,7 +24,7 @@ enum ExternalEditorState {
 }
 
 pub(crate) struct ExternalEditor<'e> {
-	config: &'e Config,
+	editor: String,
 	display: &'e Display<'e>,
 	state: ExternalEditorState,
 }
@@ -68,16 +67,16 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 }
 
 impl<'e> ExternalEditor<'e> {
-	pub(crate) fn new(display: &'e Display, config: &'e Config) -> Self {
+	pub(crate) fn new(display: &'e Display, editor: &str) -> Self {
 		Self {
-			config,
+			editor: String::from(editor),
 			display,
 			state: ExternalEditorState::Active,
 		}
 	}
 
 	fn run_editor(&mut self, git_interactive: &GitInteractive) -> Result<(), String> {
-		let mut arguments = match tolkenize(self.config.editor.as_str()) {
+		let mut arguments = match tolkenize(self.editor.as_str()) {
 			Some(args) => {
 				if args.is_empty() {
 					return Err(String::from("No editor configured"));
@@ -85,7 +84,7 @@ impl<'e> ExternalEditor<'e> {
 				args.into_iter().map(OsString::from)
 			},
 			None => {
-				return Err(format!("Invalid editor: {}", self.config.editor));
+				return Err(format!("Invalid editor: {}", self.editor));
 			},
 		};
 
@@ -107,7 +106,7 @@ impl<'e> ExternalEditor<'e> {
 				cmd.arg(filepath.as_os_str());
 			}
 			cmd.status()
-				.map_err(|e| format!("Unable to run editor ({}):\n{}", self.config.editor, e.to_string()))
+				.map_err(|e| format!("Unable to run editor ({}):\n{}", self.editor, e.to_string()))
 		};
 		let exit_status: ProcessExitStatus = self.display.leave_temporarily(callback)?;
 
