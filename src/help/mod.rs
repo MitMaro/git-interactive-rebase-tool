@@ -1,6 +1,6 @@
 mod utils;
 
-use crate::config::Config;
+use crate::config::key_bindings::KeyBindings;
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::help::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_max_help_key_length};
@@ -67,11 +67,11 @@ impl<'h> ProcessModule for Help<'h> {
 }
 
 impl<'h> Help<'h> {
-	pub(crate) fn new(config: &'h Config) -> Self {
+	pub(crate) fn new(key_bindings: &'h KeyBindings) -> Self {
 		Self {
-			normal_mode_help_lines: get_list_normal_mode_help_lines(config),
+			normal_mode_help_lines: get_list_normal_mode_help_lines(key_bindings),
 			return_state: State::List(false),
-			visual_mode_help_lines: get_list_visual_mode_help_lines(config),
+			visual_mode_help_lines: get_list_visual_mode_help_lines(key_bindings),
 			view_data: None,
 		}
 	}

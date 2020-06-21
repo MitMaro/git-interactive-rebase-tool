@@ -1,73 +1,73 @@
-use crate::Config;
+use crate::config::key_bindings::KeyBindings;
 use unicode_segmentation::UnicodeSegmentation;
 
-pub(super) fn get_list_normal_mode_help_lines(config: &Config) -> [(&str, &str); 22] {
+pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> [(&str, &str); 22] {
 	[
-		(config.input_move_up.as_str(), "Move selection up"),
-		(config.input_move_down.as_str(), "Move selection down"),
-		(config.input_move_up_step.as_str(), "Move selection up 5 lines"),
-		(config.input_move_down_step.as_str(), "Move selection down 5 lines"),
-		(config.input_abort.as_str(), "Abort interactive rebase"),
+		(key_bindings.move_up.as_str(), "Move selection up"),
+		(key_bindings.move_down.as_str(), "Move selection down"),
+		(key_bindings.move_up_step.as_str(), "Move selection up 5 lines"),
+		(key_bindings.move_down_step.as_str(), "Move selection down 5 lines"),
+		(key_bindings.abort.as_str(), "Abort interactive rebase"),
 		(
-			config.input_force_abort.as_str(),
+			key_bindings.force_abort.as_str(),
 			"Immediately abort interactive rebase",
 		),
-		(config.input_rebase.as_str(), "Write interactive rebase file"),
+		(key_bindings.rebase.as_str(), "Write interactive rebase file"),
 		(
-			config.input_force_rebase.as_str(),
+			key_bindings.force_rebase.as_str(),
 			"Immediately write interactive rebase file",
 		),
-		(config.input_toggle_visual_mode.as_str(), "Enter visual mode"),
-		(config.input_help.as_str(), "Show help"),
-		(config.input_show_commit.as_str(), "Show commit information"),
-		(config.input_move_selection_down.as_str(), "Move selected commit down"),
-		(config.input_move_selection_up.as_str(), "Move selected commit up"),
-		(config.input_action_break.as_str(), "Toggle break action"),
-		(config.input_action_pick.as_str(), "Set selected commit to be picked"),
+		(key_bindings.toggle_visual_mode.as_str(), "Enter visual mode"),
+		(key_bindings.help.as_str(), "Show help"),
+		(key_bindings.show_commit.as_str(), "Show commit information"),
+		(key_bindings.move_selection_down.as_str(), "Move selected commit down"),
+		(key_bindings.move_selection_up.as_str(), "Move selected commit up"),
+		(key_bindings.action_break.as_str(), "Toggle break action"),
+		(key_bindings.action_pick.as_str(), "Set selected commit to be picked"),
 		(
-			config.input_action_reword.as_str(),
+			key_bindings.action_reword.as_str(),
 			"Set selected commit to be reworded",
 		),
-		(config.input_action_edit.as_str(), "Set selected commit to be edited"),
+		(key_bindings.action_edit.as_str(), "Set selected commit to be edited"),
 		(
-			config.input_action_squash.as_str(),
+			key_bindings.action_squash.as_str(),
 			"Set selected commit to be squashed",
 		),
-		(config.input_action_fixup.as_str(), "Set selected commit to be fixed-up"),
-		(config.input_action_drop.as_str(), "Set selected commit to be dropped"),
-		(config.input_edit.as_str(), "Edit an exec action's command"),
+		(key_bindings.action_fixup.as_str(), "Set selected commit to be fixed-up"),
+		(key_bindings.action_drop.as_str(), "Set selected commit to be dropped"),
+		(key_bindings.edit.as_str(), "Edit an exec action's command"),
 		(
-			config.input_open_in_external_editor.as_str(),
+			key_bindings.open_in_external_editor.as_str(),
 			"Open the todo file in the default editor",
 		),
 	]
 }
 
-pub(super) fn get_list_visual_mode_help_lines(config: &Config) -> [(&str, &str); 14] {
+pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> [(&str, &str); 14] {
 	[
-		(config.input_move_up.as_str(), "Move selection up"),
-		(config.input_move_down.as_str(), "Move selection down"),
-		(config.input_move_up_step.as_str(), "Move selection up 5 lines"),
-		(config.input_move_down_step.as_str(), "Move selection down 5 lines"),
-		(config.input_help.as_str(), "Show help"),
-		(config.input_move_selection_down.as_str(), "Move selected commits down"),
-		(config.input_move_selection_up.as_str(), "Move selected commits up"),
-		(config.input_action_pick.as_str(), "Set selected commits to be picked"),
+		(key_bindings.move_up.as_str(), "Move selection up"),
+		(key_bindings.move_down.as_str(), "Move selection down"),
+		(key_bindings.move_up_step.as_str(), "Move selection up 5 lines"),
+		(key_bindings.move_down_step.as_str(), "Move selection down 5 lines"),
+		(key_bindings.help.as_str(), "Show help"),
+		(key_bindings.move_selection_down.as_str(), "Move selected commits down"),
+		(key_bindings.move_selection_up.as_str(), "Move selected commits up"),
+		(key_bindings.action_pick.as_str(), "Set selected commits to be picked"),
 		(
-			config.input_action_reword.as_str(),
+			key_bindings.action_reword.as_str(),
 			"Set selected commits to be reworded",
 		),
-		(config.input_action_edit.as_str(), "Set selected commits to be edited"),
+		(key_bindings.action_edit.as_str(), "Set selected commits to be edited"),
 		(
-			config.input_action_squash.as_str(),
+			key_bindings.action_squash.as_str(),
 			"Set selected commits to be squashed",
 		),
 		(
-			config.input_action_fixup.as_str(),
+			key_bindings.action_fixup.as_str(),
 			"Set selected commits to be fixed-up",
 		),
-		(config.input_action_drop.as_str(), "Set selected commits to be dropped"),
-		(config.input_toggle_visual_mode.as_str(), "Exit visual mode"),
+		(key_bindings.action_drop.as_str(), "Set selected commits to be dropped"),
+		(key_bindings.toggle_visual_mode.as_str(), "Exit visual mode"),
 	]
 }
 

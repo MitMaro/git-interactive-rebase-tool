@@ -126,7 +126,8 @@ impl<'v> View<'v> {
 		self.display.set_style(false, true, false);
 		let (window_width, _) = self.display.get_window_size();
 
-		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + self.config.input_help.len() as i32;
+		let title_help_indicator_total_length =
+			TITLE_HELP_INDICATOR_LENGTH + self.config.key_bindings.help.len() as i32;
 
 		if window_width >= TITLE_LENGTH {
 			self.display.draw_str(TITLE);
@@ -139,7 +140,7 @@ impl<'v> View<'v> {
 				}
 				if show_help {
 					self.display
-						.draw_str(format!("Help: {}", self.config.input_help).as_str());
+						.draw_str(format!("Help: {}", self.config.key_bindings.help).as_str());
 				}
 				else {
 					let padding = " ".repeat(title_help_indicator_total_length as usize);
@@ -182,7 +183,7 @@ impl<'v> View<'v> {
 	pub(crate) fn draw_confirm(&self, message: &str) {
 		self.draw_prompt(&format!(
 			"{} ({}/{})? ",
-			message, self.config.input_confirm_yes, self.config.input_confirm_no
+			message, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
 		));
 	}
 }

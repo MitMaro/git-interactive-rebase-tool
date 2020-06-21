@@ -104,7 +104,7 @@ fn try_main() -> Result<ExitStatus, Exit> {
 
 	let display = Display::new(&mut curses, &config);
 
-	let input_handler = InputHandler::new(&display, &config);
+	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);
 
 	let mut process = Process::new(git_interactive, &view, &display, &input_handler, &config);

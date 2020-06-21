@@ -95,11 +95,11 @@ impl<'l> List<'l> {
 
 		Self {
 			config,
-			normal_footer_compact: get_normal_footer_compact(config),
-			normal_footer_full: get_normal_footer_full(config),
+			normal_footer_compact: get_normal_footer_compact(&config.key_bindings),
+			normal_footer_full: get_normal_footer_full(&config.key_bindings),
 			state: ListState::Normal,
-			visual_footer_compact: get_visual_footer_compact(config),
-			visual_footer_full: get_visual_footer_full(config),
+			visual_footer_compact: get_visual_footer_compact(&config.key_bindings),
+			visual_footer_full: get_visual_footer_full(&config.key_bindings),
 			view_data,
 		}
 	}
@@ -134,7 +134,7 @@ impl<'l> List<'l> {
 				self.visual_footer_compact.clone()
 			}
 			else {
-				format!("(Visual) Help: {}", self.config.input_help)
+				format!("(Visual) Help: {}", self.config.key_bindings.help)
 			}
 		}
 		else if view_width >= self.normal_footer_full.len() {
@@ -144,7 +144,7 @@ impl<'l> List<'l> {
 			self.normal_footer_compact.clone()
 		}
 		else {
-			format!("Help: {}", self.config.input_help)
+			format!("Help: {}", self.config.key_bindings.help)
 		};
 
 		self.view_data

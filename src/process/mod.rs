@@ -61,7 +61,7 @@ impl<'r> Process<'r> {
 			exiting: Exiting::new(),
 			external_editor: ExternalEditor::new(display, config.editor.as_str()),
 			git_interactive,
-			help: Help::new(config),
+			help: Help::new(&config.key_bindings),
 			input_handler,
 			list: List::new(config),
 			show_commit: ShowCommit::new(),
