@@ -76,7 +76,7 @@ fn try_main() -> Result<ExitStatus, Exit> {
 		},
 	};
 
-	let git_interactive = match GitInteractive::new_from_filepath(filepath, config.comment_char.as_str()) {
+	let git_interactive = match GitInteractive::new_from_filepath(filepath, config.git.comment_char.as_str()) {
 		Ok(gi) => gi,
 		Err(message) => {
 			return Err(Exit {
