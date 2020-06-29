@@ -59,7 +59,7 @@ impl<'r> Process<'r> {
 			error: Error::new(),
 			exit_status: None,
 			exiting: Exiting::new(),
-			external_editor: ExternalEditor::new(display, config.editor.as_str()),
+			external_editor: ExternalEditor::new(display, config.git.editor.as_str()),
 			git_interactive,
 			help: Help::new(&config.key_bindings),
 			input_handler,
