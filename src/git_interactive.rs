@@ -1,4 +1,3 @@
-use crate::commit::Commit;
 use crate::list::action::Action;
 use crate::list::line::Line;
 use std::cmp;
@@ -207,14 +206,6 @@ impl GitInteractive {
 				self.selected_line_index += 1;
 			}
 		}
-	}
-
-	pub(crate) fn load_commit_stats(&self) -> Result<Commit, String> {
-		let selected_action = self.lines[self.selected_line_index - 1].get_action();
-		if *selected_action != Action::Exec && *selected_action != Action::Break {
-			return Ok(Commit::from_commit_hash(self.get_selected_line_hash().as_str())?);
-		}
-		Err(String::from("Cannot load commit for the selected action"))
 	}
 
 	pub(crate) fn is_noop(&self) -> bool {
