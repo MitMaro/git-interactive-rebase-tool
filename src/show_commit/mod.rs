@@ -1,6 +1,9 @@
+mod commit;
+mod file_stat;
+mod status;
+mod user;
 mod util;
 
-use crate::commit::Commit;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
@@ -10,6 +13,7 @@ use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBu
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
 use crate::process::state::State;
+use crate::show_commit::commit::Commit;
 use crate::show_commit::util::get_stat_item_segments;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;

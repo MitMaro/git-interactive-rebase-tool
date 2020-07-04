@@ -1,6 +1,6 @@
 /// Represents a user within a commit with a name and email address
 #[derive(Debug, Eq, PartialEq)]
-pub(crate) struct User {
+pub(super) struct User {
 	name: Option<String>,
 	email: Option<String>,
 }
@@ -18,7 +18,7 @@ impl User {
 	///
 	/// The user if formatted with "Name \<Email\>", which matches the Git CLI. If name or email are
 	/// `None` then they are omitted from the result. If neither are set, `None` is returned.
-	pub(crate) fn to_string(&self) -> Option<String> {
+	pub(super) fn to_string(&self) -> Option<String> {
 		let name = &self.name;
 		let email = &self.email;
 		match name {
@@ -40,7 +40,7 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-	use crate::commit::user::User;
+	use crate::show_commit::user::User;
 
 	#[test]
 	fn commit_user_with_none_name_email() {

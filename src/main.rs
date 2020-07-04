@@ -18,7 +18,6 @@
 #![deny(variant_size_differences)]
 
 mod cli;
-mod commit;
 mod config;
 mod confirm_abort;
 mod confirm_rebase;
