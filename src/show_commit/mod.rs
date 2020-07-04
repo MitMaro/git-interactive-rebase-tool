@@ -24,7 +24,9 @@ pub(crate) struct ShowCommit {
 
 impl ProcessModule for ShowCommit {
 	fn activate(&mut self, _: State, git_interactive: &GitInteractive) {
-		self.commit = Some(git_interactive.load_commit_stats());
+		self.commit = Some(Commit::from_commit_hash(
+			git_interactive.get_selected_line_hash().as_str(),
+		));
 	}
 
 	fn deactivate(&mut self) {
