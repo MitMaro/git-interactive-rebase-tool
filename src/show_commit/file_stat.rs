@@ -1,8 +1,8 @@
-use crate::commit::status::Status;
+use crate::show_commit::status::Status;
 
 /// Represents a file change within a Git repository
 #[derive(Debug, PartialEq)]
-pub(crate) struct FileStat {
+pub(super) struct FileStat {
 	status: Status,
 	to_name: String,
 	from_name: String,
@@ -22,25 +22,25 @@ impl FileStat {
 	}
 
 	/// Get the status of this file change
-	pub(crate) fn get_status(&self) -> &Status {
+	pub(super) fn get_status(&self) -> &Status {
 		&self.status
 	}
 
 	/// Get the destination file name for this change.
-	pub(crate) fn get_to_name(&self) -> &String {
+	pub(super) fn get_to_name(&self) -> &String {
 		&self.to_name
 	}
 
 	/// Get the source file name for this change.
-	pub(crate) fn get_from_name(&self) -> &String {
+	pub(super) fn get_from_name(&self) -> &String {
 		&self.from_name
 	}
 }
 
 #[cfg(test)]
 mod tests {
-	use crate::commit::file_stat::FileStat;
-	use crate::commit::status::Status;
+	use crate::show_commit::file_stat::FileStat;
+	use crate::show_commit::status::Status;
 
 	#[test]
 	fn commit_user_file_stat() {
