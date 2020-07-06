@@ -23,7 +23,7 @@ pub(crate) struct Help<'h> {
 	normal_mode_help_lines: [(&'h str, &'h str); 22],
 	return_state: State,
 	visual_mode_help_lines: [(&'h str, &'h str); 14],
-	show_commit_help_lines: [(&'h str, &'h str); 7],
+	show_commit_help_lines: [(&'h str, &'h str); 8],
 	view_data: Option<ViewData>,
 }
 

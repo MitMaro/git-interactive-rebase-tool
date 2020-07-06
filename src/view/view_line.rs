@@ -9,9 +9,14 @@ pub(crate) struct ViewLine {
 	padding_dim: bool,
 	padding_reverse: bool,
 	padding_underline: bool,
+	padding_character: String,
 }
 
 impl ViewLine {
+	pub(crate) fn new_empty_line() -> Self {
+		Self::new_with_pinned_segments(vec![], 1)
+	}
+
 	pub(crate) fn new(segments: Vec<LineSegment>) -> Self {
 		Self::new_with_pinned_segments(segments, 0)
 	}
@@ -30,11 +35,17 @@ impl ViewLine {
 			padding_dim: false,
 			padding_reverse: false,
 			padding_underline: false,
+			padding_character: String::from(" "),
 		}
 	}
 
 	pub(crate) fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
+		self
+	}
+
+	pub(crate) fn set_padding_character(mut self, character: &str) -> Self {
+		self.padding_character = String::from(character);
 		self
 	}
 
@@ -79,6 +90,10 @@ impl ViewLine {
 
 	pub(super) fn is_padding_reversed(&self) -> bool {
 		self.padding_reverse
+	}
+
+	pub(super) fn padding_character(&self) -> &str {
+		self.padding_character.as_str()
 	}
 }
 

@@ -28,6 +28,7 @@ pub(crate) struct KeyBindings {
 	pub(crate) open_in_external_editor: String,
 	pub(crate) rebase: String,
 	pub(crate) show_commit: String,
+	pub(crate) show_diff: String,
 	pub(crate) toggle_visual_mode: String,
 }
 
@@ -59,6 +60,7 @@ impl KeyBindings {
 			open_in_external_editor: get_input(&git_config, "interactive-rebase-tool.inputOpenInExternalEditor", "!")?,
 			rebase: get_input(&git_config, "interactive-rebase-tool.inputRebase", "w")?,
 			show_commit: get_input(&git_config, "interactive-rebase-tool.inputShowCommit", "c")?,
+			show_diff: get_input(&git_config, "interactive-rebase-tool.inputShowDiff", "d")?,
 			toggle_visual_mode: get_input(&git_config, "interactive-rebase-tool.inputToggleVisualMode", "v")?,
 		})
 	}

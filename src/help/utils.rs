@@ -71,7 +71,7 @@ pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> [(&
 	]
 }
 
-pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> [(&str, &str); 7] {
+pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> [(&str, &str); 8] {
 	[
 		(key_bindings.move_up.as_str(), "Scroll up"),
 		(key_bindings.move_down.as_str(), "Scroll down"),
@@ -79,6 +79,7 @@ pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> [(&str, 
 		(key_bindings.move_down_step.as_str(), "Scroll down half a page"),
 		(key_bindings.move_right.as_str(), "Scroll right"),
 		(key_bindings.move_left.as_str(), "Scroll left"),
+		(key_bindings.show_diff.as_str(), "Show full diff"),
 		(key_bindings.help.as_str(), "Show help"),
 	]
 }

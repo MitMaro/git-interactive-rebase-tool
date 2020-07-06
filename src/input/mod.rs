@@ -31,6 +31,7 @@ pub(crate) enum Input {
 	Rebase,
 	Resize,
 	ShowCommit,
+	ShowDiff,
 	SwapSelectedDown,
 	SwapSelectedUp,
 	ToggleVisualMode,

@@ -15,6 +15,8 @@ pub(super) struct ColorManager {
 	diff_add: (chtype, chtype),
 	diff_change: (chtype, chtype),
 	diff_remove: (chtype, chtype),
+	diff_context: (chtype, chtype),
+	diff_whitespace: (chtype, chtype),
 	indicator: (chtype, chtype),
 	normal: (chtype, chtype),
 }
@@ -87,6 +89,16 @@ impl ColorManager {
 				theme.color_background,
 				theme.color_selected_background,
 			),
+			diff_context: curses.register_selectable_color_pairs(
+				theme.color_diff_context,
+				theme.color_background,
+				theme.color_selected_background,
+			),
+			diff_whitespace: curses.register_selectable_color_pairs(
+				theme.color_diff_whitespace,
+				theme.color_background,
+				theme.color_selected_background,
+			),
 		}
 	}
 
@@ -106,6 +118,8 @@ impl ColorManager {
 				DisplayColor::DiffAddColor => self.diff_add.1,
 				DisplayColor::DiffRemoveColor => self.diff_remove.1,
 				DisplayColor::DiffChangeColor => self.diff_change.1,
+				DisplayColor::DiffContextColor => self.diff_context.1,
+				DisplayColor::DiffWhitespaceColor => self.diff_whitespace.1,
 			}
 		}
 		else {
@@ -123,6 +137,8 @@ impl ColorManager {
 				DisplayColor::DiffAddColor => self.diff_add.0,
 				DisplayColor::DiffRemoveColor => self.diff_remove.0,
 				DisplayColor::DiffChangeColor => self.diff_change.0,
+				DisplayColor::DiffContextColor => self.diff_context.0,
+				DisplayColor::DiffWhitespaceColor => self.diff_whitespace.0,
 			}
 		}
 	}

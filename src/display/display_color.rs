@@ -11,6 +11,8 @@ pub(crate) enum DisplayColor {
 	DiffAddColor,
 	DiffChangeColor,
 	DiffRemoveColor,
+	DiffContextColor,
+	DiffWhitespaceColor,
 	IndicatorColor,
 	Normal,
 }

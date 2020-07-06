@@ -19,6 +19,8 @@ pub(crate) struct Theme {
 	pub(crate) color_diff_add: Color,
 	pub(crate) color_diff_change: Color,
 	pub(crate) color_diff_remove: Color,
+	pub(crate) color_diff_context: Color,
+	pub(crate) color_diff_whitespace: Color,
 	pub(crate) character_vertical_spacing: String,
 }
 
@@ -48,6 +50,12 @@ impl Theme {
 				Color::LightYellow,
 			)?,
 			color_diff_remove: get_color(&git_config, "interactive-rebase-tool.diffRemoveColor", Color::LightRed)?,
+			color_diff_context: get_color(
+				&git_config,
+				"interactive-rebase-tool.diffContextColor",
+				Color::LightWhite,
+			)?,
+			color_diff_whitespace: get_color(&git_config, "interactive-rebase-tool.diffWhitespace", Color::LightBlack)?,
 			character_vertical_spacing: get_string(
 				&git_config,
 				"interactive-rebase-tool.verticalSpacingCharacter",
