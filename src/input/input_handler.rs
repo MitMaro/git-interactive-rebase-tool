@@ -6,10 +6,11 @@ use pancurses::Input as PancursesInput;
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum InputMode {
-	Default,
 	Confirm,
+	Default,
 	List,
 	Raw,
+	ShowCommit,
 }
 
 pub(crate) struct InputHandler<'i> {
@@ -28,6 +29,7 @@ impl<'i> InputHandler<'i> {
 		let input = curses_input_to_string(c);
 
 		match mode {
+			InputMode::ShowCommit => self.get_show_commit_input(input.as_str()),
 			InputMode::Raw => self.get_character(input.as_str()),
 			InputMode::List => self.get_list_input(input.as_str()),
 			InputMode::Confirm => self.get_confirm(input.as_str()),
@@ -37,6 +39,20 @@ impl<'i> InputHandler<'i> {
 
 	fn get_default_input(self: &Self, input: &str) -> Input {
 		match input {
+			i if i == self.key_bindings.move_up.as_str() => Input::MoveCursorUp,
+			i if i == self.key_bindings.move_down.as_str() => Input::MoveCursorDown,
+			i if i == self.key_bindings.move_left.as_str() => Input::MoveCursorLeft,
+			i if i == self.key_bindings.move_right.as_str() => Input::MoveCursorRight,
+			i if i == self.key_bindings.move_up_step.as_str() => Input::MoveCursorPageUp,
+			i if i == self.key_bindings.move_down_step.as_str() => Input::MoveCursorPageDown,
+			"Resize" => Input::Resize,
+			_ => Input::Other,
+		}
+	}
+
+	fn get_show_commit_input(self: &Self, input: &str) -> Input {
+		match input {
+			i if i == self.key_bindings.help.as_str() => Input::Help,
 			i if i == self.key_bindings.move_up.as_str() => Input::MoveCursorUp,
 			i if i == self.key_bindings.move_down.as_str() => Input::MoveCursorDown,
 			i if i == self.key_bindings.move_left.as_str() => Input::MoveCursorLeft,

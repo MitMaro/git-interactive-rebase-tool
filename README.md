@@ -106,6 +106,22 @@ instead. String values are case-insensitive.
 git config --global interactive-rebase-tool.foregroundColor black
 ```
 
+#### Git configuration
+
+Some values from your Git Config are directly used by this application.
+
+| Key                                   | Description |
+| ------------------------------------- | ----------- |
+| [`core.commentChar`][coreCommentChar] | Read when reading the TODO file to excluded commented lines |
+| [`core.editor`][coreEditor]           | Read when deciding what editor to open when trigger the external editor |
+| [`diff.renames`][diffRenames]         | Used by show commit when generating a diff |
+| [`diff.renameLimit`][diffRenameLimit] | Used by show commit when generating a diff |
+
+[coreCommentChar]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar
+[coreEditor]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreeditor
+[diffRenames]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
+[diffRenameLimit]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenameLimit
+
 #### General
 
 | Key                        | Default | Type   | Description |
