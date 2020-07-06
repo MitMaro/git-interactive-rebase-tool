@@ -246,6 +246,10 @@ impl ViewData {
 		self.show_help
 	}
 
+	pub(crate) fn is_empty(&self) -> bool {
+		self.lines.is_empty() && self.leading_lines.is_empty() && self.trailing_lines.is_empty()
+	}
+
 	pub(super) fn get_leading_lines(&self) -> &Vec<ViewLine> {
 		match &self.leading_lines_cache {
 			Some(lines) => lines,

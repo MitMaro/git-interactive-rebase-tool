@@ -3,7 +3,12 @@ mod utils;
 use crate::config::key_bindings::KeyBindings;
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
-use crate::help::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_max_help_key_length};
+use crate::help::utils::{
+	get_list_normal_mode_help_lines,
+	get_list_visual_mode_help_lines,
+	get_max_help_key_length,
+	get_show_commit_help_lines,
+};
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
@@ -18,6 +23,7 @@ pub(crate) struct Help<'h> {
 	normal_mode_help_lines: [(&'h str, &'h str); 22],
 	return_state: State,
 	visual_mode_help_lines: [(&'h str, &'h str); 14],
+	show_commit_help_lines: [(&'h str, &'h str); 7],
 	view_data: Option<ViewData>,
 }
 
@@ -73,6 +79,7 @@ impl<'h> Help<'h> {
 			return_state: State::List(false),
 			visual_mode_help_lines: get_list_visual_mode_help_lines(key_bindings),
 			view_data: None,
+			show_commit_help_lines: get_show_commit_help_lines(key_bindings),
 		}
 	}
 
@@ -82,19 +89,19 @@ impl<'h> Help<'h> {
 			None => {
 				let (view_width, view_height) = view.get_view_size();
 				let mut view_data = ViewData::new();
-				view_data.set_view_size(view_width, view_height);
 				view_data.set_show_title(true);
 
-				let lines: &[(&str, &str)] = if let State::List(visual_mode) = self.return_state {
-					if visual_mode {
-						&self.visual_mode_help_lines
-					}
-					else {
-						&self.normal_mode_help_lines
-					}
-				}
-				else {
-					&[]
+				let lines: &[(&str, &str)] = match self.return_state {
+					State::List(visual_mode) => {
+						if visual_mode {
+							&self.visual_mode_help_lines
+						}
+						else {
+							&self.normal_mode_help_lines
+						}
+					},
+					State::ShowCommit => &self.show_commit_help_lines,
+					_ => &[],
 				};
 
 				let max_key_length = get_max_help_key_length(lines);
@@ -128,6 +135,7 @@ impl<'h> Help<'h> {
 					"Any key to close",
 					DisplayColor::IndicatorColor,
 				)]));
+				view_data.set_view_size(view_width, view_height);
 				view_data.rebuild();
 
 				self.view_data = Some(view_data);

@@ -1,8 +1,9 @@
 use crate::display::color::Color;
+use git2::Config;
 use std::convert::TryFrom;
 use std::env;
 
-pub(super) fn get_input(config: &git2::Config, name: &str, default: &str) -> Result<String, String> {
+pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<String, String> {
 	let value = get_string(config, name, default)?;
 
 	match value.to_lowercase().as_ref() {
@@ -55,7 +56,7 @@ pub(super) fn get_input(config: &git2::Config, name: &str, default: &str) -> Res
 	}
 }
 
-pub(super) fn get_string(config: &git2::Config, name: &str, default: &str) -> Result<String, String> {
+pub(super) fn get_string(config: &Config, name: &str, default: &str) -> Result<String, String> {
 	match config.get_string(name) {
 		Ok(v) => Ok(v),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(String::from(default)),
@@ -63,7 +64,7 @@ pub(super) fn get_string(config: &git2::Config, name: &str, default: &str) -> Re
 	}
 }
 
-pub(super) fn get_bool(config: &git2::Config, name: &str, default: bool) -> Result<bool, String> {
+pub(super) fn get_bool(config: &Config, name: &str, default: bool) -> Result<bool, String> {
 	match config.get_bool(name) {
 		Ok(v) => Ok(v),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
@@ -71,7 +72,15 @@ pub(super) fn get_bool(config: &git2::Config, name: &str, default: bool) -> Resu
 	}
 }
 
-pub(super) fn get_color(config: &git2::Config, name: &str, default_color: Color) -> Result<Color, String> {
+pub(super) fn get_unsigned_integer(config: &Config, name: &str, default: u32) -> Result<u32, String> {
+	match config.get_i32(name) {
+		Ok(v) => Ok(v as u32),
+		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
+		Err(e) => Err(format!("Error reading git config: {}", e)),
+	}
+}
+
+pub(super) fn get_color(config: &Config, name: &str, default_color: Color) -> Result<Color, String> {
 	match config.get_string(name) {
 		Ok(v) => Color::try_from(v.to_lowercase().as_str()),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default_color),
@@ -85,7 +94,7 @@ pub(super) fn editor_from_env() -> String {
 		.unwrap_or_else(|_| String::from("vi"))
 }
 
-pub(super) fn open_git_config() -> Result<git2::Config, String> {
+pub(super) fn open_git_config() -> Result<Config, String> {
 	match git2::Repository::open_from_env() {
 		Ok(f) => {
 			match f.config() {

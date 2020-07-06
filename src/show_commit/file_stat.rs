@@ -1,8 +1,8 @@
 use crate::show_commit::status::Status;
 
 /// Represents a file change within a Git repository
-#[derive(Debug, PartialEq)]
-pub(super) struct FileStat {
+#[derive(Debug, Clone)]
+pub(crate) struct FileStat {
 	status: Status,
 	to_name: String,
 	from_name: String,

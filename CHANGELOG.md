@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased] - 2020-03-14
 
 ### Added
-- Added page up and down to help view
-- Added page up and down to show commit
+- Page up and down to help view
+- Page up and down to show commit
 - Most missing key bindings for special keys
+- Builtin help for show commit
+- Number of files change in show commit
+- Number of total additions and deletions in show commit
+- The Git "diff.renames" and "diff.rename_limit" options are now respected during show commit 
 
 ### Changed
 - Change page up and page down to scroll half the height of the view area
