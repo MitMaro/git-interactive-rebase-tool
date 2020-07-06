@@ -1,13 +1,20 @@
+use crate::show_commit::diff_line::{DiffLine, Origin};
 use crate::show_commit::file_stat::FileStat;
+use crate::show_commit::file_stats_builder::FileStatsBuilder;
 use crate::show_commit::status::Status;
 use crate::show_commit::user::User;
 use chrono::{DateTime, Local, TimeZone};
 use git2::{DiffFindOptions, DiffOptions, Error, Repository};
+use std::sync::Mutex;
 
 pub(super) struct LoadCommitDiffOptions {
-	pub(super) renames: bool,
-	pub(super) rename_limit: u32,
+	pub(super) context_lines: u32,
 	pub(super) copies: bool,
+	pub(super) ignore_whitespace: bool,
+	pub(super) ignore_whitespace_change: bool,
+	pub(super) interhunk_lines: u32,
+	pub(super) rename_limit: u32,
+	pub(super) renames: bool,
 }
 
 #[derive(Debug)]
@@ -46,10 +53,16 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 
 	// include_unmodified added to find copies from unmodified files
 	let diff_options = diff_options
+		.context_lines(config.context_lines)
 		.ignore_filemode(false)
-		.include_unmodified(config.copies)
+		.ignore_whitespace(config.ignore_whitespace)
+		.ignore_whitespace_change(config.ignore_whitespace_change)
+		.include_typechange(true)
 		.include_typechange_trees(true)
-		.include_typechange(true);
+		.include_unmodified(config.copies)
+		.indent_heuristic(true)
+		.interhunk_lines(config.interhunk_lines)
+		.minimal(true);
 
 	let mut diff_find_options = DiffFindOptions::new();
 	let diff_find_options = diff_find_options
@@ -73,9 +86,11 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 
 			diff.find_similar(Some(diff_find_options))?;
 
-			let mut file_stats = vec![];
 			let mut unmodified_file_count: usize = 0;
 
+			let file_stats_builder = Mutex::new(FileStatsBuilder::new());
+
+			// TODO trace file mode change and binary files
 			diff.foreach(
 				&mut |diff_delta, _| {
 					// unmodified files are included for copy detection, so ignore
@@ -83,6 +98,9 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 						unmodified_file_count += 1;
 						return true;
 					}
+
+					let mut fsb = file_stats_builder.lock().unwrap();
+
 					let from_file_path = diff_delta
 						.old_file()
 						.path()
@@ -94,16 +112,40 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 						.map(|p| String::from(p.to_str().unwrap()))
 						.unwrap_or_else(|| String::from("unknown"));
 
-					file_stats.push(FileStat::new(
+					fsb.add_file_stat(
 						from_file_path,
 						to_file_path,
 						Status::new_from_git_delta(diff_delta.status()),
-					));
+					);
+
 					true
 				},
 				None,
-				None,
-				None,
+				Some(&mut |_, diff_hunk| {
+					let mut fsb = file_stats_builder.lock().unwrap();
+
+					let header = std::str::from_utf8(diff_hunk.header()).unwrap();
+
+					fsb.add_delta(
+						header,
+						diff_hunk.old_start(),
+						diff_hunk.new_start(),
+						diff_hunk.old_lines(),
+						diff_hunk.new_lines(),
+					);
+					true
+				}),
+				Some(&mut |_, _, diff_line| {
+					let mut fsb = file_stats_builder.lock().unwrap();
+					fsb.add_diff_line(DiffLine::new(
+						Origin::from_chr(diff_line.origin()),
+						std::str::from_utf8(diff_line.content()).unwrap(),
+						diff_line.old_lineno(),
+						diff_line.new_lineno(),
+						diff_line.origin() == '=' || diff_line.origin() == '>' || diff_line.origin() == '<',
+					));
+					true
+				}),
 			)
 			.unwrap();
 
@@ -113,7 +155,9 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 				deletions = stats.deletions();
 			}
 
-			file_stats
+			let fsb = file_stats_builder.into_inner().unwrap();
+
+			fsb.build()
 		},
 	};
 
@@ -197,9 +241,13 @@ mod tests {
 
 	fn load_commit_state(hash: &str) -> Result<Commit, String> {
 		Commit::new_from_hash(hash, LoadCommitDiffOptions {
-			renames: true,
-			rename_limit: 200,
+			context_lines: 3,
 			copies: true,
+			ignore_whitespace: false,
+			ignore_whitespace_change: false,
+			interhunk_lines: 3,
+			rename_limit: 200,
+			renames: true,
 		})
 	}
 

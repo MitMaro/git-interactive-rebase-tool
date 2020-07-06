@@ -1,3 +1,5 @@
+use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
+use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::display::color::Color;
 use git2::Config;
 use std::convert::TryFrom;
@@ -103,5 +105,38 @@ pub(super) fn open_git_config() -> Result<Config, String> {
 			}
 		},
 		Err(e) => Err(format!("Error reading git config: {}", e)),
+	}
+}
+
+pub(super) fn get_diff_show_whitespace(git_config: &Config) -> Result<DiffShowWhitespaceSetting, String> {
+	let diff_show_whitespace = get_string(git_config, "interactive-rebase-tool.diffShowWhitespace", "both")?;
+
+	match diff_show_whitespace.to_lowercase().as_str() {
+		"true" | "on" | "both" => Ok(DiffShowWhitespaceSetting::Both),
+		"trailing" => Ok(DiffShowWhitespaceSetting::Trailing),
+		"leading" => Ok(DiffShowWhitespaceSetting::Leading),
+		"false" | "off" | "none" => Ok(DiffShowWhitespaceSetting::None),
+		_ => {
+			Err(format!(
+				"Error reading git config: {} is invalid for \"interactive-rebase-tool.diffShowWhitespace\"",
+				diff_show_whitespace
+			))
+		},
+	}
+}
+
+pub(super) fn get_diff_ignore_whitespace(git_config: &Config) -> Result<DiffIgnoreWhitespaceSetting, String> {
+	let diff_ignore_whitespace = get_string(git_config, "interactive-rebase-tool.diffIgnoreWhitespace", "none")?;
+
+	match diff_ignore_whitespace.to_lowercase().as_str() {
+		"true" | "on" | "all" => Ok(DiffIgnoreWhitespaceSetting::All),
+		"change" => Ok(DiffIgnoreWhitespaceSetting::Change),
+		"false" | "off" | "none" => Ok(DiffIgnoreWhitespaceSetting::None),
+		_ => {
+			Err(format!(
+				"Error reading git config: {} is invalid for \"interactive-rebase-tool.diffIgnoreWhitespace\"",
+				diff_ignore_whitespace
+			))
+		},
 	}
 }

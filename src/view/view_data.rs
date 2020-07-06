@@ -449,7 +449,7 @@ impl ViewData {
 				}
 
 				if start < window_width {
-					let padding = " ".repeat(window_width - start);
+					let padding = line.padding_character().repeat(window_width - start);
 
 					segments.push(LineSegment::new_with_color_and_style(
 						padding.as_str(),

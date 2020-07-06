@@ -110,32 +110,58 @@ git config --global interactive-rebase-tool.foregroundColor black
 
 Some values from your Git Config are directly used by this application.
 
-| Key                                   | Description |
-| ------------------------------------- | ----------- |
-| [`core.commentChar`][coreCommentChar] | Read when reading the TODO file to excluded commented lines |
-| [`core.editor`][coreEditor]           | Read when deciding what editor to open when trigger the external editor |
-| [`diff.renames`][diffRenames]         | Used by show commit when generating a diff |
-| [`diff.renameLimit`][diffRenameLimit] | Used by show commit when generating a diff |
+| Key                                          | Description |
+| -------------------------------------------- | ----------- |
+| [`core.commentChar`][coreCommentChar]        | Read when reading the TODO file to excluded commented lines |
+| [`core.editor`][coreEditor]                  | Read when deciding what editor to open when trigger the external editor |
+| [`diff.context`][diffContext]                | Used by show commit when generating a diff |
+| [`diff.interhunk_lines`][diffInterhunkLines] | Used by show commit when generating a diff |
+| [`diff.renameLimit`][diffRenameLimit]        | Used by show commit when generating a diff |
+| [`diff.renames`][diffRenames]                | Used by show commit when generating a diff |
 
 [coreCommentChar]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar
 [coreEditor]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreeditor
-[diffRenames]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
+[diffContext]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffcontext
+[diffInterhunkLines]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffinterHunkContext
 [diffRenameLimit]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenameLimit
+[diffRenames]:https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
 
 #### General
 
-| Key                        | Default | Type   | Description |
-| -------------------------- | ------- | ------ | ----------- |
-| `autoSelectNext`           | false   | bool   | If true, auto select the next line after action modification |
-| `verticalSpacingCharacter` | ~       | String | Vertical spacing character. Can be set to an empty string. |
+| Key                        | Default | Type    | Description |
+| -------------------------- | ------- | ------- | ----------- |
+| `autoSelectNext`           | false   | bool    | If true, auto select the next line after action modification |
+| `diffIgnoreWhitespace`     | none    | String¹ | The width of the tab character |
+| `diffShowWhitespace`       | both    | String² | The width of the tab character |
+| `diffSpaceSymbol`          | ·       | String  | The visible symbol for the space character. Only used when `diffShowWhitespace` is enabled. |
+| `diffTabSymbol`            | →       | String  | The visible symbol for the tab character. Only used when `diffShowWhitespace` is enabled. |
+| `diffTabWidth`             | 4       | Integer | The width of the tab character |
+| `verticalSpacingCharacter` | ~       | String  | Vertical spacing character. Can be set to an empty string. |
+
+¹ Ignore whitespace can be:
+- `change` to ignore changed whitespace in diffs, same as the [`--ignore-space-change`][diffIgnoreSpaceChange] flag
+- `true`, `on` or `all` to ignore all whitespace in diffs, same as the [`--ignore-all-space`][diffIgnoreAllSpace] flag
+- `false`, `off`, `none` to not ignore whitespace in diffs
+
+² Show whitespace can be:
+- `leading` to show leading whitespace only
+- `trailing` to show trailing whitespace only
+- `true`, `on` or `both` to show both leading and trailing whitespace
+- `false`, `off`, `none` to show no whitespace
+
+[diffIgnoreSpaceChange]:https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---ignore-space-change
+[diffIgnoreAllSpace]:https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---ignore-all-space
 
 #### Colors
 
 The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `black`, `blue`, `cyan`, `green`,
-`magenta`, `red`, `white` and `yellow`. Each terminal controls the exact color for these color names. On terminals that
+`magenta`, `red`, `white` and `yellow`. Dimmed versions of the 8 ANSI colors colors can be used by prefixing the color
+ with `dark`, for example `dark red`. Each terminal controls the exact color for these color names. On terminals that
 support 256 colors, a color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to
 255 with `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used
 to use the default terminal color.
+
+[ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
 
 | Key                       | Default  | Type  | Description |
 | ------------------------- | -------- | ----- | ----------- |
@@ -143,6 +169,8 @@ to use the default terminal color.
 | `diffAddColor`            | green    | Color | Color used for lines and files added in a diff |
 | `diffChangeColor`         | yellow   | Color | Color used for lines and files changed in a diff |
 | `diffRemoveColor`         | red      | Color | Color used for lines and files removed in a diff |
+| `diffContextColor`        | white    | Color | Color used for lines and files removed in a diff |
+| `diffWhitespace`          | black    | Color | Color used for lines and files removed in a diff |
 | `dropColor`               | red      | Color | Color used for the drop action |
 | `editColor`               | blue     | Color | Color used for the edit action |
 | `fixupColor`              | magenta  | Color | Color used for the fixup action |
@@ -181,7 +209,8 @@ to use the default terminal color.
 | `inputMoveUp`              | Up       | String | Key for moving the cursor up |
 | `inputOpenInExternalEditor`| !        | String | Key for opening the external editor |
 | `inputRebase`              | w        | String | Key for rebasing with confirmation |
-| `inputShowCommit`          | c        | String | Key for showing the selected commit |
+| `inputShowCommit`          | c        | String | Key for showing the overview of the selected commit |
+| `inputShowDiff`            | d        | String | Key for showing the diff of the selected commit |
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
 
 ##### Changing Key Bindings
@@ -321,7 +350,6 @@ Git Interactive Rebase Tool is released under the GPLv3 license. See [LICENSE](L
 
 See [Third Party Licenses](THIRD_PARTY_LICENSES) for licenses for third-party libraries used by this project.
 
-[ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
 [appveyor-build]:https://ci.appveyor.com/project/MitMaro/git-interactive-rebase-tool/branch/master
 [cargo]:https://github.com/rust-lang/cargo
 [crates-io]:https://crates.io/crates/git-interactive-rebase-tool

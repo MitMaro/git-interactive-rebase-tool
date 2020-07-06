@@ -59,6 +59,7 @@ impl<'i> InputHandler<'i> {
 			i if i == self.key_bindings.move_right.as_str() => Input::MoveCursorRight,
 			i if i == self.key_bindings.move_up_step.as_str() => Input::MoveCursorPageUp,
 			i if i == self.key_bindings.move_down_step.as_str() => Input::MoveCursorPageDown,
+			i if i == self.key_bindings.show_diff.as_str() => Input::ShowDiff,
 			"Resize" => Input::Resize,
 			_ => Input::Other,
 		}

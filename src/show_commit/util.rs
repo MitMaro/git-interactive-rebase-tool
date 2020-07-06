@@ -4,6 +4,7 @@ use crate::show_commit::status::Status;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_line::ViewLine;
 use num_format::{Locale, ToFormattedString};
+use unicode_segmentation::UnicodeSegmentation;
 
 pub(super) fn get_stat_item_segments(
 	status: &Status,
@@ -36,6 +37,7 @@ pub(super) fn get_stat_item_segments(
 			Status::Other => String::from("X "),
 		}
 	};
+
 	let color = match status {
 		Status::Added => DisplayColor::DiffAddColor,
 		Status::Copied => DisplayColor::DiffAddColor,
@@ -46,6 +48,7 @@ pub(super) fn get_stat_item_segments(
 		// this should never happen in a rebase
 		Status::Other => DisplayColor::Normal,
 	};
+
 	let to_file_indicator = if is_full_width { " → " } else { "→" };
 
 	match status {
@@ -118,4 +121,32 @@ pub(super) fn get_files_changed_summary(commit: &Commit, is_full_width: bool) ->
 			),
 		])
 	}
+}
+
+pub(super) fn get_partition_index_on_whitespace_for_line(line: &str) -> (usize, usize) {
+	let graphemes = UnicodeSegmentation::graphemes(line, true);
+	let length = graphemes.clone().count();
+	let mut start_partition_index = 0;
+	let mut end_partition_index = 0;
+
+	for (index, c) in graphemes.clone().enumerate() {
+		if c != " " && c != "\t" && c != "\n" {
+			start_partition_index = index;
+			break;
+		}
+	}
+
+	for (index, c) in graphemes.rev().enumerate() {
+		if c != " " && c != "\t" && c != "\n" {
+			end_partition_index = length - index;
+			break;
+		}
+	}
+
+	if start_partition_index >= end_partition_index {
+		start_partition_index = 0;
+		end_partition_index = length;
+	}
+
+	(start_partition_index, end_partition_index)
 }

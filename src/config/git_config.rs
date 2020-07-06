@@ -4,6 +4,8 @@ use git2::Config;
 #[derive(Clone, Debug)]
 pub(crate) struct GitConfig {
 	pub(crate) comment_char: String,
+	pub(crate) diff_context: u32,
+	pub(crate) diff_interhunk_lines: u32,
 	pub(crate) diff_rename_limit: u32,
 	pub(crate) diff_renames: bool,
 	pub(crate) diff_copies: bool,
@@ -20,12 +22,14 @@ impl GitConfig {
 			comment_char
 		};
 
-		let git_diff_renames = get_string(&git_config, "diff.renames", "true")?;
+		let git_diff_renames = get_string(&git_config, "diff.renames", "true")?.to_lowercase();
 		let diff_renames = git_diff_renames.as_str() != "false";
 		let diff_copies = git_diff_renames.as_str() == "copy" || git_diff_renames.as_str() == "copies";
 
 		Ok(Self {
 			comment_char,
+			diff_context: get_unsigned_integer(&git_config, "diff.context", 3)?,
+			diff_interhunk_lines: get_unsigned_integer(&git_config, "diff.interHunkContext", 0)?,
 			diff_rename_limit: get_unsigned_integer(&git_config, "diff.renameLimit", 200)?,
 			diff_renames,
 			diff_copies,
