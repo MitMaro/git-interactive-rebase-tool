@@ -99,6 +99,18 @@ impl<'d> Display<'d> {
 		(*self.width.borrow(), *self.height.borrow())
 	}
 
+	pub(crate) fn fill_end_of_line(&self) {
+		self.curses.hline(' ', self.curses.get_max_x());
+	}
+
+	pub(crate) fn ensure_at_line_start(&self, y: i32) {
+		self.curses.mv(y, 0);
+	}
+
+	pub(crate) fn move_from_end_of_line(&self, right: i32) {
+		self.curses.mv(self.curses.get_cur_y(), self.curses.get_max_x() - right);
+	}
+
 	/// Leaves curses mode, runs the specified callback, and re-enables curses.
 	pub(crate) fn leave_temporarily<F, T>(&self, callback: F) -> T
 	where F: FnOnce() -> T {

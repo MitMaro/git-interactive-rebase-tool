@@ -234,6 +234,10 @@ impl Curses {
 		self.window.getch()
 	}
 
+	pub(crate) fn get_cur_y(&self) -> i32 {
+		self.window.get_cur_y()
+	}
+
 	pub(super) fn get_max_y(&self) -> i32 {
 		self.window.get_max_y()
 	}
@@ -250,6 +254,14 @@ impl Curses {
 	#[allow(clippy::unused_self)]
 	pub(super) fn reset_prog_mode(&self) {
 		pancurses::reset_prog_mode();
+	}
+
+	pub(crate) fn hline(&self, ch: char, width: i32) {
+		self.window.hline(ch, width);
+	}
+
+	pub(crate) fn mv(&self, y: i32, x: i32) {
+		self.window.mv(y, x);
 	}
 
 	#[allow(clippy::unused_self)]

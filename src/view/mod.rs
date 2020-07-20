@@ -70,6 +70,8 @@ impl<'v> View<'v> {
 	pub(crate) fn draw_view_data(&self, view_data: &ViewData) {
 		let (_, window_height) = self.display.get_window_size();
 
+		let mut line_index = 0;
+
 		let leading_lines = view_data.get_leading_lines();
 		let lines = view_data.get_lines();
 		let trailing_lines = view_data.get_trailing_lines();
@@ -80,29 +82,47 @@ impl<'v> View<'v> {
 		let scroll_indicator_index = view_data.get_scroll_index();
 
 		if view_data.show_title() {
+			self.display.ensure_at_line_start(line_index);
+			line_index += 1;
 			self.draw_title(view_data.show_help());
 		}
 
 		for line in leading_lines {
+			self.display.ensure_at_line_start(line_index);
+			line_index += 1;
 			self.draw_view_line(line);
 		}
 
 		for (index, line) in lines.iter().enumerate() {
+			self.display.ensure_at_line_start(line_index);
 			self.draw_view_line(line);
 			if show_scroll_bar {
+				self.display.ensure_at_line_start(line_index);
+				self.display.move_from_end_of_line(1);
 				self.display.color(DisplayColor::Normal, false);
 				self.display.set_style(scroll_indicator_index != index, false, true);
 				self.display.draw_str(" ");
 			}
 			self.display.color(DisplayColor::Normal, false);
 			self.display.set_style(false, false, false);
+			line_index += 1;
 		}
 
 		if view_height > lines.len() {
-			self.draw_vertical_spacer(view_height - lines.len() - if view_data.show_title() { 1 } else { 0 });
+			self.display.color(DisplayColor::Normal, false);
+			self.display.set_style(false, false, false);
+			let draw_height = view_height - lines.len() - if view_data.show_title() { 1 } else { 0 };
+			self.display.ensure_at_line_start(line_index);
+			for _x in 0..draw_height {
+				line_index += 1;
+				self.display
+					.draw_str(format!("{}\n", self.config.theme.character_vertical_spacing).as_str());
+			}
 		}
 
 		for line in trailing_lines {
+			self.display.ensure_at_line_start(line_index);
+			line_index += 1;
 			self.draw_view_line(line)
 		}
 	}
@@ -118,6 +138,7 @@ impl<'v> View<'v> {
 		// reset style
 		self.display.color(DisplayColor::Normal, false);
 		self.display.set_style(false, false, false);
+		self.display.fill_end_of_line();
 	}
 
 	pub(crate) fn draw_title(&self, show_help: bool) {
@@ -160,15 +181,6 @@ impl<'v> View<'v> {
 		// reset style
 		self.display.color(DisplayColor::Normal, false);
 		self.display.set_style(false, false, false);
-	}
-
-	fn draw_vertical_spacer(&self, repeat: usize) {
-		self.display.color(DisplayColor::Normal, false);
-		self.display.set_style(false, false, false);
-		for _x in 0..repeat {
-			self.display
-				.draw_str(format!("{}\n", self.config.theme.character_vertical_spacing).as_str());
-		}
 	}
 
 	fn draw_prompt(&self, message: &str) {
