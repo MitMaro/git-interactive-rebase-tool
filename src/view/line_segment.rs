@@ -1,5 +1,21 @@
 use crate::display::display_color::DisplayColor;
+use std::cell::RefCell;
 use unicode_segmentation::UnicodeSegmentation;
+use unicode_width::UnicodeWidthStr;
+use xi_unicode::EmojiExt;
+
+fn unicode_column_width(s: &str) -> usize {
+	s.graphemes(true).map(grapheme_column_width).sum()
+}
+
+fn grapheme_column_width(s: &str) -> usize {
+	for c in s.chars() {
+		if c.is_emoji_modifier_base() || c.is_emoji_modifier() {
+			return 2;
+		}
+	}
+	UnicodeWidthStr::width(s)
+}
 
 pub struct SegmentPartial {
 	content: String,
@@ -51,7 +67,7 @@ impl LineSegment {
 			color,
 			reverse,
 			dim,
-			length: UnicodeSegmentation::graphemes(text, true).count(),
+			length: unicode_column_width(text),
 			underline,
 		}
 	}
@@ -81,21 +97,49 @@ impl LineSegment {
 	}
 
 	pub(super) fn get_partial_segment(&self, left: usize, max_width: usize) -> SegmentPartial {
-		let segment_length = UnicodeSegmentation::graphemes(self.text.as_str(), true).count();
+		let segment_length = unicode_column_width(self.text.as_str());
 
 		// segment is hidden to the left of the line/scroll
 		if segment_length <= left {
 			SegmentPartial::new(String::from(""), 0)
 		}
-		else if segment_length - left >= max_width {
-			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
-			let partial_line = graphemes.skip(left).take(max_width).collect::<String>();
-			SegmentPartial::new(partial_line, max_width)
-		}
 		else {
 			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
-			let partial_line = graphemes.skip(left).collect::<String>();
-			SegmentPartial::new(partial_line, segment_length - left)
+
+			let skip_length = RefCell::new(0);
+			let graphemes = graphemes.skip_while(|v| {
+				let len = grapheme_column_width(*v);
+				let value = *skip_length.borrow();
+				if value + len > left {
+					false
+				}
+				else {
+					skip_length.replace(value + len);
+					true
+				}
+			});
+
+			if segment_length - *skip_length.borrow() >= max_width {
+				let take_length = RefCell::new(0);
+				let partial_line = graphemes
+					.take_while(|v| {
+						let len = grapheme_column_width(v);
+						let value = *take_length.borrow();
+						if value + len > max_width {
+							false
+						}
+						else {
+							take_length.replace(value + len);
+							true
+						}
+					})
+					.collect::<String>();
+				SegmentPartial::new(partial_line, take_length.into_inner())
+			}
+			else {
+				let partial_line = graphemes.collect::<String>();
+				SegmentPartial::new(partial_line, segment_length - skip_length.into_inner())
+			}
 		}
 	}
 }
