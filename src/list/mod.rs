@@ -45,10 +45,6 @@ pub(crate) struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn deactivate(&mut self) {
-		self.view_data.reset();
-	}
-
 	fn process(&mut self, _: &mut GitInteractive, _: &View) -> ProcessResult {
 		ProcessResult::new()
 	}
