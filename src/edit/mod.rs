@@ -33,7 +33,7 @@ impl ProcessModule for Edit {
 		self.cursor_position = 0;
 	}
 
-	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
+	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 		match self.state {
 			EditState::Active => {},
@@ -47,9 +47,9 @@ impl ProcessModule for Edit {
 
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		_view: &View,
+		_view: &View<'_>,
 	) -> HandleInputResult
 	{
 		if self.state == EditState::Finish {
@@ -116,7 +116,7 @@ impl ProcessModule for Edit {
 		HandleInputResult::new(input)
 	}
 
-	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
 

@@ -18,15 +18,15 @@ pub(crate) struct WindowSizeError {}
 impl ProcessModule for WindowSizeError {
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		_view: &View,
+		_view: &View<'_>,
 	) -> HandleInputResult
 	{
 		HandleInputResult::new(input_handler.get_input(InputMode::Default))
 	}
 
-	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
 		let (window_width, window_height) = view.get_view_size();
 
 		view.set_color(DisplayColor::Normal, false);

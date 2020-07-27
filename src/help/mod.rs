@@ -43,9 +43,9 @@ impl<'h> ProcessModule for Help<'h> {
 
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		view: &View,
+		view: &View<'_>,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input(InputMode::Default);
@@ -69,7 +69,7 @@ impl<'h> ProcessModule for Help<'h> {
 		result.build()
 	}
 
-	fn render(&self, _: &View, _: &GitInteractive) {}
+	fn render(&self, _: &View<'_>, _: &GitInteractive) {}
 }
 
 impl<'h> Help<'h> {
@@ -83,7 +83,7 @@ impl<'h> Help<'h> {
 		}
 	}
 
-	pub(crate) fn build_view_data(&mut self, view: &View, _: &GitInteractive) -> &ViewData {
+	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
 		match self.view_data {
 			Some(ref v) => v,
 			None => {

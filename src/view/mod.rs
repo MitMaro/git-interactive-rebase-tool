@@ -24,7 +24,7 @@ pub(crate) struct View<'v> {
 }
 
 impl<'v> View<'v> {
-	pub(crate) fn new(display: &'v Display, config: &'v Config) -> Self {
+	pub(crate) fn new(display: &'v Display<'_>, config: &'v Config) -> Self {
 		Self { display, config }
 	}
 

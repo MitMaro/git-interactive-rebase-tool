@@ -11,19 +11,19 @@ pub(crate) trait ProcessModule {
 
 	fn deactivate(&mut self) {}
 
-	fn process(&mut self, _git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
+	fn process(&mut self, _git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
 		ProcessResult::new()
 	}
 
 	fn handle_input(
 		&mut self,
-		_input_handler: &InputHandler,
+		_input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		_view: &View,
+		_view: &View<'_>,
 	) -> HandleInputResult
 	{
 		HandleInputResult::new(Input::Other)
 	}
 
-	fn render(&self, _view: &View, _git_interactive: &GitInteractive);
+	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive);
 }

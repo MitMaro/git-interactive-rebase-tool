@@ -45,15 +45,15 @@ pub(crate) struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn process(&mut self, _: &mut GitInteractive, _: &View) -> ProcessResult {
+	fn process(&mut self, _: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
 		ProcessResult::new()
 	}
 
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		git_interactive: &mut GitInteractive,
-		view: &View,
+		view: &View<'_>,
 	) -> HandleInputResult
 	{
 		let (_, view_height) = view.get_view_size();
@@ -80,7 +80,7 @@ impl<'l> ProcessModule for List<'l> {
 		result.build()
 	}
 
-	fn render(&self, _view: &View, _git_interactive: &GitInteractive) {}
+	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl<'l> List<'l> {
@@ -100,7 +100,7 @@ impl<'l> List<'l> {
 		}
 	}
 
-	pub(crate) fn build_view_data(&mut self, view: &View, git_interactive: &GitInteractive) -> &ViewData {
+	pub(crate) fn build_view_data(&mut self, view: &View<'_>, git_interactive: &GitInteractive) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 
 		self.view_data.clear();

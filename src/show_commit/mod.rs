@@ -65,7 +65,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		self.state = ShowCommitState::Overview;
 	}
 
-	fn process(&mut self, _git_interactive: &mut GitInteractive, _: &View) -> ProcessResult {
+	fn process(&mut self, _git_interactive: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 
 		if let Some(commit) = &self.commit {
@@ -77,7 +77,13 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		result.build()
 	}
 
-	fn handle_input(&mut self, input_handler: &InputHandler, _: &mut GitInteractive, _: &View) -> HandleInputResult {
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		_: &mut GitInteractive,
+		_: &View<'_>,
+	) -> HandleInputResult
+	{
 		let input = input_handler.get_input(InputMode::ShowCommit);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
@@ -114,7 +120,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		result.build()
 	}
 
-	fn render(&self, _view: &View, _git_interactive: &GitInteractive) {}
+	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl<'s> ShowCommit<'s> {
@@ -141,7 +147,7 @@ impl<'s> ShowCommit<'s> {
 		}
 	}
 
-	pub(crate) fn build_view_data(&mut self, view: &View, _: &GitInteractive) -> &ViewData {
+	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
 		match &self.commit {
 			Some(commit) => {
 				if self.view_data.is_empty() {
