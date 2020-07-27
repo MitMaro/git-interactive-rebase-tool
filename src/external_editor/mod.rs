@@ -36,7 +36,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		}
 	}
 
-	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View) -> ProcessResult {
+	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
 		match self.state {
 			ExternalEditorState::Active => self.process_active(git_interactive),
 			ExternalEditorState::Error => self.process_error(git_interactive),
@@ -47,9 +47,9 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		_view: &View,
+		_view: &View<'_>,
 	) -> HandleInputResult
 	{
 		match self.state {
@@ -59,7 +59,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		}
 	}
 
-	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
 		if let ExternalEditorState::Empty = self.state {
 			view.draw_confirm("Empty rebase todo file. Do you wish to exit?");
 		}
@@ -67,7 +67,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 }
 
 impl<'e> ExternalEditor<'e> {
-	pub(crate) fn new(display: &'e Display, editor: &str) -> Self {
+	pub(crate) fn new(display: &'e Display<'_>, editor: &str) -> Self {
 		Self {
 			editor: String::from(editor),
 			display,
@@ -156,7 +156,7 @@ impl<'e> ExternalEditor<'e> {
 		result.build()
 	}
 
-	fn handle_input_active(&self, input_handler: &InputHandler) -> HandleInputResult {
+	fn handle_input_active(&self, input_handler: &InputHandler<'_>) -> HandleInputResult {
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {
@@ -168,7 +168,7 @@ impl<'e> ExternalEditor<'e> {
 		result.build()
 	}
 
-	fn handle_input_empty(&mut self, input_handler: &InputHandler) -> HandleInputResult {
+	fn handle_input_empty(&mut self, input_handler: &InputHandler<'_>) -> HandleInputResult {
 		let input = input_handler.get_input(InputMode::Confirm);
 		let mut result = HandleInputResultBuilder::new(input);
 		match input {

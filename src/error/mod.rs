@@ -28,9 +28,9 @@ impl ProcessModule for Error {
 
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		_view: &View,
+		_view: &View<'_>,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input(InputMode::Default);
@@ -44,7 +44,7 @@ impl ProcessModule for Error {
 		result.build()
 	}
 
-	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
 		view.draw_error(self.error_message.as_str());
 	}
 }

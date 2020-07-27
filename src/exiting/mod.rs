@@ -5,7 +5,7 @@ use crate::view::View;
 pub(crate) struct Exiting {}
 
 impl ProcessModule for Exiting {
-	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
 		view.draw_str("Exiting...")
 	}
 }

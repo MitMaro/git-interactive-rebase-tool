@@ -12,9 +12,9 @@ pub(crate) struct ConfirmRebase {}
 impl ProcessModule for ConfirmRebase {
 	fn handle_input(
 		&mut self,
-		input_handler: &InputHandler,
+		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
-		_view: &View,
+		_view: &View<'_>,
 	) -> HandleInputResult
 	{
 		let input = input_handler.get_input(InputMode::Confirm);
@@ -31,7 +31,7 @@ impl ProcessModule for ConfirmRebase {
 		result.build()
 	}
 
-	fn render(&self, view: &View, _git_interactive: &GitInteractive) {
+	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
 		view.draw_confirm("Are you sure you want to rebase");
 	}
 }
