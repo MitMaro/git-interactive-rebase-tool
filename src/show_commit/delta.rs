@@ -31,23 +31,23 @@ impl Delta {
 		self.context.as_str()
 	}
 
-	pub(crate) fn lines(&self) -> &Vec<DiffLine> {
+	pub(crate) const fn lines(&self) -> &Vec<DiffLine> {
 		&self.lines
 	}
 
-	pub(crate) fn old_start(&self) -> u32 {
+	pub(crate) const fn old_start(&self) -> u32 {
 		self.old_start
 	}
 
-	pub(crate) fn old_lines(&self) -> u32 {
+	pub(crate) const fn old_lines(&self) -> u32 {
 		self.old_lines
 	}
 
-	pub(crate) fn new_start(&self) -> u32 {
+	pub(crate) const fn new_start(&self) -> u32 {
 		self.new_start
 	}
 
-	pub(crate) fn new_lines(&self) -> u32 {
+	pub(crate) const fn new_lines(&self) -> u32 {
 		self.new_lines
 	}
 }

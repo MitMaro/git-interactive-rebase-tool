@@ -39,7 +39,7 @@ impl ViewLine {
 		}
 	}
 
-	pub(crate) fn set_selected(mut self, selected: bool) -> Self {
+	pub(crate) const fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
 		self
 	}
@@ -49,7 +49,7 @@ impl ViewLine {
 		self
 	}
 
-	pub(crate) fn set_padding_color_and_style(
+	pub(crate) const fn set_padding_color_and_style(
 		mut self,
 		color: DisplayColor,
 		dim: bool,
@@ -64,31 +64,31 @@ impl ViewLine {
 		self
 	}
 
-	pub(crate) fn get_number_of_pinned_segment(&self) -> usize {
+	pub(crate) const fn get_number_of_pinned_segment(&self) -> usize {
 		self.pinned_segments
 	}
 
-	pub(crate) fn get_segments(&self) -> &Vec<LineSegment> {
+	pub(crate) const fn get_segments(&self) -> &Vec<LineSegment> {
 		&self.segments
 	}
 
-	pub(crate) fn get_selected(&self) -> bool {
+	pub(crate) const fn get_selected(&self) -> bool {
 		self.selected
 	}
 
-	pub(super) fn get_padding_color(&self) -> DisplayColor {
+	pub(super) const fn get_padding_color(&self) -> DisplayColor {
 		self.padding_color
 	}
 
-	pub(super) fn is_padding_dimmed(&self) -> bool {
+	pub(super) const fn is_padding_dimmed(&self) -> bool {
 		self.padding_dim
 	}
 
-	pub(super) fn is_padding_underlined(&self) -> bool {
+	pub(super) const fn is_padding_underlined(&self) -> bool {
 		self.padding_underline
 	}
 
-	pub(super) fn is_padding_reversed(&self) -> bool {
+	pub(super) const fn is_padding_reversed(&self) -> bool {
 		self.padding_reverse
 	}
 

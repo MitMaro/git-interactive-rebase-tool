@@ -11,7 +11,7 @@ impl ProcessModule for Exiting {
 }
 
 impl Exiting {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {}
 	}
 }

@@ -180,15 +180,15 @@ impl Commit {
 		load_commit_state(hash, config).map_err(|e| String::from(e.message()))
 	}
 
-	pub(super) fn get_author(&self) -> &User {
+	pub(super) const fn get_author(&self) -> &User {
 		&self.author
 	}
 
-	pub(super) fn get_committer(&self) -> &User {
+	pub(super) const fn get_committer(&self) -> &User {
 		&self.committer
 	}
 
-	pub(super) fn get_date(&self) -> &DateTime<Local> {
+	pub(super) const fn get_date(&self) -> &DateTime<Local> {
 		&self.date
 	}
 
@@ -196,23 +196,23 @@ impl Commit {
 		&self.hash
 	}
 
-	pub(super) fn get_body(&self) -> &Option<String> {
+	pub(super) const fn get_body(&self) -> &Option<String> {
 		&self.body
 	}
 
-	pub(crate) fn get_file_stats(&self) -> &Vec<FileStat> {
+	pub(crate) const fn get_file_stats(&self) -> &Vec<FileStat> {
 		&self.file_stats
 	}
 
-	pub(crate) fn get_number_files_changed(&self) -> usize {
+	pub(crate) const fn get_number_files_changed(&self) -> usize {
 		self.number_files_changed
 	}
 
-	pub(crate) fn get_number_insertions(&self) -> usize {
+	pub(crate) const fn get_number_insertions(&self) -> usize {
 		self.insertions
 	}
 
-	pub(crate) fn get_number_deletions(&self) -> usize {
+	pub(crate) const fn get_number_deletions(&self) -> usize {
 		self.deletions
 	}
 }

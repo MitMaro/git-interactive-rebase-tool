@@ -22,7 +22,7 @@ pub struct ViewData {
 }
 
 impl ViewData {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			scroll_position: ScrollPosition::new(),
 			height: 0,
@@ -238,11 +238,11 @@ impl ViewData {
 		slope.mul_add(value - input_start, output_start).round() as usize
 	}
 
-	pub(super) fn show_title(&self) -> bool {
+	pub(super) const fn show_title(&self) -> bool {
 		self.show_title
 	}
 
-	pub(super) fn show_help(&self) -> bool {
+	pub(super) const fn show_help(&self) -> bool {
 		self.show_help
 	}
 

@@ -7,7 +7,7 @@ pub struct SegmentPartial {
 }
 
 impl SegmentPartial {
-	fn new(content: String, length: usize) -> Self {
+	const fn new(content: String, length: usize) -> Self {
 		Self { content, length }
 	}
 
@@ -15,7 +15,7 @@ impl SegmentPartial {
 		self.content.as_str()
 	}
 
-	pub(super) fn get_length(&self) -> usize {
+	pub(super) const fn get_length(&self) -> usize {
 		self.length
 	}
 }
@@ -60,23 +60,23 @@ impl LineSegment {
 		self.text.as_str()
 	}
 
-	pub(super) fn get_color(&self) -> DisplayColor {
+	pub(super) const fn get_color(&self) -> DisplayColor {
 		self.color
 	}
 
-	pub(super) fn is_dimmed(&self) -> bool {
+	pub(super) const fn is_dimmed(&self) -> bool {
 		self.dim
 	}
 
-	pub(super) fn is_underlined(&self) -> bool {
+	pub(super) const fn is_underlined(&self) -> bool {
 		self.underline
 	}
 
-	pub(super) fn is_reversed(&self) -> bool {
+	pub(super) const fn is_reversed(&self) -> bool {
 		self.reverse
 	}
 
-	pub(super) fn get_length(&self) -> usize {
+	pub(super) const fn get_length(&self) -> usize {
 		self.length
 	}
 

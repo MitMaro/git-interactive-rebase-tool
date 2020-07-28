@@ -37,7 +37,7 @@ impl ProcessModule for ConfirmRebase {
 }
 
 impl ConfirmRebase {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {}
 	}
 }

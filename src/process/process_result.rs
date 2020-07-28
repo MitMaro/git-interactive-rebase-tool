@@ -8,7 +8,7 @@ pub struct ProcessResult {
 }
 
 impl ProcessResult {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			exit_status: None,
 			state: None,
@@ -21,7 +21,7 @@ pub struct ProcessResultBuilder {
 }
 
 impl ProcessResultBuilder {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			process_result: ProcessResult {
 				exit_status: None,
@@ -38,16 +38,18 @@ impl ProcessResultBuilder {
 		self
 	}
 
-	pub(crate) fn exit_status(mut self, status: ExitStatus) -> Self {
+	pub(crate) const fn exit_status(mut self, status: ExitStatus) -> Self {
 		self.process_result.exit_status = Some(status);
 		self
 	}
 
+	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn state(mut self, new_state: State) -> Self {
 		self.process_result.state = Some(new_state);
 		self
 	}
 
+	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> ProcessResult {
 		self.process_result
 	}
