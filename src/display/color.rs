@@ -28,31 +28,31 @@ impl TryFrom<&str> for Color {
 
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
-			"black" => Ok(Color::LightBlack),
-			"blue" => Ok(Color::LightBlue),
-			"cyan" => Ok(Color::LightCyan),
-			"green" => Ok(Color::LightGreen),
-			"magenta" => Ok(Color::LightMagenta),
-			"red" => Ok(Color::LightRed),
-			"white" => Ok(Color::LightWhite),
-			"yellow" => Ok(Color::LightYellow),
-			"light black" => Ok(Color::LightBlack),
-			"light blue" => Ok(Color::LightBlue),
-			"light cyan" => Ok(Color::LightCyan),
-			"light green" => Ok(Color::LightGreen),
-			"light magenta" => Ok(Color::LightMagenta),
-			"light red" => Ok(Color::LightRed),
-			"light white" => Ok(Color::LightWhite),
-			"light yellow" => Ok(Color::LightYellow),
-			"dark black" => Ok(Color::DarkBlack),
-			"dark blue" => Ok(Color::DarkBlue),
-			"dark cyan" => Ok(Color::DarkCyan),
-			"dark green" => Ok(Color::DarkGreen),
-			"dark magenta" => Ok(Color::DarkMagenta),
-			"dark red" => Ok(Color::DarkRed),
-			"dark white" => Ok(Color::DarkWhite),
-			"dark yellow" => Ok(Color::DarkYellow),
-			"transparent" | "-1" => Ok(Color::Default),
+			"black" => Ok(Self::LightBlack),
+			"blue" => Ok(Self::LightBlue),
+			"cyan" => Ok(Self::LightCyan),
+			"green" => Ok(Self::LightGreen),
+			"magenta" => Ok(Self::LightMagenta),
+			"red" => Ok(Self::LightRed),
+			"white" => Ok(Self::LightWhite),
+			"yellow" => Ok(Self::LightYellow),
+			"light black" => Ok(Self::LightBlack),
+			"light blue" => Ok(Self::LightBlue),
+			"light cyan" => Ok(Self::LightCyan),
+			"light green" => Ok(Self::LightGreen),
+			"light magenta" => Ok(Self::LightMagenta),
+			"light red" => Ok(Self::LightRed),
+			"light white" => Ok(Self::LightWhite),
+			"light yellow" => Ok(Self::LightYellow),
+			"dark black" => Ok(Self::DarkBlack),
+			"dark blue" => Ok(Self::DarkBlue),
+			"dark cyan" => Ok(Self::DarkCyan),
+			"dark green" => Ok(Self::DarkGreen),
+			"dark magenta" => Ok(Self::DarkMagenta),
+			"dark red" => Ok(Self::DarkRed),
+			"dark white" => Ok(Self::DarkWhite),
+			"dark yellow" => Ok(Self::DarkYellow),
+			"transparent" | "-1" => Ok(Self::Default),
 			_ => {
 				let matches: Vec<&str> = s.split(',').collect();
 
@@ -60,7 +60,7 @@ impl TryFrom<&str> for Color {
 					1 => {
 						let color_index = s.parse::<i16>();
 						match color_index {
-							Ok(i) if i >= 0 && i < 256 => Ok(Color::Index(i)),
+							Ok(i) if i >= 0 && i < 256 => Ok(Self::Index(i)),
 							_ => Err(format!("Invalid color value: {}", s)),
 						}
 					},
@@ -70,7 +70,7 @@ impl TryFrom<&str> for Color {
 						let blue = matches.get(2).unwrap().parse::<i16>().unwrap_or(-1);
 
 						if red > -1 && green > -1 && blue > -1 && red < 256 && green < 256 && blue < 256 {
-							return Ok(Color::RGB { red, green, blue });
+							return Ok(Self::RGB { red, green, blue });
 						}
 						Err(format!("Invalid color string: {}. Values must be within 0-255.", s))
 					},
