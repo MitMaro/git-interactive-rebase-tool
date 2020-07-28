@@ -14,7 +14,7 @@ pub struct GitConfig {
 
 impl GitConfig {
 	pub(super) fn new(git_config: &Config) -> Result<Self, String> {
-		let comment_char = get_string(&git_config, "core.commentChar", "#")?;
+		let comment_char = get_string(git_config, "core.commentChar", "#")?;
 		let comment_char = if comment_char.as_str().eq("auto") {
 			String::from("#")
 		}
@@ -22,18 +22,18 @@ impl GitConfig {
 			comment_char
 		};
 
-		let git_diff_renames = get_string(&git_config, "diff.renames", "true")?.to_lowercase();
+		let git_diff_renames = get_string(git_config, "diff.renames", "true")?.to_lowercase();
 		let diff_renames = git_diff_renames.as_str() != "false";
 		let diff_copies = git_diff_renames.as_str() == "copy" || git_diff_renames.as_str() == "copies";
 
 		Ok(Self {
 			comment_char,
-			diff_context: get_unsigned_integer(&git_config, "diff.context", 3)?,
-			diff_interhunk_lines: get_unsigned_integer(&git_config, "diff.interHunkContext", 0)?,
-			diff_rename_limit: get_unsigned_integer(&git_config, "diff.renameLimit", 200)?,
+			diff_context: get_unsigned_integer(git_config, "diff.context", 3)?,
+			diff_interhunk_lines: get_unsigned_integer(git_config, "diff.interHunkContext", 0)?,
+			diff_rename_limit: get_unsigned_integer(git_config, "diff.renameLimit", 200)?,
 			diff_renames,
 			diff_copies,
-			editor: get_string(&git_config, "core.editor", editor_from_env().as_str())?,
+			editor: get_string(git_config, "core.editor", editor_from_env().as_str())?,
 		})
 	}
 }

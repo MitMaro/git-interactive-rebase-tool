@@ -115,16 +115,16 @@ impl<'r> Process<'r> {
 
 	fn process(&mut self) {
 		let result = match self.get_state() {
-			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive, &self.view),
-			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive, &self.view),
-			State::Edit => self.edit.process(&mut self.git_interactive, &self.view),
-			State::Error { .. } => self.error.process(&mut self.git_interactive, &self.view),
-			State::Exiting => self.exiting.process(&mut self.git_interactive, &self.view),
-			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive, &self.view),
-			State::Help(_) => self.help.process(&mut self.git_interactive, &self.view),
-			State::List(_) => self.list.process(&mut self.git_interactive, &self.view),
-			State::ShowCommit => self.show_commit.process(&mut self.git_interactive, &self.view),
-			State::WindowSizeError(_) => self.window_size_error.process(&mut self.git_interactive, &self.view),
+			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive, self.view),
+			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive, self.view),
+			State::Edit => self.edit.process(&mut self.git_interactive, self.view),
+			State::Error { .. } => self.error.process(&mut self.git_interactive, self.view),
+			State::Exiting => self.exiting.process(&mut self.git_interactive, self.view),
+			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive, self.view),
+			State::Help(_) => self.help.process(&mut self.git_interactive, self.view),
+			State::List(_) => self.list.process(&mut self.git_interactive, self.view),
+			State::ShowCommit => self.show_commit.process(&mut self.git_interactive, self.view),
+			State::WindowSizeError(_) => self.window_size_error.process(&mut self.git_interactive, self.view),
 		};
 
 		if let Some(exit_status) = result.exit_status {
@@ -143,25 +143,25 @@ impl<'r> Process<'r> {
 	fn render(&mut self) {
 		self.view.clear();
 		match self.get_state() {
-			State::ConfirmAbort => self.confirm_abort.render(&self.view, &self.git_interactive),
-			State::ConfirmRebase => self.confirm_rebase.render(&self.view, &self.git_interactive),
-			State::Edit => self.edit.render(&self.view, &self.git_interactive),
-			State::Error { .. } => self.error.render(&self.view, &self.git_interactive),
-			State::Exiting => self.exiting.render(&self.view, &self.git_interactive),
-			State::ExternalEditor => self.external_editor.render(&self.view, &self.git_interactive),
+			State::ConfirmAbort => self.confirm_abort.render(self.view, &self.git_interactive),
+			State::ConfirmRebase => self.confirm_rebase.render(self.view, &self.git_interactive),
+			State::Edit => self.edit.render(self.view, &self.git_interactive),
+			State::Error { .. } => self.error.render(self.view, &self.git_interactive),
+			State::Exiting => self.exiting.render(self.view, &self.git_interactive),
+			State::ExternalEditor => self.external_editor.render(self.view, &self.git_interactive),
 			State::Help(_) => {
-				let view_data = self.help.build_view_data(&self.view, &self.git_interactive);
+				let view_data = self.help.build_view_data(self.view, &self.git_interactive);
 				self.view.draw_view_data(view_data);
 			},
 			State::List(_) => {
 				self.view
-					.draw_view_data(self.list.build_view_data(&self.view, &self.git_interactive))
+					.draw_view_data(self.list.build_view_data(self.view, &self.git_interactive))
 			},
 			State::ShowCommit => {
 				self.view
-					.draw_view_data(self.show_commit.build_view_data(&self.view, &self.git_interactive))
+					.draw_view_data(self.show_commit.build_view_data(self.view, &self.git_interactive))
 			},
-			State::WindowSizeError(_) => self.window_size_error.render(&self.view, &self.git_interactive),
+			State::WindowSizeError(_) => self.window_size_error.render(self.view, &self.git_interactive),
 		};
 		self.view.refresh()
 	}
@@ -170,43 +170,43 @@ impl<'r> Process<'r> {
 		let result = match self.get_state() {
 			State::ConfirmAbort => {
 				self.confirm_abort
-					.handle_input(self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::ConfirmRebase => {
 				self.confirm_rebase
-					.handle_input(self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::Edit => {
 				self.edit
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::Error { .. } => {
 				self.error
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::Exiting => {
 				self.exiting
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::ExternalEditor => {
 				self.external_editor
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::Help(_) => {
 				self.help
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::List(_) => {
 				self.list
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::ShowCommit => {
 				self.show_commit
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 			State::WindowSizeError(_) => {
 				self.window_size_error
-					.handle_input(&self.input_handler, &mut self.git_interactive, &self.view)
+					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 			},
 		};
 
