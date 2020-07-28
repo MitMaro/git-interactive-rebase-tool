@@ -39,11 +39,11 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 	let body = commit.message().map(String::from);
 	let author = User::new(commit.author().name(), commit.author().email());
 	let committer = User::new(commit.committer().name(), commit.committer().email());
-	let committer = if committer != author {
-		committer
+	let committer = if committer == author {
+		User::new(None, None)
 	}
 	else {
-		User::new(None, None)
+		committer
 	};
 	let mut number_files_changed = 0;
 	let mut insertions = 0;
