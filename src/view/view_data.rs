@@ -235,7 +235,7 @@ impl ViewData {
 		let input_range = input_end - input_start;
 		let output_range = output_end - output_start;
 		let slope = output_range / input_range;
-		(output_start + slope * (value - input_start)).round() as usize
+		slope.mul_add(value - input_start, output_start).round() as usize
 	}
 
 	pub(super) fn show_title(&self) -> bool {
