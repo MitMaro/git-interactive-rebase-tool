@@ -68,13 +68,13 @@ impl<'v> View<'v> {
 	}
 
 	pub(crate) fn draw_view_data(&self, view_data: &ViewData) {
-		let (_, view_height) = self.display.get_window_size();
+		let (_, window_height) = self.display.get_window_size();
 
 		let leading_lines = view_data.get_leading_lines();
 		let lines = view_data.get_lines();
 		let trailing_lines = view_data.get_trailing_lines();
 
-		let view_height = view_height - leading_lines.len() - trailing_lines.len();
+		let view_height = window_height - leading_lines.len() - trailing_lines.len();
 
 		let show_scroll_bar = view_data.should_show_scroll_bar();
 		let scroll_indicator_index = view_data.get_scroll_index();
