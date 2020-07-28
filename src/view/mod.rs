@@ -60,8 +60,7 @@ impl<'v> View<'v> {
 	}
 
 	pub(crate) fn get_view_size(&self) -> (usize, usize) {
-		let (view_width, view_height) = self.display.get_window_size();
-		(view_width as usize, view_height as usize)
+		self.display.get_window_size()
 	}
 
 	pub(crate) fn refresh(&self) {
@@ -69,7 +68,7 @@ impl<'v> View<'v> {
 	}
 
 	pub(crate) fn draw_view_data(&self, view_data: &ViewData) {
-		let (_, view_height) = self.get_view_size();
+		let (_, view_height) = self.display.get_window_size();
 
 		let leading_lines = view_data.get_leading_lines();
 		let lines = view_data.get_lines();
@@ -126,16 +125,14 @@ impl<'v> View<'v> {
 		self.display.set_style(false, true, false);
 		let (window_width, _) = self.display.get_window_size();
 
-		let title_help_indicator_total_length =
-			TITLE_HELP_INDICATOR_LENGTH + self.config.key_bindings.help.len() as i32;
+		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + self.config.key_bindings.help.len();
 
 		if window_width >= TITLE_LENGTH {
 			self.display.draw_str(TITLE);
 			// only draw help if there is room
 			if window_width > TITLE_LENGTH + title_help_indicator_total_length {
 				if (window_width - TITLE_LENGTH - title_help_indicator_total_length) > 0 {
-					let padding =
-						" ".repeat((window_width - TITLE_LENGTH - title_help_indicator_total_length) as usize);
+					let padding = " ".repeat(window_width - TITLE_LENGTH - title_help_indicator_total_length);
 					self.display.draw_str(padding.as_str());
 				}
 				if show_help {
@@ -143,19 +140,19 @@ impl<'v> View<'v> {
 						.draw_str(format!("Help: {}", self.config.key_bindings.help).as_str());
 				}
 				else {
-					let padding = " ".repeat(title_help_indicator_total_length as usize);
+					let padding = " ".repeat(title_help_indicator_total_length);
 					self.display.draw_str(padding.as_str());
 				}
 			}
 			else if (window_width - TITLE_LENGTH) > 0 {
-				let padding = " ".repeat((window_width - TITLE_LENGTH) as usize);
+				let padding = " ".repeat(window_width - TITLE_LENGTH);
 				self.display.draw_str(padding.as_str());
 			}
 		}
 		else {
 			self.display.draw_str(TITLE_SHORT);
 			if (window_width - TITLE_SHORT_LENGTH) > 0 {
-				let padding = " ".repeat((window_width - TITLE_SHORT_LENGTH) as usize);
+				let padding = " ".repeat(window_width - TITLE_SHORT_LENGTH);
 				self.display.draw_str(padding.as_str());
 			}
 		}

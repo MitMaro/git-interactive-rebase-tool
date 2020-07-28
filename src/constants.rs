@@ -1,8 +1,8 @@
 pub(crate) const TITLE: &str = "Git Interactive Rebase Tool";
-pub(crate) const TITLE_LENGTH: i32 = 27;
+pub(crate) const TITLE_LENGTH: usize = 27;
 pub(crate) const TITLE_SHORT: &str = "Git Rebase";
-pub(crate) const TITLE_SHORT_LENGTH: i32 = 10;
-pub(crate) const TITLE_HELP_INDICATOR_LENGTH: i32 = 6;
+pub(crate) const TITLE_SHORT_LENGTH: usize = 10;
+pub(crate) const TITLE_HELP_INDICATOR_LENGTH: usize = 6;
 
 pub(crate) const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue\n";
 pub(crate) const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
