@@ -65,9 +65,9 @@ impl TryFrom<&str> for Color {
 						}
 					},
 					3 => {
-						let red = matches.get(0).unwrap().parse::<i16>().unwrap_or(-1);
-						let green = matches.get(1).unwrap().parse::<i16>().unwrap_or(-1);
-						let blue = matches.get(2).unwrap().parse::<i16>().unwrap_or(-1);
+						let red = matches[0].parse::<i16>().unwrap_or(-1);
+						let green = matches[1].parse::<i16>().unwrap_or(-1);
+						let blue = matches[2].parse::<i16>().unwrap_or(-1);
 
 						if red > -1 && green > -1 && blue > -1 && red < 256 && green < 256 && blue < 256 {
 							return Ok(Self::RGB { red, green, blue });
