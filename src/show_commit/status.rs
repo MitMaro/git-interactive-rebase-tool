@@ -21,17 +21,17 @@ pub enum Status {
 impl Status {
 	pub(super) fn new_from_git_delta(delta: Delta) -> Self {
 		match delta {
-			Delta::Added => Status::Added,
-			Delta::Conflicted => Status::Other,
-			Delta::Copied => Status::Copied,
-			Delta::Deleted => Status::Deleted,
-			Delta::Ignored => Status::Other,
-			Delta::Modified => Status::Modified,
-			Delta::Renamed => Status::Renamed,
-			Delta::Typechange => Status::Typechange,
-			Delta::Unmodified => Status::Other,
-			Delta::Unreadable => Status::Other,
-			Delta::Untracked => Status::Other,
+			Delta::Added => Self::Added,
+			Delta::Conflicted => Self::Other,
+			Delta::Copied => Self::Copied,
+			Delta::Deleted => Self::Deleted,
+			Delta::Ignored => Self::Other,
+			Delta::Modified => Self::Modified,
+			Delta::Renamed => Self::Renamed,
+			Delta::Typechange => Self::Typechange,
+			Delta::Unmodified => Self::Other,
+			Delta::Unreadable => Self::Other,
+			Delta::Untracked => Self::Other,
 		}
 	}
 }

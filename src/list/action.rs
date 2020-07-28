@@ -16,29 +16,29 @@ pub enum Action {
 impl Action {
 	pub(crate) fn as_string(self) -> String {
 		String::from(match self {
-			Action::Break => "break",
-			Action::Drop => "drop",
-			Action::Edit => "edit",
-			Action::Exec => "exec",
-			Action::Fixup => "fixup",
-			Action::Noop => "noop",
-			Action::Pick => "pick",
-			Action::Reword => "reword",
-			Action::Squash => "squash",
+			Self::Break => "break",
+			Self::Drop => "drop",
+			Self::Edit => "edit",
+			Self::Exec => "exec",
+			Self::Fixup => "fixup",
+			Self::Noop => "noop",
+			Self::Pick => "pick",
+			Self::Reword => "reword",
+			Self::Squash => "squash",
 		})
 	}
 
 	pub(super) fn to_abbreviation(self) -> String {
 		String::from(match self {
-			Action::Break => "b",
-			Action::Drop => "d",
-			Action::Edit => "e",
-			Action::Exec => "x",
-			Action::Fixup => "f",
-			Action::Noop => "n",
-			Action::Pick => "p",
-			Action::Reword => "r",
-			Action::Squash => "s",
+			Self::Break => "b",
+			Self::Drop => "d",
+			Self::Edit => "e",
+			Self::Exec => "x",
+			Self::Fixup => "f",
+			Self::Noop => "n",
+			Self::Pick => "p",
+			Self::Reword => "r",
+			Self::Squash => "s",
 		})
 	}
 }
@@ -48,15 +48,15 @@ impl TryFrom<&str> for Action {
 
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
-			"break" | "b" => Ok(Action::Break),
-			"drop" | "d" => Ok(Action::Drop),
-			"edit" | "e" => Ok(Action::Edit),
-			"exec" | "x" => Ok(Action::Exec),
-			"fixup" | "f" => Ok(Action::Fixup),
-			"noop" | "n" => Ok(Action::Noop),
-			"pick" | "p" => Ok(Action::Pick),
-			"reword" | "r" => Ok(Action::Reword),
-			"squash" | "s" => Ok(Action::Squash),
+			"break" | "b" => Ok(Self::Break),
+			"drop" | "d" => Ok(Self::Drop),
+			"edit" | "e" => Ok(Self::Edit),
+			"exec" | "x" => Ok(Self::Exec),
+			"fixup" | "f" => Ok(Self::Fixup),
+			"noop" | "n" => Ok(Self::Noop),
+			"pick" | "p" => Ok(Self::Pick),
+			"reword" | "r" => Ok(Self::Reword),
+			"squash" | "s" => Ok(Self::Squash),
 			_ => Err(format!("Invalid action: {}", s)),
 		}
 	}

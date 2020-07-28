@@ -15,7 +15,7 @@ pub struct FileStat {
 impl FileStat {
 	/// Create a new FileStat
 	pub(super) const fn new(from_name: String, to_name: String, status: Status) -> Self {
-		FileStat {
+		Self {
 			status,
 			to_name,
 			from_name,

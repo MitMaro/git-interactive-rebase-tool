@@ -8,7 +8,7 @@ pub(super) struct User {
 impl User {
 	/// Creates a new user
 	pub(super) fn new(name: Option<&str>, email: Option<&str>) -> Self {
-		User {
+		Self {
 			email: email.map(String::from),
 			name: name.map(String::from),
 		}

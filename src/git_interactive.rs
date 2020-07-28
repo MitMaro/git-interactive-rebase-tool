@@ -46,7 +46,7 @@ impl GitInteractive {
 		let path = PathBuf::from(filepath);
 		let lines = load_filepath(&path, comment_char)?;
 
-		Ok(GitInteractive {
+		Ok(Self {
 			filepath: path,
 			lines,
 			selected_line_index: 1,
