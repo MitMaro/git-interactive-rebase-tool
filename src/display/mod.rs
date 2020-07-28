@@ -11,12 +11,13 @@ use crate::display::curses::Curses;
 use crate::display::display_color::DisplayColor;
 use pancurses::Input;
 use std::cell::RefCell;
+use std::convert::TryInto;
 
 pub(crate) struct Display<'d> {
 	color_manager: ColorManager,
 	curses: &'d Curses,
-	height: RefCell<i32>,
-	width: RefCell<i32>,
+	height: RefCell<usize>,
+	width: RefCell<usize>,
 }
 
 impl<'d> Display<'d> {
@@ -24,8 +25,8 @@ impl<'d> Display<'d> {
 		Self {
 			color_manager: ColorManager::new(&config.theme, curses),
 			curses,
-			height: RefCell::new(curses.get_max_y()),
-			width: RefCell::new(curses.get_max_x()),
+			height: RefCell::new(curses.get_max_y().try_into().expect("Invalid window height")),
+			width: RefCell::new(curses.get_max_x().try_into().expect("Invalid window width")),
 		}
 	}
 
@@ -86,13 +87,15 @@ impl<'d> Display<'d> {
 
 		if let Some(Input::KeyResize) = input {
 			pancurses::resize_term(0, 0);
-			self.height.replace(self.curses.get_max_y());
-			self.width.replace(self.curses.get_max_x());
+			self.height
+				.replace(self.curses.get_max_y().try_into().expect("Invalid window height"));
+			self.width
+				.replace(self.curses.get_max_x().try_into().expect("Invalid window width"));
 		}
 		input
 	}
 
-	pub(crate) fn get_window_size(&self) -> (i32, i32) {
+	pub(crate) fn get_window_size(&self) -> (usize, usize) {
 		(*self.width.borrow(), *self.height.borrow())
 	}
 
