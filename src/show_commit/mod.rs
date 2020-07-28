@@ -181,7 +181,7 @@ impl<'s> ShowCommit<'s> {
 						},
 						ShowCommitState::Diff => {
 							self.view_builder
-								.build_view_data_diff(&mut self.view_data, &commit, is_full_width)
+								.build_view_data_diff(&mut self.view_data, commit, is_full_width)
 						},
 					}
 					self.view_data.set_view_size(view_width, view_height);

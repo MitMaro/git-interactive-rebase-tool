@@ -103,7 +103,7 @@ impl<'v> View<'v> {
 		}
 
 		for line in trailing_lines {
-			self.draw_view_line(&line)
+			self.draw_view_line(line)
 		}
 	}
 
