@@ -2,7 +2,7 @@ use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
 use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::display::color::Color;
 use git2::Config;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::env;
 
 pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<String, String> {
@@ -76,9 +76,16 @@ pub(super) fn get_bool(config: &Config, name: &str, default: bool) -> Result<boo
 
 pub(super) fn get_unsigned_integer(config: &Config, name: &str, default: u32) -> Result<u32, String> {
 	match config.get_i32(name) {
-		Ok(v) => Ok(v as u32),
+		Ok(v) => {
+			v.try_into().map_err(|_e| {
+				format!(
+					"Error reading git config: {} is outside of value range for \"{}\"",
+					v, name
+				)
+			})
+		},
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
-		Err(e) => Err(format!("Error reading git config: {}", e)),
+		Err(_e) => Err(format!("Error reading git config: \"{}\" is not valid", name)),
 	}
 }
 
