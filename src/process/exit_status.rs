@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug)]
-pub(crate) enum ExitStatus {
+pub enum ExitStatus {
 	ConfigError,
 	FileReadError,
 	FileWriteError,
@@ -8,7 +8,7 @@ pub(crate) enum ExitStatus {
 }
 
 impl ExitStatus {
-	pub(crate) fn to_code(self) -> i32 {
+	pub fn to_code(self) -> i32 {
 		match self {
 			ExitStatus::ConfigError => 1,
 			ExitStatus::FileReadError => 2,

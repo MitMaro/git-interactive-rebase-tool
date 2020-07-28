@@ -7,7 +7,7 @@ use crate::process::process_module::ProcessModule;
 use crate::process::state::State;
 use crate::view::View;
 
-pub(crate) struct ConfirmAbort {}
+pub struct ConfirmAbort {}
 
 impl ProcessModule for ConfirmAbort {
 	fn handle_input(

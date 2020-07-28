@@ -2,7 +2,7 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::state::State;
 
 #[derive(Debug)]
-pub(crate) struct ProcessResult {
+pub struct ProcessResult {
 	pub(super) exit_status: Option<ExitStatus>,
 	pub(super) state: Option<State>,
 }
@@ -16,7 +16,7 @@ impl ProcessResult {
 	}
 }
 
-pub(crate) struct ProcessResultBuilder {
+pub struct ProcessResultBuilder {
 	process_result: ProcessResult,
 }
 

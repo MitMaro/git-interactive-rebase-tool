@@ -1,5 +1,5 @@
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum DiffIgnoreWhitespaceSetting {
+pub enum DiffIgnoreWhitespaceSetting {
 	None,
 	All,
 	Change,

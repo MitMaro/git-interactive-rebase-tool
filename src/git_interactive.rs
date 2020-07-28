@@ -33,7 +33,7 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 		.collect()
 }
 
-pub(crate) struct GitInteractive {
+pub struct GitInteractive {
 	filepath: PathBuf,
 	lines: Vec<Line>,
 	selected_line_index: usize,

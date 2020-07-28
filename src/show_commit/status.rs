@@ -1,7 +1,7 @@
 use git2::Delta;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Status {
+pub enum Status {
 	/// Entry does not exist in old version
 	Added,
 	/// Entry does not exist in new version

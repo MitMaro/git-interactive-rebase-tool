@@ -1,8 +1,8 @@
-pub(crate) mod input_handler;
-pub(crate) mod utils;
+pub mod input_handler;
+pub mod utils;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub(crate) enum Input {
+pub enum Input {
 	Abort,
 	ActionBreak,
 	ActionDrop,

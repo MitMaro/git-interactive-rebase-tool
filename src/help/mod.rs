@@ -19,7 +19,7 @@ use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
 
-pub(crate) struct Help<'h> {
+pub struct Help<'h> {
 	normal_mode_help_lines: [(&'h str, &'h str); 22],
 	return_state: State,
 	visual_mode_help_lines: [(&'h str, &'h str); 14],

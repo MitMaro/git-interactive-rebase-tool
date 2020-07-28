@@ -2,7 +2,7 @@ use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::state::State;
 
-pub(crate) struct HandleInputResult {
+pub struct HandleInputResult {
 	pub(super) exit_status: Option<ExitStatus>,
 	pub(super) input: Input,
 	pub(super) state: Option<State>,
@@ -18,7 +18,7 @@ impl HandleInputResult {
 	}
 }
 
-pub(crate) struct HandleInputResultBuilder {
+pub struct HandleInputResultBuilder {
 	handle_input: HandleInputResult,
 }
 

@@ -1,7 +1,7 @@
 use crate::show_commit::diff_line::Origin::{Addition, Context, Deletion};
 
 #[derive(Debug, Clone)]
-pub(crate) enum Origin {
+pub enum Origin {
 	Context,
 	Addition,
 	Deletion,
@@ -22,7 +22,7 @@ impl Origin {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct DiffLine {
+pub struct DiffLine {
 	end_of_file: bool,
 	line: String,
 	new_line_number: Option<u32>,

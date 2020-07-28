@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub(crate) enum Action {
+pub enum Action {
 	Break,
 	Drop,
 	Edit,

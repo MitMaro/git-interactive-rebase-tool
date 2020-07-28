@@ -2,7 +2,7 @@ use crate::list::action::Action;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Line {
+pub struct Line {
 	action: Action,
 	hash: String,
 	command: String,

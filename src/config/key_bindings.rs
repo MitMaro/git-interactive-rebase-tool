@@ -2,7 +2,7 @@ use crate::config::utils::get_input;
 use git2::Config;
 
 #[derive(Clone, Debug)]
-pub(crate) struct KeyBindings {
+pub struct KeyBindings {
 	pub(crate) abort: String,
 	pub(crate) action_break: String,
 	pub(crate) action_drop: String,

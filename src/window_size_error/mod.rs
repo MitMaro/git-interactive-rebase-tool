@@ -13,7 +13,7 @@ use crate::process::handle_input_result::HandleInputResult;
 use crate::process::process_module::ProcessModule;
 use crate::view::View;
 
-pub(crate) struct WindowSizeError {}
+pub struct WindowSizeError {}
 
 impl ProcessModule for WindowSizeError {
 	fn handle_input(
@@ -57,7 +57,7 @@ impl ProcessModule for WindowSizeError {
 }
 
 impl WindowSizeError {
-	pub(crate) fn new() -> Self {
+	pub const fn new() -> Self {
 		Self {}
 	}
 }

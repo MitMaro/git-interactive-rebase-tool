@@ -6,7 +6,7 @@ use crate::process::process_module::ProcessModule;
 use crate::process::state::State;
 use crate::view::View;
 
-pub(crate) struct Error {
+pub struct Error {
 	error_message: String,
 	return_state: State,
 }

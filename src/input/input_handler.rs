@@ -5,7 +5,7 @@ use crate::input::Input;
 use pancurses::Input as PancursesInput;
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum InputMode {
+pub enum InputMode {
 	Confirm,
 	Default,
 	List,
@@ -13,7 +13,7 @@ pub(crate) enum InputMode {
 	ShowCommit,
 }
 
-pub(crate) struct InputHandler<'i> {
+pub struct InputHandler<'i> {
 	key_bindings: &'i KeyBindings,
 	display: &'i Display<'i>,
 }

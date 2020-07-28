@@ -23,7 +23,7 @@ enum ExternalEditorState {
 	Finish,
 }
 
-pub(crate) struct ExternalEditor<'e> {
+pub struct ExternalEditor<'e> {
 	editor: String,
 	display: &'e Display<'e>,
 	state: ExternalEditorState,

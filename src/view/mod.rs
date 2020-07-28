@@ -1,7 +1,7 @@
-pub(crate) mod line_segment;
-pub(crate) mod scroll_position;
-pub(crate) mod view_data;
-pub(crate) mod view_line;
+pub mod line_segment;
+pub mod scroll_position;
+pub mod view_data;
+pub mod view_line;
 
 use crate::constants::{
 	MINIMUM_COMPACT_WINDOW_WIDTH,
@@ -18,7 +18,7 @@ use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::Config;
 
-pub(crate) struct View<'v> {
+pub struct View<'v> {
 	config: &'v Config,
 	display: &'v Display<'v>,
 }

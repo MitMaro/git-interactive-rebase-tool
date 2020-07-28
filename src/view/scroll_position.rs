@@ -6,7 +6,7 @@ enum ScrollDirection {
 	Right,
 }
 
-pub(crate) struct ScrollPosition {
+pub struct ScrollPosition {
 	left_value: usize,
 	lines_length: usize,
 	max_line_width: usize,

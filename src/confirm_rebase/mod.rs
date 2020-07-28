@@ -7,7 +7,7 @@ use crate::process::process_module::ProcessModule;
 use crate::process::state::State;
 use crate::view::View;
 
-pub(crate) struct ConfirmRebase {}
+pub struct ConfirmRebase {}
 
 impl ProcessModule for ConfirmRebase {
 	fn handle_input(

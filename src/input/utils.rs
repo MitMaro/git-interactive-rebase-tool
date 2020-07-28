@@ -51,7 +51,7 @@ pub(super) fn curses_input_to_string(input: Input) -> String {
 	}
 }
 
-pub(crate) fn get_input_short_name(input: &str) -> String {
+pub fn get_input_short_name(input: &str) -> String {
 	match input {
 		"Backspace" => String::from("bs"),
 		"Delete" => String::from("dl"),
