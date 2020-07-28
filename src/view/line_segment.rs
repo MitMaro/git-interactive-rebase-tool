@@ -1,7 +1,7 @@
 use crate::display::display_color::DisplayColor;
 use unicode_segmentation::UnicodeSegmentation;
 
-pub(super) struct SegmentPartial {
+pub struct SegmentPartial {
 	content: String,
 	length: usize,
 }
@@ -20,7 +20,7 @@ impl SegmentPartial {
 	}
 }
 
-pub(crate) struct LineSegment {
+pub struct LineSegment {
 	color: DisplayColor,
 	dim: bool,
 	reverse: bool,

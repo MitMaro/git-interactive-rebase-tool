@@ -1,8 +1,8 @@
-pub(crate) mod exit_status;
-pub(crate) mod handle_input_result;
-pub(crate) mod process_module;
-pub(crate) mod process_result;
-pub(crate) mod state;
+pub mod exit_status;
+pub mod handle_input_result;
+pub mod process_module;
+pub mod process_result;
+pub mod state;
 
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
@@ -25,7 +25,7 @@ use crate::view::View;
 use crate::window_size_error::WindowSizeError;
 use std::cell::RefCell;
 
-pub(crate) struct Process<'r> {
+pub struct Process<'r> {
 	confirm_abort: ConfirmAbort,
 	confirm_rebase: ConfirmRebase,
 	edit: Edit,

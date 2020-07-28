@@ -15,7 +15,7 @@ enum EditState {
 	Finish,
 }
 
-pub(crate) struct Edit {
+pub struct Edit {
 	content: String,
 	cursor_position: usize,
 	state: EditState,

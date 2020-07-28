@@ -1,7 +1,7 @@
 use crate::display::display_color::DisplayColor;
 use crate::view::line_segment::LineSegment;
 
-pub(crate) struct ViewLine {
+pub struct ViewLine {
 	pinned_segments: usize,
 	segments: Vec<LineSegment>,
 	selected: bool,

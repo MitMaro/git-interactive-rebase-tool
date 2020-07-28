@@ -6,7 +6,7 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::View;
 
-pub(crate) trait ProcessModule {
+pub trait ProcessModule {
 	fn activate(&mut self, _state: State, _git_interactive: &GitInteractive) {}
 
 	fn deactivate(&mut self) {}

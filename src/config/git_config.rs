@@ -2,7 +2,7 @@ use crate::config::utils::{editor_from_env, get_string, get_unsigned_integer};
 use git2::Config;
 
 #[derive(Clone, Debug)]
-pub(crate) struct GitConfig {
+pub struct GitConfig {
 	pub(crate) comment_char: String,
 	pub(crate) diff_context: u32,
 	pub(crate) diff_interhunk_lines: u32,

@@ -1,8 +1,8 @@
-pub(crate) mod color;
+pub mod color;
 mod color_manager;
 mod color_mode;
-pub(crate) mod curses;
-pub(crate) mod display_color;
+pub mod curses;
+pub mod display_color;
 mod utils;
 
 use crate::config::Config;
@@ -13,7 +13,7 @@ use pancurses::Input;
 use std::cell::RefCell;
 use std::convert::TryInto;
 
-pub(crate) struct Display<'d> {
+pub struct Display<'d> {
 	color_manager: ColorManager,
 	curses: &'d Curses,
 	height: RefCell<usize>,

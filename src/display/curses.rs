@@ -15,7 +15,7 @@ use pancurses::{
 };
 use std::collections::HashMap;
 
-pub(crate) struct Curses {
+pub struct Curses {
 	color_index: i16,
 	color_lookup: HashMap<(i16, i16, i16), i16>,
 	color_mode: ColorMode,

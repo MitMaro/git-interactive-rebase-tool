@@ -1,5 +1,5 @@
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) enum State {
+pub enum State {
 	ConfirmAbort,
 	ConfirmRebase,
 	Edit,

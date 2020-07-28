@@ -18,7 +18,7 @@ pub(super) struct LoadCommitDiffOptions {
 }
 
 #[derive(Debug)]
-pub(crate) struct Commit {
+pub struct Commit {
 	author: User,
 	body: Option<String>,
 	committer: User,

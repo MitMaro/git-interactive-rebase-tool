@@ -3,7 +3,7 @@ use crate::view::line_segment::LineSegment;
 use crate::view::scroll_position::ScrollPosition;
 use crate::view::view_line::ViewLine;
 
-pub(crate) struct ViewData {
+pub struct ViewData {
 	scroll_position: ScrollPosition,
 	height: usize,
 	width: usize,

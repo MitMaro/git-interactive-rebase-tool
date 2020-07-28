@@ -1,8 +1,8 @@
-pub(crate) mod diff_ignore_whitespace_setting;
-pub(crate) mod diff_show_whitespace_setting;
-pub(crate) mod git_config;
-pub(crate) mod key_bindings;
-pub(crate) mod theme;
+pub mod diff_ignore_whitespace_setting;
+pub mod diff_show_whitespace_setting;
+pub mod git_config;
+pub mod key_bindings;
+pub mod theme;
 mod utils;
 
 use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
@@ -20,7 +20,7 @@ use crate::config::utils::{
 };
 
 #[derive(Clone, Debug)]
-pub(crate) struct Config {
+pub struct Config {
 	pub(crate) auto_select_next: bool,
 	pub(crate) diff_ignore_whitespace: DiffIgnoreWhitespaceSetting,
 	pub(crate) diff_show_whitespace: DiffShowWhitespaceSetting,

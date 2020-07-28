@@ -29,7 +29,7 @@ use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
 
-pub(crate) struct ShowCommit<'s> {
+pub struct ShowCommit<'s> {
 	config: &'s Config,
 	commit: Option<Result<Commit, String>>,
 	view_data: ViewData,

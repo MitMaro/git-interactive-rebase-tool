@@ -3,7 +3,7 @@ use crate::display::color::Color;
 use git2::Config;
 
 #[derive(Clone, Debug)]
-pub(crate) struct Theme {
+pub struct Theme {
 	pub(crate) color_foreground: Color,
 	pub(crate) color_background: Color,
 	pub(crate) color_selected_background: Color,

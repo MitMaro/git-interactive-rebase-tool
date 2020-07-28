@@ -1,5 +1,5 @@
-pub(crate) mod action;
-pub(crate) mod line;
+pub mod action;
+pub mod line;
 mod utils;
 
 use crate::config::Config;
@@ -34,7 +34,7 @@ enum ListState {
 	Visual,
 }
 
-pub(crate) struct List<'l> {
+pub struct List<'l> {
 	config: &'l Config,
 	normal_footer_compact: String,
 	normal_footer_full: String,
