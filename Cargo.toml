@@ -49,7 +49,7 @@ default-features = false
 features = []
 
 [dev-dependencies]
-serial_test = "*"
+serial_test = "0.4.0"
 
 [features]
 default = []
