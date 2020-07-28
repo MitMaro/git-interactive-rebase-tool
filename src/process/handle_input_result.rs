@@ -9,7 +9,7 @@ pub struct HandleInputResult {
 }
 
 impl HandleInputResult {
-	pub(crate) fn new(input: Input) -> Self {
+	pub(crate) const fn new(input: Input) -> Self {
 		Self {
 			exit_status: None,
 			input,
@@ -23,7 +23,7 @@ pub struct HandleInputResultBuilder {
 }
 
 impl HandleInputResultBuilder {
-	pub(crate) fn new(input: Input) -> Self {
+	pub(crate) const fn new(input: Input) -> Self {
 		Self {
 			handle_input: HandleInputResult {
 				exit_status: None,
@@ -33,7 +33,7 @@ impl HandleInputResultBuilder {
 		}
 	}
 
-	pub(crate) fn exit_status(mut self, status: ExitStatus) -> Self {
+	pub(crate) const fn exit_status(mut self, status: ExitStatus) -> Self {
 		self.handle_input.exit_status = Some(status);
 		self
 	}
@@ -43,11 +43,13 @@ impl HandleInputResultBuilder {
 		self
 	}
 
+	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn state(mut self, new_state: State) -> Self {
 		self.handle_input.state = Some(new_state);
 		self
 	}
 
+	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> HandleInputResult {
 		self.handle_input
 	}

@@ -91,19 +91,19 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn get_action(&self) -> &Action {
+	pub(crate) const fn get_action(&self) -> &Action {
 		&self.action
 	}
 
-	pub(super) fn get_command(&self) -> &String {
+	pub(super) const fn get_command(&self) -> &String {
 		&self.command
 	}
 
-	pub(crate) fn get_hash(&self) -> &String {
+	pub(crate) const fn get_hash(&self) -> &String {
 		&self.hash
 	}
 
-	pub(super) fn get_comment(&self) -> &String {
+	pub(super) const fn get_comment(&self) -> &String {
 		&self.comment
 	}
 

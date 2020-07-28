@@ -58,19 +58,19 @@ impl DiffLine {
 		self.line.as_str()
 	}
 
-	pub(crate) fn new_line_number(&self) -> Option<u32> {
+	pub(crate) const fn new_line_number(&self) -> Option<u32> {
 		self.new_line_number
 	}
 
-	pub(crate) fn old_line_number(&self) -> Option<u32> {
+	pub(crate) const fn old_line_number(&self) -> Option<u32> {
 		self.old_line_number
 	}
 
-	pub(crate) fn origin(&self) -> &Origin {
+	pub(crate) const fn origin(&self) -> &Origin {
 		&self.origin
 	}
 
-	pub(crate) fn end_of_file(&self) -> bool {
+	pub(crate) const fn end_of_file(&self) -> bool {
 		self.end_of_file
 	}
 }

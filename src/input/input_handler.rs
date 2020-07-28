@@ -19,7 +19,7 @@ pub struct InputHandler<'i> {
 }
 
 impl<'i> InputHandler<'i> {
-	pub(crate) fn new(display: &'i Display<'_>, key_bindings: &'i KeyBindings) -> Self {
+	pub(crate) const fn new(display: &'i Display<'_>, key_bindings: &'i KeyBindings) -> Self {
 		Self { key_bindings, display }
 	}
 

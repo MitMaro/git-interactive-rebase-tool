@@ -11,7 +11,7 @@ pub(super) struct FileStatsBuilder {
 }
 
 impl FileStatsBuilder {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			delta: None,
 			file_stat: None,

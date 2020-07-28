@@ -14,7 +14,7 @@ pub struct FileStat {
 
 impl FileStat {
 	/// Create a new FileStat
-	pub(super) fn new(from_name: String, to_name: String, status: Status) -> Self {
+	pub(super) const fn new(from_name: String, to_name: String, status: Status) -> Self {
 		FileStat {
 			status,
 			to_name,
@@ -38,29 +38,29 @@ impl FileStat {
 	}
 
 	/// Get the status of this file change
-	pub(super) fn get_status(&self) -> &Status {
+	pub(super) const fn get_status(&self) -> &Status {
 		&self.status
 	}
 
 	/// Get the destination file name for this change.
-	pub(super) fn get_to_name(&self) -> &String {
+	pub(super) const fn get_to_name(&self) -> &String {
 		&self.to_name
 	}
 
 	/// Get the source file name for this change.
-	pub(super) fn get_from_name(&self) -> &String {
+	pub(super) const fn get_from_name(&self) -> &String {
 		&self.from_name
 	}
 
-	pub(crate) fn largest_old_line_number(&self) -> u32 {
+	pub(crate) const fn largest_old_line_number(&self) -> u32 {
 		self.largest_old_line_number
 	}
 
-	pub(crate) fn deltas(&self) -> &Vec<Delta> {
+	pub(crate) const fn deltas(&self) -> &Vec<Delta> {
 		&self.deltas
 	}
 
-	pub(crate) fn largest_new_line_number(&self) -> u32 {
+	pub(crate) const fn largest_new_line_number(&self) -> u32 {
 		self.largest_new_line_number
 	}
 }

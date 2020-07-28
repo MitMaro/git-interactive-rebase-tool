@@ -220,19 +220,19 @@ impl GitInteractive {
 		self.lines[self.selected_line_index - 1].get_action()
 	}
 
-	pub(crate) fn get_selected_line_index(&self) -> &usize {
+	pub(crate) const fn get_selected_line_index(&self) -> &usize {
 		&self.selected_line_index
 	}
 
-	pub(crate) fn get_visual_start_index(&self) -> &usize {
+	pub(crate) const fn get_visual_start_index(&self) -> &usize {
 		&self.visual_index_start
 	}
 
-	pub(crate) fn get_filepath(&self) -> &PathBuf {
+	pub(crate) const fn get_filepath(&self) -> &PathBuf {
 		&self.filepath
 	}
 
-	pub(crate) fn get_lines(&self) -> &Vec<Line> {
+	pub(crate) const fn get_lines(&self) -> &Vec<Line> {
 		&self.lines
 	}
 }

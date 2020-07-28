@@ -16,7 +16,7 @@ pub struct ScrollPosition {
 }
 
 impl ScrollPosition {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			left_value: 0,
 			lines_length: 0,
@@ -76,11 +76,11 @@ impl ScrollPosition {
 		};
 	}
 
-	pub(crate) fn get_top_position(&self) -> usize {
+	pub(crate) const fn get_top_position(&self) -> usize {
 		self.top_value
 	}
 
-	pub(crate) fn get_left_position(&self) -> usize {
+	pub(crate) const fn get_left_position(&self) -> usize {
 		self.left_value
 	}
 
