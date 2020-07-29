@@ -57,21 +57,21 @@ impl Curses {
 	}
 
 	fn init_color(&mut self, red: i16, green: i16, blue: i16) -> i16 {
-		match self.color_lookup.get(&(red, green, blue)) {
-			Some(index) => *index,
-			None => {
-				let index = self.color_index;
-				self.color_index += 1;
-				pancurses::init_color(
-					index,
-					// convert from 0-255 range to 0 - 1000
-					((f64::from(red) / 255.0) * 1000.0) as i16,
-					((f64::from(green) / 255.0) * 1000.0) as i16,
-					((f64::from(blue) / 255.0) * 1000.0) as i16,
-				);
-				self.color_lookup.insert((red, green, blue), index);
-				index
-			},
+		if let Some(index) = self.color_lookup.get(&(red, green, blue)) {
+			*index
+		}
+		else {
+			let index = self.color_index;
+			self.color_index += 1;
+			pancurses::init_color(
+				index,
+				// convert from 0-255 range to 0 - 1000
+				((f64::from(red) / 255.0) * 1000.0) as i16,
+				((f64::from(green) / 255.0) * 1000.0) as i16,
+				((f64::from(blue) / 255.0) * 1000.0) as i16,
+			);
+			self.color_lookup.insert((red, green, blue), index);
+			index
 		}
 	}
 

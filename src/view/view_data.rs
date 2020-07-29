@@ -273,13 +273,13 @@ impl ViewData {
 
 	pub(crate) fn rebuild(&mut self) {
 		if self.leading_lines_cache.is_none() {
-			self.leading_lines_cache = Some(match self.leading_lines.len() {
-				0 => {
+			self.leading_lines_cache = Some(
+				if self.leading_lines.is_empty() {
 					self.max_leading_line_length =
 						Self::calculate_max_line_length(&self.leading_lines, 0, self.leading_lines.len());
 					self.build_lines(&self.leading_lines, 0, self.leading_lines.len(), false)
-				},
-				_ => {
+				}
+				else {
 					// trailing lines have precedence over leading lines, title always has precedence
 					let padding_height = if self.show_title { 1 } else { 0 } + self.trailing_lines.len();
 					let available_height = if padding_height < self.height {
@@ -298,17 +298,17 @@ impl ViewData {
 					self.max_leading_line_length = Self::calculate_max_line_length(&self.leading_lines, 0, end);
 					self.build_lines(&self.leading_lines, 0, end, false)
 				},
-			});
+			);
 		}
 
 		if self.trailing_lines_cache.is_none() {
-			self.trailing_lines_cache = Some(match self.trailing_lines.len() {
-				0 => {
+			self.trailing_lines_cache = Some(
+				if self.trailing_lines.is_empty() {
 					self.max_trailing_line_length =
 						Self::calculate_max_line_length(&self.trailing_lines, 0, self.trailing_lines.len());
 					self.build_lines(&self.trailing_lines, 0, self.trailing_lines.len(), false)
-				},
-				_ => {
+				}
+				else {
 					// title always has precedence
 					let padding_height = if self.show_title { 1 } else { 0 };
 					let available_height = if padding_height < self.height {
@@ -328,16 +328,16 @@ impl ViewData {
 					self.max_trailing_line_length = Self::calculate_max_line_length(&self.trailing_lines, 0, end);
 					self.build_lines(&self.trailing_lines, 0, end, false)
 				},
-			});
+			);
 		}
 
 		if self.lines_cache.is_none() {
-			self.lines_cache = Some(match self.lines.len() {
-				0 => {
+			self.lines_cache = Some(
+				if self.lines.is_empty() {
 					self.max_line_length = Self::calculate_max_line_length(&self.lines, 0, self.lines.len());
 					self.build_lines(&self.lines, 0, self.lines.len(), self.should_show_scroll_bar())
-				},
-				_ => {
+				}
+				else {
 					// all other lines take precedence over regular lines
 					let padding_height =
 						if self.show_title { 1 } else { 0 } + self.leading_lines.len() + self.trailing_lines.len();
@@ -372,7 +372,7 @@ impl ViewData {
 
 					self.build_lines(&self.lines, start, end, self.should_show_scroll_bar())
 				},
-			});
+			);
 		}
 		else {
 			self.scroll_position
