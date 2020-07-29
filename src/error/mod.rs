@@ -35,11 +35,10 @@ impl ProcessModule for Error {
 	{
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::Resize => {},
-			_ => {
-				result = result.state(self.return_state.clone());
-			},
+		if let Input::Resize = input {
+		}
+		else {
+			result = result.state(self.return_state.clone());
 		}
 		result.build()
 	}

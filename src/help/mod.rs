@@ -84,63 +84,63 @@ impl<'h> Help<'h> {
 	}
 
 	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
-		match self.view_data {
-			Some(ref v) => v,
-			None => {
-				let (view_width, view_height) = view.get_view_size();
-				let mut view_data = ViewData::new();
-				view_data.set_show_title(true);
+		if let Some(ref v) = self.view_data {
+			v
+		}
+		else {
+			let (view_width, view_height) = view.get_view_size();
+			let mut view_data = ViewData::new();
+			view_data.set_show_title(true);
 
-				let lines: &[(&str, &str)] = match self.return_state {
-					State::List(visual_mode) => {
-						if visual_mode {
-							&self.visual_mode_help_lines
-						}
-						else {
-							&self.normal_mode_help_lines
-						}
-					},
-					State::ShowCommit => &self.show_commit_help_lines,
-					_ => &[],
-				};
+			let lines: &[(&str, &str)] = match self.return_state {
+				State::List(visual_mode) => {
+					if visual_mode {
+						&self.visual_mode_help_lines
+					}
+					else {
+						&self.normal_mode_help_lines
+					}
+				},
+				State::ShowCommit => &self.show_commit_help_lines,
+				_ => &[],
+			};
 
-				let max_key_length = get_max_help_key_length(lines);
+			let max_key_length = get_max_help_key_length(lines);
 
-				view_data.push_leading_line(
-					ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
-						format!(" {0:width$} Action", "Key", width = max_key_length).as_str(),
-						DisplayColor::Normal,
-						false,
-						true,
-						false,
-					)])
-					.set_padding_color_and_style(DisplayColor::Normal, false, true, false),
-				);
+			view_data.push_leading_line(
+				ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
+					format!(" {0:width$} Action", "Key", width = max_key_length).as_str(),
+					DisplayColor::Normal,
+					false,
+					true,
+					false,
+				)])
+				.set_padding_color_and_style(DisplayColor::Normal, false, true, false),
+			);
 
-				for line in lines {
-					view_data.push_line(ViewLine::new_with_pinned_segments(
-						vec![
-							LineSegment::new_with_color(
-								format!(" {0:width$}", line.0, width = max_key_length).as_str(),
-								DisplayColor::IndicatorColor,
-							),
-							LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
-							LineSegment::new(line.1),
-						],
-						2,
-					));
-				}
+			for line in lines {
+				view_data.push_line(ViewLine::new_with_pinned_segments(
+					vec![
+						LineSegment::new_with_color(
+							format!(" {0:width$}", line.0, width = max_key_length).as_str(),
+							DisplayColor::IndicatorColor,
+						),
+						LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
+						LineSegment::new(line.1),
+					],
+					2,
+				));
+			}
 
-				view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
-					"Any key to close",
-					DisplayColor::IndicatorColor,
-				)]));
-				view_data.set_view_size(view_width, view_height);
-				view_data.rebuild();
+			view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
+				"Any key to close",
+				DisplayColor::IndicatorColor,
+			)]));
+			view_data.set_view_size(view_width, view_height);
+			view_data.rebuild();
 
-				self.view_data = Some(view_data);
-				self.view_data.as_ref().unwrap()
-			},
+			self.view_data = Some(view_data);
+			self.view_data.as_ref().unwrap()
 		}
 	}
 }

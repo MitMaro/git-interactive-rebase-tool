@@ -76,16 +76,14 @@ impl<'e> ExternalEditor<'e> {
 	}
 
 	fn run_editor(&mut self, git_interactive: &GitInteractive) -> Result<(), String> {
-		let mut arguments = match tolkenize(self.editor.as_str()) {
-			Some(args) => {
-				if args.is_empty() {
-					return Err(String::from("No editor configured"));
-				}
-				args.into_iter().map(OsString::from)
-			},
-			None => {
-				return Err(format!("Invalid editor: {}", self.editor));
-			},
+		let mut arguments = if let Some(args) = tolkenize(self.editor.as_str()) {
+			if args.is_empty() {
+				return Err(String::from("No editor configured"));
+			}
+			args.into_iter().map(OsString::from)
+		}
+		else {
+			return Err(format!("Invalid editor: {}", self.editor));
 		};
 
 		git_interactive.write_file()?;
@@ -159,11 +157,10 @@ impl<'e> ExternalEditor<'e> {
 	fn handle_input_active(&self, input_handler: &InputHandler<'_>) -> HandleInputResult {
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::Resize => {},
-			_ => {
-				result = result.state(State::List(false));
-			},
+		if let Input::Resize = input {
+		}
+		else {
+			result = result.state(State::List(false));
 		}
 		result.build()
 	}

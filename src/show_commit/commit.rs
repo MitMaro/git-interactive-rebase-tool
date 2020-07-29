@@ -74,91 +74,91 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 		.copies_from_unmodified(config.copies);
 
 	// some commits do not have parents, and can't have file stats
-	let file_stats = match commit.parent_ids().count() {
-		0 => vec![],
-		_ => {
-			let mut diff = repo.diff_tree_to_tree(
-				// parent exists from check above
-				Some(&commit.parent(0)?.tree()?),
-				Some(&commit.tree()?),
-				Some(diff_options),
-			)?;
+	let file_stats = if commit.parent_ids().count() == 0 {
+		vec![]
+	}
+	else {
+		let mut diff = repo.diff_tree_to_tree(
+			// parent exists from check above
+			Some(&commit.parent(0)?.tree()?),
+			Some(&commit.tree()?),
+			Some(diff_options),
+		)?;
 
-			diff.find_similar(Some(diff_find_options))?;
+		diff.find_similar(Some(diff_find_options))?;
 
-			let mut unmodified_file_count: usize = 0;
+		let mut unmodified_file_count: usize = 0;
 
-			let file_stats_builder = Mutex::new(FileStatsBuilder::new());
+		let file_stats_builder = Mutex::new(FileStatsBuilder::new());
 
-			// TODO trace file mode change and binary files
-			diff.foreach(
-				&mut |diff_delta, _| {
-					// unmodified files are included for copy detection, so ignore
-					if diff_delta.status() == git2::Delta::Unmodified {
-						unmodified_file_count += 1;
-						return true;
-					}
+		// TODO trace file mode change and binary files
+		diff.foreach(
+			&mut |diff_delta, _| {
+				// unmodified files are included for copy detection, so ignore
+				if diff_delta.status() == git2::Delta::Unmodified {
+					unmodified_file_count += 1;
+					return true;
+				}
 
-					let mut fsb = file_stats_builder.lock().unwrap();
+				let mut fsb = file_stats_builder.lock().unwrap();
 
-					let from_file_path = diff_delta
-						.old_file()
-						.path()
-						.map(|p| String::from(p.to_str().unwrap()))
-						.unwrap_or_else(|| String::from("unknown"));
-					let to_file_path = diff_delta
-						.new_file()
-						.path()
-						.map(|p| String::from(p.to_str().unwrap()))
-						.unwrap_or_else(|| String::from("unknown"));
+				let from_file_path = diff_delta
+					.old_file()
+					.path()
+					.map(|p| String::from(p.to_str().unwrap()))
+					.unwrap_or_else(|| String::from("unknown"));
+				let to_file_path = diff_delta
+					.new_file()
+					.path()
+					.map(|p| String::from(p.to_str().unwrap()))
+					.unwrap_or_else(|| String::from("unknown"));
 
-					fsb.add_file_stat(
-						from_file_path,
-						to_file_path,
-						Status::new_from_git_delta(diff_delta.status()),
-					);
+				fsb.add_file_stat(
+					from_file_path,
+					to_file_path,
+					Status::new_from_git_delta(diff_delta.status()),
+				);
 
-					true
-				},
-				None,
-				Some(&mut |_, diff_hunk| {
-					let mut fsb = file_stats_builder.lock().unwrap();
+				true
+			},
+			None,
+			Some(&mut |_, diff_hunk| {
+				let mut fsb = file_stats_builder.lock().unwrap();
 
-					let header = std::str::from_utf8(diff_hunk.header()).unwrap();
+				let header = std::str::from_utf8(diff_hunk.header()).unwrap();
 
-					fsb.add_delta(
-						header,
-						diff_hunk.old_start(),
-						diff_hunk.new_start(),
-						diff_hunk.old_lines(),
-						diff_hunk.new_lines(),
-					);
-					true
-				}),
-				Some(&mut |_, _, diff_line| {
-					let mut fsb = file_stats_builder.lock().unwrap();
-					fsb.add_diff_line(DiffLine::new(
-						Origin::from_chr(diff_line.origin()),
-						std::str::from_utf8(diff_line.content()).unwrap(),
-						diff_line.old_lineno(),
-						diff_line.new_lineno(),
-						diff_line.origin() == '=' || diff_line.origin() == '>' || diff_line.origin() == '<',
-					));
-					true
-				}),
-			)
-			.unwrap();
+				fsb.add_delta(
+					header,
+					diff_hunk.old_start(),
+					diff_hunk.new_start(),
+					diff_hunk.old_lines(),
+					diff_hunk.new_lines(),
+				);
+				true
+			}),
+			Some(&mut |_, _, diff_line| {
+				let mut fsb = file_stats_builder.lock().unwrap();
+				fsb.add_diff_line(DiffLine::new(
+					Origin::from_chr(diff_line.origin()),
+					std::str::from_utf8(diff_line.content()).unwrap(),
+					diff_line.old_lineno(),
+					diff_line.new_lineno(),
+					diff_line.origin() == '=' || diff_line.origin() == '>' || diff_line.origin() == '<',
+				));
+				true
+			}),
+		)
+		.unwrap();
 
-			if let Ok(stats) = diff.stats() {
-				number_files_changed = stats.files_changed() - unmodified_file_count;
-				insertions = stats.insertions();
-				deletions = stats.deletions();
-			}
+		if let Ok(stats) = diff.stats() {
+			number_files_changed = stats.files_changed() - unmodified_file_count;
+			insertions = stats.insertions();
+			deletions = stats.deletions();
+		}
 
-			let fsb = file_stats_builder.into_inner().unwrap();
+		let fsb = file_stats_builder.into_inner().unwrap();
 
-			fsb.build()
-		},
+		fsb.build()
 	};
 
 	Ok(Commit {
