@@ -1,35 +1,16 @@
 use crate::list::action::Action;
 use crate::list::line::Line;
 use std::cmp;
-use std::fs::File;
-use std::io::Read;
+use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::PathBuf;
 
 fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String> {
-	let mut file = match File::open(&path) {
-		Ok(file) => file,
-		Err(why) => {
-			return Err(format!("Error opening file, {}\nReason: {}", path.display(), why));
-		},
-	};
-
-	let mut s = String::new();
-	match file.read_to_string(&mut s) {
-		Ok(_) => {},
-		Err(why) => {
-			return Err(format!("Error reading file, {}\nReason: {}", path.display(), why));
-		},
-	}
-	// catch noop rebases
-	s.lines()
+	read_to_string(&path)
+		.map_err(|why| format!("Error reading file, {}\nReason: {}", path.display(), why))?
+		.lines()
 		.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
-		.map(|l| {
-			match Line::new(l) {
-				Ok(line) => Ok(line),
-				Err(e) => Err(format!("Error reading file, {}", e)),
-			}
-		})
+		.map(|l| Line::new(l).map_err(|e| format!("Error reading file, {}", e)))
 		.collect()
 }
 
