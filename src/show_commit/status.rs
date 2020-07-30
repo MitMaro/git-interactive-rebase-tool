@@ -22,16 +22,14 @@ impl Status {
 	pub(super) fn new_from_git_delta(delta: Delta) -> Self {
 		match delta {
 			Delta::Added => Self::Added,
-			Delta::Conflicted => Self::Other,
 			Delta::Copied => Self::Copied,
 			Delta::Deleted => Self::Deleted,
-			Delta::Ignored => Self::Other,
 			Delta::Modified => Self::Modified,
 			Delta::Renamed => Self::Renamed,
 			Delta::Typechange => Self::Typechange,
-			Delta::Unmodified => Self::Other,
-			Delta::Unreadable => Self::Other,
-			Delta::Untracked => Self::Other,
+			Delta::Ignored | Delta::Conflicted | Delta::Unmodified | Delta::Unreadable | Delta::Untracked => {
+				Self::Other
+			},
 		}
 	}
 }

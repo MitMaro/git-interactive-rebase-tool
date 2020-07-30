@@ -10,12 +10,9 @@ pub enum Origin {
 impl Origin {
 	pub(crate) fn from_chr(c: char) -> Self {
 		match c {
-			' ' => Context,
-			'+' => Addition,
-			'-' => Deletion,
-			'=' => Context,
-			'>' => Addition,
-			'<' => Deletion,
+			' ' | '=' => Context,
+			'+' | '>' => Addition,
+			'-' | '<' => Deletion,
 			_ => panic!("Invalid diff origin: {}", c),
 		}
 	}
