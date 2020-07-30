@@ -7,6 +7,7 @@ use chrono::{DateTime, Local, TimeZone};
 use git2::{DiffFindOptions, DiffOptions, Error, Repository};
 use std::sync::Mutex;
 
+#[derive(Copy, Clone, Debug)]
 pub(super) struct LoadCommitDiffOptions {
 	pub(super) context_lines: u32,
 	pub(super) copies: bool,
