@@ -30,7 +30,7 @@ impl<'i> InputHandler<'i> {
 
 		match mode {
 			InputMode::ShowCommit => self.get_show_commit_input(input.as_str()),
-			InputMode::Raw => self.get_character(input.as_str()),
+			InputMode::Raw => Self::get_character(input.as_str()),
 			InputMode::List => self.get_list_input(input.as_str()),
 			InputMode::Confirm => self.get_confirm(input.as_str()),
 			InputMode::Default => self.get_default_input(input.as_str()),
@@ -106,7 +106,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	fn get_character(&self, input: &str) -> Input {
+	fn get_character(input: &str) -> Input {
 		match input {
 			c if c == "\n" => Input::Enter,
 			c if c == "Enter" => Input::Enter,

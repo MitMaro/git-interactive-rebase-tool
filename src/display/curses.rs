@@ -242,14 +242,17 @@ impl Curses {
 		self.window.get_max_x()
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(super) fn def_prog_mode(&self) {
 		pancurses::def_prog_mode();
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(super) fn reset_prog_mode(&self) {
 		pancurses::reset_prog_mode();
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(super) fn endwin(&self) {
 		pancurses::endwin();
 	}

@@ -39,7 +39,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
 		match self.state {
 			ExternalEditorState::Active => self.process_active(git_interactive),
-			ExternalEditorState::Error => self.process_error(git_interactive),
+			ExternalEditorState::Error => Self::process_error(git_interactive),
 			ExternalEditorState::Empty => ProcessResult::new(),
 			ExternalEditorState::Finish => self.process_finish(git_interactive),
 		}
@@ -53,7 +53,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 	) -> HandleInputResult
 	{
 		match self.state {
-			ExternalEditorState::Active => self.handle_input_active(input_handler),
+			ExternalEditorState::Active => Self::handle_input_active(input_handler),
 			ExternalEditorState::Empty => self.handle_input_empty(input_handler),
 			_ => HandleInputResult::new(Input::Other),
 		}
@@ -142,7 +142,7 @@ impl<'e> ExternalEditor<'e> {
 		result.build()
 	}
 
-	fn process_error(&self, git_interactive: &GitInteractive) -> ProcessResult {
+	fn process_error(git_interactive: &GitInteractive) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new().state(State::Exiting);
 
 		if git_interactive.get_lines().is_empty() {
@@ -154,7 +154,7 @@ impl<'e> ExternalEditor<'e> {
 		result.build()
 	}
 
-	fn handle_input_active(&self, input_handler: &InputHandler<'_>) -> HandleInputResult {
+	fn handle_input_active(input_handler: &InputHandler<'_>) -> HandleInputResult {
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = HandleInputResultBuilder::new(input);
 		if let Input::Resize = input {
