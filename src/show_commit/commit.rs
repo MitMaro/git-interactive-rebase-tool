@@ -105,13 +105,11 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 				let from_file_path = diff_delta
 					.old_file()
 					.path()
-					.map(|p| String::from(p.to_str().unwrap()))
-					.unwrap_or_else(|| String::from("unknown"));
+					.map_or_else(|| String::from("unknown"), |p| String::from(p.to_str().unwrap()));
 				let to_file_path = diff_delta
 					.new_file()
 					.path()
-					.map(|p| String::from(p.to_str().unwrap()))
-					.unwrap_or_else(|| String::from("unknown"));
+					.map_or_else(|| String::from("unknown"), |p| String::from(p.to_str().unwrap()));
 
 				fsb.add_file_stat(
 					from_file_path,
