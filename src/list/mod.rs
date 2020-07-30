@@ -3,17 +3,15 @@ pub mod line;
 mod utils;
 
 use crate::config::Config;
-use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::action::Action;
-use crate::list::line::Line;
 use crate::list::utils::{
-	get_action_color,
 	get_normal_footer_compact,
 	get_normal_footer_full,
+	get_todo_line_segments,
 	get_visual_footer_compact,
 	get_visual_footer_full,
 };
@@ -26,7 +24,6 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
-use std::cmp;
 
 #[derive(Debug, PartialEq)]
 enum ListState {
@@ -115,7 +112,7 @@ impl<'l> List<'l> {
 					|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
 			self.view_data.push_line(
 				ViewLine::new_with_pinned_segments(
-					self.get_todo_line_segments(line, selected_index == index, selected_line, view_width),
+					get_todo_line_segments(line, selected_index == index, selected_line, view_width),
 					if *line.get_action() == Action::Exec { 2 } else { 3 },
 				)
 				.set_selected(selected_index == index || selected_line),
@@ -260,79 +257,5 @@ impl<'l> List<'l> {
 			_ => {},
 		}
 		result
-	}
-
-	fn get_todo_line_segments(
-		&self,
-		line: &Line,
-		is_cursor_line: bool,
-		selected: bool,
-		view_width: usize,
-	) -> Vec<LineSegment>
-	{
-		let mut segments: Vec<LineSegment> = vec![];
-
-		let action = line.get_action();
-
-		if view_width >= MINIMUM_FULL_WINDOW_WIDTH {
-			segments.push(LineSegment::new_with_color_and_style(
-				if is_cursor_line || selected { " > " } else { "   " },
-				DisplayColor::Normal,
-				!is_cursor_line && selected,
-				false,
-				false,
-			));
-
-			segments.push(LineSegment::new_with_color(
-				format!("{:6} ", action.as_string()).as_str(),
-				get_action_color(*action),
-			));
-
-			segments.push(LineSegment::new(
-				if *action == Action::Exec {
-					line.get_command().clone()
-				}
-				else if *action == Action::Break {
-					String::from("")
-				}
-				else {
-					let max_index = cmp::min(line.get_hash().len(), 8);
-					format!("{:8} ", line.get_hash()[0..max_index].to_string())
-				}
-				.as_str(),
-			));
-		}
-		else {
-			segments.push(LineSegment::new_with_color_and_style(
-				if is_cursor_line || selected { ">" } else { " " },
-				DisplayColor::Normal,
-				!is_cursor_line && selected,
-				false,
-				false,
-			));
-
-			segments.push(LineSegment::new_with_color(
-				format!("{:1} ", line.get_action().to_abbreviation()).as_str(),
-				get_action_color(*action),
-			));
-
-			segments.push(LineSegment::new(
-				if *action == Action::Exec {
-					line.get_command().clone()
-				}
-				else if *action == Action::Break {
-					String::from("    ")
-				}
-				else {
-					let max_index = cmp::min(line.get_hash().len(), 3);
-					format!("{:3} ", line.get_hash()[0..max_index].to_string())
-				}
-				.as_str(),
-			));
-		}
-		if *action != Action::Exec && *action != Action::Break {
-			segments.push(LineSegment::new(line.get_comment().as_str()));
-		}
-		segments
 	}
 }
