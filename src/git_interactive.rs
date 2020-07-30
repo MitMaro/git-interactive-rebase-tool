@@ -47,7 +47,7 @@ impl GitInteractive {
 				));
 			},
 		};
-		for line in self.lines.iter() {
+		for line in &self.lines {
 			match writeln!(file, "{}", line.to_text()) {
 				Ok(_) => {},
 				Err(why) => {
