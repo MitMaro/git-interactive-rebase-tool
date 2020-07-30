@@ -9,8 +9,14 @@ fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String
 	read_to_string(&path)
 		.map_err(|why| format!("Error reading file, {}\nReason: {}", path.display(), why))?
 		.lines()
-		.filter(|l| !l.starts_with(comment_char) && !l.is_empty())
-		.map(|l| Line::new(l).map_err(|e| format!("Error reading file, {}", e)))
+		.filter_map(|l| {
+			if l.starts_with(comment_char) || l.is_empty() {
+				None
+			}
+			else {
+				Some(Line::new(l).map_err(|e| format!("Error reading file, {}", e)))
+			}
+		})
 		.collect()
 }
 
