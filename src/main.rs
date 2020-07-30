@@ -1,21 +1,31 @@
-#![deny(warnings)]
-#![deny(anonymous_parameters)]
-#![deny(bare_trait_objects)]
-#![allow(box_pointers)]
-#![allow(elided_lifetimes_in_paths)]
-#![deny(missing_copy_implementations)]
-#![deny(missing_debug_implementations)]
-#![allow(missing_docs)]
-#![allow(single_use_lifetimes)]
-#![deny(trivial_casts)]
-#![deny(trivial_numeric_casts)]
-#![deny(unreachable_pub)]
-#![deny(unsafe_code)]
-#![deny(unused_extern_crates)]
-#![deny(unused_import_braces)]
-#![deny(unused_qualifications)]
-#![allow(unused_results)]
-#![deny(variant_size_differences)]
+// Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration
+#![deny(
+	warnings,
+	nonstandard_style,
+	unused,
+	future_incompatible,
+	rust_2018_idioms,
+	unsafe_code
+)]
+#![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
+#![allow(clippy::as_conversions)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::else_if_without_else)]
+#![allow(clippy::expect_used)]
+#![allow(clippy::float_arithmetic)]
+#![allow(clippy::implicit_return)]
+#![allow(clippy::indexing_slicing)]
+#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::integer_division)]
+#![allow(clippy::missing_docs_in_private_items)]
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::non_ascii_literal)]
+#![allow(clippy::panic)]
+#![allow(clippy::struct_excessive_bools)]
+#![allow(clippy::too_many_lines)]
+#![allow(clippy::unwrap_used)]
+#![allow(clippy::wildcard_enum_match_arm)]
 
 mod cli;
 mod config;
