@@ -39,12 +39,9 @@ pub(super) fn get_stat_item_segments(
 	};
 
 	let color = match status {
-		Status::Added => DisplayColor::DiffAddColor,
-		Status::Copied => DisplayColor::DiffAddColor,
+		Status::Added | Status::Copied => DisplayColor::DiffAddColor,
 		Status::Deleted => DisplayColor::DiffRemoveColor,
-		Status::Modified => DisplayColor::DiffChangeColor,
-		Status::Renamed => DisplayColor::DiffChangeColor,
-		Status::Typechange => DisplayColor::DiffChangeColor,
+		Status::Modified | Status::Renamed | Status::Typechange => DisplayColor::DiffChangeColor,
 		// this should never happen in a rebase
 		Status::Other => DisplayColor::Normal,
 	};
