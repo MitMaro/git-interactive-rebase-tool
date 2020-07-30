@@ -4,7 +4,7 @@ use crate::input::utils::curses_input_to_string;
 use crate::input::Input;
 use pancurses::Input as PancursesInput;
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum InputMode {
 	Confirm,
 	Default,
