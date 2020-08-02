@@ -173,7 +173,10 @@ impl<'r> Process<'r> {
 				self.view
 					.draw_view_data(self.show_commit.build_view_data(self.view, &self.git_interactive))
 			},
-			State::WindowSizeError(_) => self.window_size_error.render(self.view, &self.git_interactive),
+			State::WindowSizeError(_) => {
+				self.view
+					.draw_view_data(self.window_size_error.build_view_data(self.view, &self.git_interactive))
+			},
 		};
 		self.view.refresh()
 	}
