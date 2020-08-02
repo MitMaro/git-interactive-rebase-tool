@@ -72,6 +72,21 @@ impl<'v> View<'v> {
 
 		let mut line_index = 0;
 
+		if view_data.show_title() {
+			self.display.ensure_at_line_start(line_index);
+			line_index += 1;
+			self.draw_title(view_data.show_help());
+		}
+
+		if let Some(prompt) = view_data.get_prompt() {
+			self.display.set_style(false, false, false);
+			self.display.draw_str(&format!(
+				"\n{} ({}/{})? ",
+				prompt, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
+			));
+			return;
+		}
+
 		let leading_lines = view_data.get_leading_lines();
 		let lines = view_data.get_lines();
 		let trailing_lines = view_data.get_trailing_lines();
@@ -80,12 +95,6 @@ impl<'v> View<'v> {
 
 		let show_scroll_bar = view_data.should_show_scroll_bar();
 		let scroll_indicator_index = view_data.get_scroll_index();
-
-		if view_data.show_title() {
-			self.display.ensure_at_line_start(line_index);
-			line_index += 1;
-			self.draw_title(view_data.show_help());
-		}
 
 		for line in leading_lines {
 			self.display.ensure_at_line_start(line_index);
@@ -181,18 +190,5 @@ impl<'v> View<'v> {
 		// reset style
 		self.display.color(DisplayColor::Normal, false);
 		self.display.set_style(false, false, false);
-	}
-
-	fn draw_prompt(&self, message: &str) {
-		self.draw_title(false);
-		self.display.set_style(false, false, false);
-		self.display.draw_str(&format!("\n{} ", message));
-	}
-
-	pub(crate) fn draw_confirm(&self, message: &str) {
-		self.draw_prompt(&format!(
-			"{} ({}/{})? ",
-			message, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
-		));
 	}
 }

@@ -16,6 +16,7 @@ pub struct ViewData {
 	trailing_lines_cache: Option<Vec<ViewLine>>,
 	show_title: bool,
 	show_help: bool,
+	prompt: Option<String>,
 	max_leading_line_length: usize,
 	max_line_length: usize,
 	max_trailing_line_length: usize,
@@ -24,21 +25,22 @@ pub struct ViewData {
 impl ViewData {
 	pub(crate) const fn new() -> Self {
 		Self {
-			scroll_position: ScrollPosition::new(),
-			height: 0,
-			width: 0,
 			empty_lines: vec![],
+			height: 0,
 			leading_lines: vec![],
 			leading_lines_cache: None,
 			lines: vec![],
 			lines_cache: None,
-			trailing_lines: vec![],
-			trailing_lines_cache: None,
-			show_title: false,
-			show_help: false,
 			max_leading_line_length: 0,
 			max_line_length: 0,
 			max_trailing_line_length: 0,
+			prompt: None,
+			scroll_position: ScrollPosition::new(),
+			show_help: false,
+			show_title: false,
+			trailing_lines: vec![],
+			trailing_lines_cache: None,
+			width: 0,
 		}
 	}
 
@@ -51,6 +53,13 @@ impl ViewData {
 			DisplayColor::IndicatorColor,
 		)]));
 		inst.rebuild();
+		inst
+	}
+
+	pub(crate) fn new_confirm(prompt: &str) -> Self {
+		let mut inst = Self::new();
+		inst.set_show_title(true);
+		inst.prompt = Some(String::from(prompt));
 		inst
 	}
 
@@ -253,6 +262,10 @@ impl ViewData {
 
 	pub(crate) fn is_empty(&self) -> bool {
 		self.lines.is_empty() && self.leading_lines.is_empty() && self.trailing_lines.is_empty()
+	}
+
+	pub(super) const fn get_prompt(&self) -> &Option<String> {
+		&self.prompt
 	}
 
 	pub(super) fn get_leading_lines(&self) -> &Vec<ViewLine> {
