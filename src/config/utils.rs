@@ -70,7 +70,7 @@ pub(super) fn get_bool(config: &Config, name: &str, default: bool) -> Result<boo
 	match config.get_bool(name) {
 		Ok(v) => Ok(v),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
-		Err(e) => Err(format!("Error reading git config: {}", e)),
+		Err(_e) => Err(format!("Error reading git config: \"{}\" is not valid", name)),
 	}
 }
 
@@ -79,7 +79,7 @@ pub(super) fn get_unsigned_integer(config: &Config, name: &str, default: u32) ->
 		Ok(v) => {
 			v.try_into().map_err(|_e| {
 				format!(
-					"Error reading git config: {} is outside of value range for \"{}\"",
+					"Error reading git config: \"{}\" is outside of value range for \"{}\"",
 					v, name
 				)
 			})
@@ -93,7 +93,7 @@ pub(super) fn get_color(config: &Config, name: &str, default_color: Color) -> Re
 	match config.get_string(name) {
 		Ok(v) => Color::try_from(v.to_lowercase().as_str()),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default_color),
-		Err(e) => Err(format!("Error reading git config: {}", e)),
+		Err(_e) => Err(format!("Error reading git config: \"{}\" is not valid", name)),
 	}
 }
 
@@ -125,7 +125,7 @@ pub(super) fn get_diff_show_whitespace(git_config: &Config) -> Result<DiffShowWh
 		"false" | "off" | "none" => Ok(DiffShowWhitespaceSetting::None),
 		_ => {
 			Err(format!(
-				"Error reading git config: {} is invalid for \"interactive-rebase-tool.diffShowWhitespace\"",
+				"Error reading git config: \"{}\" is invalid for \"interactive-rebase-tool.diffShowWhitespace\"",
 				diff_show_whitespace
 			))
 		},
@@ -141,7 +141,7 @@ pub(super) fn get_diff_ignore_whitespace(git_config: &Config) -> Result<DiffIgno
 		"false" | "off" | "none" => Ok(DiffIgnoreWhitespaceSetting::None),
 		_ => {
 			Err(format!(
-				"Error reading git config: {} is invalid for \"interactive-rebase-tool.diffIgnoreWhitespace\"",
+				"Error reading git config: \"{}\" is invalid for \"interactive-rebase-tool.diffIgnoreWhitespace\"",
 				diff_ignore_whitespace
 			))
 		},

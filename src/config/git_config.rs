@@ -23,8 +23,17 @@ impl GitConfig {
 		};
 
 		let git_diff_renames = get_string(git_config, "diff.renames", "true")?.to_lowercase();
-		let diff_renames = git_diff_renames.as_str() != "false";
-		let diff_copies = git_diff_renames.as_str() == "copy" || git_diff_renames.as_str() == "copies";
+		let (diff_renames, diff_copies) = match git_diff_renames.to_lowercase().as_str() {
+			"true" => (true, false),
+			"false" => (false, false),
+			"copy" | "copies" => (true, true),
+			v => {
+				return Err(format!(
+					"Error reading git config: \"{}\" is not valid for \"diff.renames\"",
+					v
+				))
+			},
+		};
 
 		Ok(Self {
 			comment_char,
