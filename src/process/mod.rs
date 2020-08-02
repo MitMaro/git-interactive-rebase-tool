@@ -156,7 +156,10 @@ impl<'r> Process<'r> {
 				let view_data = self.error.build_view_data(self.view, &self.git_interactive);
 				self.view.draw_view_data(view_data);
 			},
-			State::Exiting => self.exiting.render(self.view, &self.git_interactive),
+			State::Exiting => {
+				self.view
+					.draw_view_data(self.exiting.build_view_data(self.view, &self.git_interactive))
+			},
 			State::ExternalEditor => {
 				let view_data = self.external_editor.build_view_data(self.view, &self.git_interactive);
 				self.view.draw_view_data(view_data);

@@ -1,17 +1,29 @@
 use crate::git_interactive::GitInteractive;
 use crate::process::process_module::ProcessModule;
+use crate::view::line_segment::LineSegment;
+use crate::view::view_data::ViewData;
+use crate::view::view_line::ViewLine;
 use crate::view::View;
 
-pub struct Exiting {}
+pub struct Exiting {
+	view_data: ViewData,
+}
 
 impl ProcessModule for Exiting {
-	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
-		view.draw_str("Exiting...")
-	}
+	fn render(&self, _: &View<'_>, _: &GitInteractive) {}
 }
 
 impl Exiting {
-	pub(crate) const fn new() -> Self {
-		Self {}
+	pub(crate) fn new() -> Self {
+		let mut view_data = ViewData::new();
+		view_data.push_line(ViewLine::new(vec![LineSegment::new("Exiting...")]));
+		Self { view_data }
+	}
+
+	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
+		self.view_data.set_view_size(view_width, view_height);
+		self.view_data.rebuild();
+		&self.view_data
 	}
 }
