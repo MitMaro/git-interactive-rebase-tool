@@ -45,16 +45,6 @@ impl<'v> View<'v> {
 		!(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT)
 	}
 
-	pub(crate) fn draw_error(&self, message: &str) {
-		self.draw_title(false);
-		self.display.color(DisplayColor::Normal, false);
-		self.display.set_style(false, false, false);
-		self.display.draw_str(message);
-		self.display.draw_str("\n");
-		self.display.color(DisplayColor::IndicatorColor, false);
-		self.display.draw_str("Press any key to continue");
-	}
-
 	pub(crate) fn clear(&self) {
 		self.display.clear();
 	}

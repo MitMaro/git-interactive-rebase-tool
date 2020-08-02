@@ -4,26 +4,29 @@ use crate::input::Input;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
 use crate::process::state::State;
+use crate::view::view_data::ViewData;
 use crate::view::View;
 
 pub struct Error {
-	error_message: String,
 	return_state: State,
+	view_data: Option<ViewData>,
+	view_data_no_error: ViewData,
 }
 
 impl ProcessModule for Error {
 	fn activate(&mut self, state: State, _git_interactive: &GitInteractive) {
 		if let State::Error { message, return_state } = state {
-			self.error_message = message;
+			eprintln!("Error activated");
+			self.view_data = Some(ViewData::new_error(message.as_str()));
 			self.return_state = *return_state;
 		}
 		else {
-			panic!("Help module activated when not expected");
+			self.view_data = None;
 		}
 	}
 
 	fn deactivate(&mut self) {
-		self.error_message.clear();
+		self.view_data = None;
 	}
 
 	fn handle_input(
@@ -43,16 +46,27 @@ impl ProcessModule for Error {
 		result.build()
 	}
 
-	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
-		view.draw_error(self.error_message.as_str());
-	}
+	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl Error {
 	pub(crate) fn new() -> Self {
 		Self {
-			error_message: String::from(""),
 			return_state: State::List(false),
+			view_data: None,
+			view_data_no_error: ViewData::new_error("Help module activated without error message"),
+		}
+	}
+
+	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
+		if let Some(ref mut view_data) = self.view_data {
+			view_data.set_view_size(view_width, view_height);
+			view_data
+		}
+		else {
+			self.view_data_no_error.set_view_size(view_width, view_height);
+			&self.view_data_no_error
 		}
 	}
 }
