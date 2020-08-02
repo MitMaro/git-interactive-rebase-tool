@@ -10,6 +10,7 @@ use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBu
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
 use crate::process::state::State;
+use crate::view::view_data::ViewData;
 use crate::view::View;
 use std::ffi::OsString;
 use std::process::Command;
@@ -27,6 +28,8 @@ pub struct ExternalEditor<'e> {
 	editor: String,
 	display: &'e Display<'e>,
 	state: ExternalEditorState,
+	view_data_external: ViewData,
+	view_data_error: ViewData,
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
@@ -59,11 +62,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		}
 	}
 
-	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
-		if let ExternalEditorState::Empty = self.state {
-			view.draw_confirm("Empty rebase todo file. Do you wish to exit?");
-		}
-	}
+	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl<'e> ExternalEditor<'e> {
@@ -72,6 +71,17 @@ impl<'e> ExternalEditor<'e> {
 			editor: String::from(editor),
 			display,
 			state: ExternalEditorState::Active,
+			view_data_external: ViewData::new(),
+			view_data_error: ViewData::new_confirm("Empty rebase todo file. Do you wish to exit"),
+		}
+	}
+
+	pub(crate) fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
+		if let ExternalEditorState::Empty = self.state {
+			&self.view_data_error
+		}
+		else {
+			&self.view_data_external
 		}
 	}
 

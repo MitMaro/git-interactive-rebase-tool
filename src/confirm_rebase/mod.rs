@@ -5,9 +5,12 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
 use crate::process::state::State;
+use crate::view::view_data::ViewData;
 use crate::view::View;
 
-pub struct ConfirmRebase {}
+pub struct ConfirmRebase {
+	view_data: ViewData,
+}
 
 impl ProcessModule for ConfirmRebase {
 	fn handle_input(
@@ -31,13 +34,17 @@ impl ProcessModule for ConfirmRebase {
 		result.build()
 	}
 
-	fn render(&self, view: &View<'_>, _git_interactive: &GitInteractive) {
-		view.draw_confirm("Are you sure you want to rebase");
-	}
+	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl ConfirmRebase {
-	pub(crate) const fn new() -> Self {
-		Self {}
+	pub(crate) fn new() -> Self {
+		Self {
+			view_data: ViewData::new_confirm("Are you sure you want to rebase"),
+		}
+	}
+
+	pub(crate) fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
+		&self.view_data
 	}
 }
