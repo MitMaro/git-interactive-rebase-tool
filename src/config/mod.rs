@@ -5,6 +5,9 @@ pub mod key_bindings;
 pub mod theme;
 mod utils;
 
+#[cfg(test)]
+mod tests;
+
 use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
 use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::config::git_config::GitConfig;
@@ -34,18 +37,20 @@ pub struct Config {
 
 impl Config {
 	pub(crate) fn new() -> Result<Self, String> {
-		let git_config = open_git_config()?;
+		Self::new_from_config(&open_git_config()?)
+	}
 
+	fn new_from_config(git_config: &git2::Config) -> Result<Self, String> {
 		Ok(Self {
-			auto_select_next: get_bool(&git_config, "interactive-rebase-tool.autoSelectNext", false)?,
-			diff_ignore_whitespace: get_diff_ignore_whitespace(&git_config)?,
-			diff_show_whitespace: get_diff_show_whitespace(&git_config)?,
-			diff_tab_width: get_unsigned_integer(&git_config, "interactive-rebase-tool.diffTabWidth", 4)?,
-			diff_tab_symbol: get_string(&git_config, "interactive-rebase-tool.diffTabSymbol", "→")?,
-			diff_space_symbol: get_string(&git_config, "interactive-rebase-tool.diffSpaceSymbol", "·")?,
-			git: GitConfig::new(&git_config)?,
-			key_bindings: KeyBindings::new(&git_config)?,
-			theme: Theme::new(&git_config)?,
+			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
+			diff_ignore_whitespace: get_diff_ignore_whitespace(git_config)?,
+			diff_show_whitespace: get_diff_show_whitespace(git_config)?,
+			diff_tab_width: get_unsigned_integer(git_config, "interactive-rebase-tool.diffTabWidth", 4)?,
+			diff_tab_symbol: get_string(git_config, "interactive-rebase-tool.diffTabSymbol", "→")?,
+			diff_space_symbol: get_string(git_config, "interactive-rebase-tool.diffSpaceSymbol", "·")?,
+			git: GitConfig::new(git_config)?,
+			key_bindings: KeyBindings::new(git_config)?,
+			theme: Theme::new(git_config)?,
 		})
 	}
 }
