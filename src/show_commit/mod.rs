@@ -140,7 +140,7 @@ impl<'s> ShowCommit<'s> {
 		Self {
 			commit: None,
 			config,
-			no_commit_view_data: ViewData::new_error("Not commit data to show"),
+			no_commit_view_data: ViewData::new_error("No commit data to show"),
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options, &config.key_bindings),
 			view_data,
