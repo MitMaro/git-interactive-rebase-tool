@@ -39,6 +39,15 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		}
 	}
 
+	fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
+		if let ExternalEditorState::Empty = self.state {
+			&self.view_data_error
+		}
+		else {
+			&self.view_data_external
+		}
+	}
+
 	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
 		match self.state {
 			ExternalEditorState::Active => self.process_active(git_interactive),
@@ -61,8 +70,6 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 			_ => HandleInputResult::new(Input::Other),
 		}
 	}
-
-	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl<'e> ExternalEditor<'e> {
@@ -73,15 +80,6 @@ impl<'e> ExternalEditor<'e> {
 			state: ExternalEditorState::Active,
 			view_data_external: ViewData::new(),
 			view_data_error: ViewData::new_confirm("Empty rebase todo file. Do you wish to exit"),
-		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
-		if let ExternalEditorState::Empty = self.state {
-			&self.view_data_error
-		}
-		else {
-			&self.view_data_external
 		}
 	}
 

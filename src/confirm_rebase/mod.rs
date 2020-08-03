@@ -13,6 +13,10 @@ pub struct ConfirmRebase {
 }
 
 impl ProcessModule for ConfirmRebase {
+	fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
+		&self.view_data
+	}
+
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
@@ -33,8 +37,6 @@ impl ProcessModule for ConfirmRebase {
 		}
 		result.build()
 	}
-
-	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl ConfirmRebase {
@@ -42,9 +44,5 @@ impl ConfirmRebase {
 		Self {
 			view_data: ViewData::new_confirm("Are you sure you want to rebase"),
 		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
-		&self.view_data
 	}
 }

@@ -13,6 +13,10 @@ pub struct ConfirmAbort {
 }
 
 impl ProcessModule for ConfirmAbort {
+	fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
+		&self.view_data
+	}
+
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
@@ -34,8 +38,6 @@ impl ProcessModule for ConfirmAbort {
 		}
 		result.build()
 	}
-
-	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl ConfirmAbort {
@@ -43,9 +45,5 @@ impl ConfirmAbort {
 		Self {
 			view_data: ViewData::new_confirm("Are you sure you want to abort"),
 		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
-		&self.view_data
 	}
 }

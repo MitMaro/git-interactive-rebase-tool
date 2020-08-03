@@ -7,6 +7,7 @@ pub mod state;
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
+use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT};
 use crate::display::Display;
 use crate::edit::Edit;
 use crate::error::Error;
@@ -141,50 +142,18 @@ impl<'r> Process<'r> {
 	}
 
 	fn render(&mut self) {
-		self.view.clear();
-		match self.get_state() {
-			State::ConfirmAbort => {
-				let view_data = self.confirm_abort.build_view_data(self.view, &self.git_interactive);
-				self.view.draw_view_data(view_data);
-			},
-			State::ConfirmRebase => {
-				let view_data = self.confirm_rebase.build_view_data(self.view, &self.git_interactive);
-				self.view.draw_view_data(view_data);
-			},
-			State::Edit => {
-				self.view
-					.draw_view_data(self.edit.build_view_data(self.view, &self.git_interactive));
-			},
-			State::Error { .. } => {
-				let view_data = self.error.build_view_data(self.view, &self.git_interactive);
-				self.view.draw_view_data(view_data);
-			},
-			State::Exiting => {
-				self.view
-					.draw_view_data(self.exiting.build_view_data(self.view, &self.git_interactive))
-			},
-			State::ExternalEditor => {
-				let view_data = self.external_editor.build_view_data(self.view, &self.git_interactive);
-				self.view.draw_view_data(view_data);
-			},
-			State::Help(_) => {
-				let view_data = self.help.build_view_data(self.view, &self.git_interactive);
-				self.view.draw_view_data(view_data);
-			},
-			State::List(_) => {
-				self.view
-					.draw_view_data(self.list.build_view_data(self.view, &self.git_interactive))
-			},
-			State::ShowCommit => {
-				self.view
-					.draw_view_data(self.show_commit.build_view_data(self.view, &self.git_interactive))
-			},
-			State::WindowSizeError(_) => {
-				self.view
-					.draw_view_data(self.window_size_error.build_view_data(self.view, &self.git_interactive))
-			},
-		};
-		self.view.refresh()
+		self.view.render(match self.get_state() {
+			State::ConfirmAbort => self.confirm_abort.build_view_data(self.view, &self.git_interactive),
+			State::ConfirmRebase => self.confirm_rebase.build_view_data(self.view, &self.git_interactive),
+			State::Edit => self.edit.build_view_data(self.view, &self.git_interactive),
+			State::Error { .. } => self.error.build_view_data(self.view, &self.git_interactive),
+			State::Exiting => self.exiting.build_view_data(self.view, &self.git_interactive),
+			State::ExternalEditor => self.external_editor.build_view_data(self.view, &self.git_interactive),
+			State::Help(_) => self.help.build_view_data(self.view, &self.git_interactive),
+			State::List(_) => self.list.build_view_data(self.view, &self.git_interactive),
+			State::ShowCommit => self.show_commit.build_view_data(self.view, &self.git_interactive),
+			State::WindowSizeError(_) => self.window_size_error.build_view_data(self.view, &self.git_interactive),
+		});
 	}
 
 	fn handle_input(&mut self) {
@@ -249,7 +218,8 @@ impl<'r> Process<'r> {
 	}
 
 	fn check_window_size(&self) {
-		let check = self.view.check_window_size();
+		let (window_width, window_height) = self.view.get_view_size();
+		let check = !(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT);
 		let state = self.get_state();
 		if let State::WindowSizeError(return_state) = state {
 			if check {

@@ -3,15 +3,7 @@ pub mod scroll_position;
 pub mod view_data;
 pub mod view_line;
 
-use crate::constants::{
-	MINIMUM_COMPACT_WINDOW_WIDTH,
-	MINIMUM_WINDOW_HEIGHT,
-	TITLE,
-	TITLE_HELP_INDICATOR_LENGTH,
-	TITLE_LENGTH,
-	TITLE_SHORT,
-	TITLE_SHORT_LENGTH,
-};
+use crate::constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH};
 use crate::display::display_color::DisplayColor;
 use crate::display::Display;
 use crate::view::view_data::ViewData;
@@ -28,24 +20,12 @@ impl<'v> View<'v> {
 		Self { display, config }
 	}
 
-	pub(crate) fn check_window_size(&self) -> bool {
-		let (window_width, window_height) = self.get_view_size();
-		!(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT)
-	}
-
-	pub(crate) fn clear(&self) {
-		self.display.clear();
-	}
-
 	pub(crate) fn get_view_size(&self) -> (usize, usize) {
 		self.display.get_window_size()
 	}
 
-	pub(crate) fn refresh(&self) {
-		self.display.refresh();
-	}
-
-	pub(crate) fn draw_view_data(&self, view_data: &ViewData) {
+	pub(crate) fn render(&self, view_data: &ViewData) {
+		self.display.clear();
 		let (_, window_height) = self.display.get_window_size();
 
 		let mut line_index = 0;
@@ -112,6 +92,7 @@ impl<'v> View<'v> {
 			line_index += 1;
 			self.draw_view_line(line)
 		}
+		self.display.refresh();
 	}
 
 	fn draw_view_line(&self, line: &ViewLine) {
@@ -128,7 +109,7 @@ impl<'v> View<'v> {
 		self.display.fill_end_of_line();
 	}
 
-	pub(crate) fn draw_title(&self, show_help: bool) {
+	fn draw_title(&self, show_help: bool) {
 		self.display.color(DisplayColor::Normal, false);
 		self.display.set_style(false, true, false);
 		let (window_width, _) = self.display.get_window_size();

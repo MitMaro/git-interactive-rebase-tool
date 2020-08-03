@@ -65,6 +65,52 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		self.state = ShowCommitState::Overview;
 	}
 
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		match &self.commit {
+			Some(commit) => {
+				if self.view_data.is_empty() {
+					let (view_width, view_height) = view.get_view_size();
+					let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
+
+					let commit = commit.as_ref().unwrap(); // if commit is error it will be caught in process
+
+					self.view_data.push_leading_line(ViewLine::new(vec![
+						LineSegment::new_with_color(
+							if is_full_width { "Commit: " } else { "" },
+							DisplayColor::IndicatorColor,
+						),
+						LineSegment::new(
+							if is_full_width {
+								commit.get_hash().to_string()
+							}
+							else {
+								let hash = commit.get_hash();
+								let max_index = hash.len().min(8);
+								format!("{:8} ", hash[0..max_index].to_string())
+							}
+							.as_str(),
+						),
+					]));
+
+					match self.state {
+						ShowCommitState::Overview => {
+							self.view_builder
+								.build_view_data_for_overview(&mut self.view_data, commit, is_full_width);
+						},
+						ShowCommitState::Diff => {
+							self.view_builder
+								.build_view_data_diff(&mut self.view_data, commit, is_full_width)
+						},
+					}
+					self.view_data.set_view_size(view_width, view_height);
+					self.view_data.rebuild();
+				}
+				&self.view_data
+			},
+			None => &self.no_commit_view_data,
+		}
+	}
+
 	fn process(&mut self, _git_interactive: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 
@@ -119,8 +165,6 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 		result.build()
 	}
-
-	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl<'s> ShowCommit<'s> {
@@ -144,52 +188,6 @@ impl<'s> ShowCommit<'s> {
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options, &config.key_bindings),
 			view_data,
-		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
-		match &self.commit {
-			Some(commit) => {
-				if self.view_data.is_empty() {
-					let (view_width, view_height) = view.get_view_size();
-					let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
-
-					let commit = commit.as_ref().unwrap(); // if commit is error it will be caught in process
-
-					self.view_data.push_leading_line(ViewLine::new(vec![
-						LineSegment::new_with_color(
-							if is_full_width { "Commit: " } else { "" },
-							DisplayColor::IndicatorColor,
-						),
-						LineSegment::new(
-							if is_full_width {
-								commit.get_hash().to_string()
-							}
-							else {
-								let hash = commit.get_hash();
-								let max_index = hash.len().min(8);
-								format!("{:8} ", hash[0..max_index].to_string())
-							}
-							.as_str(),
-						),
-					]));
-
-					match self.state {
-						ShowCommitState::Overview => {
-							self.view_builder
-								.build_view_data_for_overview(&mut self.view_data, commit, is_full_width);
-						},
-						ShowCommitState::Diff => {
-							self.view_builder
-								.build_view_data_diff(&mut self.view_data, commit, is_full_width)
-						},
-					}
-					self.view_data.set_view_size(view_width, view_height);
-					self.view_data.rebuild();
-				}
-				&self.view_data
-			},
-			None => &self.no_commit_view_data,
 		}
 	}
 }
