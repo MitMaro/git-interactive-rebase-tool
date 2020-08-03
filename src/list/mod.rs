@@ -42,62 +42,7 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn process(&mut self, _: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
-		ProcessResult::new()
-	}
-
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
-		view: &View<'_>,
-	) -> HandleInputResult
-	{
-		let (_, view_height) = view.get_view_size();
-		let input = input_handler.get_input(InputMode::List);
-		let mut result = HandleInputResultBuilder::new(input);
-		match input {
-			Input::MoveCursorLeft => self.view_data.scroll_left(),
-			Input::MoveCursorRight => self.view_data.scroll_right(),
-			Input::MoveCursorDown => {
-				git_interactive.move_cursor_down(1);
-			},
-			Input::MoveCursorUp => git_interactive.move_cursor_up(1),
-			Input::MoveCursorPageDown => git_interactive.move_cursor_down(view_height / 2),
-			Input::MoveCursorPageUp => git_interactive.move_cursor_up(view_height / 2),
-			_ => {
-				result = match self.state {
-					ListState::Normal => self.handle_normal_mode_input(input, result, git_interactive),
-					ListState::Visual => self.handle_visual_mode_input(input, result, git_interactive),
-				}
-			},
-		}
-		let selected_index = *git_interactive.get_selected_line_index() - 1;
-		self.view_data.ensure_line_visible(selected_index);
-		result.build()
-	}
-
-	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
-}
-
-impl<'l> List<'l> {
-	pub(crate) fn new(config: &'l Config) -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.set_show_help(true);
-
-		Self {
-			config,
-			normal_footer_compact: get_normal_footer_compact(&config.key_bindings),
-			normal_footer_full: get_normal_footer_full(&config.key_bindings),
-			state: ListState::Normal,
-			visual_footer_compact: get_visual_footer_compact(&config.key_bindings),
-			visual_footer_full: get_visual_footer_full(&config.key_bindings),
-			view_data,
-		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, view: &View<'_>, git_interactive: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, git_interactive: &GitInteractive) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 
 		self.view_data.clear();
@@ -152,6 +97,59 @@ impl<'l> List<'l> {
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
 		&self.view_data
+	}
+
+	fn process(&mut self, _: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
+		ProcessResult::new()
+	}
+
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		git_interactive: &mut GitInteractive,
+		view: &View<'_>,
+	) -> HandleInputResult
+	{
+		let (_, view_height) = view.get_view_size();
+		let input = input_handler.get_input(InputMode::List);
+		let mut result = HandleInputResultBuilder::new(input);
+		match input {
+			Input::MoveCursorLeft => self.view_data.scroll_left(),
+			Input::MoveCursorRight => self.view_data.scroll_right(),
+			Input::MoveCursorDown => {
+				git_interactive.move_cursor_down(1);
+			},
+			Input::MoveCursorUp => git_interactive.move_cursor_up(1),
+			Input::MoveCursorPageDown => git_interactive.move_cursor_down(view_height / 2),
+			Input::MoveCursorPageUp => git_interactive.move_cursor_up(view_height / 2),
+			_ => {
+				result = match self.state {
+					ListState::Normal => self.handle_normal_mode_input(input, result, git_interactive),
+					ListState::Visual => self.handle_visual_mode_input(input, result, git_interactive),
+				}
+			},
+		}
+		let selected_index = *git_interactive.get_selected_line_index() - 1;
+		self.view_data.ensure_line_visible(selected_index);
+		result.build()
+	}
+}
+
+impl<'l> List<'l> {
+	pub(crate) fn new(config: &'l Config) -> Self {
+		let mut view_data = ViewData::new();
+		view_data.set_show_title(true);
+		view_data.set_show_help(true);
+
+		Self {
+			config,
+			normal_footer_compact: get_normal_footer_compact(&config.key_bindings),
+			normal_footer_full: get_normal_footer_full(&config.key_bindings),
+			state: ListState::Normal,
+			visual_footer_compact: get_visual_footer_compact(&config.key_bindings),
+			visual_footer_full: get_visual_footer_full(&config.key_bindings),
+			view_data,
+		}
 	}
 
 	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action) {

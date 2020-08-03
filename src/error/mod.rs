@@ -29,6 +29,18 @@ impl ProcessModule for Error {
 		self.view_data = None;
 	}
 
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
+		if let Some(ref mut view_data) = self.view_data {
+			view_data.set_view_size(view_width, view_height);
+			view_data
+		}
+		else {
+			self.view_data_no_error.set_view_size(view_width, view_height);
+			&self.view_data_no_error
+		}
+	}
+
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
@@ -45,8 +57,6 @@ impl ProcessModule for Error {
 		}
 		result.build()
 	}
-
-	fn render(&self, _view: &View<'_>, _git_interactive: &GitInteractive) {}
 }
 
 impl Error {
@@ -55,18 +65,6 @@ impl Error {
 			return_state: State::List(false),
 			view_data: None,
 			view_data_no_error: ViewData::new_error("Help module activated without error message"),
-		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
-		if let Some(ref mut view_data) = self.view_data {
-			view_data.set_view_size(view_width, view_height);
-			view_data
-		}
-		else {
-			self.view_data_no_error.set_view_size(view_width, view_height);
-			&self.view_data_no_error
 		}
 	}
 }

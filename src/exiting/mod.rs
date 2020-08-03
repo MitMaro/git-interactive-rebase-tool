@@ -10,7 +10,12 @@ pub struct Exiting {
 }
 
 impl ProcessModule for Exiting {
-	fn render(&self, _: &View<'_>, _: &GitInteractive) {}
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
+		self.view_data.set_view_size(view_width, view_height);
+		self.view_data.rebuild();
+		&self.view_data
+	}
 }
 
 impl Exiting {
@@ -18,12 +23,5 @@ impl Exiting {
 		let mut view_data = ViewData::new();
 		view_data.push_line(ViewLine::new(vec![LineSegment::new("Exiting...")]));
 		Self { view_data }
-	}
-
-	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
 	}
 }

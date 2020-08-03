@@ -37,6 +37,44 @@ impl ProcessModule for Edit {
 		self.cursor_position = 0;
 	}
 
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
+
+		let line = self.content.as_str();
+		let pointer = self.cursor_position;
+
+		let graphemes = UnicodeSegmentation::graphemes(line, true);
+
+		let start = graphemes.clone().take(pointer).collect::<String>();
+		let indicator = graphemes.clone().skip(pointer).take(1).collect::<String>();
+		let end = graphemes.skip(pointer + 1).collect::<String>();
+
+		let mut segments = vec![
+			LineSegment::new(start.as_str()),
+			LineSegment::new_with_color_and_style(indicator.as_str(), DisplayColor::Normal, false, true, false),
+			LineSegment::new(end.as_str()),
+		];
+		if end.is_empty() {
+			segments.push(LineSegment::new_with_color_and_style(
+				" ",
+				DisplayColor::Normal,
+				false,
+				true,
+				false,
+			));
+		}
+		self.view_data.clear();
+		self.view_data.set_content(ViewLine::new(segments));
+		self.view_data
+			.push_trailing_line(ViewLine::new(vec![LineSegment::new_with_color(
+				"Enter to finish",
+				DisplayColor::IndicatorColor,
+			)]));
+		self.view_data.set_view_size(view_width, view_height);
+		self.view_data.rebuild();
+		&self.view_data
+	}
+
 	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 		match self.state {
@@ -123,8 +161,6 @@ impl ProcessModule for Edit {
 		}
 		HandleInputResult::new(input)
 	}
-
-	fn render(&self, _: &View<'_>, _: &GitInteractive) {}
 }
 
 impl Edit {
@@ -137,43 +173,5 @@ impl Edit {
 			state: EditState::Active,
 			view_data,
 		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
-
-		let line = self.content.as_str();
-		let pointer = self.cursor_position;
-
-		let graphemes = UnicodeSegmentation::graphemes(line, true);
-
-		let start = graphemes.clone().take(pointer).collect::<String>();
-		let indicator = graphemes.clone().skip(pointer).take(1).collect::<String>();
-		let end = graphemes.skip(pointer + 1).collect::<String>();
-
-		let mut segments = vec![
-			LineSegment::new(start.as_str()),
-			LineSegment::new_with_color_and_style(indicator.as_str(), DisplayColor::Normal, false, true, false),
-			LineSegment::new(end.as_str()),
-		];
-		if end.is_empty() {
-			segments.push(LineSegment::new_with_color_and_style(
-				" ",
-				DisplayColor::Normal,
-				false,
-				true,
-				false,
-			));
-		}
-		self.view_data.clear();
-		self.view_data.set_content(ViewLine::new(segments));
-		self.view_data
-			.push_trailing_line(ViewLine::new(vec![LineSegment::new_with_color(
-				"Enter to finish",
-				DisplayColor::IndicatorColor,
-			)]));
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
 	}
 }

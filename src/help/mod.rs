@@ -41,49 +41,7 @@ impl<'h> ProcessModule for Help<'h> {
 		self.view_data = None;
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		_git_interactive: &mut GitInteractive,
-		view: &View<'_>,
-	) -> HandleInputResult
-	{
-		let input = input_handler.get_input(InputMode::Default);
-		let mut result = HandleInputResultBuilder::new(input);
-		let view_data = self.view_data.as_mut().unwrap();
-		match input {
-			Input::MoveCursorLeft => view_data.scroll_left(),
-			Input::MoveCursorRight => view_data.scroll_right(),
-			Input::MoveCursorDown => view_data.scroll_down(),
-			Input::MoveCursorUp => view_data.scroll_up(),
-			Input::MoveCursorPageDown => view_data.page_down(),
-			Input::MoveCursorPageUp => view_data.page_up(),
-			Input::Resize => {
-				let (view_width, view_height) = view.get_view_size();
-				view_data.set_view_size(view_width, view_height);
-			},
-			_ => {
-				result = result.state(self.return_state.clone());
-			},
-		}
-		result.build()
-	}
-
-	fn render(&self, _: &View<'_>, _: &GitInteractive) {}
-}
-
-impl<'h> Help<'h> {
-	pub(crate) fn new(key_bindings: &'h KeyBindings) -> Self {
-		Self {
-			normal_mode_help_lines: get_list_normal_mode_help_lines(key_bindings),
-			return_state: State::List(false),
-			visual_mode_help_lines: get_list_visual_mode_help_lines(key_bindings),
-			view_data: None,
-			show_commit_help_lines: get_show_commit_help_lines(key_bindings),
-		}
-	}
-
-	pub(crate) fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
 		if let Some(ref v) = self.view_data {
 			v
 		}
@@ -141,6 +99,46 @@ impl<'h> Help<'h> {
 
 			self.view_data = Some(view_data);
 			self.view_data.as_ref().unwrap()
+		}
+	}
+
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		_git_interactive: &mut GitInteractive,
+		view: &View<'_>,
+	) -> HandleInputResult
+	{
+		let input = input_handler.get_input(InputMode::Default);
+		let mut result = HandleInputResultBuilder::new(input);
+		let view_data = self.view_data.as_mut().unwrap();
+		match input {
+			Input::MoveCursorLeft => view_data.scroll_left(),
+			Input::MoveCursorRight => view_data.scroll_right(),
+			Input::MoveCursorDown => view_data.scroll_down(),
+			Input::MoveCursorUp => view_data.scroll_up(),
+			Input::MoveCursorPageDown => view_data.page_down(),
+			Input::MoveCursorPageUp => view_data.page_up(),
+			Input::Resize => {
+				let (view_width, view_height) = view.get_view_size();
+				view_data.set_view_size(view_width, view_height);
+			},
+			_ => {
+				result = result.state(self.return_state.clone());
+			},
+		}
+		result.build()
+	}
+}
+
+impl<'h> Help<'h> {
+	pub(crate) fn new(key_bindings: &'h KeyBindings) -> Self {
+		Self {
+			normal_mode_help_lines: get_list_normal_mode_help_lines(key_bindings),
+			return_state: State::List(false),
+			visual_mode_help_lines: get_list_visual_mode_help_lines(key_bindings),
+			view_data: None,
+			show_commit_help_lines: get_show_commit_help_lines(key_bindings),
 		}
 	}
 }
