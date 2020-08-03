@@ -151,7 +151,10 @@ impl<'r> Process<'r> {
 				let view_data = self.confirm_rebase.build_view_data(self.view, &self.git_interactive);
 				self.view.draw_view_data(view_data);
 			},
-			State::Edit => self.edit.render(self.view, &self.git_interactive),
+			State::Edit => {
+				self.view
+					.draw_view_data(self.edit.build_view_data(self.view, &self.git_interactive));
+			},
 			State::Error { .. } => {
 				let view_data = self.error.build_view_data(self.view, &self.git_interactive);
 				self.view.draw_view_data(view_data);

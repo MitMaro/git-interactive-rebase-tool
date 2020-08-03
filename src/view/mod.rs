@@ -28,18 +28,6 @@ impl<'v> View<'v> {
 		Self { display, config }
 	}
 
-	pub(crate) fn draw_str(&self, s: &str) {
-		self.display.draw_str(s);
-	}
-
-	pub(crate) fn set_color(&self, color: DisplayColor, selected: bool) {
-		self.display.color(color, selected);
-	}
-
-	pub(crate) fn set_style(&self, dim: bool, underline: bool, reverse: bool) {
-		self.display.set_style(dim, underline, reverse);
-	}
-
 	pub(crate) fn check_window_size(&self) -> bool {
 		let (window_width, window_height) = self.get_view_size();
 		!(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT)

@@ -36,6 +36,7 @@ impl SegmentPartial {
 	}
 }
 
+#[derive(Clone, Debug)]
 pub struct LineSegment {
 	color: DisplayColor,
 	dim: bool,
