@@ -14,11 +14,10 @@ pub struct Error {
 }
 
 impl ProcessModule for Error {
-	fn activate(&mut self, state: State, _git_interactive: &GitInteractive) {
+	fn activate(&mut self, state: &State, _git_interactive: &GitInteractive) {
 		if let State::Error { message, return_state } = state {
-			eprintln!("Error activated");
 			self.view_data = Some(ViewData::new_error(message.as_str()));
-			self.return_state = *return_state;
+			self.return_state = *return_state.clone();
 		}
 		else {
 			self.view_data = None;

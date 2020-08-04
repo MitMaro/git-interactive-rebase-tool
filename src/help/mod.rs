@@ -28,9 +28,9 @@ pub struct Help<'h> {
 }
 
 impl<'h> ProcessModule for Help<'h> {
-	fn activate(&mut self, state: State, _git_interactive: &GitInteractive) {
+	fn activate(&mut self, state: &State, _git_interactive: &GitInteractive) {
 		if let State::Help(return_state) = state {
-			self.return_state = *return_state;
+			self.return_state = *return_state.clone();
 		}
 		else {
 			panic!("Help module activated when not expected");

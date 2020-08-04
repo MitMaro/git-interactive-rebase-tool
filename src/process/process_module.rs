@@ -8,7 +8,7 @@ use crate::view::view_data::ViewData;
 use crate::view::View;
 
 pub trait ProcessModule {
-	fn activate(&mut self, _state: State, _git_interactive: &GitInteractive) {}
+	fn activate(&mut self, _state: &State, _git_interactive: &GitInteractive) {}
 
 	fn deactivate(&mut self) {}
 

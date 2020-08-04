@@ -33,7 +33,7 @@ pub struct ExternalEditor<'e> {
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
-	fn activate(&mut self, _state: State, _git_interactive: &GitInteractive) {
+	fn activate(&mut self, _state: &State, _git_interactive: &GitInteractive) {
 		if self.state != ExternalEditorState::Empty {
 			self.state = ExternalEditorState::Active;
 		}
