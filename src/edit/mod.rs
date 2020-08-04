@@ -26,7 +26,7 @@ pub struct Edit {
 }
 
 impl ProcessModule for Edit {
-	fn activate(&mut self, _state: State, application: &GitInteractive) {
+	fn activate(&mut self, _state: &State, application: &GitInteractive) {
 		self.state = EditState::Active;
 		self.content = application.get_selected_line_edit_content().clone();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();

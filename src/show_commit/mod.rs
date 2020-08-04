@@ -39,7 +39,7 @@ pub struct ShowCommit<'s> {
 }
 
 impl<'s> ProcessModule for ShowCommit<'s> {
-	fn activate(&mut self, _state: State, git_interactive: &GitInteractive) {
+	fn activate(&mut self, _state: &State, git_interactive: &GitInteractive) {
 		// skip loading commit data if the currently loaded commit has not changed, this retains
 		// position after returning to the list view or help
 		if let Some(commit) = &self.commit {

@@ -24,7 +24,6 @@ use crate::process::state::State;
 use crate::show_commit::ShowCommit;
 use crate::view::View;
 use crate::window_size_error::WindowSizeError;
-use std::cell::RefCell;
 
 pub struct Process<'r> {
 	confirm_abort: ConfirmAbort,
@@ -39,7 +38,7 @@ pub struct Process<'r> {
 	input_handler: &'r InputHandler<'r>,
 	list: List<'r>,
 	show_commit: ShowCommit<'r>,
-	state: RefCell<State>,
+	state: State,
 	view: &'r View<'r>,
 	window_size_error: WindowSizeError,
 }
@@ -66,7 +65,7 @@ impl<'r> Process<'r> {
 			input_handler,
 			list: List::new(config),
 			show_commit: ShowCommit::new(config),
-			state: RefCell::new(State::List(false)),
+			state: State::List(false),
 			view,
 			window_size_error: WindowSizeError::new(),
 		}
@@ -84,23 +83,22 @@ impl<'r> Process<'r> {
 	}
 
 	fn activate(&mut self) {
-		let state = self.get_state();
-		match state {
-			State::ConfirmAbort => self.confirm_abort.activate(state, &self.git_interactive),
-			State::ConfirmRebase => self.confirm_rebase.activate(state, &self.git_interactive),
-			State::Edit => self.edit.activate(state, &self.git_interactive),
-			State::Error { .. } => self.error.activate(state, &self.git_interactive),
-			State::Exiting => self.exiting.activate(state, &self.git_interactive),
-			State::ExternalEditor => self.external_editor.activate(state, &self.git_interactive),
-			State::Help(_) => self.help.activate(state, &self.git_interactive),
-			State::List(_) => self.list.activate(state, &self.git_interactive),
-			State::ShowCommit => self.show_commit.activate(state, &self.git_interactive),
-			State::WindowSizeError(_) => self.window_size_error.activate(state, &self.git_interactive),
+		match self.state {
+			State::ConfirmAbort => self.confirm_abort.activate(&self.state, &self.git_interactive),
+			State::ConfirmRebase => self.confirm_rebase.activate(&self.state, &self.git_interactive),
+			State::Edit => self.edit.activate(&self.state, &self.git_interactive),
+			State::Error { .. } => self.error.activate(&self.state, &self.git_interactive),
+			State::Exiting => self.exiting.activate(&self.state, &self.git_interactive),
+			State::ExternalEditor => self.external_editor.activate(&self.state, &self.git_interactive),
+			State::Help(_) => self.help.activate(&self.state, &self.git_interactive),
+			State::List(_) => self.list.activate(&self.state, &self.git_interactive),
+			State::ShowCommit => self.show_commit.activate(&self.state, &self.git_interactive),
+			State::WindowSizeError(_) => self.window_size_error.activate(&self.state, &self.git_interactive),
 		}
 	}
 
 	fn deactivate(&mut self) {
-		match self.get_state() {
+		match self.state {
 			State::ConfirmAbort => self.confirm_abort.deactivate(),
 			State::ConfirmRebase => self.confirm_rebase.deactivate(),
 			State::Edit => self.edit.deactivate(),
@@ -115,7 +113,7 @@ impl<'r> Process<'r> {
 	}
 
 	fn process(&mut self) {
-		let result = match self.get_state() {
+		let result = match self.state {
 			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive, self.view),
 			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive, self.view),
 			State::Edit => self.edit.process(&mut self.git_interactive, self.view),
@@ -133,16 +131,16 @@ impl<'r> Process<'r> {
 		}
 
 		if let Some(new_state) = result.state {
-			if new_state != self.get_state() {
+			if new_state != self.state {
 				self.deactivate();
-				self.set_state(new_state);
+				self.state = new_state;
 				self.activate();
 			}
 		}
 	}
 
 	fn render(&mut self) {
-		self.view.render(match self.get_state() {
+		self.view.render(match self.state {
 			State::ConfirmAbort => self.confirm_abort.build_view_data(self.view, &self.git_interactive),
 			State::ConfirmRebase => self.confirm_rebase.build_view_data(self.view, &self.git_interactive),
 			State::Edit => self.edit.build_view_data(self.view, &self.git_interactive),
@@ -157,7 +155,7 @@ impl<'r> Process<'r> {
 	}
 
 	fn handle_input(&mut self) {
-		let result = match self.get_state() {
+		let result = match self.state {
 			State::ConfirmAbort => {
 				self.confirm_abort
 					.handle_input(self.input_handler, &mut self.git_interactive, self.view)
@@ -205,9 +203,9 @@ impl<'r> Process<'r> {
 		}
 
 		if let Some(new_state) = result.state {
-			if new_state != self.get_state() {
+			if new_state != self.state {
 				self.deactivate();
-				self.set_state(new_state);
+				self.state = new_state;
 				self.activate();
 			}
 		}
@@ -217,26 +215,17 @@ impl<'r> Process<'r> {
 		}
 	}
 
-	fn check_window_size(&self) {
+	fn check_window_size(&mut self) {
 		let (window_width, window_height) = self.view.get_view_size();
 		let check = !(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT);
-		let state = self.get_state();
-		if let State::WindowSizeError(return_state) = state {
+		if let State::WindowSizeError(return_state) = &self.state {
 			if check {
-				self.set_state(*return_state);
+				self.state = *return_state.clone();
 			}
 		}
 		else if !check {
-			self.set_state(State::WindowSizeError(Box::new(self.get_state())));
+			self.state = State::WindowSizeError(Box::new(self.state.clone()));
 		}
-	}
-
-	fn set_state(&self, new_state: State) {
-		self.state.replace(new_state);
-	}
-
-	fn get_state(&self) -> State {
-		self.state.borrow().clone()
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
