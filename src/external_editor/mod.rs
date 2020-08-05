@@ -39,11 +39,16 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		}
 	}
 
-	fn build_view_data(&mut self, _: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (window_width, window_height) = view.get_view_size();
 		if let ExternalEditorState::Empty = self.state {
+			self.view_data_error.set_view_size(window_width, window_height);
+			self.view_data_error.rebuild();
 			&self.view_data_error
 		}
 		else {
+			self.view_data_external.set_view_size(window_width, window_height);
+			self.view_data_external.rebuild();
 			&self.view_data_external
 		}
 	}

@@ -49,6 +49,7 @@ impl ProcessModule for WindowSizeError {
 		self.view_data.clear();
 		self.view_data.push_line(ViewLine::new(vec![LineSegment::new(message)]));
 		self.view_data.set_view_size(window_width, window_height);
+		self.view_data.rebuild();
 		&self.view_data
 	}
 

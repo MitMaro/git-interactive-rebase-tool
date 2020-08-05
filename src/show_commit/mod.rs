@@ -66,10 +66,10 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
 		match &self.commit {
 			Some(commit) => {
 				if self.view_data.is_empty() {
-					let (view_width, view_height) = view.get_view_size();
 					let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
 
 					let commit = commit.as_ref().unwrap(); // if commit is error it will be caught in process
@@ -107,7 +107,11 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				}
 				&self.view_data
 			},
-			None => &self.no_commit_view_data,
+			None => {
+				self.no_commit_view_data.set_view_size(view_width, view_height);
+				self.no_commit_view_data.rebuild();
+				&self.no_commit_view_data
+			},
 		}
 	}
 
