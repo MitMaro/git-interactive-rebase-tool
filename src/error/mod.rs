@@ -32,10 +32,12 @@ impl ProcessModule for Error {
 		let (view_width, view_height) = view.get_view_size();
 		if let Some(ref mut view_data) = self.view_data {
 			view_data.set_view_size(view_width, view_height);
+			view_data.rebuild();
 			view_data
 		}
 		else {
 			self.view_data_no_error.set_view_size(view_width, view_height);
+			self.view_data_no_error.rebuild();
 			&self.view_data_no_error
 		}
 	}
