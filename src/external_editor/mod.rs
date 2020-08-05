@@ -150,7 +150,7 @@ impl<'e> ExternalEditor<'e> {
 			self.state = ExternalEditorState::Empty;
 		}
 		else {
-			result = result.state(State::List(false));
+			result = result.state(State::List);
 		}
 		result.build()
 	}
@@ -173,7 +173,7 @@ impl<'e> ExternalEditor<'e> {
 		if let Input::Resize = input {
 		}
 		else {
-			result = result.state(State::List(false));
+			result = result.state(State::List);
 		}
 		result.build()
 	}

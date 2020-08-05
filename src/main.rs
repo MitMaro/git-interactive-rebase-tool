@@ -38,7 +38,6 @@ mod error;
 mod exiting;
 mod external_editor;
 mod git_interactive;
-mod help;
 mod input;
 mod list;
 mod process;

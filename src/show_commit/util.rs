@@ -1,3 +1,4 @@
+use crate::config::key_bindings::KeyBindings;
 use crate::display::display_color::DisplayColor;
 use crate::show_commit::commit::Commit;
 use crate::show_commit::status::Status;
@@ -5,6 +6,19 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_line::ViewLine;
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
+
+pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> [(&str, &str); 8] {
+	[
+		(key_bindings.move_up.as_str(), "Scroll up"),
+		(key_bindings.move_down.as_str(), "Scroll down"),
+		(key_bindings.move_up_step.as_str(), "Scroll up half a page"),
+		(key_bindings.move_down_step.as_str(), "Scroll down half a page"),
+		(key_bindings.move_right.as_str(), "Scroll right"),
+		(key_bindings.move_left.as_str(), "Scroll left"),
+		(key_bindings.show_diff.as_str(), "Show full diff"),
+		(key_bindings.help.as_str(), "Show help"),
+	]
+}
 
 pub(super) fn get_stat_item_segments(
 	status: &Status,
