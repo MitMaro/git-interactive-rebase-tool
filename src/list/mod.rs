@@ -9,6 +9,8 @@ use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::action::Action;
 use crate::list::utils::{
+	get_list_normal_mode_help_lines,
+	get_list_visual_mode_help_lines,
 	get_normal_footer_compact,
 	get_normal_footer_full,
 	get_todo_line_segments,
@@ -35,10 +37,12 @@ pub struct List<'l> {
 	config: &'l Config,
 	normal_footer_compact: String,
 	normal_footer_full: String,
+	normal_mode_help_lines: [(&'l str, &'l str); 22],
 	state: ListState,
+	view_data: ViewData,
 	visual_footer_compact: String,
 	visual_footer_full: String,
-	view_data: ViewData,
+	visual_mode_help_lines: [(&'l str, &'l str); 14],
 }
 
 impl<'l> ProcessModule for List<'l> {
@@ -133,6 +137,15 @@ impl<'l> ProcessModule for List<'l> {
 		self.view_data.ensure_line_visible(selected_index);
 		result.build()
 	}
+
+	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
+		if self.state == ListState::Normal {
+			Some(&self.normal_mode_help_lines)
+		}
+		else {
+			Some(&self.visual_mode_help_lines)
+		}
+	}
 }
 
 impl<'l> List<'l> {
@@ -145,10 +158,12 @@ impl<'l> List<'l> {
 			config,
 			normal_footer_compact: get_normal_footer_compact(&config.key_bindings),
 			normal_footer_full: get_normal_footer_full(&config.key_bindings),
+			normal_mode_help_lines: get_list_normal_mode_help_lines(&config.key_bindings),
 			state: ListState::Normal,
+			view_data,
 			visual_footer_compact: get_visual_footer_compact(&config.key_bindings),
 			visual_footer_full: get_visual_footer_full(&config.key_bindings),
-			view_data,
+			visual_mode_help_lines: get_list_visual_mode_help_lines(&config.key_bindings),
 		}
 	}
 
@@ -168,9 +183,6 @@ impl<'l> List<'l> {
 	{
 		let mut result = result;
 		match input {
-			Input::Help => {
-				result = result.help(State::List(false));
-			},
 			Input::ShowCommit => {
 				if !git_interactive.get_selected_line_hash().is_empty() {
 					result = result.state(State::ShowCommit);
@@ -206,7 +218,7 @@ impl<'l> List<'l> {
 			Input::ToggleVisualMode => {
 				git_interactive.start_visual_mode();
 				self.state = ListState::Visual;
-				result = result.state(State::List(true));
+				result = result.state(State::List);
 			},
 			Input::OpenInEditor => result = result.state(State::ExternalEditor),
 			_ => {},
@@ -224,9 +236,6 @@ impl<'l> List<'l> {
 	{
 		let mut result = result;
 		match input {
-			Input::Help => {
-				result = result.help(State::List(true));
-			},
 			Input::Abort => {
 				result = result.state(State::ConfirmAbort);
 			},
@@ -250,7 +259,7 @@ impl<'l> List<'l> {
 			Input::SwapSelectedUp => git_interactive.swap_visual_range_up(),
 			Input::ToggleVisualMode => {
 				self.state = ListState::Normal;
-				result = result.state(State::List(false));
+				result = result.state(State::List);
 			},
 			_ => {},
 		}

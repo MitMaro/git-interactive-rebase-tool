@@ -23,6 +23,7 @@ use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
 use crate::process::state::State;
 use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
 use crate::show_commit::show_commit_state::ShowCommitState;
+use crate::show_commit::util::get_show_commit_help_lines;
 use crate::show_commit::view_builder::{ViewBuilder, ViewBuilderOptions};
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
@@ -30,12 +31,13 @@ use crate::view::view_line::ViewLine;
 use crate::view::View;
 
 pub struct ShowCommit<'s> {
-	config: &'s Config,
 	commit: Option<Result<Commit, String>>,
-	view_data: ViewData,
+	config: &'s Config,
 	no_commit_view_data: ViewData,
-	view_builder: ViewBuilder<'s>,
+	show_commit_help_lines: [(&'s str, &'s str); 8],
 	state: ShowCommitState,
+	view_builder: ViewBuilder<'s>,
+	view_data: ViewData,
 }
 
 impl<'s> ProcessModule for ShowCommit<'s> {
@@ -120,7 +122,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 
 		if let Some(commit) = &self.commit {
 			if let Err(e) = commit {
-				result = result.error(e.as_str(), State::List(false));
+				result = result.error(e.as_str(), State::List);
 			}
 		}
 
@@ -143,9 +145,6 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			Input::MoveCursorUp => self.view_data.scroll_up(),
 			Input::MoveCursorPageDown => self.view_data.page_down(),
 			Input::MoveCursorPageUp => self.view_data.page_up(),
-			Input::Help => {
-				result = result.help(State::ShowCommit);
-			},
 			Input::ShowDiff => {
 				self.view_data.reset();
 				self.state = match self.state {
@@ -163,11 +162,15 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				}
 				else {
 					self.view_data.clear();
-					result = result.state(State::List(false));
+					result = result.state(State::List);
 				}
 			},
 		}
 		result.build()
+	}
+
+	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
+		Some(&self.show_commit_help_lines)
 	}
 }
 
@@ -189,6 +192,7 @@ impl<'s> ShowCommit<'s> {
 			commit: None,
 			config,
 			no_commit_view_data: ViewData::new_error("No commit data to show"),
+			show_commit_help_lines: get_show_commit_help_lines(&config.key_bindings),
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options, &config.key_bindings),
 			view_data,

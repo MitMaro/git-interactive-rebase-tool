@@ -63,7 +63,7 @@ impl ProcessModule for Error {
 impl Error {
 	pub(crate) fn new() -> Self {
 		Self {
-			return_state: State::List(false),
+			return_state: State::List,
 			view_data: None,
 			view_data_no_error: ViewData::new_error("Help module activated without error message"),
 		}

@@ -35,7 +35,7 @@ impl ProcessModule for ConfirmAbort {
 				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
 			},
 			Input::No => {
-				result = result.state(State::List(false));
+				result = result.state(State::List);
 			},
 			_ => {},
 		}

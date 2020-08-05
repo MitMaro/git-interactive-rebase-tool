@@ -6,8 +6,7 @@ pub enum State {
 	Error { return_state: Box<State>, message: String },
 	Exiting,
 	ExternalEditor,
-	Help(Box<State>),
-	List(bool), // TODO refactor help to not require visual mode boolean
+	List,
 	ShowCommit,
 	WindowSizeError(Box<State>),
 }

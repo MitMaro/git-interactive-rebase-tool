@@ -27,4 +27,12 @@ pub trait ProcessModule {
 	{
 		HandleInputResult::new(Input::Other)
 	}
+
+	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
+		None
+	}
+
+	fn get_help_view(&self) -> Option<ViewData> {
+		None
+	}
 }

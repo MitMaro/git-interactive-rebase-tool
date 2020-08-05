@@ -38,11 +38,6 @@ impl HandleInputResultBuilder {
 		self
 	}
 
-	pub(crate) fn help(mut self, target_state: State) -> Self {
-		self.handle_input.state = Some(State::Help(Box::new(target_state)));
-		self
-	}
-
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn state(mut self, new_state: State) -> Self {
 		self.handle_input.state = Some(new_state);

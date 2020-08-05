@@ -29,11 +29,11 @@ impl<'i> InputHandler<'i> {
 		let input = curses_input_to_string(c);
 
 		match mode {
-			InputMode::ShowCommit => self.get_show_commit_input(input.as_str()),
-			InputMode::Raw => Self::get_character(input.as_str()),
-			InputMode::List => self.get_list_input(input.as_str()),
 			InputMode::Confirm => self.get_confirm(input.as_str()),
 			InputMode::Default => self.get_default_input(input.as_str()),
+			InputMode::List => self.get_list_input(input.as_str()),
+			InputMode::Raw => Self::get_character(input.as_str()),
+			InputMode::ShowCommit => self.get_show_commit_input(input.as_str()),
 		}
 	}
 
