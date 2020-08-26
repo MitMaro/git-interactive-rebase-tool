@@ -42,6 +42,9 @@ mod input;
 mod list;
 mod process;
 mod show_commit;
+#[cfg(test)]
+#[macro_use]
+mod testutil;
 mod view;
 mod window_size_error;
 

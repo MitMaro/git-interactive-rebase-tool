@@ -29,10 +29,7 @@ pub struct GitInteractive {
 }
 
 impl GitInteractive {
-	pub(crate) fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
-		let path = PathBuf::from(filepath);
-		let lines = load_filepath(&path, comment_char)?;
-
+	pub(crate) fn new(lines: Vec<Line>, path: PathBuf, comment_char: &str) -> Result<Self, String> {
 		Ok(Self {
 			filepath: path,
 			lines,
@@ -40,6 +37,12 @@ impl GitInteractive {
 			visual_index_start: 1,
 			comment_char: String::from(comment_char),
 		})
+	}
+
+	pub(crate) fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
+		let path = PathBuf::from(filepath);
+		let lines = load_filepath(&path, comment_char)?;
+		Self::new(lines, path, comment_char)
 	}
 
 	pub(crate) fn write_file(&self) -> Result<(), String> {
