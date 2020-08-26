@@ -1,4 +1,4 @@
-use pancurses::Input;
+use crate::display::curses::Input;
 
 pub(super) fn curses_input_to_string(input: Input) -> String {
 	match input {

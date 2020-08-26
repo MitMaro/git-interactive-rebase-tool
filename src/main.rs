@@ -110,7 +110,7 @@ fn try_main() -> Result<ExitStatus, Exit> {
 
 	let mut curses = Curses::new();
 
-	let display = Display::new(&mut curses, &config);
+	let display = Display::new(&mut curses, &config.theme);
 
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);

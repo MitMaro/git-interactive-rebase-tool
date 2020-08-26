@@ -1,3 +1,5 @@
+mod ncurses;
+
 pub mod color;
 mod color_manager;
 mod color_mode;
@@ -5,28 +7,146 @@ pub mod curses;
 pub mod display_color;
 mod utils;
 
-use crate::config::Config;
+use crate::config::theme::Theme;
 use crate::display::color_manager::ColorManager;
-use crate::display::curses::Curses;
+use crate::display::curses::{chtype, Curses, Input, A_DIM, A_REVERSE, A_UNDERLINE};
 use crate::display::display_color::DisplayColor;
-use pancurses::Input;
 use std::cell::RefCell;
 use std::convert::TryInto;
 
 pub struct Display<'d> {
-	color_manager: ColorManager,
 	curses: &'d Curses,
 	height: RefCell<usize>,
 	width: RefCell<usize>,
+	action_break: (chtype, chtype),
+	action_drop: (chtype, chtype),
+	action_edit: (chtype, chtype),
+	action_exec: (chtype, chtype),
+	action_fixup: (chtype, chtype),
+	action_pick: (chtype, chtype),
+	action_reword: (chtype, chtype),
+	action_squash: (chtype, chtype),
+	diff_add: (chtype, chtype),
+	diff_change: (chtype, chtype),
+	diff_remove: (chtype, chtype),
+	diff_context: (chtype, chtype),
+	diff_whitespace: (chtype, chtype),
+	indicator: (chtype, chtype),
+	normal: (chtype, chtype),
 }
 
 impl<'d> Display<'d> {
-	pub(crate) fn new(curses: &'d mut Curses, config: &'d Config) -> Self {
+	pub(crate) fn new(curses: &'d mut Curses, theme: &'d Theme) -> Self {
+		let mut color_manager = ColorManager::new();
+		let normal = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_foreground,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let indicator = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_indicator,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_break = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_break,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_drop = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_drop,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_edit = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_edit,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_exec = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_exec,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_fixup = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_fixup,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_pick = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_pick,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_reword = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_reword,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_squash = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_action_squash,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let diff_add = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_diff_add,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let diff_change = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_diff_change,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let diff_remove = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_diff_remove,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let diff_context = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_diff_context,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let diff_whitespace = color_manager.register_selectable_color_pairs(
+			curses,
+			theme.color_diff_whitespace,
+			theme.color_background,
+			theme.color_selected_background,
+		);
 		Self {
-			color_manager: ColorManager::new(&config.theme, curses),
 			curses,
 			height: RefCell::new(curses.get_max_y().try_into().expect("Invalid window height")),
 			width: RefCell::new(curses.get_max_x().try_into().expect("Invalid window width")),
+			normal,
+			indicator,
+			action_break,
+			action_drop,
+			action_edit,
+			action_exec,
+			action_fixup,
+			action_pick,
+			action_reword,
+			action_squash,
+			diff_add,
+			diff_change,
+			diff_remove,
+			diff_context,
+			diff_whitespace,
 		}
 	}
 
@@ -45,7 +165,46 @@ impl<'d> Display<'d> {
 	}
 
 	pub(crate) fn color(&self, color: DisplayColor, selected: bool) {
-		self.curses.attrset(self.color_manager.get_color(color, selected));
+		self.curses.attrset(
+			if selected {
+				match color {
+					DisplayColor::ActionBreak => self.action_break.1,
+					DisplayColor::ActionDrop => self.action_drop.1,
+					DisplayColor::ActionEdit => self.action_edit.1,
+					DisplayColor::ActionExec => self.action_exec.1,
+					DisplayColor::ActionFixup => self.action_fixup.1,
+					DisplayColor::ActionPick => self.action_pick.1,
+					DisplayColor::ActionReword => self.action_reword.1,
+					DisplayColor::ActionSquash => self.action_squash.1,
+					DisplayColor::Normal => self.normal.1,
+					DisplayColor::IndicatorColor => self.indicator.1,
+					DisplayColor::DiffAddColor => self.diff_add.1,
+					DisplayColor::DiffRemoveColor => self.diff_remove.1,
+					DisplayColor::DiffChangeColor => self.diff_change.1,
+					DisplayColor::DiffContextColor => self.diff_context.1,
+					DisplayColor::DiffWhitespaceColor => self.diff_whitespace.1,
+				}
+			}
+			else {
+				match color {
+					DisplayColor::ActionBreak => self.action_break.0,
+					DisplayColor::ActionDrop => self.action_drop.0,
+					DisplayColor::ActionEdit => self.action_edit.0,
+					DisplayColor::ActionExec => self.action_exec.0,
+					DisplayColor::ActionFixup => self.action_fixup.0,
+					DisplayColor::ActionPick => self.action_pick.0,
+					DisplayColor::ActionReword => self.action_reword.0,
+					DisplayColor::ActionSquash => self.action_squash.0,
+					DisplayColor::Normal => self.normal.0,
+					DisplayColor::IndicatorColor => self.indicator.0,
+					DisplayColor::DiffAddColor => self.diff_add.0,
+					DisplayColor::DiffRemoveColor => self.diff_remove.0,
+					DisplayColor::DiffChangeColor => self.diff_change.0,
+					DisplayColor::DiffContextColor => self.diff_context.0,
+					DisplayColor::DiffWhitespaceColor => self.diff_whitespace.0,
+				}
+			},
+		);
 	}
 
 	pub(crate) fn set_style(&self, dim: bool, underline: bool, reverse: bool) {
@@ -56,29 +215,29 @@ impl<'d> Display<'d> {
 
 	fn set_dim(&self, on: bool) {
 		if on {
-			self.curses.attron(pancurses::A_DIM);
+			self.curses.attron(A_DIM);
 		}
 		else {
-			self.curses.attroff(pancurses::A_DIM);
+			self.curses.attroff(A_DIM);
 		}
 	}
 
 	fn set_underline(&self, on: bool) {
 		// Windows uses blue text for underlined words
 		if !cfg!(windows) && on {
-			self.curses.attron(pancurses::A_UNDERLINE);
+			self.curses.attron(A_UNDERLINE);
 		}
 		else {
-			self.curses.attroff(pancurses::A_UNDERLINE);
+			self.curses.attroff(A_UNDERLINE);
 		}
 	}
 
 	fn set_reverse(&self, on: bool) {
 		if on {
-			self.curses.attron(pancurses::A_REVERSE);
+			self.curses.attron(A_REVERSE);
 		}
 		else {
-			self.curses.attroff(pancurses::A_REVERSE);
+			self.curses.attroff(A_REVERSE);
 		}
 	}
 
@@ -86,7 +245,7 @@ impl<'d> Display<'d> {
 		let input = self.curses.getch();
 
 		if let Some(Input::KeyResize) = input {
-			pancurses::resize_term(0, 0);
+			self.curses.resize_term(0, 0);
 			self.height
 				.replace(self.curses.get_max_y().try_into().expect("Invalid window height"));
 			self.width
