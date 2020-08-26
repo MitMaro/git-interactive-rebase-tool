@@ -2,6 +2,7 @@ use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::state::State;
 
+#[derive(Debug, PartialEq)]
 pub struct HandleInputResult {
 	pub(super) exit_status: Option<ExitStatus>,
 	pub(super) input: Input,

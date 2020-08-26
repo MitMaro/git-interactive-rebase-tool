@@ -1,4 +1,7 @@
+#[cfg(not(test))]
 mod ncurses;
+#[cfg(test)]
+mod virtual_curses;
 
 pub mod color;
 mod color_manager;

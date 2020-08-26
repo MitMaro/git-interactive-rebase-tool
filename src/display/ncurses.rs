@@ -1,6 +1,6 @@
 use crate::display::color_mode::ColorMode;
+use crate::display::curses::{chtype, Input};
 use crate::display::utils::detect_color_mode;
-use pancurses::{chtype, Input};
 
 pub struct Curses {
 	color_mode: ColorMode,

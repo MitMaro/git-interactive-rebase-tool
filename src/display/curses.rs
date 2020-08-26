@@ -1,4 +1,7 @@
+#[cfg(not(test))]
 pub use super::ncurses::Curses;
+#[cfg(test)]
+pub use super::virtual_curses::Curses;
 
 pub use pancurses::{
 	chtype,

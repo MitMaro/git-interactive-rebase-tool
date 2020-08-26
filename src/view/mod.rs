@@ -38,10 +38,12 @@ impl<'v> View<'v> {
 
 		if let Some(prompt) = view_data.get_prompt() {
 			self.display.set_style(false, false, false);
+			self.display.draw_str("\n");
 			self.display.draw_str(&format!(
-				"\n{} ({}/{})? ",
+				"{} ({}/{})?",
 				prompt, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
 			));
+			self.display.draw_str(" ");
 			return;
 		}
 
