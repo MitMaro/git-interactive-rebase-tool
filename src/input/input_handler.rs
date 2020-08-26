@@ -1,8 +1,8 @@
 use crate::config::key_bindings::KeyBindings;
+use crate::display::curses::Input as CursesInput;
 use crate::display::Display;
 use crate::input::utils::curses_input_to_string;
 use crate::input::Input;
-use pancurses::Input as PancursesInput;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum InputMode {
@@ -120,7 +120,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	fn get_next_input(&self) -> PancursesInput {
+	fn get_next_input(&self) -> CursesInput {
 		loop {
 			let c = self.display.getch();
 			// technically this will never be None with delay mode
