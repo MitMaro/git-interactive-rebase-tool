@@ -7,7 +7,7 @@ use crate::list::line::Line;
 use crate::view::line_segment::LineSegment;
 use std::cmp;
 
-fn get_action_color(action: Action) -> DisplayColor {
+const fn get_action_color(action: Action) -> DisplayColor {
 	match action {
 		Action::Break => DisplayColor::ActionBreak,
 		Action::Drop => DisplayColor::ActionDrop,

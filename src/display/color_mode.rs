@@ -1,6 +1,6 @@
 use crate::display::color_mode::ColorMode::{EightBit, FourBit, TrueColor};
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub(super) enum ColorMode {
 	TwoTone,
 	ThreeBit,
@@ -10,12 +10,12 @@ pub(super) enum ColorMode {
 }
 
 impl ColorMode {
-	pub(super) fn has_minimum_four_bit_color(&self) -> bool {
-		*self == FourBit || *self == EightBit || *self == TrueColor
+	pub(super) fn has_minimum_four_bit_color(self) -> bool {
+		self == FourBit || self == EightBit || self == TrueColor
 	}
 
-	pub(super) fn has_true_color(&self) -> bool {
-		*self == TrueColor
+	pub(super) fn has_true_color(self) -> bool {
+		self == TrueColor
 	}
 }
 

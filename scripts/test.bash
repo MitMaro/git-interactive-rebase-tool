@@ -4,4 +4,5 @@ set -e
 set -u
 set -o pipefail
 
-cargo test --
+rustup update stable
+cargo test
