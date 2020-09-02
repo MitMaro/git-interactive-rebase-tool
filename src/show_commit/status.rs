@@ -19,7 +19,7 @@ pub enum Status {
 }
 
 impl Status {
-	pub(super) fn new_from_git_delta(delta: Delta) -> Self {
+	pub(super) const fn new_from_git_delta(delta: Delta) -> Self {
 		match delta {
 			Delta::Added => Self::Added,
 			Delta::Copied => Self::Copied,

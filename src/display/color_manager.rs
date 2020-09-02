@@ -102,7 +102,7 @@ impl ColorManager {
 		}
 	}
 
-	pub(super) fn get_color(&self, color: DisplayColor, selected: bool) -> chtype {
+	pub(super) const fn get_color(&self, color: DisplayColor, selected: bool) -> chtype {
 		if selected {
 			match color {
 				DisplayColor::ActionBreak => self.action_break.1,

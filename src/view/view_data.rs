@@ -276,21 +276,21 @@ impl ViewData {
 		&self.prompt
 	}
 
-	pub(super) fn get_leading_lines(&self) -> &Vec<ViewLine> {
+	pub(super) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
 		match &self.leading_lines_cache {
 			Some(lines) => lines,
 			None => &self.empty_lines,
 		}
 	}
 
-	pub(super) fn get_lines(&self) -> &Vec<ViewLine> {
+	pub(super) const fn get_lines(&self) -> &Vec<ViewLine> {
 		match &self.lines_cache {
 			Some(lines) => lines,
 			None => &self.empty_lines,
 		}
 	}
 
-	pub(super) fn get_trailing_lines(&self) -> &Vec<ViewLine> {
+	pub(super) const fn get_trailing_lines(&self) -> &Vec<ViewLine> {
 		match &self.trailing_lines_cache {
 			Some(lines) => lines,
 			None => &self.empty_lines,

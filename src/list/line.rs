@@ -84,7 +84,7 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn get_edit_content(&self) -> &String {
+	pub(crate) const fn get_edit_content(&self) -> &String {
 		match self.action {
 			Action::Exec => &self.command,
 			_ => &self.comment,

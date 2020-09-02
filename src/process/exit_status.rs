@@ -8,7 +8,7 @@ pub enum ExitStatus {
 }
 
 impl ExitStatus {
-	pub fn to_code(self) -> i32 {
+	pub const fn to_code(self) -> i32 {
 		match self {
 			Self::ConfigError => 1,
 			Self::FileReadError => 2,
