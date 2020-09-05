@@ -41,6 +41,10 @@ impl Curses {
 		self.input.borrow_mut().push(input);
 	}
 
+	pub(crate) fn set_color_mode(&mut self, color_mode: ColorMode) {
+		self.color_mode = color_mode;
+	}
+
 	pub(super) fn init_color(&mut self, index: i16, red: i16, green: i16, blue: i16) {
 		self.function_call_trace
 			.borrow_mut()
