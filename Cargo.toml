@@ -52,6 +52,7 @@ features = []
 
 [dev-dependencies]
 serial_test = "0.4.0"
+concat-idents = "1.0.0"
 
 [features]
 default = []
