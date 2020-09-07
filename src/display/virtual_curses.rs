@@ -3,8 +3,20 @@
 use crate::build_trace;
 use crate::display::color_mode::ColorMode;
 use crate::display::utils::detect_color_mode;
-use crate::display::{chtype, Input};
+pub use pancurses::{chtype, Input};
 use std::cell::RefCell;
+
+pub const A_DIM: chtype = 64;
+pub const A_REVERSE: chtype = 128;
+pub const A_UNDERLINE: chtype = 256;
+pub const COLOR_BLACK: i16 = 0;
+pub const COLOR_RED: i16 = 1;
+pub const COLOR_GREEN: i16 = 2;
+pub const COLOR_YELLOW: i16 = 3;
+pub const COLOR_BLUE: i16 = 4;
+pub const COLOR_MAGENTA: i16 = 5;
+pub const COLOR_CYAN: i16 = 6;
+pub const COLOR_WHITE: i16 = 7;
 
 pub struct Curses {
 	attributes: RefCell<chtype>,
