@@ -1,5 +1,7 @@
 pub mod line_segment;
 pub mod scroll_position;
+#[cfg(test)]
+pub mod testutil;
 pub mod view_data;
 pub mod view_line;
 
@@ -92,7 +94,7 @@ impl<'v> View<'v> {
 		for line in trailing_lines {
 			self.display.ensure_at_line_start(line_index);
 			line_index += 1;
-			self.draw_view_line(line)
+			self.draw_view_line(line);
 		}
 		self.display.refresh();
 	}

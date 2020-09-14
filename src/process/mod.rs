@@ -4,6 +4,8 @@ mod help;
 pub mod process_module;
 pub mod process_result;
 pub mod state;
+#[cfg(test)]
+pub mod testutil;
 
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
