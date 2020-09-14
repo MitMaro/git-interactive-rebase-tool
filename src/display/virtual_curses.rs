@@ -49,7 +49,7 @@ impl Curses {
 		self.function_call_trace.borrow().clone()
 	}
 
-	pub(crate) fn push_input(&mut self, input: Input) {
+	pub(crate) fn push_input(&self, input: Input) {
 		self.input.borrow_mut().push(input);
 	}
 

@@ -54,7 +54,7 @@ impl ConfirmAbort {
 #[cfg(test)]
 mod tests {
 	use crate::assert_handle_input_result;
-	use crate::build_trace;
+	use crate::build_render_output;
 	use crate::config::Config;
 	use crate::confirm_abort::ConfirmAbort;
 	use crate::display::curses::Input as CursesInput;
@@ -65,16 +65,14 @@ mod tests {
 	use crate::process::exit_status::ExitStatus;
 	use crate::process::process_module::ProcessModule;
 	use crate::process::state::State;
-	use crate::process_module_build_view_data_test;
 	use crate::process_module_handle_input_test;
+	use crate::process_module_test;
 	use crate::view::View;
 
-	process_module_build_view_data_test!(
+	process_module_test!(
 		confirm_abort_build_view_data,
 		vec!["pick aaa comment"],
-		(10, 10),
-		(0, 0),
-		vec![build_trace!("addstr", "Are you sure you want to abort (y/n)?")],
+		build_render_output!("{TITLE}", "{PROMPT}", "Are you sure you want to abort"),
 		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(ConfirmAbort::new()) }
 	);
 
@@ -85,7 +83,6 @@ mod tests {
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
-
 			assert_handle_input_result!(
 				result,
 				input = Input::Yes,
