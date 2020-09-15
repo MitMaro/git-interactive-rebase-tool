@@ -1,3 +1,4 @@
+use crate::config::key_bindings::KeyBindings;
 use crate::config::Config;
 use crate::display::curses::{Curses, Input as PancursesInput};
 use crate::display::Display;
@@ -90,7 +91,89 @@ macro_rules! process_module_test {
 	};
 }
 
-pub fn _process_module_handle_input_test<F>(lines: Vec<&str>, input: PancursesInput, callback: F)
+fn map_input_str_to_curses(input: &str) -> PancursesInput {
+	match input {
+		"Backspace" => PancursesInput::KeyBackspace,
+		"Delete" => PancursesInput::KeyDC,
+		"Down" => PancursesInput::KeyDown,
+		"End" => PancursesInput::KeyEnd,
+		"Enter" => PancursesInput::KeyEnter,
+		"F0" => PancursesInput::KeyF0,
+		"F1" => PancursesInput::KeyF1,
+		"F2" => PancursesInput::KeyF2,
+		"F3" => PancursesInput::KeyF3,
+		"F4" => PancursesInput::KeyF4,
+		"F5" => PancursesInput::KeyF5,
+		"F6" => PancursesInput::KeyF6,
+		"F7" => PancursesInput::KeyF7,
+		"F8" => PancursesInput::KeyF8,
+		"F9" => PancursesInput::KeyF9,
+		"F10" => PancursesInput::KeyF10,
+		"F11" => PancursesInput::KeyF11,
+		"F12" => PancursesInput::KeyF12,
+		"F13" => PancursesInput::KeyF13,
+		"F14" => PancursesInput::KeyF14,
+		"F15" => PancursesInput::KeyF15,
+		"Home" => PancursesInput::KeyHome,
+		"Insert" => PancursesInput::KeyIC,
+		"Left" => PancursesInput::KeyLeft,
+		"PageDown" => PancursesInput::KeyNPage,
+		"PageUp" => PancursesInput::KeyPPage,
+		"Resize" => PancursesInput::KeyResize,
+		"Right" => PancursesInput::KeyRight,
+		"ShiftDelete" => PancursesInput::KeySDC,
+		"ShiftDown" => PancursesInput::KeySF,
+		"ShiftEnd" => PancursesInput::KeySEnd,
+		"ShiftHome" => PancursesInput::KeySHome,
+		"ShiftLeft" => PancursesInput::KeySLeft,
+		"ShiftRight" => PancursesInput::KeySRight,
+		"ShiftTab" => PancursesInput::KeySTab,
+		"ShiftUp" => PancursesInput::KeySR,
+		"Tab" => PancursesInput::Character('\t'),
+		"Up" => PancursesInput::KeyUp,
+		_ => PancursesInput::Character(input.chars().next().unwrap()),
+	}
+}
+
+fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInput {
+	match input {
+		Input::Abort => map_input_str_to_curses(key_bindings.abort.as_str()),
+		Input::ActionBreak => map_input_str_to_curses(key_bindings.action_break.as_str()),
+		Input::ActionDrop => map_input_str_to_curses(key_bindings.action_drop.as_str()),
+		Input::ActionEdit => map_input_str_to_curses(key_bindings.action_edit.as_str()),
+		Input::ActionFixup => map_input_str_to_curses(key_bindings.action_fixup.as_str()),
+		Input::ActionPick => map_input_str_to_curses(key_bindings.action_pick.as_str()),
+		Input::ActionReword => map_input_str_to_curses(key_bindings.action_reword.as_str()),
+		Input::ActionSquash => map_input_str_to_curses(key_bindings.action_squash.as_str()),
+		Input::Backspace => map_input_str_to_curses("Backspace"),
+		Input::Character(c) => map_input_str_to_curses(c.to_string().as_str()),
+		Input::Delete => map_input_str_to_curses("Delete"),
+		Input::Edit => map_input_str_to_curses("Edit"),
+		Input::Enter => map_input_str_to_curses("Enter"),
+		Input::ForceAbort => map_input_str_to_curses(key_bindings.force_abort.as_str()),
+		Input::ForceRebase => map_input_str_to_curses(key_bindings.force_rebase.as_str()),
+		Input::Help => map_input_str_to_curses(key_bindings.help.as_str()),
+		Input::MoveCursorDown => map_input_str_to_curses(key_bindings.move_down.as_str()),
+		Input::MoveCursorLeft => map_input_str_to_curses(key_bindings.move_left.as_str()),
+		Input::MoveCursorPageDown => map_input_str_to_curses(key_bindings.move_down_step.as_str()),
+		Input::MoveCursorPageUp => map_input_str_to_curses(key_bindings.move_up_step.as_str()),
+		Input::MoveCursorRight => map_input_str_to_curses(key_bindings.move_right.as_str()),
+		Input::MoveCursorUp => map_input_str_to_curses(key_bindings.move_up.as_str()),
+		Input::No => map_input_str_to_curses(key_bindings.confirm_no.as_str()),
+		Input::OpenInEditor => map_input_str_to_curses(key_bindings.open_in_external_editor.as_str()),
+		Input::Other => map_input_str_to_curses("Other"),
+		Input::Rebase => map_input_str_to_curses(key_bindings.rebase.as_str()),
+		Input::Resize => map_input_str_to_curses("Resize"),
+		Input::ShowCommit => map_input_str_to_curses(key_bindings.show_commit.as_str()),
+		Input::ShowDiff => map_input_str_to_curses(key_bindings.show_diff.as_str()),
+		Input::SwapSelectedDown => map_input_str_to_curses(key_bindings.move_selection_down.as_str()),
+		Input::SwapSelectedUp => map_input_str_to_curses(key_bindings.move_selection_up.as_str()),
+		Input::ToggleVisualMode => map_input_str_to_curses(key_bindings.toggle_visual_mode.as_str()),
+		Input::Yes => map_input_str_to_curses(key_bindings.confirm_yes.as_str()),
+	}
+}
+
+pub fn _process_module_handle_input_test<F>(lines: Vec<&str>, input: Input, callback: F)
 where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 	set_var(
 		"GIT_DIR",
@@ -103,7 +186,7 @@ where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 	);
 	let config = Config::new().unwrap();
 	let mut curses = Curses::new();
-	curses.push_input(input);
+	curses.push_input(map_input_to_curses(&config.key_bindings, input));
 	let display = Display::new(&mut curses, &config.theme);
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);
