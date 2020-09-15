@@ -57,7 +57,6 @@ mod tests {
 	use crate::build_render_output;
 	use crate::config::Config;
 	use crate::confirm_abort::ConfirmAbort;
-	use crate::display::curses::Input as CursesInput;
 	use crate::display::Display;
 	use crate::git_interactive::GitInteractive;
 	use crate::input::input_handler::InputHandler;
@@ -79,7 +78,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_yes,
 		vec!["pick aaa comment"],
-		CursesInput::Character('y'),
+		Input::Yes,
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
@@ -96,7 +95,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_no,
 		vec!["pick aaa comment"],
-		CursesInput::Character('n'),
+		Input::No,
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
@@ -107,7 +106,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_any_key,
 		vec!["pick aaa comment"],
-		CursesInput::Character('x'),
+		Input::Character('x'),
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
@@ -118,7 +117,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_resize,
 		vec!["pick aaa comment"],
-		CursesInput::KeyResize,
+		Input::Resize,
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
