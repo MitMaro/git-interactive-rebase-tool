@@ -27,20 +27,20 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 
 	let mut style = vec![];
 	if dimmed {
-		style.push("dimmed");
+		style.push("Dimmed");
 	}
 	if underline {
-		style.push("underline");
+		style.push("Underline");
 	}
 	if reversed {
-		style.push("reversed");
+		style.push("Reversed");
 	}
 
 	if style.is_empty() {
 		format!("{{{}}}", color_string)
 	}
 	else {
-		format!("{{{}}} {}", color_string, style.join(","))
+		format!("{{{},{}}}", color_string, style.join(","))
 	}
 }
 
