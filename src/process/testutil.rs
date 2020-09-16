@@ -173,7 +173,7 @@ fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInp
 	}
 }
 
-pub fn _process_module_handle_input_test<F>(lines: Vec<&str>, input: Input, callback: F)
+pub fn _process_module_handle_input_test<F>(lines: Vec<&str>, input: Vec<Input>, callback: F)
 where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 	set_var(
 		"GIT_DIR",
@@ -186,7 +186,9 @@ where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 	);
 	let config = Config::new().unwrap();
 	let mut curses = Curses::new();
-	curses.push_input(map_input_to_curses(&config.key_bindings, input));
+	for i in input {
+		curses.push_input(map_input_to_curses(&config.key_bindings, i));
+	}
 	let display = Display::new(&mut curses, &config.theme);
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);
