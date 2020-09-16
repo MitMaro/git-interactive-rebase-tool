@@ -46,7 +46,20 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 
 fn render_view_line(view_line: &ViewLine) -> String {
 	let mut line = String::new();
-	for segment in view_line.get_segments() {
+	let segments = view_line.get_segments();
+	for (index, segment) in segments.iter().enumerate() {
+		let content = segment.get_content();
+		// skip any trailing padding whitespace segments to make diff building/matching easier
+		// this could probably be done in a better way, but I cannot think of it just now - Tim
+		if index + 1 == segments.len()
+			&& segment.get_color() == DisplayColor::Normal
+			&& !segment.is_dimmed()
+			&& !segment.is_reversed()
+			&& !segment.is_underlined()
+			&& content.trim().is_empty()
+		{
+			continue;
+		}
 		line.push_str(
 			render_style(
 				segment.get_color(),
