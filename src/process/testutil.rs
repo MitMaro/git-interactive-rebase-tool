@@ -17,14 +17,14 @@ use std::path::Path;
 
 pub fn panic_output_neq(expected: &str, actual: &str) {
 	panic!(vec![
-		"\n==========",
+		"\n",
 		"Unexpected output!",
 		"==========",
 		"Expected:",
-		expected,
+		expected.replace(" ", "·").replace("\t", "   →").as_str(),
 		"==========",
 		"Actual:",
-		actual,
+		actual.replace(" ", "·").replace("\t", "   →").as_str(),
 		"==========\n"
 	]
 	.join("\n"));
