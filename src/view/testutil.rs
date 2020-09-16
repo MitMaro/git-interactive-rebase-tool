@@ -92,19 +92,28 @@ pub(crate) fn render_view_data(view_data: &ViewData) -> String {
 		return lines.join("\n");
 	}
 
-	lines.push("{LEADING}".to_string());
-	for line in view_data.get_leading_lines() {
-		lines.push(render_view_line(line));
+	let leading_lines = view_data.get_leading_lines();
+	if !leading_lines.is_empty() {
+		lines.push("{LEADING}".to_string());
+		for line in leading_lines {
+			lines.push(render_view_line(line));
+		}
 	}
 
-	lines.push("{BODY}".to_string());
-	for line in view_data.get_lines() {
-		lines.push(render_view_line(line));
+	let body_lines = view_data.get_lines();
+	if !body_lines.is_empty() {
+		lines.push("{BODY}".to_string());
+		for line in body_lines {
+			lines.push(render_view_line(line));
+		}
 	}
 
-	lines.push("{TRAILING}".to_string());
-	for line in view_data.get_trailing_lines() {
-		lines.push(render_view_line(line));
+	let trailing_lines = view_data.get_trailing_lines();
+	if !trailing_lines.is_empty() {
+		lines.push("{TRAILING}".to_string());
+		for line in trailing_lines {
+			lines.push(render_view_line(line));
+		}
 	}
 
 	return lines.join("\n");
