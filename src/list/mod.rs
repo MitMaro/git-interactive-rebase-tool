@@ -103,10 +103,6 @@ impl<'l> ProcessModule for List<'l> {
 		&self.view_data
 	}
 
-	fn process(&mut self, _: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
-		ProcessResult::new()
-	}
-
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
