@@ -78,7 +78,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_yes,
 		vec!["pick aaa comment"],
-		Input::Yes,
+		vec![Input::Yes],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
@@ -95,7 +95,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_no,
 		vec!["pick aaa comment"],
-		Input::No,
+		vec![Input::No],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
@@ -106,7 +106,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_any_key,
 		vec!["pick aaa comment"],
-		Input::Character('x'),
+		vec![Input::Character('x')],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
@@ -117,7 +117,7 @@ mod tests {
 	process_module_handle_input_test!(
 		confirm_abort_handle_input_resize,
 		vec!["pick aaa comment"],
-		Input::Resize,
+		vec![Input::Resize],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);

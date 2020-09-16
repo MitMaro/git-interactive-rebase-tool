@@ -50,7 +50,7 @@ impl Curses {
 	}
 
 	pub(crate) fn push_input(&self, input: Input) {
-		self.input.borrow_mut().push(input);
+		self.input.borrow_mut().insert(0, input);
 	}
 
 	pub(crate) fn set_color_mode(&mut self, color_mode: ColorMode) {
