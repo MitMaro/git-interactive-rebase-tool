@@ -71,6 +71,7 @@ impl ViewData {
 	}
 
 	pub(crate) fn clear(&mut self) {
+		self.content = None;
 		self.leading_lines.clear();
 		self.leading_lines_cache = None;
 		self.lines.clear();

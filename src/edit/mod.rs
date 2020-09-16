@@ -2,9 +2,8 @@ use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::process::handle_input_result::HandleInputResult;
+use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
-use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
 use crate::process::state::State;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
@@ -12,22 +11,14 @@ use crate::view::view_line::ViewLine;
 use crate::view::View;
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum EditState {
-	Active,
-	Finish,
-}
-
 pub struct Edit {
 	content: String,
 	cursor_position: usize,
-	state: EditState,
 	view_data: ViewData,
 }
 
 impl ProcessModule for Edit {
 	fn activate(&mut self, _state: &State, application: &GitInteractive) {
-		self.state = EditState::Active;
 		self.content = application.get_selected_line_edit_content().clone();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 	}
@@ -35,6 +26,7 @@ impl ProcessModule for Edit {
 	fn deactivate(&mut self) {
 		self.content.clear();
 		self.cursor_position = 0;
+		self.view_data.clear();
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
@@ -54,7 +46,7 @@ impl ProcessModule for Edit {
 			LineSegment::new_with_color_and_style(indicator.as_str(), DisplayColor::Normal, false, true, false),
 			LineSegment::new(end.as_str()),
 		];
-		if end.is_empty() {
+		if indicator.is_empty() {
 			segments.push(LineSegment::new_with_color_and_style(
 				" ",
 				DisplayColor::Normal,
@@ -75,31 +67,16 @@ impl ProcessModule for Edit {
 		&self.view_data
 	}
 
-	fn process(&mut self, git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
-		match self.state {
-			EditState::Active => {},
-			EditState::Finish => {
-				git_interactive.edit_selected_line(self.content.as_str());
-				result = result.state(State::List);
-			},
-		};
-		result.build()
-	}
-
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
-		_: &mut GitInteractive,
+		git_interactive: &mut GitInteractive,
 		view: &View<'_>,
 	) -> HandleInputResult
 	{
-		if self.state == EditState::Finish {
-			return HandleInputResult::new(Input::Enter);
-		}
-		let mut input;
-		loop {
-			input = input_handler.get_input(InputMode::Raw);
+		let result = loop {
+			let input = input_handler.get_input(InputMode::Raw);
+			let result = HandleInputResultBuilder::new(input);
 			match input {
 				Input::Character(c) => {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
@@ -112,30 +89,28 @@ impl ProcessModule for Edit {
 					self.cursor_position += 1;
 				},
 				Input::Backspace => {
-					if self.cursor_position == 0 {
-						break;
+					if self.cursor_position != 0 {
+						let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+							.take(self.cursor_position - 1)
+							.collect::<String>();
+						let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+							.skip(self.cursor_position)
+							.collect::<String>();
+						self.content = format!("{}{}", start, end);
+						self.cursor_position -= 1;
 					}
-					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-						.take(self.cursor_position - 1)
-						.collect::<String>();
-					let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-						.skip(self.cursor_position)
-						.collect::<String>();
-					self.content = format!("{}{}", start, end);
-					self.cursor_position -= 1;
 				},
 				Input::Delete => {
 					let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
-					if self.cursor_position == length {
-						break;
+					if self.cursor_position != length {
+						let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+							.take(self.cursor_position)
+							.collect::<String>();
+						let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+							.skip(self.cursor_position + 1)
+							.collect::<String>();
+						self.content = format!("{}{}", start, end);
 					}
-					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-						.take(self.cursor_position)
-						.collect::<String>();
-					let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-						.skip(self.cursor_position + 1)
-						.collect::<String>();
-					self.content = format!("{}{}", start, end);
 				},
 				Input::MoveCursorRight => {
 					let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
@@ -148,7 +123,10 @@ impl ProcessModule for Edit {
 						self.cursor_position -= 1;
 					}
 				},
-				Input::Enter => self.state = EditState::Finish,
+				Input::Enter => {
+					git_interactive.edit_selected_line(self.content.as_str());
+					break result.state(State::List);
+				},
 				Input::Resize => {
 					let (view_width, view_height) = view.get_view_size();
 					self.view_data.set_view_size(view_width, view_height);
@@ -157,9 +135,9 @@ impl ProcessModule for Edit {
 					continue;
 				},
 			}
-			break;
-		}
-		HandleInputResult::new(input)
+			break result;
+		};
+		result.build()
 	}
 }
 
@@ -170,8 +148,437 @@ impl Edit {
 		Self {
 			content: String::from(""),
 			cursor_position: 0,
-			state: EditState::Active,
 			view_data,
 		}
 	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::assert_handle_input_result;
+	use crate::build_render_output;
+	use crate::config::Config;
+	use crate::display::Display;
+	use crate::edit::Edit;
+	use crate::git_interactive::GitInteractive;
+	use crate::input::input_handler::InputHandler;
+	use crate::input::Input;
+	use crate::process::process_module::ProcessModule;
+	use crate::process::state::State;
+	use crate::process_module_handle_input_test;
+	use crate::process_module_state;
+	use crate::process_module_test;
+	use crate::view::View;
+
+	process_module_test!(
+		edit_move_cursor_end,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}foobar{Normal,Underline} ",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_move_cursor_1_left,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}fooba{Normal,Underline}r",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_move_cursor_2_left,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft; 2],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}foob{Normal,Underline}a{Normal}r",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_move_cursor_1_right,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft; 5],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}f{Normal,Underline}o{Normal}obar",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_move_cursor_right,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft; 6],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal,Underline}f{Normal}oobar",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_move_cursor_attempt_past_start,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft; 10],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal,Underline}f{Normal}oobar",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_move_cursor_attempt_past_end,
+		vec!["exec foobar"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorRight; 5],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}foobar{Normal,Underline} ",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_multiple_width_unicode_single_width,
+		vec!["exec a🗳b"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft; 2],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}a{Normal,Underline}🗳{Normal}b",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_multiple_width_unicode_emoji,
+		vec!["exec a😀b"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft; 2],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}a{Normal,Underline}😀{Normal}b",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_add_character_end,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![Input::Character('x')],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}abcdx{Normal,Underline} ",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_add_character_one_from_end,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft, Input::Character('x')],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}abcx{Normal,Underline}d",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_add_character_one_from_start,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::Character('x')
+		],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}ax{Normal,Underline}b{Normal}cd",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_add_character_at_start,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::Character('x')
+		],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}x{Normal,Underline}a{Normal}bcd",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_backspace_at_end,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![Input::Backspace],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}abc{Normal,Underline} ",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_backspace_one_from_end,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft, Input::Backspace],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}ab{Normal,Underline}d",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_backspace_one_from_start,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::Backspace
+		],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal,Underline}b{Normal}cd",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_backspace_at_start,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::Backspace
+		],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal,Underline}a{Normal}bcd",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_delete_at_end,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![Input::Delete],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}abcd{Normal,Underline} ",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_delete_last_character,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![Input::MoveCursorLeft, Input::Delete],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}abc{Normal,Underline} ",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_delete_second_character,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::Delete
+		],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}a{Normal,Underline}c{Normal}d",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_test!(
+		edit_cursor_delete_first_character,
+		vec!["exec abcd"],
+		process_module_state!(state = State::Edit),
+		vec![
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::MoveCursorLeft,
+			Input::Delete
+		],
+		build_render_output!(
+			"{TITLE}",
+			"{BODY}",
+			"{Normal,Underline}b{Normal}cd",
+			"{TRAILING}",
+			"{IndicatorColor}Enter to finish"
+		),
+		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(Edit::new()) }
+	);
+
+	process_module_handle_input_test!(
+		edit_resize,
+		vec!["exec foobar"],
+		vec![Input::Resize],
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+			let mut edit = Edit::new();
+			edit.activate(&State::Edit, git_interactive);
+			let result = edit.handle_input(input_handler, git_interactive, view);
+			assert_handle_input_result!(result, input = Input::Resize);
+		}
+	);
+
+	process_module_handle_input_test!(
+		edit_finish_edit_no_change,
+		vec!["exec foobar"],
+		vec![Input::Enter],
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+			let mut edit = Edit::new();
+			edit.activate(&State::Edit, git_interactive);
+			let result = edit.handle_input(input_handler, git_interactive, view);
+			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
+			assert_eq!(git_interactive.get_selected_line_edit_content(), "foobar");
+		}
+	);
+
+	process_module_handle_input_test!(
+		edit_finish_edit_with_change,
+		vec!["exec foobar"],
+		vec![Input::Character('x'), Input::Enter],
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+			let mut edit = Edit::new();
+			edit.activate(&State::Edit, git_interactive);
+			edit.handle_input(input_handler, git_interactive, view);
+			let result = edit.handle_input(input_handler, git_interactive, view);
+			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
+			assert_eq!(git_interactive.get_selected_line_edit_content(), "foobarx");
+		}
+	);
+
+	process_module_handle_input_test!(
+		edit_ignore_other_input,
+		vec!["exec foobar"],
+		vec![Input::Other, Input::Enter],
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+			let mut edit = Edit::new();
+			edit.activate(&State::Edit, git_interactive);
+			let result = edit.handle_input(input_handler, git_interactive, view);
+			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
+		}
+	);
+
+	process_module_handle_input_test!(
+		edit_deactivate,
+		vec!["exec foobar"],
+		vec![Input::MoveCursorLeft],
+		|_: &InputHandler<'_>, git_interactive: &mut GitInteractive, _: &View<'_>| {
+			let mut edit = Edit::new();
+			edit.activate(&State::Edit, git_interactive);
+			edit.deactivate();
+			assert_eq!(edit.cursor_position, 0);
+			assert!(edit.content.is_empty());
+		}
+	);
 }

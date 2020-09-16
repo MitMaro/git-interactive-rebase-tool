@@ -32,13 +32,14 @@ pub fn panic_output_neq(expected: &str, actual: &str) {
 
 pub fn _process_module_test<F>(
 	lines: Vec<&str>,
-	state: ((i32, i32), (i32, i32)),
+	state: ((i32, i32), (i32, i32), Option<State>),
+	input: Option<Vec<Input>>,
 	expected_output: Vec<String>,
 	get_module: F,
 ) where
 	F: FnOnce(&Config, &Display<'_>) -> Box<dyn ProcessModule>,
 {
-	let (position, view_size) = state;
+	let (position, view_size, state) = state;
 	set_var(
 		"GIT_DIR",
 		Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -52,9 +53,14 @@ pub fn _process_module_test<F>(
 	let mut curses = Curses::new();
 	curses.mv(position.1, position.0);
 	curses.resize_term(view_size.1, view_size.0);
+	if let Some(input) = &input {
+		for i in input {
+			curses.push_input(map_input_to_curses(&config.key_bindings, *i));
+		}
+	}
 	let display = Display::new(&mut curses, &config.theme);
 	let view = View::new(&display, &config);
-	let git_interactive = GitInteractive::new(
+	let mut git_interactive = GitInteractive::new(
 		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
 		Path::new(env!("CARGO_MANIFEST_DIR"))
 			.join("test")
@@ -63,12 +69,34 @@ pub fn _process_module_test<F>(
 	)
 	.unwrap();
 	let mut module = get_module(&config, &display);
+	if let Some(state) = state {
+		module.activate(&state, &mut git_interactive);
+	}
+	if let Some(input) = &input {
+		let input_handler = InputHandler::new(&display, &config.key_bindings);
+		for _ in input {
+			module.handle_input(&input_handler, &mut git_interactive, &view);
+		}
+	}
 	let view_data = module.build_view_data(&view, &git_interactive);
 	let expected = expected_output.join("\n");
 	let output = render_view_data(view_data);
 	if output != expected {
 		panic_output_neq(expected.as_str(), output.as_str());
 	}
+}
+
+#[macro_export]
+macro_rules! process_module_state {
+	(position = $position:expr, view_size = $view_size:expr) => {
+		($position, $view_size, None)
+	};
+	(state = $state:expr) => {
+		((0, 0), (50, 30), Some($state))
+	};
+	(state = $state:expr, position = $position:expr, view_size = $view_size:expr) => {
+		($position, $view_size, Some($state))
+	};
 }
 
 #[macro_export]
@@ -86,7 +114,20 @@ macro_rules! process_module_test {
 		#[test]
 		#[serial_test::serial]
 		fn $name() {
-			crate::process::testutil::_process_module_test($lines, ((0, 0), (10, 10)), $expected_output, $get_module);
+			crate::process::testutil::_process_module_test(
+				$lines,
+				((0, 0), (50, 30), None),
+				None,
+				$expected_output,
+				$get_module,
+			);
+		}
+	};
+	($name:ident, $lines:expr, $state:expr, $input:expr, $expected_output:expr, $get_module:expr) => {
+		#[test]
+		#[serial_test::serial]
+		fn $name() {
+			crate::process::testutil::_process_module_test($lines, $state, Some($input), $expected_output, $get_module);
 		}
 	};
 }
@@ -131,6 +172,7 @@ fn map_input_str_to_curses(input: &str) -> PancursesInput {
 		"ShiftUp" => PancursesInput::KeySR,
 		"Tab" => PancursesInput::Character('\t'),
 		"Up" => PancursesInput::KeyUp,
+		"Other" => PancursesInput::KeyEOL, // emulate other with EOL
 		_ => PancursesInput::Character(input.chars().next().unwrap()),
 	}
 }
