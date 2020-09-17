@@ -14,8 +14,8 @@ pub struct Help {
 
 fn get_max_help_key_length(lines: &[(&str, &str)]) -> usize {
 	let mut max_length = 0;
-	for (key, _) in lines {
-		let len = UnicodeSegmentation::graphemes(*key, true).count();
+	for &(key, _) in lines {
+		let len = UnicodeSegmentation::graphemes(key, true).count();
 		if len > max_length {
 			max_length = len;
 		}

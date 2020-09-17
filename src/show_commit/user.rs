@@ -21,16 +21,16 @@ impl User {
 	pub(super) fn to_string(&self) -> Option<String> {
 		let name = &self.name;
 		let email = &self.email;
-		match name {
-			Some(n) => {
-				match email {
-					Some(e) => Some(format!("{} <{}>", *n, *e)),
+		match *name {
+			Some(ref n) => {
+				match *email {
+					Some(ref e) => Some(format!("{} <{}>", *n, *e)),
 					None => Some(n.to_string()),
 				}
 			},
 			None => {
-				match email {
-					Some(e) => Some(format!("<{}>", *e)),
+				match *email {
+					Some(ref e) => Some(format!("<{}>", *e)),
 					None => None,
 				}
 			},

@@ -28,7 +28,7 @@ pub(super) fn get_stat_item_segments(
 ) -> Vec<LineSegment>
 {
 	let status_name = if is_full_width {
-		match status {
+		match *status {
 			Status::Added => format!("{:>8}: ", "added"),
 			Status::Copied => format!("{:>8}: ", "copied"),
 			Status::Deleted => format!("{:>8}: ", "deleted"),
@@ -40,7 +40,7 @@ pub(super) fn get_stat_item_segments(
 		}
 	}
 	else {
-		match status {
+		match *status {
 			Status::Added => String::from("A "),
 			Status::Copied => String::from("C "),
 			Status::Deleted => String::from("D "),
@@ -52,7 +52,7 @@ pub(super) fn get_stat_item_segments(
 		}
 	};
 
-	let color = match status {
+	let color = match *status {
 		Status::Added | Status::Copied => DisplayColor::DiffAddColor,
 		Status::Deleted => DisplayColor::DiffRemoveColor,
 		Status::Modified | Status::Renamed | Status::Typechange => DisplayColor::DiffChangeColor,
@@ -62,7 +62,7 @@ pub(super) fn get_stat_item_segments(
 
 	let to_file_indicator = if is_full_width { " → " } else { "→" };
 
-	match status {
+	match *status {
 		Status::Copied => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),

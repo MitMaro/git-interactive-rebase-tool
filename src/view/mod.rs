@@ -38,7 +38,7 @@ impl<'v> View<'v> {
 			self.draw_title(view_data.show_help());
 		}
 
-		if let Some(prompt) = view_data.get_prompt() {
+		if let Some(ref prompt) = *view_data.get_prompt() {
 			self.display.set_style(false, false, false);
 			self.display.draw_str("\n");
 			self.display.draw_str(&format!(
