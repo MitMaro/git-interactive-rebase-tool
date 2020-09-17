@@ -1,56 +1,43 @@
+use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::state::State;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ProcessResult {
+	pub(super) error_message: Option<String>,
 	pub(super) exit_status: Option<ExitStatus>,
+	pub(super) input: Option<Input>,
 	pub(super) state: Option<State>,
 }
 
 impl ProcessResult {
 	pub(crate) const fn new() -> Self {
 		Self {
+			error_message: None,
 			exit_status: None,
+			input: None,
 			state: None,
 		}
 	}
-}
 
-pub struct ProcessResultBuilder {
-	process_result: ProcessResult,
-}
-
-impl ProcessResultBuilder {
-	pub(crate) const fn new() -> Self {
-		Self {
-			process_result: ProcessResult {
-				exit_status: None,
-				state: None,
-			},
-		}
+	pub(crate) const fn input(mut self, input: Input) -> Self {
+		self.input = Some(input);
+		self
 	}
 
-	pub(crate) fn error(mut self, message: &str, return_state: State) -> Self {
-		self.process_result.state = Some(State::Error {
-			return_state: Box::new(return_state),
-			message: String::from(message),
-		});
+	pub(crate) fn error(mut self, message: &str) -> Self {
+		self.error_message = Some(String::from(message));
 		self
 	}
 
 	pub(crate) const fn exit_status(mut self, status: ExitStatus) -> Self {
-		self.process_result.exit_status = Some(status);
+		self.exit_status = Some(status);
 		self
 	}
 
-	#[allow(clippy::missing_const_for_fn)]
+	#[allow(clippy::missing_const_for_fn)] // false positive
 	pub(crate) fn state(mut self, new_state: State) -> Self {
-		self.process_result.state = Some(new_state);
+		self.state = Some(new_state);
 		self
-	}
-
-	#[allow(clippy::missing_const_for_fn)]
-	pub(crate) fn build(self) -> ProcessResult {
-		self.process_result
 	}
 }

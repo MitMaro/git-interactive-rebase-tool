@@ -6,9 +6,8 @@ use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
-use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
-use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
+use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::view_data::ViewData;
 use crate::view::View;
@@ -67,12 +66,12 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
 		_view: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
 		match self.state {
 			ExternalEditorState::Active => Self::handle_input_active(input_handler),
 			ExternalEditorState::Empty => self.handle_input_empty(input_handler),
-			_ => HandleInputResult::new(Input::Other),
+			_ => ProcessResult::new().input(Input::Other),
 		}
 	}
 }
@@ -129,21 +128,21 @@ impl<'e> ExternalEditor<'e> {
 	}
 
 	fn process_active(&mut self, git_interactive: &GitInteractive) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
+		let mut result = ProcessResult::new();
 		if let Err(e) = self.run_editor(git_interactive) {
-			result = result.error(e.as_str(), State::ExternalEditor);
+			result = result.error(e.as_str());
 			self.state = ExternalEditorState::Error;
 		}
 		else {
 			self.state = ExternalEditorState::Finish;
 		}
-		result.build()
+		result
 	}
 
 	fn process_finish(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
+		let mut result = ProcessResult::new();
 		if let Err(e) = git_interactive.reload_file() {
-			result = result.error(e.as_str(), State::ExternalEditor);
+			result = result.error(e.as_str());
 			self.state = ExternalEditorState::Error;
 		}
 		else if git_interactive.get_lines().is_empty() {
@@ -152,11 +151,11 @@ impl<'e> ExternalEditor<'e> {
 		else {
 			result = result.state(State::List);
 		}
-		result.build()
+		result
 	}
 
 	fn process_error(git_interactive: &GitInteractive) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new().state(State::Exiting);
+		let mut result = ProcessResult::new().state(State::Exiting);
 
 		if git_interactive.get_lines().is_empty() {
 			result = result.exit_status(ExitStatus::Good);
@@ -164,23 +163,23 @@ impl<'e> ExternalEditor<'e> {
 		else {
 			result = result.exit_status(ExitStatus::StateError);
 		}
-		result.build()
+		result
 	}
 
-	fn handle_input_active(input_handler: &InputHandler<'_>) -> HandleInputResult {
+	fn handle_input_active(input_handler: &InputHandler<'_>) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::Default);
-		let mut result = HandleInputResultBuilder::new(input);
+		let mut result = ProcessResult::new().input(input);
 		if let Input::Resize = input {
 		}
 		else {
 			result = result.state(State::List);
 		}
-		result.build()
+		result
 	}
 
-	fn handle_input_empty(&mut self, input_handler: &InputHandler<'_>) -> HandleInputResult {
+	fn handle_input_empty(&mut self, input_handler: &InputHandler<'_>) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::Confirm);
-		let mut result = HandleInputResultBuilder::new(input);
+		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::Yes => {
 				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
@@ -191,6 +190,6 @@ impl<'e> ExternalEditor<'e> {
 			},
 			_ => {},
 		}
-		result.build()
+		result
 	}
 }

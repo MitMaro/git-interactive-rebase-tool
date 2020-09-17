@@ -1,7 +1,7 @@
 use crate::display::display_color::DisplayColor;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::process::handle_input_result::HandleInputResult;
+use crate::process::process_result::ProcessResult;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -84,7 +84,7 @@ impl Help {
 		&self.view_data
 	}
 
-	pub fn handle_input(&mut self, input_handler: &InputHandler<'_>, view: &View<'_>) -> HandleInputResult {
+	pub fn handle_input(&mut self, input_handler: &InputHandler<'_>, view: &View<'_>) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::Default);
 		match input {
 			Input::MoveCursorLeft => self.view_data.scroll_left(),
@@ -97,8 +97,8 @@ impl Help {
 				let (view_width, view_height) = view.get_view_size();
 				self.view_data.set_view_size(view_width, view_height);
 			},
-			_ => return HandleInputResult::new(Input::Help),
+			_ => return ProcessResult::new().input(Input::Help),
 		}
-		HandleInputResult::new(input)
+		ProcessResult::new().input(input)
 	}
 }

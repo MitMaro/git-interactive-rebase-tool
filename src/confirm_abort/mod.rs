@@ -2,8 +2,8 @@ use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
-use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
+use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::view_data::ViewData;
 use crate::view::View;
@@ -25,10 +25,10 @@ impl ProcessModule for ConfirmAbort {
 		input_handler: &InputHandler<'_>,
 		git_interactive: &mut GitInteractive,
 		_view: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
 		let input = input_handler.get_input(InputMode::Confirm);
-		let mut result = HandleInputResultBuilder::new(input);
+		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::Yes => {
 				git_interactive.clear();
@@ -39,7 +39,7 @@ impl ProcessModule for ConfirmAbort {
 			},
 			_ => {},
 		}
-		result.build()
+		result
 	}
 }
 

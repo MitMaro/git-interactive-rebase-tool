@@ -2,8 +2,8 @@ use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
+use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
@@ -72,11 +72,11 @@ impl ProcessModule for Edit {
 		input_handler: &InputHandler<'_>,
 		git_interactive: &mut GitInteractive,
 		view: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
 		let result = loop {
 			let input = input_handler.get_input(InputMode::Raw);
-			let result = HandleInputResultBuilder::new(input);
+			let result = ProcessResult::new().input(input);
 			match input {
 				Input::Character(c) => {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
@@ -137,7 +137,7 @@ impl ProcessModule for Edit {
 			}
 			break result;
 		};
-		result.build()
+		result
 	}
 }
 

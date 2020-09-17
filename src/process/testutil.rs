@@ -7,8 +7,8 @@ use crate::input::input_handler::InputHandler;
 use crate::input::Input;
 use crate::list::line::Line;
 use crate::process::exit_status::ExitStatus;
-use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
+use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::testutil::render_view_data;
 use crate::view::View;
@@ -263,20 +263,20 @@ macro_rules! process_module_handle_input_test {
 }
 
 pub fn _assert_handle_input_result(
-	actual: &HandleInputResult,
+	actual: &ProcessResult,
 	input: Input,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
 )
 {
-	let mut expected = HandleInputResultBuilder::new(input);
+	let mut expected = ProcessResult::new().input(input);
 	if let Some(state) = state {
 		expected = expected.state(state);
 	}
 	if let Some(exit_status) = exit_status {
 		expected = expected.exit_status(exit_status);
 	}
-	assert_eq!(actual, &expected.build());
+	assert_eq!(actual, &expected);
 }
 
 #[macro_export]
