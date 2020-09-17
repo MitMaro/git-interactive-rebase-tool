@@ -118,5 +118,5 @@ pub(crate) fn render_view_data(view_data: &ViewData) -> String {
 		}
 	}
 
-	return lines.join("\n");
+	lines.join("\n")
 }
