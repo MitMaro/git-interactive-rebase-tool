@@ -20,16 +20,16 @@ impl FileStatsBuilder {
 	}
 
 	fn close_delta(&mut self) {
-		if let Some(d) = &self.delta {
-			match &mut self.file_stat {
-				Some(fs) => fs.add_delta(d.clone()),
+		if let Some(ref d) = self.delta {
+			match self.file_stat {
+				Some(ref mut fs) => fs.add_delta(d.clone()),
 				None => panic!("add_file_stat must be called once before adding a delta"),
 			}
 		}
 	}
 
 	fn close_file_stat(&mut self) {
-		if let Some(fs) = &self.file_stat {
+		if let Some(ref fs) = self.file_stat {
 			self.file_stats.push(fs.clone());
 		}
 	}
@@ -47,8 +47,8 @@ impl FileStatsBuilder {
 	}
 
 	pub(crate) fn add_diff_line(&mut self, diff_line: DiffLine) {
-		match &mut self.delta {
-			Some(d) => d.add_line(diff_line),
+		match self.delta {
+			Some(ref mut d) => d.add_line(diff_line),
 			None => panic!("add_delta must be called once before adding a diff line"),
 		}
 	}

@@ -156,7 +156,7 @@ impl<'d> ViewBuilder<'d> {
 			]));
 		}
 
-		if let Some(body) = commit.get_body() {
+		if let Some(ref body) = *commit.get_body() {
 			for line in body.lines() {
 				view_data.push_line(ViewLine::new(vec![LineSegment::new(line)]));
 			}
@@ -216,7 +216,7 @@ impl<'d> ViewBuilder<'d> {
 			));
 			line_segments.push(LineSegment::new_with_color(
 				content.as_str(),
-				match diff_line.origin() {
+				match *diff_line.origin() {
 					Origin::Addition => DisplayColor::DiffAddColor,
 					Origin::Deletion => DisplayColor::DiffRemoveColor,
 					Origin::Context => DisplayColor::DiffContextColor,
@@ -230,7 +230,7 @@ impl<'d> ViewBuilder<'d> {
 		else {
 			line_segments.push(LineSegment::new_with_color(
 				self.replace_whitespace(diff_line.line(), false).as_str(),
-				match diff_line.origin() {
+				match *diff_line.origin() {
 					Origin::Addition => DisplayColor::DiffAddColor,
 					Origin::Deletion => DisplayColor::DiffRemoveColor,
 					Origin::Context => DisplayColor::DiffContextColor,

@@ -278,22 +278,22 @@ impl ViewData {
 	}
 
 	pub(super) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
-		match &self.leading_lines_cache {
-			Some(lines) => lines,
+		match self.leading_lines_cache {
+			Some(ref lines) => lines,
 			None => &self.empty_lines,
 		}
 	}
 
 	pub(super) const fn get_lines(&self) -> &Vec<ViewLine> {
-		match &self.lines_cache {
-			Some(lines) => lines,
+		match self.lines_cache {
+			Some(ref lines) => lines,
 			None => &self.empty_lines,
 		}
 	}
 
 	pub(super) const fn get_trailing_lines(&self) -> &Vec<ViewLine> {
-		match &self.trailing_lines_cache {
-			Some(lines) => lines,
+		match self.trailing_lines_cache {
+			Some(ref lines) => lines,
 			None => &self.empty_lines,
 		}
 	}
@@ -361,7 +361,7 @@ impl ViewData {
 
 		if self.lines_cache.is_none() {
 			self.lines_cache = Some(
-				if let Some(content) = &self.content {
+				if let Some(ref content) = self.content {
 					let mut view_lines = vec![];
 					let mut segments = vec![];
 					let mut remaining_width = self.width;

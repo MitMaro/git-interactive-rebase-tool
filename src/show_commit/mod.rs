@@ -44,8 +44,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	fn activate(&mut self, _state: &State, git_interactive: &GitInteractive) {
 		// skip loading commit data if the currently loaded commit has not changed, this retains
 		// position after returning to the list view or help
-		if let Some(commit) = &self.commit {
-			if let Ok(commit) = commit {
+		if let Some(ref commit) = self.commit {
+			if let Ok(ref commit) = *commit {
 				if commit.get_hash() == git_interactive.get_selected_line_hash() {
 					return;
 				}
@@ -69,8 +69,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
-		match &self.commit {
-			Some(commit) => {
+		match self.commit {
+			Some(ref commit) => {
 				if self.view_data.is_empty() {
 					let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
 
@@ -120,8 +120,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	fn process(&mut self, _git_interactive: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
 		let mut result = ProcessResultBuilder::new();
 
-		if let Some(commit) = &self.commit {
-			if let Err(e) = commit {
+		if let Some(ref commit) = self.commit {
+			if let Err(ref e) = *commit {
 				result = result.error(e.as_str(), State::List);
 			}
 		}

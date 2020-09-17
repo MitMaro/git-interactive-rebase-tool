@@ -263,7 +263,7 @@ impl<'r> Process<'r> {
 	fn check_window_size(&mut self) {
 		let (window_width, window_height) = self.view.get_view_size();
 		let check = !(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT);
-		if let State::WindowSizeError(return_state) = &self.state {
+		if let State::WindowSizeError(ref return_state) = self.state {
 			if check {
 				self.state = *return_state.clone();
 			}
