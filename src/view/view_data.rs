@@ -636,9 +636,7 @@ mod tests {
 
 	fn get_segment_content_for_view_line(view_lines: &[ViewLine], line_index: usize, segment_index: usize) -> String {
 		String::from(
-			view_lines
-				.get(line_index)
-				.unwrap()
+			view_lines[line_index]
 				.get_segments()
 				.get(segment_index)
 				.unwrap()
