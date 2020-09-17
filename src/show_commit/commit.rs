@@ -271,7 +271,7 @@ mod tests {
 	fn commit_utils_load_commit_state_load_date() {
 		set_git_dir("simple");
 		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
-		assert_eq!(commit.get_date().timestamp(), 1580172067);
+		assert_eq!(commit.get_date().timestamp(), 1_580_172_067);
 	}
 
 	#[test]
