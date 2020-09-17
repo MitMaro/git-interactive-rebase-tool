@@ -74,6 +74,6 @@ mod tests {
 
 	#[test]
 	fn color_mode_equals_other_color_mode() {
-		assert!(ColorMode::TrueColor == ColorMode::TrueColor);
+		assert_eq!(ColorMode::TrueColor, ColorMode::TrueColor);
 	}
 }
