@@ -37,7 +37,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	fn get_default_input(self: &Self, input: &str) -> Input {
+	fn get_default_input(&self, input: &str) -> Input {
 		match input {
 			i if i == self.key_bindings.move_up.as_str() => Input::MoveCursorUp,
 			i if i == self.key_bindings.move_down.as_str() => Input::MoveCursorDown,
@@ -50,7 +50,7 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	fn get_show_commit_input(self: &Self, input: &str) -> Input {
+	fn get_show_commit_input(&self, input: &str) -> Input {
 		match input {
 			i if i == self.key_bindings.help.as_str() => Input::Help,
 			i if i == self.key_bindings.move_up.as_str() => Input::MoveCursorUp,
@@ -66,7 +66,7 @@ impl<'i> InputHandler<'i> {
 	}
 
 	#[allow(clippy::cognitive_complexity)]
-	fn get_list_input(self: &Self, input: &str) -> Input {
+	fn get_list_input(&self, input: &str) -> Input {
 		match input {
 			i if i == self.key_bindings.abort.as_str() => Input::Abort,
 			i if i == self.key_bindings.rebase.as_str() => Input::Rebase,
