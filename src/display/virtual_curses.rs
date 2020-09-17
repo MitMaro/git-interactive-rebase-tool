@@ -94,29 +94,27 @@ impl Curses {
 	}
 
 	pub(super) fn attrset<T: Into<chtype>>(&self, attributes: T) {
-		let attributes = attributes.into();
+		let attrs = attributes.into();
 		self.function_call_trace
 			.borrow_mut()
-			.push(build_trace!("attrset", attributes));
-		self.attributes.replace(attributes);
+			.push(build_trace!("attrset", attrs));
+		self.attributes.replace(attrs);
 	}
 
-	pub(super) fn attron<T: Into<chtype>>(&self, attributes: T) {
-		let attributes = attributes.into();
-		self.function_call_trace
-			.borrow_mut()
-			.push(build_trace!("attron", attributes));
-		let attr = *self.attributes.borrow();
-		self.attributes.replace(attr | attributes);
+	pub(super) fn attron<T: Into<chtype>>(&self, attribute: T) {
+		let attr = attribute.into();
+		let old_attr = *self.attributes.borrow();
+		self.function_call_trace.borrow_mut().push(build_trace!("attron", attr));
+		self.attributes.replace(old_attr | attr);
 	}
 
-	pub(super) fn attroff<T: Into<chtype>>(&self, attributes: T) {
-		let attributes = attributes.into();
+	pub(super) fn attroff<T: Into<chtype>>(&self, attribute: T) {
+		let attr = attribute.into();
+		let old_attr = *self.attributes.borrow();
 		self.function_call_trace
 			.borrow_mut()
-			.push(build_trace!("attroff", attributes));
-		let attr = *self.attributes.borrow();
-		self.attributes.replace(attr & !attributes);
+			.push(build_trace!("attroff", attr));
+		self.attributes.replace(old_attr & !attr);
 	}
 
 	pub(super) fn getch(&self) -> Option<Input> {
