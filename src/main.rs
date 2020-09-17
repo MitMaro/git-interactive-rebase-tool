@@ -62,6 +62,8 @@ struct Exit {
 	status: ExitStatus,
 }
 
+// TODO use the termination trait once rust-lang/rust#43301 is stable
+#[allow(clippy::exit)]
 fn main() {
 	match try_main() {
 		Ok(code) => std::process::exit(code.to_code()),
