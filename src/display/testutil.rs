@@ -7,7 +7,7 @@ use crate::testutil::compare_trace;
 use std::env::set_var;
 use std::path::Path;
 
-pub fn _display_module_test<F>(expected_trace: Vec<(String, Vec<String>)>, input: Option<Input>, callback: F)
+pub fn _display_module_test<F>(expected_trace: &[(String, Vec<String>)], input: Option<Input>, callback: F)
 where F: FnOnce(&mut Display<'_>) {
 	set_var(
 		"GIT_DIR",
@@ -29,7 +29,7 @@ where F: FnOnce(&mut Display<'_>) {
 	let mut display = Display::new(&mut curses, &config.theme);
 	callback(&mut display);
 	let trace = curses.get_function_trace();
-	compare_trace(&trace, &expected_trace);
+	compare_trace(&trace, &expected_trace.to_vec());
 }
 
 // a lot of the testing here is just ensuring that the correct curses function are called
@@ -40,7 +40,7 @@ macro_rules! display_module_test {
 				#[test]
 				#[serial_test::serial]
 				fn test_name() {
-					crate::display::testutil::_display_module_test($expected_trace, None, $fun);
+					crate::display::testutil::_display_module_test(&$expected_trace, None, $fun);
 				}
 			});
 		};
@@ -49,7 +49,7 @@ macro_rules! display_module_test {
 				#[test]
 				#[serial_test::serial]
 				fn test_name() {
-					crate::display::testutil::_display_module_test($expected_trace, Some($input), $fun);
+					crate::display::testutil::_display_module_test(&$expected_trace, Some($input), $fun);
 				}
 			});
 		};

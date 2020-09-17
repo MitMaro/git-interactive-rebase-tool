@@ -172,7 +172,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_end,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![],
 		build_render_output!(
@@ -187,7 +187,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_1_left,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft],
 		build_render_output!(
@@ -202,7 +202,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_2_left,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft; 2],
 		build_render_output!(
@@ -217,7 +217,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_1_right,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft; 5],
 		build_render_output!(
@@ -232,7 +232,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_right,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft; 6],
 		build_render_output!(
@@ -247,7 +247,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_attempt_past_start,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft; 10],
 		build_render_output!(
@@ -262,7 +262,7 @@ mod tests {
 
 	process_module_test!(
 		edit_move_cursor_attempt_past_end,
-		vec!["exec foobar"],
+		["exec foobar"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorRight; 5],
 		build_render_output!(
@@ -277,7 +277,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_multiple_width_unicode_single_width,
-		vec!["exec a🗳b"],
+		["exec a🗳b"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft; 2],
 		build_render_output!(
@@ -292,7 +292,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_multiple_width_unicode_emoji,
-		vec!["exec a😀b"],
+		["exec a😀b"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft; 2],
 		build_render_output!(
@@ -307,7 +307,7 @@ mod tests {
 
 	process_module_test!(
 		edit_add_character_end,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![Input::Character('x')],
 		build_render_output!(
@@ -322,7 +322,7 @@ mod tests {
 
 	process_module_test!(
 		edit_add_character_one_from_end,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft, Input::Character('x')],
 		build_render_output!(
@@ -337,7 +337,7 @@ mod tests {
 
 	process_module_test!(
 		edit_add_character_one_from_start,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![
 			Input::MoveCursorLeft,
@@ -357,7 +357,7 @@ mod tests {
 
 	process_module_test!(
 		edit_add_character_at_start,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![
 			Input::MoveCursorLeft,
@@ -378,7 +378,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_backspace_at_end,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![Input::Backspace],
 		build_render_output!(
@@ -393,7 +393,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_backspace_one_from_end,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft, Input::Backspace],
 		build_render_output!(
@@ -408,7 +408,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_backspace_one_from_start,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![
 			Input::MoveCursorLeft,
@@ -428,7 +428,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_backspace_at_start,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![
 			Input::MoveCursorLeft,
@@ -449,7 +449,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_delete_at_end,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![Input::Delete],
 		build_render_output!(
@@ -464,7 +464,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_delete_last_character,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![Input::MoveCursorLeft, Input::Delete],
 		build_render_output!(
@@ -479,7 +479,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_delete_second_character,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![
 			Input::MoveCursorLeft,
@@ -499,7 +499,7 @@ mod tests {
 
 	process_module_test!(
 		edit_cursor_delete_first_character,
-		vec!["exec abcd"],
+		["exec abcd"],
 		process_module_state!(state = State::Edit),
 		vec![
 			Input::MoveCursorLeft,
@@ -520,8 +520,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		edit_resize,
-		vec!["exec foobar"],
-		vec![Input::Resize],
+		["exec foobar"],
+		[Input::Resize],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(&State::Edit, git_interactive);
@@ -532,8 +532,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		edit_finish_edit_no_change,
-		vec!["exec foobar"],
-		vec![Input::Enter],
+		["exec foobar"],
+		[Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(&State::Edit, git_interactive);
@@ -545,8 +545,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		edit_finish_edit_with_change,
-		vec!["exec foobar"],
-		vec![Input::Character('x'), Input::Enter],
+		["exec foobar"],
+		[Input::Character('x'), Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(&State::Edit, git_interactive);
@@ -559,8 +559,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		edit_ignore_other_input,
-		vec!["exec foobar"],
-		vec![Input::Other, Input::Enter],
+		["exec foobar"],
+		[Input::Other, Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(&State::Edit, git_interactive);
@@ -571,8 +571,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		edit_deactivate,
-		vec!["exec foobar"],
-		vec![Input::MoveCursorLeft],
+		["exec foobar"],
+		[Input::MoveCursorLeft],
 		|_: &InputHandler<'_>, git_interactive: &mut GitInteractive, _: &View<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(&State::Edit, git_interactive);

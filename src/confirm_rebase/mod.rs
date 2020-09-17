@@ -69,15 +69,15 @@ mod tests {
 
 	process_module_test!(
 		confirm_rebase_build_view_data,
-		vec!["pick aaa comment"],
+		["pick aaa comment"],
 		build_render_output!("{TITLE}", "{PROMPT}", "Are you sure you want to rebase"),
 		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(ConfirmRebase::new()) }
 	);
 
 	process_module_handle_input_test!(
 		confirm_rebase_handle_input_yes,
-		vec!["pick aaa comment"],
-		vec![Input::Yes],
+		["pick aaa comment"],
+		[Input::Yes],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
@@ -94,8 +94,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		confirm_rebase_handle_input_no,
-		vec!["pick aaa comment"],
-		vec![Input::No],
+		["pick aaa comment"],
+		[Input::No],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
@@ -106,8 +106,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		confirm_rebase_handle_input_any_key,
-		vec!["pick aaa comment"],
-		vec![Input::Character('x')],
+		["pick aaa comment"],
+		[Input::Character('x')],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
@@ -117,8 +117,8 @@ mod tests {
 
 	process_module_handle_input_test!(
 		confirm_rebase_handle_input_resize,
-		vec!["pick aaa comment"],
-		vec![Input::Resize],
+		["pick aaa comment"],
+		[Input::Resize],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);

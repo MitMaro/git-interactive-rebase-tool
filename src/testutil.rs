@@ -11,16 +11,15 @@ macro_rules! build_trace {
 	}};
 }
 
-pub fn panic_trace_error(e: &(String, Vec<String>), trace: &Vec<(String, Vec<String>)>) {
+pub fn panic_trace_error(e: &(String, Vec<String>), trace: &[(String, Vec<String>)]) {
 	panic!(vec![
 		"\n==========",
 		"Missing function call in trace",
 		format!("Call: {}({})", e.0, e.1.join(", ")).as_str(),
 		"Trace:",
 		trace
-			.clone()
 			.iter()
-			.map(|(f, args)| {
+			.map(|(f, args): &(String, Vec<String>)| {
 				format!(
 					"\t{}({})",
 					f,
@@ -38,32 +37,27 @@ pub fn panic_trace_error(e: &(String, Vec<String>), trace: &Vec<(String, Vec<Str
 	.join("\n"));
 }
 
-pub fn compare_trace(actual: &Vec<(String, Vec<String>)>, expected: &Vec<(String, Vec<String>)>) {
+pub fn compare_trace(actual: &[(String, Vec<String>)], expected: &[(String, Vec<String>)]) {
 	let mut e_iter = expected.iter();
 	let mut a_iter = actual.iter();
-	'trace: loop {
-		if let Some(e) = e_iter.next() {
-			loop {
-				if let Some(a) = a_iter.next() {
-					// function name and argument length must match
-					if !a.0.eq(&e.0) || a.1.len() != e.1.len() {
-						continue;
-					}
-					if a.1.iter().zip(&e.1).all(|(a, e)| e.eq("*") || a.eq(e)) {
-						continue 'trace;
-					}
+	'trace: while let Some(e) = e_iter.next() {
+		loop {
+			if let Some(a) = a_iter.next() {
+				// function name and argument length must match
+				if !a.0.eq(&e.0) || a.1.len() != e.1.len() {
+					continue;
 				}
-				else {
-					panic_trace_error(&e, &actual);
+				if a.1.iter().zip(&e.1).all(|(a, e)| e.eq("*") || a.eq(e)) {
+					continue 'trace;
 				}
 			}
-		}
-		else {
-			break;
+			else {
+				panic_trace_error(e, actual);
+			}
 		}
 	}
 
 	if let Some(e) = e_iter.next() {
-		panic_trace_error(&e, &actual);
+		panic_trace_error(e, actual);
 	}
 }
