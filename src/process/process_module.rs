@@ -1,7 +1,6 @@
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
-use crate::process::handle_input_result::HandleInputResult;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::view_data::ViewData;
@@ -23,9 +22,9 @@ pub trait ProcessModule {
 		_input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
 		_view: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
-		HandleInputResult::new(Input::Other)
+		ProcessResult::new().input(Input::Other)
 	}
 
 	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {

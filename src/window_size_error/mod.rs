@@ -1,8 +1,8 @@
 use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH};
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
-use crate::process::handle_input_result::HandleInputResult;
 use crate::process::process_module::ProcessModule;
+use crate::process::process_result::ProcessResult;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -58,9 +58,9 @@ impl ProcessModule for WindowSizeError {
 		input_handler: &InputHandler<'_>,
 		_git_interactive: &mut GitInteractive,
 		_view: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
-		HandleInputResult::new(input_handler.get_input(InputMode::Default))
+		ProcessResult::new().input(input_handler.get_input(InputMode::Default))
 	}
 }
 

@@ -18,7 +18,6 @@ use crate::list::utils::{
 	get_visual_footer_full,
 };
 use crate::process::exit_status::ExitStatus;
-use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
@@ -108,11 +107,11 @@ impl<'l> ProcessModule for List<'l> {
 		input_handler: &InputHandler<'_>,
 		git_interactive: &mut GitInteractive,
 		view: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
 		let (_, view_height) = view.get_view_size();
 		let input = input_handler.get_input(InputMode::List);
-		let mut result = HandleInputResultBuilder::new(input);
+		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::MoveCursorLeft => self.view_data.scroll_left(),
 			Input::MoveCursorRight => self.view_data.scroll_right(),
@@ -131,7 +130,7 @@ impl<'l> ProcessModule for List<'l> {
 		}
 		let selected_index = *git_interactive.get_selected_line_index() - 1;
 		self.view_data.ensure_line_visible(selected_index);
-		result.build()
+		result
 	}
 
 	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
@@ -173,9 +172,9 @@ impl<'l> List<'l> {
 	fn handle_normal_mode_input(
 		&mut self,
 		input: Input,
-		result: HandleInputResultBuilder,
+		result: ProcessResult,
 		git_interactive: &mut GitInteractive,
-	) -> HandleInputResultBuilder
+	) -> ProcessResult
 	{
 		let mut result = result;
 		match input {
@@ -226,9 +225,9 @@ impl<'l> List<'l> {
 	fn handle_visual_mode_input(
 		&mut self,
 		input: Input,
-		result: HandleInputResultBuilder,
+		result: ProcessResult,
 		git_interactive: &mut GitInteractive,
-	) -> HandleInputResultBuilder
+	) -> ProcessResult
 	{
 		let mut result = result;
 		match input {

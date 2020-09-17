@@ -17,9 +17,8 @@ use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::process::handle_input_result::{HandleInputResult, HandleInputResultBuilder};
 use crate::process::process_module::ProcessModule;
-use crate::process::process_result::{ProcessResult, ProcessResultBuilder};
+use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
 use crate::show_commit::show_commit_state::ShowCommitState;
@@ -116,15 +115,15 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	}
 
 	fn process(&mut self, _git_interactive: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
-		let mut result = ProcessResultBuilder::new();
+		// move this to active, remove the need for a cache check on each render
+		let mut result = ProcessResult::new();
 
 		if let Some(ref commit) = self.commit {
 			if let Err(ref e) = *commit {
-				result = result.error(e.as_str(), State::List);
+				result = result.error(e.as_str()).state(State::List);
 			}
 		}
-
-		result.build()
+		result
 	}
 
 	fn handle_input(
@@ -132,10 +131,10 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		input_handler: &InputHandler<'_>,
 		_: &mut GitInteractive,
 		_: &View<'_>,
-	) -> HandleInputResult
+	) -> ProcessResult
 	{
 		let input = input_handler.get_input(InputMode::ShowCommit);
-		let mut result = HandleInputResultBuilder::new(input);
+		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::MoveCursorLeft => self.view_data.scroll_left(),
 			Input::MoveCursorRight => self.view_data.scroll_right(),
@@ -164,7 +163,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				}
 			},
 		}
-		result.build()
+		result
 	}
 
 	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {

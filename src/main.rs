@@ -34,7 +34,6 @@ mod confirm_rebase;
 mod constants;
 mod display;
 mod edit;
-mod error;
 mod exiting;
 mod external_editor;
 mod git_interactive;
