@@ -77,7 +77,7 @@ fn render_view_line(view_line: &ViewLine) -> String {
 	line
 }
 
-pub(crate) fn render_view_data(view_data: &ViewData) -> String {
+pub fn render_view_data(view_data: &ViewData) -> String {
 	let mut lines = vec![];
 	if view_data.show_title() {
 		if view_data.show_help() {
@@ -88,9 +88,9 @@ pub(crate) fn render_view_data(view_data: &ViewData) -> String {
 		}
 	}
 
-	if let Some(prompt) = view_data.get_prompt() {
+	if let Some(ref prompt) = *view_data.get_prompt() {
 		lines.push("{PROMPT}".to_string());
-		lines.push(format!("{}", prompt));
+		lines.push(prompt.to_string());
 		return lines.join("\n");
 	}
 

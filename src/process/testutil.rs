@@ -31,10 +31,10 @@ pub fn panic_output_neq(expected: &str, actual: &str) {
 }
 
 pub fn _process_module_test<F>(
-	lines: Vec<&str>,
+	lines: &[&str],
 	state: ((i32, i32), (i32, i32), Option<State>),
-	input: Option<Vec<Input>>,
-	expected_output: Vec<String>,
+	input: &Option<Vec<Input>>,
+	expected_output: &[String],
 	get_module: F,
 ) where
 	F: FnOnce(&Config, &Display<'_>) -> Box<dyn ProcessModule>,
@@ -53,7 +53,7 @@ pub fn _process_module_test<F>(
 	let mut curses = Curses::new();
 	curses.mv(position.1, position.0);
 	curses.resize_term(view_size.1, view_size.0);
-	if let Some(input) = &input {
+	if let Some(ref input) = *input {
 		for i in input {
 			curses.push_input(map_input_to_curses(&config.key_bindings, *i));
 		}
@@ -70,9 +70,9 @@ pub fn _process_module_test<F>(
 	.unwrap();
 	let mut module = get_module(&config, &display);
 	if let Some(state) = state {
-		module.activate(&state, &mut git_interactive);
+		module.activate(&state, &git_interactive);
 	}
-	if let Some(input) = &input {
+	if let Some(ref input) = *input {
 		let input_handler = InputHandler::new(&display, &config.key_bindings);
 		for _ in input {
 			module.handle_input(&input_handler, &mut git_interactive, &view);
@@ -115,10 +115,10 @@ macro_rules! process_module_test {
 		#[serial_test::serial]
 		fn $name() {
 			crate::process::testutil::_process_module_test(
-				$lines,
+				&$lines,
 				((0, 0), (50, 30), None),
-				None,
-				$expected_output,
+				&None,
+				&$expected_output,
 				$get_module,
 			);
 		}
@@ -127,7 +127,13 @@ macro_rules! process_module_test {
 		#[test]
 		#[serial_test::serial]
 		fn $name() {
-			crate::process::testutil::_process_module_test($lines, $state, Some($input), $expected_output, $get_module);
+			crate::process::testutil::_process_module_test(
+				&$lines,
+				$state,
+				&Some($input),
+				&$expected_output,
+				$get_module,
+			);
 		}
 	};
 }
@@ -215,7 +221,7 @@ fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInp
 	}
 }
 
-pub fn _process_module_handle_input_test<F>(lines: Vec<&str>, input: Vec<Input>, callback: F)
+pub fn _process_module_handle_input_test<F>(lines: &[&str], input: &[Input], callback: F)
 where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 	set_var(
 		"GIT_DIR",
@@ -229,7 +235,7 @@ where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 	let config = Config::new().unwrap();
 	let mut curses = Curses::new();
 	for i in input {
-		curses.push_input(map_input_to_curses(&config.key_bindings, i));
+		curses.push_input(map_input_to_curses(&config.key_bindings, *i));
 	}
 	let display = Display::new(&mut curses, &config.theme);
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
@@ -251,13 +257,13 @@ macro_rules! process_module_handle_input_test {
 		#[test]
 		#[serial_test::serial]
 		fn $name() {
-			crate::process::testutil::_process_module_handle_input_test($lines, $input, $fun);
+			crate::process::testutil::_process_module_handle_input_test(&$lines, &$input, $fun);
 		}
 	};
 }
 
 pub fn _assert_handle_input_result(
-	actual: HandleInputResult,
+	actual: &HandleInputResult,
 	input: Input,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
@@ -270,21 +276,21 @@ pub fn _assert_handle_input_result(
 	if let Some(exit_status) = exit_status {
 		expected = expected.exit_status(exit_status);
 	}
-	assert_eq!(actual, expected.build());
+	assert_eq!(actual, &expected.build());
 }
 
 #[macro_export]
 macro_rules! assert_handle_input_result {
 	($actual:expr, input = $input:expr) => {
-		crate::process::testutil::_assert_handle_input_result($actual, $input, None, None);
+		crate::process::testutil::_assert_handle_input_result(&$actual, $input, None, None);
 	};
 	($actual:expr, input = $input:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_handle_input_result($actual, $input, Some($state), None);
+		crate::process::testutil::_assert_handle_input_result(&$actual, $input, Some($state), None);
 	};
 	($actual:expr, input = $input:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_handle_input_result($actual, $input, None, Some($exit_status));
+		crate::process::testutil::_assert_handle_input_result(&$actual, $input, None, Some($exit_status));
 	};
 	($actual:expr, input = $input:expr, state = $state:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_handle_input_result($actual, $input, Some($state), Some($exit_status));
+		crate::process::testutil::_assert_handle_input_result(&$actual, $input, Some($state), Some($exit_status));
 	};
 }
