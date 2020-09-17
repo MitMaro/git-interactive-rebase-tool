@@ -2,6 +2,8 @@ use crate::display::display_color::DisplayColor;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 
+// TODO change how style is passed to use a Struct
+#[allow(clippy::fn_params_excessive_bools)]
 fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bool, reversed: bool) -> String {
 	let mut color_string = match color {
 		DisplayColor::ActionBreak => String::from("ActionBreak"),
