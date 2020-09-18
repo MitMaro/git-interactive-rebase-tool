@@ -45,7 +45,6 @@ mod show_commit;
 #[macro_use]
 mod testutil;
 mod view;
-mod window_size_error;
 
 use crate::config::Config;
 use crate::display::curses::Curses;
