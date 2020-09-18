@@ -6,6 +6,7 @@ pub mod process_result;
 pub mod state;
 #[cfg(test)]
 pub mod testutil;
+mod window_size_error;
 
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
@@ -25,9 +26,9 @@ use crate::process::help::Help;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::process::window_size_error::WindowSizeError;
 use crate::show_commit::ShowCommit;
 use crate::view::View;
-use crate::window_size_error::WindowSizeError;
 
 pub struct Process<'r> {
 	confirm_abort: ConfirmAbort,
@@ -44,7 +45,7 @@ pub struct Process<'r> {
 	show_commit: ShowCommit<'r>,
 	state: State,
 	view: &'r View<'r>,
-	window_size_error: WindowSizeError,
+	window_size_error: Option<WindowSizeError>,
 }
 
 impl<'r> Process<'r> {
@@ -71,7 +72,7 @@ impl<'r> Process<'r> {
 			show_commit: ShowCommit::new(config),
 			state: State::List,
 			view,
-			window_size_error: WindowSizeError::new(),
+			window_size_error: None,
 		}
 	}
 
@@ -97,7 +98,6 @@ impl<'r> Process<'r> {
 			State::ExternalEditor => self.external_editor.activate(&self.state, &self.git_interactive),
 			State::List => self.list.activate(&self.state, &self.git_interactive),
 			State::ShowCommit => self.show_commit.activate(&self.state, &self.git_interactive),
-			State::WindowSizeError(_) => self.window_size_error.activate(&self.state, &self.git_interactive),
 		}
 	}
 
@@ -110,7 +110,6 @@ impl<'r> Process<'r> {
 			State::ExternalEditor => self.external_editor.deactivate(),
 			State::List => self.list.deactivate(),
 			State::ShowCommit => self.show_commit.deactivate(),
-			State::WindowSizeError(_) => self.window_size_error.deactivate(),
 		}
 	}
 
@@ -123,7 +122,6 @@ impl<'r> Process<'r> {
 			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive, self.view),
 			State::List => self.list.process(&mut self.git_interactive, self.view),
 			State::ShowCommit => self.show_commit.process(&mut self.git_interactive, self.view),
-			State::WindowSizeError(_) => self.window_size_error.process(&mut self.git_interactive, self.view),
 		};
 
 		self.handle_process_result(result);
@@ -131,7 +129,10 @@ impl<'r> Process<'r> {
 
 	fn render(&mut self) {
 		self.view.render(
-			if let Some(ref mut help) = self.help {
+			if let Some(ref mut window_size_error) = self.window_size_error {
+				window_size_error.get_view_data()
+			}
+			else if let Some(ref mut help) = self.help {
 				help.get_view_data(self.view)
 			}
 			else if let Some(ref mut error) = self.error {
@@ -146,16 +147,16 @@ impl<'r> Process<'r> {
 					State::ExternalEditor => self.external_editor.build_view_data(self.view, &self.git_interactive),
 					State::List => self.list.build_view_data(self.view, &self.git_interactive),
 					State::ShowCommit => self.show_commit.build_view_data(self.view, &self.git_interactive),
-					State::WindowSizeError(_) => {
-						self.window_size_error.build_view_data(self.view, &self.git_interactive)
-					},
 				}
 			},
 		);
 	}
 
 	fn handle_input(&mut self) {
-		let result = if let Some(ref mut help) = self.help {
+		let result = if let Some(ref mut window_size_error) = self.window_size_error {
+			window_size_error.handle_input(self.input_handler)
+		}
+		else if let Some(ref mut help) = self.help {
 			help.handle_input(self.input_handler, self.view)
 		}
 		else if let Some(ref mut error) = self.error {
@@ -189,10 +190,6 @@ impl<'r> Process<'r> {
 				},
 				State::ShowCommit => {
 					self.show_commit
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::WindowSizeError(_) => {
-					self.window_size_error
 						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
 				},
 			}
@@ -247,26 +244,20 @@ impl<'r> Process<'r> {
 						self.show_commit.get_help_view(),
 					))
 				},
-				State::ConfirmAbort
-				| State::ConfirmRebase
-				| State::Edit
-				| State::Exiting
-				| State::ExternalEditor
-				| State::WindowSizeError(_) => None,
+				State::ConfirmAbort | State::ConfirmRebase | State::Edit | State::Exiting | State::ExternalEditor => {
+					None
+				},
 			};
 		}
 	}
 
 	fn check_window_size(&mut self) {
 		let (window_width, window_height) = self.view.get_view_size();
-		let check = !(window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT);
-		if let State::WindowSizeError(ref return_state) = self.state {
-			if check {
-				self.state = *return_state.clone();
-			}
+		if window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT {
+			self.window_size_error = Some(WindowSizeError::new(window_width, window_height));
 		}
-		else if !check {
-			self.state = State::WindowSizeError(Box::new(self.state.clone()));
+		else {
+			self.window_size_error = None;
 		}
 	}
 

@@ -7,5 +7,4 @@ pub enum State {
 	ExternalEditor,
 	List,
 	ShowCommit,
-	WindowSizeError(Box<State>),
 }

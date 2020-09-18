@@ -1,12 +1,9 @@
 use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH};
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
-use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
-use crate::view::View;
 
 pub struct WindowSizeError {
 	view_data: ViewData,
@@ -17,10 +14,9 @@ const SHORT_ERROR_MESSAGE: &str = "Window too small";
 const SIZE_ERROR_MESSAGE: &str = "Size!";
 const BUG_WINDOW_SIZE_MESSAGE: &str = "Bug: window size is not invalid!";
 
-impl ProcessModule for WindowSizeError {
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
-		let (window_width, window_height) = view.get_view_size();
-
+impl WindowSizeError {
+	pub fn new(window_width: usize, window_height: usize) -> Self {
+		let mut view_data = ViewData::new();
 		let message = if window_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
 			if window_width >= SHORT_ERROR_MESSAGE.len() {
 				SHORT_ERROR_MESSAGE
@@ -46,28 +42,18 @@ impl ProcessModule for WindowSizeError {
 			BUG_WINDOW_SIZE_MESSAGE
 		};
 
-		self.view_data.clear();
-		self.view_data.push_line(ViewLine::new(vec![LineSegment::new(message)]));
-		self.view_data.set_view_size(window_width, window_height);
-		self.view_data.rebuild();
+		view_data.push_line(ViewLine::new(vec![LineSegment::new(message)]));
+		view_data.set_view_size(window_width, window_height);
+		view_data.rebuild();
+		Self { view_data }
+	}
+
+	pub const fn get_view_data(&self) -> &ViewData {
 		&self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		_git_interactive: &mut GitInteractive,
-		_view: &View<'_>,
-	) -> ProcessResult
-	{
+	#[allow(clippy::unused_self)]
+	pub fn handle_input(&self, input_handler: &InputHandler<'_>) -> ProcessResult {
 		ProcessResult::new().input(input_handler.get_input(InputMode::Default))
-	}
-}
-
-impl WindowSizeError {
-	pub const fn new() -> Self {
-		Self {
-			view_data: ViewData::new(),
-		}
 	}
 }
