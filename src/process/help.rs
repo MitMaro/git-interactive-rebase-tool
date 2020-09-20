@@ -1,21 +1,20 @@
 use crate::display::display_color::DisplayColor;
+use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
+use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
+use crate::process::state::State;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
 use unicode_segmentation::UnicodeSegmentation;
 
-pub struct Help {
-	view_data: ViewData,
-}
-
-fn get_max_help_key_length(lines: &[(&str, &str)]) -> usize {
+fn get_max_help_key_length(lines: &[(String, String)]) -> usize {
 	let mut max_length = 0;
-	for &(key, _) in lines {
-		let len = UnicodeSegmentation::graphemes(key, true).count();
+	for &(ref key, _) in lines {
+		let len = UnicodeSegmentation::graphemes(key.as_str(), true).count();
 		if len > max_length {
 			max_length = len;
 		}
@@ -23,8 +22,75 @@ fn get_max_help_key_length(lines: &[(&str, &str)]) -> usize {
 	max_length
 }
 
+pub struct Help {
+	return_state: Option<State>,
+	no_help_view_data: ViewData,
+	view_data: Option<ViewData>,
+}
+
+impl ProcessModule for Help {
+	fn activate(&mut self, _: &GitInteractive, return_state: State) -> Result<(), String> {
+		if self.return_state.is_none() {
+			self.return_state = Some(return_state);
+		}
+		Ok(())
+	}
+
+	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+		let (view_width, view_height) = view.get_view_size();
+		let view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
+		view_data.set_view_size(view_width, view_height);
+		view_data.rebuild();
+		view_data
+	}
+
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		_: &mut GitInteractive,
+		_: &View<'_>,
+	) -> ProcessResult
+	{
+		let input = input_handler.get_input(InputMode::Default);
+		let view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
+		match input {
+			Input::MoveCursorLeft => view_data.scroll_left(),
+			Input::MoveCursorRight => view_data.scroll_right(),
+			Input::MoveCursorDown => view_data.scroll_down(),
+			Input::MoveCursorUp => view_data.scroll_up(),
+			Input::MoveCursorPageDown => view_data.page_down(),
+			Input::MoveCursorPageUp => view_data.page_up(),
+			Input::Resize => {},
+			_ => {
+				let result = ProcessResult::new()
+					.input(Input::Other)
+					.state(self.return_state.unwrap_or(State::List));
+				self.return_state = None;
+				return result;
+			},
+		}
+		ProcessResult::new().input(input)
+	}
+}
+
 impl Help {
-	pub fn new_from_keybindings_descriptions(keybindings: &[(&str, &str)]) -> Self {
+	pub fn new() -> Self {
+		let mut no_help_view_data = ViewData::new();
+		no_help_view_data.set_content(ViewLine::new(vec![LineSegment::new("Help not available")]));
+
+		Self {
+			return_state: None,
+			view_data: None,
+			no_help_view_data,
+		}
+	}
+
+	pub fn clear_help(&mut self) {
+		self.return_state = None;
+		self.view_data = None;
+	}
+
+	pub fn update_from_keybindings_descriptions(&mut self, keybindings: &[(String, String)]) {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 
@@ -49,7 +115,7 @@ impl Help {
 						DisplayColor::IndicatorColor,
 					),
 					LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
-					LineSegment::new(line.1),
+					LineSegment::new(line.1.as_str()),
 				],
 				2,
 			));
@@ -60,45 +126,10 @@ impl Help {
 			DisplayColor::IndicatorColor,
 		)]));
 
-		Self { view_data }
+		self.view_data = Some(view_data);
 	}
 
-	pub fn new_from_view_data(keybindings: Option<&[(&str, &str)]>, view_data: Option<ViewData>) -> Self {
-		if let Some(k) = keybindings {
-			Self::new_from_keybindings_descriptions(k)
-		}
-		else if let Some(view_data) = view_data {
-			Self { view_data }
-		}
-		else {
-			let mut view_data = ViewData::new();
-			view_data.set_content(ViewLine::new(vec![LineSegment::new("Help not available")]));
-			Self { view_data }
-		}
-	}
-
-	pub fn get_view_data(&mut self, view: &View<'_>) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
-	}
-
-	pub fn handle_input(&mut self, input_handler: &InputHandler<'_>, view: &View<'_>) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::Default);
-		match input {
-			Input::MoveCursorLeft => self.view_data.scroll_left(),
-			Input::MoveCursorRight => self.view_data.scroll_right(),
-			Input::MoveCursorDown => self.view_data.scroll_down(),
-			Input::MoveCursorUp => self.view_data.scroll_up(),
-			Input::MoveCursorPageDown => self.view_data.page_down(),
-			Input::MoveCursorPageUp => self.view_data.page_up(),
-			Input::Resize => {
-				let (view_width, view_height) = view.get_view_size();
-				self.view_data.set_view_size(view_width, view_height);
-			},
-			_ => return ProcessResult::new().input(Input::Help),
-		}
-		ProcessResult::new().input(input)
+	pub fn update_from_view_data(&mut self, view_data: ViewData) {
+		self.view_data = Some(view_data);
 	}
 }

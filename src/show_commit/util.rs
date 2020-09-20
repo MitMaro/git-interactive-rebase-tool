@@ -7,16 +7,19 @@ use crate::view::view_line::ViewLine;
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 
-pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> [(&str, &str); 8] {
-	[
-		(key_bindings.move_up.as_str(), "Scroll up"),
-		(key_bindings.move_down.as_str(), "Scroll down"),
-		(key_bindings.move_up_step.as_str(), "Scroll up half a page"),
-		(key_bindings.move_down_step.as_str(), "Scroll down half a page"),
-		(key_bindings.move_right.as_str(), "Scroll right"),
-		(key_bindings.move_left.as_str(), "Scroll left"),
-		(key_bindings.show_diff.as_str(), "Show full diff"),
-		(key_bindings.help.as_str(), "Show help"),
+pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(String, String)> {
+	vec![
+		(key_bindings.move_up.clone(), String::from("Scroll up")),
+		(key_bindings.move_down.clone(), String::from("Scroll down")),
+		(key_bindings.move_up_step.clone(), String::from("Scroll up half a page")),
+		(
+			key_bindings.move_down_step.clone(),
+			String::from("Scroll down half a page"),
+		),
+		(key_bindings.move_right.clone(), String::from("Scroll right")),
+		(key_bindings.move_left.clone(), String::from("Scroll left")),
+		(key_bindings.show_diff.clone(), String::from("Show full diff")),
+		(key_bindings.help.clone(), String::from("Show help")),
 	]
 }
 

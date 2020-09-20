@@ -7,7 +7,9 @@ use crate::view::view_data::ViewData;
 use crate::view::View;
 
 pub trait ProcessModule {
-	fn activate(&mut self, _state: &State, _git_interactive: &GitInteractive) {}
+	fn activate(&mut self, _git_interactive: &GitInteractive, _previous_state: State) -> Result<(), String> {
+		Ok(())
+	}
 
 	fn deactivate(&mut self) {}
 
@@ -27,7 +29,7 @@ pub trait ProcessModule {
 		ProcessResult::new().input(Input::Other)
 	}
 
-	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
+	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
 		None
 	}
 

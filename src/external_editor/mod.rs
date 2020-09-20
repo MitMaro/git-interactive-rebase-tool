@@ -32,10 +32,11 @@ pub struct ExternalEditor<'e> {
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
-	fn activate(&mut self, _state: &State, _git_interactive: &GitInteractive) {
+	fn activate(&mut self, _: &GitInteractive, _: State) -> Result<(), String> {
 		if self.state != ExternalEditorState::Empty {
 			self.state = ExternalEditorState::Active;
 		}
+		Ok(())
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
@@ -130,7 +131,7 @@ impl<'e> ExternalEditor<'e> {
 	fn process_active(&mut self, git_interactive: &GitInteractive) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		if let Err(e) = self.run_editor(git_interactive) {
-			result = result.error(e.as_str());
+			result = result.error(e.as_str(), None);
 			self.state = ExternalEditorState::Error;
 		}
 		else {
@@ -142,7 +143,7 @@ impl<'e> ExternalEditor<'e> {
 	fn process_finish(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		if let Err(e) = git_interactive.reload_file() {
-			result = result.error(e.as_str());
+			result = result.error(e.as_str(), None);
 			self.state = ExternalEditorState::Error;
 		}
 		else if git_interactive.get_lines().is_empty() {

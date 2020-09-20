@@ -18,14 +18,14 @@ pub struct Edit {
 }
 
 impl ProcessModule for Edit {
-	fn activate(&mut self, _state: &State, application: &GitInteractive) {
-		self.content = application.get_selected_line_edit_content().clone();
+	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> Result<(), String> {
+		self.content = git_interactive.get_selected_line_edit_content().clone();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
+		Ok(())
 	}
 
 	fn deactivate(&mut self) {
 		self.content.clear();
-		self.cursor_position = 0;
 		self.view_data.clear();
 	}
 
@@ -173,7 +173,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_end,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![],
 		build_render_output!(
 			"{TITLE}",
@@ -188,7 +188,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_1_left,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft],
 		build_render_output!(
 			"{TITLE}",
@@ -203,7 +203,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_2_left,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft; 2],
 		build_render_output!(
 			"{TITLE}",
@@ -218,7 +218,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_1_right,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft; 5],
 		build_render_output!(
 			"{TITLE}",
@@ -233,7 +233,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_right,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft; 6],
 		build_render_output!(
 			"{TITLE}",
@@ -248,7 +248,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_attempt_past_start,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft; 10],
 		build_render_output!(
 			"{TITLE}",
@@ -263,7 +263,7 @@ mod tests {
 	process_module_test!(
 		edit_move_cursor_attempt_past_end,
 		["exec foobar"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorRight; 5],
 		build_render_output!(
 			"{TITLE}",
@@ -278,7 +278,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_multiple_width_unicode_single_width,
 		["exec a🗳b"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft; 2],
 		build_render_output!(
 			"{TITLE}",
@@ -293,7 +293,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_multiple_width_unicode_emoji,
 		["exec a😀b"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft; 2],
 		build_render_output!(
 			"{TITLE}",
@@ -308,7 +308,7 @@ mod tests {
 	process_module_test!(
 		edit_add_character_end,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::Character('x')],
 		build_render_output!(
 			"{TITLE}",
@@ -323,7 +323,7 @@ mod tests {
 	process_module_test!(
 		edit_add_character_one_from_end,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft, Input::Character('x')],
 		build_render_output!(
 			"{TITLE}",
@@ -338,7 +338,7 @@ mod tests {
 	process_module_test!(
 		edit_add_character_one_from_start,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![
 			Input::MoveCursorLeft,
 			Input::MoveCursorLeft,
@@ -358,7 +358,7 @@ mod tests {
 	process_module_test!(
 		edit_add_character_at_start,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![
 			Input::MoveCursorLeft,
 			Input::MoveCursorLeft,
@@ -379,7 +379,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_backspace_at_end,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::Backspace],
 		build_render_output!(
 			"{TITLE}",
@@ -394,7 +394,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_backspace_one_from_end,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft, Input::Backspace],
 		build_render_output!(
 			"{TITLE}",
@@ -409,7 +409,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_backspace_one_from_start,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![
 			Input::MoveCursorLeft,
 			Input::MoveCursorLeft,
@@ -429,7 +429,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_backspace_at_start,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![
 			Input::MoveCursorLeft,
 			Input::MoveCursorLeft,
@@ -450,7 +450,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_delete_at_end,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::Delete],
 		build_render_output!(
 			"{TITLE}",
@@ -465,7 +465,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_delete_last_character,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![Input::MoveCursorLeft, Input::Delete],
 		build_render_output!(
 			"{TITLE}",
@@ -480,7 +480,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_delete_second_character,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![
 			Input::MoveCursorLeft,
 			Input::MoveCursorLeft,
@@ -500,7 +500,7 @@ mod tests {
 	process_module_test!(
 		edit_cursor_delete_first_character,
 		["exec abcd"],
-		process_module_state!(state = State::Edit),
+		process_module_state!(new_state = State::Edit, previous_state = State::List),
 		vec![
 			Input::MoveCursorLeft,
 			Input::MoveCursorLeft,
@@ -524,7 +524,7 @@ mod tests {
 		[Input::Resize],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(&State::Edit, git_interactive);
+			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_handle_input_result!(result, input = Input::Resize);
 		}
@@ -536,7 +536,7 @@ mod tests {
 		[Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(&State::Edit, git_interactive);
+			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
 			assert_eq!(git_interactive.get_selected_line_edit_content(), "foobar");
@@ -549,7 +549,7 @@ mod tests {
 		[Input::Character('x'), Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(&State::Edit, git_interactive);
+			edit.activate(git_interactive, State::List).unwrap();
 			edit.handle_input(input_handler, git_interactive, view);
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
@@ -563,7 +563,7 @@ mod tests {
 		[Input::Other, Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(&State::Edit, git_interactive);
+			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
 		}
@@ -575,9 +575,8 @@ mod tests {
 		[Input::MoveCursorLeft],
 		|_: &InputHandler<'_>, git_interactive: &mut GitInteractive, _: &View<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(&State::Edit, git_interactive);
+			edit.activate(git_interactive, State::List).unwrap();
 			edit.deactivate();
-			assert_eq!(edit.cursor_position, 0);
 			assert!(edit.content.is_empty());
 		}
 	);

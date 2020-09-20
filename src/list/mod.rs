@@ -36,12 +36,12 @@ pub struct List<'l> {
 	config: &'l Config,
 	normal_footer_compact: String,
 	normal_footer_full: String,
-	normal_mode_help_lines: [(&'l str, &'l str); 22],
+	normal_mode_help_lines: Vec<(String, String)>,
 	state: ListState,
 	view_data: ViewData,
 	visual_footer_compact: String,
 	visual_footer_full: String,
-	visual_mode_help_lines: [(&'l str, &'l str); 14],
+	visual_mode_help_lines: Vec<(String, String)>,
 }
 
 impl<'l> ProcessModule for List<'l> {
@@ -133,12 +133,12 @@ impl<'l> ProcessModule for List<'l> {
 		result
 	}
 
-	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
+	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
 		if self.state == ListState::Normal {
-			Some(&self.normal_mode_help_lines)
+			Some(self.normal_mode_help_lines.clone())
 		}
 		else {
-			Some(&self.visual_mode_help_lines)
+			Some(self.visual_mode_help_lines.clone())
 		}
 	}
 }
