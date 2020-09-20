@@ -32,7 +32,7 @@ impl ProcessModule for ConfirmAbort {
 		match input {
 			Input::Yes => {
 				git_interactive.clear();
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::No => {
 				result = result.state(State::List);
@@ -82,12 +82,7 @@ mod tests {
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_abort = ConfirmAbort::new();
 			let result = confirm_abort.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(
-				result,
-				input = Input::Yes,
-				state = State::Exiting,
-				exit_status = ExitStatus::Good
-			);
+			assert_handle_input_result!(result, input = Input::Yes, exit_status = ExitStatus::Good);
 			assert_eq!(git_interactive.get_lines().len(), 0);
 		}
 	);

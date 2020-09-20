@@ -3,7 +3,6 @@ use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
 use crate::display::Display;
 use crate::edit::Edit;
-use crate::exiting::Exiting;
 use crate::external_editor::ExternalEditor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
@@ -23,7 +22,6 @@ pub struct Modules<'m> {
 	pub confirm_rebase: ConfirmRebase,
 	pub edit: Edit,
 	pub error: Error,
-	pub exiting: Exiting,
 	pub external_editor: ExternalEditor<'m>,
 	pub help: Help,
 	pub list: List<'m>,
@@ -38,7 +36,6 @@ impl<'m> Modules<'m> {
 			confirm_rebase: ConfirmRebase::new(),
 			edit: Edit::new(),
 			error: Error::new(),
-			exiting: Exiting::new(),
 			external_editor: ExternalEditor::new(display, config.git.editor.as_str()),
 			help: Help::new(),
 			list: List::new(config),
@@ -53,7 +50,6 @@ impl<'m> Modules<'m> {
 			State::ConfirmRebase => &self.confirm_rebase as &dyn ProcessModule,
 			State::Edit => &self.edit as &dyn ProcessModule,
 			State::Error => &self.error as &dyn ProcessModule,
-			State::Exiting => &self.exiting as &dyn ProcessModule,
 			State::ExternalEditor => &self.external_editor as &dyn ProcessModule,
 			State::Help => &self.help as &dyn ProcessModule,
 			State::List => &self.list as &dyn ProcessModule,
@@ -68,7 +64,6 @@ impl<'m> Modules<'m> {
 			State::ConfirmRebase => &mut self.confirm_rebase as &mut dyn ProcessModule,
 			State::Edit => &mut self.edit as &mut dyn ProcessModule,
 			State::Error => &mut self.error as &mut dyn ProcessModule,
-			State::Exiting => &mut self.exiting as &mut dyn ProcessModule,
 			State::ExternalEditor => &mut self.external_editor as &mut dyn ProcessModule,
 			State::Help => &mut self.help as &mut dyn ProcessModule,
 			State::List => &mut self.list as &mut dyn ProcessModule,

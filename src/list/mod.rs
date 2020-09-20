@@ -188,13 +188,13 @@ impl<'l> List<'l> {
 			},
 			Input::ForceAbort => {
 				git_interactive.clear();
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::Rebase => {
 				result = result.state(State::ConfirmRebase);
 			},
 			Input::ForceRebase => {
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::ActionBreak => git_interactive.toggle_break(),
 			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop),
@@ -236,13 +236,13 @@ impl<'l> List<'l> {
 			},
 			Input::ForceAbort => {
 				git_interactive.clear();
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::Rebase => {
 				result = result.state(State::ConfirmRebase);
 			},
 			Input::ForceRebase => {
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::ActionDrop => git_interactive.set_visual_range_action(Action::Drop),
 			Input::ActionEdit => git_interactive.set_visual_range_action(Action::Edit),
