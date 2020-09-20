@@ -15,6 +15,13 @@ use crate::view::View;
 use std::env::set_var;
 use std::path::Path;
 
+#[derive(Copy, Clone, Debug)]
+pub struct ProcessModuleTestState {
+	pub position: (i32, i32),
+	pub view_size: (i32, i32),
+	pub state: Option<(State, State)>,
+}
+
 pub fn panic_output_neq(expected: &str, actual: &str) {
 	panic!(vec![
 		"\n",
@@ -32,14 +39,13 @@ pub fn panic_output_neq(expected: &str, actual: &str) {
 
 pub fn _process_module_test<F>(
 	lines: &[&str],
-	state: ((i32, i32), (i32, i32), Option<State>),
+	module_state: ProcessModuleTestState,
 	input: &Option<Vec<Input>>,
 	expected_output: &[String],
 	get_module: F,
 ) where
 	F: FnOnce(&Config, &Display<'_>) -> Box<dyn ProcessModule>,
 {
-	let (position, view_size, state) = state;
 	set_var(
 		"GIT_DIR",
 		Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -51,8 +57,8 @@ pub fn _process_module_test<F>(
 	);
 	let config = Config::new().unwrap();
 	let mut curses = Curses::new();
-	curses.mv(position.1, position.0);
-	curses.resize_term(view_size.1, view_size.0);
+	curses.mv(module_state.position.1, module_state.position.0);
+	curses.resize_term(module_state.view_size.1, module_state.view_size.0);
 	if let Some(ref input) = *input {
 		for i in input {
 			curses.push_input(map_input_to_curses(&config.key_bindings, *i));
@@ -69,8 +75,8 @@ pub fn _process_module_test<F>(
 	)
 	.unwrap();
 	let mut module = get_module(&config, &display);
-	if let Some(state) = state {
-		module.activate(&state, &git_interactive);
+	if let Some((_, previous_state)) = module_state.state {
+		module.activate(&git_interactive, previous_state).unwrap();
 	}
 	if let Some(ref input) = *input {
 		let input_handler = InputHandler::new(&display, &config.key_bindings);
@@ -88,14 +94,12 @@ pub fn _process_module_test<F>(
 
 #[macro_export]
 macro_rules! process_module_state {
-	(position = $position:expr, view_size = $view_size:expr) => {
-		($position, $view_size, None)
-	};
-	(state = $state:expr) => {
-		((0, 0), (50, 30), Some($state))
-	};
-	(state = $state:expr, position = $position:expr, view_size = $view_size:expr) => {
-		($position, $view_size, Some($state))
+	(new_state = $new_state:expr, previous_state = $previous_state:expr) => {
+		crate::process::testutil::ProcessModuleTestState {
+			position: (0, 0),
+			view_size: (50, 30),
+			state: Some(($new_state, $previous_state)),
+			}
 	};
 }
 
@@ -116,7 +120,11 @@ macro_rules! process_module_test {
 		fn $name() {
 			crate::process::testutil::_process_module_test(
 				&$lines,
-				((0, 0), (50, 30), None),
+				crate::process::testutil::ProcessModuleTestState {
+					position: (0, 0),
+					view_size: (50, 30),
+					state: None,
+				},
 				&None,
 				&$expected_output,
 				$get_module,

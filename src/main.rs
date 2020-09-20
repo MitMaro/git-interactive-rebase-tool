@@ -52,6 +52,7 @@ use crate::display::Display;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::process::exit_status::ExitStatus;
+use crate::process::modules::Modules;
 use crate::process::Process;
 use crate::view::View;
 
@@ -118,9 +119,11 @@ fn try_main() -> Result<ExitStatus, Exit> {
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);
 
-	let mut process = Process::new(git_interactive, &view, &display, &input_handler, &config);
+	let modules = Modules::new(&display, &config);
 
-	let result = process.run();
+	let mut process = Process::new(git_interactive, &view, &input_handler);
+
+	let result = process.run(modules);
 	display.end();
 
 	let exit_code = match result {

@@ -1,4 +1,3 @@
-use crate::display::display_color::DisplayColor;
 use crate::view::line_segment::LineSegment;
 use crate::view::scroll_position::ScrollPosition;
 use crate::view::view_line::ViewLine;
@@ -44,18 +43,6 @@ impl ViewData {
 			trailing_lines_cache: None,
 			width: 0,
 		}
-	}
-
-	pub(crate) fn new_error(error: &str) -> Self {
-		let mut inst = Self::new();
-		inst.set_show_title(true);
-		inst.push_line(ViewLine::new(vec![LineSegment::new(error)]));
-		inst.push_trailing_line(ViewLine::new(vec![LineSegment::new_with_color(
-			"Press any key to continue",
-			DisplayColor::IndicatorColor,
-		)]));
-		inst.rebuild();
-		inst
 	}
 
 	pub(crate) fn new_confirm(prompt: &str) -> Self {
@@ -656,25 +643,6 @@ mod tests {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 		assert_eq!(view_data.show_title(), true);
-	}
-
-	#[test]
-	fn view_data_case_new_error() {
-		let mut view_data = ViewData::new_error("My Error");
-		view_data.set_view_size(100, 100);
-		assert_eq!(view_data.show_title(), true);
-		assert_eq!(view_data.show_help(), false);
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 1);
-		assert_eq!(view_data.get_trailing_lines().len(), 1);
-		assert_eq!(
-			get_segment_content_for_view_line(view_data.get_lines(), 0, 0),
-			"My Error"
-		);
-		assert_eq!(
-			get_segment_content_for_view_line(view_data.get_trailing_lines(), 0, 0),
-			"Press any key to continue"
-		);
 	}
 
 	#[test]

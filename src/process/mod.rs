@@ -1,264 +1,127 @@
-mod error;
+pub mod error;
 pub mod exit_status;
-mod help;
+pub mod help;
+pub mod modules;
 pub mod process_module;
 pub mod process_result;
 pub mod state;
 #[cfg(test)]
 pub mod testutil;
-mod window_size_error;
+pub mod window_size_error;
 
-use crate::config::Config;
-use crate::confirm_abort::ConfirmAbort;
-use crate::confirm_rebase::ConfirmRebase;
-use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT};
-use crate::display::Display;
-use crate::edit::Edit;
-use crate::exiting::Exiting;
-use crate::external_editor::ExternalEditor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
-use crate::list::List;
-use crate::process::error::Error;
 use crate::process::exit_status::ExitStatus;
-use crate::process::help::Help;
-use crate::process::process_module::ProcessModule;
+use crate::process::modules::Modules;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::process::window_size_error::WindowSizeError;
-use crate::show_commit::ShowCommit;
 use crate::view::View;
 
 pub struct Process<'r> {
-	confirm_abort: ConfirmAbort,
-	confirm_rebase: ConfirmRebase,
-	edit: Edit,
-	error: Option<Error>,
 	exit_status: Option<ExitStatus>,
-	exiting: Exiting,
-	external_editor: ExternalEditor<'r>,
 	git_interactive: GitInteractive,
-	help: Option<Help>,
 	input_handler: &'r InputHandler<'r>,
-	list: List<'r>,
-	show_commit: ShowCommit<'r>,
 	state: State,
 	view: &'r View<'r>,
-	window_size_error: Option<WindowSizeError>,
 }
 
 impl<'r> Process<'r> {
-	pub(crate) fn new(
+	pub(crate) const fn new(
 		git_interactive: GitInteractive,
 		view: &'r View<'r>,
-		display: &'r Display<'r>,
 		input_handler: &'r InputHandler<'r>,
-		config: &'r Config,
 	) -> Self
 	{
 		Self {
-			confirm_abort: ConfirmAbort::new(),
-			confirm_rebase: ConfirmRebase::new(),
-			edit: Edit::new(),
-			error: None,
-			exit_status: None,
-			exiting: Exiting::new(),
-			external_editor: ExternalEditor::new(display, config.git.editor.as_str()),
-			git_interactive,
-			help: None,
-			input_handler,
-			list: List::new(config),
-			show_commit: ShowCommit::new(config),
 			state: State::List,
+			exit_status: None,
+			git_interactive,
+			input_handler,
 			view,
-			window_size_error: None,
 		}
 	}
 
-	pub(crate) fn run(&mut self) -> Result<Option<ExitStatus>, String> {
-		self.check_window_size();
+	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>, String> {
+		let (view_width, view_height) = self.view.get_view_size();
+		if WindowSizeError::is_window_too_small(view_width, view_height) {
+			self.handle_process_result(&mut modules, ProcessResult::new().state(State::WindowSizeError));
+		}
 		while self.exit_status.is_none() {
-			if self.help.is_none() && self.error.is_none() {
-				self.process();
+			let result = modules.process(self.state, &mut self.git_interactive, self.view);
+			if self.handle_process_result(&mut modules, result) {
+				continue;
 			}
-			self.render();
-			self.handle_input();
+			self.view
+				.render(modules.build_view_data(self.state, self.view, &self.git_interactive));
+			let result = modules.handle_input(self.state, self.input_handler, &mut self.git_interactive, self.view);
+			if self.handle_process_result(&mut modules, result) {
+				continue;
+			}
 		}
 		self.exit_end()?;
 		Ok(self.exit_status)
 	}
 
-	fn activate(&mut self) {
-		match self.state {
-			State::ConfirmAbort => self.confirm_abort.activate(&self.state, &self.git_interactive),
-			State::ConfirmRebase => self.confirm_rebase.activate(&self.state, &self.git_interactive),
-			State::Edit => self.edit.activate(&self.state, &self.git_interactive),
-			State::Exiting => self.exiting.activate(&self.state, &self.git_interactive),
-			State::ExternalEditor => self.external_editor.activate(&self.state, &self.git_interactive),
-			State::List => self.list.activate(&self.state, &self.git_interactive),
-			State::ShowCommit => self.show_commit.activate(&self.state, &self.git_interactive),
-		}
-	}
+	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: ProcessResult) -> bool {
+		let previous_state = self.state;
 
-	fn deactivate(&mut self) {
-		match self.state {
-			State::ConfirmAbort => self.confirm_abort.deactivate(),
-			State::ConfirmRebase => self.confirm_rebase.deactivate(),
-			State::Edit => self.edit.deactivate(),
-			State::Exiting => self.exiting.deactivate(),
-			State::ExternalEditor => self.external_editor.deactivate(),
-			State::List => self.list.deactivate(),
-			State::ShowCommit => self.show_commit.deactivate(),
-		}
-	}
-
-	fn process(&mut self) {
-		let result = match self.state {
-			State::ConfirmAbort => self.confirm_abort.process(&mut self.git_interactive, self.view),
-			State::ConfirmRebase => self.confirm_rebase.process(&mut self.git_interactive, self.view),
-			State::Edit => self.edit.process(&mut self.git_interactive, self.view),
-			State::Exiting => self.exiting.process(&mut self.git_interactive, self.view),
-			State::ExternalEditor => self.external_editor.process(&mut self.git_interactive, self.view),
-			State::List => self.list.process(&mut self.git_interactive, self.view),
-			State::ShowCommit => self.show_commit.process(&mut self.git_interactive, self.view),
-		};
-
-		self.handle_process_result(result);
-	}
-
-	fn render(&mut self) {
-		self.view.render(
-			if let Some(ref mut window_size_error) = self.window_size_error {
-				window_size_error.get_view_data()
-			}
-			else if let Some(ref mut help) = self.help {
-				help.get_view_data(self.view)
-			}
-			else if let Some(ref mut error) = self.error {
-				error.get_view_data(self.view)
-			}
-			else {
-				match self.state {
-					State::ConfirmAbort => self.confirm_abort.build_view_data(self.view, &self.git_interactive),
-					State::ConfirmRebase => self.confirm_rebase.build_view_data(self.view, &self.git_interactive),
-					State::Edit => self.edit.build_view_data(self.view, &self.git_interactive),
-					State::Exiting => self.exiting.build_view_data(self.view, &self.git_interactive),
-					State::ExternalEditor => self.external_editor.build_view_data(self.view, &self.git_interactive),
-					State::List => self.list.build_view_data(self.view, &self.git_interactive),
-					State::ShowCommit => self.show_commit.build_view_data(self.view, &self.git_interactive),
-				}
-			},
-		);
-	}
-
-	fn handle_input(&mut self) {
-		let result = if let Some(ref mut window_size_error) = self.window_size_error {
-			window_size_error.handle_input(self.input_handler)
-		}
-		else if let Some(ref mut help) = self.help {
-			help.handle_input(self.input_handler, self.view)
-		}
-		else if let Some(ref mut error) = self.error {
-			error.handle_input(self.input_handler)
-		}
-		else {
-			match self.state {
-				State::ConfirmAbort => {
-					self.confirm_abort
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::ConfirmRebase => {
-					self.confirm_rebase
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::Edit => {
-					self.edit
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::Exiting => {
-					self.exiting
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::ExternalEditor => {
-					self.external_editor
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::List => {
-					self.list
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-				State::ShowCommit => {
-					self.show_commit
-						.handle_input(self.input_handler, &mut self.git_interactive, self.view)
-				},
-			}
-		};
-		self.handle_process_result(result);
-	}
-
-	fn handle_process_result(&mut self, result: ProcessResult) {
 		if let Some(exit_status) = result.exit_status {
 			self.exit_status = Some(exit_status);
 		}
 
-		if let Some(error_message) = result.error_message {
-			self.error = Some(Error::new(error_message.as_str()));
+		if let Some((error_message, return_state)) = result.error {
+			modules.set_error_message(error_message.as_str());
+			// overwrite the current state if there is a return state
+			if let Some(state) = return_state {
+				modules.deactivate(self.state);
+				self.state = state;
+				// no need to activate, since the Error state will be activated below instead
+			}
 		}
-
-		match result.input {
-			Some(Input::Help) => self.toggle_help(),
-			Some(Input::Resize) => self.check_window_size(),
-			Some(_) => {
-				if self.error.is_some() {
-					self.error = None;
-				}
-			},
-			None => {},
-		};
 
 		if let Some(new_state) = result.state {
 			if new_state != self.state {
-				self.deactivate();
+				modules.deactivate(self.state);
 				self.state = new_state;
-				self.activate();
+				self.activate(modules, previous_state);
 			}
 		}
+
+		match result.input {
+			Some(Input::Resize) => {
+				let (view_width, view_height) = self.view.get_view_size();
+				if self.state != State::WindowSizeError && WindowSizeError::is_window_too_small(view_width, view_height)
+				{
+					self.state = State::WindowSizeError;
+					self.activate(modules, previous_state);
+				}
+			},
+			Some(Input::Help) => {
+				if previous_state != State::Help {
+					self.state = State::Help;
+					modules.update_help_data(previous_state);
+					self.activate(modules, previous_state);
+				}
+			},
+			_ => {},
+		};
+
+		previous_state != self.state
 	}
 
-	fn toggle_help(&mut self) {
-		if self.help.is_some() {
-			self.help = None;
-		}
-		else {
-			self.help = match self.state {
-				State::List => {
-					Some(Help::new_from_view_data(
-						self.list.get_help_keybindings_descriptions(),
-						self.list.get_help_view(),
-					))
-				},
-				State::ShowCommit => {
-					Some(Help::new_from_view_data(
-						self.show_commit.get_help_keybindings_descriptions(),
-						self.show_commit.get_help_view(),
-					))
-				},
-				State::ConfirmAbort | State::ConfirmRebase | State::Edit | State::Exiting | State::ExternalEditor => {
-					None
-				},
-			};
-		}
-	}
-
-	fn check_window_size(&mut self) {
-		let (window_width, window_height) = self.view.get_view_size();
-		if window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT {
-			self.window_size_error = Some(WindowSizeError::new(window_width, window_height));
-		}
-		else {
-			self.window_size_error = None;
-		}
+	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
+		modules
+			.activate(self.state, &self.git_interactive, previous_state)
+			.map_err(|err| {
+				let return_state = self.state;
+				self.state = State::Error;
+				modules.set_error_message(err.as_str());
+				modules.activate(self.state, &self.git_interactive, return_state)
+			})
+			// if activating the error module causes an error, then the only option is to panic
+			.unwrap();
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {

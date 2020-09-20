@@ -30,24 +30,21 @@ use crate::view::view_line::ViewLine;
 use crate::view::View;
 
 pub struct ShowCommit<'s> {
-	commit: Option<Result<Commit, String>>,
+	commit: Option<Commit>,
 	config: &'s Config,
-	no_commit_view_data: ViewData,
-	show_commit_help_lines: [(&'s str, &'s str); 8],
+	show_commit_help_lines: Vec<(String, String)>,
 	state: ShowCommitState,
 	view_builder: ViewBuilder<'s>,
 	view_data: ViewData,
 }
 
 impl<'s> ProcessModule for ShowCommit<'s> {
-	fn activate(&mut self, _state: &State, git_interactive: &GitInteractive) {
+	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> Result<(), String> {
 		// skip loading commit data if the currently loaded commit has not changed, this retains
 		// position after returning to the list view or help
 		if let Some(ref commit) = self.commit {
-			if let Ok(ref commit) = *commit {
-				if commit.get_hash() == git_interactive.get_selected_line_hash() {
-					return;
-				}
+			if commit.get_hash() == git_interactive.get_selected_line_hash() {
+				return Ok(());
 			}
 		}
 		self.view_data.reset();
@@ -62,68 +59,48 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				rename_limit: self.config.git.diff_rename_limit,
 				renames: self.config.git.diff_renames,
 			},
-		));
-		self.state = ShowCommitState::Overview;
+		)?);
+		Ok(())
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
-		if let Some(ref commit) = self.commit {
-			if self.view_data.is_empty() {
-				let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
+		let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
+		if self.view_data.is_empty() {
+			let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
 
-				let commit = commit.as_ref().unwrap(); // if commit is error it will be caught in process
+			self.view_data.push_leading_line(ViewLine::new(vec![
+				LineSegment::new_with_color(
+					if is_full_width { "Commit: " } else { "" },
+					DisplayColor::IndicatorColor,
+				),
+				LineSegment::new(
+					if is_full_width {
+						commit.get_hash().to_string()
+					}
+					else {
+						let hash = commit.get_hash();
+						let max_index = hash.len().min(8);
+						format!("{:8} ", hash[0..max_index].to_string())
+					}
+					.as_str(),
+				),
+			]));
 
-				self.view_data.push_leading_line(ViewLine::new(vec![
-					LineSegment::new_with_color(
-						if is_full_width { "Commit: " } else { "" },
-						DisplayColor::IndicatorColor,
-					),
-					LineSegment::new(
-						if is_full_width {
-							commit.get_hash().to_string()
-						}
-						else {
-							let hash = commit.get_hash();
-							let max_index = hash.len().min(8);
-							format!("{:8} ", hash[0..max_index].to_string())
-						}
-						.as_str(),
-					),
-				]));
-
-				match self.state {
-					ShowCommitState::Overview => {
-						self.view_builder
-							.build_view_data_for_overview(&mut self.view_data, commit, is_full_width);
-					},
-					ShowCommitState::Diff => {
-						self.view_builder
-							.build_view_data_diff(&mut self.view_data, commit, is_full_width)
-					},
-				}
-				self.view_data.set_view_size(view_width, view_height);
-				self.view_data.rebuild();
+			match self.state {
+				ShowCommitState::Overview => {
+					self.view_builder
+						.build_view_data_for_overview(&mut self.view_data, commit, is_full_width);
+				},
+				ShowCommitState::Diff => {
+					self.view_builder
+						.build_view_data_diff(&mut self.view_data, commit, is_full_width)
+				},
 			}
-			&self.view_data
+			self.view_data.set_view_size(view_width, view_height);
+			self.view_data.rebuild();
 		}
-		else {
-			self.no_commit_view_data.set_view_size(view_width, view_height);
-			self.no_commit_view_data.rebuild();
-			&self.no_commit_view_data
-		}
-	}
-
-	fn process(&mut self, _git_interactive: &mut GitInteractive, _: &View<'_>) -> ProcessResult {
-		// move this to active, remove the need for a cache check on each render
-		let mut result = ProcessResult::new();
-
-		if let Some(ref commit) = self.commit {
-			if let Err(ref e) = *commit {
-				result = result.error(e.as_str()).state(State::List);
-			}
-		}
-		result
+		&self.view_data
 	}
 
 	fn handle_input(
@@ -152,6 +129,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			Input::Resize => {
 				self.view_data.clear();
 			},
+			Input::Help => {},
 			_ => {
 				if self.state == ShowCommitState::Diff {
 					self.view_data.reset();
@@ -166,8 +144,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		result
 	}
 
-	fn get_help_keybindings_descriptions(&self) -> Option<&[(&str, &str)]> {
-		Some(&self.show_commit_help_lines)
+	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
+		Some(self.show_commit_help_lines.clone())
 	}
 }
 
@@ -188,7 +166,6 @@ impl<'s> ShowCommit<'s> {
 		Self {
 			commit: None,
 			config,
-			no_commit_view_data: ViewData::new_error("No commit data to show"),
 			show_commit_help_lines: get_show_commit_help_lines(&config.key_bindings),
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options, &config.key_bindings),
