@@ -56,7 +56,7 @@ concat-idents = "1.0.0"
 
 [features]
 default = []
-nightly = []
+dev = []
 
 [package.metadata.deb]
 license-file = ["LICENSE"]

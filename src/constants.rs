@@ -12,7 +12,7 @@ pub const MINIMUM_FULL_WINDOW_WIDTH: usize = 34; // " > squash cccccccc mmmmmmmm
 
 pub const NAME: &str = "interactive-rebase-tool";
 
-#[cfg(not(feature = "nightly"))]
+#[cfg(not(feature = "dev"))]
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-#[cfg(feature = "nightly")]
-pub const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "-nightly");
+#[cfg(feature = "dev")]
+pub const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "-dev");
