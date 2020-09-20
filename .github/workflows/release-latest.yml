@@ -24,7 +24,7 @@ jobs:
             sudo apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
             cargo install --force cargo-deb
       - name: "Build Deb"
-        run: cargo +stable deb --output "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb"
+        run: cargo +stable deb --output "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb" -- --features dev
       - name: Upload
         env:
             FILE_PATH: "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb"
@@ -49,7 +49,7 @@ jobs:
           with:
               toolchain: stable
         - name: "Build"
-          run: cargo build --release
+          run: cargo build --features dev --release
         - name: Upload
           env:
               FILE_PATH: "target/release/interactive-rebase-tool"
