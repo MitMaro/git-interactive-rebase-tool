@@ -4,7 +4,6 @@ pub enum State {
 	ConfirmRebase,
 	Edit,
 	Error,
-	Exiting,
 	ExternalEditor,
 	Help,
 	List,

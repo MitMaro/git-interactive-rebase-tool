@@ -156,7 +156,7 @@ impl<'e> ExternalEditor<'e> {
 	}
 
 	fn process_error(git_interactive: &GitInteractive) -> ProcessResult {
-		let mut result = ProcessResult::new().state(State::Exiting);
+		let mut result = ProcessResult::new();
 
 		if git_interactive.get_lines().is_empty() {
 			result = result.exit_status(ExitStatus::Good);
@@ -183,7 +183,7 @@ impl<'e> ExternalEditor<'e> {
 		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::Yes => {
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::No => {
 				self.state = ExternalEditorState::Active;

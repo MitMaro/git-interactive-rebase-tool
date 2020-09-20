@@ -31,7 +31,7 @@ impl ProcessModule for ConfirmRebase {
 		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::Yes => {
-				result = result.exit_status(ExitStatus::Good).state(State::Exiting);
+				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::No => {
 				result = result.state(State::List);
@@ -82,12 +82,7 @@ mod tests {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
 
-			assert_handle_input_result!(
-				result,
-				input = Input::Yes,
-				state = State::Exiting,
-				exit_status = ExitStatus::Good
-			);
+			assert_handle_input_result!(result, input = Input::Yes, exit_status = ExitStatus::Good);
 			assert_eq!(git_interactive.get_lines().len(), 1);
 		}
 	);
