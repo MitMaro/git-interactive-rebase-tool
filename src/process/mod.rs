@@ -114,8 +114,7 @@ impl<'r> Process<'r> {
 				modules.set_error_message(err.as_str());
 				modules.activate(self.state, &self.git_interactive, return_state)
 			})
-			// if activating the error module causes an error, then the only option is to panic
-			.unwrap();
+			.unwrap(); // if activating the error module causes an error, then the only option is to panic
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
