@@ -1,20 +1,21 @@
 use crate::list::action::Action;
 use crate::list::line::Line;
+use anyhow::{anyhow, Result};
 use std::cmp;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>, String> {
+fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>> {
 	read_to_string(&path)
-		.map_err(|why| format!("Error reading file, {}\nReason: {}", path.display(), why))?
+		.map_err(|err| anyhow!("Error reading file: {}", path.display()).context(err))?
 		.lines()
 		.filter_map(|l| {
 			if l.starts_with(comment_char) || l.is_empty() {
 				None
 			}
 			else {
-				Some(Line::new(l).map_err(|e| format!("Error reading file, {}", e)))
+				Some(Line::new(l).map_err(|err| anyhow!("Error reading file: {}", path.display()).context(err)))
 			}
 		})
 		.collect()
@@ -29,7 +30,7 @@ pub struct GitInteractive {
 }
 
 impl GitInteractive {
-	pub(crate) fn new(lines: Vec<Line>, path: PathBuf, comment_char: &str) -> Result<Self, String> {
+	pub(crate) fn new(lines: Vec<Line>, path: PathBuf, comment_char: &str) -> Result<Self> {
 		Ok(Self {
 			filepath: path,
 			lines,
@@ -39,38 +40,24 @@ impl GitInteractive {
 		})
 	}
 
-	pub(crate) fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self, String> {
+	pub(crate) fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self> {
 		let path = PathBuf::from(filepath);
 		let lines = load_filepath(&path, comment_char)?;
 		Self::new(lines, path, comment_char)
 	}
 
-	pub(crate) fn write_file(&self) -> Result<(), String> {
-		let mut file = match File::create(&self.filepath) {
-			Ok(file) => file,
-			Err(why) => {
-				return Err(format!(
-					"Error opening file, {}\nReason: {}",
-					self.filepath.display(),
-					why
-				));
-			},
-		};
+	pub(crate) fn write_file(&self) -> Result<()> {
+		let mut file = File::create(&self.filepath)
+			.map_err(|err| anyhow!("Error opening file: {}", self.filepath.display()).context(err))?;
 		for line in &self.lines {
-			match writeln!(file, "{}", line.to_text()) {
-				Ok(_) => {},
-				Err(why) => {
-					return Err(format!("Error writing to file, {}", why));
-				},
-			}
+			writeln!(file, "{}", line.to_text())
+				.map_err(|err| anyhow!("Error writing file: {}", self.filepath.display()).context(err))?;
 		}
 		Ok(())
 	}
 
-	pub(crate) fn reload_file(&mut self) -> Result<(), String> {
-		let lines = load_filepath(&self.filepath, self.comment_char.as_str())?;
-
-		self.lines = lines;
+	pub(crate) fn reload_file(&mut self) -> Result<()> {
+		self.lines = load_filepath(&self.filepath, self.comment_char.as_str())?;
 		Ok(())
 	}
 

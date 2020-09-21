@@ -57,7 +57,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 				result = result.error(e.as_str()).exit_status(ExitStatus::StateError);
 			}
 			else if let Err(e) = git_interactive.reload_file() {
-				result = result.error(e.as_str()).exit_status(ExitStatus::StateError);
+				result = result.error(e.to_string().as_str()).exit_status(ExitStatus::StateError);
 			}
 			else if git_interactive.get_lines().is_empty() {
 				self.state = ExternalEditorState::Empty;
@@ -115,7 +115,7 @@ impl<'e> ExternalEditor<'e> {
 				}
 			})?;
 
-		git_interactive.write_file()?;
+		git_interactive.write_file().map_err(|err| err.to_string())?;
 		let filepath = git_interactive.get_filepath();
 		let callback = || -> Result<ProcessExitStatus, String> {
 			let mut file_pattern_found = false;
@@ -279,7 +279,7 @@ mod tests {
 		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
 			assert_process_result!(
 				module.process(git_interactive),
-				error = "Error reading file, Invalid line: this-is-invalid",
+				error = "Invalid line: this-is-invalid",
 				exit_status = ExitStatus::StateError
 			);
 		}
