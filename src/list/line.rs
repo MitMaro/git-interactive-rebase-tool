@@ -1,4 +1,5 @@
 use crate::list::action::Action;
+use anyhow::{anyhow, Result};
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq)]
@@ -31,7 +32,7 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new(input_line: &str) -> Result<Self, String> {
+	pub(crate) fn new(input_line: &str) -> Result<Self> {
 		if input_line.starts_with("noop") {
 			return Ok(Self::new_noop());
 		}
@@ -42,7 +43,7 @@ impl Line {
 			let input: Vec<&str> = input_line.splitn(2, ' ').collect();
 			if input.len() == 2 {
 				return Ok(Self {
-					action: Action::try_from(input[0])?,
+					action: Action::try_from(input[0]).map_err(|err| anyhow!(err))?,
 					hash: String::from(""),
 					command: String::from(input[1]),
 					comment: String::from(""),
@@ -54,7 +55,7 @@ impl Line {
 			let input: Vec<&str> = input_line.splitn(3, ' ').collect();
 			if input.len() >= 2 {
 				return Ok(Self {
-					action: Action::try_from(input[0])?,
+					action: Action::try_from(input[0]).map_err(|err| anyhow!(err))?,
 					hash: String::from(input[1]),
 					command: String::from(""),
 					comment: if input.len() == 3 {
@@ -68,7 +69,7 @@ impl Line {
 			}
 		}
 
-		Err(format!("Invalid line: {}", input_line))
+		Err(anyhow!("Invalid line: {}", input_line))
 	}
 
 	pub(crate) fn set_action(&mut self, action: Action) {
@@ -225,7 +226,7 @@ mod tests {
 		case::drop_line_only("drop", "Invalid line: drop")
 	)]
 	fn new_err(line: &str, expected_err: &str) {
-		assert_eq!(Line::new(line).unwrap_err(), expected_err);
+		assert_eq!(Line::new(line).unwrap_err().to_string(), expected_err);
 	}
 
 	#[test]
