@@ -77,15 +77,12 @@ fn try_main() -> Result<ExitStatus, Exit> {
 
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 
-	let config = match Config::new() {
-		Ok(c) => c,
-		Err(message) => {
-			return Err(Exit {
-				message,
-				status: ExitStatus::ConfigError,
-			});
-		},
-	};
+	let config = Config::new().map_err(|err| {
+		Exit {
+			message: err.to_string(),
+			status: ExitStatus::ConfigError,
+		}
+	})?;
 
 	let git_interactive = match GitInteractive::new_from_filepath(filepath, config.git.comment_char.as_str()) {
 		Ok(gi) => gi,

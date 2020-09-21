@@ -1,4 +1,5 @@
 use crate::config::utils::get_input;
+use anyhow::Result;
 use git2::Config;
 
 #[derive(Clone, Debug)]
@@ -33,7 +34,7 @@ pub struct KeyBindings {
 }
 
 impl KeyBindings {
-	pub(super) fn new(git_config: &Config) -> Result<Self, String> {
+	pub(super) fn new(git_config: &Config) -> Result<Self> {
 		Ok(Self {
 			abort: get_input(git_config, "interactive-rebase-tool.inputAbort", "q")?,
 			action_break: get_input(git_config, "interactive-rebase-tool.inputActionBreak", "b")?,

@@ -4,6 +4,7 @@ pub mod git_config;
 pub mod key_bindings;
 pub mod theme;
 mod utils;
+use anyhow::Result;
 
 #[cfg(test)]
 mod tests;
@@ -36,11 +37,11 @@ pub struct Config {
 }
 
 impl Config {
-	pub(crate) fn new() -> Result<Self, String> {
+	pub(crate) fn new() -> Result<Self> {
 		Self::new_from_config(&open_git_config()?)
 	}
 
-	fn new_from_config(git_config: &git2::Config) -> Result<Self, String> {
+	fn new_from_config(git_config: &git2::Config) -> Result<Self> {
 		Ok(Self {
 			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
 			diff_ignore_whitespace: get_diff_ignore_whitespace(git_config)?,

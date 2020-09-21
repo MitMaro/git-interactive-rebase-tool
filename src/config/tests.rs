@@ -37,6 +37,7 @@ fn load_error_with_config_file(case: &str, test: &str) -> String {
 	)
 	.err()
 	.unwrap()
+	.to_string()
 }
 fn set_git_dir(fixture: &str) {
 	set_var(
@@ -64,6 +65,7 @@ fn config_new_invalid_repo() {
 	assert!(Config::new()
 		.err()
 		.unwrap()
+		.to_string()
 		.starts_with("Error reading git config: failed to resolve path"));
 }
 
