@@ -93,7 +93,7 @@ pub(super) fn get_unsigned_integer(config: &Config, name: &str, default: u32) ->
 
 pub(super) fn get_color(config: &Config, name: &str, default_color: Color) -> Result<Color> {
 	match config.get_string(name) {
-		Ok(v) => Color::try_from(v.to_lowercase().as_str()).map_err(|err| anyhow!(err)),
+		Ok(v) => Color::try_from(v.to_lowercase().as_str()),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default_color),
 		Err(_e) => Err(anyhow!("Error reading git config: \"{}\" is not valid", name)),
 	}

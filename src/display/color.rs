@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Error};
 use std::convert::TryFrom;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -24,7 +25,7 @@ pub enum Color {
 }
 
 impl TryFrom<&str> for Color {
-	type Error = String;
+	type Error = Error;
 
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
@@ -53,7 +54,7 @@ impl TryFrom<&str> for Color {
 						let color_index = s.parse::<i16>();
 						match color_index {
 							Ok(i) if i >= 0 && i < 256 => Ok(Self::Index(i)),
-							_ => Err(format!("Invalid color value: {}", s)),
+							_ => Err(anyhow!("Invalid color value: {}", s)),
 						}
 					},
 					3 => {
@@ -64,9 +65,9 @@ impl TryFrom<&str> for Color {
 						if red > -1 && green > -1 && blue > -1 && red < 256 && green < 256 && blue < 256 {
 							return Ok(Self::RGB { red, green, blue });
 						}
-						Err(format!("Invalid color string: {}. Values must be within 0-255.", s))
+						Err(anyhow!("Invalid color string: {}. Values must be within 0-255.", s))
 					},
-					_ => Err(format!("Invalid color value: {}", s)),
+					_ => Err(anyhow!("Invalid color value: {}", s)),
 				}
 			},
 		}
@@ -94,7 +95,7 @@ mod tests {
 			concat_idents::concat_idents!(test_name = color_try_from_invalid_, $name {
 				#[test]
 				fn test_name() {
-					assert_eq!(Color::try_from($color_string).unwrap_err(), $expected);
+					assert_eq!(Color::try_from($color_string).unwrap_err().to_string(), $expected);
 				}
 			});
 		}
