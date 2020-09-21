@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Error};
 use std::convert::TryFrom;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -44,7 +45,7 @@ impl Action {
 }
 
 impl TryFrom<&str> for Action {
-	type Error = String;
+	type Error = Error;
 
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
@@ -57,7 +58,7 @@ impl TryFrom<&str> for Action {
 			"pick" | "p" => Ok(Self::Pick),
 			"reword" | "r" => Ok(Self::Reword),
 			"squash" | "s" => Ok(Self::Squash),
-			_ => Err(format!("Invalid action: {}", s)),
+			_ => Err(anyhow!("Invalid action: {}", s)),
 		}
 	}
 }
@@ -131,7 +132,10 @@ mod tests {
 
 	#[test]
 	fn action_try_from_() {
-		assert_eq!(Action::try_from("invalid").unwrap_err(), "Invalid action: invalid");
+		assert_eq!(
+			Action::try_from("invalid").unwrap_err().to_string(),
+			"Invalid action: invalid"
+		);
 	}
 
 	test_action_to_abbreviation!(b, Action::Break, "b");

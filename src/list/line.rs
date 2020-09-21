@@ -43,7 +43,7 @@ impl Line {
 			let input: Vec<&str> = input_line.splitn(2, ' ').collect();
 			if input.len() == 2 {
 				return Ok(Self {
-					action: Action::try_from(input[0]).map_err(|err| anyhow!(err))?,
+					action: Action::try_from(input[0])?,
 					hash: String::from(""),
 					command: String::from(input[1]),
 					comment: String::from(""),
@@ -55,7 +55,7 @@ impl Line {
 			let input: Vec<&str> = input_line.splitn(3, ' ').collect();
 			if input.len() >= 2 {
 				return Ok(Self {
-					action: Action::try_from(input[0]).map_err(|err| anyhow!(err))?,
+					action: Action::try_from(input[0])?,
 					hash: String::from(input[1]),
 					command: String::from(""),
 					comment: if input.len() == 3 {
