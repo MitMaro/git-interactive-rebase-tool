@@ -230,7 +230,7 @@ fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInp
 }
 
 pub fn _process_module_handle_input_test<F>(lines: &[&str], input: &[Input], callback: F)
-where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
+where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>, &Display<'_>) {
 	set_var(
 		"GIT_DIR",
 		Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -256,7 +256,7 @@ where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>) {
 		"#",
 	)
 	.unwrap();
-	callback(&input_handler, &mut git_interactive, &view);
+	callback(&input_handler, &mut git_interactive, &view, &display);
 }
 
 #[macro_export]
