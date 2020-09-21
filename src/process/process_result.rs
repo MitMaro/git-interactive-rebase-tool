@@ -4,7 +4,7 @@ use crate::process::state::State;
 
 #[derive(Debug, PartialEq)]
 pub struct ProcessResult {
-	pub(super) error: Option<(String, Option<State>)>,
+	pub(super) error: Option<String>,
 	pub(super) exit_status: Option<ExitStatus>,
 	pub(super) input: Option<Input>,
 	pub(super) state: Option<State>,
@@ -25,9 +25,9 @@ impl ProcessResult {
 		self
 	}
 
-	pub(crate) fn error(mut self, message: &str, return_state: Option<State>) -> Self {
+	pub(crate) fn error(mut self, message: &str) -> Self {
 		self.state = Some(State::Error);
-		self.error = Some((String::from(message), return_state));
+		self.error = Some(String::from(message));
 		self
 	}
 

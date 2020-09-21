@@ -49,7 +49,7 @@ impl<'r> Process<'r> {
 			self.handle_process_result(&mut modules, ProcessResult::new().state(State::WindowSizeError));
 		}
 		while self.exit_status.is_none() {
-			let result = modules.process(self.state, &mut self.git_interactive, self.view);
+			let result = modules.process(self.state, &mut self.git_interactive);
 			if self.handle_process_result(&mut modules, result) {
 				continue;
 			}
@@ -71,14 +71,8 @@ impl<'r> Process<'r> {
 			self.exit_status = Some(exit_status);
 		}
 
-		if let Some((error_message, return_state)) = result.error {
+		if let Some(error_message) = result.error {
 			modules.set_error_message(error_message.as_str());
-			// overwrite the current state if there is a return state
-			if let Some(state) = return_state {
-				modules.deactivate(self.state);
-				self.state = state;
-				// no need to activate, since the Error state will be activated below instead
-			}
 		}
 
 		if let Some(new_state) = result.state {

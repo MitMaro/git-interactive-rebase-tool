@@ -90,8 +90,8 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).build_view_data(view, git_interactive)
 	}
 
-	pub fn process(&mut self, state: State, git_interactive: &mut GitInteractive, view: &View<'_>) -> ProcessResult {
-		self.get_mut_module(state).process(git_interactive, view)
+	pub fn process(&mut self, state: State, git_interactive: &mut GitInteractive) -> ProcessResult {
+		self.get_mut_module(state).process(git_interactive)
 	}
 
 	pub fn handle_input(
