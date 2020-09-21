@@ -67,188 +67,80 @@ mod tests {
 	use super::Action;
 	use super::TryFrom;
 
-	#[test]
-	fn action_to_str_break() {
-		assert_eq!(Action::Break.as_string(), "break");
+	macro_rules! test_action_to_string {
+		($name:ident, $action:expr, $expected:expr) => {
+			concat_idents::concat_idents!(test_name = action_as_string_, $name {
+				#[test]
+				fn test_name() {
+					assert_eq!($action.as_string(), $expected);
+				}
+			});
+		}
 	}
 
-	#[test]
-	fn action_to_str_drop() {
-		assert_eq!(Action::Drop.as_string(), "drop");
+	macro_rules! test_action_try_from {
+		($name:ident, $action_string:expr, $expected:expr) => {
+			concat_idents::concat_idents!(test_name = action_try_from_, $name {
+				#[test]
+				fn test_name() {
+					assert_eq!(Action::try_from($action_string).unwrap(), $expected);
+				}
+			});
+		}
 	}
 
-	#[test]
-	fn action_to_str_edit() {
-		assert_eq!(Action::Edit.as_string(), "edit");
+	macro_rules! test_action_to_abbreviation {
+		($name:ident, $action:expr, $expected:expr) => {
+			concat_idents::concat_idents!(test_name = action_to_abbreviation_, $name {
+				#[test]
+				fn test_name() {
+					assert_eq!($action.to_abbreviation(), $expected);
+				}
+			});
+		}
 	}
 
-	#[test]
-	fn action_to_str_exec() {
-		assert_eq!(Action::Exec.as_string(), "exec");
-	}
+	test_action_to_string!(break_str, Action::Break, "break");
+	test_action_to_string!(drop, Action::Drop, "drop");
+	test_action_to_string!(edit, Action::Edit, "edit");
+	test_action_to_string!(exec, Action::Exec, "exec");
+	test_action_to_string!(fixup, Action::Fixup, "fixup");
+	test_action_to_string!(noop, Action::Noop, "noop");
+	test_action_to_string!(pick, Action::Pick, "pick");
+	test_action_to_string!(reword, Action::Reword, "reword");
+	test_action_to_string!(squash, Action::Squash, "squash");
+
+	test_action_try_from!(b, "b", Action::Break);
+	test_action_try_from!(break_str, "break", Action::Break);
+	test_action_try_from!(d, "d", Action::Drop);
+	test_action_try_from!(drop, "drop", Action::Drop);
+	test_action_try_from!(e, "e", Action::Edit);
+	test_action_try_from!(edit, "edit", Action::Edit);
+	test_action_try_from!(x, "x", Action::Exec);
+	test_action_try_from!(exec, "exec", Action::Exec);
+	test_action_try_from!(f, "f", Action::Fixup);
+	test_action_try_from!(fixup, "fixup", Action::Fixup);
+	test_action_try_from!(n, "n", Action::Noop);
+	test_action_try_from!(noop, "noop", Action::Noop);
+	test_action_try_from!(p, "p", Action::Pick);
+	test_action_try_from!(pick, "pick", Action::Pick);
+	test_action_try_from!(r, "r", Action::Reword);
+	test_action_try_from!(reword, "reword", Action::Reword);
+	test_action_try_from!(s, "s", Action::Squash);
+	test_action_try_from!(squash, "squash", Action::Squash);
 
 	#[test]
-	fn action_to_str_fixup() {
-		assert_eq!(Action::Fixup.as_string(), "fixup");
-	}
-
-	#[test]
-	fn action_to_str_noop() {
-		assert_eq!(Action::Noop.as_string(), "noop");
-	}
-
-	#[test]
-	fn action_to_str_pick() {
-		assert_eq!(Action::Pick.as_string(), "pick");
-	}
-
-	#[test]
-	fn action_to_str_reword() {
-		assert_eq!(Action::Reword.as_string(), "reword");
-	}
-
-	#[test]
-	fn action_to_str_squash() {
-		assert_eq!(Action::Squash.as_string(), "squash");
-	}
-
-	#[test]
-	fn action_from_str_b() {
-		assert_eq!(Action::try_from("b").unwrap(), Action::Break);
-	}
-
-	#[test]
-	fn action_from_str_break() {
-		assert_eq!(Action::try_from("break").unwrap(), Action::Break);
-	}
-
-	#[test]
-	fn action_from_str_d() {
-		assert_eq!(Action::try_from("d").unwrap(), Action::Drop);
-	}
-
-	#[test]
-	fn action_from_str_drop() {
-		assert_eq!(Action::try_from("drop").unwrap(), Action::Drop);
-	}
-
-	#[test]
-	fn action_from_str_e() {
-		assert_eq!(Action::try_from("e").unwrap(), Action::Edit);
-	}
-
-	#[test]
-	fn action_from_str_edit() {
-		assert_eq!(Action::try_from("edit").unwrap(), Action::Edit);
-	}
-
-	#[test]
-	fn action_from_str_x() {
-		assert_eq!(Action::try_from("x").unwrap(), Action::Exec);
-	}
-
-	#[test]
-	fn action_from_str_exec() {
-		assert_eq!(Action::try_from("exec").unwrap(), Action::Exec);
-	}
-
-	#[test]
-	fn action_from_str_f() {
-		assert_eq!(Action::try_from("f").unwrap(), Action::Fixup);
-	}
-
-	#[test]
-	fn action_from_str_fixup() {
-		assert_eq!(Action::try_from("fixup").unwrap(), Action::Fixup);
-	}
-
-	#[test]
-	fn action_from_str_n() {
-		assert_eq!(Action::try_from("n").unwrap(), Action::Noop);
-	}
-
-	#[test]
-	fn action_from_str_noop() {
-		assert_eq!(Action::try_from("noop").unwrap(), Action::Noop);
-	}
-
-	#[test]
-	fn action_from_str_p() {
-		assert_eq!(Action::try_from("p").unwrap(), Action::Pick);
-	}
-
-	#[test]
-	fn action_from_str_pick() {
-		assert_eq!(Action::try_from("pick").unwrap(), Action::Pick);
-	}
-
-	#[test]
-	fn action_from_str_r() {
-		assert_eq!(Action::try_from("r").unwrap(), Action::Reword);
-	}
-
-	#[test]
-	fn action_from_str_reword() {
-		assert_eq!(Action::try_from("reword").unwrap(), Action::Reword);
-	}
-
-	#[test]
-	fn action_from_str_s() {
-		assert_eq!(Action::try_from("s").unwrap(), Action::Squash);
-	}
-
-	#[test]
-	fn action_from_str_squash() {
-		assert_eq!(Action::try_from("squash").unwrap(), Action::Squash);
-	}
-
-	#[test]
-	fn action_from_str_invalid_action() {
+	fn action_try_from_() {
 		assert_eq!(Action::try_from("invalid").unwrap_err(), "Invalid action: invalid");
 	}
 
-	#[test]
-	fn action_to_abbreviation_break() {
-		assert_eq!(Action::Break.to_abbreviation(), "b");
-	}
-
-	#[test]
-	fn action_to_abbreviation_drop() {
-		assert_eq!(Action::Drop.to_abbreviation(), "d");
-	}
-
-	#[test]
-	fn action_to_abbreviation_edit() {
-		assert_eq!(Action::Edit.to_abbreviation(), "e");
-	}
-
-	#[test]
-	fn action_to_abbreviation_exec() {
-		assert_eq!(Action::Exec.to_abbreviation(), "x");
-	}
-
-	#[test]
-	fn action_to_abbreviation_fixup() {
-		assert_eq!(Action::Fixup.to_abbreviation(), "f");
-	}
-
-	#[test]
-	fn action_to_abbreviation_noop() {
-		assert_eq!(Action::Noop.to_abbreviation(), "n");
-	}
-
-	#[test]
-	fn action_to_abbreviation_pick() {
-		assert_eq!(Action::Pick.to_abbreviation(), "p");
-	}
-
-	#[test]
-	fn action_to_abbreviation_reword() {
-		assert_eq!(Action::Reword.to_abbreviation(), "r");
-	}
-
-	#[test]
-	fn action_to_abbreviation_squash() {
-		assert_eq!(Action::Squash.to_abbreviation(), "s");
-	}
+	test_action_to_abbreviation!(b, Action::Break, "b");
+	test_action_to_abbreviation!(d, Action::Drop, "d");
+	test_action_to_abbreviation!(e, Action::Edit, "e");
+	test_action_to_abbreviation!(x, Action::Exec, "x");
+	test_action_to_abbreviation!(f, Action::Fixup, "f");
+	test_action_to_abbreviation!(n, Action::Noop, "n");
+	test_action_to_abbreviation!(p, Action::Pick, "p");
+	test_action_to_abbreviation!(r, Action::Reword, "r");
+	test_action_to_abbreviation!(s, Action::Squash, "s");
 }
