@@ -118,13 +118,10 @@ impl<'r> Process<'r> {
 	}
 
 	fn exit_end(&mut self) -> Result<(), String> {
-		match self.git_interactive.write_file() {
-			Ok(_) => {},
-			Err(msg) => {
-				self.exit_status = Some(ExitStatus::FileWriteError);
-				return Err(msg);
-			},
-		}
+		self.git_interactive.write_file().map_err(|err| {
+			self.exit_status = Some(ExitStatus::FileWriteError);
+			err.to_string()
+		})?;
 		Ok(())
 	}
 }
