@@ -107,28 +107,20 @@ fn try_main() -> Result<ExitStatus, Exit> {
 	}
 
 	let mut curses = Curses::new();
-
 	let display = Display::new(&mut curses, &config.theme);
-
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);
-
 	let modules = Modules::new(&display, &config);
-
 	let mut process = Process::new(git_interactive, &view, &input_handler);
-
 	let result = process.run(modules);
 	display.end();
 
-	let exit_code = match result {
-		Ok(c) => c,
-		Err(message) => {
-			return Err(Exit {
-				message,
+	result
+		.map_err(|err| {
+			Exit {
+				message: err.to_string(),
 				status: ExitStatus::FileWriteError,
-			});
-		},
-	};
-
-	Ok(exit_code.unwrap_or(ExitStatus::Good))
+			}
+		})
+		.map(|exit_code| exit_code.unwrap_or(ExitStatus::Good))
 }
