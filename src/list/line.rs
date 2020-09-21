@@ -120,117 +120,116 @@ impl Line {
 mod tests {
 	use super::Line;
 	use crate::list::action::Action;
+	use rstest::rstest;
 
-	#[test]
-	fn new_with_pick_action() {
-		let line = Line::new("pick aaa comment").unwrap();
-		assert_eq!(line.action, Action::Pick);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"comment");
-		assert_eq!(line.mutated, false);
+	#[rstest(
+		line,
+		expected,
+		case::pick_action("pick aaa comment", &Line {
+			action: Action::Pick,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from("comment"),
+			mutated: false,
+		}),
+		case::reword_action("reword aaa comment", &Line {
+			action: Action::Reword,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from("comment"),
+			mutated: false,
+		}),
+		case::edit_action("edit aaa comment", &Line {
+			action: Action::Edit,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from("comment"),
+			mutated: false,
+		}),
+		case::squash_action("squash aaa comment", &Line {
+			action: Action::Squash,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from("comment"),
+			mutated: false,
+		}),
+		case::fixup_action("fixup aaa comment", &Line {
+			action: Action::Fixup,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from("comment"),
+			mutated: false,
+		}),
+		case::drop_action("drop aaa comment", &Line {
+			action: Action::Drop,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from("comment"),
+			mutated: false,
+		}),
+		case::action_without_comment("pick aaa", &Line {
+			action: Action::Pick,
+			hash: String::from("aaa"),
+			command: String::from(""),
+			comment: String::from(""),
+			mutated: false,
+		}),
+		case::exec_action("exec command", &Line {
+			action: Action::Exec,
+			hash: String::from(""),
+			command: String::from("command"),
+			comment: String::from(""),
+			mutated: false,
+		}),
+		case::break_action("break", &Line {
+			action: Action::Break,
+			hash: String::from(""),
+			command: String::from(""),
+			comment: String::from(""),
+			mutated: false,
+		}),
+		case::nnop( "noop", &Line {
+			action: Action::Noop,
+			hash: String::from(""),
+			command: String::from(""),
+			comment: String::from(""),
+			mutated: false,
+		}),
+	)]
+	fn new(line: &str, expected: &Line) {
+		assert_eq!(&Line::new(line).unwrap(), expected);
 	}
 
 	#[test]
-	fn new_with_reword_action() {
-		let line = Line::new("reword aaa comment").unwrap();
-		assert_eq!(line.action, Action::Reword);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"comment");
-		assert_eq!(line.mutated, false);
+	fn line_new_break() {
+		assert_eq!(Line::new_break(), Line {
+			action: Action::Break,
+			hash: String::from(""),
+			command: String::from(""),
+			comment: String::from(""),
+			mutated: false,
+		});
+	}
+
+	#[rstest(
+		line,
+		expected_err,
+		case::invalid_action("invalid aaa comment", "Invalid action: invalid"),
+		case::invalid_line_only("invalid", "Invalid line: invalid"),
+		case::pick_line_only("pick", "Invalid line: pick"),
+		case::reword_line_only("reword", "Invalid line: reword"),
+		case::edit_line_only("edit", "Invalid line: edit"),
+		case::squash_line_only("squash", "Invalid line: squash"),
+		case::fixup_line_only("fixup", "Invalid line: fixup"),
+		case::exec_line_only("exec", "Invalid line: exec"),
+		case::drop_line_only("drop", "Invalid line: drop")
+	)]
+	fn new_err(line: &str, expected_err: &str) {
+		assert_eq!(Line::new(line).unwrap_err(), expected_err);
 	}
 
 	#[test]
-	fn new_with_edit_action() {
-		let line = Line::new("edit aaa comment").unwrap();
-		assert_eq!(line.action, Action::Edit);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"comment");
-
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_squash_action() {
-		let line = Line::new("squash aaa comment").unwrap();
-		assert_eq!(line.action, Action::Squash);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"comment");
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_fixup_action() {
-		let line = Line::new("fixup aaa comment").unwrap();
-		assert_eq!(line.action, Action::Fixup);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"comment");
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_drop_action() {
-		let line = Line::new("drop aaa comment").unwrap();
-		assert_eq!(line.action, Action::Drop);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"comment");
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_action_without_comment() {
-		let line = Line::new("pick aaa").unwrap();
-		assert_eq!(line.action, Action::Pick);
-		assert_eq!(line.get_hash(), &"aaa");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"");
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_exec_action() {
-		let line = Line::new("exec command").unwrap();
-		assert_eq!(line.action, Action::Exec);
-		assert_eq!(line.get_hash(), &"");
-		assert_eq!(line.get_command(), &"command");
-		assert_eq!(line.get_comment(), &"");
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_break_action() {
-		let line = Line::new("break").unwrap();
-		assert_eq!(line.action, Action::Break);
-		assert_eq!(line.get_hash(), &"");
-		assert_eq!(line.get_command(), &"");
-		assert_eq!(line.get_comment(), &"");
-		assert_eq!(line.mutated, false);
-	}
-
-	#[test]
-	fn new_with_invalid_action() {
-		assert_eq!(Line::new("invalid aaa comment").unwrap_err(), "Invalid action: invalid");
-	}
-
-	#[test]
-	fn new_with_invalid_line() {
-		assert_eq!(Line::new("invalid").unwrap_err(), "Invalid line: invalid");
-		assert_eq!(Line::new("pick").unwrap_err(), "Invalid line: pick");
-		assert_eq!(Line::new("reword").unwrap_err(), "Invalid line: reword");
-		assert_eq!(Line::new("edit").unwrap_err(), "Invalid line: edit");
-		assert_eq!(Line::new("squash").unwrap_err(), "Invalid line: squash");
-		assert_eq!(Line::new("fixup").unwrap_err(), "Invalid line: fixup");
-		assert_eq!(Line::new("exec").unwrap_err(), "Invalid line: exec");
-		assert_eq!(Line::new("drop").unwrap_err(), "Invalid line: drop");
-	}
-
-	#[test]
-	fn set_to_new_action() {
+	fn set_to_new_action_with_changed_action() {
 		let mut line = Line::new("pick aaa comment").unwrap();
 		line.set_action(Action::Fixup);
 		assert_eq!(line.action, Action::Fixup);
@@ -238,50 +237,123 @@ mod tests {
 	}
 
 	#[test]
-	fn to_text_pick_action() {
-		let line = Line::new("pick aaa comment").unwrap();
-		assert_eq!(line.to_text(), "pick aaa comment");
+	fn set_to_new_action_with_unchanged_action() {
+		let mut line = Line::new("pick aaa comment").unwrap();
+		line.set_action(Action::Pick);
+		assert_eq!(line.action, Action::Pick);
+		assert_eq!(line.mutated, false);
 	}
 
-	#[test]
-	fn to_text_reword_action() {
-		let line = Line::new("reword aaa comment").unwrap();
-		assert_eq!(line.to_text(), "reword aaa comment");
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", ""),
+		case::drop("drop aaa comment", "comment"),
+		case::edit("edit aaa comment", "comment"),
+		case::exec("exec git commit --amend 'foo'", "new"),
+		case::fixup("fixup aaa comment", "comment"),
+		case::pick("pick aaa comment", "comment"),
+		case::reword("reword aaa comment", "comment"),
+		case::squash("squash aaa comment", "comment")
+	)]
+	fn edit_content(line: &str, expected: &str) {
+		let mut line = Line::new(line).unwrap();
+		line.edit_content("new");
+		assert_eq!(line.get_edit_content(), &expected);
 	}
 
-	#[test]
-	fn to_text_edit_action() {
-		let line = Line::new("edit aaa comment").unwrap();
-		assert_eq!(line.to_text(), "edit aaa comment");
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", ""),
+		case::drop("drop aaa comment", "comment"),
+		case::edit("edit aaa comment", "comment"),
+		case::exec("exec git commit --amend 'foo'", "git commit --amend 'foo'"),
+		case::fixup("fixup aaa comment", "comment"),
+		case::pick("pick aaa comment", "comment"),
+		case::reword("reword aaa comment", "comment"),
+		case::squash("squash aaa comment", "comment")
+	)]
+	fn get_edit_content(line: &str, expected: &str) {
+		assert_eq!(Line::new(line).unwrap().get_edit_content(), expected);
 	}
 
-	#[test]
-	fn to_text_squash_action() {
-		let line = Line::new("squash aaa comment").unwrap();
-		assert_eq!(line.to_text(), "squash aaa comment");
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", Action::Break),
+		case::drop("drop aaa comment", Action::Drop),
+		case::edit("edit aaa comment", Action::Edit),
+		case::exec("exec git commit --amend 'foo'", Action::Exec),
+		case::fixup("fixup aaa comment", Action::Fixup),
+		case::pick("pick aaa comment", Action::Pick),
+		case::reword("reword aaa comment", Action::Reword),
+		case::squash("squash aaa comment", Action::Squash)
+	)]
+	fn get_action(line: &str, expected: Action) {
+		assert_eq!(Line::new(line).unwrap().get_action(), &expected);
 	}
 
-	#[test]
-	fn to_text_fixup_action() {
-		let line = Line::new("fixup aaa comment").unwrap();
-		assert_eq!(line.to_text(), "fixup aaa comment");
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", ""),
+		case::drop("drop aaa comment", ""),
+		case::edit("edit aaa comment", ""),
+		case::exec("exec git commit --amend 'foo'", "git commit --amend 'foo'"),
+		case::fixup("fixup aaa comment", ""),
+		case::pick("pick aaa comment", ""),
+		case::reword("reword aaa comment", ""),
+		case::squash("squash aaa comment", "")
+	)]
+	fn get_command(line: &str, expected: &str) {
+		assert_eq!(Line::new(line).unwrap().get_command(), &expected);
 	}
 
-	#[test]
-	fn to_text_exec_action() {
-		let line = Line::new("exec command").unwrap();
-		assert_eq!(line.to_text(), "exec command");
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", ""),
+		case::drop("drop aaa comment", "aaa"),
+		case::edit("edit aaa comment", "aaa"),
+		case::exec("exec git commit --amend 'foo'", ""),
+		case::fixup("fixup aaa comment", "aaa"),
+		case::pick("pick aaa comment", "aaa"),
+		case::reword("reword aaa comment", "aaa"),
+		case::squash("squash aaa comment", "aaa")
+	)]
+	fn get_hash(line: &str, expected: &str) {
+		assert_eq!(Line::new(line).unwrap().get_hash(), &expected);
 	}
 
-	#[test]
-	fn to_text_break_action() {
-		let line = Line::new("break").unwrap();
-		assert_eq!(line.to_text(), "break");
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", ""),
+		case::drop("drop aaa comment", "comment"),
+		case::edit("edit aaa comment", "comment"),
+		case::exec("exec git commit --amend 'foo'", ""),
+		case::fixup("fixup aaa comment", "comment"),
+		case::pick("pick aaa comment", "comment"),
+		case::reword("reword aaa comment", "comment"),
+		case::squash("squash aaa comment", "comment")
+	)]
+	fn get_comment(line: &str, expected: &str) {
+		assert_eq!(Line::new(line).unwrap().get_comment(), expected);
 	}
 
-	#[test]
-	fn to_text_drop_action() {
-		let line = Line::new("drop aaa comment").unwrap();
-		assert_eq!(line.to_text(), "drop aaa comment");
+	#[rstest(
+		line,
+		case::break_action("break"),
+		case::drop("drop aaa comment"),
+		case::edit("edit aaa comment"),
+		case::exec("exec git commit --amend 'foo'"),
+		case::fixup("fixup aaa comment"),
+		case::pick("pick aaa comment"),
+		case::reword("reword aaa comment"),
+		case::squash("squash aaa comment")
+	)]
+	fn to_text(line: &str) {
+		assert_eq!(Line::new(line).unwrap().to_text(), line);
 	}
 }
