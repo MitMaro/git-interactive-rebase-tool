@@ -18,6 +18,7 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::process::window_size_error::WindowSizeError;
 use crate::view::View;
+use anyhow::Result;
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,
@@ -43,7 +44,7 @@ impl<'r> Process<'r> {
 		}
 	}
 
-	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>, String> {
+	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
 		let (view_width, view_height) = self.view.get_view_size();
 		if WindowSizeError::is_window_too_small(view_width, view_height) {
 			self.handle_process_result(&mut modules, ProcessResult::new().state(State::WindowSizeError));
@@ -117,11 +118,11 @@ impl<'r> Process<'r> {
 			.unwrap(); // if activating the error module causes an error, then the only option is to panic
 	}
 
-	fn exit_end(&mut self) -> Result<(), String> {
-		self.git_interactive.write_file().map_err(|err| {
+	fn exit_end(&mut self) -> Result<()> {
+		let result = self.git_interactive.write_file();
+		if result.is_err() {
 			self.exit_status = Some(ExitStatus::FileWriteError);
-			err.to_string()
-		})?;
-		Ok(())
+		}
+		result
 	}
 }
