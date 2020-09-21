@@ -9,6 +9,7 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
+use anyhow::Result;
 use unicode_segmentation::UnicodeSegmentation;
 
 pub struct Edit {
@@ -18,7 +19,7 @@ pub struct Edit {
 }
 
 impl ProcessModule for Edit {
-	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> Result<(), String> {
+	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> Result<()> {
 		self.content = git_interactive.get_selected_line_edit_content().clone();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 		Ok(())

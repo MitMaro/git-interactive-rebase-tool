@@ -9,6 +9,7 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
+use anyhow::Result;
 use unicode_segmentation::UnicodeSegmentation;
 
 fn get_max_help_key_length(lines: &[(String, String)]) -> usize {
@@ -29,7 +30,7 @@ pub struct Help {
 }
 
 impl ProcessModule for Help {
-	fn activate(&mut self, _: &GitInteractive, return_state: State) -> Result<(), String> {
+	fn activate(&mut self, _: &GitInteractive, return_state: State) -> Result<()> {
 		if self.return_state.is_none() {
 			self.return_state = Some(return_state);
 		}
