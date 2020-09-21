@@ -3,6 +3,7 @@ use crate::show_commit::file_stat::FileStat;
 use crate::show_commit::file_stats_builder::FileStatsBuilder;
 use crate::show_commit::status::Status;
 use crate::show_commit::user::User;
+use anyhow::{anyhow, Result};
 use chrono::{DateTime, Local, TimeZone};
 use git2::{DiffFindOptions, DiffOptions, Error, Repository};
 use std::sync::Mutex;
@@ -175,8 +176,8 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 
 impl Commit {
 	/// Load commit information from a commit hash.
-	pub(super) fn new_from_hash(hash: &str, config: LoadCommitDiffOptions) -> Result<Self, String> {
-		load_commit_state(hash, config).map_err(|e| String::from(e.message()))
+	pub(super) fn new_from_hash(hash: &str, config: LoadCommitDiffOptions) -> Result<Self> {
+		load_commit_state(hash, config).map_err(|err| anyhow!("Error loading commit: {}", hash).context(err))
 	}
 
 	pub(super) const fn get_author(&self) -> &User {
@@ -222,6 +223,7 @@ mod tests {
 	// we test what is possible
 	use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
 	use crate::show_commit::status::Status;
+	use anyhow::Result;
 	use serial_test::serial;
 	use std::env::set_var;
 	use std::path::Path;
@@ -238,7 +240,7 @@ mod tests {
 		);
 	}
 
-	fn load_commit_state(hash: &str) -> Result<Commit, String> {
+	fn load_commit_state(hash: &str) -> Result<Commit> {
 		Commit::new_from_hash(hash, LoadCommitDiffOptions {
 			context_lines: 3,
 			copies: true,

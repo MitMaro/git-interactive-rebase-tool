@@ -28,7 +28,7 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,
@@ -49,21 +49,18 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			}
 		}
 		self.view_data.reset();
-		self.commit = Some(
-			Commit::new_from_hash(
-				git_interactive.get_selected_line_hash().as_str(),
-				LoadCommitDiffOptions {
-					context_lines: self.config.git.diff_context,
-					copies: self.config.git.diff_copies,
-					ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
-					ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
-					interhunk_lines: self.config.git.diff_interhunk_lines,
-					rename_limit: self.config.git.diff_rename_limit,
-					renames: self.config.git.diff_renames,
-				},
-			)
-			.map_err(|err| anyhow!(err))?,
-		);
+		self.commit = Some(Commit::new_from_hash(
+			git_interactive.get_selected_line_hash().as_str(),
+			LoadCommitDiffOptions {
+				context_lines: self.config.git.diff_context,
+				copies: self.config.git.diff_copies,
+				ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
+				ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
+				interhunk_lines: self.config.git.diff_interhunk_lines,
+				rename_limit: self.config.git.diff_rename_limit,
+				renames: self.config.git.diff_renames,
+			},
+		)?);
 		Ok(())
 	}
 
