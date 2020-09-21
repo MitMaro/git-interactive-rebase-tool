@@ -11,6 +11,7 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::view_data::ViewData;
 use crate::view::View;
+use anyhow::Result;
 use std::ffi::OsString;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
@@ -30,7 +31,7 @@ pub struct ExternalEditor<'e> {
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
-	fn activate(&mut self, _: &GitInteractive, _: State) -> Result<(), String> {
+	fn activate(&mut self, _: &GitInteractive, _: State) -> Result<()> {
 		if self.state != ExternalEditorState::Empty {
 			self.state = ExternalEditorState::Active;
 		}

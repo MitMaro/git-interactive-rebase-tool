@@ -111,7 +111,7 @@ impl<'r> Process<'r> {
 			.map_err(|err| {
 				let return_state = self.state;
 				self.state = State::Error;
-				modules.set_error_message(err.as_str());
+				modules.set_error_message(err.to_string().as_str());
 				modules.activate(self.state, &self.git_interactive, return_state)
 			})
 			.unwrap(); // if activating the error module causes an error, then the only option is to panic

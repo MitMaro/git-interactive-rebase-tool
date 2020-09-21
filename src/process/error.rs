@@ -9,6 +9,7 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
+use anyhow::Result;
 
 pub struct Error {
 	return_state: State,
@@ -16,7 +17,7 @@ pub struct Error {
 }
 
 impl ProcessModule for Error {
-	fn activate(&mut self, _: &GitInteractive, previous_state: State) -> Result<(), String> {
+	fn activate(&mut self, _: &GitInteractive, previous_state: State) -> Result<()> {
 		self.return_state = previous_state;
 		Ok(())
 	}
