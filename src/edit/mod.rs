@@ -155,7 +155,7 @@ impl Edit {
 
 #[cfg(test)]
 mod tests {
-	use crate::assert_handle_input_result;
+	use crate::assert_process_result;
 	use crate::build_render_output;
 	use crate::config::Config;
 	use crate::display::Display;
@@ -526,7 +526,7 @@ mod tests {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::Resize);
+			assert_process_result!(result, input = Input::Resize);
 		}
 	);
 
@@ -538,7 +538,7 @@ mod tests {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
+			assert_process_result!(result, input = Input::Enter, state = State::List);
 			assert_eq!(git_interactive.get_selected_line_edit_content(), "foobar");
 		}
 	);
@@ -552,7 +552,7 @@ mod tests {
 			edit.activate(git_interactive, State::List).unwrap();
 			edit.handle_input(input_handler, git_interactive, view);
 			let result = edit.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
+			assert_process_result!(result, input = Input::Enter, state = State::List);
 			assert_eq!(git_interactive.get_selected_line_edit_content(), "foobarx");
 		}
 	);
@@ -565,7 +565,7 @@ mod tests {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::Enter, state = State::List);
+			assert_process_result!(result, input = Input::Enter, state = State::List);
 		}
 	);
 
