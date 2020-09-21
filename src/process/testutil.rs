@@ -70,7 +70,7 @@ pub fn _process_module_test<F>(
 		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
 		Path::new(env!("CARGO_MANIFEST_DIR"))
 			.join("test")
-			.join("git-rebase-todo-short"),
+			.join("git-rebase-todo-scratch"),
 		"#",
 	)
 	.unwrap();
