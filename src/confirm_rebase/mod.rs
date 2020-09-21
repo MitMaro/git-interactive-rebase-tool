@@ -52,7 +52,7 @@ impl ConfirmRebase {
 
 #[cfg(test)]
 mod tests {
-	use crate::assert_handle_input_result;
+	use crate::assert_process_result;
 	use crate::build_render_output;
 	use crate::config::Config;
 	use crate::confirm_rebase::ConfirmRebase;
@@ -82,7 +82,7 @@ mod tests {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
 
-			assert_handle_input_result!(result, input = Input::Yes, exit_status = ExitStatus::Good);
+			assert_process_result!(result, input = Input::Yes, exit_status = ExitStatus::Good);
 			assert_eq!(git_interactive.get_lines().len(), 1);
 		}
 	);
@@ -94,7 +94,7 @@ mod tests {
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::No, state = State::List);
+			assert_process_result!(result, input = Input::No, state = State::List);
 			assert_eq!(git_interactive.get_lines().len(), 1);
 		}
 	);
@@ -106,7 +106,7 @@ mod tests {
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::No, state = State::List);
+			assert_process_result!(result, input = Input::No, state = State::List);
 		}
 	);
 
@@ -117,7 +117,7 @@ mod tests {
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
-			assert_handle_input_result!(result, input = Input::Resize);
+			assert_process_result!(result, input = Input::Resize);
 		}
 	);
 }
