@@ -78,7 +78,7 @@ mod tests {
 		confirm_rebase_handle_input_yes,
 		["pick aaa comment"],
 		[Input::Yes],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
 
@@ -91,7 +91,7 @@ mod tests {
 		confirm_rebase_handle_input_no,
 		["pick aaa comment"],
 		[Input::No],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::No, state = State::List);
@@ -103,7 +103,7 @@ mod tests {
 		confirm_rebase_handle_input_any_key,
 		["pick aaa comment"],
 		[Input::Character('x')],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::No, state = State::List);
@@ -114,7 +114,7 @@ mod tests {
 		confirm_rebase_handle_input_resize,
 		["pick aaa comment"],
 		[Input::Resize],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut confirm_rebase = ConfirmRebase::new();
 			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::Resize);

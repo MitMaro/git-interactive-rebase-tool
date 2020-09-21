@@ -522,7 +522,7 @@ mod tests {
 		edit_resize,
 		["exec foobar"],
 		[Input::Resize],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
@@ -534,7 +534,7 @@ mod tests {
 		edit_finish_edit_no_change,
 		["exec foobar"],
 		[Input::Enter],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
@@ -547,7 +547,7 @@ mod tests {
 		edit_finish_edit_with_change,
 		["exec foobar"],
 		[Input::Character('x'), Input::Enter],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			edit.handle_input(input_handler, git_interactive, view);
@@ -561,7 +561,7 @@ mod tests {
 		edit_ignore_other_input,
 		["exec foobar"],
 		[Input::Other, Input::Enter],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>| {
+		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			let result = edit.handle_input(input_handler, git_interactive, view);
@@ -573,7 +573,7 @@ mod tests {
 		edit_deactivate,
 		["exec foobar"],
 		[Input::MoveCursorLeft],
-		|_: &InputHandler<'_>, git_interactive: &mut GitInteractive, _: &View<'_>| {
+		|_: &InputHandler<'_>, git_interactive: &mut GitInteractive, _: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
 			edit.activate(git_interactive, State::List).unwrap();
 			edit.deactivate();
