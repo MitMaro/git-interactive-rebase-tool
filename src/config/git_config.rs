@@ -1,4 +1,5 @@
 use crate::config::utils::{editor_from_env, get_string, get_unsigned_integer};
+use anyhow::{anyhow, Result};
 use git2::Config;
 
 #[derive(Clone, Debug)]
@@ -13,7 +14,7 @@ pub struct GitConfig {
 }
 
 impl GitConfig {
-	pub(super) fn new(git_config: &Config) -> Result<Self, String> {
+	pub(super) fn new(git_config: &Config) -> Result<Self> {
 		let comment_char = get_string(git_config, "core.commentChar", "#")?;
 		let comment_char = if comment_char.as_str().eq("auto") {
 			String::from("#")
@@ -28,7 +29,7 @@ impl GitConfig {
 			"false" => (false, false),
 			"copy" | "copies" => (true, true),
 			v => {
-				return Err(format!(
+				return Err(anyhow!(
 					"Error reading git config: \"{}\" is not valid for \"diff.renames\"",
 					v
 				))

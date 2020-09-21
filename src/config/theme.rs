@@ -1,5 +1,6 @@
 use crate::config::utils::{get_color, get_string};
 use crate::display::color::Color;
+use anyhow::Result;
 use git2::Config;
 
 #[derive(Clone, Debug)]
@@ -25,7 +26,7 @@ pub struct Theme {
 }
 
 impl Theme {
-	pub(super) fn new(git_config: &Config) -> Result<Self, String> {
+	pub(super) fn new(git_config: &Config) -> Result<Self> {
 		Ok(Self {
 			character_vertical_spacing: get_string(
 				git_config,

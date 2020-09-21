@@ -34,12 +34,13 @@ name = "interactive-rebase-tool"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1.0"
 chrono = "0.4"
 clap = "2.32.0"
 num-format = "0.4.0"
 unicode-segmentation = "1.1.0"
-xi-unicode = "0.2.1"
 unicode-width = "0.1.5"
+xi-unicode = "0.2.1"
 
 [dependencies.pancurses]
 version = "0.16"
