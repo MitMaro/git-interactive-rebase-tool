@@ -15,7 +15,7 @@ pub trait ProcessModule {
 
 	fn build_view_data(&mut self, _view: &View<'_>, _git_interactive: &GitInteractive) -> &ViewData;
 
-	fn process(&mut self, _git_interactive: &mut GitInteractive, _view: &View<'_>) -> ProcessResult {
+	fn process(&mut self, _git_interactive: &mut GitInteractive) -> ProcessResult {
 		ProcessResult::new()
 	}
 

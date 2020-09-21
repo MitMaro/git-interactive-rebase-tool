@@ -37,14 +37,16 @@ pub fn panic_output_neq(expected: &str, actual: &str) {
 	.join("\n"));
 }
 
-pub fn _process_module_test<F>(
+pub fn _process_module_test<F, C>(
 	lines: &[&str],
 	module_state: ProcessModuleTestState,
 	input: &Option<Vec<Input>>,
 	expected_output: &[String],
 	get_module: F,
+	callback: C,
 ) where
-	F: FnOnce(&Config, &Display<'_>) -> Box<dyn ProcessModule>,
+	F: for<'p> FnOnce(&Config, &'p Display<'p>) -> Box<dyn ProcessModule + 'p>,
+	C: for<'p> FnOnce(&'p mut (dyn ProcessModule + 'p), &'p mut GitInteractive),
 {
 	set_var(
 		"GIT_DIR",
@@ -84,6 +86,7 @@ pub fn _process_module_test<F>(
 			module.handle_input(&input_handler, &mut git_interactive, &view);
 		}
 	}
+	callback(module.as_mut(), &mut git_interactive);
 	let view_data = module.build_view_data(&view, &git_interactive);
 	let expected = expected_output.join("\n");
 	let output = render_view_data(view_data);
@@ -128,6 +131,7 @@ macro_rules! process_module_test {
 				&None,
 				&$expected_output,
 				$get_module,
+				|_: &mut dyn ProcessModule, _: &mut GitInteractive| {},
 			);
 		}
 	};
@@ -141,6 +145,21 @@ macro_rules! process_module_test {
 				&Some($input),
 				&$expected_output,
 				$get_module,
+				|_: &mut dyn ProcessModule, _: &mut GitInteractive| {},
+			);
+		}
+	};
+	($name:ident, $lines:expr, $state:expr, $input:expr, $expected_output:expr, $get_module:expr, $callback:expr) => {
+		#[test]
+		#[serial_test::serial]
+		fn $name() {
+			crate::process::testutil::_process_module_test(
+				&$lines,
+				$state,
+				&Some($input),
+				&$expected_output,
+				$get_module,
+				$callback,
 			);
 		}
 	};
@@ -270,35 +289,75 @@ macro_rules! process_module_handle_input_test {
 	};
 }
 
-pub fn _assert_handle_input_result(
+pub fn _assert_process_result(
 	actual: &ProcessResult,
-	input: Input,
+	input: Option<Input>,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
+	error: Option<String>,
 )
 {
-	let mut expected = ProcessResult::new().input(input);
+	let mut expected = ProcessResult::new();
+	if let Some(input) = input {
+		expected = expected.input(input);
+	}
 	if let Some(state) = state {
 		expected = expected.state(state);
 	}
 	if let Some(exit_status) = exit_status {
 		expected = expected.exit_status(exit_status);
 	}
+	if let Some(error) = error {
+		expected = expected.error(error.as_str());
+	}
 	assert_eq!(actual, &expected);
 }
 
 #[macro_export]
-macro_rules! assert_handle_input_result {
+macro_rules! assert_process_result {
+	($actual:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, None, None, None, None);
+	};
+	($actual:expr, exit_status = $exit_status:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), None);
+	};
+	($actual:expr, error = $error:expr) => {
+		crate::process::testutil::_assert_process_result(
+			&$actual,
+			None,
+			Some(State::Error),
+			None,
+			Some(String::from($error)),
+			);
+	};
+	($actual:expr, error = $error:expr, exit_status = $exit_status:expr) => {
+		crate::process::testutil::_assert_process_result(
+			&$actual,
+			None,
+			Some(State::Error),
+			Some($exit_status),
+			Some(String::from($error)),
+			);
+	};
+	($actual:expr, state = $state:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, None);
+	};
 	($actual:expr, input = $input:expr) => {
-		crate::process::testutil::_assert_handle_input_result(&$actual, $input, None, None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, None);
 	};
 	($actual:expr, input = $input:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_handle_input_result(&$actual, $input, Some($state), None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), Some($state), None, None);
 	};
 	($actual:expr, input = $input:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_handle_input_result(&$actual, $input, None, Some($exit_status));
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), None);
 	};
 	($actual:expr, input = $input:expr, state = $state:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_handle_input_result(&$actual, $input, Some($state), Some($exit_status));
+		crate::process::testutil::_assert_process_result(
+			&$actual,
+			Some($input),
+			Some($state),
+			Some($exit_status),
+			None,
+			);
 	};
 }
