@@ -36,7 +36,7 @@ pub(super) fn tolkenize(input: &str) -> Option<Vec<String>> {
 				}
 				else if c.is_ascii_whitespace() {
 					state = State::WhiteSpace;
-					if token_start != i || !value.is_empty() {
+					if token_start != i || !value.is_empty() || force_value {
 						tokens.push(format!("{}{}", value, &input[token_start..i]));
 						value.clear();
 					}
@@ -149,6 +149,21 @@ mod tests {
 	}
 
 	#[test]
+	fn tolkenize_empty_double_quoted_string_not_last() {
+		assert_eq!(tolkenize("\"\" bar").unwrap(), vec!["", "bar"]);
+	}
+
+	#[test]
+	fn tolkenize_empty_double_quoted_string_not_fist() {
+		assert_eq!(tolkenize("foo \"\"").unwrap(), vec!["foo", ""]);
+	}
+
+	#[test]
+	fn tolkenize_empty_double_quoted_string_middle() {
+		assert_eq!(tolkenize("foo \"\" bar").unwrap(), vec!["foo", "", "bar"]);
+	}
+
+	#[test]
 	fn tolkenize_empty_single_quoted_string() {
 		assert_eq!(tolkenize("''").unwrap(), vec![""]);
 	}
@@ -246,6 +261,11 @@ mod tests {
 	#[test]
 	fn tolkenize_escaped_space_before_double_quotes() {
 		assert_eq!(tolkenize("\\ \"foo\"").unwrap(), vec![" foo"]);
+	}
+
+	#[test]
+	fn tolkenize_space_before_single_quotes() {
+		assert_eq!(tolkenize(" 'foo'").unwrap(), vec!["foo"]);
 	}
 
 	#[test]
