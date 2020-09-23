@@ -17,16 +17,31 @@ jobs:
         run: cargo build --release
       - name: Test Run
         run: cargo run --release -- --version
+
+  lint:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
       - name: Lint
         run: "./scripts/lint.bash"
       - name: Format
         run: "./scripts/format.bash"
+
+  coverage:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
       - name: Build Coverage
         run: "./scripts/coverage.bash"
       - name: Post to Coveralls
         uses: coverallsapp/github-action@master
         with:
             github-token: ${{ secrets.GITHUB_TOKEN }}
+
   macos:
     name: MacOS
     runs-on: [macos-latest]
@@ -40,6 +55,7 @@ jobs:
         run: cargo build --release
       - name: Test Run
         run: cargo run --release -- --version
+
   windows:
     name: Windows Test
     runs-on: [windows-latest]
