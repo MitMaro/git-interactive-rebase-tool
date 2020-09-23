@@ -1,5 +1,6 @@
 [![Crates.io](https://img.shields.io/crates/v/git-interactive-rebase-tool.svg)][crates-io]
 [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)][license]
+[![Coverage Status](https://coveralls.io/repos/github/MitMaro/git-interactive-rebase-tool/badge.svg?branch=master)](https://coveralls.io/github/MitMaro/git-interactive-rebase-tool?branch=master)
 
 # Git Interactive Rebase Tool
 
