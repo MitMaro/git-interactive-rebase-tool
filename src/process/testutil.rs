@@ -12,14 +12,21 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::testutil::render_view_data;
 use crate::view::View;
+use anyhow::Error;
 use std::env::set_var;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Copy, Clone, Debug)]
 pub struct ProcessModuleTestState {
 	pub position: (i32, i32),
 	pub view_size: (i32, i32),
 	pub state: Option<(State, State)>,
+}
+
+pub fn get_test_todo_path() -> PathBuf {
+	Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("test")
+		.join("git-rebase-todo-scratch")
 }
 
 pub fn panic_output_neq(expected: &str, actual: &str) {
@@ -70,9 +77,7 @@ pub fn _process_module_test<F, C>(
 	let view = View::new(&display, &config);
 	let mut git_interactive = GitInteractive::new(
 		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
-		Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("git-rebase-todo-scratch"),
+		get_test_todo_path(),
 		"#",
 	)
 	.unwrap();
@@ -269,9 +274,7 @@ where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>, &Display<'_>)
 	let view = View::new(&display, &config);
 	let mut git_interactive = GitInteractive::new(
 		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
-		Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("git-rebase-todo-short"),
+		get_test_todo_path(),
 		"#",
 	)
 	.unwrap();
@@ -289,46 +292,118 @@ macro_rules! process_module_handle_input_test {
 	};
 }
 
+fn format_process_result(
+	input: Option<Input>,
+	state: Option<State>,
+	exit_status: Option<ExitStatus>,
+	error: &Option<Error>,
+) -> String
+{
+	format!(
+		"ExitStatus({}), State({}), Input({}), Error({})",
+		exit_status.map_or("None", |exit_status| {
+			match exit_status {
+				ExitStatus::ConfigError => "ConfigError",
+				ExitStatus::FileReadError => "FileReadError",
+				ExitStatus::FileWriteError => "FileWriteError",
+				ExitStatus::Good => "Good",
+				ExitStatus::StateError => "StateError",
+			}
+		}),
+		state.map_or("None", |state| {
+			match state {
+				State::ConfirmAbort => "ConfirmAbort",
+				State::ConfirmRebase => "ConfirmRebase",
+				State::Edit => "Edit",
+				State::Error => "Error",
+				State::ExternalEditor => "ExternalEditor",
+				State::Help => "Help",
+				State::List => "List",
+				State::ShowCommit => "ShowCommit",
+				State::WindowSizeError => "WindowSizeError",
+			}
+		}),
+		input.map_or("None".to_string(), |input| {
+			match input {
+				Input::Abort => "Abort".to_string(),
+				Input::ActionBreak => "ActionBreak".to_string(),
+				Input::ActionDrop => "ActionDrop".to_string(),
+				Input::ActionEdit => "ActionEdit".to_string(),
+				Input::ActionFixup => "ActionFixup".to_string(),
+				Input::ActionPick => "ActionPick".to_string(),
+				Input::ActionReword => "ActionReword".to_string(),
+				Input::ActionSquash => "ActionSquash".to_string(),
+				Input::Backspace => "Backspace".to_string(),
+				Input::Delete => "Delete".to_string(),
+				Input::Edit => "Edit".to_string(),
+				Input::Enter => "Enter".to_string(),
+				Input::ForceAbort => "ForceAbort".to_string(),
+				Input::ForceRebase => "ForceRebase".to_string(),
+				Input::Help => "Help".to_string(),
+				Input::MoveCursorDown => "MoveCursorDown".to_string(),
+				Input::MoveCursorLeft => "MoveCursorLeft".to_string(),
+				Input::MoveCursorPageDown => "MoveCursorPageDown".to_string(),
+				Input::MoveCursorPageUp => "MoveCursorPageUp".to_string(),
+				Input::MoveCursorRight => "MoveCursorRight".to_string(),
+				Input::MoveCursorUp => "MoveCursorUp".to_string(),
+				Input::No => "No".to_string(),
+				Input::OpenInEditor => "OpenInEditor".to_string(),
+				Input::Other => "Other".to_string(),
+				Input::Rebase => "Rebase".to_string(),
+				Input::Resize => "Resize".to_string(),
+				Input::ShowCommit => "ShowCommit".to_string(),
+				Input::ShowDiff => "ShowDiff".to_string(),
+				Input::SwapSelectedDown => "SwapSelectedDown".to_string(),
+				Input::SwapSelectedUp => "SwapSelectedUp".to_string(),
+				Input::ToggleVisualMode => "ToggleVisualMode".to_string(),
+				Input::Yes => "Yes".to_string(),
+				Input::Character(char) => char.to_string(),
+			}
+		}),
+		error
+			.as_ref()
+			.map_or("None".to_string(), |error| { format!("{:#}", error) })
+	)
+}
+
 pub fn _assert_process_result(
 	actual: &ProcessResult,
 	input: Option<Input>,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
-	error: Option<String>,
+	error: &Option<Error>,
 )
 {
-	let mut expected = ProcessResult::new();
-	if let Some(input) = input {
-		expected = expected.input(input);
+	if !(exit_status.map_or(actual.exit_status.is_none(), |expected| {
+		actual.exit_status.map_or(false, |actual| expected == actual)
+	}) && state.map_or(actual.state.is_none(), |expected| {
+		actual.state.map_or(false, |actual| expected == actual)
+	}) && input.map_or(actual.input.is_none(), |expected| {
+		actual.input.map_or(false, |actual| expected == actual)
+	}) && error.as_ref().map_or(actual.error.is_none(), |expected| {
+		actual
+			.error
+			.as_ref()
+			.map_or(false, |actual| format!("{:#}", expected) == format!("{:#}", actual))
+	})) {
+		panic!(vec![
+			"\n",
+			"ProcessResult does not match",
+			"==========",
+			"Expected State:",
+			format_process_result(input, state, exit_status, error).as_str(),
+			"Actual:",
+			format_process_result(actual.input, actual.state, actual.exit_status, &actual.error).as_str(),
+			"==========\n"
+		]
+		.join("\n"));
 	}
-	if let Some(state) = state {
-		expected = expected.state(state);
-	}
-	if let Some(exit_status) = exit_status {
-		expected = expected.exit_status(exit_status);
-	}
-	if let Some(error) = error {
-		expected = expected.error(error.as_str());
-	}
-	assert_eq!(actual, &expected);
 }
 
 #[macro_export]
 macro_rules! assert_process_result {
 	($actual:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, None, None);
-	};
-	($actual:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), None);
-	};
-	($actual:expr, error = $error:expr) => {
-		crate::process::testutil::_assert_process_result(
-			&$actual,
-			None,
-			Some(State::Error),
-			None,
-			Some(String::from($error)),
-			);
+		crate::process::testutil::_assert_process_result(&$actual, None, None, None, &None);
 	};
 	($actual:expr, error = $error:expr, exit_status = $exit_status:expr) => {
 		crate::process::testutil::_assert_process_result(
@@ -336,28 +411,19 @@ macro_rules! assert_process_result {
 			None,
 			Some(State::Error),
 			Some($exit_status),
-			Some(String::from($error)),
+			&Some($error),
 			);
 	};
 	($actual:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, None);
+		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &None);
 	};
 	($actual:expr, input = $input:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, &None);
 	};
 	($actual:expr, input = $input:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), Some($state), None, None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), Some($state), None, &None);
 	};
 	($actual:expr, input = $input:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), None);
-	};
-	($actual:expr, input = $input:expr, state = $state:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(
-			&$actual,
-			Some($input),
-			Some($state),
-			Some($exit_status),
-			None,
-			);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), &None);
 	};
 }

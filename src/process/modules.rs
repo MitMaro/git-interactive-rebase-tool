@@ -101,7 +101,7 @@ impl<'m> Modules<'m> {
 			.handle_input(input_handler, git_interactive, view)
 	}
 
-	pub fn set_error_message(&mut self, error: &str) {
+	pub fn set_error_message(&mut self, error: &anyhow::Error) {
 		self.error.set_error_message(error);
 	}
 

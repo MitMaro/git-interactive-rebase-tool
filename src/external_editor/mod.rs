@@ -11,7 +11,7 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::view_data::ViewData;
 use crate::view::View;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::ffi::OsString;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;
@@ -55,10 +55,10 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		let mut result = ProcessResult::new();
 		if self.state == ExternalEditorState::Active {
 			if let Err(e) = self.run_editor(git_interactive) {
-				result = result.error(e.as_str()).exit_status(ExitStatus::StateError);
+				result = result.error(e).exit_status(ExitStatus::StateError);
 			}
 			else if let Err(e) = git_interactive.reload_file() {
-				result = result.error(e.to_string().as_str()).exit_status(ExitStatus::StateError);
+				result = result.error(e).exit_status(ExitStatus::StateError);
 			}
 			else if git_interactive.get_lines().is_empty() {
 				self.state = ExternalEditorState::Empty;
@@ -105,20 +105,20 @@ impl<'e> ExternalEditor<'e> {
 		}
 	}
 
-	fn run_editor(&mut self, git_interactive: &GitInteractive) -> Result<(), String> {
+	fn run_editor(&mut self, git_interactive: &GitInteractive) -> Result<()> {
 		let mut arguments =
-			tolkenize(self.editor.as_str()).map_or(Err(format!("Invalid editor: {}", self.editor)), |args| {
+			tolkenize(self.editor.as_str()).map_or(Err(anyhow!("Invalid editor: {}", self.editor)), |args| {
 				if args.is_empty() {
-					Err(String::from("No editor configured"))
+					Err(anyhow!("No editor configured"))
 				}
 				else {
 					Ok(args.into_iter().map(OsString::from))
 				}
 			})?;
 
-		git_interactive.write_file().map_err(|err| err.to_string())?;
+		git_interactive.write_file()?;
 		let filepath = git_interactive.get_filepath();
-		let callback = || -> Result<ProcessExitStatus, String> {
+		let callback = || -> Result<ProcessExitStatus> {
 			let mut file_pattern_found = false;
 			let mut cmd = Command::new(arguments.next().unwrap());
 			for arg in arguments {
@@ -134,12 +134,12 @@ impl<'e> ExternalEditor<'e> {
 				cmd.arg(filepath.as_os_str());
 			}
 			cmd.status()
-				.map_err(|e| format!("Unable to run editor ({}):\n{}", self.editor, e.to_string()))
+				.map_err(|e| anyhow!(e).context(anyhow!("Unable to run editor ({})", self.editor)))
 		};
 		let exit_status: ProcessExitStatus = self.display.leave_temporarily(callback)?;
 
 		if !exit_status.success() {
-			return Err(String::from("Editor returned non-zero exit status."));
+			return Err(anyhow!("Editor returned non-zero exit status."));
 		}
 
 		Ok(())
@@ -160,10 +160,12 @@ mod tests {
 	use crate::process::exit_status::ExitStatus;
 	use crate::process::process_module::ProcessModule;
 	use crate::process::state::State;
+	use crate::process::testutil::get_test_todo_path;
 	use crate::process_module_handle_input_test;
 	use crate::process_module_state;
 	use crate::process_module_test;
 	use crate::view::View;
+	use anyhow::anyhow;
 	use std::path::Path;
 
 	fn get_external_editor(content: &str, exit_code: &str) -> String {
@@ -241,7 +243,7 @@ mod tests {
 		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
 			assert_process_result!(
 				module.process(git_interactive),
-				error = "Editor returned non-zero exit status.",
+				error = anyhow!("Editor returned non-zero exit status."),
 				exit_status = ExitStatus::StateError
 			);
 		}
@@ -259,7 +261,8 @@ mod tests {
 		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
 			assert_process_result!(
 				module.process(git_interactive),
-				error = "Unable to run editor (does-not-exist-xxxx):\nNo such file or directory (os error 2)",
+				error = anyhow!("No such file or directory (os error 2)")
+					.context("Unable to run editor (does-not-exist-xxxx)"),
 				exit_status = ExitStatus::StateError
 			);
 		}
@@ -280,7 +283,8 @@ mod tests {
 		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
 			assert_process_result!(
 				module.process(git_interactive),
-				error = "Invalid line: this-is-invalid",
+				error = anyhow!("Error reading file: {}", get_test_todo_path().to_str().unwrap())
+					.context("Invalid line: this-is-invalid"),
 				exit_status = ExitStatus::StateError
 			);
 		}
@@ -296,7 +300,7 @@ mod tests {
 		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
 			assert_process_result!(
 				module.process(git_interactive),
-				error = "Invalid editor: \"",
+				error = anyhow!("Invalid editor: \""),
 				exit_status = ExitStatus::StateError
 			);
 		}
@@ -312,7 +316,7 @@ mod tests {
 		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
 			assert_process_result!(
 				module.process(git_interactive),
-				error = "No editor configured",
+				error = anyhow!("No editor configured"),
 				exit_status = ExitStatus::StateError
 			);
 		}

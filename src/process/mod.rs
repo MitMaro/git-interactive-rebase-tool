@@ -47,17 +47,17 @@ impl<'r> Process<'r> {
 	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
 		let (view_width, view_height) = self.view.get_view_size();
 		if WindowSizeError::is_window_too_small(view_width, view_height) {
-			self.handle_process_result(&mut modules, ProcessResult::new().state(State::WindowSizeError));
+			self.handle_process_result(&mut modules, &ProcessResult::new().state(State::WindowSizeError));
 		}
 		while self.exit_status.is_none() {
 			let result = modules.process(self.state, &mut self.git_interactive);
-			if self.handle_process_result(&mut modules, result) {
+			if self.handle_process_result(&mut modules, &result) {
 				continue;
 			}
 			self.view
 				.render(modules.build_view_data(self.state, self.view, &self.git_interactive));
 			let result = modules.handle_input(self.state, self.input_handler, &mut self.git_interactive, self.view);
-			if self.handle_process_result(&mut modules, result) {
+			if self.handle_process_result(&mut modules, &result) {
 				continue;
 			}
 		}
@@ -65,15 +65,15 @@ impl<'r> Process<'r> {
 		Ok(self.exit_status)
 	}
 
-	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: ProcessResult) -> bool {
+	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) -> bool {
 		let previous_state = self.state;
 
 		if let Some(exit_status) = result.exit_status {
 			self.exit_status = Some(exit_status);
 		}
 
-		if let Some(error_message) = result.error {
-			modules.set_error_message(error_message.as_str());
+		if let Some(ref error) = result.error {
+			modules.set_error_message(error);
 		}
 
 		if let Some(new_state) = result.state {
@@ -109,10 +109,10 @@ impl<'r> Process<'r> {
 	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
 		modules
 			.activate(self.state, &self.git_interactive, previous_state)
-			.map_err(|err| {
+			.map_err(|ref err| {
 				let return_state = self.state;
 				self.state = State::Error;
-				modules.set_error_message(err.to_string().as_str());
+				modules.set_error_message(err);
 				modules.activate(self.state, &self.git_interactive, return_state)
 			})
 			.unwrap(); // if activating the error module causes an error, then the only option is to panic
