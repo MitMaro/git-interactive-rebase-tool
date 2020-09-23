@@ -1,10 +1,11 @@
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::state::State;
+use anyhow::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct ProcessResult {
-	pub(super) error: Option<String>,
+	pub(super) error: Option<Error>,
 	pub(super) exit_status: Option<ExitStatus>,
 	pub(super) input: Option<Input>,
 	pub(super) state: Option<State>,
@@ -25,9 +26,9 @@ impl ProcessResult {
 		self
 	}
 
-	pub(crate) fn error(mut self, message: &str) -> Self {
+	pub(crate) fn error(mut self, error: Error) -> Self {
 		self.state = Some(State::Error);
-		self.error = Some(String::from(message));
+		self.error = Some(error);
 		self
 	}
 

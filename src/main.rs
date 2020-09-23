@@ -9,6 +9,7 @@
 )]
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
 #![allow(clippy::as_conversions)]
+#![allow(clippy::blocks_in_if_conditions)] // sometimes rustfmt makes blocks out of simple statements
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::cast_sign_loss)]
 #![allow(clippy::else_if_without_else)]

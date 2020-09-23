@@ -54,9 +54,11 @@ impl Error {
 		}
 	}
 
-	pub fn set_error_message(&mut self, error: &str) {
+	pub fn set_error_message(&mut self, error: &anyhow::Error) {
 		self.view_data.reset();
-		self.view_data.push_line(ViewLine::new(vec![LineSegment::new(error)]));
+		// TODO expand error messaging
+		self.view_data
+			.push_line(ViewLine::new(vec![LineSegment::new(error.to_string().as_str())]));
 		self.view_data
 			.push_trailing_line(ViewLine::new(vec![LineSegment::new_with_color(
 				"Press any key to continue",
