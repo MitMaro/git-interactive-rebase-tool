@@ -7,6 +7,7 @@ pub mod process_result;
 pub mod state;
 #[cfg(test)]
 pub mod testutil;
+pub mod util;
 pub mod window_size_error;
 
 use crate::git_interactive::GitInteractive;
@@ -113,9 +114,11 @@ impl<'r> Process<'r> {
 				let return_state = self.state;
 				self.state = State::Error;
 				modules.set_error_message(err);
-				modules.activate(self.state, &self.git_interactive, return_state)
+				modules
+					.activate(self.state, &self.git_interactive, return_state)
+					.unwrap()
 			})
-			.unwrap(); // if activating the error module causes an error, then the only option is to panic
+			.unwrap_or(());
 	}
 
 	fn exit_end(&mut self) -> Result<()> {

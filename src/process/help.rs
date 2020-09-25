@@ -5,6 +5,7 @@ use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::process::util::handle_view_data_scroll;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -37,6 +38,10 @@ impl ProcessModule for Help {
 		Ok(())
 	}
 
+	fn deactivate(&mut self) {
+		self.return_state = None;
+	}
+
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 		let view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
@@ -53,24 +58,12 @@ impl ProcessModule for Help {
 	) -> ProcessResult
 	{
 		let input = input_handler.get_input(InputMode::Default);
-		let view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
-		match input {
-			Input::MoveCursorLeft => view_data.scroll_left(),
-			Input::MoveCursorRight => view_data.scroll_right(),
-			Input::MoveCursorDown => view_data.scroll_down(),
-			Input::MoveCursorUp => view_data.scroll_up(),
-			Input::MoveCursorPageDown => view_data.page_down(),
-			Input::MoveCursorPageUp => view_data.page_up(),
-			Input::Resize => {},
-			_ => {
-				let result = ProcessResult::new()
-					.input(Input::Other)
-					.state(self.return_state.unwrap_or(State::List));
-				self.return_state = None;
-				return result;
-			},
+		let mut result = ProcessResult::new().input(input);
+		let mut view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
+		if handle_view_data_scroll(input, &mut view_data).is_none() && input != Input::Resize {
+			result = result.state(self.return_state.unwrap_or(State::List));
 		}
-		ProcessResult::new().input(input)
+		result
 	}
 }
 

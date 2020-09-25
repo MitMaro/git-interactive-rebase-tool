@@ -113,13 +113,17 @@ impl ProcessModule for Edit {
 						self.content = format!("{}{}", start, end);
 					}
 				},
-				Input::MoveCursorRight => {
+				Input::Home => self.cursor_position = 0,
+				Input::End => {
+					self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count()
+				},
+				Input::Right => {
 					let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 					if self.cursor_position < length {
 						self.cursor_position += 1;
 					}
 				},
-				Input::MoveCursorLeft => {
+				Input::Left => {
 					if self.cursor_position != 0 {
 						self.cursor_position -= 1;
 					}
