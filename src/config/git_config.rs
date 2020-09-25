@@ -30,9 +30,10 @@ impl GitConfig {
 			"copy" | "copies" => (true, true),
 			v => {
 				return Err(anyhow!(
-					"Error reading git config: \"{}\" is not valid for \"diff.renames\"",
+					"\"{}\" does not match one of \"true\", \"false\", \"copy\" or \"copies\"",
 					v
-				))
+				)
+				.context("\"diff.renames\" is not valid"));
 			},
 		};
 

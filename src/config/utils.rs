@@ -49,10 +49,7 @@ pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<St
 		"up" => Ok(String::from("Up")),
 		_ => {
 			if value.len() > 1 {
-				return Err(anyhow!(
-					"Error reading git config: {} must contain only one character",
-					name
-				));
+				return Err(anyhow!("{} must contain only one character", name).context("Error reading git config"));
 			}
 			Ok(value)
 		},
@@ -63,40 +60,39 @@ pub(super) fn get_string(config: &Config, name: &str, default: &str) -> Result<S
 	match config.get_string(name) {
 		Ok(v) => Ok(v),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(String::from(default)),
-		Err(e) => Err(anyhow!("Error reading git config: {}", e)),
+		Err(e) => Err(anyhow!(String::from(e.message()))),
 	}
+	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
 }
 
 pub(super) fn get_bool(config: &Config, name: &str, default: bool) -> Result<bool> {
 	match config.get_bool(name) {
 		Ok(v) => Ok(v),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
-		Err(_e) => Err(anyhow!("Error reading git config: \"{}\" is not valid", name)),
+		Err(e) => Err(anyhow!(String::from(e.message()))),
 	}
+	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
 }
 
 pub(super) fn get_unsigned_integer(config: &Config, name: &str, default: u32) -> Result<u32> {
 	match config.get_i32(name) {
 		Ok(v) => {
-			v.try_into().map_err(|_e| {
-				anyhow!(
-					"Error reading git config: \"{}\" is outside of value range for \"{}\"",
-					v,
-					name
-				)
-			})
+			v.try_into()
+				.map_err(|_| anyhow!("\"{}\" is outside of valid range for an unsigned 32-bit integer", v))
 		},
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default),
-		Err(_e) => Err(anyhow!("Error reading git config: \"{}\" is not valid", name)),
+		Err(e) => Err(anyhow!(String::from(e.message()))),
 	}
+	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
 }
 
 pub(super) fn get_color(config: &Config, name: &str, default_color: Color) -> Result<Color> {
 	match config.get_string(name) {
 		Ok(v) => Color::try_from(v.to_lowercase().as_str()),
 		Err(ref e) if e.code() == git2::ErrorCode::NotFound => Ok(default_color),
-		Err(_e) => Err(anyhow!("Error reading git config: \"{}\" is not valid", name)),
+		Err(e) => Err(anyhow!(String::from(e.message()))),
 	}
+	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
 }
 
 pub(super) fn editor_from_env() -> String {
@@ -106,15 +102,10 @@ pub(super) fn editor_from_env() -> String {
 }
 
 pub(super) fn open_git_config() -> Result<Config> {
-	match git2::Repository::open_from_env() {
-		Ok(f) => {
-			match f.config() {
-				Ok(c) => Ok(c),
-				Err(e) => Err(anyhow!("Error reading git config: {}", e)),
-			}
-		},
-		Err(e) => Err(anyhow!("Error reading git config: {}", e)),
-	}
+	git2::Repository::open_from_env()
+		.map_err(|e| anyhow!(String::from(e.message())))?
+		.config()
+		.map_err(|e| anyhow!(String::from(e.message())))
 }
 
 pub(super) fn get_diff_show_whitespace(git_config: &Config) -> Result<DiffShowWhitespaceSetting> {
@@ -127,9 +118,11 @@ pub(super) fn get_diff_show_whitespace(git_config: &Config) -> Result<DiffShowWh
 		"false" | "off" | "none" => Ok(DiffShowWhitespaceSetting::None),
 		_ => {
 			Err(anyhow!(
-				"Error reading git config: \"{}\" is invalid for \"interactive-rebase-tool.diffShowWhitespace\"",
+				"\"{}\" does not match one of \"true\", \"on\", \"both\", \"trailing\", \"leading\", \"false\", \
+				 \"off\" or \"none\"",
 				diff_show_whitespace
-			))
+			)
+			.context("\"interactive-rebase-tool.diffShowWhitespace\" is not valid"))
 		},
 	}
 }
@@ -143,9 +136,10 @@ pub(super) fn get_diff_ignore_whitespace(git_config: &Config) -> Result<DiffIgno
 		"false" | "off" | "none" => Ok(DiffIgnoreWhitespaceSetting::None),
 		_ => {
 			Err(anyhow!(
-				"Error reading git config: \"{}\" is invalid for \"interactive-rebase-tool.diffIgnoreWhitespace\"",
+				"\"{}\" does not match one of \"true\", \"on\", \"all\", \"change\", \"false\", \"off\" or \"none\"",
 				diff_ignore_whitespace
-			))
+			)
+			.context("\"interactive-rebase-tool.diffIgnoreWhitespace\" is not valid"))
 		},
 	}
 }
