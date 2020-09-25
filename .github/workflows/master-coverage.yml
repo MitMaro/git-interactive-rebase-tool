@@ -1,0 +1,20 @@
+name: Master Coverage
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+  coverage:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
+      - name: Build Coverage
+        run: "./scripts/coverage.bash"
+      - name: Post to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
