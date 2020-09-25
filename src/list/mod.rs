@@ -113,8 +113,8 @@ impl<'l> ProcessModule for List<'l> {
 		let input = input_handler.get_input(InputMode::List);
 		let mut result = ProcessResult::new().input(input);
 		match input {
-			Input::MoveCursorLeft => self.view_data.scroll_left(),
-			Input::MoveCursorRight => self.view_data.scroll_right(),
+			Input::MoveCursorLeft | Input::ScrollLeft => self.view_data.scroll_left(),
+			Input::MoveCursorRight | Input::ScrollRight => self.view_data.scroll_right(),
 			Input::MoveCursorDown => {
 				git_interactive.move_cursor_down(1);
 			},

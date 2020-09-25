@@ -15,12 +15,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Number of files change in show commit
 - Number of total additions and deletions in show commit
 - The Git "diff.renames" and "diff.rename_limit" options are now respected during show commit
+- End and Home support during edit
 
 ### Changed
 - Change page up and page down to scroll half the height of the view area
 
 ### Fixed
 - Scroll position resetting on resize
+- Unable to move edit edit cursor when `inputMoveLeft` or `inputMoveRight` were set to alphanumeric characters
 
 ## [1.2.1] - 2020-01-26
 

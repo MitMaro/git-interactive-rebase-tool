@@ -20,6 +20,7 @@ use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::process::util::handle_view_data_scroll;
 use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
 use crate::show_commit::show_commit_state::ShowCommitState;
 use crate::show_commit::util::get_show_commit_help_lines;
@@ -98,9 +99,9 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 						.build_view_data_diff(&mut self.view_data, commit, is_full_width)
 				},
 			}
-			self.view_data.set_view_size(view_width, view_height);
-			self.view_data.rebuild();
 		}
+		self.view_data.set_view_size(view_width, view_height);
+		self.view_data.rebuild();
 		&self.view_data
 	}
 
@@ -113,34 +114,31 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	{
 		let input = input_handler.get_input(InputMode::ShowCommit);
 		let mut result = ProcessResult::new().input(input);
-		match input {
-			Input::MoveCursorLeft => self.view_data.scroll_left(),
-			Input::MoveCursorRight => self.view_data.scroll_right(),
-			Input::MoveCursorDown => self.view_data.scroll_down(),
-			Input::MoveCursorUp => self.view_data.scroll_up(),
-			Input::MoveCursorPageDown => self.view_data.page_down(),
-			Input::MoveCursorPageUp => self.view_data.page_up(),
-			Input::ShowDiff => {
-				self.view_data.reset();
-				self.state = match self.state {
-					ShowCommitState::Overview => ShowCommitState::Diff,
-					ShowCommitState::Diff => ShowCommitState::Overview,
-				}
-			},
-			Input::Resize => {
-				self.view_data.clear();
-			},
-			Input::Help => {},
-			_ => {
-				if self.state == ShowCommitState::Diff {
+
+		if handle_view_data_scroll(input, &mut self.view_data).is_none() {
+			match input {
+				Input::ShowDiff => {
 					self.view_data.reset();
-					self.state = ShowCommitState::Overview;
-				}
-				else {
+					self.state = match self.state {
+						ShowCommitState::Overview => ShowCommitState::Diff,
+						ShowCommitState::Diff => ShowCommitState::Overview,
+					}
+				},
+				Input::Resize => {
 					self.view_data.clear();
-					result = result.state(State::List);
-				}
-			},
+				},
+				Input::Help => {},
+				_ => {
+					if self.state == ShowCommitState::Diff {
+						self.view_data.reset();
+						self.state = ShowCommitState::Overview;
+					}
+					else {
+						self.view_data.clear();
+						result = result.state(State::List);
+					}
+				},
+			}
 		}
 		result
 	}

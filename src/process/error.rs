@@ -5,6 +5,7 @@ use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::process::util::handle_view_data_scroll;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -38,9 +39,8 @@ impl ProcessModule for Error {
 	{
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
-		match input {
-			Input::Resize => {},
-			_ => result = result.state(self.return_state),
+		if handle_view_data_scroll(input, &mut self.view_data).is_none() && input != Input::Resize {
+			result = result.state(self.return_state);
 		}
 		result
 	}
