@@ -120,22 +120,27 @@ impl ViewData {
 	}
 
 	pub(crate) fn set_view_size(&mut self, view_width: usize, view_height: usize) {
-		if self.height != view_height || self.width != view_width {
+		if self.height != view_height
+			|| self.width != view_width
+			|| self.leading_lines_cache.is_none()
+			|| self.lines_cache.is_none()
+			|| self.trailing_lines_cache.is_none()
+		{
 			self.height = view_height;
 			self.width = view_width;
 			self.leading_lines_cache = None;
 			self.lines_cache = None;
 			self.trailing_lines_cache = None;
 
+			let title_height = if self.show_title { 1 } else { 0 };
+
 			self.scroll_position.view_resize(
-				if self.height == 0 || self.leading_lines.len() + self.trailing_lines.len() >= self.height {
+				if self.height == 0 || self.leading_lines.len() + self.trailing_lines.len() + title_height > self.height
+				{
 					0
 				}
 				else {
-					self.height
-						- self.leading_lines.len()
-						- self.trailing_lines.len()
-						- if self.show_title { 1 } else { 0 }
+					self.height - self.leading_lines.len() - self.trailing_lines.len() - title_height
 				},
 				if self.width == 0 {
 					0
