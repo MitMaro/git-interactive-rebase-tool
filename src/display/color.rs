@@ -54,7 +54,12 @@ impl TryFrom<&str> for Color {
 						let color_index = s.parse::<i16>();
 						match color_index {
 							Ok(i) if i >= 0 && i < 256 => Ok(Self::Index(i)),
-							_ => Err(anyhow!("Invalid color value: {}", s)),
+							_ => {
+								Err(anyhow!(
+									"\"{}\" is not a valid color index. Index must be between 0-255.",
+									s
+								))
+							},
 						}
 					},
 					3 => {
@@ -65,9 +70,12 @@ impl TryFrom<&str> for Color {
 						if red > -1 && green > -1 && blue > -1 && red < 256 && green < 256 && blue < 256 {
 							return Ok(Self::RGB { red, green, blue });
 						}
-						Err(anyhow!("Invalid color string: {}. Values must be within 0-255.", s))
+						Err(anyhow!(
+							"\"{}\" is not a valid color triple. Values must be between 0-255.",
+							s
+						))
 					},
-					_ => Err(anyhow!("Invalid color value: {}", s)),
+					_ => Err(anyhow!("\"{}\" is not a valid color value.", s)),
 				}
 			},
 		}
@@ -134,59 +142,67 @@ mod tests {
 	test_color_try_from_invalid!(
 		non_number_red,
 		"red,0,0",
-		"Invalid color string: red,0,0. Values must be within 0-255."
+		"\"red,0,0\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_green,
 		"0,green,0",
-		"Invalid color string: 0,green,0. Values must be within 0-255."
+		"\"0,green,0\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_blue,
 		"0,0,blue",
-		"Invalid color string: 0,0,blue. Values must be within 0-255."
+		"\"0,0,blue\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_red_lower_limit,
 		"-1,0,0",
-		"Invalid color string: -1,0,0. Values must be within 0-255."
+		"\"-1,0,0\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_green_lower_limit,
 		"0,-1,0",
-		"Invalid color string: 0,-1,0. Values must be within 0-255."
+		"\"0,-1,0\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_blue_lower_limit,
 		"0,0,-1",
-		"Invalid color string: 0,0,-1. Values must be within 0-255."
+		"\"0,0,-1\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_red_upper_limit,
 		"256,0,0",
-		"Invalid color string: 256,0,0. Values must be within 0-255."
+		"\"256,0,0\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_green_upper_limit,
 		"0,256,0",
-		"Invalid color string: 0,256,0. Values must be within 0-255."
+		"\"0,256,0\" is not a valid color triple. Values must be between 0-255."
 	);
 	test_color_try_from_invalid!(
 		rgb_non_number_blue_upper_limit,
 		"0,0,256",
-		"Invalid color string: 0,0,256. Values must be within 0-255."
+		"\"0,0,256\" is not a valid color triple. Values must be between 0-255."
 	);
-	test_color_try_from_invalid!(index_upper_limit, "256", "Invalid color value: 256");
+	test_color_try_from_invalid!(
+		index_upper_limit,
+		"256",
+		"\"256\" is not a valid color index. Index must be between 0-255."
+	);
 	test_color_try_from_invalid!(
 		index_lower_limit,
 		// -1 is transparent/default and a valid value
 		"-2",
-		"Invalid color value: -2"
+		"\"-2\" is not a valid color index. Index must be between 0-255."
 	);
-	test_color_try_from_invalid!(str_single_value, "invalid", "Invalid color value: invalid");
+	test_color_try_from_invalid!(
+		str_single_value,
+		"invalid",
+		"\"invalid\" is not a valid color index. Index must be between 0-255."
+	);
 	test_color_try_from_invalid!(
 		str_multiple_value,
 		"invalid,invalid",
-		"Invalid color value: invalid,invalid"
+		"\"invalid,invalid\" is not a valid color value."
 	);
 }

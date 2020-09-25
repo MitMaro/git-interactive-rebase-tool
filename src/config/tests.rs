@@ -23,50 +23,66 @@ fn load_with_config_file(case: &str, test: &str) -> Config {
 }
 
 fn load_error_with_config_file(case: &str, test: &str) -> String {
-	Config::new_from_config(
-		&git2::Config::open(
-			Path::new(env!("CARGO_MANIFEST_DIR"))
-				.join("test")
-				.join("fixtures")
-				.join("config")
-				.join(case)
-				.join(test)
-				.as_path(),
-		)
-		.unwrap(),
-	)
-	.err()
-	.unwrap()
-	.to_string()
-}
-fn set_git_dir(fixture: &str) {
-	set_var(
-		"GIT_DIR",
-		Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join(fixture)
-			.to_str()
+	format!(
+		"{:#}",
+		Config::new_from_config(
+			&git2::Config::open(
+				Path::new(env!("CARGO_MANIFEST_DIR"))
+					.join("test")
+					.join("fixtures")
+					.join("config")
+					.join(case)
+					.join(test)
+					.as_path(),
+			)
 			.unwrap(),
-	);
+		)
+		.err()
+		.unwrap()
+	)
 }
 
 #[test]
 #[serial]
 fn config_new() {
-	set_git_dir("simple");
+	set_var(
+		"GIT_DIR",
+		Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("test")
+			.join("fixtures")
+			.join("simple")
+			.to_str()
+			.unwrap(),
+	);
 	Config::new().unwrap();
 }
 
 #[test]
 #[serial]
 fn config_new_invalid_repo() {
-	set_git_dir("does-not-exist");
-	assert!(Config::new()
-		.err()
-		.unwrap()
-		.to_string()
-		.starts_with("Error reading git config: failed to resolve path"));
+	let git_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("test")
+		.join("fixtures")
+		.join("does-not-exist")
+		.into_os_string()
+		.into_string()
+		.unwrap();
+	set_var("GIT_DIR", git_dir.as_str());
+	assert_eq!(
+		format!("{:#}", Config::new().err().unwrap()).trim(),
+		if cfg!(windows) {
+			format!(
+				"Error loading git config: failed to resolve path '{}': The system cannot find the file specified.",
+				git_dir.as_str()
+			)
+		}
+		else {
+			format!(
+				"Error loading git config: failed to resolve path '{}': No such file or directory",
+				git_dir.as_str()
+			)
+		}
+	);
 }
 
 #[test]
@@ -91,7 +107,7 @@ fn config_auto_select_next_false() {
 fn config_auto_select_next_invalid() {
 	assert_eq!(
 		load_error_with_config_file("auto-select-next", "invalid.gitconfig"),
-		"Error reading git config: \"interactive-rebase-tool.autoSelectNext\" is not valid",
+		"\"interactive-rebase-tool.autoSelectNext\" is not valid: failed to parse \'invalid\' as a boolean value",
 	);
 }
 
@@ -153,7 +169,8 @@ fn config_diff_ignore_whitespace_mixed_case() {
 fn config_diff_ignore_whitespace_invalid() {
 	assert_eq!(
 		load_error_with_config_file("diff-ignore-whitespace", "invalid.gitconfig"),
-		"Error reading git config: \"invalid\" is invalid for \"interactive-rebase-tool.diffIgnoreWhitespace\"",
+		"\"interactive-rebase-tool.diffIgnoreWhitespace\" is not valid: \"invalid\" does not match one of \"true\", \
+		 \"on\", \"all\", \"change\", \"false\", \"off\" or \"none\""
 	);
 }
 
@@ -221,7 +238,8 @@ fn config_diff_show_whitespace_mixed_case() {
 fn config_diff_show_whitespace_invalid() {
 	assert_eq!(
 		load_error_with_config_file("diff-show-whitespace", "invalid.gitconfig"),
-		"Error reading git config: \"invalid\" is invalid for \"interactive-rebase-tool.diffShowWhitespace\"",
+		"\"interactive-rebase-tool.diffShowWhitespace\" is not valid: \"invalid\" does not match one of \"true\", \
+		 \"on\", \"both\", \"trailing\", \"leading\", \"false\", \"off\" or \"none\""
 	);
 }
 
@@ -241,7 +259,7 @@ fn config_diff_tab_width() {
 fn config_diff_tab_invalid() {
 	assert_eq!(
 		load_error_with_config_file("diff-tab-width", "invalid.gitconfig"),
-		"Error reading git config: \"interactive-rebase-tool.diffTabWidth\" is not valid",
+		"\"interactive-rebase-tool.diffTabWidth\" is not valid: failed to parse \'invalid\' as a 32-bit integer"
 	);
 }
 
@@ -249,7 +267,8 @@ fn config_diff_tab_invalid() {
 fn config_diff_tab_invalid_range() {
 	assert_eq!(
 		load_error_with_config_file("diff-tab-width", "invalid-range.gitconfig"),
-		"Error reading git config: \"-100\" is outside of value range for \"interactive-rebase-tool.diffTabWidth\"",
+		"\"interactive-rebase-tool.diffTabWidth\" is not valid: \"-100\" is outside of valid range for an unsigned \
+		 32-bit integer"
 	);
 }
 
@@ -269,7 +288,7 @@ fn config_diff_tab_symbol() {
 fn config_diff_tab_symbol_invalid_utf8() {
 	assert_eq!(
 		load_error_with_config_file("diff-tab-symbol", "invalid.gitconfig"),
-		"Error reading git config: configuration value is not valid utf8"
+		"\"interactive-rebase-tool.diffTabSymbol\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -289,7 +308,7 @@ fn config_diff_space_symbol() {
 fn config_diff_space_symbol_invalid_utf8() {
 	assert_eq!(
 		load_error_with_config_file("diff-space-symbol", "invalid.gitconfig"),
-		"Error reading git config: configuration value is not valid utf8"
+		"\"interactive-rebase-tool.diffSpaceSymbol\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -315,7 +334,7 @@ fn config_git_comment_char() {
 fn config_git_comment_char_invalid() {
 	assert_eq!(
 		load_error_with_config_file("comment-char", "invalid.gitconfig"),
-		"Error reading git config: configuration value is not valid utf8"
+		"\"core.commentChar\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -335,7 +354,7 @@ fn config_git_diff_context() {
 fn config_git_diff_context_invalid() {
 	assert_eq!(
 		load_error_with_config_file("diff-context", "invalid.gitconfig"),
-		"Error reading git config: \"diff.context\" is not valid"
+		"\"diff.context\" is not valid: failed to parse \'invalid\' as a 32-bit integer"
 	);
 }
 
@@ -343,7 +362,7 @@ fn config_git_diff_context_invalid() {
 fn config_git_diff_context_invalid_range() {
 	assert_eq!(
 		load_error_with_config_file("diff-context", "invalid-range.gitconfig"),
-		"Error reading git config: \"-100\" is outside of value range for \"diff.context\""
+		"\"diff.context\" is not valid: \"-100\" is outside of valid range for an unsigned 32-bit integer"
 	);
 }
 
@@ -393,7 +412,7 @@ fn config_git_diff_renames_mixed_case() {
 fn config_git_diff_renames_invalid() {
 	assert_eq!(
 		load_error_with_config_file("diff-renames", "invalid.gitconfig"),
-		"Error reading git config: \"invalid\" is not valid for \"diff.renames\""
+		"\"diff.renames\" is not valid: \"invalid\" does not match one of \"true\", \"false\", \"copy\" or \"copies\""
 	);
 }
 
@@ -440,7 +459,7 @@ fn config_git_editor_invalid() {
 	remove_var("EDITOR");
 	assert_eq!(
 		load_error_with_config_file("editor", "invalid.gitconfig"),
-		"Error reading git config: configuration value is not valid utf8"
+		"\"core.editor\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -676,7 +695,7 @@ fn config_key_bindings_key_up() {
 fn config_key_bindings_invalid() {
 	assert_eq!(
 		load_error_with_config_file("key-bindings", "key-invalid.gitconfig"),
-		"Error reading git config: configuration value is not valid utf8"
+		"\"interactive-rebase-tool.inputAbort\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -692,7 +711,7 @@ fn config_key_bindings_key_multiple_characters() {
 fn config_key_bindings_key_invalid() {
 	assert_eq!(
 		load_error_with_config_file("key-bindings", "key-invalid.gitconfig"),
-		"Error reading git config: configuration value is not valid utf8"
+		"\"interactive-rebase-tool.inputAbort\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -1240,7 +1259,7 @@ fn config_theme_color_selected() {
 fn config_theme_color_invalid() {
 	assert_eq!(
 		load_error_with_config_file("theme", "color-invalid.gitconfig"),
-		"Error reading git config: \"interactive-rebase-tool.breakColor\" is not valid"
+		"\"interactive-rebase-tool.breakColor\" is not valid: configuration value is not valid utf8"
 	);
 }
 
@@ -1248,7 +1267,8 @@ fn config_theme_color_invalid() {
 fn config_theme_color_invalid_range_under() {
 	assert_eq!(
 		load_error_with_config_file("theme", "color-invalid-range-under.gitconfig"),
-		"Invalid color value: -2"
+		"\"interactive-rebase-tool.breakColor\" is not valid: \"-2\" is not a valid color index. Index must be \
+		 between 0-255."
 	);
 }
 
@@ -1256,6 +1276,7 @@ fn config_theme_color_invalid_range_under() {
 fn config_theme_color_invalid_range_above() {
 	assert_eq!(
 		load_error_with_config_file("theme", "color-invalid-range-above.gitconfig"),
-		"Invalid color value: 256"
+		"\"interactive-rebase-tool.breakColor\" is not valid: \"256\" is not a valid color index. Index must be \
+		 between 0-255."
 	);
 }

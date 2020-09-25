@@ -81,12 +81,13 @@ fn main() {
 		},
 	}
 }
+
 fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 
 	let config = Config::new().map_err(|err| {
 		Exit {
-			message: err.to_string(),
+			message: format!("{:#}", err),
 			status: ExitStatus::ConfigError,
 		}
 	})?;
