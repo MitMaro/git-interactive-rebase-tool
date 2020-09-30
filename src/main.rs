@@ -127,7 +127,7 @@ fn try_main() -> Result<ExitStatus, Exit> {
 		.map(|exit_code| exit_code.unwrap_or(ExitStatus::Good))
 }
 
-pub fn build_cli() -> App<'static, 'static> {
+fn build_cli() -> App<'static, 'static> {
 	App::new(NAME)
 		.version(VERSION)
 		.about("Full feature terminal based sequence editor for git interactive rebase.")
