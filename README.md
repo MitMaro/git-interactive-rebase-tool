@@ -306,7 +306,7 @@ To start developing the project you will need to [install Rust][install-rust], w
 
 #### Debian and derivatives
 
-You will need `build-essential` and `libncurses5-dev` to build the project. Additionally, you will need `pkg-config` and
+You will need `build-essential` and `libncursesw5-dev` to build the project. Additionally, you will need `pkg-config` and
 `liblzma-dev` if you wish to build a release. They can be installed using `apt-get`:
 
     sudo apt-get install build-essential libncursesw5-dev
