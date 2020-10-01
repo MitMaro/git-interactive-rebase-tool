@@ -58,9 +58,7 @@ impl<'r> Process<'r> {
 			self.view
 				.render(modules.build_view_data(self.state, self.view, &self.git_interactive));
 			let result = modules.handle_input(self.state, self.input_handler, &mut self.git_interactive, self.view);
-			if self.handle_process_result(&mut modules, &result) {
-				continue;
-			}
+			self.handle_process_result(&mut modules, &result);
 		}
 		self.exit_end()?;
 		Ok(self.exit_status)
@@ -75,9 +73,10 @@ impl<'r> Process<'r> {
 
 		if let Some(ref error) = result.error {
 			modules.set_error_message(error);
+			self.state = State::Error;
+			self.activate(modules, result.state.unwrap_or(previous_state));
 		}
-
-		if let Some(new_state) = result.state {
+		else if let Some(new_state) = result.state {
 			if new_state != self.state {
 				modules.deactivate(self.state);
 				self.state = new_state;
@@ -108,17 +107,8 @@ impl<'r> Process<'r> {
 	}
 
 	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
-		modules
-			.activate(self.state, &self.git_interactive, previous_state)
-			.map_err(|ref err| {
-				let return_state = self.state;
-				self.state = State::Error;
-				modules.set_error_message(err);
-				modules
-					.activate(self.state, &self.git_interactive, return_state)
-					.unwrap()
-			})
-			.unwrap_or(());
+		let result = modules.activate(self.state, &self.git_interactive, previous_state);
+		self.handle_process_result(modules, &result);
 	}
 
 	fn exit_end(&mut self) -> Result<()> {

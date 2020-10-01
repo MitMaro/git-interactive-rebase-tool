@@ -83,7 +83,7 @@ pub fn _process_module_test<F, C>(
 	.unwrap();
 	let mut module = get_module(&config, &display);
 	if let Some((_, previous_state)) = module_state.state {
-		module.activate(&git_interactive, previous_state).unwrap();
+		module.activate(&git_interactive, previous_state);
 	}
 	if let Some(ref input) = *input {
 		let input_handler = InputHandler::new(&display, &config.key_bindings);
@@ -508,13 +508,7 @@ macro_rules! assert_process_result {
 		crate::process::testutil::_assert_process_result(&$actual, None, None, None, &None);
 	};
 	($actual:expr, error = $error:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(
-			&$actual,
-			None,
-			Some(State::Error),
-			Some($exit_status),
-			&Some($error),
-			);
+		crate::process::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), &Some($error));
 	};
 	($actual:expr, state = $state:expr) => {
 		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &None);

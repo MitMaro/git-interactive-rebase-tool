@@ -29,7 +29,6 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
-use anyhow::Result;
 
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,
@@ -41,16 +40,17 @@ pub struct ShowCommit<'s> {
 }
 
 impl<'s> ProcessModule for ShowCommit<'s> {
-	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> Result<()> {
+	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
 		// skip loading commit data if the currently loaded commit has not changed, this retains
 		// position after returning to the list view or help
 		if let Some(ref commit) = self.commit {
 			if commit.get_hash() == git_interactive.get_selected_line_hash() {
-				return Ok(());
+				return ProcessResult::new();
 			}
 		}
 		self.view_data.reset();
-		self.commit = Some(Commit::new_from_hash(
+
+		let new_commit = Commit::new_from_hash(
 			git_interactive.get_selected_line_hash().as_str(),
 			LoadCommitDiffOptions {
 				context_lines: self.config.git.diff_context,
@@ -61,8 +61,15 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				rename_limit: self.config.git.diff_rename_limit,
 				renames: self.config.git.diff_renames,
 			},
-		)?);
-		Ok(())
+		);
+
+		match new_commit {
+			Ok(c) => {
+				self.commit = Some(c);
+				ProcessResult::new()
+			},
+			Err(e) => ProcessResult::new().error(e).state(State::List),
+		}
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {

@@ -9,7 +9,6 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
-use anyhow::Result;
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
 const SHORT_ERROR_MESSAGE: &str = "Window too small";
@@ -22,9 +21,9 @@ pub struct WindowSizeError {
 }
 
 impl ProcessModule for WindowSizeError {
-	fn activate(&mut self, _: &GitInteractive, previous_state: State) -> Result<()> {
+	fn activate(&mut self, _: &GitInteractive, previous_state: State) -> ProcessResult {
 		self.return_state = previous_state;
-		Ok(())
+		ProcessResult::new()
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {

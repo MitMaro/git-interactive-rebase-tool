@@ -5,11 +5,10 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::view_data::ViewData;
 use crate::view::View;
-use anyhow::Result;
 
 pub trait ProcessModule {
-	fn activate(&mut self, _git_interactive: &GitInteractive, _previous_state: State) -> Result<()> {
-		Ok(())
+	fn activate(&mut self, _git_interactive: &GitInteractive, _previous_state: State) -> ProcessResult {
+		ProcessResult::new()
 	}
 
 	fn deactivate(&mut self) {}

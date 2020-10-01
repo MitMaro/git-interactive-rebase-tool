@@ -31,11 +31,11 @@ pub struct ExternalEditor<'e> {
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
-	fn activate(&mut self, _: &GitInteractive, _: State) -> Result<()> {
+	fn activate(&mut self, _: &GitInteractive, _: State) -> ProcessResult {
 		if self.state != ExternalEditorState::Empty {
 			self.state = ExternalEditorState::Active;
 		}
-		Ok(())
+		ProcessResult::new()
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
