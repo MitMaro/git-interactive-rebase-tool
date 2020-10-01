@@ -55,7 +55,7 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::modules::Modules;
 use crate::process::Process;
 use crate::view::View;
-use clap::App;
+use clap::{App, ArgMatches};
 
 struct Exit {
 	message: String,
@@ -65,7 +65,15 @@ struct Exit {
 // TODO use the termination trait once rust-lang/rust#43301 is stable
 #[allow(clippy::exit)]
 fn main() {
-	match try_main() {
+	let app = App::new(NAME)
+		.version(VERSION)
+		.about("Full feature terminal based sequence editor for git interactive rebase.")
+		.author("Tim Oram <dev@mitmaro.ca>")
+		.args_from_usage("<rebase-todo-filepath> 'The path to the git rebase todo file'");
+
+	let matches = app.get_matches();
+
+	match try_main(&matches) {
 		Ok(code) => std::process::exit(code.to_code()),
 		Err(err) => {
 			eprintln!("{}", err.message);
@@ -73,10 +81,7 @@ fn main() {
 		},
 	}
 }
-
-fn try_main() -> Result<ExitStatus, Exit> {
-	let matches = build_cli().get_matches();
-
+fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 
 	let config = Config::new().map_err(|err| {
