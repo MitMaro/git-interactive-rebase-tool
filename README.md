@@ -9,7 +9,7 @@ Git 1.7.8+. Written in Rust using ncurses.
 
 ![Git Interactive Rebase Tool](/docs/assets/images/git-interactive-rebase-demo.gif?raw=true)
 
-**This is the documentation for the development build. For the current stable release please use the
+**This is the documentation for the development build. For the current stable release, please use the
 [1.2.x documentation](https://github.com/MitMaro/git-interactive-rebase-tool/tree/1.2.1/README.md).**
 
 ## Install
@@ -44,8 +44,7 @@ GitBash requires the use of `winpty` in order to work correctly, so to set the e
 #### Notes
 
 Windows before version 10 has [serious rendering issues with saturated darker colors](https://devblogs.microsoft.com/commandline/updating-the-windows-console-colors/),
-such as the blue color, that are completely illegible on modern displays. While it is possible to avoid using the
-saturated colors, a better option is to update the theme using Microsoft's [ColorTool](https://github.com/Microsoft/Terminal/tree/master/src/tools/ColorTool).
+such as the blue color that is entirely illegible on modern displays. While it is possible to avoid using saturated colors, a better option is to update the theme using Microsoft's [ColorTool](https://github.com/Microsoft/Terminal/tree/master/src/tools/ColorTool).
 
 ## Usage
 
@@ -98,7 +97,7 @@ You can temporarily use a different sequence editor by using the `GIT_SEQUENCE_E
 
 ### Configuration
 
-The tool can be configured using the [git config][git-config] command. Invalid values are ignored and the default used
+The tool can be configured using the [git config][git-config] command. Invalid values are ignored and the default is used
 instead. String values are case-insensitive.
 
 #### Example
@@ -217,7 +216,7 @@ to use the default terminal color.
 ##### Changing Key Bindings
 
 Most keys can be changed to any printable character or supported special character. It is possible to provide
-conflicting keybindings, which will result in undefined behaviour. The `inputConfirmYes` bindings has a special
+conflicting keybindings, which will result in undefined behaviour. The `inputConfirmYes` binding has a special
 behaviour in that it responds to both the uppercase and lowercase letter of the value set, if the variant exist.
 
 ###### Example
@@ -287,7 +286,7 @@ in the table below. Some special keys do not work correctly on some setups.
 
 The external editor action will first attempt to start the editor defined by the
 [Git configuration "core.editor"][git-core-editor], followed by the `VISUAL` and
-`EDITOR` environment variables. Finally, if neither is set the external editor
+`EDITOR` environment variables. Finally, if neither is set, the external editor
 defaults to using `vi`.
 
 The `%` character in the value will be replaced with the git rebase todo file.
@@ -298,7 +297,7 @@ provided as the last argument.
 
 ### Install Rust
 
-To start developing the project you will need to [install Rust][install-rust], which can generally be done using
+To start developing the project, you will need to [install Rust][install-rust], which can generally be done using
 [rustup].
 
 
@@ -306,7 +305,7 @@ To start developing the project you will need to [install Rust][install-rust], w
 
 #### Debian and derivatives
 
-You will need `build-essential` and `libncurses5-dev` to build the project. Additionally, you will need `pkg-config` and
+You will need `build-essential` and `libncursesw5-dev` to build the project. Additionally, you will need `pkg-config` and
 `liblzma-dev` if you wish to build a release. They can be installed using `apt-get`:
 
     sudo apt-get install build-essential libncursesw5-dev
