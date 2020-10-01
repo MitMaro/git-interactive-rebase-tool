@@ -28,7 +28,6 @@
 #![allow(clippy::unwrap_used)]
 #![allow(clippy::wildcard_enum_match_arm)]
 
-mod cli;
 mod config;
 mod confirm_abort;
 mod confirm_rebase;
@@ -47,6 +46,7 @@ mod testutil;
 mod view;
 
 use crate::config::Config;
+use crate::constants::{NAME, VERSION};
 use crate::display::curses::Curses;
 use crate::display::Display;
 use crate::git_interactive::GitInteractive;
@@ -55,6 +55,7 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::modules::Modules;
 use crate::process::Process;
 use crate::view::View;
+use clap::App;
 
 struct Exit {
 	message: String,
@@ -74,7 +75,7 @@ fn main() {
 }
 
 fn try_main() -> Result<ExitStatus, Exit> {
-	let matches = cli::build_cli().get_matches();
+	let matches = build_cli().get_matches();
 
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 
@@ -124,4 +125,12 @@ fn try_main() -> Result<ExitStatus, Exit> {
 			}
 		})
 		.map(|exit_code| exit_code.unwrap_or(ExitStatus::Good))
+}
+
+fn build_cli() -> App<'static, 'static> {
+	App::new(NAME)
+		.version(VERSION)
+		.about("Full feature terminal based sequence editor for git interactive rebase.")
+		.author("Tim Oram <dev@mitmaro.ca>")
+		.args_from_usage("<rebase-todo-filepath> 'The path to the git rebase todo file'")
 }
