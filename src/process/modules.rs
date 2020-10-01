@@ -16,7 +16,6 @@ use crate::process::window_size_error::WindowSizeError;
 use crate::show_commit::ShowCommit;
 use crate::view::view_data::ViewData;
 use crate::view::View;
-use anyhow::Result;
 
 pub struct Modules<'m> {
 	pub confirm_abort: ConfirmAbort,
@@ -73,7 +72,7 @@ impl<'m> Modules<'m> {
 		}
 	}
 
-	pub fn activate(&mut self, state: State, git_interactive: &GitInteractive, previous_state: State) -> Result<()> {
+	pub fn activate(&mut self, state: State, git_interactive: &GitInteractive, previous_state: State) -> ProcessResult {
 		self.get_mut_module(state).activate(git_interactive, previous_state)
 	}
 

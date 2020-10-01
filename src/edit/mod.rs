@@ -9,7 +9,6 @@ use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
-use anyhow::Result;
 use unicode_segmentation::UnicodeSegmentation;
 
 pub struct Edit {
@@ -19,10 +18,10 @@ pub struct Edit {
 }
 
 impl ProcessModule for Edit {
-	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> Result<()> {
+	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
 		self.content = git_interactive.get_selected_line_edit_content().clone();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
-		Ok(())
+		ProcessResult::new()
 	}
 
 	fn deactivate(&mut self) {
@@ -529,7 +528,7 @@ mod tests {
 		[Input::Resize],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(git_interactive, State::List).unwrap();
+			edit.activate(git_interactive, State::List);
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::Resize);
 		}
@@ -541,7 +540,7 @@ mod tests {
 		[Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(git_interactive, State::List).unwrap();
+			edit.activate(git_interactive, State::List);
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::Enter, state = State::List);
 			assert_eq!(git_interactive.get_selected_line_edit_content(), "foobar");
@@ -554,7 +553,7 @@ mod tests {
 		[Input::Character('x'), Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(git_interactive, State::List).unwrap();
+			edit.activate(git_interactive, State::List);
 			edit.handle_input(input_handler, git_interactive, view);
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::Enter, state = State::List);
@@ -568,7 +567,7 @@ mod tests {
 		[Input::Other, Input::Enter],
 		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(git_interactive, State::List).unwrap();
+			edit.activate(git_interactive, State::List);
 			let result = edit.handle_input(input_handler, git_interactive, view);
 			assert_process_result!(result, input = Input::Enter, state = State::List);
 		}
@@ -580,7 +579,7 @@ mod tests {
 		[Input::MoveCursorLeft],
 		|_: &InputHandler<'_>, git_interactive: &mut GitInteractive, _: &View<'_>, _: &Display<'_>| {
 			let mut edit = Edit::new();
-			edit.activate(git_interactive, State::List).unwrap();
+			edit.activate(git_interactive, State::List);
 			edit.deactivate();
 			assert!(edit.content.is_empty());
 		}

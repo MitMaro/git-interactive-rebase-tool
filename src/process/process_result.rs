@@ -27,7 +27,6 @@ impl ProcessResult {
 	}
 
 	pub(crate) fn error(mut self, error: Error) -> Self {
-		self.state = Some(State::Error);
 		self.error = Some(error);
 		self
 	}
