@@ -149,22 +149,13 @@ impl<'e> ExternalEditor<'e> {
 #[cfg(all(unix, test))]
 mod tests {
 	use crate::assert_process_result;
-	use crate::build_render_output;
-	use crate::config::Config;
-	use crate::display::Display;
+	use crate::assert_rendered_output;
 	use crate::external_editor::{ExternalEditor, ExternalEditorState};
-	use crate::git_interactive::GitInteractive;
-	use crate::input::input_handler::InputHandler;
 	use crate::input::Input;
 	use crate::list::action::Action;
 	use crate::process::exit_status::ExitStatus;
-	use crate::process::process_module::ProcessModule;
 	use crate::process::state::State;
-	use crate::process::testutil::get_test_todo_path;
-	use crate::process_module_handle_input_test;
-	use crate::process_module_state;
-	use crate::process_module_test;
-	use crate::view::View;
+	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use anyhow::anyhow;
 	use std::path::Path;
 
@@ -181,191 +172,186 @@ mod tests {
 		)
 	}
 
-	process_module_test!(
-		external_edit_success,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> {
-			Box::new(ExternalEditor::new(
-				display,
-				get_external_editor("drop aaa comment", "0").as_str(),
-			))
-		},
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(module.process(git_interactive), state = State::List);
-			assert_eq!(git_interactive.get_selected_line_action(), &Action::Drop)
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn success() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::MoveCursorLeft],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(
+					test_context.display,
+					get_external_editor("drop aaa comment", "0").as_str(),
+				);
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(test_context.process(&mut module), state = State::List);
+				assert_eq!(test_context.git_interactive.get_selected_line_action(), &Action::Drop);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_empty_edit_success,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!("{TITLE}", "{PROMPT}", "Empty rebase todo file. Do you wish to exit"),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> {
-			Box::new(ExternalEditor::new(display, get_external_editor("", "0").as_str()))
-		},
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(module.process(git_interactive));
-			assert_process_result!(module.process(git_interactive));
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn empty_edit_success() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(test_context.process(&mut module));
+				assert_process_result!(test_context.process(&mut module));
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(
+					view_data,
+					"{TITLE}",
+					"{PROMPT}",
+					"Empty rebase todo file. Do you wish to exit"
+				);
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_noop,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> {
-			Box::new(ExternalEditor::new(display, get_external_editor("noop", "0").as_str()))
-		},
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(module.process(git_interactive), state = State::List);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn noop() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, get_external_editor("noop", "0").as_str());
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(test_context.process(&mut module), state = State::List);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_fail_exit_code,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> {
-			Box::new(ExternalEditor::new(
-				display,
-				get_external_editor("drop aaa comment", "1").as_str(),
-			))
-		},
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(
-				module.process(git_interactive),
-				error = anyhow!("Editor returned non-zero exit status."),
-				exit_status = ExitStatus::StateError
-			);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn fail_exit_code() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(
+					test_context.display,
+					get_external_editor("drop aaa comment", "1").as_str(),
+				);
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(
+					test_context.process(&mut module),
+					error = anyhow!("Editor returned non-zero exit status."),
+					exit_status = ExitStatus::StateError
+				);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_fail_general,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> {
-			Box::new(ExternalEditor::new(display, "does-not-exist-xxxx"))
-		},
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(
-				module.process(git_interactive),
-				error = anyhow!("No such file or directory (os error 2)")
-					.context("Unable to run editor (does-not-exist-xxxx)"),
-				exit_status = ExitStatus::StateError
-			);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn fail_general() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, "does-not-exist-xxxx");
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(
+					test_context.process(&mut module),
+					error = anyhow!("No such file or directory (os error 2)")
+						.context("Unable to run editor (does-not-exist-xxxx)"),
+					exit_status = ExitStatus::StateError
+				);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_fail_invalid_edit,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> {
-			Box::new(ExternalEditor::new(
-				display,
-				get_external_editor("this-is-invalid", "0").as_str(),
-			))
-		},
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(
-				module.process(git_interactive),
-				error = anyhow!("Error reading file: {}", get_test_todo_path().to_str().unwrap())
-					.context("Invalid line: this-is-invalid"),
-				exit_status = ExitStatus::StateError
-			);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn fail_invalid_edit() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, "\"");
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(
+					test_context.process(&mut module),
+					error = anyhow!("Invalid editor: \""),
+					exit_status = ExitStatus::StateError
+				);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_fail_invalid_editor,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(ExternalEditor::new(display, "\"")) },
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(
-				module.process(git_interactive),
-				error = anyhow!("Invalid editor: \""),
-				exit_status = ExitStatus::StateError
-			);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn fail_empty_editor() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, "");
+				test_context.activate(&mut module, State::List);
+				assert_process_result!(
+					test_context.process(&mut module),
+					error = anyhow!("No editor configured"),
+					exit_status = ExitStatus::StateError
+				);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_test!(
-		external_edit_fail_empty_editor,
-		["pick aaa comment"],
-		process_module_state!(new_state = State::ExternalEditor, previous_state = State::List),
-		vec![],
-		build_render_output!(""),
-		|_: &Config, display: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(ExternalEditor::new(display, "")) },
-		|module: &mut dyn ProcessModule, git_interactive: &mut GitInteractive| {
-			assert_process_result!(
-				module.process(git_interactive),
-				error = anyhow!("No editor configured"),
-				exit_status = ExitStatus::StateError
-			);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn confirm_empty() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::No],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, "editor");
+				test_context.activate(&mut module, State::List);
+				module.state = ExternalEditorState::Empty;
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::No);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "");
+			},
+		);
+	}
 
-	process_module_handle_input_test!(
-		external_edit_confirm_empty,
-		["pick aaa comment"],
-		[Input::Yes],
-		|input_handler: &InputHandler<'_>,
-		 git_interactive: &mut GitInteractive,
-		 view: &View<'_>,
-		 display: &Display<'_>| {
-			let mut external_edit = ExternalEditor::new(display, "editor");
-			external_edit.state = ExternalEditorState::Empty;
-			let result = external_edit.handle_input(input_handler, git_interactive, view);
-			assert_process_result!(result, input = Input::Yes, exit_status = ExitStatus::Good);
-		}
-	);
-
-	process_module_handle_input_test!(
-		external_edit_not_confirm_empty,
-		["pick aaa comment"],
-		[Input::No],
-		|input_handler: &InputHandler<'_>,
-		 git_interactive: &mut GitInteractive,
-		 view: &View<'_>,
-		 display: &Display<'_>| {
-			let mut external_edit = ExternalEditor::new(display, "editor");
-			external_edit.state = ExternalEditorState::Empty;
-			let result = external_edit.handle_input(input_handler, git_interactive, view);
-			assert_process_result!(result, input = Input::No);
-			assert_eq!(external_edit.state, ExternalEditorState::Active);
-		}
-	);
-
-	process_module_handle_input_test!(
-		external_edit_not_confirm_other_key,
-		["pick aaa comment"],
-		[Input::Resize],
-		|input_handler: &InputHandler<'_>,
-		 git_interactive: &mut GitInteractive,
-		 view: &View<'_>,
-		 display: &Display<'_>| {
-			let mut external_edit = ExternalEditor::new(display, "editor");
-			external_edit.state = ExternalEditorState::Empty;
-			let result = external_edit.handle_input(input_handler, git_interactive, view);
-			assert_process_result!(result, input = Input::Resize);
-			assert_eq!(external_edit.state, ExternalEditorState::Empty);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn not_confirm_other_key() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::Resize],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ExternalEditor::new(test_context.display, "editor");
+				test_context.activate(&mut module, State::List);
+				module.state = ExternalEditorState::Empty;
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
+			},
+		);
+	}
 }

@@ -8,6 +8,7 @@
 	unsafe_code
 )]
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
+#![allow(clippy::blanket_clippy_restriction_lints)]
 #![allow(clippy::as_conversions)]
 #![allow(clippy::blocks_in_if_conditions)] // sometimes rustfmt makes blocks out of simple statements
 #![allow(clippy::cast_possible_truncation)]
