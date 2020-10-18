@@ -11,163 +11,70 @@ use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::view::testutil::render_view_data;
+use crate::view::view_data::ViewData;
 use crate::view::View;
 use anyhow::Error;
 use std::env::set_var;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use tempfile::{Builder, NamedTempFile};
+
+pub struct TestContext<'t> {
+	pub git_interactive: &'t mut GitInteractive,
+	pub todo_file: NamedTempFile,
+	pub input_handler: &'t InputHandler<'t>,
+	pub view: &'t View<'t>,
+	pub display: &'t Display<'t>,
+	num_inputs: usize,
+}
+
+impl<'t> TestContext<'t> {
+	pub fn activate(&mut self, module: &'_ mut dyn ProcessModule, state: State) -> ProcessResult {
+		module.activate(self.git_interactive, state)
+	}
+
+	#[allow(clippy::unused_self)]
+	pub fn deactivate(&mut self, module: &'_ mut dyn ProcessModule) {
+		module.deactivate();
+	}
+
+	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
+		module.build_view_data(self.view, self.git_interactive)
+	}
+
+	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
+		assert_ne!(self.num_inputs, 0);
+		self.num_inputs -= 1;
+		module.handle_input(self.input_handler, self.git_interactive, self.view)
+	}
+
+	pub fn process(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
+		module.process(self.git_interactive)
+	}
+
+	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
+		assert_ne!(self.num_inputs, 0);
+		let mut results = vec![];
+		for _ in 0..self.num_inputs {
+			results.push(module.handle_input(self.input_handler, self.git_interactive, self.view));
+		}
+		self.num_inputs -= 1;
+		results
+	}
+}
 
 #[derive(Copy, Clone, Debug)]
-pub struct ProcessModuleTestState {
+pub struct ViewState {
 	pub position: (i32, i32),
-	pub view_size: (i32, i32),
-	pub state: Option<(State, State)>,
+	pub size: (i32, i32),
 }
 
-pub fn get_test_todo_path() -> PathBuf {
-	Path::new(env!("CARGO_MANIFEST_DIR"))
-		.join("test")
-		.join("git-rebase-todo-scratch")
-}
-
-pub fn panic_output_neq(expected: &str, actual: &str) {
-	panic!(vec![
-		"\n",
-		"Unexpected output!",
-		"==========",
-		"Expected:",
-		expected.replace(" ", "·").replace("\t", "   →").as_str(),
-		"==========",
-		"Actual:",
-		actual.replace(" ", "·").replace("\t", "   →").as_str(),
-		"==========\n"
-	]
-	.join("\n"));
-}
-
-pub fn _process_module_test<F, C>(
-	lines: &[&str],
-	module_state: ProcessModuleTestState,
-	input: &Option<Vec<Input>>,
-	expected_output: &[String],
-	get_module: F,
-	callback: C,
-) where
-	F: for<'p> FnOnce(&Config, &'p Display<'p>) -> Box<dyn ProcessModule + 'p>,
-	C: for<'p> FnOnce(&'p mut (dyn ProcessModule + 'p), &'p mut GitInteractive),
-{
-	set_var(
-		"GIT_DIR",
-		Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join("simple")
-			.to_str()
-			.unwrap(),
-	);
-	let config = Config::new().unwrap();
-	let mut curses = Curses::new();
-	curses.mv(module_state.position.1, module_state.position.0);
-	curses.resize_term(module_state.view_size.1, module_state.view_size.0);
-	if let Some(ref input) = *input {
-		for i in input {
-			curses.push_input(map_input_to_curses(&config.key_bindings, *i));
-		}
-	}
-	let display = Display::new(&mut curses, &config.theme);
-	let view = View::new(&display, &config);
-	let mut git_interactive = GitInteractive::new(
-		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
-		get_test_todo_path(),
-		"#",
-	)
-	.unwrap();
-	let mut module = get_module(&config, &display);
-	if let Some((_, previous_state)) = module_state.state {
-		module.activate(&git_interactive, previous_state);
-	}
-	if let Some(ref input) = *input {
-		let input_handler = InputHandler::new(&display, &config.key_bindings);
-		for _ in input {
-			module.handle_input(&input_handler, &mut git_interactive, &view);
-		}
-	}
-	callback(module.as_mut(), &mut git_interactive);
-	let view_data = module.build_view_data(&view, &git_interactive);
-	let expected = expected_output.join("\n");
-	let output = render_view_data(view_data);
-	if output != expected {
-		panic_output_neq(expected.as_str(), output.as_str());
-	}
-}
-
-#[macro_export]
-macro_rules! process_module_state {
-	(new_state = $new_state:expr, previous_state = $previous_state:expr) => {
-		crate::process::testutil::ProcessModuleTestState {
+impl Default for ViewState {
+	fn default() -> Self {
+		Self {
 			position: (0, 0),
-			view_size: (50, 30),
-			state: Some(($new_state, $previous_state)),
-			}
-	};
-}
-
-#[macro_export]
-macro_rules! build_render_output {
-	($($arg:expr),*) => {{
-		let mut args = vec![];
-		$( args.push(String::from($arg)); )*
-		args
-	}};
-}
-
-#[macro_export]
-macro_rules! process_module_test {
-	($name:ident, $lines:expr, $expected_output:expr, $get_module:expr) => {
-		#[test]
-		#[serial_test::serial]
-		fn $name() {
-			crate::process::testutil::_process_module_test(
-				&$lines,
-				crate::process::testutil::ProcessModuleTestState {
-					position: (0, 0),
-					view_size: (50, 30),
-					state: None,
-				},
-				&None,
-				&$expected_output,
-				$get_module,
-				|_: &mut dyn ProcessModule, _: &mut GitInteractive| {},
-			);
+			size: (50, 30),
 		}
-	};
-	($name:ident, $lines:expr, $state:expr, $input:expr, $expected_output:expr, $get_module:expr) => {
-		#[test]
-		#[serial_test::serial]
-		fn $name() {
-			crate::process::testutil::_process_module_test(
-				&$lines,
-				$state,
-				&Some($input),
-				&$expected_output,
-				$get_module,
-				|_: &mut dyn ProcessModule, _: &mut GitInteractive| {},
-			);
-		}
-	};
-	($name:ident, $lines:expr, $state:expr, $input:expr, $expected_output:expr, $get_module:expr, $callback:expr) => {
-		#[test]
-		#[serial_test::serial]
-		fn $name() {
-			crate::process::testutil::_process_module_test(
-				&$lines,
-				$state,
-				&Some($input),
-				&$expected_output,
-				$get_module,
-				$callback,
-			);
-		}
-	};
+	}
 }
 
 fn map_input_str_to_curses(input: &str) -> PancursesInput {
@@ -211,7 +118,12 @@ fn map_input_str_to_curses(input: &str) -> PancursesInput {
 		"Tab" => PancursesInput::Character('\t'),
 		"Up" => PancursesInput::KeyUp,
 		"Other" => PancursesInput::KeyEOL, // emulate other with EOL
-		_ => PancursesInput::Character(input.chars().next().unwrap()),
+		_ => {
+			if input.len() > 1 {
+				panic!("Unexpected input: {}", input);
+			}
+			PancursesInput::Character(input.chars().next().unwrap())
+		},
 	}
 }
 
@@ -302,45 +214,6 @@ fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInp
 		Input::Up => map_input_str_to_curses("Up"),
 		Input::Yes => map_input_str_to_curses(key_bindings.confirm_yes.as_str()),
 	}
-}
-
-pub fn _process_module_handle_input_test<F>(lines: &[&str], input: &[Input], callback: F)
-where F: FnOnce(&InputHandler<'_>, &mut GitInteractive, &View<'_>, &Display<'_>) {
-	set_var(
-		"GIT_DIR",
-		Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join("simple")
-			.to_str()
-			.unwrap(),
-	);
-	let config = Config::new().unwrap();
-	let mut curses = Curses::new();
-	for i in input {
-		curses.push_input(map_input_to_curses(&config.key_bindings, *i));
-	}
-	let display = Display::new(&mut curses, &config.theme);
-	let input_handler = InputHandler::new(&display, &config.key_bindings);
-	let view = View::new(&display, &config);
-	let mut git_interactive = GitInteractive::new(
-		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
-		get_test_todo_path(),
-		"#",
-	)
-	.unwrap();
-	callback(&input_handler, &mut git_interactive, &view, &display);
-}
-
-#[macro_export]
-macro_rules! process_module_handle_input_test {
-	($name:ident, $lines:expr, $input:expr, $fun:expr) => {
-		#[test]
-		#[serial_test::serial]
-		fn $name() {
-			crate::process::testutil::_process_module_handle_input_test(&$lines, &$input, $fun);
-		}
-	};
 }
 
 fn format_process_result(
@@ -468,6 +341,34 @@ fn format_process_result(
 	)
 }
 
+pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
+	let expected = expected.join("\n");
+	let output = render_view_data(view_data);
+	if output != expected {
+		panic!(vec![
+			"\n",
+			"Unexpected output!",
+			"==========",
+			"Expected:",
+			expected.replace(" ", "·").replace("\t", "   →").as_str(),
+			"==========",
+			"Actual:",
+			output.replace(" ", "·").replace("\t", "   →").as_str(),
+			"==========\n"
+		]
+		.join("\n"));
+	}
+}
+
+#[macro_export]
+macro_rules! assert_rendered_output {
+	($view_data:expr, $($arg:expr),*) => {
+		let mut expected = vec![];
+		$( expected.push(String::from($arg)); )*
+		crate::process::testutil::_assert_rendered_output(&$view_data, &expected);
+	};
+}
+
 pub fn _assert_process_result(
 	actual: &ProcessResult,
 	input: Option<Input>,
@@ -522,4 +423,47 @@ macro_rules! assert_process_result {
 	($actual:expr, input = $input:expr, exit_status = $exit_status:expr) => {
 		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), &None);
 	};
+}
+
+pub fn process_module_test<C>(lines: &[&str], view_state: ViewState, input: &[Input], callback: C)
+where C: for<'p> FnOnce(TestContext<'p>) {
+	let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("test")
+		.join("fixtures")
+		.join("simple")
+		.to_str()
+		.unwrap()
+		.to_string();
+
+	set_var("GIT_DIR", git_repo_dir.as_str());
+	let config = Config::new().unwrap();
+	let mut curses = Curses::new();
+	curses.mv(view_state.position.1, view_state.position.0);
+	curses.resize_term(view_state.size.1, view_state.size.0);
+	for i in input {
+		curses.push_input(map_input_to_curses(&config.key_bindings, *i));
+	}
+	let display = Display::new(&mut curses, &config.theme);
+	let view = View::new(&display, &config);
+	let todo_file = Builder::new()
+		.prefix("git-rebase-todo-scratch")
+		.suffix("")
+		.tempfile_in(git_repo_dir.as_str())
+		.unwrap();
+
+	let mut git_interactive = GitInteractive::new(
+		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
+		todo_file.path().to_path_buf(),
+		"#",
+	)
+	.unwrap();
+	let input_handler = InputHandler::new(&display, &config.key_bindings);
+	callback(TestContext {
+		git_interactive: &mut git_interactive,
+		todo_file,
+		view: &view,
+		input_handler: &input_handler,
+		display: &display,
+		num_inputs: input.len(),
+	});
 }

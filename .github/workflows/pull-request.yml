@@ -64,8 +64,12 @@ jobs:
       - name: Update Rust
         run: rustup update stable
       - name: Test
-        run: cargo test --target x86_64-pc-windows-msvc --release --
+        run: cargo test --target x86_64-pc-windows-msvc --release
+        env:
+            RUSTFLAGS: '--cap-lints warn'
       - name: Build
         run: cargo build --target x86_64-pc-windows-msvc --release
+        env:
+            RUSTFLAGS: '--cap-lints warn'
       - name: Test Run
         run: cargo run --target x86_64-pc-windows-msvc --release -- --version

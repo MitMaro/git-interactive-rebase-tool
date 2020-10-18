@@ -53,71 +53,94 @@ impl ConfirmRebase {
 #[cfg(test)]
 mod tests {
 	use crate::assert_process_result;
-	use crate::build_render_output;
-	use crate::config::Config;
+	use crate::assert_rendered_output;
 	use crate::confirm_rebase::ConfirmRebase;
-	use crate::display::Display;
-	use crate::git_interactive::GitInteractive;
-	use crate::input::input_handler::InputHandler;
 	use crate::input::Input;
 	use crate::process::exit_status::ExitStatus;
-	use crate::process::process_module::ProcessModule;
 	use crate::process::state::State;
-	use crate::process_module_handle_input_test;
-	use crate::process_module_test;
-	use crate::view::View;
+	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 
-	process_module_test!(
-		confirm_rebase_build_view_data,
-		["pick aaa comment"],
-		build_render_output!("{TITLE}", "{PROMPT}", "Are you sure you want to rebase"),
-		|_: &Config, _: &Display<'_>| -> Box<dyn ProcessModule> { Box::new(ConfirmRebase::new()) }
-	);
+	#[test]
+	#[serial_test::serial]
+	fn build_view_data() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|test_context: TestContext<'_>| {
+				let mut module = ConfirmRebase::new();
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "{TITLE}", "{PROMPT}", "Are you sure you want to rebase");
+			},
+		);
+	}
 
-	process_module_handle_input_test!(
-		confirm_rebase_handle_input_yes,
-		["pick aaa comment"],
-		[Input::Yes],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
-			let mut confirm_rebase = ConfirmRebase::new();
-			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
+	#[test]
+	#[serial_test::serial]
+	fn handle_input_yes() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::Yes],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ConfirmRebase::new();
+				assert_process_result!(
+					test_context.handle_input(&mut module),
+					input = Input::Yes,
+					exit_status = ExitStatus::Good
+				);
+				assert_eq!(test_context.git_interactive.get_lines().len(), 1);
+			},
+		);
+	}
 
-			assert_process_result!(result, input = Input::Yes, exit_status = ExitStatus::Good);
-			assert_eq!(git_interactive.get_lines().len(), 1);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn handle_input_no() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::No],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ConfirmRebase::new();
+				assert_process_result!(
+					test_context.handle_input(&mut module),
+					input = Input::No,
+					state = State::List
+				);
+			},
+		);
+	}
 
-	process_module_handle_input_test!(
-		confirm_rebase_handle_input_no,
-		["pick aaa comment"],
-		[Input::No],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
-			let mut confirm_rebase = ConfirmRebase::new();
-			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
-			assert_process_result!(result, input = Input::No, state = State::List);
-			assert_eq!(git_interactive.get_lines().len(), 1);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn handle_input_any_key() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::Character('x')],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ConfirmRebase::new();
+				assert_process_result!(
+					test_context.handle_input(&mut module),
+					input = Input::No,
+					state = State::List
+				);
+			},
+		);
+	}
 
-	process_module_handle_input_test!(
-		confirm_rebase_handle_input_any_key,
-		["pick aaa comment"],
-		[Input::Character('x')],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
-			let mut confirm_rebase = ConfirmRebase::new();
-			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
-			assert_process_result!(result, input = Input::No, state = State::List);
-		}
-	);
-
-	process_module_handle_input_test!(
-		confirm_rebase_handle_input_resize,
-		["pick aaa comment"],
-		[Input::Resize],
-		|input_handler: &InputHandler<'_>, git_interactive: &mut GitInteractive, view: &View<'_>, _: &Display<'_>| {
-			let mut confirm_rebase = ConfirmRebase::new();
-			let result = confirm_rebase.handle_input(input_handler, git_interactive, view);
-			assert_process_result!(result, input = Input::Resize);
-		}
-	);
+	#[test]
+	#[serial_test::serial]
+	fn handle_input_resize() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::Resize],
+			|mut test_context: TestContext<'_>| {
+				let mut module = ConfirmRebase::new();
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
+			},
+		);
+	}
 }

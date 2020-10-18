@@ -19,10 +19,11 @@ pub fn panic_trace_error(e: &(String, Vec<String>), trace: &[(String, Vec<String
 		"Trace:",
 		trace
 			.iter()
-			.map(|(f, args): &(String, Vec<String>)| {
+			.map(|t| {
+				let (ref func, ref args) = *t;
 				format!(
 					"\t{}({})",
-					f,
+					func,
 					args.iter()
 						.map(|v| v.replace("\n", "\\n"))
 						.collect::<Vec<String>>()

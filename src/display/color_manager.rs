@@ -131,6 +131,7 @@ impl ColorManager {
 			},
 			// for indexed colored we assume 8bit color
 			Color::Index(i) => i,
+			#[allow(clippy::option_if_let_else)]
 			Color::RGB { red, green, blue } if color_mode.has_true_color() => {
 				if let Some(index) = self.color_lookup.get(&(red, green, blue)) {
 					*index
