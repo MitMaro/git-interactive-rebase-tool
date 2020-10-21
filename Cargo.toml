@@ -36,7 +36,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0"
 chrono = "0.4"
-clap = "2.32.0"
+clap = "2.33.3"
 num-format = "0.4.0"
 unicode-segmentation = "1.1.0"
 unicode-width = "0.1.5"
