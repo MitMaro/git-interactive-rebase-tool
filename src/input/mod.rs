@@ -1,5 +1,4 @@
 pub mod input_handler;
-pub mod utils;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Input {

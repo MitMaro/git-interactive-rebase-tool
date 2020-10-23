@@ -35,7 +35,7 @@ pub struct ShowCommit<'s> {
 	config: &'s Config,
 	show_commit_help_lines: Vec<(String, String)>,
 	state: ShowCommitState,
-	view_builder: ViewBuilder<'s>,
+	view_builder: ViewBuilder,
 	view_data: ViewData,
 }
 
@@ -174,7 +174,7 @@ impl<'s> ShowCommit<'s> {
 			config,
 			show_commit_help_lines: get_show_commit_help_lines(&config.key_bindings),
 			state: ShowCommitState::Overview,
-			view_builder: ViewBuilder::new(view_builder_options, &config.key_bindings),
+			view_builder: ViewBuilder::new(view_builder_options),
 			view_data,
 		}
 	}
