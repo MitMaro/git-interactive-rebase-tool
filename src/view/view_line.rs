@@ -207,12 +207,19 @@ mod tests {
 
 	#[test]
 	fn set_padding_color_and_style() {
-		let view_line = ViewLine::from("foo");
-		let view_line = view_line.set_padding_color_and_style(DisplayColor::IndicatorColor, true, true, true);
+		let view_line =
+			ViewLine::from("foo").set_padding_color_and_style(DisplayColor::IndicatorColor, true, true, true);
 
 		assert_eq!(view_line.get_padding_color(), DisplayColor::IndicatorColor);
 		assert_eq!(view_line.is_padding_dimmed(), true);
 		assert_eq!(view_line.is_padding_underlined(), true);
 		assert_eq!(view_line.is_padding_reversed(), true);
+	}
+
+	#[test]
+	fn set_padding_character() {
+		let view_line = ViewLine::from("foo").set_padding_character("@");
+
+		assert_eq!(view_line.padding_character(), "@");
 	}
 }
