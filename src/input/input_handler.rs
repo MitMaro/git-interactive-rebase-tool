@@ -187,7 +187,7 @@ impl<'i> InputHandler<'i> {
 				Input::Resize
 			}
 			else {
-				Input::Other
+				Self::get_raw_input(input)
 			}
 		})
 	}
