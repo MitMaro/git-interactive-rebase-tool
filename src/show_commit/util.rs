@@ -97,7 +97,7 @@ pub(super) fn get_files_changed_summary(commit: &Commit, is_full_width: bool) ->
 	let deletions = commit.get_number_deletions();
 
 	if is_full_width {
-		ViewLine::new(vec![
+		ViewLine::from(vec![
 			LineSegment::new_with_color(
 				files_changed.to_formatted_string(&Locale::en).as_str(),
 				DisplayColor::IndicatorColor,
@@ -118,7 +118,7 @@ pub(super) fn get_files_changed_summary(commit: &Commit, is_full_width: bool) ->
 		])
 	}
 	else {
-		ViewLine::new(vec![
+		ViewLine::from(vec![
 			LineSegment::new_with_color(
 				files_changed.to_formatted_string(&Locale::en).as_str(),
 				DisplayColor::IndicatorColor,

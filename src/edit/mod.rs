@@ -56,12 +56,12 @@ impl ProcessModule for Edit {
 			));
 		}
 		self.view_data.clear();
-		self.view_data.set_content(ViewLine::new(segments));
+		self.view_data.set_content(ViewLine::from(segments));
 		self.view_data
-			.push_trailing_line(ViewLine::new(vec![LineSegment::new_with_color(
+			.push_trailing_line(ViewLine::from(LineSegment::new_with_color(
 				"Enter to finish",
 				DisplayColor::IndicatorColor,
-			)]));
+			)));
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
 		&self.view_data

@@ -5,7 +5,6 @@ use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
-use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
@@ -54,7 +53,7 @@ impl ProcessModule for WindowSizeError {
 		};
 
 		self.view_data.clear();
-		self.view_data.push_line(ViewLine::new(vec![LineSegment::new(message)]));
+		self.view_data.push_line(ViewLine::from(message));
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
 		&self.view_data
