@@ -48,10 +48,10 @@ impl GitInteractive {
 
 	pub(crate) fn write_file(&self) -> Result<()> {
 		let mut file = File::create(&self.filepath)
-			.map_err(|err| anyhow!("Error opening file: {}", self.filepath.display()).context(err))?;
+			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath.display())))?;
 		for line in &self.lines {
 			writeln!(file, "{}", line.to_text())
-				.map_err(|err| anyhow!("Error writing file: {}", self.filepath.display()).context(err))?;
+				.map_err(|err| anyhow!(err).context(anyhow!("Error writing file: {}", self.filepath.display())))?;
 		}
 		Ok(())
 	}
