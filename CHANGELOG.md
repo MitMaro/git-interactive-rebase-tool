@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Scroll position resetting on resize
 - Unable to move edit edit cursor when `inputMoveLeft` or `inputMoveRight` were set to alphanumeric characters
 
+### Removed
+- Available actions footer from list and show commit views
+
 ## [1.2.1] - 2020-01-26
 
 ### Fixed

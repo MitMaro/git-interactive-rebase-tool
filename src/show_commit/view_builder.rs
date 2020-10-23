@@ -1,6 +1,4 @@
-use crate::config::key_bindings::KeyBindings;
 use crate::display::display_color::DisplayColor;
-use crate::input::utils::get_input_short_name;
 use crate::show_commit::commit::Commit;
 use crate::show_commit::diff_line::{DiffLine, Origin};
 use crate::show_commit::util::{
@@ -39,8 +37,7 @@ impl ViewBuilderOptions {
 	}
 }
 
-pub(super) struct ViewBuilder<'d> {
-	key_bindings: &'d KeyBindings,
+pub(super) struct ViewBuilder {
 	invisible_tab_string: String,
 	visible_tab_string: String,
 	visible_space_string: String,
@@ -48,71 +45,14 @@ pub(super) struct ViewBuilder<'d> {
 	show_trailing_whitespace: bool,
 }
 
-impl<'d> ViewBuilder<'d> {
-	pub(crate) fn new(options: ViewBuilderOptions, key_bindings: &'d KeyBindings) -> Self {
+impl ViewBuilder {
+	pub(crate) fn new(options: ViewBuilderOptions) -> Self {
 		Self {
-			key_bindings,
 			invisible_tab_string: " ".repeat(options.tab_width),
 			visible_tab_string: format!("{0:width$}", options.tab_character, width = options.tab_width),
 			visible_space_string: options.space_character,
 			show_leading_whitespace: options.show_leading_whitespace,
 			show_trailing_whitespace: options.show_trailing_whitespace,
-		}
-	}
-
-	fn get_overview_footer(&self, is_full_width: bool) -> String {
-		if is_full_width {
-			format!(
-				" {}, {}, {}, {}, {}, {}, {}, {}, Any other key to close",
-				self.key_bindings.move_up,
-				self.key_bindings.move_down,
-				self.key_bindings.move_up_step,
-				self.key_bindings.move_down_step,
-				self.key_bindings.move_right,
-				self.key_bindings.move_left,
-				self.key_bindings.show_diff,
-				self.key_bindings.help,
-			)
-		}
-		else {
-			format!(
-				" {}, {}, {}, {}, {}, {}, {}, {}, Any to close",
-				get_input_short_name(self.key_bindings.move_up.as_str()),
-				get_input_short_name(self.key_bindings.move_down.as_str()),
-				get_input_short_name(self.key_bindings.move_up_step.as_str()),
-				get_input_short_name(self.key_bindings.move_down_step.as_str()),
-				get_input_short_name(self.key_bindings.move_right.as_str()),
-				get_input_short_name(self.key_bindings.move_left.as_str()),
-				get_input_short_name(self.key_bindings.show_diff.as_str()),
-				get_input_short_name(self.key_bindings.help.as_str()),
-			)
-		}
-	}
-
-	fn get_diff_footer(&self, is_full_width: bool) -> String {
-		if is_full_width {
-			format!(
-				" {}, {}, {}, {}, {}, {}, {}, Any other key to close",
-				self.key_bindings.move_up,
-				self.key_bindings.move_down,
-				self.key_bindings.move_up_step,
-				self.key_bindings.move_down_step,
-				self.key_bindings.move_right,
-				self.key_bindings.move_left,
-				self.key_bindings.help,
-			)
-		}
-		else {
-			format!(
-				" {}, {}, {}, {}, {}, {}, {}, Any to close",
-				get_input_short_name(self.key_bindings.move_up.as_str()),
-				get_input_short_name(self.key_bindings.move_down.as_str()),
-				get_input_short_name(self.key_bindings.move_up_step.as_str()),
-				get_input_short_name(self.key_bindings.move_down_step.as_str()),
-				get_input_short_name(self.key_bindings.move_right.as_str()),
-				get_input_short_name(self.key_bindings.move_left.as_str()),
-				get_input_short_name(self.key_bindings.help.as_str()),
-			)
 		}
 	}
 
@@ -127,6 +67,7 @@ impl<'d> ViewBuilder<'d> {
 		s.replace("\n", "")
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(super) fn build_view_data_for_overview(&self, view_data: &mut ViewData, commit: &Commit, is_full_width: bool) {
 		view_data.push_line(ViewLine::from(vec![
 			LineSegment::new_with_color(
@@ -173,10 +114,6 @@ impl<'d> ViewBuilder<'d> {
 				is_full_width,
 			)));
 		}
-
-		view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new(
-			self.get_overview_footer(is_full_width).as_str(),
-		)]));
 	}
 
 	fn get_diff_line_segments(
@@ -307,9 +244,5 @@ impl<'d> ViewBuilder<'d> {
 			}
 			view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
 		}
-
-		view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new(
-			self.get_diff_footer(is_full_width).as_str(),
-		)]));
 	}
 }
