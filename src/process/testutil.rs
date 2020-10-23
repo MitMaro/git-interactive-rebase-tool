@@ -14,13 +14,14 @@ use crate::view::testutil::render_view_data;
 use crate::view::view_data::ViewData;
 use crate::view::View;
 use anyhow::Error;
+use std::cell::Cell;
 use std::env::set_var;
 use std::path::Path;
 use tempfile::{Builder, NamedTempFile};
 
 pub struct TestContext<'t> {
 	pub git_interactive: &'t mut GitInteractive,
-	pub todo_file: NamedTempFile,
+	todo_file: Cell<NamedTempFile>,
 	pub input_handler: &'t InputHandler<'t>,
 	pub view: &'t View<'t>,
 	pub display: &'t Display<'t>,
@@ -60,6 +61,29 @@ impl<'t> TestContext<'t> {
 		self.num_inputs -= 1;
 		results
 	}
+
+	pub fn get_todo_file_path(&self) -> String {
+		let t = self.todo_file.replace(NamedTempFile::new().unwrap());
+		let path = t.path().to_str().unwrap().to_string();
+		self.todo_file.replace(t);
+		path
+	}
+
+	pub fn delete_todo_file(&self) {
+		self.todo_file
+			.replace(Builder::new().tempfile().unwrap())
+			.close()
+			.unwrap()
+	}
+
+	pub fn set_todo_file_readonly(&self) {
+		let t = self.todo_file.replace(NamedTempFile::new().unwrap());
+		let todo_file = t.as_file();
+		let mut permissions = todo_file.metadata().unwrap().permissions();
+		permissions.set_readonly(true);
+		todo_file.set_permissions(permissions).unwrap();
+		self.todo_file.replace(t);
+	}
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -72,7 +96,7 @@ impl Default for ViewState {
 	fn default() -> Self {
 		Self {
 			position: (0, 0),
-			size: (50, 30),
+			size: (500, 30),
 		}
 	}
 }
@@ -414,6 +438,9 @@ macro_rules! assert_process_result {
 	($actual:expr, state = $state:expr) => {
 		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &None);
 	};
+	($actual:expr, state = $state:expr, error = $error:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &Some($error));
+	};
 	($actual:expr, input = $input:expr) => {
 		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, &None);
 	};
@@ -460,7 +487,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
 		git_interactive: &mut git_interactive,
-		todo_file,
+		todo_file: Cell::new(todo_file),
 		view: &view,
 		input_handler: &input_handler,
 		display: &display,

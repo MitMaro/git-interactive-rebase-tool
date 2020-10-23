@@ -152,7 +152,9 @@ impl Curses {
 		self.function_call_trace
 			.borrow_mut()
 			.push(build_trace!("resize_term", nlines, ncols));
-		self.size.replace((ncols, nlines));
+		if nlines != 0 && ncols != 0 {
+			self.size.replace((ncols, nlines));
+		}
 	}
 
 	pub(super) fn def_prog_mode(&self) {

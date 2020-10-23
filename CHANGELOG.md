@@ -16,9 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Number of total additions and deletions in show commit
 - The Git "diff.renames" and "diff.rename_limit" options are now respected during show commit
 - End and Home support during edit
+- Optional rollback on error or invalid file during external edit
 
 ### Changed
 - Change page up and page down to scroll half the height of the view area
+- Improved error handling for executing external editor
 
 ### Fixed
 - Scroll position resetting on resize

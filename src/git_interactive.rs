@@ -56,6 +56,10 @@ impl GitInteractive {
 		Ok(())
 	}
 
+	pub(crate) fn set_lines(&mut self, lines: Vec<Line>) {
+		self.lines = lines;
+	}
+
 	pub(crate) fn reload_file(&mut self) -> Result<()> {
 		self.lines = load_filepath(&self.filepath, self.comment_char.as_str())?;
 		Ok(())
