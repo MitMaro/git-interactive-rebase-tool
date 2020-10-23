@@ -368,7 +368,7 @@ impl ViewData {
 							segments.push(segment.clone());
 
 							if remaining_width == 0 {
-								view_lines.push(ViewLine::new(segments.to_vec()));
+								view_lines.push(ViewLine::from(segments.to_vec()));
 								segments.clear();
 								remaining_width = self.width;
 							}
@@ -389,7 +389,7 @@ impl ViewData {
 									));
 
 									if remaining_width == 0 {
-										view_lines.push(ViewLine::new(segments.to_vec()));
+										view_lines.push(ViewLine::from(segments.to_vec()));
 										segments.clear();
 										remaining_width = self.width;
 									}
@@ -401,7 +401,7 @@ impl ViewData {
 						}
 					}
 					if !segments.is_empty() {
-						view_lines.push(ViewLine::new(segments.to_vec()));
+						view_lines.push(ViewLine::from(segments.to_vec()));
 					}
 
 					self.max_line_length = self.width;
@@ -551,7 +551,7 @@ mod tests {
 	use crate::view::view_line::ViewLine;
 
 	fn create_mock_view_line() -> ViewLine {
-		ViewLine::new(vec![LineSegment::new("Mocked Line")])
+		ViewLine::from("Mocked Line")
 	}
 
 	fn create_mocked_view_data() -> ViewData {
@@ -578,15 +578,15 @@ mod tests {
 		view_data.push_leading_line(create_mock_view_line());
 		view_data.push_leading_line(create_mock_view_line());
 
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("a")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("b")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("c")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("d")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("1")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("2")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("3")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("4")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("5")]));
+		view_data.push_line(ViewLine::from("a"));
+		view_data.push_line(ViewLine::from("b"));
+		view_data.push_line(ViewLine::from("c"));
+		view_data.push_line(ViewLine::from("d"));
+		view_data.push_line(ViewLine::from("1"));
+		view_data.push_line(ViewLine::from("2"));
+		view_data.push_line(ViewLine::from("3"));
+		view_data.push_line(ViewLine::from("4"));
+		view_data.push_line(ViewLine::from("5"));
 
 		view_data.push_trailing_line(create_mock_view_line());
 		view_data.push_trailing_line(create_mock_view_line());
@@ -597,14 +597,14 @@ mod tests {
 
 	fn create_mocked_scroll_horizontal_view_data() -> ViewData {
 		let mut view_data = ViewData::new();
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("aaaaa")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("aaaaaaaaaa")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("aaaaaaaaaaaaaaa")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("aaaaaaaaaa")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("aaaaa")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("bbbbb")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("ccccc")]));
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("ddddd")]));
+		view_data.push_line(ViewLine::from("aaaaa"));
+		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
+		view_data.push_line(ViewLine::from("aaaaaaaaaaaaaaa"));
+		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
+		view_data.push_line(ViewLine::from("aaaaa"));
+		view_data.push_line(ViewLine::from("bbbbb"));
+		view_data.push_line(ViewLine::from("ccccc"));
+		view_data.push_line(ViewLine::from("ddddd"));
 		view_data.set_view_size(7, 20);
 
 		view_data
@@ -1175,8 +1175,8 @@ mod tests {
 	#[test]
 	fn view_data_case_calculate_max_line_length_max_first() {
 		let view_lines = [
-			ViewLine::new(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("012345")]),
+			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
+			ViewLine::from("012345"),
 		];
 		assert_eq!(ViewData::calculate_max_line_length(&view_lines, 0, 1), 16);
 	}
@@ -1184,8 +1184,8 @@ mod tests {
 	#[test]
 	fn view_data_case_calculate_max_line_length_max_last() {
 		let view_lines = [
-			ViewLine::new(vec![LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
+			ViewLine::from("012345"),
+			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
 		];
 		assert_eq!(ViewData::calculate_max_line_length(&view_lines, 0, 2), 16);
 	}
@@ -1193,10 +1193,10 @@ mod tests {
 	#[test]
 	fn view_data_case_calculate_max_line_length_with_slice() {
 		let view_lines = [
-			ViewLine::new(vec![LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("0123456789"), LineSegment::new("01234567")]),
+			ViewLine::from("012345"),
+			ViewLine::from("012345"),
+			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
+			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("01234567")]),
 		];
 		assert_eq!(ViewData::calculate_max_line_length(&view_lines, 1, 2), 16);
 	}
@@ -1204,9 +1204,9 @@ mod tests {
 	#[test]
 	fn view_data_case_calculate_max_line_length_ignore_pinned() {
 		let view_lines = [
-			ViewLine::new(vec![LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("012345")]),
-			ViewLine::new(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
+			ViewLine::from("012345"),
+			ViewLine::from("012345"),
+			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
 			ViewLine::new_pinned(vec![LineSegment::new("0123456789"), LineSegment::new("01234567")]),
 		];
 		assert_eq!(ViewData::calculate_max_line_length(&view_lines, 0, 4), 16);

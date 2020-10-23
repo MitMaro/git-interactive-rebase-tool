@@ -128,7 +128,7 @@ impl<'d> ViewBuilder<'d> {
 	}
 
 	pub(super) fn build_view_data_for_overview(&self, view_data: &mut ViewData, commit: &Commit, is_full_width: bool) {
-		view_data.push_line(ViewLine::new(vec![
+		view_data.push_line(ViewLine::from(vec![
 			LineSegment::new_with_color(
 				if is_full_width { "Date: " } else { "D: " },
 				DisplayColor::IndicatorColor,
@@ -137,7 +137,7 @@ impl<'d> ViewBuilder<'d> {
 		]));
 
 		if let Some(author) = commit.get_author().to_string() {
-			view_data.push_line(ViewLine::new(vec![
+			view_data.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Author: " } else { "A: " },
 					DisplayColor::IndicatorColor,
@@ -147,7 +147,7 @@ impl<'d> ViewBuilder<'d> {
 		}
 
 		if let Some(committer) = commit.get_committer().to_string() {
-			view_data.push_line(ViewLine::new(vec![
+			view_data.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Committer: " } else { "C: " },
 					DisplayColor::IndicatorColor,
@@ -158,15 +158,15 @@ impl<'d> ViewBuilder<'d> {
 
 		if let Some(ref body) = *commit.get_body() {
 			for line in body.lines() {
-				view_data.push_line(ViewLine::new(vec![LineSegment::new(line)]));
+				view_data.push_line(ViewLine::from(line));
 			}
 		}
 
-		view_data.push_line(ViewLine::new(vec![LineSegment::new("")]));
+		view_data.push_line(ViewLine::from(""));
 
 		view_data.push_line(get_files_changed_summary(commit, is_full_width));
 		for stat in commit.get_file_stats() {
-			view_data.push_line(ViewLine::new(get_stat_item_segments(
+			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name().as_str(),
 				stat.get_from_name().as_str(),
@@ -245,7 +245,7 @@ impl<'d> ViewBuilder<'d> {
 		view_data.push_leading_line(get_files_changed_summary(commit, is_full_width));
 		view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
 		for stat in commit.get_file_stats() {
-			view_data.push_line(ViewLine::new(get_stat_item_segments(
+			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name().as_str(),
 				stat.get_from_name().as_str(),
@@ -256,7 +256,7 @@ impl<'d> ViewBuilder<'d> {
 			let old_largest_line_number_length = stat.largest_old_line_number().to_string().len();
 			let new_largest_line_number_length = stat.largest_new_line_number().to_string().len();
 			for delta in stat.deltas() {
-				view_data.push_line(ViewLine::new(vec![
+				view_data.push_line(ViewLine::from(vec![
 					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, true, false, false),
 					LineSegment::new_with_color(
 						format!(
@@ -283,7 +283,7 @@ impl<'d> ViewBuilder<'d> {
 
 				for line in delta.lines() {
 					if line.end_of_file() && line.line() != "\n" {
-						view_data.push_line(ViewLine::new(vec![
+						view_data.push_line(ViewLine::from(vec![
 							LineSegment::new(
 								" ".repeat(old_largest_line_number_length + new_largest_line_number_length + 3)
 									.as_str(),
@@ -296,7 +296,7 @@ impl<'d> ViewBuilder<'d> {
 						continue;
 					}
 
-					view_data.push_line(ViewLine::new(self.get_diff_line_segments(
+					view_data.push_line(ViewLine::from(self.get_diff_line_segments(
 						line,
 						old_largest_line_number_length,
 						new_largest_line_number_length,

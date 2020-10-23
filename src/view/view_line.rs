@@ -18,10 +18,6 @@ impl ViewLine {
 		Self::new_with_pinned_segments(vec![], 1)
 	}
 
-	pub(crate) fn new(segments: Vec<LineSegment>) -> Self {
-		Self::new_with_pinned_segments(segments, 0)
-	}
-
 	pub(crate) fn new_pinned(segments: Vec<LineSegment>) -> Self {
 		let segments_length = segments.len();
 		Self::new_with_pinned_segments(segments, segments_length)
@@ -98,6 +94,30 @@ impl ViewLine {
 	}
 }
 
+impl<'a> From<&'a str> for ViewLine {
+	fn from(line: &'a str) -> Self {
+		Self::from(LineSegment::new(line))
+	}
+}
+
+impl<'a> From<String> for ViewLine {
+	fn from(line: String) -> Self {
+		Self::from(LineSegment::new(line.as_str()))
+	}
+}
+
+impl<'a> From<LineSegment> for ViewLine {
+	fn from(line_segment: LineSegment) -> Self {
+		Self::from(vec![line_segment])
+	}
+}
+
+impl<'a> From<Vec<LineSegment>> for ViewLine {
+	fn from(line_segment: Vec<LineSegment>) -> Self {
+		Self::new_with_pinned_segments(line_segment, 0)
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use crate::display::display_color::DisplayColor;
@@ -105,17 +125,49 @@ mod tests {
 	use crate::view::view_line::ViewLine;
 
 	#[test]
-	fn view_line_new() {
-		let view_line = ViewLine::new(vec![LineSegment::new("foo"), LineSegment::new("bar")]);
+	fn from_str() {
+		let view_line = ViewLine::from("foo");
+
+		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
+		assert_eq!(view_line.get_segments().len(), 1);
+		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
+		assert_eq!(view_line.get_selected(), false);
+	}
+
+	#[test]
+	fn from_string() {
+		let view_line = ViewLine::from(String::from("foo"));
+
+		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
+		assert_eq!(view_line.get_segments().len(), 1);
+		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
+		assert_eq!(view_line.get_selected(), false);
+	}
+
+	#[test]
+	fn from_line_segment() {
+		let view_line = ViewLine::from(LineSegment::new("foo"));
+
+		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
+		assert_eq!(view_line.get_segments().len(), 1);
+		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
+		assert_eq!(view_line.get_selected(), false);
+	}
+
+	#[test]
+	fn from_list_line_segment() {
+		let view_line = ViewLine::from(vec![LineSegment::new("foo"), LineSegment::new("bar")]);
 
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 2);
+		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
+		assert_eq!(view_line.get_segments().last().unwrap().get_content(), "bar");
 		assert_eq!(view_line.get_selected(), false);
 	}
 
 	#[test]
 	fn view_line_new_selected() {
-		let view_line = ViewLine::new(vec![LineSegment::new("foo"), LineSegment::new("bar")]).set_selected(true);
+		let view_line = ViewLine::from(vec![LineSegment::new("foo"), LineSegment::new("bar")]).set_selected(true);
 
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 2);
@@ -135,6 +187,7 @@ mod tests {
 		assert_eq!(view_line.get_segments().len(), 4);
 		assert_eq!(view_line.get_selected(), false);
 	}
+
 	#[test]
 	fn view_line_new_with_pinned_segments() {
 		let view_line = ViewLine::new_with_pinned_segments(
@@ -154,7 +207,7 @@ mod tests {
 
 	#[test]
 	fn view_line_set_padding_color_and_style() {
-		let view_line = ViewLine::new(vec![LineSegment::new("foo")]);
+		let view_line = ViewLine::from("foo");
 		let view_line = view_line.set_padding_color_and_style(DisplayColor::IndicatorColor, true, true, true);
 
 		assert_eq!(view_line.get_padding_color(), DisplayColor::IndicatorColor);

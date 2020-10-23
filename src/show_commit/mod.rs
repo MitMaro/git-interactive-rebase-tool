@@ -78,7 +78,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		if self.view_data.is_empty() {
 			let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
 
-			self.view_data.push_leading_line(ViewLine::new(vec![
+			self.view_data.push_leading_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Commit: " } else { "" },
 					DisplayColor::IndicatorColor,
