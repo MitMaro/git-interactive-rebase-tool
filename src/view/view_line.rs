@@ -166,7 +166,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_line_new_selected() {
+	fn new_selected() {
 		let view_line = ViewLine::from(vec![LineSegment::new("foo"), LineSegment::new("bar")]).set_selected(true);
 
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
@@ -175,7 +175,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_line_new_pinned() {
+	fn new_pinned() {
 		let view_line = ViewLine::new_pinned(vec![
 			LineSegment::new("foo"),
 			LineSegment::new("bar"),
@@ -189,7 +189,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_line_new_with_pinned_segments() {
+	fn new_with_pinned_segments() {
 		let view_line = ViewLine::new_with_pinned_segments(
 			vec![
 				LineSegment::new("foo"),
@@ -206,7 +206,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_line_set_padding_color_and_style() {
+	fn set_padding_color_and_style() {
 		let view_line = ViewLine::from("foo");
 		let view_line = view_line.set_padding_color_and_style(DisplayColor::IndicatorColor, true, true, true);
 
