@@ -177,7 +177,7 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 impl Commit {
 	/// Load commit information from a commit hash.
 	pub(super) fn new_from_hash(hash: &str, config: LoadCommitDiffOptions) -> Result<Self> {
-		load_commit_state(hash, config).map_err(|err| anyhow!("Error loading commit: {}", hash).context(err))
+		load_commit_state(hash, config).map_err(|err| anyhow!(err).context(anyhow!("Error loading commit: {}", hash)))
 	}
 
 	pub(super) const fn get_author(&self) -> &User {
