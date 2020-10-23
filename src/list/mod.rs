@@ -3,25 +3,15 @@ pub mod line;
 mod utils;
 
 use crate::config::Config;
-use crate::display::display_color::DisplayColor;
 use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::action::Action;
-use crate::list::utils::{
-	get_list_normal_mode_help_lines,
-	get_list_visual_mode_help_lines,
-	get_normal_footer_compact,
-	get_normal_footer_full,
-	get_todo_line_segments,
-	get_visual_footer_compact,
-	get_visual_footer_full,
-};
+use crate::list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
-use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
@@ -34,13 +24,9 @@ enum ListState {
 
 pub struct List<'l> {
 	config: &'l Config,
-	normal_footer_compact: String,
-	normal_footer_full: String,
 	normal_mode_help_lines: Vec<(String, String)>,
 	state: ListState,
 	view_data: ViewData,
-	visual_footer_compact: String,
-	visual_footer_full: String,
 	visual_mode_help_lines: Vec<(String, String)>,
 }
 
@@ -66,36 +52,6 @@ impl<'l> ProcessModule for List<'l> {
 				.set_selected(selected_index == index || selected_line),
 			);
 		}
-
-		let footer = if is_visual_mode {
-			if view_width >= self.visual_footer_full.len() {
-				self.visual_footer_full.clone()
-			}
-			else if view_width >= self.visual_footer_compact.len() {
-				self.visual_footer_compact.clone()
-			}
-			else {
-				format!("(Visual) Help: {}", self.config.key_bindings.help)
-			}
-		}
-		else if view_width >= self.normal_footer_full.len() {
-			self.normal_footer_full.clone()
-		}
-		else if view_width >= self.normal_footer_compact.len() {
-			self.normal_footer_compact.clone()
-		}
-		else {
-			format!("Help: {}", self.config.key_bindings.help)
-		};
-
-		self.view_data
-			.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
-				footer.as_str(),
-				DisplayColor::Normal,
-				true,
-				false,
-				false,
-			)]));
 
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
@@ -151,13 +107,9 @@ impl<'l> List<'l> {
 
 		Self {
 			config,
-			normal_footer_compact: get_normal_footer_compact(&config.key_bindings),
-			normal_footer_full: get_normal_footer_full(&config.key_bindings),
 			normal_mode_help_lines: get_list_normal_mode_help_lines(&config.key_bindings),
 			state: ListState::Normal,
 			view_data,
-			visual_footer_compact: get_visual_footer_compact(&config.key_bindings),
-			visual_footer_full: get_visual_footer_full(&config.key_bindings),
 			visual_mode_help_lines: get_list_visual_mode_help_lines(&config.key_bindings),
 		}
 	}
