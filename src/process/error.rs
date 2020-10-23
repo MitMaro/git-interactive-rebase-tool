@@ -55,8 +55,10 @@ impl Error {
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
 		self.view_data.reset();
-		// TODO expand error messaging
-		self.view_data.push_line(ViewLine::from(error.to_string()));
+		self.view_data.set_show_title(true);
+		for cause in error.chain() {
+			self.view_data.push_line(ViewLine::from(format!("{:#}", cause)));
+		}
 		self.view_data
 			.push_trailing_line(ViewLine::from(LineSegment::new_with_color(
 				"Press any key to continue",
