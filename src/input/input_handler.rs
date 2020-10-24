@@ -143,21 +143,15 @@ impl<'i> InputHandler<'i> {
 
 		match mode {
 			InputMode::Confirm => self.get_confirm(input.as_str()),
-			InputMode::Default => self.get_default_input(input.as_str()),
+			InputMode::Default => Self::get_default_input(input.as_str()),
 			InputMode::List => self.get_list_input(input.as_str()),
 			InputMode::Raw => Self::get_raw_input(input.as_str()),
 			InputMode::ShowCommit => self.get_show_commit_input(input.as_str()),
 		}
 	}
 
-	fn get_standard_inputs(&self, input: &str) -> Option<Input> {
+	fn get_standard_inputs(input: &str) -> Option<Input> {
 		Some(match input {
-			i if i == self.key_bindings.move_up.as_str() => Input::ScrollUp,
-			i if i == self.key_bindings.move_down.as_str() => Input::ScrollDown,
-			i if i == self.key_bindings.move_left.as_str() => Input::ScrollLeft,
-			i if i == self.key_bindings.move_right.as_str() => Input::ScrollRight,
-			i if i == self.key_bindings.move_up_step.as_str() => Input::ScrollJumpUp,
-			i if i == self.key_bindings.move_down_step.as_str() => Input::ScrollJumpDown,
 			"Up" => Input::ScrollUp,
 			"Down" => Input::ScrollDown,
 			"Left" => Input::ScrollLeft,
@@ -166,30 +160,22 @@ impl<'i> InputHandler<'i> {
 			"PageDown" => Input::ScrollJumpDown,
 			"Home" => Input::ScrollTop,
 			"End" => Input::ScrollBottom,
-			"resize" => Input::Resize,
+			"Resize" => Input::Resize,
 			_ => return None,
 		})
 	}
 
 	fn get_confirm(&self, input: &str) -> Input {
-		self.get_standard_inputs(input).unwrap_or_else(|| {
+		Self::get_standard_inputs(input).unwrap_or_else(|| {
 			match input {
-				"Resize" => Input::Resize,
 				c if c.to_lowercase() == self.key_bindings.confirm_yes.to_lowercase() => Input::Yes,
 				_ => Input::No,
 			}
 		})
 	}
 
-	fn get_default_input(&self, input: &str) -> Input {
-		self.get_standard_inputs(input).unwrap_or_else(|| {
-			if input == "Resize" {
-				Input::Resize
-			}
-			else {
-				Self::get_raw_input(input)
-			}
-		})
+	fn get_default_input(input: &str) -> Input {
+		Self::get_standard_inputs(input).unwrap_or_else(|| Self::get_raw_input(input))
 	}
 
 	#[allow(clippy::cognitive_complexity)]
@@ -219,8 +205,6 @@ impl<'i> InputHandler<'i> {
 			i if i == self.key_bindings.move_down_step.as_str() => Input::MoveCursorPageDown,
 			i if i == self.key_bindings.move_selection_down.as_str() => Input::SwapSelectedDown,
 			i if i == self.key_bindings.move_selection_up.as_str() => Input::SwapSelectedUp,
-			"Left" => Input::ScrollLeft,
-			"Right" => Input::ScrollRight,
 			"Resize" => Input::Resize,
 			_ => Input::Other,
 		}
@@ -282,23 +266,294 @@ impl<'i> InputHandler<'i> {
 	}
 
 	fn get_show_commit_input(&self, input: &str) -> Input {
-		self.get_standard_inputs(input).unwrap_or_else(|| {
+		Self::get_standard_inputs(input).unwrap_or_else(|| {
 			match input {
 				i if i == self.key_bindings.help.as_str() => Input::Help,
 				i if i == self.key_bindings.show_diff.as_str() => Input::ShowDiff,
-				"Resize" => Input::Resize,
 				_ => Input::Other,
 			}
 		})
 	}
 
 	fn get_next_input(&self) -> CursesInput {
-		loop {
-			let c = self.display.getch();
-			// technically this will never be None with delay mode
-			if let Some(input) = c {
-				break input;
-			}
+		// technically this will never be None with delay mode
+		self.display.getch().unwrap()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::CursesInput;
+	use crate::config::Config;
+	use crate::display::curses::Curses;
+	use crate::display::Display;
+	use crate::input::input_handler::{InputHandler, InputMode};
+	use crate::input::Input;
+	use rstest::rstest;
+	use std::env::set_var;
+	use std::path::Path;
+
+	fn input_handler_test<C>(input: &[CursesInput], callback: C)
+	where C: for<'p> FnOnce(&'p InputHandler<'_>) {
+		let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("test")
+			.join("fixtures")
+			.join("simple")
+			.to_str()
+			.unwrap()
+			.to_string();
+
+		set_var("GIT_DIR", git_repo_dir.as_str());
+		let config = Config::new().unwrap();
+		let mut curses = Curses::new();
+		for i in input {
+			curses.push_input(*i);
 		}
+		let display = Display::new(&mut curses, &config.theme);
+		let input_handler = InputHandler::new(&display, &config.key_bindings);
+		callback(&input_handler);
+	}
+
+	#[rstest(
+		input,
+		expected,
+		case::yes_lower(CursesInput::Character('y'), Input::Yes),
+		case::yes_upper(CursesInput::Character('Y'), Input::Yes),
+		case::no_n_lower(CursesInput::Character('n'), Input::No),
+		case::no_n_upper(CursesInput::Character('N'), Input::No),
+		case::no_other(CursesInput::KeyEOL, Input::No),
+		case::standard_resize(CursesInput::KeyResize, Input::Resize),
+		case::standard_move_up(CursesInput::KeyUp, Input::ScrollUp),
+		case::standard_move_down(CursesInput::KeyDown, Input::ScrollDown),
+		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
+		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
+		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
+		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown)
+	)]
+	#[serial_test::serial]
+	fn confirm_mode(input: CursesInput, expected: Input) {
+		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Confirm), expected);
+		});
+	}
+
+	#[rstest(
+		input,
+		expected,
+		case::character(CursesInput::Character('a'), Input::Character('a')),
+		case::tab_character(CursesInput::Character('\t'), Input::Tab),
+		case::backspace_key(CursesInput::KeyBackspace, Input::Backspace),
+		case::backspace_character(CursesInput::Character('\u{7f}'), Input::Backspace),
+		case::enter(CursesInput::KeyEnter, Input::Enter),
+		case::newline(CursesInput::Character('\n'), Input::Enter),
+		case::other(CursesInput::KeyEOL, Input::Other),
+		case::standard_resize(CursesInput::KeyResize, Input::Resize),
+		case::standard_move_up(CursesInput::KeyUp, Input::ScrollUp),
+		case::standard_move_down(CursesInput::KeyDown, Input::ScrollDown),
+		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
+		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
+		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
+		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown)
+	)]
+	#[serial_test::serial]
+	fn default_mode(input: CursesInput, expected: Input) {
+		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Default), expected);
+		});
+	}
+
+	#[rstest(
+		input,
+		expected,
+		case::abort(CursesInput::Character('q'), Input::Abort),
+		case::rebase(CursesInput::Character('w'), Input::Rebase),
+		case::force_abort(CursesInput::Character('Q'), Input::ForceAbort),
+		case::force_rebase(CursesInput::Character('W'), Input::ForceRebase),
+		case::open_in_external_editor(CursesInput::Character('!'), Input::OpenInEditor),
+		case::show_commit(CursesInput::Character('c'), Input::ShowCommit),
+		case::edit(CursesInput::Character('E'), Input::Edit),
+		case::help(CursesInput::Character('?'), Input::Help),
+		case::toggle_visual_mode(CursesInput::Character('v'), Input::ToggleVisualMode),
+		case::action_break(CursesInput::Character('b'), Input::ActionBreak),
+		case::action_drop(CursesInput::Character('d'), Input::ActionDrop),
+		case::action_edit(CursesInput::Character('e'), Input::ActionEdit),
+		case::action_fixup(CursesInput::Character('f'), Input::ActionFixup),
+		case::action_pick(CursesInput::Character('p'), Input::ActionPick),
+		case::action_reword(CursesInput::Character('r'), Input::ActionReword),
+		case::action_squash(CursesInput::Character('s'), Input::ActionSquash),
+		case::move_up(CursesInput::KeyUp, Input::MoveCursorUp),
+		case::move_down(CursesInput::KeyDown, Input::MoveCursorDown),
+		case::move_left(CursesInput::KeyLeft, Input::MoveCursorLeft),
+		case::move_right(CursesInput::KeyRight, Input::MoveCursorRight),
+		case::move_page_up(CursesInput::KeyPPage, Input::MoveCursorPageUp),
+		case::move_page_down(CursesInput::KeyNPage, Input::MoveCursorPageDown),
+		case::swap_selected_down(CursesInput::Character('j'), Input::SwapSelectedDown),
+		case::swap_selected_up(CursesInput::Character('k'), Input::SwapSelectedUp),
+		case::resize(CursesInput::KeyResize, Input::Resize),
+		case::other(CursesInput::Character('z'), Input::Other)
+	)]
+	#[serial_test::serial]
+	fn list_mode(input: CursesInput, expected: Input) {
+		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::List), expected);
+		});
+	}
+
+	#[rstest(
+		input,
+		expected,
+		case::tab_character(CursesInput::Character('\t'), Input::Tab),
+		case::newline(CursesInput::Character('\n'), Input::Enter),
+		case::backspace_character(CursesInput::Character('\u{7f}'), Input::Backspace),
+		case::character(CursesInput::Character('a'), Input::Character('a')),
+		case::backspace_key(CursesInput::KeyBackspace, Input::Backspace),
+		case::btab_key(CursesInput::KeyBTab, Input::ShiftTab),
+		case::dc_key(CursesInput::KeyDC, Input::Delete),
+		case::down_key(CursesInput::KeyDown, Input::Down),
+		case::end_key(CursesInput::KeyEnd, Input::End),
+		case::enter_key(CursesInput::KeyEnter, Input::Enter),
+		case::f0_key(CursesInput::KeyF0, Input::F0),
+		case::f1_key(CursesInput::KeyF1, Input::F1),
+		case::f2_key(CursesInput::KeyF2, Input::F2),
+		case::f3_key(CursesInput::KeyF3, Input::F3),
+		case::f4_key(CursesInput::KeyF4, Input::F4),
+		case::f5_key(CursesInput::KeyF5, Input::F5),
+		case::f6_key(CursesInput::KeyF6, Input::F6),
+		case::f7_key(CursesInput::KeyF7, Input::F7),
+		case::f8_key(CursesInput::KeyF8, Input::F8),
+		case::f9_key(CursesInput::KeyF9, Input::F9),
+		case::f10_key(CursesInput::KeyF10, Input::F10),
+		case::f11_key(CursesInput::KeyF11, Input::F11),
+		case::f12_key(CursesInput::KeyF12, Input::F12),
+		case::f13_key(CursesInput::KeyF13, Input::F13),
+		case::f14_key(CursesInput::KeyF14, Input::F14),
+		case::f15_key(CursesInput::KeyF15, Input::F15),
+		case::home_key(CursesInput::KeyHome, Input::Home),
+		case::ic_key(CursesInput::KeyIC, Input::Insert),
+		case::left_key(CursesInput::KeyLeft, Input::Left),
+		case::npage_key(CursesInput::KeyNPage, Input::PageDown),
+		case::ppage_key(CursesInput::KeyPPage, Input::PageUp),
+		case::resize_key(CursesInput::KeyResize, Input::Resize),
+		case::right_key(CursesInput::KeyRight, Input::Right),
+		case::sdc_key(CursesInput::KeySDC, Input::ShiftDelete),
+		case::send_key(CursesInput::KeySEnd, Input::ShiftEnd),
+		case::sf_key(CursesInput::KeySF, Input::ShiftDown),
+		case::shome_key(CursesInput::KeySHome, Input::ShiftHome),
+		case::sleft_key(CursesInput::KeySLeft, Input::ShiftLeft),
+		case::snext_key(CursesInput::KeySNext, Input::ShiftPageDown),
+		case::sprevious_key(CursesInput::KeySPrevious, Input::ShiftPageUp),
+		case::sr_key(CursesInput::KeySR, Input::ShiftUp),
+		case::sright_key(CursesInput::KeySRight, Input::ShiftRight),
+		case::up_key(CursesInput::KeyUp, Input::Up),
+		case::print_key(CursesInput::KeyPrint, Input::Print),
+		case::sprint_key(CursesInput::KeySPrint, Input::ShiftPrint),
+		case::a1_key(CursesInput::KeyA1, Input::KeypadUpperLeft),
+		case::a3_key(CursesInput::KeyA3, Input::KeypadUpperRight),
+		case::b2_key(CursesInput::KeyB2, Input::KeypadCenter),
+		case::c1_key(CursesInput::KeyC1, Input::KeypadLowerLeft),
+		case::c3_key(CursesInput::KeyC3, Input::KeypadLowerRight)
+	)]
+	#[serial_test::serial]
+	fn raw_mode(input: CursesInput, expected: Input) {
+		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Raw), expected);
+		});
+	}
+
+	#[rstest(
+		input => [
+			CursesInput::Unknown(0),
+			CursesInput::KeyDL,
+			CursesInput::KeyIL,
+			CursesInput::KeyClear,
+			CursesInput::KeyCodeYes,
+			CursesInput::KeyBreak,
+			CursesInput::KeyEIC,
+			CursesInput::KeyEOS,
+			CursesInput::KeyEOL,
+			CursesInput::KeySTab,
+			CursesInput::KeyCTab,
+			CursesInput::KeyCATab,
+			CursesInput::KeySReset,
+			CursesInput::KeyReset,
+			CursesInput::KeyLL,
+			CursesInput::KeyAbort,
+			CursesInput::KeySHelp,
+			CursesInput::KeyLHelp,
+			CursesInput::KeyBeg,
+			CursesInput::KeyCancel,
+			CursesInput::KeyClose,
+			CursesInput::KeyCommand,
+			CursesInput::KeyCopy,
+			CursesInput::KeyCreate,
+			CursesInput::KeyExit,
+			CursesInput::KeyFind,
+			CursesInput::KeyHelp,
+			CursesInput::KeyMark,
+			CursesInput::KeyMessage,
+			CursesInput::KeyMove,
+			CursesInput::KeyNext,
+			CursesInput::KeyOpen,
+			CursesInput::KeyOptions,
+			CursesInput::KeyPrevious,
+			CursesInput::KeyRedo,
+			CursesInput::KeyReference,
+			CursesInput::KeyRefresh,
+			CursesInput::KeyReplace,
+			CursesInput::KeyRestart,
+			CursesInput::KeyResume,
+			CursesInput::KeySave,
+			CursesInput::KeySBeg,
+			CursesInput::KeySCancel,
+			CursesInput::KeySCommand,
+			CursesInput::KeySCopy,
+			CursesInput::KeySCreate,
+			CursesInput::KeySDL,
+			CursesInput::KeySelect,
+			CursesInput::KeySEOL,
+			CursesInput::KeySExit,
+			CursesInput::KeySFind,
+			CursesInput::KeySIC,
+			CursesInput::KeySMessage,
+			CursesInput::KeySMove,
+			CursesInput::KeySOptions,
+			CursesInput::KeySRedo,
+			CursesInput::KeySReplace,
+			CursesInput::KeySResume,
+			CursesInput::KeySSave,
+			CursesInput::KeySSuspend,
+			CursesInput::KeySUndo,
+			CursesInput::KeySuspend,
+			CursesInput::KeyUndo,
+			CursesInput::KeyEvent,
+			CursesInput::KeyMouse,
+		],
+	)]
+	#[serial_test::serial]
+	fn raw_mode_unsupported(input: CursesInput) {
+		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Raw), Input::Other);
+		});
+	}
+
+	#[rstest(
+		input,
+		expected,
+		case::help(CursesInput::Character('?'), Input::Help),
+		case::newline(CursesInput::Character('d'), Input::ShowDiff),
+		case::other(CursesInput::KeyEOL, Input::Other),
+		case::standard_resize(CursesInput::KeyResize, Input::Resize),
+		case::standard_move_up(CursesInput::KeyUp, Input::ScrollUp),
+		case::standard_move_down(CursesInput::KeyDown, Input::ScrollDown),
+		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
+		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
+		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
+		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown)
+	)]
+	#[serial_test::serial]
+	fn confirm_input_mode(input: CursesInput, expected: Input) {
+		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::ShowCommit), expected);
+		});
 	}
 }
