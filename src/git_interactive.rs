@@ -84,17 +84,16 @@ impl GitInteractive {
 		self.visual_index_start = self.selected_line_index;
 	}
 
-	#[allow(clippy::range_plus_one)]
 	pub(crate) fn swap_visual_range_up(&mut self) {
 		if self.selected_line_index == 1 || self.visual_index_start == 1 {
 			return;
 		}
 
 		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..self.visual_index_start + 1
+			self.selected_line_index..=self.visual_index_start
 		}
 		else {
-			self.visual_index_start..self.selected_line_index + 1
+			self.visual_index_start..=self.selected_line_index
 		};
 
 		for index in range {
@@ -113,17 +112,16 @@ impl GitInteractive {
 		self.move_cursor_up(1);
 	}
 
-	#[allow(clippy::range_plus_one)]
 	pub(crate) fn swap_visual_range_down(&mut self) {
 		if self.selected_line_index == self.lines.len() || self.visual_index_start == self.lines.len() {
 			return;
 		}
 
 		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..self.visual_index_start + 1
+			self.selected_line_index..=self.visual_index_start
 		}
 		else {
-			self.visual_index_start..self.selected_line_index + 1
+			self.visual_index_start..=self.selected_line_index
 		};
 
 		for index in range.rev() {
@@ -149,13 +147,12 @@ impl GitInteractive {
 		self.lines[self.selected_line_index - 1].get_edit_content()
 	}
 
-	#[allow(clippy::range_plus_one)]
 	pub(crate) fn set_visual_range_action(&mut self, action: Action) {
 		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..self.visual_index_start + 1
+			self.selected_line_index..=self.visual_index_start
 		}
 		else {
-			self.visual_index_start..self.selected_line_index + 1
+			self.visual_index_start..=self.selected_line_index
 		};
 
 		for index in range {
