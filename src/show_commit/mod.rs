@@ -44,14 +44,14 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		// skip loading commit data if the currently loaded commit has not changed, this retains
 		// position after returning to the list view or help
 		if let Some(ref commit) = self.commit {
-			if commit.get_hash() == git_interactive.get_selected_line_hash() {
+			if commit.get_hash() == git_interactive.get_selected_line().get_hash() {
 				return ProcessResult::new();
 			}
 		}
 		self.view_data.reset();
 
 		let new_commit = Commit::new_from_hash(
-			git_interactive.get_selected_line_hash().as_str(),
+			git_interactive.get_selected_line().get_hash().as_str(),
 			LoadCommitDiffOptions {
 				context_lines: self.config.git.diff_context,
 				copies: self.config.git.diff_copies,

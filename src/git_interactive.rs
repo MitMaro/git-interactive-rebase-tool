@@ -143,10 +143,6 @@ impl GitInteractive {
 		self.lines[self.selected_line_index - 1].edit_content(content);
 	}
 
-	pub(crate) fn get_selected_line_edit_content(&self) -> &String {
-		self.lines[self.selected_line_index - 1].get_edit_content()
-	}
-
 	pub(crate) fn set_visual_range_action(&mut self, action: Action) {
 		let range = if self.selected_line_index <= self.visual_index_start {
 			self.selected_line_index..=self.visual_index_start
@@ -190,12 +186,8 @@ impl GitInteractive {
 		!self.lines.is_empty() && *self.lines[0].get_action() == Action::Noop
 	}
 
-	pub(crate) fn get_selected_line_hash(&self) -> &String {
-		self.lines[self.selected_line_index - 1].get_hash()
-	}
-
-	pub(crate) fn get_selected_line_action(&self) -> &Action {
-		self.lines[self.selected_line_index - 1].get_action()
+	pub(crate) fn get_selected_line(&self) -> &Line {
+		&self.lines[self.selected_line_index - 1]
 	}
 
 	pub(crate) const fn get_selected_line_index(&self) -> &usize {
