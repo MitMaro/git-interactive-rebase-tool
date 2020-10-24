@@ -131,7 +131,7 @@ impl<'l> List<'l> {
 		let mut result = result;
 		match input {
 			Input::ShowCommit => {
-				if !git_interactive.get_selected_line_hash().is_empty() {
+				if !git_interactive.get_selected_line().get_hash().is_empty() {
 					result = result.state(State::ShowCommit);
 				}
 			},
@@ -156,7 +156,7 @@ impl<'l> List<'l> {
 			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword),
 			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash),
 			Input::Edit => {
-				if *git_interactive.get_selected_line_action() == Action::Exec {
+				if git_interactive.get_selected_line().get_action() == &Action::Exec {
 					result = result.state(State::Edit);
 				}
 			},

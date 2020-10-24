@@ -85,10 +85,10 @@ impl Line {
 		}
 	}
 
-	pub(crate) const fn get_edit_content(&self) -> &String {
+	pub(crate) fn get_edit_content(&self) -> &str {
 		match self.action {
-			Action::Exec => &self.command,
-			_ => &self.comment,
+			Action::Exec => self.command.as_str(),
+			_ => self.comment.as_str(),
 		}
 	}
 
@@ -260,7 +260,7 @@ mod tests {
 	fn edit_content(line: &str, expected: &str) {
 		let mut line = Line::new(line).unwrap();
 		line.edit_content("new");
-		assert_eq!(line.get_edit_content(), &expected);
+		assert_eq!(line.get_edit_content(), expected);
 	}
 
 	#[rstest(

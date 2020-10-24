@@ -19,7 +19,7 @@ pub struct Edit {
 
 impl ProcessModule for Edit {
 	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
-		self.content = git_interactive.get_selected_line_edit_content().clone();
+		self.content = git_interactive.get_selected_line().get_edit_content().to_string();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 		ProcessResult::new()
 	}
@@ -809,7 +809,10 @@ mod tests {
 					input = Input::Enter,
 					state = State::List
 				);
-				assert_eq!(test_context.git_interactive.get_selected_line_edit_content(), "foobar");
+				assert_eq!(
+					test_context.git_interactive.get_selected_line().get_edit_content(),
+					"foobar"
+				);
 			},
 		);
 	}
@@ -830,7 +833,10 @@ mod tests {
 					input = Input::Enter,
 					state = State::List
 				);
-				assert_eq!(test_context.git_interactive.get_selected_line_edit_content(), "foobarx");
+				assert_eq!(
+					test_context.git_interactive.get_selected_line().get_edit_content(),
+					"foobarx"
+				);
 			},
 		);
 	}
@@ -850,7 +856,10 @@ mod tests {
 					input = Input::Enter,
 					state = State::List
 				);
-				assert_eq!(test_context.git_interactive.get_selected_line_edit_content(), "foobar");
+				assert_eq!(
+					test_context.git_interactive.get_selected_line().get_edit_content(),
+					"foobar"
+				);
 			},
 		);
 	}
