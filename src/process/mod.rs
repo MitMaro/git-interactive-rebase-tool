@@ -50,11 +50,8 @@ impl<'r> Process<'r> {
 		if WindowSizeError::is_window_too_small(view_width, view_height) {
 			self.handle_process_result(&mut modules, &ProcessResult::new().state(State::WindowSizeError));
 		}
+		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
-			let result = modules.process(self.state, &mut self.git_interactive);
-			if self.handle_process_result(&mut modules, &result) {
-				continue;
-			}
 			self.view
 				.render(modules.build_view_data(self.state, self.view, &self.git_interactive));
 			let result = modules.handle_input(self.state, self.input_handler, &mut self.git_interactive, self.view);

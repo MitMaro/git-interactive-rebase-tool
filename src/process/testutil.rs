@@ -43,22 +43,14 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		assert_ne!(self.num_inputs, 0);
-		self.num_inputs -= 1;
 		module.handle_input(self.input_handler, self.git_interactive, self.view)
 	}
 
-	pub fn process(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.process(self.git_interactive)
-	}
-
 	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
-		assert_ne!(self.num_inputs, 0);
 		let mut results = vec![];
 		for _ in 0..self.num_inputs {
 			results.push(module.handle_input(self.input_handler, self.git_interactive, self.view));
 		}
-		self.num_inputs -= 1;
 		results
 	}
 

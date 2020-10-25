@@ -22,7 +22,6 @@ use std::process::ExitStatus as ProcessExitStatus;
 
 #[derive(Debug)]
 enum ExternalEditorState {
-	Initial,
 	Active,
 	Empty,
 	Error(Error),
@@ -39,14 +38,18 @@ pub struct ExternalEditor<'e> {
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
 	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
-		if self.lines.is_empty() {
+		let mut result = ProcessResult::new();
+		self.state = ExternalEditorState::Active;
+		if let Err(err) = git_interactive.write_file() {
+			result = result.error(err).state(State::List);
+		}
+		else if self.lines.is_empty() {
 			self.lines = git_interactive.get_lines().to_owned();
 		}
-		ProcessResult::new()
+		result
 	}
 
 	fn deactivate(&mut self) {
-		self.state = ExternalEditorState::Initial;
 		self.lines.clear();
 		self.invalid_selection = false;
 		self.view_data.reset();
@@ -57,9 +60,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		self.view_data.clear();
 
 		match self.state {
-			ExternalEditorState::Initial | ExternalEditorState::Active => {
-				self.view_data.push_leading_line(ViewLine::from("Editing..."))
-			},
+			ExternalEditorState::Active => self.view_data.push_leading_line(ViewLine::from("Editing...")),
 			ExternalEditorState::Empty => {
 				self.view_data
 					.push_leading_line(ViewLine::from("The rebase file is empty."));
@@ -86,7 +87,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		}
 
 		match &self.state {
-			&ExternalEditorState::Initial | &ExternalEditorState::Active => {},
+			&ExternalEditorState::Active => {},
 			&ExternalEditorState::Empty | &ExternalEditorState::Error(_) => {
 				if self.invalid_selection {
 					self.view_data.push_line(ViewLine::from(LineSegment::new_with_color(
@@ -108,15 +109,15 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		&self.view_data
 	}
 
-	fn process(&mut self, git_interactive: &mut GitInteractive) -> ProcessResult {
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		git_interactive: &mut GitInteractive,
+		view: &View<'_>,
+	) -> ProcessResult
+	{
 		let mut result = ProcessResult::new();
 		match self.state {
-			ExternalEditorState::Initial => {
-				if let Err(err) = git_interactive.write_file() {
-					result = result.error(err).state(State::List);
-				}
-				self.state = ExternalEditorState::Active;
-			},
 			ExternalEditorState::Active => {
 				if let Err(e) = self.run_editor(git_interactive) {
 					self.state = ExternalEditorState::Error(e);
@@ -134,22 +135,6 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 						Err(e) => self.state = ExternalEditorState::Error(e),
 					}
 				}
-			},
-			ExternalEditorState::Empty | ExternalEditorState::Error(_) => {},
-		}
-		result
-	}
-
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
-		view: &View<'_>,
-	) -> ProcessResult
-	{
-		let mut result = ProcessResult::new();
-		match self.state {
-			ExternalEditorState::Initial | ExternalEditorState::Active => {
 				result = result.input(Input::Other);
 			},
 			ExternalEditorState::Empty => {
@@ -161,10 +146,8 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 						Input::Character('1') => result = result.exit_status(ExitStatus::Good),
 						Input::Character('2') => self.state = ExternalEditorState::Active,
 						Input::Character('3') => {
-							self.state = {
-								git_interactive.set_lines(self.lines.to_vec());
-								ExternalEditorState::Initial
-							}
+							git_interactive.set_lines(self.lines.to_vec());
+							self.activate(git_interactive, State::ExternalEditor);
 						},
 						_ => self.invalid_selection = true,
 					}
@@ -190,7 +173,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 						},
 						Input::Character('4') => {
 							git_interactive.set_lines(self.lines.to_vec());
-							self.state = ExternalEditorState::Initial
+							self.activate(git_interactive, State::ExternalEditor);
 						},
 						_ => self.invalid_selection = true,
 					}
@@ -209,7 +192,7 @@ impl<'e> ExternalEditor<'e> {
 		Self {
 			editor: String::from(editor),
 			display,
-			state: ExternalEditorState::Initial,
+			state: ExternalEditorState::Active,
 			view_data,
 			invalid_selection: false,
 			lines: vec![],
@@ -307,14 +290,12 @@ mod tests {
 
 	fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
 		let actual_state = match *actual {
-			ExternalEditorState::Initial => String::from("Initial"),
 			ExternalEditorState::Active => String::from("Active"),
 			ExternalEditorState::Empty => String::from("Empty"),
 			ExternalEditorState::Error(ref err) => format!("Error({:#})", err),
 		};
 
 		let expected_state = match *expected {
-			ExternalEditorState::Initial => String::from("Initial"),
 			ExternalEditorState::Active => String::from("Active"),
 			ExternalEditorState::Empty => String::from("Empty"),
 			ExternalEditorState::Error(ref err) => format!("Error({:#})", err),
@@ -352,7 +333,30 @@ mod tests {
 					Line::new("pick aaa comment1").unwrap(),
 					Line::new("drop bbb comment2").unwrap()
 				]);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Initial);
+				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn activate_write_file_fail() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[Input::Up],
+			|mut test_context: TestContext<'_>| {
+				let todo_path = test_context.get_todo_file_path();
+				let mut module = ExternalEditor::new(
+					test_context.display,
+					get_external_editor("pick aaa comment", "0").as_str(),
+				);
+				test_context.set_todo_file_readonly();
+				assert_process_result!(
+					test_context.activate(&mut module, State::List),
+					state = State::List,
+					error = anyhow!("Error opening file: {}: Permission denied (os error 13)", todo_path)
+				);
 			},
 		);
 	}
@@ -371,7 +375,6 @@ mod tests {
 				);
 				test_context.deactivate(&mut module);
 				assert_eq!(module.lines, vec![]);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Initial);
 				assert_eq!(module.invalid_selection, false);
 			},
 		);
@@ -389,39 +392,15 @@ mod tests {
 					test_context.display,
 					get_external_editor("pick aaa comment", "0").as_str(),
 				);
-				test_context.activate(&mut module, State::List);
-				// Initial state
-				assert_process_result!(test_context.process(&mut module));
+				assert_process_result!(test_context.activate(&mut module, State::List));
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				// Active state
-				assert_process_result!(test_context.process(&mut module), state = State::List);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn start_edit_write_file_fail() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let todo_path = test_context.get_todo_file_path();
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "0").as_str(),
-				);
-				test_context.activate(&mut module, State::List);
-				test_context.set_todo_file_readonly();
 				assert_process_result!(
-					test_context.process(&mut module),
-					state = State::List,
-					error = anyhow!("Error opening file: {}: Permission denied (os error 13)", todo_path)
+					test_context.handle_input(&mut module),
+					input = Input::Other,
+					state = State::List
 				);
+				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 			},
 		);
 	}
@@ -435,10 +414,8 @@ mod tests {
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
@@ -467,10 +444,8 @@ mod tests {
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
@@ -491,10 +466,8 @@ mod tests {
 			&[Input::Character('2')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('2'));
@@ -512,14 +485,12 @@ mod tests {
 			&[Input::Character('3')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('3'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Initial);
+				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 				assert_eq!(test_context.git_interactive.get_lines(), &vec![
 					Line::new("pick aaa comment").unwrap(),
 					Line::new("drop bbb comment").unwrap()
@@ -537,14 +508,11 @@ mod tests {
 			&[Input::Character('4')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('4'));
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				assert_process_result!(test_context.process(&mut module)); // empty state
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
 					view_data,
@@ -572,11 +540,8 @@ mod tests {
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("noop", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module));
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
@@ -592,7 +557,6 @@ mod tests {
 					"",
 					"{IndicatorColor}Please choose an option."
 				);
-				assert_process_result!(test_context.process(&mut module));
 			},
 		);
 	}
@@ -606,9 +570,8 @@ mod tests {
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, "");
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(
 					module.state,
 					ExternalEditorState::Error(
@@ -631,7 +594,6 @@ mod tests {
 					"",
 					"{IndicatorColor}Please choose an option."
 				);
-				assert_process_result!(test_context.process(&mut module));
 			},
 		);
 	}
@@ -652,9 +614,8 @@ mod tests {
 						.to_str()
 						.unwrap(),
 				);
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(
 					module.state,
 					ExternalEditorState::Error(
@@ -676,7 +637,6 @@ mod tests {
 					"",
 					"{IndicatorColor}Please choose an option."
 				);
-				assert_process_result!(test_context.process(&mut module));
 			},
 		);
 	}
@@ -693,9 +653,8 @@ mod tests {
 					test_context.display,
 					get_external_editor("pick aaa comment", "1").as_str(),
 				);
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(
 					module.state,
 					ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status"))
@@ -714,7 +673,6 @@ mod tests {
 					"",
 					"{IndicatorColor}Please choose an option."
 				);
-				assert_process_result!(test_context.process(&mut module));
 			},
 		);
 	}
@@ -729,10 +687,9 @@ mod tests {
 			|mut test_context: TestContext<'_>| {
 				let todo_path = test_context.get_todo_file_path();
 				let mut module = ExternalEditor::new(test_context.display, "true");
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
+				assert_process_result!(test_context.activate(&mut module, State::List));
 				test_context.delete_todo_file();
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(
 					module.state,
 					ExternalEditorState::Error(
@@ -754,7 +711,6 @@ mod tests {
 					"",
 					"{IndicatorColor}Please choose an option."
 				);
-				assert_process_result!(test_context.process(&mut module));
 			},
 		);
 	}
@@ -771,9 +727,8 @@ mod tests {
 					test_context.display,
 					get_external_editor("pick aaa comment", "1").as_str(),
 				);
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
 					test_context.handle_input(&mut module),
@@ -797,9 +752,8 @@ mod tests {
 					test_context.display,
 					get_external_editor("pick aaa comment", "1").as_str(),
 				);
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('2'));
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
@@ -819,9 +773,8 @@ mod tests {
 					test_context.display,
 					get_external_editor("drop aaa comment", "1").as_str(),
 				);
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
 					test_context.handle_input(&mut module),
@@ -848,12 +801,11 @@ mod tests {
 					test_context.display,
 					get_external_editor("rdop aaa comment", "1").as_str(),
 				);
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('4'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Initial);
+				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 				assert_eq!(test_context.git_interactive.get_lines(), &vec![Line::new(
 					"pick aaa comment"
 				)
@@ -871,11 +823,9 @@ mod tests {
 			&[Input::Character('5')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, "");
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('5'));
-				assert_process_result!(test_context.process(&mut module)); // error state
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
 					view_data,
@@ -891,7 +841,6 @@ mod tests {
 					"",
 					"{IndicatorColor}Invalid option selected. Please choose an option."
 				);
-				assert_process_result!(test_context.process(&mut module));
 			},
 		);
 	}
@@ -908,10 +857,8 @@ mod tests {
 			&[Input::Right],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
 					test_context.handle_all_inputs(&mut module).last().unwrap(),
@@ -935,10 +882,8 @@ mod tests {
 			&[Input::Right, Input::Right, Input::Right, Input::Left],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
 					test_context.handle_all_inputs(&mut module).last().unwrap(),
@@ -962,10 +907,8 @@ mod tests {
 			&[Input::Down],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
 					test_context.handle_all_inputs(&mut module).last().unwrap(),
@@ -996,10 +939,8 @@ mod tests {
 			&[Input::Down, Input::Down, Input::Down, Input::Up],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
 				assert_process_result!(
 					test_context.handle_all_inputs(&mut module).last().unwrap(),
@@ -1030,10 +971,8 @@ mod tests {
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
-				test_context.activate(&mut module, State::List);
-				// initial state
-				assert_process_result!(test_context.process(&mut module)); // initial state
-				assert_process_result!(test_context.process(&mut module)); // active state
+				assert_process_result!(test_context.activate(&mut module, State::List));
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_process_result!(
 					test_context.handle_all_inputs(&mut module).last().unwrap(),
 					input = Input::Resize
