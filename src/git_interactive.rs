@@ -25,7 +25,7 @@ pub struct GitInteractive {
 	filepath: PathBuf,
 	lines: Vec<Line>,
 	selected_line_index: usize,
-	visual_index_start: usize,
+	visual_index_start: Option<usize>,
 	comment_char: String,
 }
 
@@ -35,7 +35,7 @@ impl GitInteractive {
 			filepath: path,
 			lines,
 			selected_line_index: 1,
-			visual_index_start: 1,
+			visual_index_start: None,
 			comment_char: String::from(comment_char),
 		})
 	}
@@ -81,61 +81,61 @@ impl GitInteractive {
 	}
 
 	pub(crate) fn start_visual_mode(&mut self) {
-		self.visual_index_start = self.selected_line_index;
+		self.visual_index_start = Some(self.selected_line_index);
 	}
 
-	pub(crate) fn swap_visual_range_up(&mut self) {
-		if self.selected_line_index == 1 || self.visual_index_start == 1 {
+	pub(crate) fn end_visual_mode(&mut self) {
+		self.visual_index_start = None;
+	}
+
+	pub(crate) fn swap_range_up(&mut self) {
+		let end_index = self.visual_index_start.unwrap_or(self.selected_line_index);
+		let start_index = self.selected_line_index;
+
+		if end_index == 1 || start_index == 1 {
 			return;
 		}
 
-		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..=self.visual_index_start
+		let range = if end_index <= start_index {
+			end_index..=start_index
 		}
 		else {
-			self.visual_index_start..=self.selected_line_index
+			start_index..=end_index
 		};
 
 		for index in range {
 			self.lines.swap(index - 1, index - 2);
 		}
-		self.visual_index_start -= 1;
+
+		if let Some(visual_index_start) = self.visual_index_start {
+			self.visual_index_start = Some(visual_index_start - 1);
+		}
 		self.move_cursor_up(1);
 	}
 
-	pub(crate) fn swap_selected_up(&mut self) {
-		if self.selected_line_index == 1 {
-			return;
-		}
-		self.lines
-			.swap(self.selected_line_index - 1, self.selected_line_index - 2);
-		self.move_cursor_up(1);
-	}
+	pub(crate) fn swap_range_down(&mut self) {
+		let end_index = self.visual_index_start.unwrap_or(self.selected_line_index);
+		let start_index = self.selected_line_index;
 
-	pub(crate) fn swap_visual_range_down(&mut self) {
-		if self.selected_line_index == self.lines.len() || self.visual_index_start == self.lines.len() {
+		if end_index == self.lines.len() || start_index == self.lines.len() {
 			return;
 		}
 
-		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..=self.visual_index_start
+		let range = if end_index <= start_index {
+			end_index..=start_index
 		}
 		else {
-			self.visual_index_start..=self.selected_line_index
+			start_index..=end_index
 		};
 
 		for index in range.rev() {
 			self.lines.swap(index - 1, index);
 		}
-		self.visual_index_start += 1;
-		self.move_cursor_down(1);
-	}
 
-	pub(crate) fn swap_selected_down(&mut self) {
-		if self.selected_line_index == self.lines.len() {
-			return;
+		if let Some(visual_index_start) = self.visual_index_start {
+			self.visual_index_start = Some(visual_index_start + 1);
 		}
-		self.lines.swap(self.selected_line_index - 1, self.selected_line_index);
+
 		self.move_cursor_down(1);
 	}
 
@@ -143,12 +143,15 @@ impl GitInteractive {
 		self.lines[self.selected_line_index - 1].edit_content(content);
 	}
 
-	pub(crate) fn set_visual_range_action(&mut self, action: Action) {
-		let range = if self.selected_line_index <= self.visual_index_start {
-			self.selected_line_index..=self.visual_index_start
+	pub(crate) fn set_range_action(&mut self, action: Action) {
+		let end_index = self.visual_index_start.unwrap_or(self.selected_line_index);
+		let start_index = self.selected_line_index;
+
+		let range = if start_index <= end_index {
+			start_index..=end_index
 		}
 		else {
-			self.visual_index_start..=self.selected_line_index
+			end_index..=start_index
 		};
 
 		for index in range {
@@ -156,13 +159,6 @@ impl GitInteractive {
 			if *selected_action != Action::Exec && *selected_action != Action::Break {
 				self.lines[index - 1].set_action(action);
 			}
-		}
-	}
-
-	pub(crate) fn set_selected_line_action(&mut self, action: Action) {
-		let selected_action = self.lines[self.selected_line_index - 1].get_action();
-		if *selected_action != Action::Exec && *selected_action != Action::Break {
-			self.lines[self.selected_line_index - 1].set_action(action);
 		}
 	}
 
@@ -194,8 +190,8 @@ impl GitInteractive {
 		&self.selected_line_index
 	}
 
-	pub(crate) const fn get_visual_start_index(&self) -> &usize {
-		&self.visual_index_start
+	pub(crate) fn get_visual_start_index(&self) -> usize {
+		self.visual_index_start.unwrap_or(self.selected_line_index)
 	}
 
 	pub(crate) const fn get_filepath(&self) -> &PathBuf {
