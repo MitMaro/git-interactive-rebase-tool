@@ -470,12 +470,9 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.tempfile_in(git_repo_dir.as_str())
 		.unwrap();
 
-	let mut git_interactive = GitInteractive::new(
-		lines.iter().map(|l| Line::new(l).unwrap()).collect(),
-		todo_file.path().to_path_buf(),
-		"#",
-	)
-	.unwrap();
+	let mut git_interactive = GitInteractive::new(todo_file.path().to_str().unwrap(), "#");
+	git_interactive.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
+
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
 		git_interactive: &mut git_interactive,

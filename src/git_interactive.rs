@@ -4,64 +4,67 @@ use anyhow::{anyhow, Result};
 use std::cmp;
 use std::fs::{read_to_string, File};
 use std::io::Write;
-use std::path::PathBuf;
-
-fn load_filepath(path: &PathBuf, comment_char: &str) -> Result<Vec<Line>> {
-	read_to_string(&path)
-		.map_err(|err| anyhow!("Error reading file: {}", path.display()).context(err))?
-		.lines()
-		.filter_map(|l| {
-			if l.starts_with(comment_char) || l.is_empty() {
-				None
-			}
-			else {
-				Some(Line::new(l).map_err(|err| anyhow!("Error reading file: {}", path.display()).context(err)))
-			}
-		})
-		.collect()
-}
+use std::path::Path;
 
 pub struct GitInteractive {
-	filepath: PathBuf,
+	filepath: String,
 	lines: Vec<Line>,
 	selected_line_index: usize,
 	visual_index_start: Option<usize>,
 	comment_char: String,
+	is_noop: bool,
 }
 
 impl GitInteractive {
-	pub(crate) fn new(lines: Vec<Line>, path: PathBuf, comment_char: &str) -> Result<Self> {
-		Ok(Self {
-			filepath: path,
-			lines,
+	pub(crate) fn new(path: &str, comment_char: &str) -> Self {
+		Self {
+			filepath: path.to_string(),
+			lines: vec![],
 			selected_line_index: 1,
+			is_noop: false,
 			visual_index_start: None,
 			comment_char: String::from(comment_char),
-		})
+		}
 	}
 
-	pub(crate) fn new_from_filepath(filepath: &str, comment_char: &str) -> Result<Self> {
-		let path = PathBuf::from(filepath);
-		let lines = load_filepath(&path, comment_char)?;
-		Self::new(lines, path, comment_char)
+	pub(crate) fn set_lines(&mut self, lines: Vec<Line>) {
+		self.is_noop = !lines.is_empty() && lines[0].get_action() == &Action::Noop;
+		self.lines = if self.is_noop {
+			vec![]
+		}
+		else {
+			lines.into_iter().filter(|l| l.get_action() != &Action::Noop).collect()
+		};
+	}
+
+	pub(crate) fn load_file(&mut self) -> Result<()> {
+		let lines = read_to_string(Path::new(&self.filepath))
+			.map_err(|err| anyhow!("Error reading file: {}", self.filepath).context(err))?
+			.lines()
+			.filter_map(|l| {
+				if l.starts_with(self.comment_char.as_str()) || l.is_empty() {
+					None
+				}
+				else {
+					Some(Line::new(l).map_err(|err| anyhow!("Error reading file: {}", self.filepath).context(err)))
+				}
+			})
+			.collect::<Result<Vec<Line>>>()?;
+		self.set_lines(lines);
+		Ok(())
 	}
 
 	pub(crate) fn write_file(&self) -> Result<()> {
 		let mut file = File::create(&self.filepath)
-			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath.display())))?;
-		for line in &self.lines {
-			writeln!(file, "{}", line.to_text())
-				.map_err(|err| anyhow!(err).context(anyhow!("Error writing file: {}", self.filepath.display())))?;
+			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath)))?;
+		let file_contents = if self.is_noop {
+			String::from("noop")
 		}
-		Ok(())
-	}
-
-	pub(crate) fn set_lines(&mut self, lines: Vec<Line>) {
-		self.lines = lines;
-	}
-
-	pub(crate) fn reload_file(&mut self) -> Result<()> {
-		self.lines = load_filepath(&self.filepath, self.comment_char.as_str())?;
+		else {
+			self.lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
+		};
+		writeln!(file, "{}", file_contents)
+			.map_err(|err| anyhow!(err).context(anyhow!("Error writing file: {}", self.filepath)))?;
 		Ok(())
 	}
 
@@ -178,8 +181,8 @@ impl GitInteractive {
 		}
 	}
 
-	pub(crate) fn is_noop(&self) -> bool {
-		!self.lines.is_empty() && *self.lines[0].get_action() == Action::Noop
+	pub(crate) const fn is_noop(&self) -> bool {
+		self.is_noop
 	}
 
 	pub(crate) fn get_selected_line(&self) -> &Line {
@@ -194,8 +197,8 @@ impl GitInteractive {
 		self.visual_index_start.unwrap_or(self.selected_line_index)
 	}
 
-	pub(crate) const fn get_filepath(&self) -> &PathBuf {
-		&self.filepath
+	pub(crate) fn get_filepath(&self) -> &str {
+		self.filepath.as_str()
 	}
 
 	pub(crate) const fn get_lines(&self) -> &Vec<Line> {
