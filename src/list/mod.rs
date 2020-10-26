@@ -115,7 +115,7 @@ impl<'l> List<'l> {
 	}
 
 	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action) {
-		git_interactive.set_selected_line_action(action);
+		git_interactive.set_range_action(action);
 		if self.config.auto_select_next {
 			git_interactive.move_cursor_down(1);
 		}
@@ -160,8 +160,8 @@ impl<'l> List<'l> {
 					result = result.state(State::Edit);
 				}
 			},
-			Input::SwapSelectedDown => git_interactive.swap_selected_down(),
-			Input::SwapSelectedUp => git_interactive.swap_selected_up(),
+			Input::SwapSelectedDown => git_interactive.swap_range_down(),
+			Input::SwapSelectedUp => git_interactive.swap_range_up(),
 			Input::ToggleVisualMode => {
 				git_interactive.start_visual_mode();
 				self.state = ListState::Visual;
@@ -196,15 +196,16 @@ impl<'l> List<'l> {
 			Input::ForceRebase => {
 				result = result.exit_status(ExitStatus::Good);
 			},
-			Input::ActionDrop => git_interactive.set_visual_range_action(Action::Drop),
-			Input::ActionEdit => git_interactive.set_visual_range_action(Action::Edit),
-			Input::ActionFixup => git_interactive.set_visual_range_action(Action::Fixup),
-			Input::ActionPick => git_interactive.set_visual_range_action(Action::Pick),
-			Input::ActionReword => git_interactive.set_visual_range_action(Action::Reword),
-			Input::ActionSquash => git_interactive.set_visual_range_action(Action::Squash),
-			Input::SwapSelectedDown => git_interactive.swap_visual_range_down(),
-			Input::SwapSelectedUp => git_interactive.swap_visual_range_up(),
+			Input::ActionDrop => git_interactive.set_range_action(Action::Drop),
+			Input::ActionEdit => git_interactive.set_range_action(Action::Edit),
+			Input::ActionFixup => git_interactive.set_range_action(Action::Fixup),
+			Input::ActionPick => git_interactive.set_range_action(Action::Pick),
+			Input::ActionReword => git_interactive.set_range_action(Action::Reword),
+			Input::ActionSquash => git_interactive.set_range_action(Action::Squash),
+			Input::SwapSelectedDown => git_interactive.swap_range_down(),
+			Input::SwapSelectedUp => git_interactive.swap_range_up(),
 			Input::ToggleVisualMode => {
+				git_interactive.end_visual_mode();
 				self.state = ListState::Normal;
 				result = result.state(State::List);
 			},
