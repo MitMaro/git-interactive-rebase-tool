@@ -93,13 +93,13 @@ fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
 		}
 	})?;
 
-	let git_interactive =
-		GitInteractive::new_from_filepath(filepath, config.git.comment_char.as_str()).map_err(|err| {
-			Exit {
-				message: err.to_string(),
-				status: ExitStatus::FileReadError,
-			}
-		})?;
+	let mut git_interactive = GitInteractive::new(filepath, config.git.comment_char.as_str());
+	git_interactive.load_file().map_err(|err| {
+		Exit {
+			message: err.to_string(),
+			status: ExitStatus::FileReadError,
+		}
+	})?;
 
 	if git_interactive.is_noop() {
 		return Err(Exit {

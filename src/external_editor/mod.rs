@@ -123,7 +123,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 					self.state = ExternalEditorState::Error(e);
 				}
 				else {
-					match git_interactive.reload_file() {
+					match git_interactive.load_file() {
 						Ok(_) => {
 							if git_interactive.get_lines().is_empty() || git_interactive.is_noop() {
 								self.state = ExternalEditorState::Empty;
@@ -234,14 +234,14 @@ impl<'e> ExternalEditor<'e> {
 			for arg in arguments {
 				if arg.as_os_str() == "%" {
 					file_pattern_found = true;
-					cmd.arg(filepath.as_os_str());
+					cmd.arg(filepath);
 				}
 				else {
 					cmd.arg(arg);
 				}
 			}
 			if !file_pattern_found {
-				cmd.arg(filepath.as_os_str());
+				cmd.arg(filepath);
 			}
 			cmd.status().map_err(|e| anyhow!(e).context("Unable to run editor"))
 		};
