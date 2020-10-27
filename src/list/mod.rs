@@ -7,6 +7,7 @@ use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::action::Action;
+use crate::list::line::Line;
 use crate::list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
@@ -55,6 +56,7 @@ impl<'l> ProcessModule for List<'l> {
 
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
+		self.view_data.ensure_line_visible(selected_index);
 		&self.view_data
 	}
 
@@ -84,8 +86,6 @@ impl<'l> ProcessModule for List<'l> {
 				}
 			},
 		}
-		let selected_index = *git_interactive.get_selected_line_index() - 1;
-		self.view_data.ensure_line_visible(selected_index);
 		result
 	}
 
@@ -148,7 +148,18 @@ impl<'l> List<'l> {
 			Input::ForceRebase => {
 				result = result.exit_status(ExitStatus::Good);
 			},
-			Input::ActionBreak => git_interactive.toggle_break(),
+			Input::ActionBreak => {
+				// TODO - does not stop multiple breaks in a row
+				let action = git_interactive.get_selected_line().get_action();
+				if action == &Action::Break {
+					git_interactive.remove_line(*git_interactive.get_selected_line_index());
+					git_interactive.move_cursor_up(1);
+				}
+				else {
+					git_interactive.add_line(*git_interactive.get_selected_line_index() + 1, Line::new_break());
+					git_interactive.move_cursor_down(1);
+				}
+			},
 			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop),
 			Input::ActionEdit => self.set_selected_line_action(git_interactive, Action::Edit),
 			Input::ActionFixup => self.set_selected_line_action(git_interactive, Action::Fixup),
