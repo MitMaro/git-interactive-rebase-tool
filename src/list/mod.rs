@@ -114,9 +114,9 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action) {
+	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action, advanced_next: bool) {
 		git_interactive.set_range_action(action);
-		if self.config.auto_select_next {
+		if advanced_next && self.config.auto_select_next {
 			git_interactive.move_cursor_down(1);
 		}
 	}
@@ -160,12 +160,12 @@ impl<'l> List<'l> {
 					git_interactive.move_cursor_down(1);
 				}
 			},
-			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop),
-			Input::ActionEdit => self.set_selected_line_action(git_interactive, Action::Edit),
-			Input::ActionFixup => self.set_selected_line_action(git_interactive, Action::Fixup),
-			Input::ActionPick => self.set_selected_line_action(git_interactive, Action::Pick),
-			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword),
-			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash),
+			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop, true),
+			Input::ActionEdit => self.set_selected_line_action(git_interactive, Action::Edit, true),
+			Input::ActionFixup => self.set_selected_line_action(git_interactive, Action::Fixup, true),
+			Input::ActionPick => self.set_selected_line_action(git_interactive, Action::Pick, true),
+			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword, true),
+			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash, true),
 			Input::Edit => {
 				if git_interactive.get_selected_line().get_action() == &Action::Exec {
 					result = result.state(State::Edit);
@@ -207,12 +207,12 @@ impl<'l> List<'l> {
 			Input::ForceRebase => {
 				result = result.exit_status(ExitStatus::Good);
 			},
-			Input::ActionDrop => git_interactive.set_range_action(Action::Drop),
-			Input::ActionEdit => git_interactive.set_range_action(Action::Edit),
-			Input::ActionFixup => git_interactive.set_range_action(Action::Fixup),
-			Input::ActionPick => git_interactive.set_range_action(Action::Pick),
-			Input::ActionReword => git_interactive.set_range_action(Action::Reword),
-			Input::ActionSquash => git_interactive.set_range_action(Action::Squash),
+			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop, false),
+			Input::ActionEdit => self.set_selected_line_action(git_interactive, Action::Edit, false),
+			Input::ActionFixup => self.set_selected_line_action(git_interactive, Action::Fixup, false),
+			Input::ActionPick => self.set_selected_line_action(git_interactive, Action::Pick, false),
+			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword, false),
+			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash, false),
 			Input::SwapSelectedDown => git_interactive.swap_range_down(),
 			Input::SwapSelectedUp => git_interactive.swap_range_up(),
 			Input::ToggleVisualMode => {
