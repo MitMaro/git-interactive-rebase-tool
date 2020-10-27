@@ -165,20 +165,12 @@ impl GitInteractive {
 		}
 	}
 
-	pub(crate) fn toggle_break(&mut self) {
-		let selected_action = self.lines[self.selected_line_index - 1].get_action();
-		if *selected_action == Action::Break {
-			self.lines.remove(self.selected_line_index - 1);
-			if self.selected_line_index != 1 {
-				self.selected_line_index -= 1;
-			}
-		}
-		else {
-			self.lines.insert(self.selected_line_index, Line::new_break());
-			if self.selected_line_index != self.lines.len() {
-				self.selected_line_index += 1;
-			}
-		}
+	pub(crate) fn add_line(&mut self, line_number: usize, line: Line) {
+		self.lines.insert(line_number - 1, line);
+	}
+
+	pub(crate) fn remove_line(&mut self, line_number: usize) {
+		self.lines.remove(line_number - 1);
 	}
 
 	pub(crate) const fn is_noop(&self) -> bool {
