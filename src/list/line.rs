@@ -100,8 +100,8 @@ impl Line {
 		self.command.as_str()
 	}
 
-	pub(crate) const fn get_hash(&self) -> &String {
-		&self.hash
+	pub(crate) fn get_hash(&self) -> &str {
+		self.hash.as_str()
 	}
 
 	pub(super) const fn get_comment(&self) -> &String {
@@ -324,7 +324,7 @@ mod tests {
 		case::squash("squash aaa comment", "aaa")
 	)]
 	fn get_hash(line: &str, expected: &str) {
-		assert_eq!(Line::new(line).unwrap().get_hash(), &expected);
+		assert_eq!(Line::new(line).unwrap().get_hash(), expected);
 	}
 
 	#[rstest(
