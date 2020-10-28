@@ -39,7 +39,7 @@ impl<'l> ProcessModule for List<'l> {
 
 		let is_visual_mode = self.state == ListState::Visual;
 		let visual_index = git_interactive.get_visual_start_index() - 1;
-		let selected_index = *git_interactive.get_selected_line_index() - 1;
+		let selected_index = git_interactive.get_selected_line_index() - 1;
 
 		for (index, line) in git_interactive.get_lines().iter().enumerate() {
 			let selected_line = is_visual_mode
@@ -152,11 +152,11 @@ impl<'l> List<'l> {
 				// TODO - does not stop multiple breaks in a row
 				let action = git_interactive.get_selected_line().get_action();
 				if action == &Action::Break {
-					git_interactive.remove_line(*git_interactive.get_selected_line_index());
+					git_interactive.remove_line(git_interactive.get_selected_line_index());
 					git_interactive.move_cursor_up(1);
 				}
 				else {
-					git_interactive.add_line(*git_interactive.get_selected_line_index() + 1, Line::new_break());
+					git_interactive.add_line(git_interactive.get_selected_line_index() + 1, Line::new_break());
 					git_interactive.move_cursor_down(1);
 				}
 			},

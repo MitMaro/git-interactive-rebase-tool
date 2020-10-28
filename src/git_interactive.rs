@@ -181,8 +181,8 @@ impl GitInteractive {
 		&self.lines[self.selected_line_index - 1]
 	}
 
-	pub(crate) const fn get_selected_line_index(&self) -> &usize {
-		&self.selected_line_index
+	pub(crate) const fn get_selected_line_index(&self) -> usize {
+		self.selected_line_index
 	}
 
 	pub(crate) fn get_visual_start_index(&self) -> usize {
