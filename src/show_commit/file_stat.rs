@@ -48,8 +48,8 @@ impl FileStat {
 	}
 
 	/// Get the source file name for this change.
-	pub(super) const fn get_from_name(&self) -> &String {
-		&self.from_name
+	pub(super) fn get_from_name(&self) -> &str {
+		self.from_name.as_str()
 	}
 
 	pub(crate) const fn largest_old_line_number(&self) -> u32 {
