@@ -75,6 +75,10 @@ impl GitInteractive {
 		self.selected_line_index = selected_line_index;
 	}
 
+	pub(crate) fn set_visual_index(&mut self, visual_index: usize) {
+		self.visual_index_start = Some(visual_index);
+	}
+
 	pub(crate) fn start_visual_mode(&mut self) {
 		self.visual_index_start = Some(self.selected_line_index);
 	}
@@ -83,55 +87,8 @@ impl GitInteractive {
 		self.visual_index_start = None;
 	}
 
-	pub(crate) fn swap_range_up(&mut self) {
-		let end_index = self.visual_index_start.unwrap_or(self.selected_line_index);
-		let start_index = self.selected_line_index;
-
-		if end_index == 1 || start_index == 1 {
-			return;
-		}
-
-		let range = if end_index <= start_index {
-			end_index..=start_index
-		}
-		else {
-			start_index..=end_index
-		};
-
-		for index in range {
-			self.lines.swap(index - 1, index - 2);
-		}
-
-		if let Some(visual_index_start) = self.visual_index_start {
-			self.visual_index_start = Some(visual_index_start - 1);
-		}
-		self.selected_line_index -= 1;
-	}
-
-	pub(crate) fn swap_range_down(&mut self) {
-		let end_index = self.visual_index_start.unwrap_or(self.selected_line_index);
-		let start_index = self.selected_line_index;
-
-		if end_index == self.lines.len() || start_index == self.lines.len() {
-			return;
-		}
-
-		let range = if end_index <= start_index {
-			end_index..=start_index
-		}
-		else {
-			start_index..=end_index
-		};
-
-		for index in range.rev() {
-			self.lines.swap(index - 1, index);
-		}
-
-		if let Some(visual_index_start) = self.visual_index_start {
-			self.visual_index_start = Some(visual_index_start + 1);
-		}
-
-		self.selected_line_index += 1;
+	pub(crate) fn swap_lines(&mut self, a: usize, b: usize) {
+		self.lines.swap(a, b);
 	}
 
 	pub(crate) fn edit_selected_line(&mut self, content: &str) {
@@ -177,8 +134,8 @@ impl GitInteractive {
 		self.selected_line_index
 	}
 
-	pub(crate) fn get_visual_start_index(&self) -> usize {
-		self.visual_index_start.unwrap_or(self.selected_line_index)
+	pub(crate) const fn get_visual_start_index(&self) -> Option<usize> {
+		self.visual_index_start
 	}
 
 	pub(crate) fn get_filepath(&self) -> &str {
