@@ -174,7 +174,7 @@ pub(super) fn get_todo_line_segments(
 
 		segments.push(LineSegment::new(
 			if *action == Action::Exec {
-				line.get_command().clone()
+				String::from(line.get_command())
 			}
 			else if *action == Action::Break {
 				String::from("")
@@ -202,7 +202,7 @@ pub(super) fn get_todo_line_segments(
 
 		segments.push(LineSegment::new(
 			if *action == Action::Exec {
-				line.get_command().clone()
+				String::from(line.get_command())
 			}
 			else if *action == Action::Break {
 				String::from("    ")
