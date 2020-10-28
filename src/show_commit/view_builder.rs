@@ -110,7 +110,7 @@ impl ViewBuilder {
 			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name(),
-				stat.get_from_name().as_str(),
+				stat.get_from_name(),
 				is_full_width,
 			)));
 		}
@@ -185,7 +185,7 @@ impl ViewBuilder {
 			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name(),
-				stat.get_from_name().as_str(),
+				stat.get_from_name(),
 				true,
 			)));
 
