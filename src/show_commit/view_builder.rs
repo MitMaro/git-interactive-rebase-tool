@@ -109,7 +109,7 @@ impl ViewBuilder {
 		for stat in commit.get_file_stats() {
 			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
-				stat.get_to_name().as_str(),
+				stat.get_to_name(),
 				stat.get_from_name().as_str(),
 				is_full_width,
 			)));
@@ -184,7 +184,7 @@ impl ViewBuilder {
 		for stat in commit.get_file_stats() {
 			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
-				stat.get_to_name().as_str(),
+				stat.get_to_name(),
 				stat.get_from_name().as_str(),
 				true,
 			)));

@@ -43,8 +43,8 @@ impl FileStat {
 	}
 
 	/// Get the destination file name for this change.
-	pub(super) const fn get_to_name(&self) -> &String {
-		&self.to_name
+	pub(super) fn get_to_name(&self) -> &str {
+		self.to_name.as_str()
 	}
 
 	/// Get the source file name for this change.
