@@ -16,6 +16,7 @@ use crate::process::state::State;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
+use std::cmp;
 
 #[derive(Debug, PartialEq)]
 enum ListState {
@@ -74,11 +75,11 @@ impl<'l> ProcessModule for List<'l> {
 			Input::MoveCursorLeft => self.view_data.scroll_left(),
 			Input::MoveCursorRight => self.view_data.scroll_right(),
 			Input::MoveCursorDown => {
-				git_interactive.move_cursor_down(1);
+				Self::move_cursor_down(git_interactive, 1);
 			},
-			Input::MoveCursorUp => git_interactive.move_cursor_up(1),
-			Input::MoveCursorPageDown => git_interactive.move_cursor_down(view_height / 2),
-			Input::MoveCursorPageUp => git_interactive.move_cursor_up(view_height / 2),
+			Input::MoveCursorUp => Self::move_cursor_up(git_interactive, 1),
+			Input::MoveCursorPageDown => Self::move_cursor_down(git_interactive, view_height / 2),
+			Input::MoveCursorPageUp => Self::move_cursor_up(git_interactive, view_height / 2),
 			_ => {
 				result = match self.state {
 					ListState::Normal => self.handle_normal_mode_input(input, result, git_interactive),
@@ -114,10 +115,28 @@ impl<'l> List<'l> {
 		}
 	}
 
+	pub(crate) fn move_cursor_up(git_interactive: &mut GitInteractive, amount: usize) {
+		let current_selected_line_index = git_interactive.get_selected_line_index();
+		git_interactive.set_selected_line_index(
+			if amount >= current_selected_line_index {
+				1
+			}
+			else {
+				current_selected_line_index - amount
+			},
+		);
+	}
+
+	pub(crate) fn move_cursor_down(git_interactive: &mut GitInteractive, amount: usize) {
+		let current_selected_line_index = git_interactive.get_selected_line_index();
+		let lines_length = git_interactive.get_lines().len();
+		git_interactive.set_selected_line_index(cmp::min(current_selected_line_index + amount, lines_length));
+	}
+
 	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action, advanced_next: bool) {
 		git_interactive.set_range_action(action);
 		if advanced_next && self.config.auto_select_next {
-			git_interactive.move_cursor_down(1);
+			Self::move_cursor_down(git_interactive, 1);
 		}
 	}
 
@@ -153,11 +172,11 @@ impl<'l> List<'l> {
 				let action = git_interactive.get_selected_line().get_action();
 				if action == &Action::Break {
 					git_interactive.remove_line(git_interactive.get_selected_line_index());
-					git_interactive.move_cursor_up(1);
+					Self::move_cursor_up(git_interactive, 1);
 				}
 				else {
 					git_interactive.add_line(git_interactive.get_selected_line_index() + 1, Line::new_break());
-					git_interactive.move_cursor_down(1);
+					Self::move_cursor_down(git_interactive, 1);
 				}
 			},
 			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop, true),

@@ -1,7 +1,6 @@
 use crate::list::action::Action;
 use crate::list::line::Line;
 use anyhow::{anyhow, Result};
-use std::cmp;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::Path;
@@ -72,15 +71,8 @@ impl GitInteractive {
 		self.lines.clear();
 	}
 
-	pub(crate) fn move_cursor_up(&mut self, amount: usize) {
-		self.selected_line_index = match amount {
-			a if a >= self.selected_line_index => 1,
-			_ => self.selected_line_index - amount,
-		};
-	}
-
-	pub(crate) fn move_cursor_down(&mut self, amount: usize) {
-		self.selected_line_index = cmp::min(self.selected_line_index + amount, self.lines.len());
+	pub(crate) fn set_selected_line_index(&mut self, selected_line_index: usize) {
+		self.selected_line_index = selected_line_index;
 	}
 
 	pub(crate) fn start_visual_mode(&mut self) {
@@ -113,7 +105,7 @@ impl GitInteractive {
 		if let Some(visual_index_start) = self.visual_index_start {
 			self.visual_index_start = Some(visual_index_start - 1);
 		}
-		self.move_cursor_up(1);
+		self.selected_line_index -= 1;
 	}
 
 	pub(crate) fn swap_range_down(&mut self) {
@@ -139,7 +131,7 @@ impl GitInteractive {
 			self.visual_index_start = Some(visual_index_start + 1);
 		}
 
-		self.move_cursor_down(1);
+		self.selected_line_index += 1;
 	}
 
 	pub(crate) fn edit_selected_line(&mut self, content: &str) {
