@@ -215,7 +215,7 @@ pub(super) fn get_todo_line_segments(
 		));
 	}
 	if *action != Action::Exec && *action != Action::Break {
-		segments.push(LineSegment::new(line.get_comment().as_str()));
+		segments.push(LineSegment::new(line.get_comment()));
 	}
 	segments
 }

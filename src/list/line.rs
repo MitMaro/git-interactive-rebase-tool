@@ -104,8 +104,8 @@ impl Line {
 		self.hash.as_str()
 	}
 
-	pub(super) const fn get_comment(&self) -> &String {
-		&self.comment
+	pub(super) fn get_comment(&self) -> &str {
+		self.comment.as_str()
 	}
 
 	pub(crate) fn to_text(&self) -> String {
