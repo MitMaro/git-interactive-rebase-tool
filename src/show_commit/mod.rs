@@ -50,18 +50,15 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 		self.view_data.reset();
 
-		let new_commit = Commit::new_from_hash(
-			git_interactive.get_selected_line().get_hash().as_str(),
-			LoadCommitDiffOptions {
-				context_lines: self.config.git.diff_context,
-				copies: self.config.git.diff_copies,
-				ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
-				ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
-				interhunk_lines: self.config.git.diff_interhunk_lines,
-				rename_limit: self.config.git.diff_rename_limit,
-				renames: self.config.git.diff_renames,
-			},
-		);
+		let new_commit = Commit::new_from_hash(git_interactive.get_selected_line().get_hash(), LoadCommitDiffOptions {
+			context_lines: self.config.git.diff_context,
+			copies: self.config.git.diff_copies,
+			ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
+			ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
+			interhunk_lines: self.config.git.diff_interhunk_lines,
+			rename_limit: self.config.git.diff_rename_limit,
+			renames: self.config.git.diff_renames,
+		});
 
 		match new_commit {
 			Ok(c) => {
