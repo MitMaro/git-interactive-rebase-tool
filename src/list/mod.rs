@@ -29,6 +29,7 @@ pub struct List<'l> {
 	normal_mode_help_lines: Vec<(String, String)>,
 	state: ListState,
 	view_data: ViewData,
+	visual_index_start: Option<usize>,
 	visual_mode_help_lines: Vec<(String, String)>,
 }
 
@@ -39,8 +40,8 @@ impl<'l> ProcessModule for List<'l> {
 		self.view_data.clear();
 
 		let is_visual_mode = self.state == ListState::Visual;
-		let visual_index = git_interactive
-			.get_visual_start_index()
+		let visual_index = self
+			.visual_index_start
 			.unwrap_or_else(|| git_interactive.get_selected_line_index())
 			- 1;
 		let selected_index = git_interactive.get_selected_line_index() - 1;
@@ -60,6 +61,9 @@ impl<'l> ProcessModule for List<'l> {
 
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
+		if let Some(visual_index) = self.visual_index_start {
+			self.view_data.ensure_line_visible(visual_index - 1);
+		}
 		self.view_data.ensure_line_visible(selected_index);
 		&self.view_data
 	}
@@ -114,6 +118,7 @@ impl<'l> List<'l> {
 			normal_mode_help_lines: get_list_normal_mode_help_lines(&config.key_bindings),
 			state: ListState::Normal,
 			view_data,
+			visual_index_start: None,
 			visual_mode_help_lines: get_list_visual_mode_help_lines(&config.key_bindings),
 		}
 	}
@@ -137,15 +142,18 @@ impl<'l> List<'l> {
 	}
 
 	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action, advanced_next: bool) {
-		git_interactive.set_range_action(action);
+		let start_index = git_interactive.get_selected_line_index();
+		let end_index = self.visual_index_start.unwrap_or(start_index);
+
+		git_interactive.set_range_action(start_index, end_index, action);
 		if advanced_next && self.config.auto_select_next {
 			Self::move_cursor_down(git_interactive, 1);
 		}
 	}
 
-	pub(crate) fn swap_range_up(git_interactive: &mut GitInteractive) {
+	pub(crate) fn swap_range_up(&mut self, git_interactive: &mut GitInteractive) {
 		let start_index = git_interactive.get_selected_line_index();
-		let end_index = git_interactive.get_visual_start_index().unwrap_or(start_index);
+		let end_index = self.visual_index_start.unwrap_or(start_index);
 
 		if end_index == 1 || start_index == 1 {
 			return;
@@ -162,15 +170,15 @@ impl<'l> List<'l> {
 			git_interactive.swap_lines(index - 1, index - 2);
 		}
 
-		if let Some(visual_index_start) = git_interactive.get_visual_start_index() {
-			git_interactive.set_visual_index(visual_index_start - 1);
+		if let Some(visual_index_start) = self.visual_index_start {
+			self.visual_index_start = Some(visual_index_start - 1);
 		}
 		Self::move_cursor_up(git_interactive, 1);
 	}
 
-	pub(crate) fn swap_range_down(git_interactive: &mut GitInteractive) {
+	pub(crate) fn swap_range_down(&mut self, git_interactive: &mut GitInteractive) {
 		let start_index = git_interactive.get_selected_line_index();
-		let end_index = git_interactive.get_visual_start_index().unwrap_or(start_index);
+		let end_index = self.visual_index_start.unwrap_or(start_index);
 		let lines_length = git_interactive.get_lines().len();
 
 		if end_index == lines_length || start_index == lines_length {
@@ -188,8 +196,8 @@ impl<'l> List<'l> {
 			git_interactive.swap_lines(index - 1, index);
 		}
 
-		if let Some(visual_index_start) = git_interactive.get_visual_start_index() {
-			git_interactive.set_visual_index(visual_index_start + 1);
+		if let Some(visual_index_start) = self.visual_index_start {
+			self.visual_index_start = Some(visual_index_start + 1);
 		}
 
 		Self::move_cursor_down(git_interactive, 1);
@@ -245,10 +253,10 @@ impl<'l> List<'l> {
 					result = result.state(State::Edit);
 				}
 			},
-			Input::SwapSelectedDown => Self::swap_range_down(git_interactive),
-			Input::SwapSelectedUp => Self::swap_range_up(git_interactive),
+			Input::SwapSelectedDown => self.swap_range_down(git_interactive),
+			Input::SwapSelectedUp => self.swap_range_up(git_interactive),
 			Input::ToggleVisualMode => {
-				git_interactive.start_visual_mode();
+				self.visual_index_start = Some(git_interactive.get_selected_line_index());
 				self.state = ListState::Visual;
 				result = result.state(State::List);
 			},
@@ -287,10 +295,10 @@ impl<'l> List<'l> {
 			Input::ActionPick => self.set_selected_line_action(git_interactive, Action::Pick, false),
 			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword, false),
 			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash, false),
-			Input::SwapSelectedDown => Self::swap_range_down(git_interactive),
-			Input::SwapSelectedUp => Self::swap_range_up(git_interactive),
+			Input::SwapSelectedDown => self.swap_range_down(git_interactive),
+			Input::SwapSelectedUp => self.swap_range_up(git_interactive),
 			Input::ToggleVisualMode => {
-				git_interactive.end_visual_mode();
+				self.visual_index_start = None;
 				self.state = ListState::Normal;
 				result = result.state(State::List);
 			},
