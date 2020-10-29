@@ -1,17 +1,15 @@
-pub mod action;
-pub mod line;
 mod utils;
 
 use crate::config::Config;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::list::action::Action;
-use crate::list::line::Line;
 use crate::list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::action::Action;
+use crate::todo_file::line::Line;
 use crate::todo_file::{EditContext, TodoFile};
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;

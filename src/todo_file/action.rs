@@ -29,7 +29,7 @@ impl Action {
 		})
 	}
 
-	pub(super) fn to_abbreviation(self) -> String {
+	pub(crate) fn to_abbreviation(self) -> String {
 		String::from(match self {
 			Self::Break => "b",
 			Self::Drop => "d",
@@ -66,7 +66,7 @@ impl TryFrom<&str> for Action {
 #[cfg(test)]
 mod tests {
 	use super::Action;
-	use super::TryFrom;
+	use std::convert::TryFrom;
 
 	macro_rules! test_action_to_string {
 		($name:ident, $action:expr, $expected:expr) => {

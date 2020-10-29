@@ -1,8 +1,8 @@
 use crate::config::key_bindings::KeyBindings;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::display_color::DisplayColor;
-use crate::list::action::Action;
-use crate::list::line::Line;
+use crate::todo_file::action::Action;
+use crate::todo_file::line::Line;
 use crate::view::line_segment::LineSegment;
 use std::cmp;
 
