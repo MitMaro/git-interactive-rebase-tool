@@ -1,4 +1,4 @@
-use crate::list::action::Action;
+use crate::todo_file::action::Action;
 use anyhow::{anyhow, Result};
 use std::convert::TryFrom;
 
@@ -96,7 +96,7 @@ impl Line {
 		&self.action
 	}
 
-	pub(super) fn get_command(&self) -> &str {
+	pub(crate) fn get_command(&self) -> &str {
 		self.command.as_str()
 	}
 
@@ -104,7 +104,7 @@ impl Line {
 		self.hash.as_str()
 	}
 
-	pub(super) fn get_comment(&self) -> &str {
+	pub(crate) fn get_comment(&self) -> &str {
 		self.comment.as_str()
 	}
 
@@ -120,7 +120,7 @@ impl Line {
 #[cfg(test)]
 mod tests {
 	use super::Line;
-	use crate::list::action::Action;
+	use crate::todo_file::action::Action;
 	use rstest::rstest;
 
 	#[rstest(

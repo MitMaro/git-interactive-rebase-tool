@@ -1,9 +1,12 @@
-use crate::list::action::Action;
-use crate::list::line::Line;
+use action::Action;
 use anyhow::{anyhow, Result};
+use line::Line;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::Path;
+
+pub mod action;
+pub mod line;
 
 pub struct EditContext {
 	action: Option<Action>,

@@ -5,11 +5,11 @@ use crate::display::Display;
 use crate::external_editor::argument_tolkenizer::tolkenize;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::list::line::Line;
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::line::Line;
 use crate::todo_file::TodoFile;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
@@ -261,10 +261,10 @@ mod tests {
 	use crate::assert_rendered_output;
 	use crate::external_editor::{ExternalEditor, ExternalEditorState};
 	use crate::input::Input;
-	use crate::list::line::Line;
 	use crate::process::exit_status::ExitStatus;
 	use crate::process::state::State;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
+	use crate::todo_file::line::Line;
 	use anyhow::anyhow;
 	use std::path::Path;
 
