@@ -4,7 +4,6 @@ use crate::confirm_rebase::ConfirmRebase;
 use crate::display::Display;
 use crate::edit::Edit;
 use crate::external_editor::ExternalEditor;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::list::List;
 use crate::process::error::Error;
@@ -14,6 +13,7 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::process::window_size_error::WindowSizeError;
 use crate::show_commit::ShowCommit;
+use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;
 use crate::view::View;
 
@@ -72,28 +72,28 @@ impl<'m> Modules<'m> {
 		}
 	}
 
-	pub fn activate(&mut self, state: State, git_interactive: &GitInteractive, previous_state: State) -> ProcessResult {
-		self.get_mut_module(state).activate(git_interactive, previous_state)
+	pub fn activate(&mut self, state: State, rebase_todo: &TodoFile, previous_state: State) -> ProcessResult {
+		self.get_mut_module(state).activate(rebase_todo, previous_state)
 	}
 
 	pub fn deactivate(&mut self, state: State) {
 		self.get_mut_module(state).deactivate()
 	}
 
-	pub fn build_view_data(&mut self, state: State, view: &View<'_>, git_interactive: &GitInteractive) -> &ViewData {
-		self.get_mut_module(state).build_view_data(view, git_interactive)
+	pub fn build_view_data(&mut self, state: State, view: &View<'_>, rebase_todo: &TodoFile) -> &ViewData {
+		self.get_mut_module(state).build_view_data(view, rebase_todo)
 	}
 
 	pub fn handle_input(
 		&mut self,
 		state: State,
 		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
+		rebase_todo: &mut TodoFile,
 		view: &View<'_>,
 	) -> ProcessResult
 	{
 		self.get_mut_module(state)
-			.handle_input(input_handler, git_interactive, view)
+			.handle_input(input_handler, rebase_todo, view)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {

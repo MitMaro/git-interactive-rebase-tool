@@ -3,7 +3,6 @@ mod argument_tolkenizer;
 use crate::display::display_color::DisplayColor;
 use crate::display::Display;
 use crate::external_editor::argument_tolkenizer::tolkenize;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::line::Line;
@@ -11,6 +10,7 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::TodoFile;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -37,14 +37,14 @@ pub struct ExternalEditor<'e> {
 }
 
 impl<'e> ProcessModule for ExternalEditor<'e> {
-	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
+	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		self.state = ExternalEditorState::Active;
-		if let Err(err) = git_interactive.write_file() {
+		if let Err(err) = todo_file.write_file() {
 			result = result.error(err).state(State::List);
 		}
 		else if self.lines.is_empty() {
-			self.lines = git_interactive.get_lines().to_owned();
+			self.lines = todo_file.get_lines().to_owned();
 		}
 		result
 	}
@@ -55,7 +55,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		self.view_data.reset();
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let (window_width, window_height) = view.get_view_size();
 		self.view_data.clear();
 
@@ -112,20 +112,20 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
+		todo_file: &mut TodoFile,
 		view: &View<'_>,
 	) -> ProcessResult
 	{
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
-				if let Err(e) = self.run_editor(git_interactive) {
+				if let Err(e) = self.run_editor(todo_file) {
 					self.state = ExternalEditorState::Error(e);
 				}
 				else {
-					match git_interactive.load_file() {
+					match todo_file.load_file() {
 						Ok(_) => {
-							if git_interactive.get_lines().is_empty() || git_interactive.is_noop() {
+							if todo_file.get_lines().is_empty() || todo_file.is_noop() {
 								self.state = ExternalEditorState::Empty;
 							}
 							else {
@@ -146,8 +146,8 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 						Input::Character('1') => result = result.exit_status(ExitStatus::Good),
 						Input::Character('2') => self.state = ExternalEditorState::Active,
 						Input::Character('3') => {
-							git_interactive.set_lines(self.lines.to_vec());
-							self.activate(git_interactive, State::ExternalEditor);
+							todo_file.set_lines(self.lines.to_vec());
+							self.activate(todo_file, State::ExternalEditor);
 						},
 						_ => self.invalid_selection = true,
 					}
@@ -160,20 +160,20 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 					self.invalid_selection = false;
 					match input {
 						Input::Character('1') => {
-							git_interactive.clear();
+							todo_file.set_noop();
 							result = result.exit_status(ExitStatus::Good)
 						},
 						Input::Character('2') => self.state = ExternalEditorState::Active,
 						Input::Character('3') => {
-							git_interactive.set_lines(self.lines.to_vec());
+							todo_file.set_lines(self.lines.to_vec());
 							result = result.state(State::List);
-							if let Err(err) = git_interactive.write_file() {
+							if let Err(err) = todo_file.write_file() {
 								result = result.error(err);
 							}
 						},
 						Input::Character('4') => {
-							git_interactive.set_lines(self.lines.to_vec());
-							self.activate(git_interactive, State::ExternalEditor);
+							todo_file.set_lines(self.lines.to_vec());
+							self.activate(todo_file, State::ExternalEditor);
 						},
 						_ => self.invalid_selection = true,
 					}
@@ -215,7 +215,7 @@ impl<'e> ExternalEditor<'e> {
 		None
 	}
 
-	fn run_editor(&mut self, git_interactive: &GitInteractive) -> Result<()> {
+	fn run_editor(&mut self, todo_file: &TodoFile) -> Result<()> {
 		let mut arguments = tolkenize(self.editor.as_str())
 			.map_or(Err(anyhow!("Invalid editor: \"{}\"", self.editor)), |args| {
 				if args.is_empty() {
@@ -227,7 +227,7 @@ impl<'e> ExternalEditor<'e> {
 			})
 			.map_err(|e| anyhow!("Please see the git \"core.editor\" configuration for details").context(e))?;
 
-		let filepath = git_interactive.get_filepath();
+		let filepath = todo_file.get_filepath();
 		let callback = || -> Result<ProcessExitStatus> {
 			let mut file_pattern_found = false;
 			let mut cmd = Command::new(arguments.next().unwrap());
@@ -329,7 +329,7 @@ mod tests {
 					get_external_editor("pick aaa comment", "0").as_str(),
 				);
 				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_eq!(test_context.git_interactive.get_lines(), &vec![
+				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![
 					Line::new("pick aaa comment1").unwrap(),
 					Line::new("drop bbb comment2").unwrap()
 				]);
@@ -491,7 +491,7 @@ mod tests {
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('3'));
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				assert_eq!(test_context.git_interactive.get_lines(), &vec![
+				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![
 					Line::new("pick aaa comment").unwrap(),
 					Line::new("drop bbb comment").unwrap()
 				]);
@@ -735,7 +735,7 @@ mod tests {
 					input = Input::Character('1'),
 					exit_status = ExitStatus::Good
 				);
-				assert_eq!(test_context.git_interactive.get_lines(), &vec![]);
+				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![]);
 			},
 		);
 	}
@@ -781,7 +781,7 @@ mod tests {
 					input = Input::Character('3'),
 					state = State::List
 				);
-				assert_eq!(test_context.git_interactive.get_lines(), &vec![Line::new(
+				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![Line::new(
 					"pick aaa comment"
 				)
 				.unwrap()]);
@@ -806,7 +806,7 @@ mod tests {
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('4'));
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				assert_eq!(test_context.git_interactive.get_lines(), &vec![Line::new(
+				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![Line::new(
 					"pick aaa comment"
 				)
 				.unwrap()]);

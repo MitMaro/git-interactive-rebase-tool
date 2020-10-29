@@ -2,7 +2,6 @@ use crate::config::key_bindings::KeyBindings;
 use crate::config::Config;
 use crate::display::curses::{Curses, Input as PancursesInput};
 use crate::display::Display;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
 use crate::list::line::Line;
@@ -10,6 +9,7 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::TodoFile;
 use crate::view::testutil::render_view_data;
 use crate::view::view_data::ViewData;
 use crate::view::View;
@@ -20,7 +20,7 @@ use std::path::Path;
 use tempfile::{Builder, NamedTempFile};
 
 pub struct TestContext<'t> {
-	pub git_interactive: &'t mut GitInteractive,
+	pub rebase_todo_file: &'t mut TodoFile,
 	todo_file: Cell<NamedTempFile>,
 	pub input_handler: &'t InputHandler<'t>,
 	pub view: &'t View<'t>,
@@ -30,7 +30,7 @@ pub struct TestContext<'t> {
 
 impl<'t> TestContext<'t> {
 	pub fn activate(&mut self, module: &'_ mut dyn ProcessModule, state: State) -> ProcessResult {
-		module.activate(self.git_interactive, state)
+		module.activate(self.rebase_todo_file, state)
 	}
 
 	#[allow(clippy::unused_self)]
@@ -39,17 +39,17 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
-		module.build_view_data(self.view, self.git_interactive)
+		module.build_view_data(self.view, self.rebase_todo_file)
 	}
 
 	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_input(self.input_handler, self.git_interactive, self.view)
+		module.handle_input(self.input_handler, self.rebase_todo_file, self.view)
 	}
 
 	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.num_inputs {
-			results.push(module.handle_input(self.input_handler, self.git_interactive, self.view));
+			results.push(module.handle_input(self.input_handler, self.rebase_todo_file, self.view));
 		}
 		results
 	}
@@ -470,12 +470,12 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.tempfile_in(git_repo_dir.as_str())
 		.unwrap();
 
-	let mut git_interactive = GitInteractive::new(todo_file.path().to_str().unwrap(), "#");
-	git_interactive.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
+	let mut rebsae_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), "#");
+	rebsae_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
 
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
-		git_interactive: &mut git_interactive,
+		rebase_todo_file: &mut rebsae_todo_file,
 		todo_file: Cell::new(todo_file),
 		view: &view,
 		input_handler: &input_handler,

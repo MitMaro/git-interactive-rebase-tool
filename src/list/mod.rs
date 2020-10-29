@@ -3,7 +3,6 @@ pub mod line;
 mod utils;
 
 use crate::config::Config;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::list::action::Action;
@@ -13,6 +12,7 @@ use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::{EditContext, TodoFile};
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
@@ -34,7 +34,7 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn build_view_data(&mut self, view: &View<'_>, git_interactive: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, todo_file: &TodoFile) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 
 		self.view_data.clear();
@@ -42,11 +42,11 @@ impl<'l> ProcessModule for List<'l> {
 		let is_visual_mode = self.state == ListState::Visual;
 		let visual_index = self
 			.visual_index_start
-			.unwrap_or_else(|| git_interactive.get_selected_line_index())
+			.unwrap_or_else(|| todo_file.get_selected_line_index())
 			- 1;
-		let selected_index = git_interactive.get_selected_line_index() - 1;
+		let selected_index = todo_file.get_selected_line_index() - 1;
 
-		for (index, line) in git_interactive.get_lines().iter().enumerate() {
+		for (index, line) in todo_file.get_lines().iter().enumerate() {
 			let selected_line = is_visual_mode
 				&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
 					|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
@@ -71,7 +71,7 @@ impl<'l> ProcessModule for List<'l> {
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
+		todo_file: &mut TodoFile,
 		view: &View<'_>,
 	) -> ProcessResult
 	{
@@ -82,15 +82,15 @@ impl<'l> ProcessModule for List<'l> {
 			Input::MoveCursorLeft => self.view_data.scroll_left(),
 			Input::MoveCursorRight => self.view_data.scroll_right(),
 			Input::MoveCursorDown => {
-				Self::move_cursor_down(git_interactive, 1);
+				Self::move_cursor_down(todo_file, 1);
 			},
-			Input::MoveCursorUp => Self::move_cursor_up(git_interactive, 1),
-			Input::MoveCursorPageDown => Self::move_cursor_down(git_interactive, view_height / 2),
-			Input::MoveCursorPageUp => Self::move_cursor_up(git_interactive, view_height / 2),
+			Input::MoveCursorUp => Self::move_cursor_up(todo_file, 1),
+			Input::MoveCursorPageDown => Self::move_cursor_down(todo_file, view_height / 2),
+			Input::MoveCursorPageUp => Self::move_cursor_up(todo_file, view_height / 2),
 			_ => {
 				result = match self.state {
-					ListState::Normal => self.handle_normal_mode_input(input, result, git_interactive),
-					ListState::Visual => self.handle_visual_mode_input(input, result, git_interactive),
+					ListState::Normal => self.handle_normal_mode_input(input, result, todo_file),
+					ListState::Visual => self.handle_visual_mode_input(input, result, todo_file),
 				}
 			},
 		}
@@ -123,9 +123,9 @@ impl<'l> List<'l> {
 		}
 	}
 
-	pub(crate) fn move_cursor_up(git_interactive: &mut GitInteractive, amount: usize) {
-		let current_selected_line_index = git_interactive.get_selected_line_index();
-		git_interactive.set_selected_line_index(
+	pub(crate) fn move_cursor_up(todo_file: &mut TodoFile, amount: usize) {
+		let current_selected_line_index = todo_file.get_selected_line_index();
+		todo_file.set_selected_line_index(
 			if amount >= current_selected_line_index {
 				1
 			}
@@ -135,24 +135,24 @@ impl<'l> List<'l> {
 		);
 	}
 
-	pub(crate) fn move_cursor_down(git_interactive: &mut GitInteractive, amount: usize) {
-		let current_selected_line_index = git_interactive.get_selected_line_index();
-		let lines_length = git_interactive.get_lines().len();
-		git_interactive.set_selected_line_index(cmp::min(current_selected_line_index + amount, lines_length));
+	pub(crate) fn move_cursor_down(rebase_todo: &mut TodoFile, amount: usize) {
+		let current_selected_line_index = rebase_todo.get_selected_line_index();
+		let lines_length = rebase_todo.get_lines().len();
+		rebase_todo.set_selected_line_index(cmp::min(current_selected_line_index + amount, lines_length));
 	}
 
-	fn set_selected_line_action(&self, git_interactive: &mut GitInteractive, action: Action, advanced_next: bool) {
-		let start_index = git_interactive.get_selected_line_index();
+	fn set_selected_line_action(&self, rebase_todo: &mut TodoFile, action: Action, advanced_next: bool) {
+		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
-		git_interactive.set_range_action(start_index, end_index, action);
+		rebase_todo.update_range(start_index, end_index, &EditContext::new().action(action));
 		if advanced_next && self.config.auto_select_next {
-			Self::move_cursor_down(git_interactive, 1);
+			Self::move_cursor_down(rebase_todo, 1);
 		}
 	}
 
-	pub(crate) fn swap_range_up(&mut self, git_interactive: &mut GitInteractive) {
-		let start_index = git_interactive.get_selected_line_index();
+	pub(crate) fn swap_range_up(&mut self, rebase_todo: &mut TodoFile) {
+		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
 		if end_index == 1 || start_index == 1 {
@@ -167,19 +167,19 @@ impl<'l> List<'l> {
 		};
 
 		for index in range {
-			git_interactive.swap_lines(index - 1, index - 2);
+			rebase_todo.swap_lines(index - 1, index - 2);
 		}
 
 		if let Some(visual_index_start) = self.visual_index_start {
 			self.visual_index_start = Some(visual_index_start - 1);
 		}
-		Self::move_cursor_up(git_interactive, 1);
+		Self::move_cursor_up(rebase_todo, 1);
 	}
 
-	pub(crate) fn swap_range_down(&mut self, git_interactive: &mut GitInteractive) {
-		let start_index = git_interactive.get_selected_line_index();
+	pub(crate) fn swap_range_down(&mut self, rebase_todo: &mut TodoFile) {
+		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
-		let lines_length = git_interactive.get_lines().len();
+		let lines_length = rebase_todo.get_lines().len();
 
 		if end_index == lines_length || start_index == lines_length {
 			return;
@@ -193,27 +193,27 @@ impl<'l> List<'l> {
 		};
 
 		for index in range.rev() {
-			git_interactive.swap_lines(index - 1, index);
+			rebase_todo.swap_lines(index - 1, index);
 		}
 
 		if let Some(visual_index_start) = self.visual_index_start {
 			self.visual_index_start = Some(visual_index_start + 1);
 		}
 
-		Self::move_cursor_down(git_interactive, 1);
+		Self::move_cursor_down(rebase_todo, 1);
 	}
 
 	fn handle_normal_mode_input(
 		&mut self,
 		input: Input,
 		result: ProcessResult,
-		git_interactive: &mut GitInteractive,
+		rebase_todo: &mut TodoFile,
 	) -> ProcessResult
 	{
 		let mut result = result;
 		match input {
 			Input::ShowCommit => {
-				if !git_interactive.get_selected_line().get_hash().is_empty() {
+				if !rebase_todo.get_selected_line().get_hash().is_empty() {
 					result = result.state(State::ShowCommit);
 				}
 			},
@@ -221,7 +221,7 @@ impl<'l> List<'l> {
 				result = result.state(State::ConfirmAbort);
 			},
 			Input::ForceAbort => {
-				git_interactive.clear();
+				rebase_todo.set_noop();
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::Rebase => {
@@ -232,31 +232,31 @@ impl<'l> List<'l> {
 			},
 			Input::ActionBreak => {
 				// TODO - does not stop multiple breaks in a row
-				let action = git_interactive.get_selected_line().get_action();
+				let action = rebase_todo.get_selected_line().get_action();
 				if action == &Action::Break {
-					git_interactive.remove_line(git_interactive.get_selected_line_index());
-					Self::move_cursor_up(git_interactive, 1);
+					rebase_todo.remove_line(rebase_todo.get_selected_line_index());
+					Self::move_cursor_up(rebase_todo, 1);
 				}
 				else {
-					git_interactive.add_line(git_interactive.get_selected_line_index() + 1, Line::new_break());
-					Self::move_cursor_down(git_interactive, 1);
+					rebase_todo.add_line(rebase_todo.get_selected_line_index() + 1, Line::new_break());
+					Self::move_cursor_down(rebase_todo, 1);
 				}
 			},
-			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop, true),
-			Input::ActionEdit => self.set_selected_line_action(git_interactive, Action::Edit, true),
-			Input::ActionFixup => self.set_selected_line_action(git_interactive, Action::Fixup, true),
-			Input::ActionPick => self.set_selected_line_action(git_interactive, Action::Pick, true),
-			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword, true),
-			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash, true),
+			Input::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop, true),
+			Input::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit, true),
+			Input::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup, true),
+			Input::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick, true),
+			Input::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword, true),
+			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash, true),
 			Input::Edit => {
-				if git_interactive.get_selected_line().get_action() == &Action::Exec {
+				if rebase_todo.get_selected_line().get_action() == &Action::Exec {
 					result = result.state(State::Edit);
 				}
 			},
-			Input::SwapSelectedDown => self.swap_range_down(git_interactive),
-			Input::SwapSelectedUp => self.swap_range_up(git_interactive),
+			Input::SwapSelectedDown => self.swap_range_down(rebase_todo),
+			Input::SwapSelectedUp => self.swap_range_up(rebase_todo),
 			Input::ToggleVisualMode => {
-				self.visual_index_start = Some(git_interactive.get_selected_line_index());
+				self.visual_index_start = Some(rebase_todo.get_selected_line_index());
 				self.state = ListState::Visual;
 				result = result.state(State::List);
 			},
@@ -271,7 +271,7 @@ impl<'l> List<'l> {
 		&mut self,
 		input: Input,
 		result: ProcessResult,
-		git_interactive: &mut GitInteractive,
+		rebase_todo: &mut TodoFile,
 	) -> ProcessResult
 	{
 		let mut result = result;
@@ -280,7 +280,7 @@ impl<'l> List<'l> {
 				result = result.state(State::ConfirmAbort);
 			},
 			Input::ForceAbort => {
-				git_interactive.clear();
+				rebase_todo.set_noop();
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::Rebase => {
@@ -289,14 +289,14 @@ impl<'l> List<'l> {
 			Input::ForceRebase => {
 				result = result.exit_status(ExitStatus::Good);
 			},
-			Input::ActionDrop => self.set_selected_line_action(git_interactive, Action::Drop, false),
-			Input::ActionEdit => self.set_selected_line_action(git_interactive, Action::Edit, false),
-			Input::ActionFixup => self.set_selected_line_action(git_interactive, Action::Fixup, false),
-			Input::ActionPick => self.set_selected_line_action(git_interactive, Action::Pick, false),
-			Input::ActionReword => self.set_selected_line_action(git_interactive, Action::Reword, false),
-			Input::ActionSquash => self.set_selected_line_action(git_interactive, Action::Squash, false),
-			Input::SwapSelectedDown => self.swap_range_down(git_interactive),
-			Input::SwapSelectedUp => self.swap_range_up(git_interactive),
+			Input::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop, false),
+			Input::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit, false),
+			Input::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup, false),
+			Input::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick, false),
+			Input::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword, false),
+			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash, false),
+			Input::SwapSelectedDown => self.swap_range_down(rebase_todo),
+			Input::SwapSelectedUp => self.swap_range_up(rebase_todo),
 			Input::ToggleVisualMode => {
 				self.visual_index_start = None;
 				self.state = ListState::Normal;

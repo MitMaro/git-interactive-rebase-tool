@@ -1,10 +1,10 @@
 use crate::display::display_color::DisplayColor;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::{EditContext, TodoFile};
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -18,8 +18,8 @@ pub struct Edit {
 }
 
 impl ProcessModule for Edit {
-	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
-		self.content = git_interactive.get_selected_line().get_edit_content().to_string();
+	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
+		self.content = todo_file.get_selected_line().get_edit_content().to_string();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 		ProcessResult::new()
 	}
@@ -29,7 +29,7 @@ impl ProcessModule for Edit {
 		self.view_data.clear();
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 
 		let line = self.content.as_str();
@@ -70,7 +70,7 @@ impl ProcessModule for Edit {
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
+		todo_file: &mut TodoFile,
 		view: &View<'_>,
 	) -> ProcessResult
 	{
@@ -128,7 +128,7 @@ impl ProcessModule for Edit {
 					}
 				},
 				Input::Enter => {
-					git_interactive.edit_selected_line(self.content.as_str());
+					todo_file.update_selected(&EditContext::new().content(self.content.as_str()));
 					break result.state(State::List);
 				},
 				Input::Resize => {
@@ -810,7 +810,7 @@ mod tests {
 					state = State::List
 				);
 				assert_eq!(
-					test_context.git_interactive.get_selected_line().get_edit_content(),
+					test_context.rebase_todo_file.get_selected_line().get_edit_content(),
 					"foobar"
 				);
 			},
@@ -834,7 +834,7 @@ mod tests {
 					state = State::List
 				);
 				assert_eq!(
-					test_context.git_interactive.get_selected_line().get_edit_content(),
+					test_context.rebase_todo_file.get_selected_line().get_edit_content(),
 					"foobarx"
 				);
 			},
@@ -857,7 +857,7 @@ mod tests {
 					state = State::List
 				);
 				assert_eq!(
-					test_context.git_interactive.get_selected_line().get_edit_content(),
+					test_context.rebase_todo_file.get_selected_line().get_edit_content(),
 					"foobar"
 				);
 			},

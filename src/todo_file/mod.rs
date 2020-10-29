@@ -5,22 +5,54 @@ use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::Path;
 
-pub struct GitInteractive {
-	filepath: String,
-	lines: Vec<Line>,
-	selected_line_index: usize,
-	comment_char: String,
-	is_noop: bool,
+pub struct EditContext {
+	action: Option<Action>,
+	content: Option<String>,
 }
 
-impl GitInteractive {
+impl EditContext {
+	pub const fn new() -> Self {
+		Self {
+			action: None,
+			content: None,
+		}
+	}
+
+	pub const fn action(mut self, action: Action) -> Self {
+		self.action = Some(action);
+		self
+	}
+
+	pub fn content(mut self, content: &str) -> Self {
+		self.content = Some(content.to_string());
+		self
+	}
+
+	pub const fn get_action(&self) -> &Option<Action> {
+		&self.action
+	}
+
+	pub const fn get_content(&self) -> &Option<String> {
+		&self.content
+	}
+}
+
+pub struct TodoFile {
+	comment_char: String,
+	filepath: String,
+	is_noop: bool,
+	lines: Vec<Line>,
+	selected_line_index: usize,
+}
+
+impl TodoFile {
 	pub(crate) fn new(path: &str, comment_char: &str) -> Self {
 		Self {
+			comment_char: comment_char.to_string(),
 			filepath: path.to_string(),
 			lines: vec![],
-			selected_line_index: 1,
 			is_noop: false,
-			comment_char: String::from(comment_char),
+			selected_line_index: 1,
 		}
 	}
 
@@ -65,7 +97,8 @@ impl GitInteractive {
 		Ok(())
 	}
 
-	pub(crate) fn clear(&mut self) {
+	pub(crate) fn set_noop(&mut self) {
+		self.is_noop = true;
 		self.lines.clear();
 	}
 
@@ -77,26 +110,6 @@ impl GitInteractive {
 		self.lines.swap(a, b);
 	}
 
-	pub(crate) fn edit_selected_line(&mut self, content: &str) {
-		self.lines[self.selected_line_index - 1].edit_content(content);
-	}
-
-	pub(crate) fn set_range_action(&mut self, start_index: usize, end_index: usize, action: Action) {
-		let range = if start_index <= end_index {
-			start_index..=end_index
-		}
-		else {
-			end_index..=start_index
-		};
-
-		for index in range {
-			let selected_action = self.lines[index - 1].get_action();
-			if *selected_action != Action::Exec && *selected_action != Action::Break {
-				self.lines[index - 1].set_action(action);
-			}
-		}
-	}
-
 	pub(crate) fn add_line(&mut self, line_number: usize, line: Line) {
 		self.lines.insert(line_number - 1, line);
 	}
@@ -105,8 +118,28 @@ impl GitInteractive {
 		self.lines.remove(line_number - 1);
 	}
 
-	pub(crate) const fn is_noop(&self) -> bool {
-		self.is_noop
+	pub(crate) fn update_selected(&mut self, edit_context: &EditContext) {
+		self.update_range(self.selected_line_index, self.selected_line_index, edit_context);
+	}
+
+	pub(crate) fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
+		let range = if end_index <= start_index {
+			end_index..=start_index
+		}
+		else {
+			start_index..=end_index
+		};
+
+		for index in range {
+			let line = &mut self.lines[index - 1];
+			if let Some(action) = edit_context.get_action().as_ref() {
+				line.set_action(*action);
+			}
+
+			if let Some(content) = edit_context.get_content().as_ref() {
+				line.edit_content(content);
+			}
+		}
 	}
 
 	pub(crate) fn get_selected_line(&self) -> &Line {
@@ -123,5 +156,9 @@ impl GitInteractive {
 
 	pub(crate) const fn get_lines(&self) -> &Vec<Line> {
 		&self.lines
+	}
+
+	pub(crate) const fn is_noop(&self) -> bool {
+		self.is_noop
 	}
 }

@@ -10,7 +10,6 @@ pub mod testutil;
 pub mod util;
 pub mod window_size_error;
 
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
@@ -18,28 +17,24 @@ use crate::process::modules::Modules;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::process::window_size_error::WindowSizeError;
+use crate::todo_file::TodoFile;
 use crate::view::View;
 use anyhow::Result;
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,
-	git_interactive: GitInteractive,
+	rebase_todo: TodoFile,
 	input_handler: &'r InputHandler<'r>,
 	state: State,
 	view: &'r View<'r>,
 }
 
 impl<'r> Process<'r> {
-	pub(crate) const fn new(
-		git_interactive: GitInteractive,
-		view: &'r View<'r>,
-		input_handler: &'r InputHandler<'r>,
-	) -> Self
-	{
+	pub(crate) const fn new(rebase_todo: TodoFile, view: &'r View<'r>, input_handler: &'r InputHandler<'r>) -> Self {
 		Self {
 			state: State::List,
 			exit_status: None,
-			git_interactive,
+			rebase_todo,
 			input_handler,
 			view,
 		}
@@ -53,8 +48,8 @@ impl<'r> Process<'r> {
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
 			self.view
-				.render(modules.build_view_data(self.state, self.view, &self.git_interactive));
-			let result = modules.handle_input(self.state, self.input_handler, &mut self.git_interactive, self.view);
+				.render(modules.build_view_data(self.state, self.view, &self.rebase_todo));
+			let result = modules.handle_input(self.state, self.input_handler, &mut self.rebase_todo, self.view);
 			self.handle_process_result(&mut modules, &result);
 		}
 		self.exit_end()?;
@@ -104,12 +99,12 @@ impl<'r> Process<'r> {
 	}
 
 	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
-		let result = modules.activate(self.state, &self.git_interactive, previous_state);
+		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
 		self.handle_process_result(modules, &result);
 	}
 
 	fn exit_end(&mut self) -> Result<()> {
-		let result = self.git_interactive.write_file();
+		let result = self.rebase_todo.write_file();
 		if result.is_err() {
 			self.exit_status = Some(ExitStatus::FileWriteError);
 		}

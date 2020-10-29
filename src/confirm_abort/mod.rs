@@ -1,10 +1,10 @@
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;
 use crate::view::View;
 
@@ -13,7 +13,7 @@ pub struct ConfirmAbort {
 }
 
 impl ProcessModule for ConfirmAbort {
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let (window_width, window_height) = view.get_view_size();
 		self.view_data.set_view_size(window_width, window_height);
 		self.view_data.rebuild();
@@ -23,7 +23,7 @@ impl ProcessModule for ConfirmAbort {
 	fn handle_input(
 		&mut self,
 		input_handler: &InputHandler<'_>,
-		git_interactive: &mut GitInteractive,
+		rebase_todo: &mut TodoFile,
 		_view: &View<'_>,
 	) -> ProcessResult
 	{
@@ -31,7 +31,7 @@ impl ProcessModule for ConfirmAbort {
 		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::Yes => {
-				git_interactive.clear();
+				rebase_todo.set_noop();
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::No => {
@@ -90,7 +90,7 @@ mod tests {
 					input = Input::Yes,
 					exit_status = ExitStatus::Good
 				);
-				assert_eq!(test_context.git_interactive.get_lines().len(), 0);
+				assert_eq!(test_context.rebase_todo_file.get_lines().len(), 0);
 			},
 		);
 	}
