@@ -626,6 +626,12 @@ mod tests {
 	);
 
 	display_module_test!(
+		ensure_at_line_start,
+		[build_trace!("mv", "32", "0")],
+		|display: &mut Display<'_>| display.ensure_at_line_start(32)
+	);
+
+	display_module_test!(
 		move_from_end_of_line,
 		[
 			build_trace!("get_cur_y"),
