@@ -1,10 +1,10 @@
 use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH};
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
+use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
@@ -20,12 +20,12 @@ pub struct WindowSizeError {
 }
 
 impl ProcessModule for WindowSizeError {
-	fn activate(&mut self, _: &GitInteractive, previous_state: State) -> ProcessResult {
+	fn activate(&mut self, _: &TodoFile, previous_state: State) -> ProcessResult {
 		self.return_state = previous_state;
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 		let message = if view_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
 			if view_width >= SHORT_ERROR_MESSAGE.len() {
@@ -59,13 +59,7 @@ impl ProcessModule for WindowSizeError {
 		&self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		_: &mut GitInteractive,
-		view: &View<'_>,
-	) -> ProcessResult
-	{
+	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut TodoFile, view: &View<'_>) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 

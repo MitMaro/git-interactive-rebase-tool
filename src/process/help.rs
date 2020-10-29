@@ -1,11 +1,11 @@
 use crate::display::display_color::DisplayColor;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::process::util::handle_view_data_scroll;
+use crate::todo_file::TodoFile;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -30,7 +30,7 @@ pub struct Help {
 }
 
 impl ProcessModule for Help {
-	fn activate(&mut self, _: &GitInteractive, return_state: State) -> ProcessResult {
+	fn activate(&mut self, _: &TodoFile, return_state: State) -> ProcessResult {
 		if self.return_state.is_none() {
 			self.return_state = Some(return_state);
 		}
@@ -41,7 +41,7 @@ impl ProcessModule for Help {
 		self.return_state = None;
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 		let view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
 		view_data.set_view_size(view_width, view_height);
@@ -49,13 +49,7 @@ impl ProcessModule for Help {
 		view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		_: &mut GitInteractive,
-		_: &View<'_>,
-	) -> ProcessResult
-	{
+	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut TodoFile, _: &View<'_>) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 		let mut view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);

@@ -36,25 +36,26 @@ mod constants;
 mod display;
 mod edit;
 mod external_editor;
-mod git_interactive;
 mod input;
 mod list;
 mod process;
 mod show_commit;
+mod todo_file;
+mod view;
+
 #[cfg(test)]
 #[macro_use]
 mod testutil;
-mod view;
 
 use crate::config::Config;
 use crate::constants::{NAME, VERSION};
 use crate::display::curses::Curses;
 use crate::display::Display;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::InputHandler;
 use crate::process::exit_status::ExitStatus;
 use crate::process::modules::Modules;
 use crate::process::Process;
+use crate::todo_file::TodoFile;
 use crate::view::View;
 use clap::{App, ArgMatches};
 
@@ -93,22 +94,22 @@ fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
 		}
 	})?;
 
-	let mut git_interactive = GitInteractive::new(filepath, config.git.comment_char.as_str());
-	git_interactive.load_file().map_err(|err| {
+	let mut todo_file = TodoFile::new(filepath, config.git.comment_char.as_str());
+	todo_file.load_file().map_err(|err| {
 		Exit {
 			message: err.to_string(),
 			status: ExitStatus::FileReadError,
 		}
 	})?;
 
-	if git_interactive.is_noop() {
+	if todo_file.is_noop() {
 		return Err(Exit {
 			message: String::from("A noop rebase was provided, skipping editing"),
 			status: ExitStatus::Good,
 		});
 	}
 
-	if git_interactive.get_lines().is_empty() {
+	if todo_file.get_lines().is_empty() {
 		return Err(Exit {
 			message: String::from("An empty rebase was provided, nothing to edit"),
 			status: ExitStatus::Good,
@@ -120,7 +121,7 @@ fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	let view = View::new(&display, &config);
 	let modules = Modules::new(&display, &config);
-	let mut process = Process::new(git_interactive, &view, &input_handler);
+	let mut process = Process::new(todo_file, &view, &input_handler);
 	let result = process.run(modules);
 	display.end();
 

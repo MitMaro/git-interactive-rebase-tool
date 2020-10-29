@@ -14,7 +14,6 @@ use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::config::Config;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::display_color::DisplayColor;
-use crate::git_interactive::GitInteractive;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
@@ -25,6 +24,7 @@ use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
 use crate::show_commit::show_commit_state::ShowCommitState;
 use crate::show_commit::util::get_show_commit_help_lines;
 use crate::show_commit::view_builder::{ViewBuilder, ViewBuilderOptions};
+use crate::todo_file::TodoFile;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -40,17 +40,17 @@ pub struct ShowCommit<'s> {
 }
 
 impl<'s> ProcessModule for ShowCommit<'s> {
-	fn activate(&mut self, git_interactive: &GitInteractive, _: State) -> ProcessResult {
+	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
 		// skip loading commit data if the currently loaded commit has not changed, this retains
 		// position after returning to the list view or help
 		if let Some(ref commit) = self.commit {
-			if commit.get_hash() == git_interactive.get_selected_line().get_hash() {
+			if commit.get_hash() == rebase_todo.get_selected_line().get_hash() {
 				return ProcessResult::new();
 			}
 		}
 		self.view_data.reset();
 
-		let new_commit = Commit::new_from_hash(git_interactive.get_selected_line().get_hash(), LoadCommitDiffOptions {
+		let new_commit = Commit::new_from_hash(rebase_todo.get_selected_line().get_hash(), LoadCommitDiffOptions {
 			context_lines: self.config.git.diff_context,
 			copies: self.config.git.diff_copies,
 			ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
@@ -69,7 +69,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &GitInteractive) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let (view_width, view_height) = view.get_view_size();
 		let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
 		if self.view_data.is_empty() {
@@ -109,13 +109,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		&self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		_: &mut GitInteractive,
-		_: &View<'_>,
-	) -> ProcessResult
-	{
+	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut TodoFile, _: &View<'_>) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::ShowCommit);
 		let mut result = ProcessResult::new().input(input);
 
