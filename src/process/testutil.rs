@@ -358,21 +358,47 @@ fn format_process_result(
 }
 
 pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
-	let expected = expected.join("\n");
 	let output = render_view_data(view_data);
-	if output != expected {
-		panic!(vec![
-			"\n",
-			"Unexpected output!",
-			"==========",
-			"Expected:",
-			expected.replace(" ", "·").replace("\t", "   →").as_str(),
-			"==========",
-			"Actual:",
-			output.replace(" ", "·").replace("\t", "   →").as_str(),
-			"==========\n"
-		]
-		.join("\n"));
+	let mut mismatch = false;
+	let mut error_output = vec![
+		"\nUnexpected output!".to_string(),
+		"--- Expected".to_string(),
+		"+++ Actual".to_string(),
+		"==========".to_string(),
+	];
+
+	for (expected_line, output_line) in expected.iter().zip(output.iter()) {
+		let e = expected_line.replace(" ", "·").replace("\t", "   →");
+		if expected_line == output_line {
+			error_output.push(format!(" {}", e));
+		}
+		else {
+			mismatch = true;
+			let o = output_line.replace(" ", "·").replace("\t", "   →");
+			error_output.push(format!("-{}", e));
+			error_output.push(format!("+{}", o));
+		}
+	}
+
+	match expected.len() {
+		a if a > output.len() => {
+			mismatch = true;
+			for line in expected.iter().skip(output.len()) {
+				error_output.push(format!("-{}", line.replace(" ", "·").replace("\t", "   →")));
+			}
+		},
+		a if a < output.len() => {
+			mismatch = true;
+			for line in output.iter().skip(expected.len()) {
+				error_output.push(format!("+{}", line.replace(" ", "·").replace("\t", "   →")));
+			}
+		},
+		_ => {},
+	}
+
+	if mismatch {
+		error_output.push(String::from("==========\n"));
+		panic!(error_output.join("\n"));
 	}
 }
 
