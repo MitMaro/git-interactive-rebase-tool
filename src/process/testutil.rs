@@ -20,6 +20,7 @@ use std::path::Path;
 use tempfile::{Builder, NamedTempFile};
 
 pub struct TestContext<'t> {
+	pub config: &'t Config,
 	pub rebase_todo_file: &'t mut TodoFile,
 	todo_file: Cell<NamedTempFile>,
 	pub input_handler: &'t InputHandler<'t>,
@@ -501,6 +502,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
+		config: &config,
 		rebase_todo_file: &mut rebsae_todo_file,
 		todo_file: Cell::new(todo_file),
 		view: &view,
