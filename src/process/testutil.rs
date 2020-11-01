@@ -47,6 +47,14 @@ impl<'t> TestContext<'t> {
 		module.handle_input(self.input_handler, self.rebase_todo_file, self.view)
 	}
 
+	pub fn handle_n_inputs(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
+		let mut results = vec![];
+		for _ in 0..n {
+			results.push(module.handle_input(self.input_handler, self.rebase_todo_file, self.view));
+		}
+		results
+	}
+
 	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.num_inputs {
