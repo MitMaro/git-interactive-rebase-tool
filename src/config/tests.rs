@@ -1,6 +1,4 @@
-use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
-use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
-use crate::config::Config;
+use super::*;
 use crate::display::color::Color;
 use serial_test::serial;
 use std::env::{remove_var, set_var};

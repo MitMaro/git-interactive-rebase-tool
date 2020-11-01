@@ -120,9 +120,7 @@ impl<'a> From<Vec<LineSegment>> for ViewLine {
 
 #[cfg(test)]
 mod tests {
-	use crate::display::display_color::DisplayColor;
-	use crate::view::line_segment::LineSegment;
-	use crate::view::view_line::ViewLine;
+	use super::*;
 
 	#[test]
 	fn from_str() {

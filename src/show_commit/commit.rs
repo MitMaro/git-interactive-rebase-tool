@@ -221,9 +221,7 @@ impl Commit {
 mod tests {
 	// some of this file is difficult to test because it would require a non-standard git repo, so
 	// we test what is possible
-	use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
-	use crate::show_commit::status::Status;
-	use anyhow::Result;
+	use super::*;
 	use serial_test::serial;
 	use std::env::set_var;
 	use std::path::Path;

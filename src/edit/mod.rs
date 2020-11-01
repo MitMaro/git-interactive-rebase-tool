@@ -158,11 +158,9 @@ impl Edit {
 }
 #[cfg(test)]
 mod tests {
+	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
-	use crate::edit::Edit;
-	use crate::input::Input;
-	use crate::process::state::State;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 
 	#[test]

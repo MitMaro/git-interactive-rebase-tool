@@ -178,11 +178,9 @@ impl ColorManager {
 
 #[cfg(test)]
 mod tests {
-	use super::ColorManager;
+	use super::*;
 	use crate::build_trace;
-	use crate::display::color::Color;
 	use crate::display::color_mode::ColorMode;
-	use crate::display::curses::Curses;
 	use crate::testutil::compare_trace;
 	use concat_idents::concat_idents;
 

@@ -56,8 +56,7 @@ pub(super) fn detect_color_mode(number_of_colors: i16) -> ColorMode {
 
 #[cfg(all(windows, test))]
 mod tests {
-	use crate::display::color_mode::ColorMode;
-	use crate::display::utils::detect_color_mode;
+	use super::*;
 
 	#[test]
 	fn detect_color_mode_windows() {
@@ -67,8 +66,7 @@ mod tests {
 
 #[cfg(all(unix, test))]
 mod tests {
-	use crate::display::color_mode::ColorMode;
-	use crate::display::utils::detect_color_mode;
+	use super::*;
 	use serial_test::serial;
 	use std::env::{remove_var, set_var};
 
