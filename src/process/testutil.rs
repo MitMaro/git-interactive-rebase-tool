@@ -166,7 +166,7 @@ fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInp
 		Input::Character(c) => map_input_str_to_curses(c.to_string().as_str()),
 		Input::Delete => map_input_str_to_curses("Delete"),
 		Input::Down => map_input_str_to_curses("Down"),
-		Input::Edit => map_input_str_to_curses("Edit"),
+		Input::Edit => map_input_str_to_curses(key_bindings.edit.as_str()),
 		Input::End => map_input_str_to_curses("End"),
 		Input::Enter => map_input_str_to_curses("Enter"),
 		Input::F0 => map_input_str_to_curses("F0"),
