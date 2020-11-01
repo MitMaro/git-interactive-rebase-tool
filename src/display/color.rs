@@ -84,8 +84,7 @@ impl TryFrom<&str> for Color {
 
 #[cfg(test)]
 mod tests {
-	use super::Color;
-	use std::convert::TryFrom;
+	use super::*;
 
 	macro_rules! test_color_try_from {
 		($name:ident, $color_string:expr, $expected:expr) => {

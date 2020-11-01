@@ -546,9 +546,7 @@ impl ViewData {
 
 #[cfg(test)]
 mod tests {
-	use crate::view::line_segment::LineSegment;
-	use crate::view::view_data::ViewData;
-	use crate::view::view_line::ViewLine;
+	use super::*;
 
 	fn create_mock_view_line() -> ViewLine {
 		ViewLine::from("Mocked Line")

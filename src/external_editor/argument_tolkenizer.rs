@@ -116,7 +116,7 @@ pub(super) fn tolkenize(input: &str) -> Option<Vec<String>> {
 
 #[cfg(test)]
 mod tests {
-	use crate::external_editor::argument_tolkenizer::tolkenize;
+	use super::*;
 
 	#[test]
 	fn tolkenize_empty_string() {

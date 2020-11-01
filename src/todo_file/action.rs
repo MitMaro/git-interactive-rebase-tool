@@ -65,8 +65,7 @@ impl TryFrom<&str> for Action {
 
 #[cfg(test)]
 mod tests {
-	use super::Action;
-	use std::convert::TryFrom;
+	use super::*;
 
 	macro_rules! test_action_to_string {
 		($name:ident, $action:expr, $expected:expr) => {

@@ -67,8 +67,7 @@ impl FileStat {
 
 #[cfg(test)]
 mod tests {
-	use crate::show_commit::file_stat::FileStat;
-	use crate::show_commit::status::Status;
+	use super::*;
 
 	#[test]
 	fn commit_user_file_stat() {

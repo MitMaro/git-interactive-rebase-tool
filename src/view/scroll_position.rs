@@ -174,7 +174,7 @@ impl ScrollPosition {
 #[cfg(test)]
 mod tests {
 	// Note: Some of these tests are duplicates logically, but are described differently
-	use crate::view::scroll_position::ScrollPosition;
+	use super::*;
 
 	#[test]
 	fn scroll_position_new() {

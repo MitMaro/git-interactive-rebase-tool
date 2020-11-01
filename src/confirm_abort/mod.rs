@@ -53,12 +53,9 @@ impl ConfirmAbort {
 
 #[cfg(test)]
 mod tests {
+	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
-	use crate::confirm_abort::ConfirmAbort;
-	use crate::input::Input;
-	use crate::process::exit_status::ExitStatus;
-	use crate::process::state::State;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 
 	#[test]

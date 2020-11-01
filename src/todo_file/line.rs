@@ -119,8 +119,7 @@ impl Line {
 
 #[cfg(test)]
 mod tests {
-	use super::Line;
-	use crate::todo_file::action::Action;
+	use super::*;
 	use rstest::rstest;
 
 	#[rstest(

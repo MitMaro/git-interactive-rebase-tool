@@ -40,7 +40,7 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-	use crate::show_commit::user::User;
+	use super::*;
 
 	#[test]
 	fn commit_user_with_none_name_email() {

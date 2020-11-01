@@ -257,15 +257,10 @@ impl<'e> ExternalEditor<'e> {
 
 #[cfg(all(unix, test))]
 mod tests {
+	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
-	use crate::external_editor::{ExternalEditor, ExternalEditorState};
-	use crate::input::Input;
-	use crate::process::exit_status::ExitStatus;
-	use crate::process::state::State;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
-	use crate::todo_file::line::Line;
-	use anyhow::anyhow;
 	use std::path::Path;
 
 	fn get_external_editor(content: &str, exit_code: &str) -> String {

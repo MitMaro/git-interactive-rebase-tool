@@ -292,7 +292,7 @@ impl<'d> Display<'d> {
 
 #[cfg(all(windows, test))]
 mod tests {
-	use super::Display;
+	use super::*;
 	use crate::build_trace;
 	use crate::display_module_test;
 
@@ -309,10 +309,8 @@ mod tests {
 
 #[cfg(all(unix, test))]
 mod tests {
-	use super::display_color::DisplayColor;
-	use super::Display;
+	use super::*;
 	use crate::build_trace;
-	use crate::display::curses::Input;
 	use crate::display_module_test;
 
 	display_module_test!(

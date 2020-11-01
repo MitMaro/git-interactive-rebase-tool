@@ -283,12 +283,9 @@ impl<'i> InputHandler<'i> {
 
 #[cfg(test)]
 mod tests {
-	use super::CursesInput;
+	use super::*;
 	use crate::config::Config;
 	use crate::display::curses::Curses;
-	use crate::display::Display;
-	use crate::input::input_handler::{InputHandler, InputMode};
-	use crate::input::Input;
 	use rstest::rstest;
 	use std::env::set_var;
 	use std::path::Path;

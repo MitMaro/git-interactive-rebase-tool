@@ -147,8 +147,7 @@ impl LineSegment {
 
 #[cfg(test)]
 mod tests {
-	use crate::display::display_color::DisplayColor;
-	use crate::view::line_segment::LineSegment;
+	use super::*;
 
 	#[test]
 	fn line_segment_case_new() {

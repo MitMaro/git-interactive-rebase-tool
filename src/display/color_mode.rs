@@ -21,7 +21,7 @@ impl ColorMode {
 
 #[cfg(test)]
 mod tests {
-	use crate::display::color_mode::ColorMode;
+	use super::*;
 
 	#[test]
 	fn color_mode_has_minimum_four_bit_color_two_tone() {
