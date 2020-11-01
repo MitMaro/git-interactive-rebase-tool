@@ -140,10 +140,11 @@ const fn get_action_color(action: Action) -> DisplayColor {
 		Action::Edit => DisplayColor::ActionEdit,
 		Action::Exec => DisplayColor::ActionExec,
 		Action::Fixup => DisplayColor::ActionFixup,
-		Action::Noop => DisplayColor::Normal,
 		Action::Pick => DisplayColor::ActionPick,
 		Action::Reword => DisplayColor::ActionReword,
 		Action::Squash => DisplayColor::ActionSquash,
+		// this is technically impossible, since noops should never be rendered
+		Action::Noop => DisplayColor::Normal,
 	}
 }
 
@@ -205,7 +206,7 @@ pub(super) fn get_todo_line_segments(
 				String::from(line.get_command())
 			}
 			else if *action == Action::Break {
-				String::from("    ")
+				String::from("")
 			}
 			else {
 				let max_index = cmp::min(line.get_hash().len(), 3);
