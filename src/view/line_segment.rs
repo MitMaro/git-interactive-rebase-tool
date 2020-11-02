@@ -371,4 +371,24 @@ mod tests {
 		assert_eq!(partial.get_content(), "");
 		assert_eq!(partial.get_length(), 0);
 	}
+
+	#[test]
+	fn line_segment_case_get_partial_segment_partial_segment_left_with_emoji() {
+		let line_segment = LineSegment::new("1😊2😊3😊4567890");
+
+		let partial = line_segment.get_partial_segment(0, 10);
+
+		assert_eq!(partial.get_content(), "1😊2😊3😊4");
+		assert_eq!(partial.get_length(), 10);
+	}
+
+	#[test]
+	fn line_segment_case_get_partial_segment_partial_segment_left_with_emoji_split_at_length() {
+		let line_segment = LineSegment::new("123456789😊");
+
+		let partial = line_segment.get_partial_segment(0, 10);
+
+		assert_eq!(partial.get_content(), "123456789");
+		assert_eq!(partial.get_length(), 9);
+	}
 }
