@@ -57,7 +57,7 @@ use crate::process::modules::Modules;
 use crate::process::Process;
 use crate::todo_file::TodoFile;
 use crate::view::View;
-use clap::{App, ArgMatches};
+use clap::{App, Arg, ArgMatches};
 
 struct Exit {
 	message: String,
@@ -71,7 +71,18 @@ fn main() {
 		.version(VERSION)
 		.about("Full feature terminal based sequence editor for git interactive rebase.")
 		.author("Tim Oram <dev@mitmaro.ca>")
-		.args_from_usage("<rebase-todo-filepath> 'The path to the git rebase todo file'");
+		.arg(
+			Arg::with_name("license")
+				.long("license")
+				.help("Print license information and exit")
+				.conflicts_with("<rebase-todo-filepath>"),
+		)
+		.arg(
+			Arg::with_name("rebase-todo-filepath")
+				.index(1)
+				.help("The path to the git rebase todo file")
+				.required_unless_one(&["license"]),
+		);
 
 	let matches = app.get_matches();
 
@@ -84,7 +95,39 @@ fn main() {
 	}
 }
 
+#[allow(clippy::print_stdout)]
+fn print_license() {
+	println!(
+		r#"
+Sequence Editor for Git Interactive Rebase
+
+Copyright (C) 2017-2020 Tim Oram and Contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+A list of open source software and the license terms can be found at
+<https://gitrebasetool.mitmaro.ca/licenses.html>
+		"#
+	);
+}
+
 fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
+	if matches.is_present("license") {
+		print_license();
+		return Ok(ExitStatus::Good);
+	}
+
 	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
 
 	let config = Config::new().map_err(|err| {
