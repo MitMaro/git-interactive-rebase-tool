@@ -62,7 +62,7 @@ impl ScrollPosition {
 		let current_value = self.top_value;
 
 		self.top_value = match line_index {
-			// show all if list is view height is long enough
+			// show all of list if view height is long enough
 			_ if self.lines_length <= self.view_height => 0,
 			// last item selected, set top to show bottom of lines
 			p if p >= self.lines_length - 1 => self.lines_length - self.view_height,
@@ -72,6 +72,24 @@ impl ScrollPosition {
 			p if p < current_value => p,
 			// if selected item is hidden below, shift top down
 			p if p >= current_value + self.view_height => p - self.view_height + 1,
+			_ => current_value,
+		};
+	}
+
+	pub(crate) fn ensure_column_visible(&mut self, column_index: usize) {
+		let current_value = self.left_value;
+
+		self.left_value = match column_index {
+			// show all of max column length if view width is wide enough
+			_ if self.max_line_width <= self.view_width => 0,
+			// last column selected, set left to show as much left as possible
+			p if p >= self.max_line_width - 1 => self.max_line_width - self.view_width,
+			// if on last two of column set left to zero
+			p if p < 1 => 0,
+			// if selected column is hidden to the left, shift left
+			p if p < current_value => p,
+			// if selected column is hidden to the right, shift right
+			p if p >= current_value + self.view_width => p - self.view_width + 1,
 			_ => current_value,
 		};
 	}
@@ -804,5 +822,123 @@ mod tests {
 		scroll_position.view_resize(5, 0);
 		scroll_position.ensure_line_visible(0);
 		assert_eq!(scroll_position.get_top_position(), 0);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_right_to_boundary() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(0);
+		assert_eq!(scroll_position.get_left_position(), 0);
+		scroll_position.ensure_column_visible(1);
+		assert_eq!(scroll_position.get_left_position(), 0);
+		scroll_position.ensure_column_visible(2);
+		assert_eq!(scroll_position.get_left_position(), 0);
+		scroll_position.ensure_column_visible(3);
+		assert_eq!(scroll_position.get_left_position(), 0);
+		scroll_position.ensure_column_visible(4);
+		assert_eq!(scroll_position.get_left_position(), 0);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_right_to_end_of_line() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(5);
+		assert_eq!(scroll_position.get_left_position(), 1);
+		scroll_position.ensure_column_visible(6);
+		assert_eq!(scroll_position.get_left_position(), 2);
+		scroll_position.ensure_column_visible(7);
+		assert_eq!(scroll_position.get_left_position(), 3);
+		scroll_position.ensure_column_visible(8);
+		assert_eq!(scroll_position.get_left_position(), 4);
+		scroll_position.ensure_column_visible(9);
+		assert_eq!(scroll_position.get_left_position(), 5);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_right_past_end_of_line() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(100);
+		assert_eq!(scroll_position.get_left_position(), 5);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_jump_right_to_end() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(9);
+		assert_eq!(scroll_position.get_left_position(), 5);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_to_start_of_line() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.left_value = 5;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(9);
+		assert_eq!(scroll_position.get_left_position(), 5);
+		scroll_position.ensure_column_visible(8);
+		assert_eq!(scroll_position.get_left_position(), 5);
+		scroll_position.ensure_column_visible(7);
+		assert_eq!(scroll_position.get_left_position(), 5);
+		scroll_position.ensure_column_visible(6);
+		assert_eq!(scroll_position.get_left_position(), 5);
+		scroll_position.ensure_column_visible(5);
+		assert_eq!(scroll_position.get_left_position(), 5);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_from_scroll_boundary_to_start_of_line() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.left_value = 5;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(4);
+		assert_eq!(scroll_position.get_left_position(), 4);
+		scroll_position.ensure_column_visible(3);
+		assert_eq!(scroll_position.get_left_position(), 3);
+		scroll_position.ensure_column_visible(2);
+		assert_eq!(scroll_position.get_left_position(), 2);
+		scroll_position.ensure_column_visible(1);
+		assert_eq!(scroll_position.get_left_position(), 1);
+		scroll_position.ensure_column_visible(0);
+		assert_eq!(scroll_position.get_left_position(), 0);
+	}
+
+	#[test]
+	fn ensure_column_visible_move_index_jump_right_to_start() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.left_value = 5;
+		scroll_position.view_resize(1, 5);
+		scroll_position.ensure_column_visible(0);
+		assert_eq!(scroll_position.get_left_position(), 0);
+	}
+
+	#[test]
+	fn set_line_maximums() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 1;
+		scroll_position.lines_length = 1;
+		scroll_position.set_line_maximums(10, 20);
+		assert_eq!(scroll_position.max_line_width, 10);
+		assert_eq!(scroll_position.lines_length, 20);
+	}
+
+	#[test]
+	fn set_line_maximums_no_change() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.max_line_width = 10;
+		scroll_position.lines_length = 20;
+		scroll_position.set_line_maximums(10, 20);
+		assert_eq!(scroll_position.max_line_width, 10);
+		assert_eq!(scroll_position.lines_length, 20);
 	}
 }
