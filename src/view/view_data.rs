@@ -119,6 +119,18 @@ impl ViewData {
 		}
 	}
 
+	pub(crate) fn ensure_column_visible(&mut self, new_cursor_position: usize) {
+		let previous_left = self.scroll_position.get_left_position();
+		self.scroll_position.ensure_column_visible(new_cursor_position);
+
+		if previous_left != self.scroll_position.get_left_position() {
+			self.leading_lines_cache = None;
+			self.lines_cache = None;
+			self.trailing_lines_cache = None;
+			self.rebuild();
+		}
+	}
+
 	pub(crate) fn set_view_size(&mut self, view_width: usize, view_height: usize) {
 		if self.height != view_height
 			|| self.width != view_width
@@ -1255,6 +1267,34 @@ mod tests {
 
 		view_data.ensure_line_visible(4);
 		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "1");
+	}
+
+	#[test]
+	fn ensure_column_visible_with_scroll_change() {
+		let mut view_data = ViewData::new();
+		view_data.push_line(ViewLine::from("0123456789"));
+		view_data.set_view_size(5, 1);
+		// set scroll position to right
+		for _ in 0..10 {
+			view_data.scroll_right();
+		}
+
+		view_data.ensure_column_visible(2);
+		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "23456");
+	}
+
+	#[test]
+	fn ensure_column_visible_without_scroll_change() {
+		let mut view_data = ViewData::new();
+		view_data.push_line(ViewLine::from("0123456789"));
+		view_data.set_view_size(5, 1);
+		// set scroll position to right
+		for _ in 0..10 {
+			view_data.scroll_right();
+		}
+
+		view_data.ensure_column_visible(6);
+		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "56789");
 	}
 
 	#[test]
