@@ -15,7 +15,6 @@ pub struct ViewData {
 	trailing_lines_cache: Option<Vec<ViewLine>>,
 	show_title: bool,
 	show_help: bool,
-	content: Option<ViewLine>,
 	prompt: Option<String>,
 	max_leading_line_length: usize,
 	max_line_length: usize,
@@ -38,7 +37,6 @@ impl ViewData {
 			scroll_position: ScrollPosition::new(),
 			show_help: false,
 			show_title: false,
-			content: None,
 			trailing_lines: vec![],
 			trailing_lines_cache: None,
 			width: 0,
@@ -58,7 +56,6 @@ impl ViewData {
 	}
 
 	pub(crate) fn clear(&mut self) {
-		self.content = None;
 		self.leading_lines.clear();
 		self.leading_lines_cache = None;
 		self.lines.clear();
@@ -172,12 +169,6 @@ impl ViewData {
 
 	pub(crate) fn set_show_help(&mut self, show: bool) {
 		self.show_help = show;
-	}
-
-	pub(crate) fn set_content(&mut self, content: ViewLine) {
-		self.lines.clear();
-		self.lines_cache = None;
-		self.content = Some(content);
 	}
 
 	pub(crate) fn push_leading_line(&mut self, view_line: ViewLine) {
@@ -365,64 +356,7 @@ impl ViewData {
 
 		if self.lines_cache.is_none() {
 			self.lines_cache = Some(
-				if let Some(ref content) = self.content {
-					let mut view_lines = vec![];
-					let mut segments = vec![];
-					let mut remaining_width = self.width;
-					for segment in content.get_segments().iter() {
-						// ignore empty segments
-						if segment.get_length() == 0 {
-							continue;
-						}
-						// push segments that completely fit
-						if segment.get_length() <= remaining_width {
-							remaining_width -= segment.get_length();
-							segments.push(segment.clone());
-
-							if remaining_width == 0 {
-								view_lines.push(ViewLine::from(segments.to_vec()));
-								segments.clear();
-								remaining_width = self.width;
-							}
-						}
-						else {
-							let mut used_segment_length = 0;
-							loop {
-								let partial = segment.get_partial_segment(used_segment_length, remaining_width);
-								used_segment_length += partial.get_length();
-								remaining_width -= partial.get_length();
-								if partial.get_length() > 0 {
-									segments.push(LineSegment::new_with_color_and_style(
-										partial.get_content(),
-										segment.get_color(),
-										segment.is_dimmed(),
-										segment.is_underlined(),
-										segment.is_reversed(),
-									));
-
-									if remaining_width == 0 {
-										view_lines.push(ViewLine::from(segments.to_vec()));
-										segments.clear();
-										remaining_width = self.width;
-									}
-								}
-								else {
-									break;
-								}
-							}
-						}
-					}
-					if !segments.is_empty() {
-						view_lines.push(ViewLine::from(segments.to_vec()));
-					}
-
-					self.max_line_length = self.width;
-
-					self.scroll_position
-						.set_line_maximums(self.get_max_line_length(), self.lines.len());
-					view_lines
-				}
-				else if self.lines.is_empty() {
+				if self.lines.is_empty() {
 					self.max_line_length = Self::calculate_max_line_length(&self.lines, 0, self.lines.len());
 					self.build_lines(&self.lines, 0, self.lines.len(), self.should_show_scroll_bar())
 				}
