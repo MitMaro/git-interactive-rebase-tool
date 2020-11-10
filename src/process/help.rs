@@ -63,7 +63,7 @@ impl ProcessModule for Help {
 impl Help {
 	pub fn new() -> Self {
 		let mut no_help_view_data = ViewData::new();
-		no_help_view_data.set_content(ViewLine::from("Help not available"));
+		no_help_view_data.push_line(ViewLine::from("Help not available"));
 
 		Self {
 			return_state: None,
