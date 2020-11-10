@@ -10,7 +10,6 @@ use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::todo_file::line::Line;
 use crate::todo_file::TodoFile;
-use crate::view::testutil::render_view_data;
 use crate::view::view_data::ViewData;
 use crate::view::View;
 use anyhow::Error;
@@ -364,60 +363,6 @@ fn format_process_result(
 			.as_ref()
 			.map_or("None".to_string(), |error| { format!("{:#}", error) })
 	)
-}
-
-pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
-	let output = render_view_data(view_data);
-	let mut mismatch = false;
-	let mut error_output = vec![
-		"\nUnexpected output!".to_string(),
-		"--- Expected".to_string(),
-		"+++ Actual".to_string(),
-		"==========".to_string(),
-	];
-
-	for (expected_line, output_line) in expected.iter().zip(output.iter()) {
-		let e = expected_line.replace(" ", "·").replace("\t", "   →");
-		if expected_line == output_line {
-			error_output.push(format!(" {}", e));
-		}
-		else {
-			mismatch = true;
-			let o = output_line.replace(" ", "·").replace("\t", "   →");
-			error_output.push(format!("-{}", e));
-			error_output.push(format!("+{}", o));
-		}
-	}
-
-	match expected.len() {
-		a if a > output.len() => {
-			mismatch = true;
-			for line in expected.iter().skip(output.len()) {
-				error_output.push(format!("-{}", line.replace(" ", "·").replace("\t", "   →")));
-			}
-		},
-		a if a < output.len() => {
-			mismatch = true;
-			for line in output.iter().skip(expected.len()) {
-				error_output.push(format!("+{}", line.replace(" ", "·").replace("\t", "   →")));
-			}
-		},
-		_ => {},
-	}
-
-	if mismatch {
-		error_output.push(String::from("==========\n"));
-		panic!(error_output.join("\n"));
-	}
-}
-
-#[macro_export]
-macro_rules! assert_rendered_output {
-	($view_data:expr, $($arg:expr),*) => {
-		let mut expected = vec![];
-		$( expected.push(String::from($arg)); )*
-		crate::process::testutil::_assert_rendered_output(&$view_data, &expected);
-	};
 }
 
 pub fn _assert_process_result(
