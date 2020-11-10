@@ -265,7 +265,10 @@ impl ViewData {
 	}
 
 	pub(crate) fn is_empty(&self) -> bool {
-		self.lines.is_empty() && self.leading_lines.is_empty() && self.trailing_lines.is_empty()
+		self.lines.is_empty()
+			&& self.leading_lines.is_empty()
+			&& self.trailing_lines.is_empty()
+			&& self.prompt.is_none()
 	}
 
 	pub(super) const fn get_prompt(&self) -> &Option<String> {
@@ -357,8 +360,8 @@ impl ViewData {
 		if self.lines_cache.is_none() {
 			self.lines_cache = Some(
 				if self.lines.is_empty() {
-					self.max_line_length = Self::calculate_max_line_length(&self.lines, 0, self.lines.len());
-					self.build_lines(&self.lines, 0, self.lines.len(), self.should_show_scroll_bar())
+					self.max_line_length = 0;
+					vec![]
 				}
 				else {
 					// all other lines take precedence over regular lines
@@ -493,6 +496,7 @@ impl ViewData {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::assert_rendered_output;
 
 	fn create_mock_view_line() -> ViewLine {
 		ViewLine::from("Mocked Line")
@@ -541,14 +545,16 @@ mod tests {
 
 	fn create_mocked_scroll_horizontal_view_data() -> ViewData {
 		let mut view_data = ViewData::new();
-		view_data.push_line(ViewLine::from("aaaaa"));
+		view_data.push_leading_line(ViewLine::from("llllllllllllll"));
 		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
 		view_data.push_line(ViewLine::from("aaaaaaaaaaaaaaa"));
 		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
 		view_data.push_line(ViewLine::from("aaaaa"));
-		view_data.push_line(ViewLine::from("bbbbb"));
-		view_data.push_line(ViewLine::from("ccccc"));
-		view_data.push_line(ViewLine::from("ddddd"));
+		view_data.push_line(ViewLine::from("aaaa"));
+		view_data.push_line(ViewLine::from("aaa"));
+		view_data.push_line(ViewLine::from("aa"));
+		view_data.push_line(ViewLine::from("a"));
+		view_data.push_trailing_line(ViewLine::from("ttttttttttttttt"));
 		view_data.set_view_size(7, 20);
 
 		view_data
@@ -570,321 +576,520 @@ mod tests {
 		view_data
 	}
 
-	fn get_segment_content_for_view_line(view_lines: &[ViewLine], line_index: usize, segment_index: usize) -> String {
-		String::from(
-			view_lines[line_index]
-				.get_segments()
-				.get(segment_index)
-				.unwrap()
-				.get_content(),
-		)
+	#[test]
+	fn render_empty() {
+		let view_data = ViewData::new();
+		assert_rendered_output!(view_data, "{EMPTY}");
 	}
 
 	#[test]
-	fn view_data_case_with_show_help() {
-		let mut view_data = ViewData::new();
-		view_data.set_show_help(true);
-		assert_eq!(view_data.show_help(), true);
-	}
-
-	#[test]
-	fn view_data_case_with_show_title() {
+	fn with_title_with_help() {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
-		assert_eq!(view_data.show_title(), true);
+		view_data.set_show_help(true);
+		assert_rendered_output!(view_data, "{TITLE}{HELP}", "{EMPTY}");
 	}
 
 	#[test]
-	fn view_data_case_clear() {
+	fn with_title_without_help() {
+		let mut view_data = ViewData::new();
+		view_data.set_show_title(true);
+		view_data.set_show_help(false);
+		assert_rendered_output!(view_data, "{TITLE}", "{EMPTY}");
+	}
+
+	#[test]
+	fn with_prompt() {
+		let view_data = ViewData::new_confirm("This is a prompt");
+		assert_rendered_output!(view_data, "{TITLE}", "{PROMPT}", "This is a prompt");
+	}
+
+	#[test]
+	fn clear() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 3);
 		view_data.scroll_position.scroll_down();
 		view_data.clear();
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 0);
+		assert_rendered_output!(view_data, "{EMPTY}");
 		assert_eq!(view_data.scroll_position.get_top_position(), 1);
 	}
 
 	#[test]
-	fn view_data_case_reset() {
+	fn reset() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 3);
 		view_data.scroll_position.scroll_down();
 		view_data.reset();
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 0);
+		assert_rendered_output!(view_data, "{EMPTY}");
 		assert_eq!(view_data.scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn view_data_case_with_no_lines() {
-		// default case with more than enough view height for all lines with title
-		let mut view_data = ViewData::new();
-		view_data.set_view_size(100, 10);
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 0);
-	}
-
-	#[test]
-	fn view_data_case_with_no_leading_lines() {
+	fn rebuild_no_leading_lines() {
 		let mut view_data = ViewData::new();
 		view_data.set_view_size(100, 10);
 		view_data.push_line(create_mock_view_line());
 		view_data.push_trailing_line(create_mock_view_line());
 		view_data.rebuild();
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 1);
-		assert_eq!(view_data.get_trailing_lines().len(), 1);
+		assert_rendered_output!(
+			view_data,
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines() {
+	fn rebuild_no_body_lines() {
 		let mut view_data = ViewData::new();
 		view_data.set_view_size(100, 10);
 		view_data.push_leading_line(create_mock_view_line());
 		view_data.push_trailing_line(create_mock_view_line());
 		view_data.rebuild();
 
-		assert_eq!(view_data.get_leading_lines().len(), 1);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 1);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_no_trailing_lines() {
+	fn rebuild_no_trailing_lines() {
 		let mut view_data = ViewData::new();
 		view_data.set_view_size(100, 10);
 		view_data.push_leading_line(create_mock_view_line());
 		view_data.push_line(create_mock_view_line());
 		view_data.rebuild();
 
-		assert_eq!(view_data.get_leading_lines().len(), 1);
-		assert_eq!(view_data.get_lines().len(), 1);
-		assert_eq!(view_data.get_trailing_lines().len(), 0);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_more_than_enough_view_height_for_all_lines_with_title() {
+	fn rebuild_with_more_than_enough_view_height_for_all_lines_with_title() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_show_title(true);
 		view_data.set_view_size(100, 12);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 4);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_more_than_enough_view_height_for_all_lines_without_title() {
+	fn rebuild_with_more_than_enough_view_height_for_all_lines_without_title() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_show_title(false);
 		view_data.set_view_size(100, 12);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 4);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_just_enough_height_for_all_lines_with_title() {
+	fn rebuild_with_just_enough_height_for_all_lines_with_title() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_show_title(true);
 		view_data.set_view_size(100, 10);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 4);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_just_enough_height_for_all_lines_without_title() {
+	fn rebuild_with_just_enough_height_for_all_lines_without_title() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_show_title(false);
 		view_data.set_view_size(100, 9);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 4);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_removal_of_single_general_line() {
+	fn rebuild_with_removal_of_single_general_line() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 8);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_removal_of_all_but_one_general_line() {
+	fn rebuild_with_removal_of_all_but_one_general_line() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 6);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 1);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_removal_of_all_general_lines() {
+	fn rebuild_with_removal_of_all_general_lines() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 5);
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines_remove_one_leading_line() {
+	fn rebuild_with_no_general_lines_and_remove_one_leading_line() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 4);
 
-		assert_eq!(view_data.get_leading_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines_remove_all_but_one_leading_line() {
+	fn rebuild_with_no_general_lines_and_all_but_one_leading_line() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 3);
 
-		assert_eq!(view_data.get_leading_lines().len(), 1);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines_no_leading_lines() {
+	fn rebuild_after_adding_leading_line() {
+		let mut view_data = create_mocked_view_data();
+		view_data.set_show_title(true);
+		view_data.set_view_size(100, 12);
+		view_data.push_leading_line(create_mock_view_line());
+		view_data.rebuild();
+
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
+	}
+
+	#[test]
+	fn rebuild_after_adding_line() {
+		let mut view_data = create_mocked_view_data();
+		view_data.set_show_title(true);
+		view_data.set_view_size(100, 12);
+		view_data.push_line(create_mock_view_line());
+		view_data.rebuild();
+
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
+	}
+
+	#[test]
+	fn rebuild_after_adding_trailing_line() {
+		let mut view_data = create_mocked_view_data();
+		view_data.set_show_title(true);
+		view_data.set_view_size(100, 12);
+		view_data.push_trailing_line(create_mock_view_line());
+		view_data.rebuild();
+
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
+	}
+
+	#[test]
+	fn rebuild_with_no_general_lines_and_no_leading_lines() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 2);
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		assert_rendered_output!(view_data, "{TRAILING}", "{Normal}Mocked Line", "{Normal}Mocked Line");
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines_no_leading_lines_remove_one_trailing_line() {
+	fn rebuild_with_no_general_lines_and_no_leading_lines_and_one_trailing_line() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 1);
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 1);
+		assert_rendered_output!(view_data, "{TRAILING}", "{Normal}Mocked Line");
 	}
 
 	#[test]
-	fn view_data_case_rebuild_no_change() {
+	fn rebuild_with_no_change() {
+		// this test isn't great, because it has to modify internals
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 100);
 		view_data.rebuild();
+		// set the cache to something it should not be
+		view_data.leading_lines_cache = Some(vec![]);
+		view_data.lines_cache = Some(vec![]);
+		view_data.trailing_lines_cache = Some(vec![]);
 		view_data.rebuild();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_lines().len(), 4);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
+		// cache should still be empty after rebuild
+		assert_rendered_output!(view_data);
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines_no_leading_lines_no_trailing_lines() {
+	fn rebuild_with_no_height() {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 0);
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 0);
+		assert_rendered_output!(view_data);
 	}
 
 	#[test]
-	fn view_data_case_with_no_general_lines_no_leading_lines_no_trailing_lines_with_title() {
+	fn rebuild_with_one_height_and_title() {
 		let mut view_data = create_mocked_view_data();
-		view_data.set_view_size(100, 0);
 		view_data.set_show_title(true);
+		view_data.set_view_size(100, 1);
 
-		assert_eq!(view_data.get_leading_lines().len(), 0);
-		assert_eq!(view_data.get_lines().len(), 0);
-		assert_eq!(view_data.get_trailing_lines().len(), 0);
+		assert_rendered_output!(view_data, "{TITLE}");
 	}
 
 	#[test]
-	fn view_data_case_scroll_down_one_line() {
+	fn scroll_down_one_line() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
-
 		view_data.scroll_down();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "2");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}b",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_down_two_lines() {
+	fn scroll_down_two_lines() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
-
 		view_data.scroll_down();
 		view_data.scroll_down();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "3");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_down_bottom() {
+	fn scroll_down_bottom() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		for _ in 0..4 {
 			view_data.scroll_down();
 		}
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "5");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{Normal}4",
+			"{Normal}5",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_down_one_past_bottom() {
+	fn scroll_down_one_past_bottom() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		for _ in 0..5 {
 			view_data.scroll_down();
 		}
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "5");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{Normal}4",
+			"{Normal}5",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_down_well_past_bottom() {
-		let mut view_data = create_mocked_scroll_vertical_view_data();
-
-		for _ in 0..20 {
-			view_data.scroll_down();
-		}
-
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "5");
-	}
-
-	#[test]
-	fn view_data_case_scroll_up_one_line() {
+	fn scroll_up_one_line() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		// set scroll position to bottom
@@ -894,14 +1099,26 @@ mod tests {
 
 		view_data.scroll_up();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "4");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{Normal}4",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_up_two_lines() {
+	fn scroll_up_two_lines() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		// set scroll position to bottom
@@ -912,14 +1129,26 @@ mod tests {
 		view_data.scroll_up();
 		view_data.scroll_up();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "3");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_up_top() {
+	fn scroll_up_top() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		// set scroll position to bottom
@@ -931,14 +1160,26 @@ mod tests {
 			view_data.scroll_up();
 		}
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "1");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}a",
+			"{Normal}b",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_up_one_past_top() {
+	fn scroll_up_one_past_top() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		// set scroll position to bottom
@@ -950,14 +1191,76 @@ mod tests {
 			view_data.scroll_up();
 		}
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "1");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}a",
+			"{Normal}b",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_up_well_past_top() {
+	fn page_down_once() {
+		let mut view_data = create_mocked_scroll_vertical_view_data();
+
+		view_data.page_down();
+
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
+	}
+
+	#[test]
+	fn page_down_past_bottom() {
+		let mut view_data = create_mocked_scroll_vertical_view_data();
+
+		view_data.page_down();
+		view_data.page_down();
+		view_data.page_down();
+
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{Normal}4",
+			"{Normal}5",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
+	}
+
+	#[test]
+	fn page_up_once() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		// set scroll position to bottom
@@ -965,61 +1268,28 @@ mod tests {
 			view_data.scroll_down();
 		}
 
-		for _ in 0..20 {
-			view_data.scroll_up();
-		}
-
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "1");
-	}
-
-	#[test]
-	fn view_data_case_page_down_once() {
-		let mut view_data = create_mocked_scroll_vertical_view_data();
-
-		view_data.page_down();
-
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "3");
-	}
-
-	#[test]
-	fn view_data_case_page_down_past_bottom() {
-		let mut view_data = create_mocked_scroll_vertical_view_data();
-
-		view_data.page_down();
-		view_data.page_down();
-		view_data.page_down();
-
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "5");
-	}
-
-	#[test]
-	fn view_data_case_page_up_once() {
-		let mut view_data = create_mocked_scroll_vertical_view_data();
-
-		// set scroll position to bottom
-		for _ in 0..5 {
-			view_data.scroll_down();
-		}
-
 		view_data.page_up();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "3");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_page_up_past_top() {
+	fn page_up_past_top() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 
 		// set scroll position to bottom
@@ -1031,77 +1301,135 @@ mod tests {
 		view_data.page_up();
 		view_data.page_up();
 
-		assert_eq!(view_data.get_leading_lines().len(), 3);
-		assert_eq!(view_data.get_trailing_lines().len(), 2);
-		assert_eq!(view_data.get_lines().len(), 5);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 4, 0), "1");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}a",
+			"{Normal}b",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_left_one_from_start() {
+	fn scroll_left() {
 		let mut view_data = create_mocked_scroll_horizontal_view_data();
+		// move right first
+		view_data.scroll_right();
+		view_data.scroll_right();
+		view_data.scroll_left();
 		view_data.scroll_left();
 
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "aaaaa");
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 1), "  ");
-		assert_eq!(
-			get_segment_content_for_view_line(view_data.get_lines(), 1, 0),
-			"aaaaaaa"
-		);
-		assert_eq!(
-			get_segment_content_for_view_line(view_data.get_lines(), 2, 0),
-			"aaaaaaa"
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}lllllll",
+			"{BODY}",
+			"{Normal}aaaaaaa",
+			"{Normal}aaaaaaa",
+			"{Normal}aaaaaaa",
+			"{Normal}aaaaa",
+			"{Normal}aaaa",
+			"{Normal}aaa",
+			"{Normal}aa",
+			"{Normal}a",
+			"{TRAILING}",
+			"{Normal}ttttttt"
 		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_right_one_from_start() {
+	fn scroll_right_one_from_start() {
 		let mut view_data = create_mocked_scroll_horizontal_view_data();
 		view_data.scroll_right();
 
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "aaaa");
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 1), "   ");
-		assert_eq!(
-			get_segment_content_for_view_line(view_data.get_lines(), 1, 0),
-			"aaaaaaa"
-		);
-		assert_eq!(
-			get_segment_content_for_view_line(view_data.get_lines(), 2, 0),
-			"aaaaaaa"
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}lllllll",
+			"{BODY}",
+			"{Normal}aaaaaaa",
+			"{Normal}aaaaaaa",
+			"{Normal}aaaaaaa",
+			"{Normal}aaaa",
+			"{Normal}aaa",
+			"{Normal}aa",
+			"{Normal}a",
+			"",
+			"{TRAILING}",
+			"{Normal}ttttttt"
 		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_right_to_end() {
+	fn scroll_right_to_end() {
 		let mut view_data = create_mocked_scroll_horizontal_view_data();
 		for _ in 0..8 {
 			view_data.scroll_right();
 		}
 
-		let lines = view_data.get_lines();
-		assert_eq!(get_segment_content_for_view_line(lines, 0, 0), "       ");
-		assert_eq!(get_segment_content_for_view_line(lines, 1, 0), "aa");
-		assert_eq!(get_segment_content_for_view_line(lines, 1, 1), "     ");
-		assert_eq!(get_segment_content_for_view_line(lines, 2, 0), "aaaaaaa");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}llllll",
+			"{BODY}",
+			"{Normal}aa",
+			"{Normal}aaaaaaa",
+			"{Normal}aa",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"{TRAILING}",
+			"{Normal}ttttttt"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_right_past_end() {
+	fn scroll_right_past_end() {
 		let mut view_data = create_mocked_scroll_horizontal_view_data();
 		for _ in 0..20 {
 			view_data.scroll_right();
 		}
 
-		let lines = view_data.get_lines();
-		assert_eq!(get_segment_content_for_view_line(lines, 0, 0), "       ");
-		assert_eq!(get_segment_content_for_view_line(lines, 1, 0), "aa");
-		assert_eq!(get_segment_content_for_view_line(lines, 1, 1), "     ");
-		assert_eq!(get_segment_content_for_view_line(lines, 2, 0), "aaaaaaa");
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}llllll",
+			"{BODY}",
+			"{Normal}aa",
+			"{Normal}aaaaaaa",
+			"{Normal}aa",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"{TRAILING}",
+			"{Normal}ttttttt"
+		);
 	}
 
 	#[test]
-	fn view_data_case_scroll_down_trigger_shorter_width() {
-		let mut view_data = create_mocked_scroll_horizontal_view_data();
+	fn scroll_down_trigger_shorter_width() {
+		let mut view_data = ViewData::new();
+		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
+		view_data.push_line(ViewLine::from("aaaaaaaaaaaaaaa"));
+		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
+		view_data.push_line(ViewLine::from("aaaaa"));
+		view_data.push_line(ViewLine::from("aaaa"));
+		view_data.push_line(ViewLine::from("aaa"));
+		view_data.push_line(ViewLine::from("aa"));
+		view_data.push_line(ViewLine::from("a"));
 		view_data.set_view_size(7, 3);
 		for _ in 0..10 {
 			view_data.scroll_right();
@@ -1110,14 +1438,11 @@ mod tests {
 			view_data.scroll_down();
 		}
 
-		let lines = view_data.get_lines();
-		assert_eq!(get_segment_content_for_view_line(lines, 0, 0), "aaaaaa");
-		assert_eq!(get_segment_content_for_view_line(lines, 1, 0), "a");
-		assert_eq!(get_segment_content_for_view_line(lines, 1, 1), "     ");
+		assert_rendered_output!(view_data, "{BODY}", "{Normal}aaaaa", "{Normal}aaaa", "{Normal}aaa");
 	}
 
 	#[test]
-	fn view_data_case_calculate_max_line_length_max_first() {
+	fn calculate_max_line_length_max_first() {
 		let view_lines = [
 			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
 			ViewLine::from("012345"),
@@ -1126,7 +1451,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_data_case_calculate_max_line_length_max_last() {
+	fn calculate_max_line_length_max_last() {
 		let view_lines = [
 			ViewLine::from("012345"),
 			ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
@@ -1135,7 +1460,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_data_case_calculate_max_line_length_with_slice() {
+	fn calculate_max_line_length_with_slice() {
 		let view_lines = [
 			ViewLine::from("012345"),
 			ViewLine::from("012345"),
@@ -1146,7 +1471,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_data_case_calculate_max_line_length_ignore_pinned() {
+	fn calculate_max_line_length_ignore_pinned() {
 		let view_lines = [
 			ViewLine::from("012345"),
 			ViewLine::from("012345"),
@@ -1157,7 +1482,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_data_case_view_resize_zero() {
+	fn set_view_resize_zero() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 		view_data.set_view_size(0, 0);
 		assert_eq!(view_data.height, 0);
@@ -1165,7 +1490,7 @@ mod tests {
 	}
 
 	#[test]
-	fn view_data_case_view_resize_and_top_greater_than_length() {
+	fn set_view_resize_and_top_greater_than_length() {
 		// I don't think this path is triggerable, since a view resize will reset the top position - Tim
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 		view_data.set_show_title(false);
@@ -1176,31 +1501,80 @@ mod tests {
 		view_data.lines_cache = None;
 		view_data.height = 13;
 		view_data.rebuild();
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "b");
+
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}b",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{Normal}4",
+			"{Normal}5",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_ensure_line_visible_with_scroll_change() {
+	fn ensure_line_visible_with_scroll_change() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 		// set scroll position to bottom
 		for _ in 0..5 {
 			view_data.scroll_down();
 		}
-
 		view_data.ensure_line_visible(1);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "b");
+
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}b",
+			"{Normal}c",
+			"{Normal}d",
+			"{Normal}1",
+			"{Normal}2",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
-	fn view_data_case_ensure_line_visible_without_scroll_change() {
+	fn ensure_line_visible_without_scroll_change() {
 		let mut view_data = create_mocked_scroll_vertical_view_data();
 		// set scroll position to bottom
 		for _ in 0..5 {
 			view_data.scroll_down();
 		}
-
 		view_data.ensure_line_visible(4);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "1");
+
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{BODY}",
+			"{Normal}1",
+			"{Normal}2",
+			"{Normal}3",
+			"{Normal}4",
+			"{Normal}5",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
@@ -1214,7 +1588,7 @@ mod tests {
 		}
 
 		view_data.ensure_column_visible(2);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "23456");
+		assert_rendered_output!(view_data, "{BODY}", "{Normal}23456");
 	}
 
 	#[test]
@@ -1228,53 +1602,53 @@ mod tests {
 		}
 
 		view_data.ensure_column_visible(6);
-		assert_eq!(get_segment_content_for_view_line(view_data.get_lines(), 0, 0), "56789");
+		assert_rendered_output!(view_data, "{BODY}", "{Normal}56789");
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_top_position() {
+	fn get_scroll_index_top_position() {
 		let view_data = create_mocked_scroll_index_data(100, 100, 0);
 		assert_eq!(view_data.get_scroll_index(), 0);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_empty_lines() {
+	fn get_scroll_index_empty_lines() {
 		let view_data = ViewData::new();
 		assert_eq!(view_data.get_scroll_index(), 0);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_end_position() {
+	fn get_scroll_index_end_position() {
 		let view_data = create_mocked_scroll_index_data(100, 10, 90);
 		assert_eq!(view_data.get_scroll_index(), 9);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_position_one_down() {
+	fn get_scroll_index_position_one_down() {
 		let view_data = create_mocked_scroll_index_data(100, 10, 1);
 		assert_eq!(view_data.get_scroll_index(), 1);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_position_low_input_range_1() {
+	fn get_scroll_index_position_low_input_range_1() {
 		let view_data = create_mocked_scroll_index_data(10, 8, 1);
 		assert_eq!(view_data.get_scroll_index(), 4);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_item_count_smaller_than_height() {
+	fn get_scroll_index_item_count_smaller_than_height() {
 		let view_data = create_mocked_scroll_index_data(10, 11, 1);
 		assert_eq!(view_data.get_scroll_index(), 0);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_view_height_too_small() {
+	fn get_scroll_index_view_height_too_small() {
 		let view_data = create_mocked_scroll_index_data(10, 2, 5);
 		assert_eq!(view_data.get_scroll_index(), 0);
 	}
 
 	#[test]
-	fn view_data_case_get_scroll_index_position_extreme_lows() {
+	fn get_scroll_index_position_extreme_lows() {
 		assert_eq!(create_mocked_scroll_index_data(0, 0, 0).get_scroll_index(), 0);
 		assert_eq!(create_mocked_scroll_index_data(2, 1, 1).get_scroll_index(), 0);
 		assert_eq!(create_mocked_scroll_index_data(2, 0, 1).get_scroll_index(), 0);
