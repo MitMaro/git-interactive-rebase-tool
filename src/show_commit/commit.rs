@@ -238,7 +238,7 @@ mod tests {
 		);
 	}
 
-	fn load_commit_state(hash: &str) -> Result<Commit> {
+	fn load_commit_from_hash(hash: &str) -> Result<Commit> {
 		Commit::new_from_hash(hash, LoadCommitDiffOptions {
 			context_lines: 3,
 			copies: true,
@@ -252,33 +252,33 @@ mod tests {
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_hash() {
+	fn get_hash() {
 		set_git_dir("simple");
-		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
+		let commit = load_commit_from_hash("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
 		assert_eq!(commit.get_hash(), "18d82dcc4c36cade807d7cf79700b6bbad8080b9");
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_author() {
+	fn get_author() {
 		set_git_dir("simple");
-		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
+		let commit = load_commit_from_hash("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
 		assert_eq!(commit.get_author().to_string().unwrap(), "Tim Oram <dev@mitmaro.ca>");
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_date() {
+	fn get_date() {
 		set_git_dir("simple");
-		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
+		let commit = load_commit_from_hash("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
 		assert_eq!(commit.get_date().timestamp(), 1_580_172_067);
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_body() {
+	fn get_body() {
 		set_git_dir("simple");
-		let commit = load_commit_state("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
+		let commit = load_commit_from_hash("18d82dcc4c36cade807d7cf79700b6bbad8080b9").unwrap();
 		assert_eq!(
 			commit.get_body().as_ref().unwrap(),
 			"Empty commit title\n\nEmpty commit body\n"
@@ -287,17 +287,17 @@ mod tests {
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_committer_match_author() {
+	fn get_committer_when_matches_author() {
 		set_git_dir("simple");
-		let commit = load_commit_state("ac950e31a96660e55d8034948b5d9b985c97692d").unwrap();
+		let commit = load_commit_from_hash("ac950e31a96660e55d8034948b5d9b985c97692d").unwrap();
 		assert!(commit.get_committer().to_string().is_none());
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_committer_not_match_author() {
+	fn load_commit_get_committer_when_not_matches_author() {
 		set_git_dir("simple");
-		let commit = load_commit_state("2836dcdcbd040f9157652dd3db0d584a44d4793d").unwrap();
+		let commit = load_commit_from_hash("2836dcdcbd040f9157652dd3db0d584a44d4793d").unwrap();
 		assert_eq!(
 			commit.get_committer().to_string().unwrap(),
 			"Not Tim Oram <not-dev@mitmaro.ca>"
@@ -306,53 +306,76 @@ mod tests {
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_modified_file() {
+	fn load_initial_commit() {
 		set_git_dir("simple");
-		let commit = load_commit_state("1cc0456637cb220155e957c641f483e60724c581").unwrap();
+		let commit = load_commit_from_hash("e10b3f474644d8566947104c07acba4d6f4f4f9f").unwrap();
+		assert_eq!(commit.get_file_stats().len(), 0);
+	}
+
+	#[test]
+	#[serial]
+	fn commit_with_modified_file() {
+		set_git_dir("simple");
+		let commit = load_commit_from_hash("1cc0456637cb220155e957c641f483e60724c581").unwrap();
 		let file_stat = commit.get_file_stats().first().unwrap();
 		assert_eq!(*file_stat.get_status(), Status::Modified);
 		assert_eq!(file_stat.get_from_name(), "a");
+		assert_eq!(commit.get_number_files_changed(), 1);
+		assert_eq!(commit.get_number_insertions(), 1);
+		assert_eq!(commit.get_number_deletions(), 0);
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_added_file() {
+	fn commit_with_added_file() {
 		set_git_dir("simple");
-		let commit = load_commit_state("c1ac7f2c32f9e00012f409572d223c9457ae497b").unwrap();
+		let commit = load_commit_from_hash("c1ac7f2c32f9e00012f409572d223c9457ae497b").unwrap();
 		let file_stat = commit.get_file_stats().first().unwrap();
 		assert_eq!(*file_stat.get_status(), Status::Added);
 		assert_eq!(file_stat.get_from_name(), "e");
+		assert_eq!(commit.get_number_files_changed(), 1);
+		assert_eq!(commit.get_number_insertions(), 1);
+		assert_eq!(commit.get_number_deletions(), 0);
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_deleted_file() {
+	fn commit_with_deleted_file() {
 		set_git_dir("simple");
-		let commit = load_commit_state("d85479638307e4db37e1f1f2c3c807f7ff36a0ff").unwrap();
+		let commit = load_commit_from_hash("d85479638307e4db37e1f1f2c3c807f7ff36a0ff").unwrap();
 		let file_stat = commit.get_file_stats().first().unwrap();
 		assert_eq!(*file_stat.get_status(), Status::Deleted);
 		assert_eq!(file_stat.get_from_name(), "b");
+		assert_eq!(commit.get_number_files_changed(), 1);
+		assert_eq!(commit.get_number_insertions(), 0);
+		assert_eq!(commit.get_number_deletions(), 1);
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_renamed_file() {
+	fn commit_with_renamed_file() {
 		set_git_dir("simple");
-		let commit = load_commit_state("aed0fd1db3e73c0e568677ae8903a11c5fbc5659").unwrap();
+		let commit = load_commit_from_hash("aed0fd1db3e73c0e568677ae8903a11c5fbc5659").unwrap();
 		let file_stat = commit.get_file_stats().first().unwrap();
 		assert_eq!(*file_stat.get_status(), Status::Renamed);
 		assert_eq!(file_stat.get_from_name(), "c");
 		assert_eq!(file_stat.get_to_name(), "f");
+		assert_eq!(commit.get_number_files_changed(), 1);
+		assert_eq!(commit.get_number_insertions(), 0);
+		assert_eq!(commit.get_number_deletions(), 0);
 	}
 
 	#[test]
 	#[serial]
-	fn commit_utils_load_commit_state_load_copied_file() {
+	fn commit_with_copied_file() {
 		set_git_dir("simple");
-		let commit = load_commit_state("c028f42bdb2a5a9f80adea23d95eb240b994a6c2").unwrap();
+		let commit = load_commit_from_hash("c028f42bdb2a5a9f80adea23d95eb240b994a6c2").unwrap();
 		let file_stat = commit.get_file_stats().first().unwrap();
 		assert_eq!(*file_stat.get_status(), Status::Copied);
 		assert_eq!(file_stat.get_from_name(), "d");
 		assert_eq!(file_stat.get_to_name(), "g");
+		assert_eq!(commit.get_number_files_changed(), 1);
+		assert_eq!(commit.get_number_insertions(), 0);
+		assert_eq!(commit.get_number_deletions(), 0);
 	}
 }
