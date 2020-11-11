@@ -5,5 +5,5 @@ set -u
 set -o pipefail
 
 rustup update nightly
-cargo +nightly install cargo-tarpaulin
-cargo +nightly tarpaulin --exclude-files=src/display/ncurses.rs --all-features --ignore-tests --line --verbose --out Html --out Lcov --output-dir coverage
+cargo +nightly install --version 0.16.0 cargo-tarpaulin
+cargo +nightly tarpaulin --exclude-files=src/display/ncurses.rs --all-features --ignore-tests --line --verbose --out Html --out Lcov --output-dir coverage "$@"
