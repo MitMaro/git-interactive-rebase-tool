@@ -34,7 +34,7 @@ impl FileStatsBuilder {
 		}
 	}
 
-	pub(crate) fn add_file_stat(&mut self, from_name: String, to_name: String, status: Status) {
+	pub(crate) fn add_file_stat(&mut self, from_name: &str, to_name: &str, status: Status) {
 		self.close_delta();
 		self.close_file_stat();
 		self.delta = None;
