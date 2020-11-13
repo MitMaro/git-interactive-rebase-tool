@@ -23,8 +23,11 @@ pub struct SegmentPartial {
 }
 
 impl SegmentPartial {
-	const fn new(content: String, length: usize) -> Self {
-		Self { content, length }
+	fn new(content: &str, length: usize) -> Self {
+		Self {
+			content: String::from(content),
+			length,
+		}
 	}
 
 	pub(super) fn get_content(&self) -> &str {
@@ -102,7 +105,7 @@ impl LineSegment {
 
 		// segment is hidden to the left of the line/scroll
 		if segment_length <= left {
-			SegmentPartial::new(String::from(""), 0)
+			SegmentPartial::new("", 0)
 		}
 		else {
 			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
@@ -135,11 +138,11 @@ impl LineSegment {
 						}
 					})
 					.collect::<String>();
-				SegmentPartial::new(partial_line, take_length.into_inner())
+				SegmentPartial::new(partial_line.as_str(), take_length.into_inner())
 			}
 			else {
 				let partial_line = graphemes.collect::<String>();
-				SegmentPartial::new(partial_line, segment_length - skip_length.into_inner())
+				SegmentPartial::new(partial_line.as_str(), segment_length - skip_length.into_inner())
 			}
 		}
 	}
