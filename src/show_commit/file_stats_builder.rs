@@ -1,7 +1,6 @@
 use crate::show_commit::delta::Delta;
 use crate::show_commit::diff_line::DiffLine;
 use crate::show_commit::file_stat::FileStat;
-use crate::show_commit::status::Status;
 
 #[derive(Debug, Clone)]
 pub(super) struct FileStatsBuilder {
@@ -34,16 +33,16 @@ impl FileStatsBuilder {
 		}
 	}
 
-	pub(crate) fn add_file_stat(&mut self, from_name: &str, to_name: &str, status: Status) {
+	pub(crate) fn add_file_stat(&mut self, file_stat: FileStat) {
 		self.close_delta();
 		self.close_file_stat();
 		self.delta = None;
-		self.file_stat = Some(FileStat::new(from_name, to_name, status));
+		self.file_stat = Some(file_stat);
 	}
 
-	pub(crate) fn add_delta(&mut self, header: &str, old_start: u32, new_start: u32, old_lines: u32, new_lines: u32) {
+	pub(crate) fn add_delta(&mut self, delta: Delta) {
 		self.close_delta();
-		self.delta = Some(Delta::new(header, old_start, new_start, old_lines, new_lines));
+		self.delta = Some(delta);
 	}
 
 	pub(crate) fn add_diff_line(&mut self, diff_line: DiffLine) {
@@ -57,5 +56,125 @@ impl FileStatsBuilder {
 		self.close_delta();
 		self.close_file_stat();
 		self.file_stats
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::show_commit::origin::Origin;
+	use crate::show_commit::status::Status;
+
+	#[test]
+	fn build_file_stat_with_file_stat_without_delta() {
+		let file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		assert_eq!(file_stats_builder.build(), vec![file_stat_1]);
+	}
+
+	#[test]
+	fn build_file_stat_with_file_stat_with_delta() {
+		let mut file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let delta_1 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stats_builder.add_delta(delta_1.clone());
+		file_stat_1.add_delta(delta_1);
+		assert_eq!(file_stats_builder.build(), vec![file_stat_1]);
+	}
+
+	#[test]
+	fn build_file_stat_with_file_stat_without_delta_followed_by_file_stat_with_delta() {
+		let file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let mut file_stat_2 = FileStat::new("from2", "to2", Status::Deleted);
+		let delta_1 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stats_builder.add_file_stat(file_stat_2.clone());
+		file_stats_builder.add_delta(delta_1.clone());
+		file_stat_2.add_delta(delta_1);
+		assert_eq!(file_stats_builder.build(), vec![file_stat_1, file_stat_2]);
+	}
+
+	#[test]
+	fn build_file_stat_with_file_stat_without_delta_followed_by_file_stat_with_delta_followed_by_file_stat() {
+		let file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let mut file_stat_2 = FileStat::new("from2", "to2", Status::Deleted);
+		let delta_1 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stats_builder.add_file_stat(file_stat_2.clone());
+		file_stats_builder.add_delta(delta_1.clone());
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stat_2.add_delta(delta_1);
+		assert_eq!(file_stats_builder.build(), vec![
+			file_stat_1.clone(),
+			file_stat_2,
+			file_stat_1
+		]);
+	}
+
+	#[test]
+	fn build_file_stat_with_file_stat_with_delta_with_diff_line() {
+		let mut file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let mut delta_1 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let diff_line_1 = DiffLine::new(Origin::Addition, "My Line", Some(1), Some(2), false);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stats_builder.add_delta(delta_1.clone());
+		file_stats_builder.add_diff_line(diff_line_1.clone());
+		delta_1.add_line(diff_line_1);
+		file_stat_1.add_delta(delta_1);
+		assert_eq!(file_stats_builder.build(), vec![file_stat_1]);
+	}
+
+	#[test]
+	fn build_file_stat_with_file_stat_with_delta_with_diff_line_followed_by_file_stat() {
+		let mut file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let file_stat_2 = FileStat::new("from2", "to2", Status::Deleted);
+		let mut delta_1 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let diff_line_1 = DiffLine::new(Origin::Addition, "My Line", Some(1), Some(2), false);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stats_builder.add_delta(delta_1.clone());
+		file_stats_builder.add_diff_line(diff_line_1.clone());
+		file_stats_builder.add_file_stat(file_stat_2.clone());
+		delta_1.add_line(diff_line_1);
+		file_stat_1.add_delta(delta_1);
+		assert_eq!(file_stats_builder.build(), vec![file_stat_1, file_stat_2]);
+	}
+
+	#[test]
+	fn build_file_stat_with_file_stat_with_delta_with_diff_line_followed_by_delta() {
+		let mut file_stat_1 = FileStat::new("from", "to", Status::Added);
+		let mut delta_1 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let delta_2 = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta2 {", 11, 10, 9, 8);
+		let diff_line_1 = DiffLine::new(Origin::Addition, "My Line", Some(1), Some(2), false);
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(file_stat_1.clone());
+		file_stats_builder.add_delta(delta_1.clone());
+		file_stats_builder.add_diff_line(diff_line_1.clone());
+		file_stats_builder.add_delta(delta_2.clone());
+		delta_1.add_line(diff_line_1);
+		file_stat_1.add_delta(delta_1);
+		file_stat_1.add_delta(delta_2);
+		assert_eq!(file_stats_builder.build(), vec![file_stat_1]);
+	}
+
+	#[test]
+	#[should_panic]
+	fn add_delta_without_file_stat() {
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4));
+		file_stats_builder.build();
+	}
+	#[test]
+	#[should_panic]
+	fn add_diff_line_before_delta() {
+		let mut file_stats_builder = FileStatsBuilder::new();
+		file_stats_builder.add_file_stat(FileStat::new("from", "to", Status::Added));
+		file_stats_builder.add_diff_line(DiffLine::new(Origin::Addition, "My Line", Some(1), Some(2), false));
+		file_stats_builder.build();
 	}
 }
