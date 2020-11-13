@@ -1,6 +1,7 @@
 use crate::show_commit::diff_line::DiffLine;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Delta {
 	old_start: u32,
 	old_lines: u32,

@@ -1,6 +1,7 @@
 use crate::show_commit::origin::Origin;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct DiffLine {
 	end_of_file: bool,
 	line: String,

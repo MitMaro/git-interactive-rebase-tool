@@ -70,10 +70,53 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn commit_user_file_stat() {
+	fn no_deltas() {
 		let file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Status::Renamed);
 		assert_eq!(*file_stat.get_status(), Status::Renamed);
 		assert_eq!(file_stat.get_from_name(), "/from/path");
 		assert_eq!(file_stat.get_to_name(), "/to/path");
+		assert_eq!(file_stat.largest_old_line_number(), 0);
+		assert_eq!(file_stat.largest_new_line_number(), 0);
+		assert!(file_stat.deltas().is_empty());
+	}
+
+	#[test]
+	fn add_delta() {
+		let mut file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Status::Renamed);
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4));
+		assert_eq!(file_stat.largest_old_line_number(), 13);
+		assert_eq!(file_stat.largest_new_line_number(), 16);
+		assert_eq!(file_stat.deltas().len(), 1);
+	}
+
+	#[test]
+	fn add_delta_with_larger_old_line_number() {
+		let mut file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Status::Renamed);
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4));
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 14, 12, 3, 4));
+		assert_eq!(file_stat.largest_old_line_number(), 17);
+		assert_eq!(file_stat.largest_new_line_number(), 16);
+		assert_eq!(file_stat.deltas().len(), 2);
+	}
+
+	#[test]
+	fn add_delta_with_larger_new_line_number() {
+		let mut file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Status::Renamed);
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4));
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 17, 3, 4));
+		assert_eq!(file_stat.largest_old_line_number(), 13);
+		assert_eq!(file_stat.largest_new_line_number(), 21);
+		assert_eq!(file_stat.deltas().len(), 2);
+	}
+
+	#[test]
+	fn add_delta_with_larger_new_and_old_line_number() {
+		let mut file_stat = FileStat::new("/from/path".to_string(), "/to/path".to_string(), Status::Renamed);
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4));
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 14, 12, 3, 4));
+		file_stat.add_delta(Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 17, 3, 4));
+		assert_eq!(file_stat.largest_old_line_number(), 17);
+		assert_eq!(file_stat.largest_new_line_number(), 21);
+		assert_eq!(file_stat.deltas().len(), 3);
 	}
 }
