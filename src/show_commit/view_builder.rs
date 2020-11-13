@@ -1,6 +1,7 @@
+use super::origin::Origin;
 use crate::display::display_color::DisplayColor;
 use crate::show_commit::commit::Commit;
-use crate::show_commit::diff_line::{DiffLine, Origin};
+use crate::show_commit::diff_line::DiffLine;
 use crate::show_commit::util::{
 	get_files_changed_summary,
 	get_partition_index_on_whitespace_for_line,

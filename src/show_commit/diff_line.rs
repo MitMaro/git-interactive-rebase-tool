@@ -1,22 +1,4 @@
-use crate::show_commit::diff_line::Origin::{Addition, Context, Deletion};
-
-#[derive(Debug, Clone)]
-pub enum Origin {
-	Context,
-	Addition,
-	Deletion,
-}
-
-impl Origin {
-	pub(crate) fn from_chr(c: char) -> Self {
-		match c {
-			' ' | '=' => Context,
-			'+' | '>' => Addition,
-			'-' | '<' => Deletion,
-			_ => panic!("Invalid diff origin: {}", c),
-		}
-	}
-}
+use crate::show_commit::origin::Origin;
 
 #[derive(Debug, Clone)]
 pub struct DiffLine {

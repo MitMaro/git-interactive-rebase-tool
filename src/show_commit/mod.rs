@@ -3,6 +3,7 @@ mod delta;
 mod diff_line;
 mod file_stat;
 mod file_stats_builder;
+mod origin;
 mod show_commit_state;
 mod status;
 mod user;

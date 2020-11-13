@@ -54,8 +54,8 @@ impl Delta {
 
 #[cfg(test)]
 mod tests {
+	use super::super::origin::Origin;
 	use super::*;
-	use crate::show_commit::diff_line::Origin;
 
 	#[test]
 	fn new_with_correctly_formatted_context() {

@@ -1,4 +1,5 @@
-use crate::show_commit::diff_line::{DiffLine, Origin};
+use super::origin::Origin;
+use crate::show_commit::diff_line::DiffLine;
 use crate::show_commit::file_stat::FileStat;
 use crate::show_commit::file_stats_builder::FileStatsBuilder;
 use crate::show_commit::status::Status;
@@ -139,7 +140,7 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 			Some(&mut |_, _, diff_line| {
 				let mut fsb = file_stats_builder.lock().unwrap();
 				fsb.add_diff_line(DiffLine::new(
-					Origin::from_chr(diff_line.origin()),
+					Origin::from(diff_line.origin()),
 					std::str::from_utf8(diff_line.content()).unwrap(),
 					diff_line.old_lineno(),
 					diff_line.new_lineno(),
