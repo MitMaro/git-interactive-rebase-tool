@@ -53,3 +53,41 @@ impl DiffLine {
 		self.end_of_file
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::super::origin::Origin;
+	use super::*;
+
+	#[test]
+	fn new_without_end_of_file() {
+		let diff_line = DiffLine::new(
+			Origin::Addition,
+			"This is a line\n\\ No newline at end of file\n",
+			Some(1),
+			Some(2),
+			false,
+		);
+		assert_eq!(diff_line.line(), "This is a line\n\\ No newline at end of file\n");
+		assert_eq!(diff_line.old_line_number(), Some(1));
+		assert_eq!(diff_line.new_line_number(), Some(2));
+		assert_eq!(diff_line.origin(), &Origin::Addition);
+		assert!(!diff_line.end_of_file());
+	}
+
+	#[test]
+	fn new_with_end_of_file() {
+		let diff_line = DiffLine::new(
+			Origin::Addition,
+			"This is a line\n\\ No newline at end of file\n",
+			Some(1),
+			Some(2),
+			true,
+		);
+		assert_eq!(diff_line.line(), "This is a line");
+		assert_eq!(diff_line.old_line_number(), Some(1));
+		assert_eq!(diff_line.new_line_number(), Some(2));
+		assert_eq!(diff_line.origin(), &Origin::Addition);
+		assert!(diff_line.end_of_file());
+	}
+}
