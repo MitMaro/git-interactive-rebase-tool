@@ -18,8 +18,8 @@ pub enum Status {
 	Other,
 }
 
-impl Status {
-	pub(super) const fn new_from_git_delta(delta: Delta) -> Self {
+impl From<Delta> for Status {
+	fn from(delta: Delta) -> Self {
 		match delta {
 			Delta::Added => Self::Added,
 			Delta::Copied => Self::Copied,
@@ -31,5 +31,30 @@ impl Status {
 				Self::Other
 			},
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use rstest::rstest;
+
+	#[rstest(
+		input,
+		expected,
+		case::added(Delta::Added, &Status::Added),
+		case::copied(Delta::Copied, &Status::Copied),
+		case::deleted(Delta::Deleted, &Status::Deleted),
+		case::modified(Delta::Modified, &Status::Modified),
+		case::renamed(Delta::Renamed, &Status::Renamed),
+		case::typechange(Delta::Typechange, &Status::Typechange),
+		case::ignored(Delta::Ignored, &Status::Other),
+		case::conflicted(Delta::Conflicted, &Status::Other),
+		case::unmodified(Delta::Unmodified, &Status::Other),
+		case::unreadable(Delta::Unreadable, &Status::Other),
+		case::untracked(Delta::Untracked, &Status::Other)
+	)]
+	fn from_delta(input: Delta, expected: &Status) {
+		assert_eq!(&Status::from(input), expected);
 	}
 }

@@ -114,11 +114,7 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 					.path()
 					.map_or_else(|| String::from("unknown"), |p| String::from(p.to_str().unwrap()));
 
-				fsb.add_file_stat(
-					from_file_path,
-					to_file_path,
-					Status::new_from_git_delta(diff_delta.status()),
-				);
+				fsb.add_file_stat(from_file_path, to_file_path, Status::from(diff_delta.status()));
 
 				true
 			},
