@@ -1,4 +1,5 @@
 use super::origin::Origin;
+use crate::show_commit::delta::Delta;
 use crate::show_commit::diff_line::DiffLine;
 use crate::show_commit::file_stat::FileStat;
 use crate::show_commit::file_stats_builder::FileStatsBuilder;
@@ -114,11 +115,11 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 					.path()
 					.map_or_else(|| String::from("unknown"), |p| String::from(p.to_str().unwrap()));
 
-				fsb.add_file_stat(
+				fsb.add_file_stat(FileStat::new(
 					from_file_path.as_str(),
 					to_file_path.as_str(),
 					Status::from(diff_delta.status()),
-				);
+				));
 
 				true
 			},
@@ -128,13 +129,13 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 
 				let header = std::str::from_utf8(diff_hunk.header()).unwrap();
 
-				fsb.add_delta(
+				fsb.add_delta(Delta::new(
 					header,
 					diff_hunk.old_start(),
 					diff_hunk.new_start(),
 					diff_hunk.old_lines(),
 					diff_hunk.new_lines(),
-				);
+				));
 				true
 			}),
 			Some(&mut |_, _, diff_line| {

@@ -3,6 +3,7 @@ use crate::show_commit::status::Status;
 
 /// Represents a file change within a Git repository
 #[derive(Debug, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct FileStat {
 	status: Status,
 	to_name: String,
