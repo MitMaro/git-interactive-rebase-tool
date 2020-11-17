@@ -42,3 +42,67 @@ impl ProcessResult {
 		self
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use anyhow::anyhow;
+
+	#[test]
+	fn empty() {
+		let result = ProcessResult::new();
+		assert!(result.error.is_none());
+		assert_eq!(result.exit_status, None);
+		assert_eq!(result.input, None);
+		assert_eq!(result.state, None);
+	}
+
+	#[test]
+	fn with_input() {
+		let result = ProcessResult::new().input(Input::Character('a'));
+		assert!(result.error.is_none());
+		assert_eq!(result.exit_status, None);
+		assert_eq!(result.input, Some(Input::Character('a')));
+		assert_eq!(result.state, None);
+	}
+
+	#[test]
+	fn with_error() {
+		let result = ProcessResult::new().error(anyhow!("Test Error"));
+		assert_eq!(result.error.unwrap().to_string(), String::from("Test Error"));
+		assert_eq!(result.exit_status, None);
+		assert_eq!(result.input, None);
+		assert_eq!(result.state, None);
+	}
+
+	#[test]
+	fn exit_status() {
+		let result = ProcessResult::new().exit_status(ExitStatus::Good);
+		assert!(result.error.is_none());
+		assert_eq!(result.exit_status, Some(ExitStatus::Good));
+		assert_eq!(result.input, None);
+		assert_eq!(result.state, None);
+	}
+
+	#[test]
+	fn state() {
+		let result = ProcessResult::new().state(State::List);
+		assert!(result.error.is_none());
+		assert_eq!(result.exit_status, None);
+		assert_eq!(result.input, None);
+		assert_eq!(result.state, Some(State::List));
+	}
+
+	#[test]
+	fn everything() {
+		let result = ProcessResult::new()
+			.error(anyhow!("Test Error"))
+			.state(State::List)
+			.exit_status(ExitStatus::Good)
+			.input(Input::Character('a'));
+		assert_eq!(result.error.unwrap().to_string(), String::from("Test Error"));
+		assert_eq!(result.exit_status, Some(ExitStatus::Good));
+		assert_eq!(result.input, Some(Input::Character('a')));
+		assert_eq!(result.state, Some(State::List));
+	}
+}
