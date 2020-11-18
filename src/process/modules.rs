@@ -104,11 +104,8 @@ impl<'m> Modules<'m> {
 		if let Some(ref keybindings_descriptions) = self.get_module(state).get_help_keybindings_descriptions() {
 			self.help.update_from_keybindings_descriptions(keybindings_descriptions);
 		}
-		else if let Some(help_view_data) = self.get_module(state).get_help_view() {
-			self.help.update_from_view_data(help_view_data);
-		}
 		else {
-			self.help.clear_help();
+			self.help.clear();
 		}
 	}
 }
