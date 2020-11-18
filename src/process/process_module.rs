@@ -28,8 +28,4 @@ pub trait ProcessModule {
 	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
 		None
 	}
-
-	fn get_help_view(&self) -> Option<ViewData> {
-		None
-	}
 }

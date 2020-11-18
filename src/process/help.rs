@@ -38,7 +38,7 @@ impl ProcessModule for Help {
 	}
 
 	fn deactivate(&mut self) {
-		self.return_state = None;
+		self.clear()
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
@@ -64,6 +64,10 @@ impl Help {
 	pub fn new() -> Self {
 		let mut no_help_view_data = ViewData::new();
 		no_help_view_data.push_line(ViewLine::from("Help not available"));
+		no_help_view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
+			"Press any key to close",
+			DisplayColor::IndicatorColor,
+		)]));
 
 		Self {
 			return_state: None,
@@ -72,7 +76,7 @@ impl Help {
 		}
 	}
 
-	pub fn clear_help(&mut self) {
+	pub fn clear(&mut self) {
 		self.return_state = None;
 		self.view_data = None;
 	}
@@ -109,14 +113,157 @@ impl Help {
 		}
 
 		view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
-			"Any key to close",
+			"Press any key to close",
 			DisplayColor::IndicatorColor,
 		)]));
 
 		self.view_data = Some(view_data);
 	}
+}
 
-	pub fn update_from_view_data(&mut self, view_data: ViewData) {
-		self.view_data = Some(view_data);
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::assert_process_result;
+	use crate::assert_rendered_output;
+	use crate::process::testutil::{process_module_test, TestContext, ViewState};
+
+	#[test]
+	#[serial_test::serial]
+	fn empty() {
+		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+			let mut module = Help::new();
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{BODY}",
+				"{Normal}Help not available",
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to close"
+			);
+		});
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn from_key_bindings() {
+		process_module_test(
+			&[],
+			ViewState {
+				size: (22, 100),
+				..ViewState::default()
+			},
+			&[],
+			|test_context: TestContext<'_>| {
+				let mut module = Help::new();
+				module.update_from_keybindings_descriptions(&[
+					(String::from("a"), String::from("Description A")),
+					(String::from("b"), String::from("Description B")),
+				]);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(
+					view_data,
+					"{TITLE}",
+					"{LEADING}",
+					"{Normal,Underline} Key Action{Normal,Underline}           ",
+					"{BODY}",
+					"{IndicatorColor} a{Normal,Dimmed}|{Normal}Description A",
+					"{IndicatorColor} b{Normal,Dimmed}|{Normal}Description B",
+					"{TRAILING}",
+					"{IndicatorColor}Press any key to close"
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn clear() {
+		process_module_test(
+			&[],
+			ViewState::default(),
+			&[Input::Character('a')],
+			|_: TestContext<'_>| {
+				let mut module = Help::new();
+				module.clear();
+				assert!(module.return_state.is_none());
+				assert!(module.view_data.is_none());
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn deactivate() {
+		process_module_test(
+			&[],
+			ViewState::default(),
+			&[Input::Character('a')],
+			|_: TestContext<'_>| {
+				let mut module = Help::new();
+				module.deactivate();
+				assert!(module.return_state.is_none());
+				assert!(module.view_data.is_none());
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn return_state() {
+		process_module_test(
+			&[],
+			ViewState::default(),
+			&[Input::Character('a')],
+			|mut test_context: TestContext<'_>| {
+				let mut module = Help::new();
+				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				assert_process_result!(
+					test_context.handle_input(&mut module),
+					input = Input::Character('a'),
+					state = State::ConfirmRebase
+				)
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn resize() {
+		process_module_test(
+			&[],
+			ViewState::default(),
+			&[Input::Resize],
+			|mut test_context: TestContext<'_>| {
+				let mut module = Help::new();
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize)
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn scroll_events() {
+		process_module_test(
+			&[],
+			ViewState::default(),
+			&[
+				Input::ScrollLeft,
+				Input::ScrollRight,
+				Input::ScrollDown,
+				Input::ScrollUp,
+				Input::ScrollJumpDown,
+				Input::ScrollJumpUp,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = Help::new();
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollLeft);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollRight);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollDown);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollUp);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollJumpDown);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollJumpUp);
+			},
+		);
 	}
 }
