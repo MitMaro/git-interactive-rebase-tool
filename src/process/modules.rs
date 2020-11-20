@@ -109,3 +109,63 @@ impl<'m> Modules<'m> {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	// these tests just ensure that nothing panics
+	use super::*;
+	use crate::input::Input;
+	use crate::process::testutil::{process_module_test, TestContext, ViewState};
+	use anyhow::anyhow;
+	use rstest::rstest;
+
+	#[rstest(
+		state,
+		case::confirm_abort(State::ConfirmAbort),
+		case::confirm_rabase(State::ConfirmRebase),
+		case::edit(State::Edit),
+		case::error(State::Error),
+		case::external_editor(State::ExternalEditor),
+		case::help(State::Help),
+		case::list(State::List),
+		case::show_commit(State::ShowCommit),
+		case::window_size_error(State::WindowSizeError)
+	)]
+	#[serial_test::serial]
+	fn module_lifecycle(state: State) {
+		process_module_test(
+			&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment"],
+			ViewState::default(),
+			&[Input::Resize],
+			|test_context: TestContext<'_>| {
+				let mut config = test_context.config.clone();
+				config.git.editor = String::from("true");
+				let mut modules = Modules::new(test_context.display, &config);
+				modules.activate(state, test_context.rebase_todo_file, State::List);
+				modules.handle_input(
+					state,
+					test_context.input_handler,
+					test_context.rebase_todo_file,
+					test_context.view,
+				);
+				modules.build_view_data(state, test_context.view, test_context.rebase_todo_file);
+				modules.deactivate(state);
+				modules.update_help_data(state);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn set_error_message() {
+		process_module_test(
+			&["pick aaa comment"],
+			ViewState::default(),
+			&[],
+			|test_context: TestContext<'_>| {
+				let mut modules = Modules::new(test_context.display, test_context.config);
+				modules.set_error_message(&anyhow!("Test Error"));
+			},
+		);
+	}
+}
