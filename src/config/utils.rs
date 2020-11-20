@@ -74,6 +74,7 @@ pub(super) fn get_bool(config: &Config, name: &str, default: bool) -> Result<boo
 	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
 }
 
+#[allow(clippy::map_err_ignore)]
 pub(super) fn get_unsigned_integer(config: &Config, name: &str, default: u32) -> Result<u32> {
 	match config.get_i32(name) {
 		Ok(v) => {

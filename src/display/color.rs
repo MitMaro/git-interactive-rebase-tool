@@ -53,7 +53,7 @@ impl TryFrom<&str> for Color {
 					1 => {
 						let color_index = s.parse::<i16>();
 						match color_index {
-							Ok(i) if i >= 0 && i < 256 => Ok(Self::Index(i)),
+							Ok(i) if (0..256).contains(&i) => Ok(Self::Index(i)),
 							_ => {
 								Err(anyhow!(
 									"\"{}\" is not a valid color index. Index must be between 0-255.",
