@@ -1,3 +1,4 @@
+use crate::todo_file::edit_content::EditContext;
 use action::Action;
 use anyhow::{anyhow, Result};
 use line::Line;
@@ -6,39 +7,8 @@ use std::io::Write;
 use std::path::Path;
 
 pub mod action;
+pub mod edit_content;
 pub mod line;
-
-pub struct EditContext {
-	action: Option<Action>,
-	content: Option<String>,
-}
-
-impl EditContext {
-	pub const fn new() -> Self {
-		Self {
-			action: None,
-			content: None,
-		}
-	}
-
-	pub const fn action(mut self, action: Action) -> Self {
-		self.action = Some(action);
-		self
-	}
-
-	pub fn content(mut self, content: &str) -> Self {
-		self.content = Some(content.to_string());
-		self
-	}
-
-	pub const fn get_action(&self) -> &Option<Action> {
-		&self.action
-	}
-
-	pub const fn get_content(&self) -> &Option<String> {
-		&self.content
-	}
-}
 
 pub struct TodoFile {
 	comment_char: String,
