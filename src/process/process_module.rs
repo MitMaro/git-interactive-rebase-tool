@@ -1,5 +1,4 @@
 use crate::input::input_handler::InputHandler;
-use crate::input::Input;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::todo_file::TodoFile;
@@ -20,10 +19,7 @@ pub trait ProcessModule {
 		_input_handler: &InputHandler<'_>,
 		_rebase_todo: &mut TodoFile,
 		_view: &View<'_>,
-	) -> ProcessResult
-	{
-		ProcessResult::new().input(Input::Other)
-	}
+	) -> ProcessResult;
 
 	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
 		None
