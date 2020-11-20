@@ -246,6 +246,7 @@ impl<'d> Display<'d> {
 		}
 	}
 
+	#[allow(clippy::unwrap_in_result)]
 	pub(crate) fn getch(&self) -> Option<Input> {
 		let input = self.curses.getch();
 
