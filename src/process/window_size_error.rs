@@ -40,12 +40,9 @@ impl ProcessModule for WindowSizeError {
 			if view_width >= MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH {
 				HEIGHT_ERROR_MESSAGE
 			}
-			else if view_width >= SHORT_ERROR_MESSAGE.len() {
-				SHORT_ERROR_MESSAGE
-			}
 			else {
-				// not much to do if the window gets too narrow
-				SIZE_ERROR_MESSAGE
+				// this message will always be safe here
+				SHORT_ERROR_MESSAGE
 			}
 		}
 		else {
@@ -84,5 +81,135 @@ impl WindowSizeError {
 
 	pub const fn is_window_too_small(window_width: usize, window_height: usize) -> bool {
 		window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::assert_process_result;
+	use crate::assert_rendered_output;
+	use crate::process::testutil::{process_module_test, TestContext, ViewState};
+	use rstest::rstest;
+	use std::convert::TryFrom;
+
+	#[test]
+	fn is_window_too_small_width_too_small() {
+		assert!(WindowSizeError::is_window_too_small(
+			MINIMUM_COMPACT_WINDOW_WIDTH,
+			MINIMUM_WINDOW_HEIGHT + 1
+		));
+	}
+
+	#[test]
+	fn is_window_too_small_height_too_small() {
+		assert!(WindowSizeError::is_window_too_small(
+			MINIMUM_COMPACT_WINDOW_WIDTH + 1,
+			MINIMUM_WINDOW_HEIGHT
+		));
+	}
+
+	#[test]
+	fn is_window_too_small_height_and_width_too_small() {
+		assert!(WindowSizeError::is_window_too_small(
+			MINIMUM_COMPACT_WINDOW_WIDTH,
+			MINIMUM_WINDOW_HEIGHT
+		));
+	}
+
+	#[test]
+	fn is_window_too_small_width_and_height_large() {
+		assert!(!WindowSizeError::is_window_too_small(
+			MINIMUM_COMPACT_WINDOW_WIDTH + 1,
+			MINIMUM_WINDOW_HEIGHT + 1
+		));
+	}
+
+	#[rstest(
+		width, height, expected,
+		case::not_too_small(100, 100, "Bug: window size is invalid!"),
+		case::width_too_small_long_message(SHORT_ERROR_MESSAGE.len(), MINIMUM_WINDOW_HEIGHT + 1, "Window too small"),
+		case::width_too_small_short_message(SHORT_ERROR_MESSAGE.len() - 1, MINIMUM_WINDOW_HEIGHT + 1, "Size!"),
+		case::height_too_small_long_message(
+			MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH, MINIMUM_WINDOW_HEIGHT, "Window too small, increase height to continue"
+		),
+		case::height_too_small_short_message(
+			MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH - 1, MINIMUM_WINDOW_HEIGHT, "Window too small"
+		)
+	)]
+	#[allow(clippy::cast_possible_wrap)]
+	#[serial_test::serial]
+	fn build_view_data(width: usize, height: usize, expected: &str) {
+		process_module_test(
+			&[],
+			ViewState {
+				size: (i32::try_from(width).unwrap(), i32::try_from(height).unwrap()),
+				..ViewState::default()
+			},
+			&[],
+			|test_context: TestContext<'_>| {
+				let mut module = WindowSizeError::new();
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(view_data, "{BODY}", format!("{{Normal}}{}", expected));
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn input_resize_window_still_small() {
+		process_module_test(
+			&[],
+			ViewState {
+				size: (1, 1),
+				..ViewState::default()
+			},
+			&[Input::Resize],
+			|mut test_context: TestContext<'_>| {
+				let mut module = WindowSizeError::new();
+				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn input_resize_window_no_longer_too_small() {
+		process_module_test(
+			&[],
+			ViewState {
+				size: (100, 100),
+				..ViewState::default()
+			},
+			&[Input::Resize],
+			|mut test_context: TestContext<'_>| {
+				let mut module = WindowSizeError::new();
+				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				assert_process_result!(
+					test_context.handle_input(&mut module),
+					input = Input::Resize,
+					state = State::ConfirmRebase
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn input_other_character() {
+		process_module_test(
+			&[],
+			ViewState {
+				size: (100, 100),
+				..ViewState::default()
+			},
+			&[Input::Character('a')],
+			|mut test_context: TestContext<'_>| {
+				let mut module = WindowSizeError::new();
+				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('a'));
+			},
+		);
 	}
 }
