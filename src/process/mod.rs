@@ -5,10 +5,13 @@ pub mod modules;
 pub mod process_module;
 pub mod process_result;
 pub mod state;
-#[cfg(test)]
-pub mod testutil;
 pub mod util;
 pub mod window_size_error;
+
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+pub mod testutil;
 
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
@@ -52,7 +55,7 @@ impl<'r> Process<'r> {
 			let result = modules.handle_input(self.state, self.input_handler, &mut self.rebase_todo, self.view);
 			self.handle_process_result(&mut modules, &result);
 		}
-		self.exit_end()?;
+		self.rebase_todo.write_file()?;
 		Ok(self.exit_status)
 	}
 
@@ -104,13 +107,5 @@ impl<'r> Process<'r> {
 	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
 		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
 		self.handle_process_result(modules, &result);
-	}
-
-	fn exit_end(&mut self) -> Result<()> {
-		let result = self.rebase_todo.write_file();
-		if result.is_err() {
-			self.exit_status = Some(ExitStatus::FileWriteError);
-		}
-		result
 	}
 }
