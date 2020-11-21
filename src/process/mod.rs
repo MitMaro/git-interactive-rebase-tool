@@ -77,6 +77,9 @@ impl<'r> Process<'r> {
 		}
 
 		match result.input {
+			Some(Input::Exit) => {
+				self.exit_status = Some(ExitStatus::Abort);
+			},
 			Some(Input::Resize) => {
 				let (view_width, view_height) = self.view.get_view_size();
 				if self.state != State::WindowSizeError && WindowSizeError::is_window_too_small(view_width, view_height)

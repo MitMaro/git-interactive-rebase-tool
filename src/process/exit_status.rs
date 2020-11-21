@@ -1,5 +1,6 @@
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ExitStatus {
+	Abort,
 	ConfigError,
 	FileReadError,
 	FileWriteError,
@@ -10,6 +11,7 @@ pub enum ExitStatus {
 impl ExitStatus {
 	pub const fn to_code(self) -> i32 {
 		match self {
+			Self::Abort => 5,
 			Self::ConfigError => 1,
 			Self::FileReadError => 2,
 			Self::FileWriteError => 3,
@@ -27,6 +29,7 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
+		case::abort(ExitStatus::Abort, 5),
 		case::config_error(ExitStatus::ConfigError, 1),
 		case::file_read_error(ExitStatus::FileReadError, 2),
 		case::file_write_error(ExitStatus::FileWriteError, 3),

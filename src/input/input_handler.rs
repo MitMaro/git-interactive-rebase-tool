@@ -34,6 +34,7 @@ impl<'i> InputHandler<'i> {
 			CursesInput::KeyDown => String::from("Down"),
 			CursesInput::KeyEnd => String::from("End"),
 			CursesInput::KeyEnter => String::from("Enter"),
+			CursesInput::KeyExit => String::from("Exit"),
 			CursesInput::KeyF0 => String::from("F0"),
 			CursesInput::KeyF1 => String::from("F1"),
 			CursesInput::KeyF2 => String::from("F2"),
@@ -98,7 +99,6 @@ impl<'i> InputHandler<'i> {
 			| CursesInput::KeyCommand
 			| CursesInput::KeyCopy
 			| CursesInput::KeyCreate
-			| CursesInput::KeyExit
 			| CursesInput::KeyFind
 			| CursesInput::KeyHelp
 			| CursesInput::KeyMark
@@ -160,6 +160,7 @@ impl<'i> InputHandler<'i> {
 			"PageDown" => Input::ScrollJumpDown,
 			"Home" => Input::ScrollTop,
 			"End" => Input::ScrollBottom,
+			"Exit" => Input::Exit,
 			"Resize" => Input::Resize,
 			_ => return None,
 		})
@@ -205,6 +206,7 @@ impl<'i> InputHandler<'i> {
 			i if i == self.key_bindings.move_down_step.as_str() => Input::MoveCursorPageDown,
 			i if i == self.key_bindings.move_selection_down.as_str() => Input::SwapSelectedDown,
 			i if i == self.key_bindings.move_selection_up.as_str() => Input::SwapSelectedUp,
+			"Exit" => Input::Exit,
 			"Resize" => Input::Resize,
 			_ => Input::Other,
 		}
@@ -220,6 +222,7 @@ impl<'i> InputHandler<'i> {
 			c if c == "Down" => Input::Down,
 			c if c == "End" => Input::End,
 			c if c == "Enter" => Input::Enter,
+			c if c == "Exit" => Input::Exit,
 			c if c == "F0" => Input::F0,
 			c if c == "F1" => Input::F1,
 			c if c == "F2" => Input::F2,
@@ -325,7 +328,8 @@ mod tests {
 		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
 		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
 		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
-		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown)
+		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown),
+		case::exit(CursesInput::KeyExit, Input::Exit)
 	)]
 	#[serial_test::serial]
 	fn confirm_mode(input: CursesInput, expected: Input) {
@@ -350,7 +354,8 @@ mod tests {
 		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
 		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
 		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
-		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown)
+		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown),
+		case::exit(CursesInput::KeyExit, Input::Exit)
 	)]
 	#[serial_test::serial]
 	fn default_mode(input: CursesInput, expected: Input) {
@@ -387,7 +392,8 @@ mod tests {
 		case::swap_selected_down(CursesInput::Character('j'), Input::SwapSelectedDown),
 		case::swap_selected_up(CursesInput::Character('k'), Input::SwapSelectedUp),
 		case::resize(CursesInput::KeyResize, Input::Resize),
-		case::other(CursesInput::Character('z'), Input::Other)
+		case::other(CursesInput::Character('z'), Input::Other),
+		case::exit(CursesInput::KeyExit, Input::Exit)
 	)]
 	#[serial_test::serial]
 	fn list_mode(input: CursesInput, expected: Input) {
@@ -448,7 +454,8 @@ mod tests {
 		case::a3_key(CursesInput::KeyA3, Input::KeypadUpperRight),
 		case::b2_key(CursesInput::KeyB2, Input::KeypadCenter),
 		case::c1_key(CursesInput::KeyC1, Input::KeypadLowerLeft),
-		case::c3_key(CursesInput::KeyC3, Input::KeypadLowerRight)
+		case::c3_key(CursesInput::KeyC3, Input::KeypadLowerRight),
+		case::exit(CursesInput::KeyExit, Input::Exit)
 	)]
 	#[serial_test::serial]
 	fn raw_mode(input: CursesInput, expected: Input) {
@@ -483,7 +490,6 @@ mod tests {
 			CursesInput::KeyCommand,
 			CursesInput::KeyCopy,
 			CursesInput::KeyCreate,
-			CursesInput::KeyExit,
 			CursesInput::KeyFind,
 			CursesInput::KeyHelp,
 			CursesInput::KeyMark,
@@ -545,7 +551,8 @@ mod tests {
 		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
 		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
 		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
-		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown)
+		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown),
+		case::exit(CursesInput::KeyExit, Input::Exit)
 	)]
 	#[serial_test::serial]
 	fn confirm_input_mode(input: CursesInput, expected: Input) {
