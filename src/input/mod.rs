@@ -47,6 +47,7 @@ pub enum Input {
 	Down,
 	End,
 	Enter,
+	Exit,
 	F0,
 	F1,
 	F2,

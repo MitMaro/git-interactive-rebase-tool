@@ -108,6 +108,7 @@ fn map_input_str_to_curses(input: &str) -> PancursesInput {
 		"Down" => PancursesInput::KeyDown,
 		"End" => PancursesInput::KeyEnd,
 		"Enter" => PancursesInput::KeyEnter,
+		"Exit" => PancursesInput::KeyExit,
 		"F0" => PancursesInput::KeyF0,
 		"F1" => PancursesInput::KeyF1,
 		"F2" => PancursesInput::KeyF2,
@@ -168,6 +169,7 @@ fn map_input_to_curses(key_bindings: &KeyBindings, input: Input) -> PancursesInp
 		Input::Edit => map_input_str_to_curses(key_bindings.edit.as_str()),
 		Input::End | Input::ScrollBottom => map_input_str_to_curses("End"),
 		Input::Enter => map_input_str_to_curses("Enter"),
+		Input::Exit => map_input_str_to_curses("Exit"),
 		Input::F0 => map_input_str_to_curses("F0"),
 		Input::F1 => map_input_str_to_curses("F1"),
 		Input::F2 => map_input_str_to_curses("F2"),
@@ -243,6 +245,7 @@ fn format_process_result(
 		"ExitStatus({}), State({}), Input({}), Error({})",
 		exit_status.map_or("None", |exit_status| {
 			match exit_status {
+				ExitStatus::Abort => "Abort",
 				ExitStatus::ConfigError => "ConfigError",
 				ExitStatus::FileReadError => "FileReadError",
 				ExitStatus::FileWriteError => "FileWriteError",
@@ -280,6 +283,7 @@ fn format_process_result(
 				Input::Edit => "Edit".to_string(),
 				Input::End => "End".to_string(),
 				Input::Enter => "Enter".to_string(),
+				Input::Exit => "Exit".to_string(),
 				Input::F0 => "F0".to_string(),
 				Input::F1 => "F1".to_string(),
 				Input::F2 => "F2".to_string(),
