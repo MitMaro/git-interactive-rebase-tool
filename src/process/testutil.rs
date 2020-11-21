@@ -431,7 +431,8 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.to_string();
 
 	set_var("GIT_DIR", git_repo_dir.as_str());
-	let config = Config::new().unwrap();
+	let mut config = Config::new().unwrap();
+	config.git.editor = String::from("true");
 	let mut curses = Curses::new();
 	curses.mv(view_state.position.1, view_state.position.0);
 	curses.resize_term(view_state.size.1, view_state.size.0);
@@ -446,13 +447,13 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.tempfile_in(git_repo_dir.as_str())
 		.unwrap();
 
-	let mut rebsae_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), "#");
-	rebsae_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
+	let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), "#");
+	rebase_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
 
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
 		config: &config,
-		rebase_todo_file: rebsae_todo_file,
+		rebase_todo_file,
 		todo_file: Cell::new(todo_file),
 		view: &view,
 		input_handler: &input_handler,
