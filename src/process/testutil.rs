@@ -20,7 +20,7 @@ use tempfile::{Builder, NamedTempFile};
 
 pub struct TestContext<'t> {
 	pub config: &'t Config,
-	pub rebase_todo_file: &'t mut TodoFile,
+	pub rebase_todo_file: TodoFile,
 	todo_file: Cell<NamedTempFile>,
 	pub input_handler: &'t InputHandler<'t>,
 	pub view: &'t View<'t>,
@@ -29,8 +29,8 @@ pub struct TestContext<'t> {
 }
 
 impl<'t> TestContext<'t> {
-	pub fn activate(&mut self, module: &'_ mut dyn ProcessModule, state: State) -> ProcessResult {
-		module.activate(self.rebase_todo_file, state)
+	pub fn activate(&self, module: &'_ mut dyn ProcessModule, state: State) -> ProcessResult {
+		module.activate(&self.rebase_todo_file, state)
 	}
 
 	#[allow(clippy::unused_self)]
@@ -39,17 +39,17 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
-		module.build_view_data(self.view, self.rebase_todo_file)
+		module.build_view_data(self.view, &self.rebase_todo_file)
 	}
 
 	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_input(self.input_handler, self.rebase_todo_file, self.view)
+		module.handle_input(self.input_handler, &mut self.rebase_todo_file, self.view)
 	}
 
 	pub fn handle_n_inputs(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_input(self.input_handler, self.rebase_todo_file, self.view));
+			results.push(module.handle_input(self.input_handler, &mut self.rebase_todo_file, self.view));
 		}
 		results
 	}
@@ -57,7 +57,7 @@ impl<'t> TestContext<'t> {
 	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.num_inputs {
-			results.push(module.handle_input(self.input_handler, self.rebase_todo_file, self.view));
+			results.push(module.handle_input(self.input_handler, &mut self.rebase_todo_file, self.view));
 		}
 		results
 	}
@@ -448,7 +448,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
 		config: &config,
-		rebase_todo_file: &mut rebsae_todo_file,
+		rebase_todo_file: rebsae_todo_file,
 		todo_file: Cell::new(todo_file),
 		view: &view,
 		input_handler: &input_handler,

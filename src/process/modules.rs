@@ -137,18 +137,18 @@ mod tests {
 			&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment"],
 			ViewState::default(),
 			&[Input::Resize],
-			|test_context: TestContext<'_>| {
+			|mut test_context: TestContext<'_>| {
 				let mut config = test_context.config.clone();
 				config.git.editor = String::from("true");
 				let mut modules = Modules::new(test_context.display, &config);
-				modules.activate(state, test_context.rebase_todo_file, State::List);
+				modules.activate(state, &test_context.rebase_todo_file, State::List);
 				modules.handle_input(
 					state,
 					test_context.input_handler,
-					test_context.rebase_todo_file,
+					&mut test_context.rebase_todo_file,
 					test_context.view,
 				);
-				modules.build_view_data(state, test_context.view, test_context.rebase_todo_file);
+				modules.build_view_data(state, test_context.view, &test_context.rebase_todo_file);
 				modules.deactivate(state);
 				modules.update_help_data(state);
 			},

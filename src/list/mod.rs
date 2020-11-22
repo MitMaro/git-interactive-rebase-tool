@@ -2580,7 +2580,7 @@ mod tests {
 			&["break"],
 			ViewState::default(),
 			&[],
-			|test_context: TestContext<'_>| {
+			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
 				test_context
 					.rebase_todo_file
