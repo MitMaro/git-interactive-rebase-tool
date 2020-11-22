@@ -139,7 +139,7 @@ mod tests {
 			&[Input::Character('a')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Error::new();
-				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
 				assert_process_result!(
 					test_context.handle_input(&mut module),
@@ -159,7 +159,7 @@ mod tests {
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Error::new();
-				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize)
 			},
@@ -182,7 +182,7 @@ mod tests {
 			],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Error::new();
-				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollLeft);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollRight);
