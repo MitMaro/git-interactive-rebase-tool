@@ -318,7 +318,7 @@ mod tests {
 			&["pick aaa comment1", "drop bbb comment2"],
 			ViewState::default(),
 			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
+			|test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(
 					test_context.display,
 					get_external_editor("pick aaa comment", "0").as_str(),
@@ -340,7 +340,7 @@ mod tests {
 			&["pick aaa comment"],
 			ViewState::default(),
 			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
+			|test_context: TestContext<'_>| {
 				let todo_path = test_context.get_todo_file_path();
 				let mut module = ExternalEditor::new(
 					test_context.display,
