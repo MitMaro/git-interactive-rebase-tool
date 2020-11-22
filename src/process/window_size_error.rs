@@ -167,7 +167,7 @@ mod tests {
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
-				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				test_context.activate(&mut module, State::ConfirmRebase);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
 			},
 		);
@@ -185,7 +185,7 @@ mod tests {
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
-				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				test_context.activate(&mut module, State::ConfirmRebase);
 				assert_process_result!(
 					test_context.handle_input(&mut module),
 					input = Input::Resize,
@@ -207,7 +207,7 @@ mod tests {
 			&[Input::Character('a')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
-				module.activate(test_context.rebase_todo_file, State::ConfirmRebase);
+				test_context.activate(&mut module, State::ConfirmRebase);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('a'));
 			},
 		);
