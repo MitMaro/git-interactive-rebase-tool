@@ -129,7 +129,12 @@ impl ProcessModule for Edit {
 					}
 				},
 				Input::Enter => {
-					todo_file.update_selected(&EditContext::new().content(self.content.as_str()));
+					let selected_index = todo_file.get_selected_line_index();
+					todo_file.update_range(
+						selected_index,
+						selected_index,
+						&EditContext::new().content(self.content.as_str()),
+					);
 					break result.state(State::List);
 				},
 				Input::Resize => {
