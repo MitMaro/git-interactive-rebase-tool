@@ -126,3 +126,227 @@ impl TodoFile {
 		self.is_noop
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use tempfile::{Builder, NamedTempFile};
+
+	fn create_todo_file(file_contents: &[&str]) -> NamedTempFile {
+		let todo_file = Builder::new()
+			.prefix("git-rebase-todo-scratch")
+			.suffix("")
+			.tempfile()
+			.unwrap();
+		write!(todo_file.as_file(), "{}", file_contents.join("\n")).unwrap();
+		todo_file
+	}
+
+	macro_rules! assert_todo_lines {
+		($todo_file_path:expr, $($arg:expr),*) => {
+			let actual_lines = $todo_file_path.get_lines();
+			let mut expected = vec![];
+			$( expected.push(Line::new($arg).unwrap()); )*
+			assert_eq!(
+				actual_lines.iter().map(Line::to_text).collect::<String>(),
+				expected.iter().map(Line::to_text).collect::<String>()
+			);
+		};
+	}
+
+	macro_rules! assert_read_todo_file {
+		($todo_file_path:expr, $($arg:expr),*) => {
+			let mut expected = vec![];
+			$( expected.push($arg); )*
+			let content = read_to_string(Path::new($todo_file_path.path().as_os_str().to_str().unwrap())).unwrap();
+			assert_eq!(content, format!("{}\n", expected.join("\n")));
+		};
+	}
+
+	#[test]
+	fn load_file() {
+		let todo_file_path = create_todo_file(&["pick aaa foobar"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert_todo_lines!(todo_file, "pick aaa foobar");
+	}
+
+	#[test]
+	fn load_noop_file() {
+		let todo_file_path = create_todo_file(&["noop"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert_eq!(todo_file.get_lines(), &vec![]);
+		assert!(todo_file.is_noop())
+	}
+
+	#[test]
+	fn load_ignore_comments() {
+		let todo_file_path = create_todo_file(&["# pick aaa comment", "pick aaa foo", "# pick aaa comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert_eq!(todo_file.get_lines(), &vec![Line::new("pick aaa foo").unwrap()]);
+	}
+
+	#[test]
+	fn load_ignore_newlines() {
+		let todo_file_path = create_todo_file(&["", "pick aaa foobar", ""]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert_todo_lines!(todo_file, "pick aaa foobar");
+	}
+
+	#[test]
+	fn write_file() {
+		let todo_file_path = create_todo_file(&[]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.set_lines(vec![Line::new("pick bbb comment").unwrap()]);
+		todo_file.write_file().unwrap();
+		assert_todo_lines!(todo_file, "pick bbb comment");
+	}
+
+	#[test]
+	fn write_file_noop() {
+		let todo_file_path = create_todo_file(&[]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.set_lines(vec![Line::new("noop").unwrap()]);
+		todo_file.write_file().unwrap();
+		assert_read_todo_file!(&todo_file_path, "noop");
+	}
+
+	#[test]
+	#[should_panic]
+	fn swap_lines_index_miss() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.swap_lines(100, 101);
+	}
+
+	#[test]
+	fn swap_lines() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.swap_lines(0, 1);
+		assert_todo_lines!(todo_file, "drop bbb comment", "pick aaa comment", "edit ccc comment");
+	}
+
+	#[test]
+	#[should_panic]
+	fn add_line_index_miss() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.add_line(100, Line::new("fixup ddd comment").unwrap());
+	}
+
+	#[test]
+	fn add_line() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.add_line(2, Line::new("fixup ddd comment").unwrap());
+		assert_todo_lines!(
+			todo_file,
+			"pick aaa comment",
+			"fixup ddd comment",
+			"drop bbb comment",
+			"edit ccc comment"
+		);
+	}
+
+	#[test]
+	#[should_panic]
+	fn remove_line_index_miss() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.remove_line(100);
+	}
+
+	#[test]
+	fn remove_line() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.remove_line(2);
+		assert_todo_lines!(todo_file, "pick aaa comment", "edit ccc comment");
+	}
+
+	#[test]
+	fn update_range_full_set_action() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.update_range(1, 3, &EditContext::new().action(Action::Reword));
+		assert_todo_lines!(
+			todo_file,
+			"reword aaa comment",
+			"reword bbb comment",
+			"reword ccc comment"
+		);
+	}
+
+	#[test]
+	fn update_range_full_set_content() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.update_range(1, 3, &EditContext::new().content("echo"));
+		assert_todo_lines!(todo_file, "exec echo", "exec echo", "exec echo");
+	}
+
+	#[test]
+	fn update_range_swap_range() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		todo_file.update_range(3, 1, &EditContext::new().action(Action::Reword));
+		assert_todo_lines!(
+			todo_file,
+			"reword aaa comment",
+			"reword bbb comment",
+			"reword ccc comment"
+		);
+	}
+
+	#[test]
+	fn selected_line_index() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		todo_file.set_selected_line_index(10);
+		assert_eq!(todo_file.get_selected_line_index(), 10);
+	}
+
+	#[test]
+	#[should_panic]
+	fn selected_line_index_miss() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		todo_file.set_selected_line_index(10);
+		todo_file.get_selected_line();
+	}
+
+	#[test]
+	fn selected_line() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		todo_file.set_selected_line_index(1);
+		assert_eq!(todo_file.get_selected_line(), &Line::new("exec foo").unwrap());
+	}
+
+	#[test]
+	fn get_file_path() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let todo_file = TodoFile::new(filepath, "#");
+		assert_eq!(todo_file.get_filepath(), filepath);
+	}
+}
