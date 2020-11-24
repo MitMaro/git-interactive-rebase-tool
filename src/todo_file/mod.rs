@@ -86,10 +86,6 @@ impl TodoFile {
 		self.lines.remove(line_number - 1);
 	}
 
-	pub(crate) fn update_selected(&mut self, edit_context: &EditContext) {
-		self.update_range(self.selected_line_index, self.selected_line_index, edit_context);
-	}
-
 	pub(crate) fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
 		let range = if end_index <= start_index {
 			end_index..=start_index
