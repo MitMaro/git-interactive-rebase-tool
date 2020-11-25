@@ -38,7 +38,7 @@ anyhow = "1.0"
 chrono = "0.4"
 clap = "2.33.3"
 num-format = "0.4.0"
-unicode-segmentation = "1.7.0"
+unicode-segmentation = "1.7.1"
 unicode-width = "0.1.8"
 xi-unicode = "0.3.0"
 
