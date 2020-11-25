@@ -53,6 +53,10 @@ impl Curses {
 		&self.colors
 	}
 
+	pub(crate) const fn get_color_pairs(&self) -> &[(i16, i16); 255] {
+		&self.color_pairs
+	}
+
 	pub(crate) fn push_input(&self, input: Input) {
 		self.input.borrow_mut().insert(0, input);
 	}
@@ -66,9 +70,6 @@ impl Curses {
 	}
 
 	pub(super) fn init_color_pair(&mut self, index: i16, foreground: i16, background: i16) -> chtype {
-		self.function_call_trace
-			.borrow_mut()
-			.push(build_trace!("init_color_pair", index, foreground, background));
 		self.color_pairs[index as usize] = (foreground, background);
 		index as chtype
 	}

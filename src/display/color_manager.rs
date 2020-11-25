@@ -178,24 +178,16 @@ impl ColorManager {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::build_trace;
 	use crate::display::color_mode::ColorMode;
-	use crate::testutil::compare_trace;
 	use concat_idents::concat_idents;
 
-	fn _assert_indexed_color(color_mode: ColorMode, color: Color, expected_index: i32) {
+	fn _assert_indexed_color(color_mode: ColorMode, color: Color, expected_index: i16) {
 		let mut color_manager = ColorManager::new();
 		let mut curses = Curses::new();
 		curses.set_color_mode(color_mode);
 		color_manager.register_selectable_color_pairs(&mut curses, color, Color::Default, Color::Default);
-		let trace = curses.get_function_trace();
-		let expected_trace = vec![build_trace!(
-			"init_color_pair",
-			"16",
-			format!("{}", expected_index),
-			"-1"
-		)];
-		compare_trace(&trace, &expected_trace);
+		let color_pairs = curses.get_color_pairs();
+		assert_eq!(color_pairs[16], (expected_index, -1));
 	}
 
 	macro_rules! assert_three_bit_color {
@@ -402,16 +394,14 @@ mod tests {
 		let mut color_manager = ColorManager::new();
 		let mut curses = Curses::new();
 		curses.set_color_mode(ColorMode::TwoTone);
-		let (standard_color, selected_color) = color_manager.register_selectable_color_pairs(
+		color_manager.register_selectable_color_pairs(
 			&mut curses,
 			Color::DarkBlue,
 			Color::LightYellow,
 			Color::DarkMagenta,
 		);
-		let trace = curses.get_function_trace();
-		let expected_trace = vec![build_trace!("init_color_pair", "16", "4", "3")];
-		compare_trace(&trace, &expected_trace);
-		assert_eq!(standard_color, selected_color);
+		let color_pairs = curses.get_color_pairs();
+		assert_eq!(color_pairs[16], (4, 3));
 	}
 
 	#[test]
@@ -431,11 +421,8 @@ mod tests {
 			Color::LightMagenta,
 			Color::DarkRed,
 		);
-		let trace = curses.get_function_trace();
-		let expected_trace = vec![
-			build_trace!("init_color_pair", "16", "4", "3"),
-			build_trace!("init_color_pair", "17", "6", "5"),
-		];
-		compare_trace(&trace, &expected_trace);
+		let color_pairs = curses.get_color_pairs();
+		assert_eq!(color_pairs[16], (4, 3));
+		assert_eq!(color_pairs[17], (6, 5));
 	}
 }
