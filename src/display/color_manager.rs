@@ -390,12 +390,11 @@ mod tests {
 				blue: 220,
 			},
 		);
-		let trace = curses.get_function_trace();
-		let expected_trace = vec![
-			build_trace!("init_color", "16", "392", "588", "784"),
-			build_trace!("init_color", "17", "470", "666", "862"),
-		];
-		compare_trace(&trace, &expected_trace);
+
+		let colors = curses.get_colors();
+
+		assert_eq!(colors[16], (392, 588, 784));
+		assert_eq!(colors[17], (470, 666, 862));
 	}
 
 	#[test]
