@@ -49,6 +49,10 @@ impl Curses {
 		self.function_call_trace.borrow().clone()
 	}
 
+	pub(crate) const fn get_colors(&self) -> &[(i16, i16, i16); 255] {
+		&self.colors
+	}
+
 	pub(crate) fn push_input(&self, input: Input) {
 		self.input.borrow_mut().insert(0, input);
 	}
@@ -58,9 +62,6 @@ impl Curses {
 	}
 
 	pub(super) fn init_color(&mut self, index: i16, red: i16, green: i16, blue: i16) {
-		self.function_call_trace
-			.borrow_mut()
-			.push(build_trace!("init_color", index, red, green, blue));
 		self.colors[index as usize] = (red, green, blue);
 	}
 
