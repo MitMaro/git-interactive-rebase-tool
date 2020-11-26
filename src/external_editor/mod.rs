@@ -206,7 +206,6 @@ impl<'e> ExternalEditor<'e> {
 			Input::ScrollUp => self.view_data.scroll_up(),
 			Input::Resize => {
 				let (window_width, window_height) = view.get_view_size();
-				eprintln!("{} {}", window_width, window_height);
 				self.view_data.set_view_size(window_width, window_height);
 			},
 			_ => return Some(input),
