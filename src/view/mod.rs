@@ -155,3 +155,260 @@ impl<'v> View<'v> {
 		self.display.set_style(false, false, false);
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	use crate::config::Config;
+	use crate::display::curses::Curses;
+	use std::env::set_var;
+	use std::path::Path;
+
+	pub struct TestContext {
+		pub config: Config,
+		pub curses: Curses,
+	}
+
+	pub fn view_module_test<F>(callback: F)
+	where F: FnOnce(TestContext) {
+		set_var(
+			"GIT_DIR",
+			Path::new(env!("CARGO_MANIFEST_DIR"))
+				.join("test")
+				.join("fixtures")
+				.join("simple")
+				.to_str()
+				.unwrap(),
+		);
+		let config = Config::new().unwrap();
+		let curses = Curses::new();
+		curses.resize_term(10, 20);
+		callback(TestContext { config, curses });
+	}
+
+	fn assert_output(curses: &Curses, expected: &[&str]) {
+		assert_eq!(curses.get_output().join(""), expected.join(""));
+	}
+
+	#[test]
+	fn get_view_size() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 20);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			assert_eq!(view.get_view_size(), (20, 10));
+		});
+	}
+
+	#[test]
+	fn render_empty() {
+		view_module_test(|mut test_context| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let view_data = ViewData::new();
+			view.render(&view_data);
+			assert_output(&test_context.curses, &["~\n"; 10]);
+		});
+	}
+
+	#[test]
+	fn render_title_full_width() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 35);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.set_show_title(true);
+			view.render(&view_data);
+			let mut expected = vec!["Git Interactive Rebase Tool        "];
+			expected.extend(vec!["~\n"; 9]);
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_title_short_title() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 26);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.set_show_title(true);
+			view.render(&view_data);
+			let mut expected = vec!["Git Rebase                "];
+			expected.extend(vec!["~\n"; 9]);
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_title_full_width_with_help() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 35);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.set_show_title(true);
+			view_data.set_show_help(true);
+			view.render(&view_data);
+			let mut expected = vec!["Git Interactive Rebase Tool Help: ?"];
+			expected.extend(vec!["~\n"; 9]);
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_title_full_width_with_help_enabled_but_not_enough_length() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 34);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.set_show_title(true);
+			view_data.set_show_help(true);
+			view.render(&view_data);
+			let mut expected = vec!["Git Interactive Rebase Tool       "];
+			expected.extend(vec!["~\n"; 9]);
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_prompt() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 35);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let view_data = ViewData::new_confirm("This is a prompt");
+			view.render(&view_data);
+			let expected = vec!["Git Interactive Rebase Tool        ", "\nThis is a prompt (y/n)? "];
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_leading_lines() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 30);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.push_leading_line(ViewLine::from("This is a leading line"));
+			view_data.set_view_size(30, 10);
+			view.render(&view_data);
+			let mut expected = vec!["This is a leading line        {HLINE| |30}"];
+			expected.extend(vec!["~\n"; 9]);
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_normal_lines() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 30);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.push_line(ViewLine::from("This is a line"));
+			view_data.set_view_size(30, 10);
+			view.render(&view_data);
+			let mut expected = vec!["This is a line                {HLINE| |30}"];
+			expected.extend(vec!["~\n"; 9]);
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_tailing_lines() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 30);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
+			view_data.set_view_size(30, 10);
+			view.render(&view_data);
+			let mut expected = vec!["~\n"; 9];
+			expected.push("This is a trailing line       {HLINE| |30}");
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_all_lines() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(10, 30);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.push_leading_line(ViewLine::from("This is a leading line"));
+			view_data.push_line(ViewLine::from("This is a line"));
+			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
+			view_data.set_view_size(30, 10);
+			view.render(&view_data);
+			let mut expected = vec![
+				"This is a leading line        {HLINE| |30}",
+				"This is a line                {HLINE| |30}",
+			];
+			expected.extend(vec!["~\n"; 7]);
+			expected.push("This is a trailing line       {HLINE| |30}");
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_with_full_screen_data() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(6, 30);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.push_leading_line(ViewLine::from("This is a leading line"));
+			view_data.push_line(ViewLine::from("This is line 1"));
+			view_data.push_line(ViewLine::from("This is line 2"));
+			view_data.push_line(ViewLine::from("This is line 3"));
+			view_data.push_line(ViewLine::from("This is line 4"));
+			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
+			view_data.set_view_size(30, 6);
+			view.render(&view_data);
+			let expected = vec![
+				"This is a leading line        {HLINE| |30}",
+				"This is line 1                {HLINE| |30}",
+				"This is line 2                {HLINE| |30}",
+				"This is line 3                {HLINE| |30}",
+				"This is line 4                {HLINE| |30}",
+				"This is a trailing line       {HLINE| |30}",
+			];
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+
+	#[test]
+	fn render_with_scroll_bar() {
+		view_module_test(|mut test_context| {
+			test_context.curses.resize_term(6, 30);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let view = View::new(&display, &test_context.config);
+			let mut view_data = ViewData::new();
+			view_data.push_leading_line(ViewLine::from("This is a leading line"));
+			view_data.push_line(ViewLine::from("This is line 1"));
+			view_data.push_line(ViewLine::from("This is line 2"));
+			view_data.push_line(ViewLine::from("This is line 3"));
+			view_data.push_line(ViewLine::from("This is line 4"));
+			view_data.push_line(ViewLine::from("This is line 5"));
+			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
+			view_data.set_view_size(30, 6);
+			view.render(&view_data);
+			let expected = vec![
+				"This is a leading line        {HLINE| |30}",
+				"This is line 1               {HLINE| |30} ",
+				"This is line 2               {HLINE| |30} ",
+				"This is line 3               {HLINE| |30} ",
+				"This is line 4               {HLINE| |30} ",
+				"This is a trailing line       {HLINE| |30}",
+			];
+			assert_output(&test_context.curses, &expected);
+		});
+	}
+}
