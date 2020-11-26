@@ -294,366 +294,219 @@ impl<'d> Display<'d> {
 #[cfg(all(windows, test))]
 mod tests {
 	use super::*;
-	use crate::build_trace;
-	use crate::display_module_test;
+	use crate::display::testutil::{display_module_test, TestContext};
 
-	display_module_test!(
-		set_style_underline_disabled,
-		[
-			build_trace!("attron", "64"),
-			build_trace!("attroff", "256"),
-			build_trace!("attron", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(true, true, true)
-	);
+	#[test]
+	#[serial_test::serial()]
+	fn windows_set_style_underline_disabled() {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.set_style(true, true, true);
+			assert!(test_context.curses.is_dimmed());
+			assert!(test_context.curses.is_reverse());
+			assert!(!test_context.curses.is_underline());
+		});
+	}
 }
 
 #[cfg(all(unix, test))]
 mod tests {
 	use super::*;
-	use crate::build_trace;
-	use crate::display_module_test;
+	use crate::display::testutil::{display_module_test, TestContext};
+	use crate::display::virtual_curses::State;
+	use rstest::rstest;
 
-	display_module_test!(
-		draw_str,
-		[build_trace!("addstr", "Test string")],
-		|display: &mut Display<'_>| display.draw_str("Test string")
-	);
+	#[test]
+	#[serial_test::serial]
+	fn draw_str() {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.draw_str("Test String");
+			let output = test_context.curses.get_output();
+			assert_eq!(output, vec!["Test String"]);
+		});
+	}
 
-	display_module_test!(
-		clear,
-		[
-			build_trace!("attrset", "16"),
-			build_trace!("attroff", "64"),
-			build_trace!("attroff", "256"),
-			build_trace!("attroff", "128"),
-			build_trace!("erase")
-		],
-		|display: &mut Display<'_>| display.clear()
-	);
+	#[test]
+	#[serial_test::serial]
+	fn clear() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.addstr("Test String");
+			test_context.curses.attron(curses::A_DIM);
+			test_context.curses.attron(curses::A_REVERSE);
+			test_context.curses.attron(curses::A_UNDERLINE);
 
-	display_module_test!(refresh, [build_trace!("refresh")], |display: &mut Display<'_>| {
-		display.refresh()
-	});
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.clear();
+			assert!(test_context.curses.get_output().is_empty());
+			assert!(!test_context.curses.is_dimmed());
+			assert!(!test_context.curses.is_reverse());
+			assert!(!test_context.curses.is_underline());
+		});
+	}
 
-	display_module_test!(
-		color_action_break_not_selected,
-		[build_trace!("attrset", "20")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionBreak, false)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn reset() {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.refresh();
+			assert_eq!(test_context.curses.get_state(), State::Refreshed);
+		});
+	}
 
-	display_module_test!(
-		color_action_break_selected,
-		[build_trace!("attrset", "21")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionBreak, true)
-	);
+	#[rstest(
+		display_color,
+		selected,
+		expected,
+		case::action_break(DisplayColor::ActionBreak, false, 20),
+		case::action_break_selected(DisplayColor::ActionBreak, true, 21),
+		case::action_drop(DisplayColor::ActionDrop, false, 22),
+		case::action_drop_selected(DisplayColor::ActionDrop, true, 23),
+		case::action_edit(DisplayColor::ActionEdit, false, 24),
+		case::action_edit_selected(DisplayColor::ActionEdit, true, 25),
+		case::action_exec(DisplayColor::ActionExec, false, 26),
+		case::action_exec_selected(DisplayColor::ActionExec, true, 27),
+		case::action_fixup(DisplayColor::ActionFixup, false, 28),
+		case::action_fixup_selected(DisplayColor::ActionFixup, true, 29),
+		case::action_pick(DisplayColor::ActionPick, false, 30),
+		case::action_pick_selected(DisplayColor::ActionPick, true, 31),
+		case::action_reword(DisplayColor::ActionReword, false, 32),
+		case::action_reword_selected(DisplayColor::ActionReword, true, 33),
+		case::action_squash(DisplayColor::ActionSquash, false, 34),
+		case::action_squash_selected(DisplayColor::ActionSquash, true, 35),
+		case::normal(DisplayColor::Normal, false, 16),
+		case::normal_selected(DisplayColor::Normal, true, 17),
+		case::indicator(DisplayColor::IndicatorColor, false, 18),
+		case::indicator_selected(DisplayColor::IndicatorColor, true, 19),
+		case::diff_add(DisplayColor::DiffAddColor, false, 36),
+		case::diff_add_selected(DisplayColor::DiffAddColor, true, 37),
+		case::diff_remove(DisplayColor::DiffRemoveColor, false, 40),
+		case::diff_remove_selected(DisplayColor::DiffRemoveColor, true, 41),
+		case::diff_change(DisplayColor::DiffChangeColor, false, 38),
+		case::diff_change_selected(DisplayColor::DiffChangeColor, true, 39),
+		case::diff_context(DisplayColor::DiffContextColor, false, 42),
+		case::diff_context_selected(DisplayColor::DiffContextColor, true, 43),
+		case::diff_whitespace(DisplayColor::DiffWhitespaceColor, false, 44),
+		case::diff_whitespace_selected(DisplayColor::DiffWhitespaceColor, true, 45)
+	)]
+	#[serial_test::serial()]
+	fn color(display_color: DisplayColor, selected: bool, expected: chtype) {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.color(display_color, selected);
+			assert!(test_context.curses.is_color_enabled(expected));
+		});
+	}
 
-	display_module_test!(
-		color_action_drop_not_selected,
-		[build_trace!("attrset", "22")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionDrop, false)
-	);
+	#[rstest(
+		dim,
+		underline,
+		reverse,
+		case::all_off(false, false, false),
+		case::reverse(false, false, true),
+		case::underline(false, true, false),
+		case::underline_reverse(false, true, true),
+		case::dim(true, false, false),
+		case::dim_reverse(true, false, true),
+		case::dim_underline(true, true, false),
+		case::all_on(true, true, true)
+	)]
+	#[serial_test::serial()]
+	fn style(dim: bool, underline: bool, reverse: bool) {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.set_style(dim, underline, reverse);
+			assert_eq!(test_context.curses.is_dimmed(), dim);
+			assert_eq!(test_context.curses.is_underline(), underline);
+			assert_eq!(test_context.curses.is_reverse(), reverse);
+		});
+	}
 
-	display_module_test!(
-		color_action_drop_selected,
-		[build_trace!("attrset", "23")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionDrop, true)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn getch_normal_input() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.push_input(Input::Character('z'));
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			assert_eq!(display.getch().unwrap(), Input::Character('z'));
+		});
+	}
 
-	display_module_test!(
-		color_action_edit_not_selected,
-		[build_trace!("attrset", "24")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionEdit, false)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn getch_resize() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.push_input(Input::KeyResize);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			assert_eq!(display.getch().unwrap(), Input::KeyResize);
+			assert_eq!(test_context.curses.get_state(), State::Resized);
+		});
+	}
 
-	display_module_test!(
-		color_action_edit_selected,
-		[build_trace!("attrset", "25")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionEdit, true)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn get_window_size() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.resize_term(10, 12);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			assert_eq!(display.get_window_size(), (12, 10));
+		});
+	}
 
-	display_module_test!(
-		color_action_exec_not_selected,
-		[build_trace!("attrset", "26")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionExec, false)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn fill_end_of_line() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.resize_term(10, 23);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.fill_end_of_line();
+			assert_eq!(test_context.curses.get_output()[0], "{HLINE| |23}");
+		});
+	}
 
-	display_module_test!(
-		color_action_exec_selected,
-		[build_trace!("attrset", "27")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionExec, true)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn ensure_at_line_start() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.resize_term(5, 25);
+			test_context.curses.mv(10, 12);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.ensure_at_line_start(5);
+			assert_eq!(test_context.curses.get_cur_y(), 5);
+			assert_eq!(test_context.curses.get_cur_x(), 0);
+		});
+	}
 
-	display_module_test!(
-		color_action_fixup_not_selected,
-		[build_trace!("attrset", "28")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionFixup, false)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn move_from_end_of_line() {
+		display_module_test(|mut test_context: TestContext| {
+			test_context.curses.resize_term(5, 25);
+			test_context.curses.mv(5, 20);
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.move_from_end_of_line(5);
+			assert_eq!(test_context.curses.get_cur_x(), 20);
+		});
+	}
 
-	display_module_test!(
-		color_action_fixup_selected,
-		[build_trace!("attrset", "29")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionFixup, true)
-	);
+	#[test]
+	#[serial_test::serial]
+	fn leave_temporarily() {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			assert_eq!(display.leave_temporarily(|| "Done"), "Done");
+			assert_eq!(test_context.curses.get_state(), State::Normal);
+		});
+	}
 
-	display_module_test!(
-		color_action_pick_not_selected,
-		[build_trace!("attrset", "30")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionPick, false)
-	);
-
-	display_module_test!(
-		color_action_pick_selected,
-		[build_trace!("attrset", "31")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionPick, true)
-	);
-
-	display_module_test!(
-		color_action_reword_not_selected,
-		[build_trace!("attrset", "32")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionReword, false)
-	);
-
-	display_module_test!(
-		color_action_reword_selected,
-		[build_trace!("attrset", "33")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionReword, true)
-	);
-
-	display_module_test!(
-		color_action_squash_not_selected,
-		[build_trace!("attrset", "34")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionSquash, false)
-	);
-
-	display_module_test!(
-		color_action_squash_selected,
-		[build_trace!("attrset", "35")],
-		|display: &mut Display<'_>| display.color(DisplayColor::ActionSquash, true)
-	);
-
-	display_module_test!(
-		color_normal_not_selected,
-		[build_trace!("attrset", "16")],
-		|display: &mut Display<'_>| display.color(DisplayColor::Normal, false)
-	);
-
-	display_module_test!(
-		color_normal_selected,
-		[build_trace!("attrset", "17")],
-		|display: &mut Display<'_>| display.color(DisplayColor::Normal, true)
-	);
-
-	display_module_test!(
-		color_indicator_color_not_selected,
-		[build_trace!("attrset", "18")],
-		|display: &mut Display<'_>| display.color(DisplayColor::IndicatorColor, false)
-	);
-
-	display_module_test!(
-		color_indiciator_color_selected,
-		[build_trace!("attrset", "19")],
-		|display: &mut Display<'_>| display.color(DisplayColor::IndicatorColor, true)
-	);
-
-	display_module_test!(
-		color_diff_add_color_not_selected,
-		[build_trace!("attrset", "36")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffAddColor, false)
-	);
-
-	display_module_test!(
-		color_diff_add_color_selected,
-		[build_trace!("attrset", "37")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffAddColor, true)
-	);
-
-	display_module_test!(
-		color_diff_remove_color_not_selected,
-		[build_trace!("attrset", "40")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffRemoveColor, false)
-	);
-
-	display_module_test!(
-		color_diff_remove_color_selected,
-		[build_trace!("attrset", "41")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffRemoveColor, true)
-	);
-
-	display_module_test!(
-		color_diff_change_color_not_selected,
-		[build_trace!("attrset", "38")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffChangeColor, false)
-	);
-
-	display_module_test!(
-		color_diff_change_color_selected,
-		[build_trace!("attrset", "39")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffChangeColor, true)
-	);
-
-	display_module_test!(
-		color_diff_context_color_not_selected,
-		[build_trace!("attrset", "42")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffContextColor, false)
-	);
-
-	display_module_test!(
-		color_diff_context_color_selected,
-		[build_trace!("attrset", "43")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffContextColor, true)
-	);
-
-	display_module_test!(
-		color_diff_whitespace_color_not_selected,
-		[build_trace!("attrset", "44")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffWhitespaceColor, false)
-	);
-
-	display_module_test!(
-		color_diff_whitespace_color_selected,
-		[build_trace!("attrset", "45")],
-		|display: &mut Display<'_>| display.color(DisplayColor::DiffWhitespaceColor, true)
-	);
-
-	display_module_test!(
-		set_style_dim_off_underline_off_reverse_off,
-		[
-			build_trace!("attroff", "64"),
-			build_trace!("attroff", "256"),
-			build_trace!("attroff", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(false, false, false)
-	);
-
-	display_module_test!(
-		set_style_dim_on_underline_off_reverse_off,
-		[
-			build_trace!("attron", "64"),
-			build_trace!("attroff", "256"),
-			build_trace!("attroff", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(true, false, false)
-	);
-
-	display_module_test!(
-		set_style_dim_on_underline_off_reverse_on,
-		[
-			build_trace!("attron", "64"),
-			build_trace!("attroff", "256"),
-			build_trace!("attron", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(true, false, true)
-	);
-
-	display_module_test!(
-		set_style_dim_on_underline_on_reverse_off,
-		[
-			build_trace!("attron", "64"),
-			build_trace!("attron", "256"),
-			build_trace!("attroff", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(true, true, false)
-	);
-
-	display_module_test!(
-		set_style_dim_on_underline_on_reverse_on,
-		[
-			build_trace!("attron", "64"),
-			build_trace!("attron", "256"),
-			build_trace!("attron", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(true, true, true)
-	);
-
-	display_module_test!(
-		set_style_dim_off_underline_on_reverse_off,
-		[
-			build_trace!("attroff", "64"),
-			build_trace!("attron", "256"),
-			build_trace!("attroff", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(false, true, false)
-	);
-
-	display_module_test!(
-		set_style_dim_off_underline_on_reverse_on,
-		[
-			build_trace!("attroff", "64"),
-			build_trace!("attron", "256"),
-			build_trace!("attron", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(false, true, true)
-	);
-
-	display_module_test!(
-		set_style_dim_off_underline_off_reverse_on,
-		[
-			build_trace!("attroff", "64"),
-			build_trace!("attroff", "256"),
-			build_trace!("attron", "128")
-		],
-		|display: &mut Display<'_>| display.set_style(false, false, true)
-	);
-
-	display_module_test!(
-		getch_normal_input,
-		Input::Character('z'),
-		[],
-		|display: &mut Display<'_>| assert_eq!(display.getch().unwrap(), Input::Character('z'))
-	);
-
-	display_module_test!(
-		getch_resize,
-		Input::KeyResize,
-		[
-			build_trace!("resize_term", "0", "0"),
-			build_trace!("get_max_y"),
-			build_trace!("get_max_x")
-		],
-		|display: &mut Display<'_>| { assert_eq!(display.getch().unwrap(), Input::KeyResize) }
-	);
-
-	display_module_test!(get_window_size, [], |display: &mut Display<'_>| {
-		assert_eq!(display.get_window_size(), (77, 66));
-	});
-
-	display_module_test!(
-		fill_end_of_line,
-		[build_trace!("hline", " ", "77")],
-		|display: &mut Display<'_>| display.fill_end_of_line()
-	);
-
-	display_module_test!(
-		ensure_at_line_start,
-		[build_trace!("mv", "32", "0")],
-		|display: &mut Display<'_>| display.ensure_at_line_start(32)
-	);
-
-	display_module_test!(
-		move_from_end_of_line,
-		[
-			build_trace!("get_cur_y"),
-			build_trace!("get_max_x"),
-			build_trace!("mv", "13", "65")
-		],
-		|display: &mut Display<'_>| display.move_from_end_of_line(12)
-	);
-
-	display_module_test!(
-		leave_temporarily,
-		[
-			build_trace!("def_prog_mode"),
-			build_trace!("endwin"),
-			build_trace!("reset_prog_mode")
-		],
-		|display: &mut Display<'_>| {
-			let result = display.leave_temporarily(|| "Done");
-			assert_eq!(result, "Done");
-		}
-	);
-
-	display_module_test!(end, [build_trace!("endwin")], |display: &mut Display<'_>| {
-		display.end()
-	});
+	#[test]
+	#[serial_test::serial]
+	fn end() {
+		display_module_test(|mut test_context: TestContext| {
+			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			display.end();
+			assert_eq!(test_context.curses.get_state(), State::Ended);
+		});
+	}
 }

@@ -43,10 +43,6 @@ mod show_commit;
 mod todo_file;
 mod view;
 
-#[cfg(test)]
-#[macro_use]
-mod testutil;
-
 use crate::config::Config;
 use crate::constants::{NAME, VERSION};
 use crate::display::curses::Curses;
