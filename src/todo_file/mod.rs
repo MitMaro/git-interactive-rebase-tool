@@ -70,11 +70,6 @@ impl TodoFile {
 		Ok(())
 	}
 
-	pub(crate) fn set_noop(&mut self) {
-		self.is_noop = true;
-		self.lines.clear();
-	}
-
 	pub(crate) fn set_selected_line_index(&mut self, selected_line_index: usize) {
 		self.selected_line_index = selected_line_index;
 	}

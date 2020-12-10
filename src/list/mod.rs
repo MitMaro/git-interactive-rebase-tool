@@ -217,7 +217,7 @@ impl<'l> List<'l> {
 				result = result.state(State::ConfirmAbort);
 			},
 			Input::ForceAbort => {
-				rebase_todo.set_noop();
+				rebase_todo.set_lines(vec![]);
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::Rebase => {
@@ -274,7 +274,7 @@ impl<'l> List<'l> {
 				result = result.state(State::ConfirmAbort);
 			},
 			Input::ForceAbort => {
-				rebase_todo.set_noop();
+				rebase_todo.set_lines(vec![]);
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::Rebase => {
@@ -1596,7 +1596,7 @@ mod tests {
 					input = Input::ForceAbort,
 					exit_status = ExitStatus::Good
 				);
-				assert!(test_context.rebase_todo_file.is_noop())
+				assert_eq!(test_context.rebase_todo_file.get_lines().len(), 0)
 			},
 		);
 	}
@@ -2061,7 +2061,7 @@ mod tests {
 					input = Input::ForceAbort,
 					exit_status = ExitStatus::Good
 				);
-				assert!(test_context.rebase_todo_file.is_noop())
+				assert_eq!(test_context.rebase_todo_file.get_lines().len(), 0)
 			},
 		);
 	}

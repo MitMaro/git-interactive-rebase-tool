@@ -30,7 +30,7 @@ impl ProcessModule for ConfirmAbort {
 		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::Yes => {
-				rebase_todo.set_noop();
+				rebase_todo.set_lines(vec![]);
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::No => {

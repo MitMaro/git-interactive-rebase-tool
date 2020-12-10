@@ -159,7 +159,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 					self.invalid_selection = false;
 					match input {
 						Input::Character('1') => {
-							todo_file.set_noop();
+							todo_file.set_lines(vec![]);
 							result = result.exit_status(ExitStatus::Good)
 						},
 						Input::Character('2') => self.state = ExternalEditorState::Active,
