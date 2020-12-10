@@ -64,8 +64,7 @@ impl LineSegment {
 		dim: bool,
 		underline: bool,
 		reverse: bool,
-	) -> Self
-	{
+	) -> Self {
 		Self {
 			text: String::from(text),
 			color,

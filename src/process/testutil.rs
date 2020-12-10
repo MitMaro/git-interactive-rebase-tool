@@ -239,8 +239,7 @@ fn format_process_result(
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
 	error: &Option<Error>,
-) -> String
-{
+) -> String {
 	format!(
 		"ExitStatus({}), State({}), Input({}), Error({})",
 		exit_status.map_or("None", |exit_status| {
@@ -367,8 +366,7 @@ pub fn _assert_process_result(
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
 	error: &Option<Error>,
-)
-{
+) {
 	if !(exit_status.map_or(actual.exit_status.is_none(), |expected| {
 		actual.exit_status.map_or(false, |actual| expected == actual)
 	}) && state.map_or(actual.state.is_none(), |expected| {

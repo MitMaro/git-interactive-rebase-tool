@@ -25,8 +25,7 @@ impl ProcessModule for ConfirmAbort {
 		input_handler: &InputHandler<'_>,
 		rebase_todo: &mut TodoFile,
 		_view: &View<'_>,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		let input = input_handler.get_input(InputMode::Confirm);
 		let mut result = ProcessResult::new().input(input);
 		match input {

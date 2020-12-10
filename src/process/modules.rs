@@ -90,8 +90,7 @@ impl<'m> Modules<'m> {
 		input_handler: &InputHandler<'_>,
 		rebase_todo: &mut TodoFile,
 		view: &View<'_>,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		self.get_mut_module(state)
 			.handle_input(input_handler, rebase_todo, view)
 	}

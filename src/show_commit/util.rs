@@ -28,8 +28,7 @@ pub(super) fn get_stat_item_segments(
 	to_name: &str,
 	from_name: &str,
 	is_full_width: bool,
-) -> Vec<LineSegment>
-{
+) -> Vec<LineSegment> {
 	let status_name = if is_full_width {
 		match *status {
 			Status::Added => format!("{:>8}: ", "added"),

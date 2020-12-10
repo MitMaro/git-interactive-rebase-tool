@@ -114,8 +114,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		input_handler: &InputHandler<'_>,
 		todo_file: &mut TodoFile,
 		view: &View<'_>,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {

@@ -26,8 +26,7 @@ impl ViewBuilderOptions {
 		space_character: &str,
 		show_leading_whitespace: bool,
 		show_trailing_whitespace: bool,
-	) -> Self
-	{
+	) -> Self {
 		Self {
 			space_character: String::from(space_character),
 			tab_character: String::from(tab_character),
@@ -122,8 +121,7 @@ impl ViewBuilder {
 		diff_line: &DiffLine,
 		old_largest_line_number_length: usize,
 		new_largest_line_number_length: usize,
-	) -> Vec<LineSegment>
-	{
+	) -> Vec<LineSegment> {
 		let mut line_segments = vec![];
 		line_segments.push(match diff_line.old_line_number() {
 			Some(line_number) => {

@@ -34,8 +34,7 @@ impl ColorManager {
 		foreground: Color,
 		background: Color,
 		selected_background: Color,
-	) -> (chtype, chtype)
-	{
+	) -> (chtype, chtype) {
 		let fg = self.find_color(curses, foreground);
 		let bg = self.find_color(curses, background);
 		let standard_pair = curses.init_color_pair(self.color_pair_index, fg, bg);
