@@ -153,8 +153,7 @@ pub(super) fn get_todo_line_segments(
 	is_cursor_line: bool,
 	selected: bool,
 	view_width: usize,
-) -> Vec<LineSegment>
-{
+) -> Vec<LineSegment> {
 	let mut segments: Vec<LineSegment> = vec![];
 
 	let action = line.get_action();

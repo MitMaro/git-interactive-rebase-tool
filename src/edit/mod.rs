@@ -74,8 +74,7 @@ impl ProcessModule for Edit {
 		input_handler: &InputHandler<'_>,
 		todo_file: &mut TodoFile,
 		view: &View<'_>,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		let result = loop {
 			let input = input_handler.get_input(InputMode::Raw);
 			let result = ProcessResult::new().input(input);

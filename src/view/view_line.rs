@@ -52,8 +52,7 @@ impl ViewLine {
 		dim: bool,
 		underline: bool,
 		reverse: bool,
-	) -> Self
-	{
+	) -> Self {
 		self.padding_color = color;
 		self.padding_dim = dim;
 		self.padding_underline = underline;

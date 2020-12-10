@@ -71,8 +71,7 @@ impl<'l> ProcessModule for List<'l> {
 		input_handler: &InputHandler<'_>,
 		todo_file: &mut TodoFile,
 		view: &View<'_>,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		let (_, view_height) = view.get_view_size();
 		let input = input_handler.get_input(InputMode::List);
 		let mut result = ProcessResult::new().input(input);
@@ -206,8 +205,7 @@ impl<'l> List<'l> {
 		input: Input,
 		result: ProcessResult,
 		rebase_todo: &mut TodoFile,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		let mut result = result;
 		match input {
 			Input::ShowCommit => {
@@ -269,8 +267,7 @@ impl<'l> List<'l> {
 		input: Input,
 		result: ProcessResult,
 		rebase_todo: &mut TodoFile,
-	) -> ProcessResult
-	{
+	) -> ProcessResult {
 		let mut result = result;
 		match input {
 			Input::Abort => {

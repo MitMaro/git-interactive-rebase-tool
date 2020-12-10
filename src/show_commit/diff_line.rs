@@ -17,8 +17,7 @@ impl DiffLine {
 		old_line_number: Option<u32>,
 		new_line_number: Option<u32>,
 		end_of_file: bool,
-	) -> Self
-	{
+	) -> Self {
 		Self {
 			end_of_file,
 			// remove the end of file marker from diff
