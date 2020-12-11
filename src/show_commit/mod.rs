@@ -10,6 +10,9 @@ mod user;
 mod util;
 mod view_builder;
 
+#[cfg(test)]
+mod tests;
+
 use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
 use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::config::Config;
@@ -88,7 +91,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 					else {
 						let hash = commit.get_hash();
 						let max_index = hash.len().min(8);
-						format!("{:8} ", hash[0..max_index].to_string())
+						format!("{:8}", hash[0..max_index].to_string())
 					}
 					.as_str(),
 				),

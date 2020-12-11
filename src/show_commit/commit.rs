@@ -23,15 +23,15 @@ pub(super) struct LoadCommitDiffOptions {
 
 #[derive(Debug)]
 pub struct Commit {
-	author: User,
-	body: Option<String>,
-	committer: User,
-	date: DateTime<Local>,
-	file_stats: Vec<FileStat>,
-	hash: String,
-	number_files_changed: usize,
-	insertions: usize,
-	deletions: usize,
+	pub(super) author: User,
+	pub(super) body: Option<String>,
+	pub(super) committer: User,
+	pub(super) date: DateTime<Local>,
+	pub(super) file_stats: Vec<FileStat>,
+	pub(super) hash: String,
+	pub(super) number_files_changed: usize,
+	pub(super) insertions: usize,
+	pub(super) deletions: usize,
 }
 
 fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit, Error> {

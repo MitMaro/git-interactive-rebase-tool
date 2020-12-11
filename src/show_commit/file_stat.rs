@@ -5,12 +5,12 @@ use crate::show_commit::status::Status;
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct FileStat {
-	status: Status,
-	to_name: String,
-	from_name: String,
-	largest_old_line_number: u32,
-	largest_new_line_number: u32,
-	deltas: Vec<Delta>,
+	pub(super) status: Status,
+	pub(super) to_name: String,
+	pub(super) from_name: String,
+	pub(super) largest_old_line_number: u32,
+	pub(super) largest_new_line_number: u32,
+	pub(super) deltas: Vec<Delta>,
 }
 
 impl FileStat {

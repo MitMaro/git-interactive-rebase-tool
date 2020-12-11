@@ -140,7 +140,7 @@ pub(super) fn get_partition_index_on_whitespace_for_line(line: &str) -> (usize, 
 	let graphemes = UnicodeSegmentation::graphemes(line, true);
 	let length = graphemes.clone().count();
 	let mut start_partition_index = 0;
-	let mut end_partition_index = 0;
+	let mut end_partition_index = length;
 
 	for (index, c) in graphemes.clone().enumerate() {
 		if c != " " && c != "\t" && c != "\n" {
@@ -154,11 +154,6 @@ pub(super) fn get_partition_index_on_whitespace_for_line(line: &str) -> (usize, 
 			end_partition_index = length - index;
 			break;
 		}
-	}
-
-	if start_partition_index >= end_partition_index {
-		start_partition_index = 0;
-		end_partition_index = length;
 	}
 
 	(start_partition_index, end_partition_index)
