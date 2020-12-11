@@ -54,7 +54,7 @@ features = []
 [dev-dependencies]
 concat-idents = "1.0.0"
 rstest = "0.6.4"
-serial_test = "0.5.0"
+serial_test = "0.5.1"
 tempfile = "3.1.0"
 
 [features]
