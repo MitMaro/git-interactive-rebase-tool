@@ -141,10 +141,21 @@ impl ViewBuilder {
 
 		if self.show_leading_whitespace || self.show_trailing_whitespace {
 			let line = diff_line.line();
-			let (start, end) = get_partition_index_on_whitespace_for_line(line);
-			let leading = self.replace_whitespace(&line[0..start], self.show_leading_whitespace);
-			let content = self.replace_whitespace(&line[start..end], false);
-			let trailing = self.replace_whitespace(&line[end..], self.show_trailing_whitespace);
+			let (leading, content, trailing) = if line.trim().is_empty() {
+				(
+					self.replace_whitespace(line, self.show_leading_whitespace || self.show_trailing_whitespace),
+					String::from(""),
+					String::from(""),
+				)
+			}
+			else {
+				let (start, end) = get_partition_index_on_whitespace_for_line(line);
+				(
+					self.replace_whitespace(&line[0..start], self.show_leading_whitespace),
+					self.replace_whitespace(&line[start..end], false),
+					self.replace_whitespace(&line[end..], self.show_trailing_whitespace),
+				)
+			};
 
 			line_segments.push(LineSegment::new_with_color(
 				leading.as_str(),
@@ -180,7 +191,9 @@ impl ViewBuilder {
 	pub(super) fn build_view_data_diff(&self, view_data: &mut ViewData, commit: &Commit, is_full_width: bool) {
 		view_data.push_leading_line(get_files_changed_summary(commit, is_full_width));
 		view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
-		for stat in commit.get_file_stats() {
+
+		let file_stats = commit.get_file_stats();
+		for (s_i, stat) in file_stats.iter().enumerate() {
 			view_data.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name(),
@@ -188,10 +201,10 @@ impl ViewBuilder {
 				true,
 			)));
 
-			view_data.push_line(ViewLine::new_empty_line());
 			let old_largest_line_number_length = stat.largest_old_line_number().to_string().len();
 			let new_largest_line_number_length = stat.largest_new_line_number().to_string().len();
 			for delta in stat.deltas() {
+				view_data.push_line(ViewLine::new_empty_line());
 				view_data.push_line(ViewLine::from(vec![
 					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, true, false, false),
 					LineSegment::new_with_color(
@@ -224,10 +237,7 @@ impl ViewBuilder {
 								" ".repeat(old_largest_line_number_length + new_largest_line_number_length + 3)
 									.as_str(),
 							),
-							LineSegment::new_with_color(
-								"\\ No newline at end of file ",
-								DisplayColor::DiffContextColor,
-							),
+							LineSegment::new_with_color("\\ No newline at end of file", DisplayColor::DiffContextColor),
 						]));
 						continue;
 					}
@@ -238,10 +248,10 @@ impl ViewBuilder {
 						new_largest_line_number_length,
 					)));
 				}
-
-				view_data.push_line(ViewLine::new_empty_line());
 			}
-			view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
+			if s_i + 1 != file_stats.len() {
+				view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
+			}
 		}
 	}
 }
