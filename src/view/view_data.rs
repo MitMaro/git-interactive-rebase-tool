@@ -488,6 +488,7 @@ impl ViewData {
 
 				ViewLine::new_with_pinned_segments(segments, line.get_number_of_pinned_segment())
 					.set_selected(line.get_selected())
+					.set_padding_character(line.padding_character())
 			})
 			.collect::<Vec<ViewLine>>()
 	}
@@ -987,6 +988,27 @@ mod tests {
 		view_data.set_view_size(100, 1);
 
 		assert_rendered_output!(view_data, "{TITLE}");
+	}
+
+	#[test]
+	fn rebuild_retains_selected() {
+		let mut view_data = ViewData::new();
+		view_data.set_view_size(100, 10);
+		view_data.push_line(ViewLine::new_empty_line().set_padding_character("*"));
+		view_data.rebuild();
+
+		// padding characters are stripped by the test render, so test it directly
+		assert_eq!(view_data.lines_cache.unwrap()[0].padding_character(), "*");
+	}
+
+	#[test]
+	fn rebuild_retains_padding_character() {
+		let mut view_data = ViewData::new();
+		view_data.set_view_size(100, 10);
+		view_data.push_line(ViewLine::from("a").set_selected(true));
+		view_data.rebuild();
+
+		assert_rendered_output!(view_data, "{BODY}", "{Normal(selected)}a");
 	}
 
 	#[test]

@@ -51,14 +51,14 @@ fn render_view_line(view_line: &ViewLine) -> String {
 	let segments = view_line.get_segments();
 	for (index, segment) in segments.iter().enumerate() {
 		let content = segment.get_content();
-		// skip any trailing padding whitespace segments to make diff building/matching easier
-		// this could probably be done in a better way, but I cannot think of it just now - Tim
-		if index + 1 == segments.len()
+		let is_padding = index + 1 == segments.len() && content.replace(view_line.padding_character(), "").is_empty();
+		// skip standard padding
+		if is_padding
+			&& view_line.padding_character() == " "
 			&& segment.get_color() == DisplayColor::Normal
 			&& !segment.is_dimmed()
 			&& !segment.is_reversed()
 			&& !segment.is_underlined()
-			&& content.trim().is_empty()
 		{
 			continue;
 		}
@@ -72,7 +72,13 @@ fn render_view_line(view_line: &ViewLine) -> String {
 			)
 			.as_str(),
 		);
-		line.push_str(segment.get_content());
+		// only render
+		if is_padding {
+			line.push_str(format!("{{Pad {},{}}}", view_line.padding_character(), content.len()).as_str());
+		}
+		else {
+			line.push_str(segment.get_content());
+		}
 	}
 	line
 }
