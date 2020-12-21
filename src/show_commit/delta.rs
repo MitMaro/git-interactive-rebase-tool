@@ -13,7 +13,7 @@ pub struct Delta {
 
 impl Delta {
 	pub(super) fn new(header: &str, old_start: u32, new_start: u32, old_lines: u32, new_lines: u32) -> Self {
-		let context = header.splitn(3, '@').nth(2).unwrap_or("").trim();
+		let context = header.splitn(3, "@@").nth(2).unwrap_or("").trim();
 		Self {
 			old_start,
 			old_lines,
@@ -60,7 +60,7 @@ mod tests {
 
 	#[test]
 	fn new_with_correctly_formatted_context() {
-		let delta = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let delta = Delta::new("@@ src/show_commit/delta.rs:56 @@ impl Delta {", 10, 12, 3, 4);
 		assert_eq!(delta.context(), "impl Delta {");
 		assert_eq!(delta.old_start(), 10);
 		assert_eq!(delta.new_start(), 12);
@@ -70,8 +70,8 @@ mod tests {
 
 	#[test]
 	fn new_with_at_symbol_in_context() {
-		let delta = Delta::new("@ path:1 @ Context@", 10, 12, 3, 4);
-		assert_eq!(delta.context(), "Context@");
+		let delta = Delta::new("@@ path:1 @@ Context@@", 10, 12, 3, 4);
+		assert_eq!(delta.context(), "Context@@");
 		assert_eq!(delta.old_start(), 10);
 		assert_eq!(delta.new_start(), 12);
 		assert_eq!(delta.old_lines(), 3);
@@ -80,7 +80,7 @@ mod tests {
 
 	#[test]
 	fn new_with_incorrectly_formatted_context() {
-		let delta = Delta::new("@invalid", 10, 12, 3, 4);
+		let delta = Delta::new("@@invalid", 10, 12, 3, 4);
 		assert_eq!(delta.context(), "");
 		assert_eq!(delta.old_start(), 10);
 		assert_eq!(delta.new_start(), 12);
@@ -90,7 +90,7 @@ mod tests {
 
 	#[test]
 	fn add_line() {
-		let mut delta = Delta::new("@ src/show_commit/delta.rs:56 @ impl Delta {", 10, 12, 3, 4);
+		let mut delta = Delta::new("@@ src/show_commit/delta.rs:56 @@ impl Delta {", 10, 12, 3, 4);
 		delta.add_line(DiffLine::new(
 			Origin::Addition,
 			"this is a line",
