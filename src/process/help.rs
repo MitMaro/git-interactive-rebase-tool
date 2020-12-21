@@ -165,7 +165,7 @@ mod tests {
 					view_data,
 					"{TITLE}",
 					"{LEADING}",
-					"{Normal,Underline} Key Action{Normal,Underline}           ",
+					"{Normal,Underline} Key Action{Normal,Underline}{Pad  ,11}",
 					"{BODY}",
 					"{IndicatorColor} a{Normal,Dimmed}|{Normal}Description A",
 					"{IndicatorColor} b{Normal,Dimmed}|{Normal}Description B",
