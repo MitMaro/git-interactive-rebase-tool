@@ -427,7 +427,7 @@ mod tests {
 	#[serial_test::serial]
 	fn getch_normal_input() {
 		display_module_test(|mut test_context: TestContext| {
-			test_context.curses.push_input(Input::Character('z'));
+			test_context.curses.set_inputs(vec![Input::Character('z')]);
 			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
 			assert_eq!(display.getch().unwrap(), Input::Character('z'));
 		});
@@ -437,7 +437,7 @@ mod tests {
 	#[serial_test::serial]
 	fn getch_resize() {
 		display_module_test(|mut test_context: TestContext| {
-			test_context.curses.push_input(Input::KeyResize);
+			test_context.curses.set_inputs(vec![Input::KeyResize]);
 			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
 			assert_eq!(display.getch().unwrap(), Input::KeyResize);
 			assert_eq!(test_context.curses.get_state(), State::Resized);

@@ -53,9 +53,13 @@ use crate::process::modules::Modules;
 use crate::process::Process;
 use crate::todo_file::TodoFile;
 use crate::view::View;
-use clap::{App, Arg, ArgMatches};
+use clap::{App, Arg};
 
-struct Exit {
+#[cfg(test)]
+pub mod testutil;
+
+#[derive(Debug)]
+pub struct Exit {
 	message: String,
 	status: ExitStatus,
 }
@@ -82,7 +86,14 @@ fn main() {
 
 	let matches = app.get_matches();
 
-	match try_main(&matches) {
+	if matches.is_present("license") {
+		print_license();
+		std::process::exit(ExitStatus::Good.to_code());
+	}
+
+	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
+
+	match try_main(filepath) {
 		Ok(code) => std::process::exit(code.to_code()),
 		Err(err) => {
 			eprintln!("{}", err.message);
@@ -118,14 +129,7 @@ A list of open source software and the license terms can be found at
 	);
 }
 
-fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
-	if matches.is_present("license") {
-		print_license();
-		return Ok(ExitStatus::Good);
-	}
-
-	let filepath = matches.value_of("rebase-todo-filepath").unwrap();
-
+fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 	let config = Config::new().map_err(|err| {
 		Exit {
 			message: format!("{:#}", err),
@@ -172,4 +176,88 @@ fn try_main(matches: &ArgMatches<'_>) -> Result<ExitStatus, Exit> {
 			}
 		})
 		.map(|exit_code| exit_code.unwrap_or(ExitStatus::Good))
+}
+
+#[cfg(all(unix, test))]
+mod tests {
+	use super::*;
+	use crate::assert_exit_status;
+	use std::env::set_var;
+	use std::fs::File;
+	use std::path::Path;
+
+	fn set_git_directory(repo: &str) -> String {
+		let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("test").join(repo);
+		set_var("GIT_DIR", path.to_str().unwrap());
+		String::from(path.to_str().unwrap())
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn error_loading_config() {
+		let path = set_git_directory("fixtures/invalid-config");
+		assert_exit_status!(
+			try_main("does-not-exist"),
+			message = format!("Error loading git config: could not find repository from '{}'", path),
+			status = ExitStatus::ConfigError
+		)
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn error_loading_file() {
+		set_git_directory("fixtures/simple");
+		assert_exit_status!(
+			try_main("does-not-exist"),
+			message = "No such file or directory (os error 2)",
+			status = ExitStatus::FileReadError
+		)
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn error_noop() {
+		let path = set_git_directory("fixtures/simple");
+		let todo_file = Path::new(path.as_str()).join("rebase-todo-noop");
+		assert_exit_status!(
+			try_main(todo_file.to_str().unwrap()),
+			message = "A noop rebase was provided, skipping editing",
+			status = ExitStatus::Good
+		)
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn error_empty_file() {
+		let path = set_git_directory("fixtures/simple");
+		let todo_file = Path::new(path.as_str()).join("rebase-todo-empty");
+		assert_exit_status!(
+			try_main(todo_file.to_str().unwrap()),
+			message = "An empty rebase was provided, nothing to edit",
+			status = ExitStatus::Good
+		)
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn error_process() {
+		let path = set_git_directory("fixtures/simple");
+		let todo_file_path = Path::new(path.as_str()).join("rebase-todo-readonly");
+		let todo_file = File::open(todo_file_path.as_path()).unwrap();
+		let mut permissions = todo_file.metadata().unwrap().permissions();
+		permissions.set_readonly(true);
+		todo_file.set_permissions(permissions).unwrap();
+		assert_exit_status!(
+			try_main(todo_file_path.to_str().unwrap()),
+			message = format!("Error opening file: {}", todo_file_path.to_str().unwrap()),
+			status = ExitStatus::FileWriteError
+		)
+	}
+	#[test]
+	#[serial_test::serial]
+	fn success() {
+		let path = set_git_directory("fixtures/simple");
+		let todo_file = Path::new(path.as_str()).join("rebase-todo");
+		assert_exit_status!(try_main(todo_file.to_str().unwrap()), status = ExitStatus::Abort)
+	}
 }

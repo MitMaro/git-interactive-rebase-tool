@@ -306,9 +306,7 @@ mod tests {
 		set_var("GIT_DIR", git_repo_dir.as_str());
 		let config = Config::new().unwrap();
 		let mut curses = Curses::new();
-		for i in input {
-			curses.push_input(*i);
-		}
+		curses.set_inputs(input.to_vec());
 		let display = Display::new(&mut curses, &config.theme);
 		let input_handler = InputHandler::new(&display, &config.key_bindings);
 		callback(&input_handler);
