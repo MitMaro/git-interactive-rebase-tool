@@ -434,9 +434,12 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 	let mut curses = Curses::new();
 	curses.mv(view_state.position.1, view_state.position.0);
 	curses.resize_term(view_state.size.1, view_state.size.0);
-	for i in input {
-		curses.push_input(map_input_to_curses(&config.key_bindings, *i));
-	}
+	curses.set_inputs(
+		input
+			.iter()
+			.map(|i| map_input_to_curses(&config.key_bindings, *i))
+			.collect(),
+	);
 	let display = Display::new(&mut curses, &config.theme);
 	let view = View::new(&display, &config);
 	let todo_file = Builder::new()

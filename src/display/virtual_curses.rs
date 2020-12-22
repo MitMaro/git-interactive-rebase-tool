@@ -43,7 +43,7 @@ impl Curses {
 			color_mode: detect_color_mode(16),
 			color_pairs: [(0, 0); 255],
 			colors: [(0, 0, 0); 255],
-			input: RefCell::new(vec![]),
+			input: RefCell::new(vec![Input::KeyExit]),
 			output: RefCell::new(vec![]),
 			position: RefCell::new((0, 0)),
 			size: RefCell::new((10, 10)),
@@ -85,8 +85,9 @@ impl Curses {
 		(*self.attributes.borrow() & A_UNDERLINE) == A_UNDERLINE
 	}
 
-	pub(crate) fn push_input(&self, input: Input) {
-		self.input.borrow_mut().insert(0, input);
+	pub(crate) fn set_inputs(&self, mut input: Vec<Input>) {
+		input.reverse();
+		self.input.replace(input);
 	}
 
 	pub(crate) fn set_color_mode(&mut self, color_mode: ColorMode) {
