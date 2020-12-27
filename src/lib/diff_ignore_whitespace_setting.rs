@@ -2,5 +2,5 @@
 pub enum DiffIgnoreWhitespaceSetting {
 	None,
 	All,
-	Modified,
+	Change,
 }
