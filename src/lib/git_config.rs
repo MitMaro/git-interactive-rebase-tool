@@ -9,25 +9,25 @@ pub struct GitConfig {
 	pub(crate) diff_interhunk_lines: u32,
 	pub(crate) diff_rename_limit: u32,
 	pub(crate) diff_renames: bool,
-	pub(crate) diff_copies: bool,
-	pub(crate) editor: String,
+	pub(crate) diff_copy: bool,
+	pub(crate) editor_command: String,
 }
 
 impl GitConfig {
 	pub(super) fn new(git_config: &Config) -> Result<Self> {
-		let comment_char = get_string(git_config, "core.commentChar", "#")?;
-		let comment_char = if comment_char.as_str().eq("auto") {
+		let comment_character = get_string(git_config, "core.commentChar", "#")?;
+		let comment_character = if comment_character.as_str().eq("auto") {
 			String::from("#")
 		}
 		else {
-			comment_char
+			comment_character
 		};
 
 		let git_diff_renames = get_string(git_config, "diff.renames", "true")?.to_lowercase();
 		let (diff_renames, diff_copies) = match git_diff_renames.to_lowercase().as_str() {
-			"true" => (true, false),
-			"false" => (false, false),
-			"copy" | "copies" => (true, true),
+            "true" => (true, false),
+            "false" => (false, false),
+            "copy" | "copies" => (true, true),
 			v => {
 				return Err(anyhow!(
 					"\"{}\" does not match one of \"true\", \"false\", \"copy\" or \"copies\"",
@@ -38,13 +38,17 @@ impl GitConfig {
 		};
 
 		Ok(Self {
-			comment_char,
+			comment_char: comment_character,
 			diff_context: get_unsigned_integer(git_config, "diff.context", 3)?,
 			diff_interhunk_lines: get_unsigned_integer(git_config, "diff.interHunkContext", 0)?,
 			diff_rename_limit: get_unsigned_integer(git_config, "diff.renameLimit", 200)?,
 			diff_renames,
-			diff_copies,
-			editor: get_string(git_config, "core.editor", editor_from_env().as_str())?,
+			diff_copy: diff_copies,
+			editor_command: get_string(
+				git_config,
+				"core.editor",
+				editor_from_env().as_str()
+			)?,
 		})
 	}
 }
