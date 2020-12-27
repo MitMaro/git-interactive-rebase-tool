@@ -37,7 +37,7 @@ pub struct Config {
 }
 
 impl Config {
-	pub(crate) fn new() -> Result<Self> {
+	pub(crate) fn new_from_env() -> Result<Self> {
 		let config = open_git_config().map_err(|e| e.context("Error loading git config"))?;
 		Self::new_from_config(&config).map_err(|e| e.context("Error reading git config"))
 	}
