@@ -2,6 +2,6 @@
 pub enum DiffShowWhitespaceSetting {
 	None,
 	Trailing,
-	Laeding,
+	Leading,
 	Both,
 }
