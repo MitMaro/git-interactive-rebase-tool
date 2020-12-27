@@ -2,8 +2,7 @@ pub mod diff_ignore_whitespace_setting;
 pub mod diff_show_whitespace_setting;
 pub mod git_config;
 pub mod key_bindings;
-pub mod theme;
-mod utils;
+mod util;
 use anyhow::Result;
 
 #[cfg(test)]
@@ -13,7 +12,6 @@ use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
 use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::config::git_config::GitConfig;
 use crate::config::key_bindings::KeyBindings;
-use crate::config::theme::Theme;
 use crate::config::utils::{
 	get_bool,
 	get_diff_ignore_whitespace,
@@ -22,6 +20,9 @@ use crate::config::utils::{
 	get_unsigned_integer,
 	open_git_config,
 };
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Clone, Debug)]
 pub struct Config {
