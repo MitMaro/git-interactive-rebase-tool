@@ -1,5 +1,14 @@
 # Installation
 
+## Table of Contents
+
+* [Arch Linux](./install.md#arch-linux)
+* [Cargo Package Manager](./install.md#cargo-package-manager)
+* [Debian and derivatives](./install.md#debian-and-derivatives)
+* [FreeBSD](./install.md#freebsd)
+* [macOS](./install.md#macos)
+* [Windows](./install.md#windows)
+
 ## Arch Linux
 
 ### With your [AUR](https://aur.archlinux.org/) helper of choice
@@ -21,7 +30,7 @@ This generally happens when `rustup` is installed without setting a default tool
 
     sudo pacman -R git-interactive-rebase-tool
 
-## [Cargo Package Manager](https://crates.io/)
+## Cargo Package Manager
 
     cargo install git-interactive-rebase-tool
     
@@ -58,7 +67,7 @@ it is not satisfied.
 
     pkg remove interactive_rebase_tool
 
-## MacOS
+## macOS
 
 ### With [Homebrew](https://brew.sh/)
 
@@ -79,7 +88,7 @@ Delete the copied `interactive-rebase-tool`.
 
 ### Notes
 
-On MacOS, Terminal.app does not support highlighting the selected line(s). If you want this feature you will need to use
+On macOS, Terminal.app does not support highlighting the selected line(s). If you want this feature you will need to use
 a terminal emulator like [iTerm2](https://iterm2.com/index.html).
 
 ## Windows
