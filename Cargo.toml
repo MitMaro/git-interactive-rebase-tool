@@ -47,7 +47,7 @@ version = "0.16"
 features = ["win32", "wide"]
 
 [dependencies.git2]
-version = "0.13.14"
+version = "0.13.15"
 default-features = false
 features = []
 
