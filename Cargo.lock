@@ -101,9 +101,9 @@ dependencies = [
 
 [[package]]
 name = "concat-idents"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1572e5abf852031cadc932ed5ed2c6c5cb27b4de8ed673e5d1dfdf14ff7ec0a3"
+checksum = "7cd78dedb13549ba9357961f67e9de981cef4c21caf8a4095dbbb70875ba0ba2"
 dependencies = [
  "quote",
  "syn",
