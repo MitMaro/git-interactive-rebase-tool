@@ -114,13 +114,14 @@ hr {
 		float: left;
 	}
 	&.right {
+		text-align: right;
 		float: right;
 	}
 }
 
 section {
 	max-width: 760px;
-	padding: 30px 0;
+	padding: 30px 0 15px 0;
 	&.title {
 		border: none;
 		outline: none;
@@ -143,5 +144,34 @@ section {
 		display: block;
 		margin: 0 auto;
 		box-shadow: 1px 1px 2px #000000;
+	}
+}
+
+nav {
+	font-size: 18px;
+	border-bottom: 1px dashed #ad9044;
+	ul {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		//background-color: #191919;
+	}
+
+	li {
+		float: left;
+		border-right: 1px solid #121212;
+	}
+
+	li a {
+		color: #ffcc00;
+		display: inline-block;
+		text-align: center;
+		padding: 8px 16px;
+		text-decoration: none;
+	}
+
+	li a:hover {
+		background-color: #696969;
 	}
 }

@@ -1,0 +1,8 @@
+jekyll:
+    image: jekyll/jekyll
+    command: jekyll serve --watch --config _config.yml
+    ports:
+        - 4000:4000
+    volumes:
+        - .:/srv/jekyll
+        - ./vendor/bundle:/usr/local/bundle
