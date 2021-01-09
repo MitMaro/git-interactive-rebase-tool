@@ -2579,9 +2579,8 @@ mod tests {
 			&[],
 			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
-				test_context
-					.rebase_todo_file
-					.update_range(1, 1, &EditContext::new().action(Action::Noop));
+				test_context.rebase_todo_file.remove_line(1);
+				test_context.rebase_todo_file.add_line(1, Line::new("noop").unwrap());
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
 					view_data,

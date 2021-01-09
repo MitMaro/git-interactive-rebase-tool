@@ -73,7 +73,7 @@ impl Line {
 	}
 
 	pub(crate) fn set_action(&mut self, action: Action) {
-		if self.action != action {
+		if !self.action.is_static() && self.action != action {
 			self.mutated = true;
 			self.action = action;
 		}
@@ -226,6 +226,37 @@ mod tests {
 	)]
 	fn new_err(line: &str, expected_err: &str) {
 		assert_eq!(Line::new(line).unwrap_err().to_string(), expected_err);
+	}
+
+	#[rstest(
+		from,
+		to,
+		case::drop(Action::Drop, Action::Fixup),
+		case::edit(Action::Edit, Action::Fixup),
+		case::fixup(Action::Fixup, Action::Pick),
+		case::pick(Action::Pick, Action::Fixup),
+		case::reword(Action::Reword, Action::Fixup),
+		case::squash(Action::Squash, Action::Fixup)
+	)]
+	fn set_action_non_static(from: Action, to: Action) {
+		let mut line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
+		line.set_action(to);
+		assert_eq!(line.action, to);
+		assert_eq!(line.mutated, true);
+	}
+
+	#[rstest(
+		from,
+		to,
+		case::break_action(Action::Break, Action::Fixup),
+		case::exec(Action::Exec, Action::Fixup),
+		case::noop(Action::Noop, Action::Fixup)
+	)]
+	fn set_action_static(from: Action, to: Action) {
+		let mut line = Line::new(format!("{} comment", from.as_string()).as_str()).unwrap();
+		line.set_action(to);
+		assert_eq!(line.action, from);
+		assert_eq!(line.mutated, false);
 	}
 
 	#[test]

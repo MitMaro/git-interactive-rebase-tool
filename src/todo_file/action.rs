@@ -42,6 +42,13 @@ impl Action {
 			Self::Squash => "s",
 		})
 	}
+
+	pub const fn is_static(self) -> bool {
+		match self {
+			Self::Break | Self::Exec | Self::Noop => true,
+			Self::Drop | Self::Edit | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
+		}
+	}
 }
 
 impl TryFrom<&str> for Action {
@@ -66,6 +73,7 @@ impl TryFrom<&str> for Action {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use rstest::rstest;
 
 	macro_rules! test_action_to_string {
 		($name:ident, $action:expr, $expected:expr) => {
@@ -146,4 +154,21 @@ mod tests {
 	test_action_to_abbreviation!(p, Action::Pick, "p");
 	test_action_to_abbreviation!(r, Action::Reword, "r");
 	test_action_to_abbreviation!(s, Action::Squash, "s");
+
+	#[rstest(
+		action,
+		expected,
+		case::break_action(Action::Break, true),
+		case::drop(Action::Drop, false),
+		case::edit(Action::Edit, false),
+		case::exec(Action::Exec, true),
+		case::fixup(Action::Fixup, false),
+		case::noop(Action::Noop, true),
+		case::pick(Action::Pick, false),
+		case::reword(Action::Reword, false),
+		case::squash(Action::Squash, false)
+	)]
+	fn module_lifecycle(action: Action, expected: bool) {
+		assert_eq!(action.is_static(), expected);
+	}
 }
