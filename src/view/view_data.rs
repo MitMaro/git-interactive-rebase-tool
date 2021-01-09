@@ -62,6 +62,7 @@ impl ViewData {
 		self.lines_cache = None;
 		self.trailing_lines.clear();
 		self.trailing_lines_cache = None;
+		self.prompt = None;
 	}
 
 	pub(crate) fn scroll_up(&mut self) {
