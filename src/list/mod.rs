@@ -227,15 +227,24 @@ impl<'l> List<'l> {
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::ActionBreak => {
-				// TODO - does not stop multiple breaks in a row
 				let action = rebase_todo.get_selected_line().get_action();
-				if action == &Action::Break {
-					rebase_todo.remove_line(rebase_todo.get_selected_line_index());
-					Self::move_cursor_up(rebase_todo, 1);
+				let selected_line_index = rebase_todo.get_selected_line_index();
+				let lines = rebase_todo.get_lines();
+				let next_action_is_break = if selected_line_index < lines.len() {
+					lines[selected_line_index].get_action() == &Action::Break
 				}
 				else {
-					rebase_todo.add_line(rebase_todo.get_selected_line_index() + 1, Line::new_break());
-					Self::move_cursor_down(rebase_todo, 1);
+					false
+				};
+				if !next_action_is_break {
+					if action == &Action::Break {
+						rebase_todo.remove_line(rebase_todo.get_selected_line_index());
+						Self::move_cursor_up(rebase_todo, 1);
+					}
+					else {
+						rebase_todo.add_line(rebase_todo.get_selected_line_index() + 1, Line::new_break());
+						Self::move_cursor_down(rebase_todo, 1);
+					}
 				}
 			},
 			Input::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop, true),
@@ -1380,9 +1389,7 @@ mod tests {
 		);
 	}
 
-	// TODO - this is a known bug
 	#[test]
-	#[ignore]
 	#[serial_test::serial]
 	fn change_selected_line_toggle_break_above_existing() {
 		process_module_test(
