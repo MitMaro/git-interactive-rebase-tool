@@ -13,9 +13,9 @@ pub mod display_color;
 mod utils;
 
 use crate::config::theme::Theme;
-use crate::display::color_manager::ColorManager;
-use crate::display::curses::{chtype, Curses, Input, A_DIM, A_REVERSE, A_UNDERLINE};
-use crate::display::display_color::DisplayColor;
+use color_manager::ColorManager;
+use curses::{chtype, Curses, Input, A_DIM, A_REVERSE, A_UNDERLINE};
+use display_color::DisplayColor;
 use std::cell::RefCell;
 use std::convert::TryInto;
 
@@ -293,8 +293,8 @@ impl<'d> Display<'d> {
 
 #[cfg(all(windows, test))]
 mod tests {
+	use super::testutil::{display_module_test, TestContext};
 	use super::*;
-	use crate::display::testutil::{display_module_test, TestContext};
 
 	#[test]
 	#[serial_test::serial()]
@@ -311,9 +311,9 @@ mod tests {
 
 #[cfg(all(unix, test))]
 mod tests {
+	use super::testutil::{display_module_test, TestContext};
+	use super::virtual_curses::State;
 	use super::*;
-	use crate::display::testutil::{display_module_test, TestContext};
-	use crate::display::virtual_curses::State;
 	use rstest::rstest;
 
 	#[test]

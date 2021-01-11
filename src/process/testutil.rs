@@ -1,13 +1,13 @@
+use super::exit_status::ExitStatus;
+use super::process_module::ProcessModule;
+use super::process_result::ProcessResult;
+use super::state::State;
 use crate::config::key_bindings::KeyBindings;
 use crate::config::Config;
 use crate::display::curses::{Curses, Input as PancursesInput};
 use crate::display::Display;
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
 use crate::todo_file::line::Line;
 use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;

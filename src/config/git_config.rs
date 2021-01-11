@@ -1,4 +1,4 @@
-use crate::config::utils::{editor_from_env, get_string, get_unsigned_integer};
+use super::utils::{editor_from_env, get_string, get_unsigned_integer};
 use anyhow::{anyhow, Result};
 use git2::Config;
 

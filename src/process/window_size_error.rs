@@ -1,9 +1,9 @@
+use super::process_module::ProcessModule;
+use super::process_result::ProcessResult;
+use super::state::State;
 use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH};
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
 use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
@@ -86,10 +86,10 @@ impl WindowSizeError {
 
 #[cfg(test)]
 mod tests {
+	use super::testutil::{process_module_test, TestContext, ViewState};
 	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use rstest::rstest;
 	use std::convert::TryFrom;
 

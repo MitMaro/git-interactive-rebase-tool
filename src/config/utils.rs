@@ -1,5 +1,5 @@
-use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
-use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
+use super::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
+use super::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::display::color::Color;
 use anyhow::{anyhow, Result};
 use git2::Config;

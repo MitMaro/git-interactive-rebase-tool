@@ -1,3 +1,9 @@
+use super::error::Error;
+use super::help::Help;
+use super::process_module::ProcessModule;
+use super::process_result::ProcessResult;
+use super::state::State;
+use super::window_size_error::WindowSizeError;
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
@@ -6,12 +12,6 @@ use crate::edit::Edit;
 use crate::external_editor::ExternalEditor;
 use crate::input::input_handler::InputHandler;
 use crate::list::List;
-use crate::process::error::Error;
-use crate::process::help::Help;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::window_size_error::WindowSizeError;
 use crate::show_commit::ShowCommit;
 use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;
@@ -112,9 +112,9 @@ impl<'m> Modules<'m> {
 #[cfg(test)]
 mod tests {
 	// these tests just ensure that nothing panics
+	use super::testutil::{process_module_test, TestContext, ViewState};
 	use super::*;
 	use crate::input::Input;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use anyhow::anyhow;
 	use rstest::rstest;
 

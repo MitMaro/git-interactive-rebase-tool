@@ -24,15 +24,15 @@ use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::process::util::handle_view_data_scroll;
-use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
-use crate::show_commit::show_commit_state::ShowCommitState;
-use crate::show_commit::util::get_show_commit_help_lines;
-use crate::show_commit::view_builder::{ViewBuilder, ViewBuilderOptions};
 use crate::todo_file::TodoFile;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
+use commit::{Commit, LoadCommitDiffOptions};
+use show_commit_state::ShowCommitState;
+use util::get_show_commit_help_lines;
+use view_builder::{ViewBuilder, ViewBuilderOptions};
 
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,

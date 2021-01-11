@@ -1,7 +1,7 @@
+use super::commit::Commit;
+use super::status::Status;
 use crate::config::key_bindings::KeyBindings;
 use crate::display::display_color::DisplayColor;
-use crate::show_commit::commit::Commit;
-use crate::show_commit::status::Status;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_line::ViewLine;
 use num_format::{Locale, ToFormattedString};

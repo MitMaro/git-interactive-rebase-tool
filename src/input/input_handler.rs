@@ -1,7 +1,7 @@
+use super::Input;
 use crate::config::key_bindings::KeyBindings;
 use crate::display::curses::Input as CursesInput;
 use crate::display::Display;
-use crate::input::Input;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum InputMode {

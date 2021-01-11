@@ -3,7 +3,6 @@ mod utils;
 use crate::config::Config;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
@@ -16,6 +15,7 @@ use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
 use std::cmp;
+use utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 
 #[derive(Debug, PartialEq)]
 enum ListState {

@@ -1,5 +1,5 @@
+use super::curses::Curses;
 use crate::config::Config;
-use crate::display::curses::Curses;
 use std::env::set_var;
 use std::path::Path;
 

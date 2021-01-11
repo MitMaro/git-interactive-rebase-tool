@@ -15,14 +15,14 @@ pub mod testutil;
 
 use crate::input::input_handler::InputHandler;
 use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::modules::Modules;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::window_size_error::WindowSizeError;
 use crate::todo_file::TodoFile;
 use crate::view::View;
 use anyhow::Result;
+use exit_status::ExitStatus;
+use modules::Modules;
+use process_result::ProcessResult;
+use state::State;
+use window_size_error::WindowSizeError;
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,

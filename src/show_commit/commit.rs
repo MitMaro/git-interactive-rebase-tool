@@ -1,10 +1,10 @@
+use super::delta::Delta;
+use super::diff_line::DiffLine;
+use super::file_stat::FileStat;
+use super::file_stats_builder::FileStatsBuilder;
 use super::origin::Origin;
-use crate::show_commit::delta::Delta;
-use crate::show_commit::diff_line::DiffLine;
-use crate::show_commit::file_stat::FileStat;
-use crate::show_commit::file_stats_builder::FileStatsBuilder;
-use crate::show_commit::status::Status;
-use crate::show_commit::user::User;
+use super::status::Status;
+use super::user::User;
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Local, TimeZone};
 use git2::{DiffFindOptions, DiffOptions, Error, Repository};

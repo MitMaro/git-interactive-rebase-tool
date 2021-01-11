@@ -2,7 +2,6 @@ mod argument_tolkenizer;
 
 use crate::display::display_color::DisplayColor;
 use crate::display::Display;
-use crate::external_editor::argument_tolkenizer::tolkenize;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
@@ -16,6 +15,7 @@ use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::view::View;
 use anyhow::{anyhow, Error, Result};
+use argument_tolkenizer::tolkenize;
 use std::ffi::OsString;
 use std::process::Command;
 use std::process::ExitStatus as ProcessExitStatus;

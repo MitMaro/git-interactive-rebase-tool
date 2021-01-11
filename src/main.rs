@@ -44,7 +44,6 @@ mod todo_file;
 mod view;
 
 use crate::config::Config;
-use crate::constants::{NAME, VERSION};
 use crate::display::curses::Curses;
 use crate::display::Display;
 use crate::input::input_handler::InputHandler;
@@ -54,6 +53,7 @@ use crate::process::Process;
 use crate::todo_file::TodoFile;
 use crate::view::View;
 use clap::{App, Arg};
+use constants::{NAME, VERSION};
 
 #[cfg(test)]
 pub mod testutil;

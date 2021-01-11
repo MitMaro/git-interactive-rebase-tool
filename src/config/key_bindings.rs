@@ -1,4 +1,4 @@
-use crate::config::utils::get_input;
+use super::utils::get_input;
 use anyhow::Result;
 use git2::Config;
 

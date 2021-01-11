@@ -1,4 +1,4 @@
-use crate::config::utils::{get_color, get_string};
+use super::utils::{get_color, get_string};
 use crate::display::color::Color;
 use anyhow::Result;
 use git2::Config;

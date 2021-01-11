@@ -1,10 +1,10 @@
+use super::process_module::ProcessModule;
+use super::process_result::ProcessResult;
+use super::state::State;
+use super::util::handle_view_data_scroll;
 use crate::display::display_color::DisplayColor;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::util::handle_view_data_scroll;
 use crate::todo_file::TodoFile;
 use crate::view::line_segment::LineSegment;
 use crate::view::view_data::ViewData;
@@ -66,10 +66,10 @@ impl Error {
 
 #[cfg(test)]
 mod tests {
+	use super::testutil::{process_module_test, TestContext, ViewState};
 	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use anyhow::anyhow;
 
 	#[test]

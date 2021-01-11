@@ -1,6 +1,6 @@
+use super::process_result::ProcessResult;
+use super::state::State;
 use crate::input::input_handler::InputHandler;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
 use crate::todo_file::TodoFile;
 use crate::view::view_data::ViewData;
 use crate::view::View;

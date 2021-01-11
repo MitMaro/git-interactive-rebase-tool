@@ -1,6 +1,6 @@
-use crate::show_commit::delta::Delta;
-use crate::show_commit::diff_line::DiffLine;
-use crate::show_commit::file_stat::FileStat;
+use super::delta::Delta;
+use super::diff_line::DiffLine;
+use super::file_stat::FileStat;
 
 #[derive(Debug, Clone)]
 pub(super) struct FileStatsBuilder {
@@ -61,9 +61,9 @@ impl FileStatsBuilder {
 
 #[cfg(test)]
 mod tests {
+	use super::origin::Origin;
+	use super::status::Status;
 	use super::*;
-	use crate::show_commit::origin::Origin;
-	use crate::show_commit::status::Status;
 
 	#[test]
 	fn build_file_stat_with_file_stat_without_delta() {

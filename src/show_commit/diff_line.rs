@@ -1,4 +1,4 @@
-use crate::show_commit::origin::Origin;
+use super::origin::Origin;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]

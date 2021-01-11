@@ -8,9 +8,9 @@ pub mod view_line;
 use crate::constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH};
 use crate::display::display_color::DisplayColor;
 use crate::display::Display;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
 use crate::Config;
+use view_data::ViewData;
+use view_line::ViewLine;
 
 pub struct View<'v> {
 	config: &'v Config,

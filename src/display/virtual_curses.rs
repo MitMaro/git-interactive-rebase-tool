@@ -1,5 +1,5 @@
-use crate::display::color_mode::ColorMode;
-use crate::display::utils::detect_color_mode;
+use super::color_mode::ColorMode;
+use super::utils::detect_color_mode;
 pub use pancurses::{chtype, Input};
 use std::cell::RefCell;
 

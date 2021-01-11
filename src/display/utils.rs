@@ -1,4 +1,4 @@
-use crate::display::color_mode::ColorMode;
+use super::color_mode::ColorMode;
 use std::env::var;
 
 pub(super) fn detect_color_mode(number_of_colors: i16) -> ColorMode {

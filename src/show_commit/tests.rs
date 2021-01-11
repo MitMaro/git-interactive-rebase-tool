@@ -1,13 +1,13 @@
+use super::delta::Delta;
+use super::diff_line::DiffLine;
+use super::file_stat::FileStat;
+use super::origin::Origin;
+use super::status::Status;
+use super::user::User;
 use super::*;
 use crate::assert_process_result;
 use crate::assert_rendered_output;
 use crate::process::testutil::{process_module_test, TestContext, ViewState};
-use crate::show_commit::delta::Delta;
-use crate::show_commit::diff_line::DiffLine;
-use crate::show_commit::file_stat::FileStat;
-use crate::show_commit::origin::Origin;
-use crate::show_commit::status::Status;
-use crate::show_commit::user::User;
 use anyhow::anyhow;
 use chrono::Local;
 

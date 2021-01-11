@@ -1,4 +1,4 @@
-use crate::show_commit::diff_line::DiffLine;
+use super::diff_line::DiffLine;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]

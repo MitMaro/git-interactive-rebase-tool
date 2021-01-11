@@ -1,5 +1,5 @@
-use crate::display::color::Color;
-use crate::display::curses::{
+use super::color::Color;
+use super::curses::{
 	chtype,
 	Curses,
 	COLOR_BLACK,
@@ -177,8 +177,8 @@ impl ColorManager {
 
 #[cfg(test)]
 mod tests {
+	use super::color_mode::ColorMode;
 	use super::*;
-	use crate::display::color_mode::ColorMode;
 	use concat_idents::concat_idents;
 
 	fn _assert_indexed_color(color_mode: ColorMode, color: Color, expected_index: i16) {

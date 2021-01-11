@@ -1,4 +1,4 @@
-use crate::todo_file::action::Action;
+use super::action::Action;
 use anyhow::{anyhow, Result};
 use std::convert::TryFrom;
 

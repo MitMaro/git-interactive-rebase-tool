@@ -1,6 +1,6 @@
+use super::exit_status::ExitStatus;
+use super::state::State;
 use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::state::State;
 use anyhow::Error;
 
 #[derive(Debug)]

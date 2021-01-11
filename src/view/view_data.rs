@@ -1,6 +1,6 @@
-use crate::view::line_segment::LineSegment;
-use crate::view::scroll_position::ScrollPosition;
-use crate::view::view_line::ViewLine;
+use super::line_segment::LineSegment;
+use super::scroll_position::ScrollPosition;
+use super::view_line::ViewLine;
 
 pub struct ViewData {
 	scroll_position: ScrollPosition,

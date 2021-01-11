@@ -1,14 +1,14 @@
-use crate::todo_file::edit_content::EditContext;
+pub mod action;
+pub mod edit_content;
+pub mod line;
+
 use action::Action;
 use anyhow::{anyhow, Result};
+use edit_content::EditContext;
 use line::Line;
 use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::Path;
-
-pub mod action;
-pub mod edit_content;
-pub mod line;
 
 pub struct TodoFile {
 	comment_char: String,
