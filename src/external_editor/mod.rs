@@ -1,9 +1,8 @@
 mod argument_tolkenizer;
 
 use crate::display::display_color::DisplayColor;
-use crate::display::Display;
 use crate::external_editor::argument_tolkenizer::tolkenize;
-use crate::input::input_handler::{InputHandler, InputMode};
+use crate::input::input_handler::InputMode;
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::process_module::ProcessModule;
@@ -27,16 +26,15 @@ enum ExternalEditorState {
 	Error(Error),
 }
 
-pub struct ExternalEditor<'e> {
+pub struct ExternalEditor {
 	editor: String,
-	display: &'e Display<'e>,
 	state: ExternalEditorState,
 	view_data: ViewData,
 	invalid_selection: bool,
 	lines: Vec<Line>,
 }
 
-impl<'e> ProcessModule for ExternalEditor<'e> {
+impl ProcessModule for ExternalEditor {
 	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		self.state = ExternalEditorState::Active;
@@ -110,16 +108,11 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 		&self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		todo_file: &mut TodoFile,
-		view: &View<'_>,
-	) -> ProcessResult {
+	fn handle_input(&mut self, view: &View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
-				if let Err(e) = self.run_editor(todo_file) {
+				if let Err(e) = self.run_editor(view, todo_file) {
 					self.state = ExternalEditorState::Error(e);
 				}
 				else {
@@ -138,7 +131,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 				result = result.input(Input::Other);
 			},
 			ExternalEditorState::Empty => {
-				let input = input_handler.get_input(InputMode::Default);
+				let input = view.get_input(InputMode::Default);
 				result = result.input(input);
 				if let Some(input) = self.handle_standard_inputs(view, input) {
 					self.invalid_selection = false;
@@ -154,7 +147,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let input = input_handler.get_input(InputMode::Default);
+				let input = view.get_input(InputMode::Default);
 				result = result.input(input);
 				if let Some(input) = self.handle_standard_inputs(view, input) {
 					self.invalid_selection = false;
@@ -184,14 +177,13 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 	}
 }
 
-impl<'e> ExternalEditor<'e> {
-	pub(crate) fn new(display: &'e Display<'_>, editor: &str) -> Self {
+impl ExternalEditor {
+	pub(crate) fn new(editor: &str) -> Self {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 
 		Self {
 			editor: String::from(editor),
-			display,
 			state: ExternalEditorState::Active,
 			view_data,
 			invalid_selection: false,
@@ -215,7 +207,7 @@ impl<'e> ExternalEditor<'e> {
 		None
 	}
 
-	fn run_editor(&mut self, todo_file: &TodoFile) -> Result<()> {
+	fn run_editor(&mut self, view: &View<'_>, todo_file: &TodoFile) -> Result<()> {
 		let mut arguments = tolkenize(self.editor.as_str())
 			.map_or(Err(anyhow!("Invalid editor: \"{}\"", self.editor)), |args| {
 				if args.is_empty() {
@@ -245,7 +237,7 @@ impl<'e> ExternalEditor<'e> {
 			}
 			cmd.status().map_err(|e| anyhow!(e).context("Unable to run editor"))
 		};
-		let exit_status: ProcessExitStatus = self.display.leave_temporarily(callback)?;
+		let exit_status: ProcessExitStatus = view.leave_temporarily(callback)?;
 
 		if !exit_status.success() {
 			return Err(anyhow!("Editor returned a non-zero exit status"));
@@ -319,10 +311,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Up],
 			|test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "0").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![
 					Line::new("pick aaa comment1").unwrap(),
@@ -342,10 +331,7 @@ mod tests {
 			&[Input::Up],
 			|test_context: TestContext<'_>| {
 				let todo_path = test_context.get_todo_file_path();
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "0").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
 				test_context.set_todo_file_readonly();
 				assert_process_result!(
 					test_context.activate(&mut module, State::List),
@@ -364,10 +350,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "0").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
 				test_context.deactivate(&mut module);
 				assert_eq!(module.lines, vec![]);
 				assert_eq!(module.invalid_selection, false);
@@ -383,10 +366,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "0").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
@@ -408,7 +388,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
@@ -438,7 +418,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
@@ -460,7 +440,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('2')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
@@ -479,7 +459,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('3')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
@@ -502,7 +482,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('4')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
@@ -534,7 +514,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("noop", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("noop", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
@@ -564,7 +544,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, "");
+				let mut module = ExternalEditor::new("");
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(
@@ -602,7 +582,6 @@ mod tests {
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(
-					test_context.display,
 					Path::new(env!("CARGO_MANIFEST_DIR"))
 						.join("test")
 						.join("not-executable.sh")
@@ -644,10 +623,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "1").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "1").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_external_editor_state_eq!(
@@ -681,7 +657,7 @@ mod tests {
 			&[Input::Up],
 			|mut test_context: TestContext<'_>| {
 				let todo_path = test_context.get_todo_file_path();
-				let mut module = ExternalEditor::new(test_context.display, "true");
+				let mut module = ExternalEditor::new("true");
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				test_context.delete_todo_file();
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
@@ -718,10 +694,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('1')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "1").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "1").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -743,10 +716,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('2')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("pick aaa comment", "1").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "1").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -764,10 +734,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('3')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("drop aaa comment", "1").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("drop aaa comment", "1").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -792,10 +759,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('4')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					test_context.display,
-					get_external_editor("rdop aaa comment", "1").as_str(),
-				);
+				let mut module = ExternalEditor::new(get_external_editor("rdop aaa comment", "1").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -817,7 +781,7 @@ mod tests {
 			ViewState::default(),
 			&[Input::Character('5')],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, "");
+				let mut module = ExternalEditor::new("");
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('5'));
@@ -851,7 +815,7 @@ mod tests {
 			},
 			&[Input::Right],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -876,7 +840,7 @@ mod tests {
 			},
 			&[Input::Right, Input::Right, Input::Right, Input::Left],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -901,7 +865,7 @@ mod tests {
 			},
 			&[Input::Down],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -933,7 +897,7 @@ mod tests {
 			},
 			&[Input::Down, Input::Down, Input::Down, Input::Up],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				test_context.build_view_data(&mut module);
@@ -965,7 +929,7 @@ mod tests {
 			},
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(test_context.display, get_external_editor("", "0").as_str());
+				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
 				assert_process_result!(

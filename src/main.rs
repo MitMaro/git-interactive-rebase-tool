@@ -160,13 +160,10 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 	}
 
 	let mut curses = Curses::new();
-	let display = Display::new(&mut curses, &config.theme);
-	let input_handler = InputHandler::new(&display, &config.key_bindings);
-	let view = View::new(&display, &config);
-	let modules = Modules::new(&display, &config);
-	let mut process = Process::new(todo_file, &view, &input_handler);
+	let display = Display::new(InputHandler::new(&config.key_bindings), &mut curses, &config.theme);
+	let modules = Modules::new(&config);
+	let mut process = Process::new(todo_file, View::new(display, &config));
 	let result = process.run(modules);
-	display.end();
 
 	result
 		.map_err(|err| {

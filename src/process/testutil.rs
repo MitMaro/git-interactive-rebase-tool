@@ -22,9 +22,7 @@ pub struct TestContext<'t> {
 	pub config: &'t Config,
 	pub rebase_todo_file: TodoFile,
 	todo_file: Cell<NamedTempFile>,
-	pub input_handler: &'t InputHandler<'t>,
-	pub view: &'t View<'t>,
-	pub display: &'t Display<'t>,
+	pub view: View<'t>,
 	num_inputs: usize,
 }
 
@@ -39,17 +37,17 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
-		module.build_view_data(self.view, &self.rebase_todo_file)
+		module.build_view_data(&self.view, &self.rebase_todo_file)
 	}
 
 	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_input(self.input_handler, &mut self.rebase_todo_file, self.view)
+		module.handle_input(&self.view, &mut self.rebase_todo_file)
 	}
 
 	pub fn handle_n_inputs(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_input(self.input_handler, &mut self.rebase_todo_file, self.view));
+			results.push(module.handle_input(&self.view, &mut self.rebase_todo_file));
 		}
 		results
 	}
@@ -57,7 +55,7 @@ impl<'t> TestContext<'t> {
 	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.num_inputs {
-			results.push(module.handle_input(self.input_handler, &mut self.rebase_todo_file, self.view));
+			results.push(module.handle_input(&self.view, &mut self.rebase_todo_file));
 		}
 		results
 	}
@@ -440,8 +438,9 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 			.map(|i| map_input_to_curses(&config.key_bindings, *i))
 			.collect(),
 	);
-	let display = Display::new(&mut curses, &config.theme);
-	let view = View::new(&display, &config);
+	let input_handler = InputHandler::new(&config.key_bindings);
+	let display = Display::new(input_handler, &mut curses, &config.theme);
+	let view = View::new(display, &config);
 	let todo_file = Builder::new()
 		.prefix("git-rebase-todo-scratch")
 		.suffix("")
@@ -451,14 +450,11 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 	let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), "#");
 	rebase_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
 
-	let input_handler = InputHandler::new(&display, &config.key_bindings);
 	callback(TestContext {
 		config: &config,
 		rebase_todo_file,
 		todo_file: Cell::new(todo_file),
-		view: &view,
-		input_handler: &input_handler,
-		display: &display,
+		view,
 		num_inputs: input.len(),
 	});
 }

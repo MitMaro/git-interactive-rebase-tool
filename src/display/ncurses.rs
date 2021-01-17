@@ -50,12 +50,12 @@ impl Curses {
 	}
 
 	#[allow(clippy::unused_self)]
-	pub(super) fn init_color(&self, index: i16, red: i16, green: i16, blue: i16) {
+	pub(super) fn init_color(&mut self, index: i16, red: i16, green: i16, blue: i16) {
 		pancurses::init_color(index, red, green, blue);
 	}
 
 	#[allow(clippy::unused_self)]
-	pub(super) fn init_color_pair(&self, index: i16, foreground: i16, background: i16) -> chtype {
+	pub(super) fn init_color_pair(&mut self, index: i16, foreground: i16, background: i16) -> chtype {
 		pancurses::init_pair(index, foreground, background);
 		// curses seems to init a pair for i16 but read with u64
 		pancurses::COLOR_PAIR(index as chtype)
@@ -65,27 +65,27 @@ impl Curses {
 		&self.color_mode
 	}
 
-	pub(super) fn erase(&self) {
+	pub(super) fn erase(&mut self) {
 		self.window.erase();
 	}
 
-	pub(super) fn refresh(&self) {
+	pub(super) fn refresh(&mut self) {
 		self.window.refresh();
 	}
 
-	pub(super) fn addstr(&self, s: &str) {
+	pub(super) fn addstr(&mut self, s: &str) {
 		self.window.addstr(s);
 	}
 
-	pub(super) fn attrset<T: Into<chtype>>(&self, attributes: T) {
+	pub(super) fn attrset<T: Into<chtype>>(&mut self, attributes: T) {
 		self.window.attrset(attributes);
 	}
 
-	pub(super) fn attron<T: Into<chtype>>(&self, attributes: T) {
+	pub(super) fn attron<T: Into<chtype>>(&mut self, attributes: T) {
 		self.window.attron(attributes);
 	}
 
-	pub(super) fn attroff<T: Into<chtype>>(&self, attributes: T) {
+	pub(super) fn attroff<T: Into<chtype>>(&mut self, attributes: T) {
 		self.window.attroff(attributes);
 	}
 
@@ -105,11 +105,11 @@ impl Curses {
 		self.window.get_max_x()
 	}
 
-	pub(crate) fn hline(&self, ch: char, width: i32) {
+	pub(crate) fn hline(&mut self, ch: char, width: i32) {
 		self.window.hline(ch, width);
 	}
 
-	pub(crate) fn mv(&self, y: i32, x: i32) {
+	pub(crate) fn mv(&mut self, y: i32, x: i32) {
 		self.window.mv(y, x);
 	}
 

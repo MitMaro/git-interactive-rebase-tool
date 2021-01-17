@@ -1,10 +1,8 @@
 use crate::config::Config;
 use crate::confirm_abort::ConfirmAbort;
 use crate::confirm_rebase::ConfirmRebase;
-use crate::display::Display;
 use crate::edit::Edit;
 use crate::external_editor::ExternalEditor;
-use crate::input::input_handler::InputHandler;
 use crate::list::List;
 use crate::process::error::Error;
 use crate::process::help::Help;
@@ -22,7 +20,7 @@ pub struct Modules<'m> {
 	pub confirm_rebase: ConfirmRebase,
 	pub edit: Edit,
 	pub error: Error,
-	pub external_editor: ExternalEditor<'m>,
+	pub external_editor: ExternalEditor,
 	pub help: Help,
 	pub list: List<'m>,
 	pub show_commit: ShowCommit<'m>,
@@ -30,13 +28,13 @@ pub struct Modules<'m> {
 }
 
 impl<'m> Modules<'m> {
-	pub fn new(display: &'m Display<'m>, config: &'m Config) -> Self {
+	pub fn new(config: &'m Config) -> Self {
 		Modules {
 			confirm_abort: ConfirmAbort::new(),
 			confirm_rebase: ConfirmRebase::new(),
 			edit: Edit::new(),
 			error: Error::new(),
-			external_editor: ExternalEditor::new(display, config.git.editor.as_str()),
+			external_editor: ExternalEditor::new(config.git.editor.as_str()),
 			help: Help::new(),
 			list: List::new(config),
 			show_commit: ShowCommit::new(config),
@@ -84,15 +82,8 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).build_view_data(view, rebase_todo)
 	}
 
-	pub fn handle_input(
-		&mut self,
-		state: State,
-		input_handler: &InputHandler<'_>,
-		rebase_todo: &mut TodoFile,
-		view: &View<'_>,
-	) -> ProcessResult {
-		self.get_mut_module(state)
-			.handle_input(input_handler, rebase_todo, view)
+	pub fn handle_input(&mut self, state: State, view: &View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+		self.get_mut_module(state).handle_input(view, rebase_todo)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
@@ -139,15 +130,10 @@ mod tests {
 			|mut test_context: TestContext<'_>| {
 				let mut config = test_context.config.clone();
 				config.git.editor = String::from("true");
-				let mut modules = Modules::new(test_context.display, &config);
+				let mut modules = Modules::new(&config);
 				modules.activate(state, &test_context.rebase_todo_file, State::List);
-				modules.handle_input(
-					state,
-					test_context.input_handler,
-					&mut test_context.rebase_todo_file,
-					test_context.view,
-				);
-				modules.build_view_data(state, test_context.view, &test_context.rebase_todo_file);
+				modules.handle_input(state, &test_context.view, &mut test_context.rebase_todo_file);
+				modules.build_view_data(state, &test_context.view, &test_context.rebase_todo_file);
 				modules.deactivate(state);
 				modules.update_help_data(state);
 			},
@@ -162,7 +148,7 @@ mod tests {
 			ViewState::default(),
 			&[],
 			|test_context: TestContext<'_>| {
-				let mut modules = Modules::new(test_context.display, test_context.config);
+				let mut modules = Modules::new(test_context.config);
 				modules.set_error_message(&anyhow!("Test Error"));
 			},
 		);
