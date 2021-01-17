@@ -74,7 +74,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 		let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
 		if self.view_data.is_empty() {
 			let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;

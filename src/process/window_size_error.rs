@@ -26,7 +26,8 @@ impl ProcessModule for WindowSizeError {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 		let message = if view_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
 			if view_width >= SHORT_ERROR_MESSAGE.len() {
 				SHORT_ERROR_MESSAGE
@@ -61,7 +62,8 @@ impl ProcessModule for WindowSizeError {
 		let mut result = ProcessResult::new().input(input);
 
 		if input == Input::Resize {
-			let (view_width, view_height) = view.get_view_size();
+			let view_width = view.get_view_size().width();
+			let view_height = view.get_view_size().height();
 			if !Self::is_window_too_small(view_width, view_height) {
 				result = result.state(self.return_state);
 			}

@@ -44,7 +44,8 @@ impl<'r> Process<'r> {
 	}
 
 	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
-		let (view_width, view_height) = self.view.get_view_size();
+		let view_width = self.view.get_view_size().width();
+		let view_height = self.view.get_view_size().height();
 		if WindowSizeError::is_window_too_small(view_width, view_height) {
 			self.handle_process_result(&mut modules, &ProcessResult::new().state(State::WindowSizeError));
 		}
@@ -84,7 +85,8 @@ impl<'r> Process<'r> {
 				self.exit_status = Some(ExitStatus::Abort);
 			},
 			Some(Input::Resize) => {
-				let (view_width, view_height) = self.view.get_view_size();
+				let view_width = self.view.get_view_size().width();
+				let view_height = self.view.get_view_size().height();
 				if self.state != State::WindowSizeError && WindowSizeError::is_window_too_small(view_width, view_height)
 				{
 					self.state = State::WindowSizeError;

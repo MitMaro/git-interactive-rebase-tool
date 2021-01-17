@@ -23,7 +23,8 @@ impl ProcessModule for Error {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
 		&self.view_data

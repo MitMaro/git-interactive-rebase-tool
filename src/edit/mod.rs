@@ -31,7 +31,8 @@ impl ProcessModule for Edit {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
@@ -138,7 +139,8 @@ impl ProcessModule for Edit {
 					break result.state(State::List);
 				},
 				Input::Resize => {
-					let (view_width, view_height) = view.get_view_size();
+					let view_width = view.get_view_size().width();
+					let view_height = view.get_view_size().height();
 					self.view_data.set_view_size(view_width, view_height);
 				},
 				_ => {

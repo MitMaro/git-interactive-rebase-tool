@@ -7,7 +7,7 @@ pub mod view_line;
 
 use crate::constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH};
 use crate::display::display_color::DisplayColor;
-use crate::display::Display;
+use crate::display::{Display, Size};
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::Config;
@@ -22,13 +22,13 @@ impl<'v> View<'v> {
 		Self { display, config }
 	}
 
-	pub(crate) fn get_view_size(&self) -> (usize, usize) {
+	pub(crate) fn get_view_size(&self) -> Size {
 		self.display.get_window_size()
 	}
 
 	pub(crate) fn render(&self, view_data: &ViewData) {
 		self.display.clear();
-		let (_, window_height) = self.display.get_window_size();
+		let window_height = self.display.get_window_size().height();
 
 		let mut line_index = 0;
 
@@ -116,7 +116,7 @@ impl<'v> View<'v> {
 	fn draw_title(&self, show_help: bool) {
 		self.display.color(DisplayColor::Normal, false);
 		self.display.set_style(false, true, false);
-		let (window_width, _) = self.display.get_window_size();
+		let window_width = self.display.get_window_size().width();
 
 		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + self.config.key_bindings.help.len();
 
@@ -197,7 +197,7 @@ mod tests {
 			test_context.curses.resize_term(10, 20);
 			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
 			let view = View::new(&display, &test_context.config);
-			assert_eq!(view.get_view_size(), (20, 10));
+			assert_eq!(view.get_view_size(), Size::new(20, 10));
 		});
 	}
 
