@@ -1,6 +1,5 @@
 use crate::config::key_bindings::KeyBindings;
 use crate::display::curses::Input as CursesInput;
-use crate::display::Display;
 use crate::input::Input;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -14,16 +13,15 @@ pub enum InputMode {
 
 pub struct InputHandler<'i> {
 	key_bindings: &'i KeyBindings,
-	display: &'i Display<'i>,
 }
 
 impl<'i> InputHandler<'i> {
-	pub(crate) const fn new(display: &'i Display<'_>, key_bindings: &'i KeyBindings) -> Self {
-		Self { key_bindings, display }
+	pub(crate) const fn new(key_bindings: &'i KeyBindings) -> Self {
+		Self { key_bindings }
 	}
 
-	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
-		let input = match self.get_next_input() {
+	pub(crate) fn get_input(&self, mode: InputMode, event: CursesInput) -> Input {
+		let input = match event {
 			CursesInput::Character(c) if c == '\t' => String::from("Tab"),
 			CursesInput::Character(c) if c == '\n' => String::from("Enter"),
 			CursesInput::Character(c) if c == '\u{7f}' => String::from("Backspace"),
@@ -277,23 +275,17 @@ impl<'i> InputHandler<'i> {
 			}
 		})
 	}
-
-	fn get_next_input(&self) -> CursesInput {
-		// technically this will never be None with delay mode
-		self.display.getch().unwrap()
-	}
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
 	use crate::config::Config;
-	use crate::display::curses::Curses;
 	use rstest::rstest;
 	use std::env::set_var;
 	use std::path::Path;
 
-	fn input_handler_test<C>(input: &[CursesInput], callback: C)
+	fn input_handler_test<C>(callback: C)
 	where C: for<'p> FnOnce(&'p InputHandler<'_>) {
 		let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
 			.join("test")
@@ -305,10 +297,7 @@ mod tests {
 
 		set_var("GIT_DIR", git_repo_dir.as_str());
 		let config = Config::new().unwrap();
-		let mut curses = Curses::new();
-		curses.set_inputs(input.to_vec());
-		let display = Display::new(&mut curses, &config.theme);
-		let input_handler = InputHandler::new(&display, &config.key_bindings);
+		let input_handler = InputHandler::new(&config.key_bindings);
 		callback(&input_handler);
 	}
 
@@ -331,8 +320,8 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn confirm_mode(input: CursesInput, expected: Input) {
-		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Confirm), expected);
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Confirm, input), expected);
 		});
 	}
 
@@ -357,8 +346,8 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn default_mode(input: CursesInput, expected: Input) {
-		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Default), expected);
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Default, input), expected);
 		});
 	}
 
@@ -395,8 +384,8 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn list_mode(input: CursesInput, expected: Input) {
-		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::List), expected);
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::List, input), expected);
 		});
 	}
 
@@ -457,8 +446,8 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn raw_mode(input: CursesInput, expected: Input) {
-		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Raw), expected);
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Raw, input), expected);
 		});
 	}
 
@@ -532,8 +521,8 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn raw_mode_unsupported(input: CursesInput) {
-		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Raw), Input::Other);
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::Raw, input), Input::Other);
 		});
 	}
 
@@ -554,8 +543,8 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn confirm_input_mode(input: CursesInput, expected: Input) {
-		input_handler_test(&[input], |input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::ShowCommit), expected);
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(input_handler.get_input(InputMode::ShowCommit, input), expected);
 		});
 	}
 }

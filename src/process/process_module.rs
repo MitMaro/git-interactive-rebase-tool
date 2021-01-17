@@ -1,4 +1,3 @@
-use crate::input::input_handler::InputHandler;
 use crate::process::process_result::ProcessResult;
 use crate::process::state::State;
 use crate::todo_file::TodoFile;
@@ -14,12 +13,7 @@ pub trait ProcessModule {
 
 	fn build_view_data(&mut self, _view: &View<'_>, _rebase_todo: &TodoFile) -> &ViewData;
 
-	fn handle_input(
-		&mut self,
-		_input_handler: &InputHandler<'_>,
-		_rebase_todo: &mut TodoFile,
-		_view: &View<'_>,
-	) -> ProcessResult;
+	fn handle_input(&mut self, _view: &View<'_>, _rebase_todo: &mut TodoFile) -> ProcessResult;
 
 	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
 		None

@@ -135,6 +135,7 @@ dependencies = [
  "clap",
  "concat-idents",
  "git2",
+ "lazy_static",
  "num-format",
  "pancurses",
  "rstest",

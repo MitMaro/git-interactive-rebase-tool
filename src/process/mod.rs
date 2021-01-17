@@ -13,7 +13,6 @@ mod tests;
 #[cfg(test)]
 pub mod testutil;
 
-use crate::input::input_handler::InputHandler;
 use crate::input::Input;
 use crate::process::exit_status::ExitStatus;
 use crate::process::modules::Modules;
@@ -27,18 +26,16 @@ use anyhow::Result;
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,
 	rebase_todo: TodoFile,
-	input_handler: &'r InputHandler<'r>,
 	state: State,
-	view: &'r View<'r>,
+	view: View<'r>,
 }
 
 impl<'r> Process<'r> {
-	pub(crate) const fn new(rebase_todo: TodoFile, view: &'r View<'r>, input_handler: &'r InputHandler<'r>) -> Self {
+	pub(crate) const fn new(rebase_todo: TodoFile, view: View<'r>) -> Self {
 		Self {
 			state: State::List,
 			exit_status: None,
 			rebase_todo,
-			input_handler,
 			view,
 		}
 	}
@@ -52,11 +49,14 @@ impl<'r> Process<'r> {
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
 			self.view
-				.render(modules.build_view_data(self.state, self.view, &self.rebase_todo));
-			let result = modules.handle_input(self.state, self.input_handler, &mut self.rebase_todo, self.view);
+				.render(modules.build_view_data(self.state, &self.view, &self.rebase_todo));
+			let result = modules.handle_input(self.state, &self.view, &mut self.rebase_todo);
 			self.handle_process_result(&mut modules, &result);
 		}
+		self.view.end();
+
 		self.rebase_todo.write_file()?;
+
 		Ok(self.exit_status)
 	}
 

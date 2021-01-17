@@ -15,14 +15,17 @@ mod utils;
 
 use crate::config::theme::Theme;
 use crate::display::color_manager::ColorManager;
-use crate::display::curses::{chtype, Curses, Input, A_DIM, A_REVERSE, A_UNDERLINE};
+use crate::display::curses::{chtype, Curses, A_DIM, A_REVERSE, A_UNDERLINE};
 use crate::display::display_color::DisplayColor;
 pub use crate::display::size::Size;
+use crate::input::input_handler::{InputHandler, InputMode};
+use crate::input::Input;
 use std::cell::RefCell;
 use std::convert::TryInto;
 
 pub struct Display<'d> {
-	curses: &'d Curses,
+	curses: &'d mut Curses,
+	input_handler: InputHandler<'d>,
 	height: RefCell<usize>,
 	width: RefCell<usize>,
 	action_break: (chtype, chtype),
@@ -43,7 +46,7 @@ pub struct Display<'d> {
 }
 
 impl<'d> Display<'d> {
-	pub(crate) fn new(curses: &'d mut Curses, theme: &'d Theme) -> Self {
+	pub(crate) fn new(input_handler: InputHandler<'d>, curses: &'d mut Curses, theme: &'d Theme) -> Self {
 		let mut color_manager = ColorManager::new();
 		let normal = color_manager.register_selectable_color_pairs(
 			curses,
@@ -135,10 +138,15 @@ impl<'d> Display<'d> {
 			theme.color_background,
 			theme.color_selected_background,
 		);
+
+		let height = curses.get_max_y().try_into().expect("Invalid window height");
+		let width = curses.get_max_x().try_into().expect("Invalid window height");
+
 		Self {
 			curses,
-			height: RefCell::new(curses.get_max_y().try_into().expect("Invalid window height")),
-			width: RefCell::new(curses.get_max_x().try_into().expect("Invalid window width")),
+			input_handler,
+			height: RefCell::new(height),
+			width: RefCell::new(width),
 			normal,
 			indicator,
 			action_break,
@@ -157,21 +165,21 @@ impl<'d> Display<'d> {
 		}
 	}
 
-	pub(crate) fn draw_str(&self, s: &str) {
+	pub(crate) fn draw_str(&mut self, s: &str) {
 		self.curses.addstr(s);
 	}
 
-	pub(crate) fn clear(&self) {
+	pub(crate) fn clear(&mut self) {
 		self.color(DisplayColor::Normal, false);
 		self.set_style(false, false, false);
 		self.curses.erase();
 	}
 
-	pub(crate) fn refresh(&self) {
+	pub(crate) fn refresh(&mut self) {
 		self.curses.refresh();
 	}
 
-	pub(crate) fn color(&self, color: DisplayColor, selected: bool) {
+	pub(crate) fn color(&mut self, color: DisplayColor, selected: bool) {
 		self.curses.attrset(
 			if selected {
 				match color {
@@ -214,13 +222,13 @@ impl<'d> Display<'d> {
 		);
 	}
 
-	pub(crate) fn set_style(&self, dim: bool, underline: bool, reverse: bool) {
+	pub(crate) fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) {
 		self.set_dim(dim);
 		self.set_underline(underline);
 		self.set_reverse(reverse);
 	}
 
-	fn set_dim(&self, on: bool) {
+	fn set_dim(&mut self, on: bool) {
 		if on {
 			self.curses.attron(A_DIM);
 		}
@@ -229,7 +237,7 @@ impl<'d> Display<'d> {
 		}
 	}
 
-	fn set_underline(&self, on: bool) {
+	fn set_underline(&mut self, on: bool) {
 		// Windows uses blue text for underlined words
 		if !cfg!(windows) && on {
 			self.curses.attron(A_UNDERLINE);
@@ -239,7 +247,7 @@ impl<'d> Display<'d> {
 		}
 	}
 
-	fn set_reverse(&self, on: bool) {
+	fn set_reverse(&mut self, on: bool) {
 		if on {
 			self.curses.attron(A_REVERSE);
 		}
@@ -248,44 +256,43 @@ impl<'d> Display<'d> {
 		}
 	}
 
-	#[allow(clippy::unwrap_in_result)]
-	pub(crate) fn getch(&self) -> Option<Input> {
-		let input = self.curses.getch();
+	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
+		self.curses.getch().map_or(Input::Other, |input| {
+			let input = self.input_handler.get_input(mode, input);
 
-		if let Some(Input::KeyResize) = input {
-			self.curses.resize_term(0, 0);
-			self.height
-				.replace(self.curses.get_max_y().try_into().expect("Invalid window height"));
-			self.width
-				.replace(self.curses.get_max_x().try_into().expect("Invalid window width"));
-		}
-		input
+			if input == Input::Resize {
+				self.curses.resize_term(0, 0);
+				self.height
+					.replace(self.curses.get_max_y().try_into().expect("Invalid window height"));
+				self.width
+					.replace(self.curses.get_max_x().try_into().expect("Invalid window width"));
+			}
+			input
+		})
 	}
 
 	pub(crate) fn get_window_size(&self) -> Size {
 		Size::new(*self.width.borrow(), *self.height.borrow())
 	}
 
-	pub(crate) fn fill_end_of_line(&self) {
+	pub(crate) fn fill_end_of_line(&mut self) {
 		self.curses.hline(' ', self.curses.get_max_x());
 	}
 
-	pub(crate) fn ensure_at_line_start(&self, y: i32) {
+	pub(crate) fn ensure_at_line_start(&mut self, y: i32) {
 		self.curses.mv(y, 0);
 	}
 
-	pub(crate) fn move_from_end_of_line(&self, right: i32) {
+	pub(crate) fn move_from_end_of_line(&mut self, right: i32) {
 		self.curses.mv(self.curses.get_cur_y(), self.curses.get_max_x() - right);
 	}
 
-	/// Leaves curses mode, runs the specified callback, and re-enables curses.
-	pub(crate) fn leave_temporarily<F, T>(&self, callback: F) -> T
-	where F: FnOnce() -> T {
+	pub(crate) fn def_prog_mode(&self) {
 		self.curses.def_prog_mode();
-		self.curses.endwin();
-		let rv = callback();
+	}
+
+	pub(crate) fn reset_prog_mode(&self) {
 		self.curses.reset_prog_mode();
-		rv
 	}
 
 	pub(crate) fn end(&self) {
@@ -301,7 +308,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial()]
 	fn windows_set_style_underline_disabled() {
-		display_module_test(|mut test_context: TestContext| {
+		display_module_test(|mut test_context: TestContext<'_>| {
 			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
 			display.set_style(true, true, true);
 			assert!(test_context.curses.is_dimmed());
@@ -314,6 +321,7 @@ mod tests {
 #[cfg(all(unix, test))]
 mod tests {
 	use super::*;
+	use crate::display::curses::Input as CursesInput;
 	use crate::display::testutil::{display_module_test, TestContext};
 	use crate::display::virtual_curses::State;
 	use rstest::rstest;
@@ -321,10 +329,14 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn draw_str() {
-		display_module_test(|mut test_context: TestContext| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+		display_module_test(|mut test_context: TestContext<'_>| {
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.draw_str("Test String");
-			let output = test_context.curses.get_output();
+			let output = Curses::get_output();
 			assert_eq!(output, vec!["Test String"]);
 		});
 	}
@@ -332,15 +344,19 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn clear() {
-		display_module_test(|mut test_context: TestContext| {
+		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.curses.addstr("Test String");
 			test_context.curses.attron(curses::A_DIM);
 			test_context.curses.attron(curses::A_REVERSE);
 			test_context.curses.attron(curses::A_UNDERLINE);
 
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.clear();
-			assert!(test_context.curses.get_output().is_empty());
+			assert!(Curses::get_output().is_empty());
 			assert!(!test_context.curses.is_dimmed());
 			assert!(!test_context.curses.is_reverse());
 			assert!(!test_context.curses.is_underline());
@@ -350,8 +366,12 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn reset() {
-		display_module_test(|mut test_context: TestContext| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+		display_module_test(|mut test_context: TestContext<'_>| {
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.refresh();
 			assert_eq!(test_context.curses.get_state(), State::Refreshed);
 		});
@@ -394,8 +414,12 @@ mod tests {
 	)]
 	#[serial_test::serial()]
 	fn color(display_color: DisplayColor, selected: bool, expected: chtype) {
-		display_module_test(|mut test_context: TestContext| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+		display_module_test(|mut test_context: TestContext<'_>| {
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.color(display_color, selected);
 			assert!(test_context.curses.is_color_enabled(expected));
 		});
@@ -416,8 +440,12 @@ mod tests {
 	)]
 	#[serial_test::serial()]
 	fn style(dim: bool, underline: bool, reverse: bool) {
-		display_module_test(|mut test_context: TestContext| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+		display_module_test(|mut test_context: TestContext<'_>| {
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.set_style(dim, underline, reverse);
 			assert_eq!(test_context.curses.is_dimmed(), dim);
 			assert_eq!(test_context.curses.is_underline(), underline);
@@ -428,20 +456,28 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn getch_normal_input() {
-		display_module_test(|mut test_context: TestContext| {
-			test_context.curses.set_inputs(vec![Input::Character('z')]);
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
-			assert_eq!(display.getch().unwrap(), Input::Character('z'));
+		display_module_test(|mut test_context: TestContext<'_>| {
+			test_context.curses.set_inputs(vec![CursesInput::Character('z')]);
+			let display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
+			assert_eq!(display.get_input(InputMode::Default), Input::Character('z'));
 		});
 	}
 
 	#[test]
 	#[serial_test::serial]
-	fn getch_resize() {
-		display_module_test(|mut test_context: TestContext| {
-			test_context.curses.set_inputs(vec![Input::KeyResize]);
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
-			assert_eq!(display.getch().unwrap(), Input::KeyResize);
+	fn get_input_resize() {
+		display_module_test(|mut test_context: TestContext<'_>| {
+			test_context.curses.set_inputs(vec![CursesInput::KeyResize]);
+			let display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
+			assert_eq!(display.get_input(InputMode::Default), Input::Resize);
 			assert_eq!(test_context.curses.get_state(), State::Resized);
 		});
 	}
@@ -449,9 +485,13 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn get_window_size() {
-		display_module_test(|mut test_context: TestContext| {
+		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.curses.resize_term(10, 12);
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			assert_eq!(display.get_window_size(), Size::new(12, 10));
 		});
 	}
@@ -459,21 +499,29 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn fill_end_of_line() {
-		display_module_test(|mut test_context: TestContext| {
+		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.curses.resize_term(10, 23);
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.fill_end_of_line();
-			assert_eq!(test_context.curses.get_output()[0], "{HLINE| |23}");
+			assert_eq!(Curses::get_output()[0], "{HLINE| |23}");
 		});
 	}
 
 	#[test]
 	#[serial_test::serial]
 	fn ensure_at_line_start() {
-		display_module_test(|mut test_context: TestContext| {
+		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.curses.resize_term(5, 25);
 			test_context.curses.mv(10, 12);
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.ensure_at_line_start(5);
 			assert_eq!(test_context.curses.get_cur_y(), 5);
 			assert_eq!(test_context.curses.get_cur_x(), 0);
@@ -483,10 +531,14 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn move_from_end_of_line() {
-		display_module_test(|mut test_context: TestContext| {
+		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.curses.resize_term(5, 25);
 			test_context.curses.mv(5, 20);
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.move_from_end_of_line(5);
 			assert_eq!(test_context.curses.get_cur_x(), 20);
 		});
@@ -494,19 +546,13 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn leave_temporarily() {
-		display_module_test(|mut test_context: TestContext| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
-			assert_eq!(display.leave_temporarily(|| "Done"), "Done");
-			assert_eq!(test_context.curses.get_state(), State::Normal);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
 	fn end() {
-		display_module_test(|mut test_context: TestContext| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
+		display_module_test(|mut test_context: TestContext<'_>| {
+			let display = Display::new(
+				test_context.input_handler,
+				&mut test_context.curses,
+				&test_context.config.theme,
+			);
 			display.end();
 			assert_eq!(test_context.curses.get_state(), State::Ended);
 		});

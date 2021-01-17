@@ -1,7 +1,7 @@
 mod utils;
 
 use crate::config::Config;
-use crate::input::input_handler::{InputHandler, InputMode};
+use crate::input::input_handler::InputMode;
 use crate::input::Input;
 use crate::list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::process::exit_status::ExitStatus;
@@ -67,14 +67,9 @@ impl<'l> ProcessModule for List<'l> {
 		&self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		todo_file: &mut TodoFile,
-		view: &View<'_>,
-	) -> ProcessResult {
+	fn handle_input(&mut self, view: &View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
 		let view_height = view.get_view_size().height();
-		let input = input_handler.get_input(InputMode::List);
+		let input = view.get_input(InputMode::List);
 		let mut result = ProcessResult::new().input(input);
 		match input {
 			Input::MoveCursorLeft => self.view_data.scroll_left(),

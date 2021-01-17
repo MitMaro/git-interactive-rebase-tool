@@ -56,6 +56,7 @@ concat-idents = "1.1.2"
 rstest = "0.6.4"
 serial_test = "0.5.1"
 tempfile = "3.2.0"
+lazy_static = "1.4.0"
 
 [features]
 default = []

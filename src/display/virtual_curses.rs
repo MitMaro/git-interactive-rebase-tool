@@ -1,7 +1,9 @@
 use crate::display::color_mode::ColorMode;
 use crate::display::utils::detect_color_mode;
+use lazy_static::lazy_static;
 pub use pancurses::{chtype, Input};
 use std::cell::RefCell;
+use std::sync::Mutex;
 
 pub const A_DIM: chtype = 64;
 pub const A_REVERSE: chtype = 128;
@@ -14,6 +16,10 @@ pub const COLOR_BLUE: i16 = 4;
 pub const COLOR_MAGENTA: i16 = 5;
 pub const COLOR_CYAN: i16 = 6;
 pub const COLOR_WHITE: i16 = 7;
+
+lazy_static! {
+	static ref OUTPUT: Mutex<Vec<String>> = Mutex::new(vec![]);
+}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
@@ -30,7 +36,6 @@ pub struct Curses {
 	color_pairs: [(i16, i16); 255],
 	colors: [(i16, i16, i16); 255],
 	input: RefCell<Vec<Input>>,
-	output: RefCell<Vec<String>>,
 	position: RefCell<(i32, i32)>,
 	size: RefCell<(i32, i32)>,
 	state: RefCell<State>,
@@ -44,7 +49,6 @@ impl Curses {
 			color_pairs: [(0, 0); 255],
 			colors: [(0, 0, 0); 255],
 			input: RefCell::new(vec![Input::KeyExit]),
-			output: RefCell::new(vec![]),
 			position: RefCell::new((0, 0)),
 			size: RefCell::new((10, 10)),
 			state: RefCell::new(State::Normal),
@@ -57,8 +61,8 @@ impl Curses {
 		&self.colors
 	}
 
-	pub(crate) fn get_output(&self) -> Vec<String> {
-		self.output.borrow().clone()
+	pub(crate) fn get_output() -> Vec<String> {
+		OUTPUT.lock().unwrap().clone()
 	}
 
 	pub(crate) const fn get_color_pairs(&self) -> &[(i16, i16); 255] {
@@ -109,16 +113,18 @@ impl Curses {
 		&self.color_mode
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(super) fn erase(&self) {
-		self.output.borrow_mut().clear();
+		OUTPUT.lock().unwrap().clear();
 	}
 
 	pub(super) fn refresh(&self) {
 		self.state.replace(State::Refreshed);
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(super) fn addstr(&self, s: &str) {
-		self.output.borrow_mut().push(String::from(s));
+		OUTPUT.lock().unwrap().push(String::from(s));
 	}
 
 	pub(super) fn attrset<T: Into<chtype>>(&self, attributes: T) {
@@ -158,8 +164,9 @@ impl Curses {
 		(*self.size.borrow()).1
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(crate) fn hline(&self, ch: char, width: i32) {
-		self.output.borrow_mut().push(format!("{{HLINE|{}|{}}}", ch, width));
+		OUTPUT.lock().unwrap().push(format!("{{HLINE|{}|{}}}", ch, width));
 	}
 
 	pub(crate) fn mv(&self, y: i32, x: i32) {

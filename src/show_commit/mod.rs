@@ -18,7 +18,7 @@ use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
 use crate::config::Config;
 use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
 use crate::display::display_color::DisplayColor;
-use crate::input::input_handler::{InputHandler, InputMode};
+use crate::input::input_handler::InputMode;
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
@@ -114,8 +114,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut TodoFile, _: &View<'_>) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::ShowCommit);
+	fn handle_input(&mut self, view: &View<'_>, _: &mut TodoFile) -> ProcessResult {
+		let input = view.get_input(InputMode::ShowCommit);
 		let mut result = ProcessResult::new().input(input);
 
 		if handle_view_data_scroll(input, &mut self.view_data).is_none() {

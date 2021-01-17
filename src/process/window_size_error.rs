@@ -1,5 +1,5 @@
 use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH};
-use crate::input::input_handler::{InputHandler, InputMode};
+use crate::input::input_handler::InputMode;
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
@@ -57,8 +57,8 @@ impl ProcessModule for WindowSizeError {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut TodoFile, view: &View<'_>) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::Default);
+	fn handle_input(&mut self, view: &View<'_>, _: &mut TodoFile) -> ProcessResult {
+		let input = view.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 
 		if input == Input::Resize {

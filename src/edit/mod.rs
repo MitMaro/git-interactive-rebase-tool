@@ -1,5 +1,5 @@
 use crate::display::display_color::DisplayColor;
-use crate::input::input_handler::{InputHandler, InputMode};
+use crate::input::input_handler::InputMode;
 use crate::input::Input;
 use crate::process::process_module::ProcessModule;
 use crate::process::process_result::ProcessResult;
@@ -70,14 +70,9 @@ impl ProcessModule for Edit {
 		&self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		todo_file: &mut TodoFile,
-		view: &View<'_>,
-	) -> ProcessResult {
+	fn handle_input(&mut self, view: &View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
 		let result = loop {
-			let input = input_handler.get_input(InputMode::Raw);
+			let input = view.get_input(InputMode::Raw);
 			let result = ProcessResult::new().input(input);
 			match input {
 				Input::Character(c) => {
