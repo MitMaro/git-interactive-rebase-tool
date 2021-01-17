@@ -114,7 +114,7 @@ impl Curses {
 	}
 
 	#[allow(clippy::unused_self)]
-	pub(super) fn erase(&self) {
+	pub(crate) fn erase(&self) {
 		OUTPUT.lock().unwrap().clear();
 	}
 

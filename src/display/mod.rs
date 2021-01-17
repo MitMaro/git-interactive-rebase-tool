@@ -20,6 +20,7 @@ use crate::display::display_color::DisplayColor;
 pub use crate::display::size::Size;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
+use anyhow::Result;
 use std::cell::RefCell;
 use std::convert::TryInto;
 
@@ -165,21 +166,24 @@ impl<'d> Display<'d> {
 		}
 	}
 
-	pub(crate) fn draw_str(&mut self, s: &str) {
+	pub(crate) fn draw_str(&mut self, s: &str) -> Result<()> {
 		self.curses.addstr(s);
+		Ok(())
 	}
 
-	pub(crate) fn clear(&mut self) {
-		self.color(DisplayColor::Normal, false);
-		self.set_style(false, false, false);
+	pub(crate) fn clear(&mut self) -> Result<()> {
+		self.color(DisplayColor::Normal, false)?;
+		self.set_style(false, false, false)?;
 		self.curses.erase();
+		Ok(())
 	}
 
-	pub(crate) fn refresh(&mut self) {
+	pub(crate) fn refresh(&mut self) -> Result<()> {
 		self.curses.refresh();
+		Ok(())
 	}
 
-	pub(crate) fn color(&mut self, color: DisplayColor, selected: bool) {
+	pub(crate) fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
 		self.curses.attrset(
 			if selected {
 				match color {
@@ -220,24 +224,26 @@ impl<'d> Display<'d> {
 				}
 			},
 		);
+		Ok(())
 	}
 
-	pub(crate) fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) {
-		self.set_dim(dim);
-		self.set_underline(underline);
-		self.set_reverse(reverse);
+	pub(crate) fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<()> {
+		self.set_dim(dim)?;
+		self.set_underline(underline)?;
+		self.set_reverse(reverse)
 	}
 
-	fn set_dim(&mut self, on: bool) {
+	fn set_dim(&mut self, on: bool) -> Result<()> {
 		if on {
 			self.curses.attron(A_DIM);
 		}
 		else {
 			self.curses.attroff(A_DIM);
 		}
+		Ok(())
 	}
 
-	fn set_underline(&mut self, on: bool) {
+	fn set_underline(&mut self, on: bool) -> Result<()> {
 		// Windows uses blue text for underlined words
 		if !cfg!(windows) && on {
 			self.curses.attron(A_UNDERLINE);
@@ -245,15 +251,17 @@ impl<'d> Display<'d> {
 		else {
 			self.curses.attroff(A_UNDERLINE);
 		}
+		Ok(())
 	}
 
-	fn set_reverse(&mut self, on: bool) {
+	fn set_reverse(&mut self, on: bool) -> Result<()> {
 		if on {
 			self.curses.attron(A_REVERSE);
 		}
 		else {
 			self.curses.attroff(A_REVERSE);
 		}
+		Ok(())
 	}
 
 	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
@@ -275,16 +283,19 @@ impl<'d> Display<'d> {
 		Size::new(*self.width.borrow(), *self.height.borrow())
 	}
 
-	pub(crate) fn fill_end_of_line(&mut self) {
+	pub(crate) fn fill_end_of_line(&mut self) -> Result<()> {
 		self.curses.hline(' ', self.curses.get_max_x());
+		Ok(())
 	}
 
-	pub(crate) fn ensure_at_line_start(&mut self, y: i32) {
+	pub(crate) fn ensure_at_line_start(&mut self, y: i32) -> Result<()> {
 		self.curses.mv(y, 0);
+		Ok(())
 	}
 
-	pub(crate) fn move_from_end_of_line(&mut self, right: i32) {
+	pub(crate) fn move_from_end_of_line(&mut self, right: i32) -> Result<()> {
 		self.curses.mv(self.curses.get_cur_y(), self.curses.get_max_x() - right);
+		Ok(())
 	}
 
 	pub(crate) fn def_prog_mode(&self) {
@@ -335,7 +346,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.draw_str("Test String");
+			display.draw_str("Test String").unwrap();
 			let output = Curses::get_output();
 			assert_eq!(output, vec!["Test String"]);
 		});
@@ -355,7 +366,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.clear();
+			display.clear().unwrap();
 			assert!(Curses::get_output().is_empty());
 			assert!(!test_context.curses.is_dimmed());
 			assert!(!test_context.curses.is_reverse());
@@ -372,7 +383,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.refresh();
+			display.refresh().unwrap();
 			assert_eq!(test_context.curses.get_state(), State::Refreshed);
 		});
 	}
@@ -420,7 +431,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.color(display_color, selected);
+			display.color(display_color, selected).unwrap();
 			assert!(test_context.curses.is_color_enabled(expected));
 		});
 	}
@@ -446,7 +457,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.set_style(dim, underline, reverse);
+			display.set_style(dim, underline, reverse).unwrap();
 			assert_eq!(test_context.curses.is_dimmed(), dim);
 			assert_eq!(test_context.curses.is_underline(), underline);
 			assert_eq!(test_context.curses.is_reverse(), reverse);
@@ -506,7 +517,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.fill_end_of_line();
+			display.fill_end_of_line().unwrap();
 			assert_eq!(Curses::get_output()[0], "{HLINE| |23}");
 		});
 	}
@@ -522,7 +533,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.ensure_at_line_start(5);
+			display.ensure_at_line_start(5).unwrap();
 			assert_eq!(test_context.curses.get_cur_y(), 5);
 			assert_eq!(test_context.curses.get_cur_x(), 0);
 		});
@@ -539,7 +550,7 @@ mod tests {
 				&mut test_context.curses,
 				&test_context.config.theme,
 			);
-			display.move_from_end_of_line(5);
+			display.move_from_end_of_line(5).unwrap();
 			assert_eq!(test_context.curses.get_cur_x(), 20);
 		});
 	}

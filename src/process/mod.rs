@@ -48,8 +48,13 @@ impl<'r> Process<'r> {
 		}
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
-			self.view
-				.render(modules.build_view_data(self.state, &self.view, &self.rebase_todo));
+			if let Err(_) = self
+				.view
+				.render(modules.build_view_data(self.state, &self.view, &self.rebase_todo))
+			{
+				self.exit_status = Some(ExitStatus::StateError);
+				continue;
+			}
 			let result = modules.handle_input(self.state, &self.view, &mut self.rebase_todo);
 			self.handle_process_result(&mut modules, &result);
 		}

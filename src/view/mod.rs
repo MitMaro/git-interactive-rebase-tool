@@ -13,6 +13,7 @@ use crate::input::Input;
 use crate::view::view_data::ViewData;
 use crate::view::view_line::ViewLine;
 use crate::Config;
+use anyhow::Result;
 
 pub struct View<'v> {
 	config: &'v Config,
@@ -39,34 +40,33 @@ impl<'v> View<'v> {
 	}
 
 	pub(crate) fn end(&self) {
-		self.display.end();
+		self.display.end()
 	}
 
 	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
 		self.display.get_input(mode)
 	}
 
-	pub(crate) fn render(&mut self, view_data: &ViewData) {
-		self.display.clear();
+	pub(crate) fn render(&mut self, view_data: &ViewData) -> Result<()> {
+		self.display.clear()?;
 		let window_height = self.display.get_window_size().height();
 
 		let mut line_index = 0;
 
 		if view_data.show_title() {
-			self.display.ensure_at_line_start(line_index);
+			self.display.ensure_at_line_start(line_index)?;
 			line_index += 1;
-			self.draw_title(view_data.show_help());
+			self.draw_title(view_data.show_help())?;
 		}
 
 		if let Some(ref prompt) = *view_data.get_prompt() {
-			self.display.set_style(false, false, false);
-			self.display.draw_str("\n");
+			self.display.set_style(false, false, false)?;
+			self.display.draw_str("\n")?;
 			self.display.draw_str(&format!(
-				"{} ({}/{})?",
+				"{} ({}/{})? ",
 				prompt, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
-			));
-			self.display.draw_str(" ");
-			return;
+			))?;
+			return Ok(());
 		}
 
 		let leading_lines = view_data.get_leading_lines();
@@ -79,100 +79,100 @@ impl<'v> View<'v> {
 		let scroll_indicator_index = view_data.get_scroll_index();
 
 		for line in leading_lines {
-			self.display.ensure_at_line_start(line_index);
+			self.display.ensure_at_line_start(line_index)?;
 			line_index += 1;
-			self.draw_view_line(line);
+			self.draw_view_line(line)?;
 		}
 
 		for (index, line) in lines.iter().enumerate() {
-			self.display.ensure_at_line_start(line_index);
-			self.draw_view_line(line);
+			self.display.ensure_at_line_start(line_index)?;
+			self.draw_view_line(line)?;
 			if show_scroll_bar {
-				self.display.ensure_at_line_start(line_index);
-				self.display.move_from_end_of_line(1);
-				self.display.color(DisplayColor::Normal, false);
-				self.display.set_style(scroll_indicator_index != index, false, true);
-				self.display.draw_str(" ");
+				self.display.ensure_at_line_start(line_index)?;
+				self.display.move_from_end_of_line(1)?;
+				self.display.color(DisplayColor::Normal, false)?;
+				self.display.set_style(scroll_indicator_index != index, false, true)?;
+				self.display.draw_str(" ")?;
 			}
-			self.display.color(DisplayColor::Normal, false);
-			self.display.set_style(false, false, false);
+			self.display.color(DisplayColor::Normal, false)?;
+			self.display.set_style(false, false, false)?;
 			line_index += 1;
 		}
 
 		if view_height > lines.len() {
-			self.display.color(DisplayColor::Normal, false);
-			self.display.set_style(false, false, false);
+			self.display.color(DisplayColor::Normal, false)?;
+			self.display.set_style(false, false, false)?;
 			let draw_height = view_height - lines.len() - if view_data.show_title() { 1 } else { 0 };
-			self.display.ensure_at_line_start(line_index);
+			self.display.ensure_at_line_start(line_index)?;
 			for _x in 0..draw_height {
 				line_index += 1;
 				self.display
-					.draw_str(format!("{}\n", self.config.theme.character_vertical_spacing).as_str());
+					.draw_str(format!("{}\n", self.config.theme.character_vertical_spacing).as_str())?;
 			}
 		}
 
 		for line in trailing_lines {
-			self.display.ensure_at_line_start(line_index);
+			self.display.ensure_at_line_start(line_index)?;
 			line_index += 1;
-			self.draw_view_line(line);
+			self.draw_view_line(line)?;
 		}
-		self.display.refresh();
+		self.display.refresh()
 	}
 
-	fn draw_view_line(&mut self, line: &ViewLine) {
+	fn draw_view_line(&mut self, line: &ViewLine) -> Result<()> {
 		for segment in line.get_segments() {
-			self.display.color(segment.get_color(), line.get_selected());
+			self.display.color(segment.get_color(), line.get_selected())?;
 			self.display
-				.set_style(segment.is_dimmed(), segment.is_underlined(), segment.is_reversed());
-			self.display.draw_str(segment.get_content());
+				.set_style(segment.is_dimmed(), segment.is_underlined(), segment.is_reversed())?;
+			self.display.draw_str(segment.get_content())?;
 		}
 
 		// reset style
-		self.display.color(DisplayColor::Normal, false);
-		self.display.set_style(false, false, false);
-		self.display.fill_end_of_line();
+		self.display.color(DisplayColor::Normal, false)?;
+		self.display.set_style(false, false, false)?;
+		self.display.fill_end_of_line()
 	}
 
-	fn draw_title(&mut self, show_help: bool) {
-		self.display.color(DisplayColor::Normal, false);
-		self.display.set_style(false, true, false);
+	fn draw_title(&mut self, show_help: bool) -> Result<()> {
+		self.display.color(DisplayColor::Normal, false)?;
+		self.display.set_style(false, true, false)?;
 		let window_width = self.display.get_window_size().width();
 
 		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + self.config.key_bindings.help.len();
 
 		if window_width >= TITLE_LENGTH {
-			self.display.draw_str(TITLE);
+			self.display.draw_str(TITLE)?;
 			// only draw help if there is room
 			if window_width > TITLE_LENGTH + title_help_indicator_total_length {
 				if (window_width - TITLE_LENGTH - title_help_indicator_total_length) > 0 {
 					let padding = " ".repeat(window_width - TITLE_LENGTH - title_help_indicator_total_length);
-					self.display.draw_str(padding.as_str());
+					self.display.draw_str(padding.as_str())?;
 				}
 				if show_help {
 					self.display
-						.draw_str(format!("Help: {}", self.config.key_bindings.help).as_str());
+						.draw_str(format!("Help: {}", self.config.key_bindings.help).as_str())?;
 				}
 				else {
 					let padding = " ".repeat(title_help_indicator_total_length);
-					self.display.draw_str(padding.as_str());
+					self.display.draw_str(padding.as_str())?;
 				}
 			}
 			else if (window_width - TITLE_LENGTH) > 0 {
 				let padding = " ".repeat(window_width - TITLE_LENGTH);
-				self.display.draw_str(padding.as_str());
+				self.display.draw_str(padding.as_str())?;
 			}
 		}
 		else {
-			self.display.draw_str(TITLE_SHORT);
+			self.display.draw_str(TITLE_SHORT)?;
 			if (window_width - TITLE_SHORT_LENGTH) > 0 {
 				let padding = " ".repeat(window_width - TITLE_SHORT_LENGTH);
-				self.display.draw_str(padding.as_str());
+				self.display.draw_str(padding.as_str())?;
 			}
 		}
 
 		// reset style
-		self.display.color(DisplayColor::Normal, false);
-		self.display.set_style(false, false, false);
+		self.display.color(DisplayColor::Normal, false)?;
+		self.display.set_style(false, false, false)
 	}
 }
 
@@ -210,6 +210,7 @@ mod tests {
 		);
 		let config = Config::new().unwrap();
 		let mut curses = Curses::new();
+		curses.erase();
 		curses.resize_term(size.height().try_into().unwrap(), size.width().try_into().unwrap());
 		let input_handler = InputHandler::new(&config.key_bindings);
 		let display = Display::new(input_handler, &mut curses, &config.theme);
@@ -228,7 +229,7 @@ mod tests {
 	fn render_empty() {
 		view_module_test(&Size::new(20, 10), |mut test_context| {
 			let view_data = ViewData::new();
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			TestContext::assert_output(&["~\n"; 10]);
 		});
 	}
@@ -238,7 +239,7 @@ mod tests {
 		view_module_test(&Size::new(35, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool        "];
 			expected.extend(vec!["~\n"; 9]);
 			TestContext::assert_output(&expected);
@@ -250,7 +251,7 @@ mod tests {
 		view_module_test(&Size::new(26, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Rebase                "];
 			expected.extend(vec!["~\n"; 9]);
 			TestContext::assert_output(&expected);
@@ -263,7 +264,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool Help: ?"];
 			expected.extend(vec!["~\n"; 9]);
 			TestContext::assert_output(&expected);
@@ -276,7 +277,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool       "];
 			expected.extend(vec!["~\n"; 9]);
 			TestContext::assert_output(&expected);
@@ -287,7 +288,7 @@ mod tests {
 	fn render_prompt() {
 		view_module_test(&Size::new(35, 10), |mut test_context| {
 			let view_data = ViewData::new_confirm("This is a prompt");
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let expected = vec!["Git Interactive Rebase Tool        ", "\nThis is a prompt (y/n)? "];
 			TestContext::assert_output(&expected);
 		});
@@ -299,7 +300,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["This is a leading line        {HLINE| |30}"];
 			expected.extend(vec!["~\n"; 9]);
 			TestContext::assert_output(&expected);
@@ -312,7 +313,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["This is a line                {HLINE| |30}"];
 			expected.extend(vec!["~\n"; 9]);
 			TestContext::assert_output(&expected);
@@ -325,7 +326,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["~\n"; 9];
 			expected.push("This is a trailing line       {HLINE| |30}");
 			TestContext::assert_output(&expected);
@@ -340,7 +341,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec![
 				"This is a leading line        {HLINE| |30}",
 				"This is a line                {HLINE| |30}",
@@ -362,7 +363,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is line 4"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 6);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let expected = vec![
 				"This is a leading line        {HLINE| |30}",
 				"This is line 1                {HLINE| |30}",
@@ -387,7 +388,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is line 5"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 6);
-			test_context.view.render(&view_data);
+			test_context.view.render(&view_data).unwrap();
 			let expected = vec![
 				"This is a leading line        {HLINE| |30}",
 				"This is line 1               {HLINE| |30} ",
