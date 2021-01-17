@@ -42,7 +42,8 @@ impl ProcessModule for Help {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 		let view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
 		view_data.set_view_size(view_width, view_height);
 		view_data.rebuild();

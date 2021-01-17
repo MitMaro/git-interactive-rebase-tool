@@ -56,7 +56,8 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let (window_width, window_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 		self.view_data.clear();
 
 		match self.state {
@@ -104,7 +105,7 @@ impl<'e> ProcessModule for ExternalEditor<'e> {
 			},
 		}
 
-		self.view_data.set_view_size(window_width, window_height);
+		self.view_data.set_view_size(view_width, view_height);
 		self.view_data.rebuild();
 		&self.view_data
 	}
@@ -205,8 +206,9 @@ impl<'e> ExternalEditor<'e> {
 			Input::ScrollDown => self.view_data.scroll_down(),
 			Input::ScrollUp => self.view_data.scroll_up(),
 			Input::Resize => {
-				let (window_width, window_height) = view.get_view_size();
-				self.view_data.set_view_size(window_width, window_height);
+				let view_width = view.get_view_size().width();
+				let view_height = view.get_view_size().height();
+				self.view_data.set_view_size(view_width, view_height);
 			},
 			_ => return Some(input),
 		}

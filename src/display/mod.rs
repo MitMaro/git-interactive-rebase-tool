@@ -10,12 +10,14 @@ mod color_manager;
 mod color_mode;
 pub mod curses;
 pub mod display_color;
+mod size;
 mod utils;
 
 use crate::config::theme::Theme;
 use crate::display::color_manager::ColorManager;
 use crate::display::curses::{chtype, Curses, Input, A_DIM, A_REVERSE, A_UNDERLINE};
 use crate::display::display_color::DisplayColor;
+pub use crate::display::size::Size;
 use std::cell::RefCell;
 use std::convert::TryInto;
 
@@ -260,8 +262,8 @@ impl<'d> Display<'d> {
 		input
 	}
 
-	pub(crate) fn get_window_size(&self) -> (usize, usize) {
-		(*self.width.borrow(), *self.height.borrow())
+	pub(crate) fn get_window_size(&self) -> Size {
+		Size::new(*self.width.borrow(), *self.height.borrow())
 	}
 
 	pub(crate) fn fill_end_of_line(&self) {
@@ -450,7 +452,7 @@ mod tests {
 		display_module_test(|mut test_context: TestContext| {
 			test_context.curses.resize_term(10, 12);
 			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
-			assert_eq!(display.get_window_size(), (12, 10));
+			assert_eq!(display.get_window_size(), Size::new(12, 10));
 		});
 	}
 

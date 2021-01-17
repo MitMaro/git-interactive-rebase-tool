@@ -34,7 +34,8 @@ pub struct List<'l> {
 
 impl<'l> ProcessModule for List<'l> {
 	fn build_view_data(&mut self, view: &View<'_>, todo_file: &TodoFile) -> &ViewData {
-		let (view_width, view_height) = view.get_view_size();
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
 		self.view_data.clear();
 		self.view_data.set_view_size(view_width, view_height);
 
@@ -72,7 +73,7 @@ impl<'l> ProcessModule for List<'l> {
 		todo_file: &mut TodoFile,
 		view: &View<'_>,
 	) -> ProcessResult {
-		let (_, view_height) = view.get_view_size();
+		let view_height = view.get_view_size().height();
 		let input = input_handler.get_input(InputMode::List);
 		let mut result = ProcessResult::new().input(input);
 		match input {
