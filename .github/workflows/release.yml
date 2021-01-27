@@ -28,7 +28,7 @@ jobs:
             - name: "System Setup"
               run: |
                   apt-get update;
-                  apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
+                  apt-get --assume-yes -f install curl build-essential pkg-config liblzma-dev;
                   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs  | sh -s -- --default-toolchain stable -y;
                   $HOME/.cargo/bin/cargo install --force cargo-deb
             - name: "Build Deb"
@@ -64,7 +64,7 @@ jobs:
             - name: "System Setup"
               run: |
                   apt-get update;
-                  apt-get --assume-yes -f install curl build-essential libncursesw5-dev pkg-config liblzma-dev;
+                  apt-get --assume-yes -f install curl build-essential pkg-config liblzma-dev;
                   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs  | sh -s -- --default-toolchain stable -y;
                   $HOME/.cargo/bin/cargo install --force cargo-deb
             - name: "Build Deb"

@@ -70,7 +70,7 @@ impl ProcessModule for Edit {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
 		let result = loop {
 			let input = view.get_input(InputMode::Raw);
 			let result = ProcessResult::new().input(input);
@@ -159,6 +159,7 @@ impl Edit {
 		}
 	}
 }
+
 #[cfg(test)]
 mod tests {
 	use super::*;

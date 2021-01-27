@@ -82,7 +82,7 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).build_view_data(view, rebase_todo)
 	}
 
-	pub fn handle_input(&mut self, state: State, view: &View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+	pub fn handle_input(&mut self, state: State, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
 		self.get_mut_module(state).handle_input(view, rebase_todo)
 	}
 
@@ -132,7 +132,7 @@ mod tests {
 				config.git.editor = String::from("true");
 				let mut modules = Modules::new(&config);
 				modules.activate(state, &test_context.rebase_todo_file, State::List);
-				modules.handle_input(state, &test_context.view, &mut test_context.rebase_todo_file);
+				modules.handle_input(state, &mut test_context.view, &mut test_context.rebase_todo_file);
 				modules.build_view_data(state, &test_context.view, &test_context.rebase_todo_file);
 				modules.deactivate(state);
 				modules.update_help_data(state);

@@ -28,6 +28,7 @@
 #![allow(clippy::too_many_lines)]
 #![allow(clippy::unwrap_used)]
 #![allow(clippy::wildcard_enum_match_arm)]
+#![allow(clippy::similar_names)]
 
 mod config;
 mod confirm_abort;
@@ -45,7 +46,7 @@ mod view;
 
 use crate::config::Config;
 use crate::constants::{NAME, VERSION};
-use crate::display::curses::Curses;
+use crate::display::CrossTerm;
 use crate::display::Display;
 use crate::input::input_handler::InputHandler;
 use crate::process::exit_status::ExitStatus;
@@ -159,8 +160,8 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 		});
 	}
 
-	let mut curses = Curses::new();
-	let display = Display::new(InputHandler::new(&config.key_bindings), &mut curses, &config.theme);
+	let mut crossterm = CrossTerm::new();
+	let display = Display::new(InputHandler::new(&config.key_bindings), &mut crossterm, &config.theme);
 	let modules = Modules::new(&config);
 	let mut process = Process::new(todo_file, View::new(display, &config));
 	let result = process.run(modules);
@@ -238,6 +239,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn error_process() {
+		CrossTerm::set_inputs(vec![create_key_event!('d', "Control")]);
 		let path = set_git_directory("fixtures/simple");
 		let todo_file_path = Path::new(path.as_str()).join("rebase-todo-readonly");
 		let todo_file = File::open(todo_file_path.as_path()).unwrap();
@@ -253,6 +255,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn success() {
+		CrossTerm::set_inputs(vec![create_key_event!('d', "Control")]);
 		let path = set_git_directory("fixtures/simple");
 		let todo_file = Path::new(path.as_str()).join("rebase-todo");
 		assert_exit_status!(try_main(todo_file.to_str().unwrap()), status = ExitStatus::Abort)

@@ -1,6 +1,29 @@
 use crate::config::key_bindings::KeyBindings;
-use crate::display::curses::Input as CursesInput;
+use crate::display::Event;
+use crate::display::{KeyCode, KeyModifiers, MouseEventKind};
 use crate::input::Input;
+
+fn modifiers_to_string(modifiers: KeyModifiers, code: Option<KeyCode>) -> String {
+	let mut result = vec![];
+
+	if modifiers.contains(KeyModifiers::SHIFT) {
+		if let Some(KeyCode::Char(k)) = code {
+			if k == '\t' || k == '\n' || k == '\u{7f}' {
+				result.push(String::from("Shift"))
+			}
+		}
+		else {
+			result.push(String::from("Shift"))
+		}
+	}
+	if modifiers.contains(KeyModifiers::CONTROL) {
+		result.push(String::from("Control"))
+	}
+	if modifiers.contains(KeyModifiers::ALT) {
+		result.push(String::from("Alt"))
+	}
+	result.join("")
+}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum InputMode {
@@ -20,124 +43,59 @@ impl<'i> InputHandler<'i> {
 		Self { key_bindings }
 	}
 
-	pub(crate) fn get_input(&self, mode: InputMode, event: CursesInput) -> Input {
+	pub(crate) fn get_input(&self, mode: InputMode, event: Event) -> Input {
 		let input = match event {
-			CursesInput::Character(c) if c == '\t' => String::from("Tab"),
-			CursesInput::Character(c) if c == '\n' => String::from("Enter"),
-			CursesInput::Character(c) if c == '\u{7f}' => String::from("Backspace"),
-			CursesInput::Character(c) => c.to_string(),
-			CursesInput::KeyBackspace => String::from("Backspace"),
-			CursesInput::KeyBTab => String::from("ShiftTab"),
-			CursesInput::KeyDC => String::from("Delete"),
-			CursesInput::KeyDown => String::from("Down"),
-			CursesInput::KeyEnd => String::from("End"),
-			CursesInput::KeyEnter => String::from("Enter"),
-			CursesInput::KeyExit => String::from("Exit"),
-			CursesInput::KeyF0 => String::from("F0"),
-			CursesInput::KeyF1 => String::from("F1"),
-			CursesInput::KeyF2 => String::from("F2"),
-			CursesInput::KeyF3 => String::from("F3"),
-			CursesInput::KeyF4 => String::from("F4"),
-			CursesInput::KeyF5 => String::from("F5"),
-			CursesInput::KeyF6 => String::from("F6"),
-			CursesInput::KeyF7 => String::from("F7"),
-			CursesInput::KeyF8 => String::from("F8"),
-			CursesInput::KeyF9 => String::from("F9"),
-			CursesInput::KeyF10 => String::from("F10"),
-			CursesInput::KeyF11 => String::from("F11"),
-			CursesInput::KeyF12 => String::from("F12"),
-			CursesInput::KeyF13 => String::from("F13"),
-			CursesInput::KeyF14 => String::from("F14"),
-			CursesInput::KeyF15 => String::from("F15"),
-			CursesInput::KeyHome => String::from("Home"),
-			CursesInput::KeyIC => String::from("Insert"),
-			CursesInput::KeyLeft => String::from("Left"),
-			CursesInput::KeyNPage => String::from("PageDown"),
-			CursesInput::KeyPPage => String::from("PageUp"),
-			CursesInput::KeyResize => String::from("Resize"),
-			CursesInput::KeyRight => String::from("Right"),
-			CursesInput::KeySDC => String::from("ShiftDelete"),
-			CursesInput::KeySEnd => String::from("ShiftEnd"),
-			CursesInput::KeySF => String::from("ShiftDown"),
-			CursesInput::KeySHome => String::from("ShiftHome"),
-			CursesInput::KeySLeft => String::from("ShiftLeft"),
-			CursesInput::KeySNext => String::from("ShiftPageDown"),
-			CursesInput::KeySPrevious => String::from("ShiftPageUp"),
-			CursesInput::KeySR => String::from("ShiftUp"),
-			CursesInput::KeySRight => String::from("ShiftRight"),
-			CursesInput::KeyUp => String::from("Up"),
-			CursesInput::KeyPrint => String::from("Print"),
-			CursesInput::KeySPrint => String::from("ShiftPrint"),
-			CursesInput::KeyA1 => String::from("KeypadUpperLeft"),
-			CursesInput::KeyA3 => String::from("KeypadUpperRight"),
-			CursesInput::KeyB2 => String::from("KeypadCenter"),
-			CursesInput::KeyC1 => String::from("KeypadLowerLeft"),
-			CursesInput::KeyC3 => String::from("KeypadLowerRight"),
-			CursesInput::Unknown(_)
-			| CursesInput::KeyDL
-			| CursesInput::KeyIL
-			| CursesInput::KeyClear
-			| CursesInput::KeyCodeYes
-			| CursesInput::KeyBreak
-			| CursesInput::KeyEIC
-			| CursesInput::KeyEOS
-			| CursesInput::KeyEOL
-			| CursesInput::KeySTab
-			| CursesInput::KeyCTab
-			| CursesInput::KeyCATab
-			| CursesInput::KeySReset
-			| CursesInput::KeyReset
-			| CursesInput::KeyLL
-			| CursesInput::KeyAbort
-			| CursesInput::KeySHelp
-			| CursesInput::KeyLHelp
-			| CursesInput::KeyBeg
-			| CursesInput::KeyCancel
-			| CursesInput::KeyClose
-			| CursesInput::KeyCommand
-			| CursesInput::KeyCopy
-			| CursesInput::KeyCreate
-			| CursesInput::KeyFind
-			| CursesInput::KeyHelp
-			| CursesInput::KeyMark
-			| CursesInput::KeyMessage
-			| CursesInput::KeyMove
-			| CursesInput::KeyNext
-			| CursesInput::KeyOpen
-			| CursesInput::KeyOptions
-			| CursesInput::KeyPrevious
-			| CursesInput::KeyRedo
-			| CursesInput::KeyReference
-			| CursesInput::KeyRefresh
-			| CursesInput::KeyReplace
-			| CursesInput::KeyRestart
-			| CursesInput::KeyResume
-			| CursesInput::KeySave
-			| CursesInput::KeySBeg
-			| CursesInput::KeySCancel
-			| CursesInput::KeySCommand
-			| CursesInput::KeySCopy
-			| CursesInput::KeySCreate
-			| CursesInput::KeySDL
-			| CursesInput::KeySelect
-			| CursesInput::KeySEOL
-			| CursesInput::KeySExit
-			| CursesInput::KeySFind
-			| CursesInput::KeySIC
-			| CursesInput::KeySMessage
-			| CursesInput::KeySMove
-			| CursesInput::KeySOptions
-			| CursesInput::KeySRedo
-			| CursesInput::KeySReplace
-			| CursesInput::KeySResume
-			| CursesInput::KeySSave
-			| CursesInput::KeySSuspend
-			| CursesInput::KeySUndo
-			| CursesInput::KeySuspend
-			| CursesInput::KeyUndo
-			| CursesInput::KeyEvent
-			| CursesInput::KeyMouse => String::from("Other"),
+			Event::Key(event) => {
+				let code = format!(
+					"{}{}",
+					modifiers_to_string(event.modifiers, Some(event.code)),
+					match event.code {
+						KeyCode::Backspace => String::from("Backspace"),
+						KeyCode::BackTab => String::from("BackTab"),
+						KeyCode::Delete => String::from("Delete"),
+						KeyCode::Down => String::from("Down"),
+						KeyCode::End => String::from("End"),
+						KeyCode::Enter => String::from("Enter"),
+						KeyCode::Esc => String::from("Esc"),
+						KeyCode::F(i) => format!("F{}", i),
+						KeyCode::Home => String::from("Home"),
+						KeyCode::Insert => String::from("Insert"),
+						KeyCode::Left => String::from("Left"),
+						KeyCode::Null => String::from("Other"),
+						KeyCode::PageDown => String::from("PageDown"),
+						KeyCode::PageUp => String::from("PageUp"),
+						KeyCode::Right => String::from("Right"),
+						KeyCode::Tab => String::from("Tab"),
+						KeyCode::Up => String::from("Up"),
+						KeyCode::Char(c) if c == '\t' => String::from("Tab"),
+						KeyCode::Char(c) if c == '\n' => String::from("Enter"),
+						KeyCode::Char(c) if c == '\u{7f}' => String::from("Backspace"),
+						KeyCode::Char(c) => c.to_string(),
+					}
+				);
+
+				match code.as_str() {
+					"Controlc" => String::from("Kill"),
+					"Controld" => String::from("Exit"),
+					_ => code,
+				}
+			},
+			Event::Mouse(event) => {
+				format!("{}{}", modifiers_to_string(event.modifiers, None), match event.kind {
+					MouseEventKind::ScrollDown => String::from("Down"),
+					MouseEventKind::ScrollUp => String::from("Up"),
+					_ => String::from("Ignore"),
+				})
+			},
+			Event::Resize(..) => String::from("Resize"),
 		};
+
+		// this is a hack to work around unhandled mouse events, input handling needs to be changed
+		// to properly handle dynamic inputs like mouse events
+		// TODO remove hack
+		if input == "Ignore" {
+			return Input::Ignore;
+		}
 
 		match mode {
 			InputMode::Confirm => self.get_confirm(input.as_str()),
@@ -159,6 +117,7 @@ impl<'i> InputHandler<'i> {
 			"Home" => Input::ScrollTop,
 			"End" => Input::ScrollBottom,
 			"Exit" => Input::Exit,
+			"Kill" => Input::Kill,
 			"Resize" => Input::Resize,
 			_ => return None,
 		})
@@ -205,6 +164,7 @@ impl<'i> InputHandler<'i> {
 			i if i == self.key_bindings.move_selection_down.as_str() => Input::SwapSelectedDown,
 			i if i == self.key_bindings.move_selection_up.as_str() => Input::SwapSelectedUp,
 			"Exit" => Input::Exit,
+			"Kill" => Input::Kill,
 			"Resize" => Input::Resize,
 			_ => Input::Other,
 		}
@@ -213,56 +173,33 @@ impl<'i> InputHandler<'i> {
 	#[allow(clippy::cognitive_complexity)]
 	fn get_raw_input(input: &str) -> Input {
 		match input {
-			c if c == "Tab" => Input::Tab,
 			c if c == "Backspace" => Input::Backspace,
-			c if c == "ShiftTab" => Input::ShiftTab,
+			c if c == "BackTab" => Input::BackTab,
 			c if c == "Delete" => Input::Delete,
 			c if c == "Down" => Input::Down,
 			c if c == "End" => Input::End,
 			c if c == "Enter" => Input::Enter,
+			c if c == "Esc" => Input::Escape,
 			c if c == "Exit" => Input::Exit,
-			c if c == "F0" => Input::F0,
-			c if c == "F1" => Input::F1,
-			c if c == "F2" => Input::F2,
-			c if c == "F3" => Input::F3,
-			c if c == "F4" => Input::F4,
-			c if c == "F5" => Input::F5,
-			c if c == "F6" => Input::F6,
-			c if c == "F7" => Input::F7,
-			c if c == "F8" => Input::F8,
-			c if c == "F9" => Input::F9,
-			c if c == "F10" => Input::F10,
-			c if c == "F11" => Input::F11,
-			c if c == "F12" => Input::F12,
-			c if c == "F13" => Input::F13,
-			c if c == "F14" => Input::F14,
-			c if c == "F15" => Input::F15,
 			c if c == "Home" => Input::Home,
 			c if c == "Insert" => Input::Insert,
+			c if c == "Kill" => Input::Kill,
 			c if c == "Left" => Input::Left,
+			c if c == "Other" => Input::Other,
 			c if c == "PageDown" => Input::PageDown,
 			c if c == "PageUp" => Input::PageUp,
 			c if c == "Resize" => Input::Resize,
 			c if c == "Right" => Input::Right,
-			c if c == "ShiftDelete" => Input::ShiftDelete,
-			c if c == "ShiftEnd" => Input::ShiftEnd,
-			c if c == "ShiftDown" => Input::ShiftDown,
-			c if c == "ShiftHome" => Input::ShiftHome,
-			c if c == "ShiftLeft" => Input::ShiftLeft,
-			c if c == "ShiftPageDown" => Input::ShiftPageDown,
-			c if c == "ShiftPageUp" => Input::ShiftPageUp,
-			c if c == "ShiftUp" => Input::ShiftUp,
-			c if c == "ShiftRight" => Input::ShiftRight,
+			c if c == "Tab" => Input::Tab,
 			c if c == "Up" => Input::Up,
-			c if c == "Print" => Input::Print,
-			c if c == "ShiftPrint" => Input::ShiftPrint,
-			c if c == "KeypadUpperLeft" => Input::KeypadUpperLeft,
-			c if c == "KeypadUpperRight" => Input::KeypadUpperRight,
-			c if c == "KeypadCenter" => Input::KeypadCenter,
-			c if c == "KeypadLowerLeft" => Input::KeypadLowerLeft,
-			c if c == "KeypadLowerRight" => Input::KeypadLowerRight,
-			c if c == "Other" => Input::Other,
-			c => Input::Character(c.chars().next().unwrap()),
+			c => {
+				if c.chars().count() == 1 {
+					Input::Character(c.chars().next().unwrap())
+				}
+				else {
+					Input::Other
+				}
+			},
 		}
 	}
 
@@ -281,6 +218,9 @@ impl<'i> InputHandler<'i> {
 mod tests {
 	use super::*;
 	use crate::config::Config;
+	use crate::create_key_event;
+	use crate::create_mouse_event;
+	use crossterm::event::MouseEvent;
 	use rstest::rstest;
 	use std::env::set_var;
 	use std::path::Path;
@@ -301,25 +241,112 @@ mod tests {
 		callback(&input_handler);
 	}
 
+	#[test]
+	fn modifiers_to_string_no_modifiers() {
+		assert_eq!(modifiers_to_string(KeyModifiers::NONE, None), "");
+	}
+
+	#[test]
+	fn modifiers_to_string_alt() {
+		assert_eq!(modifiers_to_string(KeyModifiers::ALT, None), "Alt");
+	}
+
+	#[test]
+	fn modifiers_to_string_control() {
+		assert_eq!(modifiers_to_string(KeyModifiers::CONTROL, None), "Control");
+	}
+
+	#[test]
+	fn modifiers_to_string_shift() {
+		assert_eq!(modifiers_to_string(KeyModifiers::SHIFT, None), "Shift");
+	}
+
+	#[test]
+	fn modifiers_to_string_combined() {
+		assert_eq!(modifiers_to_string(KeyModifiers::all(), None), "ShiftControlAlt");
+	}
+
+	#[test]
+	fn modifiers_to_string_with_code_char() {
+		assert_eq!(modifiers_to_string(KeyModifiers::SHIFT, Some(KeyCode::Char('A'))), "");
+	}
+
+	#[test]
+	fn modifiers_to_string_with_code_char_tab() {
+		assert_eq!(
+			modifiers_to_string(KeyModifiers::SHIFT, Some(KeyCode::Char('\t'))),
+			"Shift"
+		);
+	}
+
+	#[test]
+	fn modifiers_to_string_with_code_newline() {
+		assert_eq!(
+			modifiers_to_string(KeyModifiers::SHIFT, Some(KeyCode::Char('\n'))),
+			"Shift"
+		);
+	}
+
+	#[test]
+	fn modifiers_to_string_with_code_backspace() {
+		assert_eq!(
+			modifiers_to_string(KeyModifiers::SHIFT, Some(KeyCode::Char('\u{7f}'))),
+			"Shift"
+		);
+	}
+
+	#[test]
+	fn modifiers_to_string_with_code_other() {
+		assert_eq!(modifiers_to_string(KeyModifiers::SHIFT, Some(KeyCode::Enter)), "Shift");
+	}
+
+	#[test]
+	fn modifiers_to_string_with_code_alphabetic_combined() {
+		assert_eq!(
+			modifiers_to_string(KeyModifiers::all(), Some(KeyCode::Char('A'))),
+			"ControlAlt"
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn ignore_hack() {
+		input_handler_test(|input_handler: &InputHandler<'_>| {
+			assert_eq!(
+				input_handler.get_input(
+					InputMode::Confirm,
+					Event::Mouse(MouseEvent {
+						kind: MouseEventKind::Moved,
+						column: 0,
+						row: 0,
+						modifiers: KeyModifiers::NONE
+					})
+				),
+				Input::Ignore
+			);
+		});
+	}
 	#[rstest(
 		input,
 		expected,
-		case::yes_lower(CursesInput::Character('y'), Input::Yes),
-		case::yes_upper(CursesInput::Character('Y'), Input::Yes),
-		case::no_n_lower(CursesInput::Character('n'), Input::No),
-		case::no_n_upper(CursesInput::Character('N'), Input::No),
-		case::no_other(CursesInput::KeyEOL, Input::No),
-		case::standard_resize(CursesInput::KeyResize, Input::Resize),
-		case::standard_move_up(CursesInput::KeyUp, Input::ScrollUp),
-		case::standard_move_down(CursesInput::KeyDown, Input::ScrollDown),
-		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
-		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
-		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
-		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown),
-		case::exit(CursesInput::KeyExit, Input::Exit)
+		case::yes_lower(create_key_event!('y'), Input::Yes),
+		case::yes_upper(create_key_event!('Y'), Input::Yes),
+		case::no_n_lower(create_key_event!('n'), Input::No),
+		case::no_n_upper(create_key_event!('N'), Input::No),
+		case::no_other(create_key_event!(code KeyCode::Null), Input::No),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_move_up(create_key_event!(code KeyCode::Up), Input::ScrollUp),
+		case::standard_move_down(create_key_event!(code KeyCode::Down), Input::ScrollDown),
+		case::standard_move_left(create_key_event!(code KeyCode::Left), Input::ScrollLeft),
+		case::standard_move_right(create_key_event!(code KeyCode::Right), Input::ScrollRight),
+		case::standard_move_jump_up(create_key_event!(code KeyCode::PageUp), Input::ScrollJumpUp),
+		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
+		case::exit(create_key_event!('d', "Control"), Input::Exit)
 	)]
 	#[serial_test::serial]
-	fn confirm_mode(input: CursesInput, expected: Input) {
+	fn confirm_mode(input: Event, expected: Input) {
 		input_handler_test(|input_handler: &InputHandler<'_>| {
 			assert_eq!(input_handler.get_input(InputMode::Confirm, input), expected);
 		});
@@ -328,24 +355,30 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::character(CursesInput::Character('a'), Input::Character('a')),
-		case::tab_character(CursesInput::Character('\t'), Input::Tab),
-		case::backspace_key(CursesInput::KeyBackspace, Input::Backspace),
-		case::backspace_character(CursesInput::Character('\u{7f}'), Input::Backspace),
-		case::enter(CursesInput::KeyEnter, Input::Enter),
-		case::newline(CursesInput::Character('\n'), Input::Enter),
-		case::other(CursesInput::KeyEOL, Input::Other),
-		case::standard_resize(CursesInput::KeyResize, Input::Resize),
-		case::standard_move_up(CursesInput::KeyUp, Input::ScrollUp),
-		case::standard_move_down(CursesInput::KeyDown, Input::ScrollDown),
-		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
-		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
-		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
-		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown),
-		case::exit(CursesInput::KeyExit, Input::Exit)
+		case::character(create_key_event!('a'), Input::Character('a')),
+		case::tab_character(create_key_event!('\t'), Input::Tab),
+		case::tab_key_code(create_key_event!(code KeyCode::Tab), Input::Tab),
+		case::backspace_key(create_key_event!(code KeyCode::Backspace), Input::Backspace),
+		case::backspace_character(create_key_event!('\u{7f}'), Input::Backspace),
+		case::enter(create_key_event!(code KeyCode::Enter), Input::Enter),
+		case::newline(create_key_event!('\n'), Input::Enter),
+		case::other(create_key_event!(code KeyCode::Null), Input::Other),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_move_up(create_key_event!(code KeyCode::Up), Input::ScrollUp),
+		case::standard_move_down(create_key_event!(code KeyCode::Down), Input::ScrollDown),
+		case::standard_move_left(create_key_event!(code KeyCode::Left), Input::ScrollLeft),
+		case::standard_move_right(create_key_event!(code KeyCode::Right), Input::ScrollRight),
+		case::standard_move_jump_up(create_key_event!(code KeyCode::PageUp), Input::ScrollJumpUp),
+		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
+		case::esc(create_key_event!(code KeyCode::Esc), Input::Escape),
+		case::mouse_down(create_mouse_event!(MouseEventKind::ScrollDown), Input::ScrollDown),
+		case::mouse_up(create_mouse_event!(MouseEventKind::ScrollUp), Input::ScrollUp)
+
 	)]
 	#[serial_test::serial]
-	fn default_mode(input: CursesInput, expected: Input) {
+	fn default_mode(input: Event, expected: Input) {
 		input_handler_test(|input_handler: &InputHandler<'_>| {
 			assert_eq!(input_handler.get_input(InputMode::Default, input), expected);
 		});
@@ -354,36 +387,37 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::abort(CursesInput::Character('q'), Input::Abort),
-		case::rebase(CursesInput::Character('w'), Input::Rebase),
-		case::force_abort(CursesInput::Character('Q'), Input::ForceAbort),
-		case::force_rebase(CursesInput::Character('W'), Input::ForceRebase),
-		case::open_in_external_editor(CursesInput::Character('!'), Input::OpenInEditor),
-		case::show_commit(CursesInput::Character('c'), Input::ShowCommit),
-		case::edit(CursesInput::Character('E'), Input::Edit),
-		case::help(CursesInput::Character('?'), Input::Help),
-		case::toggle_visual_mode(CursesInput::Character('v'), Input::ToggleVisualMode),
-		case::action_break(CursesInput::Character('b'), Input::ActionBreak),
-		case::action_drop(CursesInput::Character('d'), Input::ActionDrop),
-		case::action_edit(CursesInput::Character('e'), Input::ActionEdit),
-		case::action_fixup(CursesInput::Character('f'), Input::ActionFixup),
-		case::action_pick(CursesInput::Character('p'), Input::ActionPick),
-		case::action_reword(CursesInput::Character('r'), Input::ActionReword),
-		case::action_squash(CursesInput::Character('s'), Input::ActionSquash),
-		case::move_up(CursesInput::KeyUp, Input::MoveCursorUp),
-		case::move_down(CursesInput::KeyDown, Input::MoveCursorDown),
-		case::move_left(CursesInput::KeyLeft, Input::MoveCursorLeft),
-		case::move_right(CursesInput::KeyRight, Input::MoveCursorRight),
-		case::move_page_up(CursesInput::KeyPPage, Input::MoveCursorPageUp),
-		case::move_page_down(CursesInput::KeyNPage, Input::MoveCursorPageDown),
-		case::swap_selected_down(CursesInput::Character('j'), Input::SwapSelectedDown),
-		case::swap_selected_up(CursesInput::Character('k'), Input::SwapSelectedUp),
-		case::resize(CursesInput::KeyResize, Input::Resize),
-		case::other(CursesInput::Character('z'), Input::Other),
-		case::exit(CursesInput::KeyExit, Input::Exit)
+		case::abort(create_key_event!('q'), Input::Abort),
+		case::rebase(create_key_event!('w'), Input::Rebase),
+		case::force_abort(create_key_event!('Q'), Input::ForceAbort),
+		case::force_rebase(create_key_event!('W'), Input::ForceRebase),
+		case::open_in_external_editor(create_key_event!('!'), Input::OpenInEditor),
+		case::show_commit(create_key_event!('c'), Input::ShowCommit),
+		case::edit(create_key_event!('E'), Input::Edit),
+		case::help(create_key_event!('?'), Input::Help),
+		case::toggle_visual_mode(create_key_event!('v'), Input::ToggleVisualMode),
+		case::action_break(create_key_event!('b'), Input::ActionBreak),
+		case::action_drop(create_key_event!('d'), Input::ActionDrop),
+		case::action_edit(create_key_event!('e'), Input::ActionEdit),
+		case::action_fixup(create_key_event!('f'), Input::ActionFixup),
+		case::action_pick(create_key_event!('p'), Input::ActionPick),
+		case::action_reword(create_key_event!('r'), Input::ActionReword),
+		case::action_squash(create_key_event!('s'), Input::ActionSquash),
+		case::move_up(create_key_event!(code KeyCode::Up), Input::MoveCursorUp),
+		case::move_down(create_key_event!(code KeyCode::Down), Input::MoveCursorDown),
+		case::move_left(create_key_event!(code KeyCode::Left), Input::MoveCursorLeft),
+		case::move_right(create_key_event!(code KeyCode::Right), Input::MoveCursorRight),
+		case::move_page_up(create_key_event!(code KeyCode::PageUp), Input::MoveCursorPageUp),
+		case::move_page_down(create_key_event!(code KeyCode::PageDown), Input::MoveCursorPageDown),
+		case::swap_selected_down(create_key_event!('j'), Input::SwapSelectedDown),
+		case::swap_selected_up(create_key_event!('k'), Input::SwapSelectedUp),
+		case::resize(Event::Resize(0, 0), Input::Resize),
+		case::other(create_key_event!('z'), Input::Other),
+		case::exit(create_key_event!('d', "Control"), Input::Exit),
+		case::exit(create_key_event!('c', "Control"), Input::Kill),
 	)]
 	#[serial_test::serial]
-	fn list_mode(input: CursesInput, expected: Input) {
+	fn list_mode(input: Event, expected: Input) {
 		input_handler_test(|input_handler: &InputHandler<'_>| {
 			assert_eq!(input_handler.get_input(InputMode::List, input), expected);
 		});
@@ -392,157 +426,52 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::tab_character(CursesInput::Character('\t'), Input::Tab),
-		case::newline(CursesInput::Character('\n'), Input::Enter),
-		case::backspace_character(CursesInput::Character('\u{7f}'), Input::Backspace),
-		case::character(CursesInput::Character('a'), Input::Character('a')),
-		case::backspace_key(CursesInput::KeyBackspace, Input::Backspace),
-		case::btab_key(CursesInput::KeyBTab, Input::ShiftTab),
-		case::dc_key(CursesInput::KeyDC, Input::Delete),
-		case::down_key(CursesInput::KeyDown, Input::Down),
-		case::end_key(CursesInput::KeyEnd, Input::End),
-		case::enter_key(CursesInput::KeyEnter, Input::Enter),
-		case::f0_key(CursesInput::KeyF0, Input::F0),
-		case::f1_key(CursesInput::KeyF1, Input::F1),
-		case::f2_key(CursesInput::KeyF2, Input::F2),
-		case::f3_key(CursesInput::KeyF3, Input::F3),
-		case::f4_key(CursesInput::KeyF4, Input::F4),
-		case::f5_key(CursesInput::KeyF5, Input::F5),
-		case::f6_key(CursesInput::KeyF6, Input::F6),
-		case::f7_key(CursesInput::KeyF7, Input::F7),
-		case::f8_key(CursesInput::KeyF8, Input::F8),
-		case::f9_key(CursesInput::KeyF9, Input::F9),
-		case::f10_key(CursesInput::KeyF10, Input::F10),
-		case::f11_key(CursesInput::KeyF11, Input::F11),
-		case::f12_key(CursesInput::KeyF12, Input::F12),
-		case::f13_key(CursesInput::KeyF13, Input::F13),
-		case::f14_key(CursesInput::KeyF14, Input::F14),
-		case::f15_key(CursesInput::KeyF15, Input::F15),
-		case::home_key(CursesInput::KeyHome, Input::Home),
-		case::ic_key(CursesInput::KeyIC, Input::Insert),
-		case::left_key(CursesInput::KeyLeft, Input::Left),
-		case::npage_key(CursesInput::KeyNPage, Input::PageDown),
-		case::ppage_key(CursesInput::KeyPPage, Input::PageUp),
-		case::resize_key(CursesInput::KeyResize, Input::Resize),
-		case::right_key(CursesInput::KeyRight, Input::Right),
-		case::sdc_key(CursesInput::KeySDC, Input::ShiftDelete),
-		case::send_key(CursesInput::KeySEnd, Input::ShiftEnd),
-		case::sf_key(CursesInput::KeySF, Input::ShiftDown),
-		case::shome_key(CursesInput::KeySHome, Input::ShiftHome),
-		case::sleft_key(CursesInput::KeySLeft, Input::ShiftLeft),
-		case::snext_key(CursesInput::KeySNext, Input::ShiftPageDown),
-		case::sprevious_key(CursesInput::KeySPrevious, Input::ShiftPageUp),
-		case::sr_key(CursesInput::KeySR, Input::ShiftUp),
-		case::sright_key(CursesInput::KeySRight, Input::ShiftRight),
-		case::up_key(CursesInput::KeyUp, Input::Up),
-		case::print_key(CursesInput::KeyPrint, Input::Print),
-		case::sprint_key(CursesInput::KeySPrint, Input::ShiftPrint),
-		case::a1_key(CursesInput::KeyA1, Input::KeypadUpperLeft),
-		case::a3_key(CursesInput::KeyA3, Input::KeypadUpperRight),
-		case::b2_key(CursesInput::KeyB2, Input::KeypadCenter),
-		case::c1_key(CursesInput::KeyC1, Input::KeypadLowerLeft),
-		case::c3_key(CursesInput::KeyC3, Input::KeypadLowerRight),
-		case::exit(CursesInput::KeyExit, Input::Exit)
+		case::backspace_character(create_key_event!(code KeyCode::Backspace), Input::Backspace),
+		case::backtab_key(create_key_event!(code KeyCode::BackTab), Input::BackTab),
+		case::delete_key(create_key_event!(code KeyCode::Delete), Input::Delete),
+		case::down_key(create_key_event!(code KeyCode::Down), Input::Down),
+		case::end_key(create_key_event!(code KeyCode::End), Input::End),
+		case::enter_key(create_key_event!(code KeyCode::Enter), Input::Enter),
+		case::exit_key(create_key_event!('d', "Control"), Input::Exit),
+		case::home_key(create_key_event!(code KeyCode::Home), Input::Home),
+		case::insert_key(create_key_event!(code KeyCode::Insert), Input::Insert),
+		case::kill_key(create_key_event!('c', "Control"), Input::Kill),
+		case::left_key(create_key_event!(code KeyCode::Left), Input::Left),
+		case::other(create_key_event!(code KeyCode::Null), Input::Other),
+		case::page_down_key(create_key_event!(code KeyCode::PageDown), Input::PageDown),
+		case::page_up_key(create_key_event!(code KeyCode::PageUp), Input::PageUp),
+		case::resize_key(Event::Resize(0, 0), Input::Resize),
+		case::right_key(create_key_event!(code KeyCode::Right), Input::Right),
+		case::tab_key(create_key_event!(code KeyCode::Tab), Input::Tab),
+		case::up_key(create_key_event!(code KeyCode::Up), Input::Up),
+		case::character(create_key_event!('a'), Input::Character('a')),
+		case::unknown(create_key_event!(code KeyCode::F(1)), Input::Other)
 	)]
 	#[serial_test::serial]
-	fn raw_mode(input: CursesInput, expected: Input) {
+	fn raw_mode(input: Event, expected: Input) {
 		input_handler_test(|input_handler: &InputHandler<'_>| {
 			assert_eq!(input_handler.get_input(InputMode::Raw, input), expected);
 		});
 	}
 
 	#[rstest(
-		input => [
-			CursesInput::Unknown(0),
-			CursesInput::KeyDL,
-			CursesInput::KeyIL,
-			CursesInput::KeyClear,
-			CursesInput::KeyCodeYes,
-			CursesInput::KeyBreak,
-			CursesInput::KeyEIC,
-			CursesInput::KeyEOS,
-			CursesInput::KeyEOL,
-			CursesInput::KeySTab,
-			CursesInput::KeyCTab,
-			CursesInput::KeyCATab,
-			CursesInput::KeySReset,
-			CursesInput::KeyReset,
-			CursesInput::KeyLL,
-			CursesInput::KeyAbort,
-			CursesInput::KeySHelp,
-			CursesInput::KeyLHelp,
-			CursesInput::KeyBeg,
-			CursesInput::KeyCancel,
-			CursesInput::KeyClose,
-			CursesInput::KeyCommand,
-			CursesInput::KeyCopy,
-			CursesInput::KeyCreate,
-			CursesInput::KeyFind,
-			CursesInput::KeyHelp,
-			CursesInput::KeyMark,
-			CursesInput::KeyMessage,
-			CursesInput::KeyMove,
-			CursesInput::KeyNext,
-			CursesInput::KeyOpen,
-			CursesInput::KeyOptions,
-			CursesInput::KeyPrevious,
-			CursesInput::KeyRedo,
-			CursesInput::KeyReference,
-			CursesInput::KeyRefresh,
-			CursesInput::KeyReplace,
-			CursesInput::KeyRestart,
-			CursesInput::KeyResume,
-			CursesInput::KeySave,
-			CursesInput::KeySBeg,
-			CursesInput::KeySCancel,
-			CursesInput::KeySCommand,
-			CursesInput::KeySCopy,
-			CursesInput::KeySCreate,
-			CursesInput::KeySDL,
-			CursesInput::KeySelect,
-			CursesInput::KeySEOL,
-			CursesInput::KeySExit,
-			CursesInput::KeySFind,
-			CursesInput::KeySIC,
-			CursesInput::KeySMessage,
-			CursesInput::KeySMove,
-			CursesInput::KeySOptions,
-			CursesInput::KeySRedo,
-			CursesInput::KeySReplace,
-			CursesInput::KeySResume,
-			CursesInput::KeySSave,
-			CursesInput::KeySSuspend,
-			CursesInput::KeySUndo,
-			CursesInput::KeySuspend,
-			CursesInput::KeyUndo,
-			CursesInput::KeyEvent,
-			CursesInput::KeyMouse,
-		],
-	)]
-	#[serial_test::serial]
-	fn raw_mode_unsupported(input: CursesInput) {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Raw, input), Input::Other);
-		});
-	}
-
-	#[rstest(
 		input,
 		expected,
-		case::help(CursesInput::Character('?'), Input::Help),
-		case::newline(CursesInput::Character('d'), Input::ShowDiff),
-		case::other(CursesInput::KeyEOL, Input::Other),
-		case::standard_resize(CursesInput::KeyResize, Input::Resize),
-		case::standard_move_up(CursesInput::KeyUp, Input::ScrollUp),
-		case::standard_move_down(CursesInput::KeyDown, Input::ScrollDown),
-		case::standard_move_left(CursesInput::KeyLeft, Input::ScrollLeft),
-		case::standard_move_right(CursesInput::KeyRight, Input::ScrollRight),
-		case::standard_move_jump_up(CursesInput::KeyPPage, Input::ScrollJumpUp),
-		case::standard_move_jump_down(CursesInput::KeyNPage, Input::ScrollJumpDown),
-		case::exit(CursesInput::KeyExit, Input::Exit)
+		case::help(create_key_event!('?'), Input::Help),
+		case::show_diff(create_key_event!('d'), Input::ShowDiff),
+		case::other(create_key_event!(code KeyCode::Null), Input::Other),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_move_up(create_key_event!(code KeyCode::Up), Input::ScrollUp),
+		case::standard_move_down(create_key_event!(code KeyCode::Down), Input::ScrollDown),
+		case::standard_move_left(create_key_event!(code KeyCode::Left), Input::ScrollLeft),
+		case::standard_move_right(create_key_event!(code KeyCode::Right), Input::ScrollRight),
+		case::standard_move_jump_up(create_key_event!(code KeyCode::PageUp), Input::ScrollJumpUp),
+		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
 	)]
 	#[serial_test::serial]
-	fn confirm_input_mode(input: CursesInput, expected: Input) {
+	fn show_commit_mode(input: Event, expected: Input) {
 		input_handler_test(|input_handler: &InputHandler<'_>| {
 			assert_eq!(input_handler.get_input(InputMode::ShowCommit, input), expected);
 		});

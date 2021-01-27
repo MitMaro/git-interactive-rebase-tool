@@ -1,153 +1,147 @@
-#[cfg(not(test))]
-mod ncurses;
-#[cfg(test)]
-mod testutil;
-#[cfg(test)]
-mod virtual_curses;
-
 pub mod color;
-mod color_manager;
 mod color_mode;
-pub mod curses;
 pub mod display_color;
-mod size;
+pub mod size;
 mod utils;
 
+#[cfg(not(test))]
+mod crossterm;
+#[cfg(test)]
+mod mockcrossterm;
+#[cfg(test)]
+pub mod testutil;
+#[cfg(not(test))]
+use self::crossterm as ct;
+#[cfg(test)]
+use mockcrossterm as ct;
+
 use crate::config::theme::Theme;
-use crate::display::color_manager::ColorManager;
-use crate::display::curses::{chtype, Curses, A_DIM, A_REVERSE, A_UNDERLINE};
 use crate::display::display_color::DisplayColor;
-pub use crate::display::size::Size;
+use crate::display::size::Size;
+use crate::display::utils::register_selectable_color_pairs;
 use crate::input::input_handler::{InputHandler, InputMode};
 use crate::input::Input;
 use anyhow::Result;
-use std::cell::RefCell;
-use std::convert::TryInto;
+use ct::Color as CrosstermColor;
+pub use ct::{Colors, CrossTerm, Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind};
 
 pub struct Display<'d> {
-	curses: &'d mut Curses,
+	crossterm: &'d mut CrossTerm,
 	input_handler: InputHandler<'d>,
-	height: RefCell<usize>,
-	width: RefCell<usize>,
-	action_break: (chtype, chtype),
-	action_drop: (chtype, chtype),
-	action_edit: (chtype, chtype),
-	action_exec: (chtype, chtype),
-	action_fixup: (chtype, chtype),
-	action_pick: (chtype, chtype),
-	action_reword: (chtype, chtype),
-	action_squash: (chtype, chtype),
-	diff_add: (chtype, chtype),
-	diff_change: (chtype, chtype),
-	diff_remove: (chtype, chtype),
-	diff_context: (chtype, chtype),
-	diff_whitespace: (chtype, chtype),
-	indicator: (chtype, chtype),
-	normal: (chtype, chtype),
+	action_break: (Colors, Colors),
+	action_drop: (Colors, Colors),
+	action_edit: (Colors, Colors),
+	action_exec: (Colors, Colors),
+	action_fixup: (Colors, Colors),
+	action_pick: (Colors, Colors),
+	action_reword: (Colors, Colors),
+	action_squash: (Colors, Colors),
+	diff_add: (Colors, Colors),
+	diff_change: (Colors, Colors),
+	diff_remove: (Colors, Colors),
+	diff_context: (Colors, Colors),
+	diff_whitespace: (Colors, Colors),
+	indicator: (Colors, Colors),
+	normal: (Colors, Colors),
 }
 
 impl<'d> Display<'d> {
-	pub(crate) fn new(input_handler: InputHandler<'d>, curses: &'d mut Curses, theme: &'d Theme) -> Self {
-		let mut color_manager = ColorManager::new();
-		let normal = color_manager.register_selectable_color_pairs(
-			curses,
+	pub(crate) fn new(input_handler: InputHandler<'d>, crossterm: &'d mut CrossTerm, theme: &'d Theme) -> Self {
+		let color_mode = crossterm.get_color_mode();
+		let normal = register_selectable_color_pairs(
+			color_mode,
 			theme.color_foreground,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let indicator = color_manager.register_selectable_color_pairs(
-			curses,
+		let indicator = register_selectable_color_pairs(
+			color_mode,
 			theme.color_indicator,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_break = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_break = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_break,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_drop = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_drop = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_drop,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_edit = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_edit = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_edit,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_exec = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_exec = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_exec,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_fixup = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_fixup = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_fixup,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_pick = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_pick = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_pick,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_reword = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_reword = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_reword,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let action_squash = color_manager.register_selectable_color_pairs(
-			curses,
+		let action_squash = register_selectable_color_pairs(
+			color_mode,
 			theme.color_action_squash,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let diff_add = color_manager.register_selectable_color_pairs(
-			curses,
+		let diff_add = register_selectable_color_pairs(
+			color_mode,
 			theme.color_diff_add,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let diff_change = color_manager.register_selectable_color_pairs(
-			curses,
+		let diff_change = register_selectable_color_pairs(
+			color_mode,
 			theme.color_diff_change,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let diff_remove = color_manager.register_selectable_color_pairs(
-			curses,
+		let diff_remove = register_selectable_color_pairs(
+			color_mode,
 			theme.color_diff_remove,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let diff_context = color_manager.register_selectable_color_pairs(
-			curses,
+		let diff_context = register_selectable_color_pairs(
+			color_mode,
 			theme.color_diff_context,
 			theme.color_background,
 			theme.color_selected_background,
 		);
-		let diff_whitespace = color_manager.register_selectable_color_pairs(
-			curses,
+		let diff_whitespace = register_selectable_color_pairs(
+			color_mode,
 			theme.color_diff_whitespace,
 			theme.color_background,
 			theme.color_selected_background,
 		);
 
-		let height = curses.get_max_y().try_into().expect("Invalid window height");
-		let width = curses.get_max_x().try_into().expect("Invalid window height");
-
 		Self {
-			curses,
+			crossterm,
 			input_handler,
-			height: RefCell::new(height),
-			width: RefCell::new(width),
 			normal,
 			indicator,
 			action_break,
@@ -167,24 +161,21 @@ impl<'d> Display<'d> {
 	}
 
 	pub(crate) fn draw_str(&mut self, s: &str) -> Result<()> {
-		self.curses.addstr(s);
-		Ok(())
+		self.crossterm.print(s)
 	}
 
 	pub(crate) fn clear(&mut self) -> Result<()> {
 		self.color(DisplayColor::Normal, false)?;
 		self.set_style(false, false, false)?;
-		self.curses.erase();
-		Ok(())
+		self.crossterm.reset()
 	}
 
 	pub(crate) fn refresh(&mut self) -> Result<()> {
-		self.curses.refresh();
-		Ok(())
+		self.crossterm.flush()
 	}
 
 	pub(crate) fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
-		self.curses.attrset(
+		self.crossterm.set_color(
 			if selected {
 				match color {
 					DisplayColor::ActionBreak => self.action_break.1,
@@ -223,8 +214,7 @@ impl<'d> Display<'d> {
 					DisplayColor::DiffWhitespaceColor => self.diff_whitespace.0,
 				}
 			},
-		);
-		Ok(())
+		)
 	}
 
 	pub(crate) fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<()> {
@@ -234,107 +224,62 @@ impl<'d> Display<'d> {
 	}
 
 	fn set_dim(&mut self, on: bool) -> Result<()> {
-		if on {
-			self.curses.attron(A_DIM);
-		}
-		else {
-			self.curses.attroff(A_DIM);
-		}
-		Ok(())
+		self.crossterm.set_dim(on)
 	}
 
 	fn set_underline(&mut self, on: bool) -> Result<()> {
-		// Windows uses blue text for underlined words
-		if !cfg!(windows) && on {
-			self.curses.attron(A_UNDERLINE);
-		}
-		else {
-			self.curses.attroff(A_UNDERLINE);
-		}
-		Ok(())
+		self.crossterm.set_underline(on)
 	}
 
 	fn set_reverse(&mut self, on: bool) -> Result<()> {
-		if on {
-			self.curses.attron(A_REVERSE);
-		}
-		else {
-			self.curses.attroff(A_REVERSE);
-		}
-		Ok(())
-	}
-
-	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
-		self.curses.getch().map_or(Input::Other, |input| {
-			let input = self.input_handler.get_input(mode, input);
-
-			if input == Input::Resize {
-				self.curses.resize_term(0, 0);
-				self.height
-					.replace(self.curses.get_max_y().try_into().expect("Invalid window height"));
-				self.width
-					.replace(self.curses.get_max_x().try_into().expect("Invalid window width"));
-			}
-			input
-		})
+		self.crossterm.set_reverse(on)
 	}
 
 	pub(crate) fn get_window_size(&self) -> Size {
-		Size::new(*self.width.borrow(), *self.height.borrow())
+		self.crossterm.get_size()
 	}
 
-	pub(crate) fn fill_end_of_line(&mut self) -> Result<()> {
-		self.curses.hline(' ', self.curses.get_max_x());
-		Ok(())
+	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
+		// TODO remove ignore hack
+		loop {
+			let input = CrossTerm::read_event().map_or(Input::Other, |input| self.input_handler.get_input(mode, input));
+			if input != Input::Ignore {
+				return input;
+			}
+		}
 	}
 
-	pub(crate) fn ensure_at_line_start(&mut self, y: i32) -> Result<()> {
-		self.curses.mv(y, 0);
-		Ok(())
+	pub(crate) fn ensure_at_line_start(&mut self) -> Result<()> {
+		self.crossterm.move_to_column(1)
 	}
 
-	pub(crate) fn move_from_end_of_line(&mut self, right: i32) -> Result<()> {
-		self.curses.mv(self.curses.get_cur_y(), self.curses.get_max_x() - right);
-		Ok(())
+	pub(crate) fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
+		let width = self.get_window_size().width();
+		self.crossterm.move_to_column(width as u16 - right + 1)
 	}
 
-	pub(crate) fn def_prog_mode(&self) {
-		self.curses.def_prog_mode();
+	pub(crate) fn next_line(&mut self) -> Result<()> {
+		self.crossterm.move_next_line()
 	}
 
-	pub(crate) fn reset_prog_mode(&self) {
-		self.curses.reset_prog_mode();
+	pub(crate) fn start(&mut self) -> Result<()> {
+		self.crossterm.start()?;
+		self.crossterm.flush()
 	}
 
-	pub(crate) fn end(&self) {
-		self.curses.endwin();
-	}
-}
-
-#[cfg(all(windows, test))]
-mod tests {
-	use super::*;
-	use crate::display::testutil::{display_module_test, TestContext};
-
-	#[test]
-	#[serial_test::serial()]
-	fn windows_set_style_underline_disabled() {
-		display_module_test(|mut test_context: TestContext<'_>| {
-			let display = Display::new(&mut test_context.curses, &test_context.config.theme);
-			display.set_style(true, true, true);
-			assert!(test_context.curses.is_dimmed());
-			assert!(test_context.curses.is_reverse());
-			assert!(!test_context.curses.is_underline());
-		});
+	pub(crate) fn end(&mut self) -> Result<()> {
+		self.crossterm.end()?;
+		self.crossterm.flush()
 	}
 }
 
-#[cfg(all(unix, test))]
+#[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::display::curses::Input as CursesInput;
+	use crate::create_key_event;
+	use crate::display::mockcrossterm::State;
 	use crate::display::testutil::{display_module_test, TestContext};
-	use crate::display::virtual_curses::State;
+	use crossterm::event::MouseEvent;
 	use rstest::rstest;
 
 	#[test]
@@ -343,11 +288,11 @@ mod tests {
 		display_module_test(|mut test_context: TestContext<'_>| {
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			display.draw_str("Test String").unwrap();
-			let output = Curses::get_output();
+			let output = CrossTerm::get_output();
 			assert_eq!(output, vec!["Test String"]);
 		});
 	}
@@ -356,83 +301,166 @@ mod tests {
 	#[serial_test::serial]
 	fn clear() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.addstr("Test String");
-			test_context.curses.attron(curses::A_DIM);
-			test_context.curses.attron(curses::A_REVERSE);
-			test_context.curses.attron(curses::A_UNDERLINE);
-
+			test_context.crossterm.print("Test String").unwrap();
+			test_context.crossterm.set_dim(true).unwrap();
+			test_context.crossterm.set_reverse(true).unwrap();
+			test_context.crossterm.set_underline(true).unwrap();
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			display.clear().unwrap();
-			assert!(Curses::get_output().is_empty());
-			assert!(!test_context.curses.is_dimmed());
-			assert!(!test_context.curses.is_reverse());
-			assert!(!test_context.curses.is_underline());
+			assert!(CrossTerm::get_output().is_empty());
+			assert!(CrossTerm::get_output().is_empty());
+			assert!(!test_context.crossterm.is_dimmed());
+			assert!(!test_context.crossterm.is_reverse());
+			assert!(!test_context.crossterm.is_underline());
 		});
 	}
 
 	#[test]
 	#[serial_test::serial]
-	fn reset() {
+	fn refresh() {
 		display_module_test(|mut test_context: TestContext<'_>| {
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			display.refresh().unwrap();
-			assert_eq!(test_context.curses.get_state(), State::Refreshed);
+			assert!(!test_context.crossterm.is_dirty());
 		});
 	}
 
 	#[rstest(
 		display_color,
 		selected,
-		expected,
-		case::action_break(DisplayColor::ActionBreak, false, 20),
-		case::action_break_selected(DisplayColor::ActionBreak, true, 21),
-		case::action_drop(DisplayColor::ActionDrop, false, 22),
-		case::action_drop_selected(DisplayColor::ActionDrop, true, 23),
-		case::action_edit(DisplayColor::ActionEdit, false, 24),
-		case::action_edit_selected(DisplayColor::ActionEdit, true, 25),
-		case::action_exec(DisplayColor::ActionExec, false, 26),
-		case::action_exec_selected(DisplayColor::ActionExec, true, 27),
-		case::action_fixup(DisplayColor::ActionFixup, false, 28),
-		case::action_fixup_selected(DisplayColor::ActionFixup, true, 29),
-		case::action_pick(DisplayColor::ActionPick, false, 30),
-		case::action_pick_selected(DisplayColor::ActionPick, true, 31),
-		case::action_reword(DisplayColor::ActionReword, false, 32),
-		case::action_reword_selected(DisplayColor::ActionReword, true, 33),
-		case::action_squash(DisplayColor::ActionSquash, false, 34),
-		case::action_squash_selected(DisplayColor::ActionSquash, true, 35),
-		case::normal(DisplayColor::Normal, false, 16),
-		case::normal_selected(DisplayColor::Normal, true, 17),
-		case::indicator(DisplayColor::IndicatorColor, false, 18),
-		case::indicator_selected(DisplayColor::IndicatorColor, true, 19),
-		case::diff_add(DisplayColor::DiffAddColor, false, 36),
-		case::diff_add_selected(DisplayColor::DiffAddColor, true, 37),
-		case::diff_remove(DisplayColor::DiffRemoveColor, false, 40),
-		case::diff_remove_selected(DisplayColor::DiffRemoveColor, true, 41),
-		case::diff_change(DisplayColor::DiffChangeColor, false, 38),
-		case::diff_change_selected(DisplayColor::DiffChangeColor, true, 39),
-		case::diff_context(DisplayColor::DiffContextColor, false, 42),
-		case::diff_context_selected(DisplayColor::DiffContextColor, true, 43),
-		case::diff_whitespace(DisplayColor::DiffWhitespaceColor, false, 44),
-		case::diff_whitespace_selected(DisplayColor::DiffWhitespaceColor, true, 45)
+		expected_foreground,
+		expected_background,
+		case::action_break(DisplayColor::ActionBreak, false, CrosstermColor::White, CrosstermColor::Reset),
+		case::action_break_selected(
+			DisplayColor::ActionBreak,
+			true,
+			CrosstermColor::White,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_drop(DisplayColor::ActionDrop, false, CrosstermColor::Red, CrosstermColor::Reset),
+		case::action_drop_selected(
+			DisplayColor::ActionDrop,
+			true,
+			CrosstermColor::Red,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_edit(DisplayColor::ActionEdit, false, CrosstermColor::Blue, CrosstermColor::Reset),
+		case::action_edit_selected(
+			DisplayColor::ActionEdit,
+			true,
+			CrosstermColor::Blue,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_exec(DisplayColor::ActionExec, false, CrosstermColor::White, CrosstermColor::Reset),
+		case::action_exec_selected(
+			DisplayColor::ActionExec,
+			true,
+			CrosstermColor::White,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_fixup(DisplayColor::ActionFixup, false, CrosstermColor::Magenta, CrosstermColor::Reset),
+		case::action_fixup_selected(
+			DisplayColor::ActionFixup,
+			true,
+			CrosstermColor::Magenta,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_pick(DisplayColor::ActionPick, false, CrosstermColor::Green, CrosstermColor::Reset),
+		case::action_pick_selected(
+			DisplayColor::ActionPick,
+			true,
+			CrosstermColor::Green,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_reword(DisplayColor::ActionReword, false, CrosstermColor::Yellow, CrosstermColor::Reset),
+		case::action_reword_selected(
+			DisplayColor::ActionReword,
+			true,
+			CrosstermColor::Yellow,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_squash(DisplayColor::ActionSquash, false, CrosstermColor::Cyan, CrosstermColor::Reset),
+		case::action_squash_selected(
+			DisplayColor::ActionSquash,
+			true,
+			CrosstermColor::Cyan,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::normal(DisplayColor::Normal, false, CrosstermColor::Reset, CrosstermColor::Reset),
+		case::normal_selected(DisplayColor::Normal, true, CrosstermColor::Reset, CrosstermColor::AnsiValue(237)),
+		case::indicator(DisplayColor::IndicatorColor, false, CrosstermColor::Cyan, CrosstermColor::Reset),
+		case::indicator_selected(
+			DisplayColor::IndicatorColor,
+			true,
+			CrosstermColor::Cyan,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::diff_add(DisplayColor::DiffAddColor, false, CrosstermColor::Green, CrosstermColor::Reset),
+		case::diff_add_selected(
+			DisplayColor::DiffAddColor,
+			true,
+			CrosstermColor::Green,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::diff_remove(DisplayColor::DiffRemoveColor, false, CrosstermColor::Red, CrosstermColor::Reset),
+		case::diff_remove_selected(
+			DisplayColor::DiffRemoveColor,
+			true,
+			CrosstermColor::Red,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::diff_change(DisplayColor::DiffChangeColor, false, CrosstermColor::Yellow, CrosstermColor::Reset),
+		case::diff_change_selected(
+			DisplayColor::DiffChangeColor,
+			true,
+			CrosstermColor::Yellow,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::diff_context(DisplayColor::DiffContextColor, false, CrosstermColor::White, CrosstermColor::Reset),
+		case::diff_context_selected(
+			DisplayColor::DiffContextColor,
+			true,
+			CrosstermColor::White,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::diff_whitespace(
+			DisplayColor::DiffWhitespaceColor,
+			false,
+			CrosstermColor::Grey,
+			CrosstermColor::Reset
+		),
+		case::diff_whitespace_selected(
+			DisplayColor::DiffWhitespaceColor,
+			true,
+			CrosstermColor::Grey,
+			CrosstermColor::AnsiValue(237)
+		)
 	)]
 	#[serial_test::serial()]
-	fn color(display_color: DisplayColor, selected: bool, expected: chtype) {
+	fn color(
+		display_color: DisplayColor,
+		selected: bool,
+		expected_foreground: CrosstermColor,
+		expected_background: CrosstermColor,
+	) {
 		display_module_test(|mut test_context: TestContext<'_>| {
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			display.color(display_color, selected).unwrap();
-			assert!(test_context.curses.is_color_enabled(expected));
+			assert!(test_context
+				.crossterm
+				.is_colors_enabled(Colors::new(expected_foreground, expected_background)));
 		});
 	}
 
@@ -454,24 +482,24 @@ mod tests {
 		display_module_test(|mut test_context: TestContext<'_>| {
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			display.set_style(dim, underline, reverse).unwrap();
-			assert_eq!(test_context.curses.is_dimmed(), dim);
-			assert_eq!(test_context.curses.is_underline(), underline);
-			assert_eq!(test_context.curses.is_reverse(), reverse);
+			assert_eq!(test_context.crossterm.is_dimmed(), dim);
+			assert_eq!(test_context.crossterm.is_underline(), underline);
+			assert_eq!(test_context.crossterm.is_reverse(), reverse);
 		});
 	}
 
 	#[test]
 	#[serial_test::serial]
-	fn getch_normal_input() {
+	fn get_input_success() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.set_inputs(vec![CursesInput::Character('z')]);
+			CrossTerm::set_inputs(vec![create_key_event!('z')]);
 			let display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			assert_eq!(display.get_input(InputMode::Default), Input::Character('z'));
@@ -480,16 +508,37 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn get_input_resize() {
+	fn get_input_fail() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.set_inputs(vec![CursesInput::KeyResize]);
+			CrossTerm::set_inputs(vec![]);
 			let display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
-			assert_eq!(display.get_input(InputMode::Default), Input::Resize);
-			assert_eq!(test_context.curses.get_state(), State::Resized);
+			assert_eq!(display.get_input(InputMode::Default), Input::Other);
+		});
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn get_input_ignore_hack() {
+		display_module_test(|mut test_context: TestContext<'_>| {
+			CrossTerm::set_inputs(vec![
+				Event::Mouse(MouseEvent {
+					kind: MouseEventKind::Moved,
+					column: 0,
+					row: 0,
+					modifiers: KeyModifiers::NONE,
+				}),
+				create_key_event!('z'),
+			]);
+			let display = Display::new(
+				test_context.input_handler,
+				&mut test_context.crossterm,
+				&test_context.config.theme,
+			);
+			assert_eq!(display.get_input(InputMode::Default), Input::Character('z'));
 		});
 	}
 
@@ -497,10 +546,10 @@ mod tests {
 	#[serial_test::serial]
 	fn get_window_size() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.resize_term(10, 12);
+			test_context.crossterm.set_size(Size::new(12, 10));
 			let display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			assert_eq!(display.get_window_size(), Size::new(12, 10));
@@ -509,33 +558,15 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn fill_end_of_line() {
-		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.resize_term(10, 23);
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.curses,
-				&test_context.config.theme,
-			);
-			display.fill_end_of_line().unwrap();
-			assert_eq!(Curses::get_output()[0], "{HLINE| |23}");
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
 	fn ensure_at_line_start() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.resize_term(5, 25);
-			test_context.curses.mv(10, 12);
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
-			display.ensure_at_line_start(5).unwrap();
-			assert_eq!(test_context.curses.get_cur_y(), 5);
-			assert_eq!(test_context.curses.get_cur_x(), 0);
+			display.ensure_at_line_start().unwrap();
+			assert_eq!(test_context.crossterm.get_position(), (1, 0));
 		});
 	}
 
@@ -543,15 +574,29 @@ mod tests {
 	#[serial_test::serial]
 	fn move_from_end_of_line() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			test_context.curses.resize_term(5, 25);
-			test_context.curses.mv(5, 20);
+			test_context.crossterm.set_size(Size::new(20, 10));
 			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
 			display.move_from_end_of_line(5).unwrap();
-			assert_eq!(test_context.curses.get_cur_x(), 20);
+			// character after the 15th character (16th)
+			assert_eq!(test_context.crossterm.get_position(), (16, 0));
+		});
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn start() {
+		display_module_test(|mut test_context: TestContext<'_>| {
+			let mut display = Display::new(
+				test_context.input_handler,
+				&mut test_context.crossterm,
+				&test_context.config.theme,
+			);
+			display.start().unwrap();
+			assert_eq!(test_context.crossterm.get_state(), State::Normal);
 		});
 	}
 
@@ -559,13 +604,13 @@ mod tests {
 	#[serial_test::serial]
 	fn end() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let display = Display::new(
+			let mut display = Display::new(
 				test_context.input_handler,
-				&mut test_context.curses,
+				&mut test_context.crossterm,
 				&test_context.config.theme,
 			);
-			display.end();
-			assert_eq!(test_context.curses.get_state(), State::Ended);
+			display.end().unwrap();
+			assert_eq!(test_context.crossterm.get_state(), State::Ended);
 		});
 	}
 }

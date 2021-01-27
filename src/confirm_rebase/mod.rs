@@ -21,7 +21,7 @@ impl ProcessModule for ConfirmRebase {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
 		let input = view.get_input(InputMode::Confirm);
 		let mut result = ProcessResult::new().input(input);
 		match input {

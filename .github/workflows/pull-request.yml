@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
+        run: sudo apt-get install build-essential pkg-config liblzma-dev
       - name: Update Rust
         run: rustup update stable
       - name: Test
@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
+        run: sudo apt-get install build-essential pkg-config liblzma-dev
       - name: Lint
         run: "./scripts/lint.bash"
       - name: Format
@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get install build-essential libncursesw5-dev pkg-config liblzma-dev
+        run: sudo apt-get install build-essential pkg-config liblzma-dev
       - name: Build Coverage
         run: "./scripts/coverage.bash"
       - name: Post to Coveralls

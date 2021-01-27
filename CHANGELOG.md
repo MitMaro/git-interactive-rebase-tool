@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Optional rollback on error or invalid file during external edit
 
 ### Changed
+- No longer based on Curses and instead using Crossterm
 - Change page up and page down to scroll half the height of the view area
 - Improved error handling for executing external editor
 

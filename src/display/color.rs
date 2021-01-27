@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Color {
+	Default,
 	LightWhite,
 	LightBlack,
 	LightBlue,
@@ -11,6 +12,7 @@ pub enum Color {
 	LightMagenta,
 	LightRed,
 	LightYellow,
+	LightGrey,
 	DarkWhite,
 	DarkBlack,
 	DarkBlue,
@@ -19,9 +21,9 @@ pub enum Color {
 	DarkMagenta,
 	DarkRed,
 	DarkYellow,
-	Default,
-	Index(i16),
-	RGB { red: i16, green: i16, blue: i16 },
+	DarkGrey,
+	Index(u8),
+	RGB { red: u8, green: u8, blue: u8 },
 }
 
 impl TryFrom<&str> for Color {
@@ -37,6 +39,7 @@ impl TryFrom<&str> for Color {
 			"red" | "light red" => Ok(Self::LightRed),
 			"white" | "light white" => Ok(Self::LightWhite),
 			"yellow" | "light yellow" => Ok(Self::LightYellow),
+			"grey" | "light grey" => Ok(Self::LightGrey),
 			"dark black" => Ok(Self::DarkBlack),
 			"dark blue" => Ok(Self::DarkBlue),
 			"dark cyan" => Ok(Self::DarkCyan),
@@ -45,15 +48,16 @@ impl TryFrom<&str> for Color {
 			"dark red" => Ok(Self::DarkRed),
 			"dark white" => Ok(Self::DarkWhite),
 			"dark yellow" => Ok(Self::DarkYellow),
+			"dark grey" => Ok(Self::DarkGrey),
 			"transparent" | "-1" => Ok(Self::Default),
 			_ => {
 				let matches: Vec<&str> = s.split(',').collect();
 
 				match matches.len() {
 					1 => {
-						let color_index = s.parse::<i16>();
+						let color_index = s.parse::<u8>();
 						match color_index {
-							Ok(i) if (0..256).contains(&i) => Ok(Self::Index(i)),
+							Ok(i) if (0..=255).contains(&i) => Ok(Self::Index(i)),
 							_ => {
 								Err(anyhow!(
 									"\"{}\" is not a valid color index. Index must be between 0-255.",
@@ -67,8 +71,12 @@ impl TryFrom<&str> for Color {
 						let green = matches[1].parse::<i16>().unwrap_or(-1);
 						let blue = matches[2].parse::<i16>().unwrap_or(-1);
 
-						if red > -1 && green > -1 && blue > -1 && red < 256 && green < 256 && blue < 256 {
-							return Ok(Self::RGB { red, green, blue });
+						if red >= 0 && green >= 0 && blue >= 0 && red < 256 && green < 256 && blue < 256 {
+							return Ok(Self::RGB {
+								red: red as u8,
+								green: green as u8,
+								blue: blue as u8,
+							});
 						}
 						Err(anyhow!(
 							"\"{}\" is not a valid color triple. Values must be between 0-255.",
