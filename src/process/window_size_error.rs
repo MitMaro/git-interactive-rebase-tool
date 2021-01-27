@@ -57,7 +57,7 @@ impl ProcessModule for WindowSizeError {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
 		let input = view.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 
@@ -91,9 +91,9 @@ mod tests {
 	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
+	use crate::display::size::Size;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use rstest::rstest;
-	use std::convert::TryFrom;
 
 	#[test]
 	fn is_window_too_small_width_too_small() {
@@ -145,7 +145,7 @@ mod tests {
 		process_module_test(
 			&[],
 			ViewState {
-				size: (i32::try_from(width).unwrap(), i32::try_from(height).unwrap()),
+				size: Size::new(width, height),
 				..ViewState::default()
 			},
 			&[],
@@ -163,7 +163,7 @@ mod tests {
 		process_module_test(
 			&[],
 			ViewState {
-				size: (1, 1),
+				size: Size::new(1, 1),
 				..ViewState::default()
 			},
 			&[Input::Resize],
@@ -181,7 +181,7 @@ mod tests {
 		process_module_test(
 			&[],
 			ViewState {
-				size: (100, 100),
+				size: Size::new(100, 100),
 				..ViewState::default()
 			},
 			&[Input::Resize],
@@ -202,10 +202,7 @@ mod tests {
 	fn input_other_character() {
 		process_module_test(
 			&[],
-			ViewState {
-				size: (100, 100),
-				..ViewState::default()
-			},
+			ViewState { ..ViewState::default() },
 			&[Input::Character('a')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();

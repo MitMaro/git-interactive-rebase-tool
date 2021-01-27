@@ -108,7 +108,7 @@ impl ProcessModule for ExternalEditor {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
@@ -207,7 +207,7 @@ impl ExternalEditor {
 		None
 	}
 
-	fn run_editor(&mut self, view: &View<'_>, todo_file: &TodoFile) -> Result<()> {
+	fn run_editor(&mut self, view: &mut View<'_>, todo_file: &TodoFile) -> Result<()> {
 		let mut arguments = tolkenize(self.editor.as_str())
 			.map_or(Err(anyhow!("Invalid editor: \"{}\"", self.editor)), |args| {
 				if args.is_empty() {
@@ -237,12 +237,13 @@ impl ExternalEditor {
 			}
 			cmd.status().map_err(|e| anyhow!(e).context("Unable to run editor"))
 		};
-		let exit_status: ProcessExitStatus = view.leave_temporarily(callback)?;
-
+		view.end()?;
+		let exit_status = callback();
+		view.start()?;
+		let exit_status = exit_status?;
 		if !exit_status.success() {
 			return Err(anyhow!("Editor returned a non-zero exit status"));
 		}
-
 		Ok(())
 	}
 }
@@ -252,6 +253,7 @@ mod tests {
 	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
+	use crate::display::size::Size;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use std::path::Path;
 
@@ -810,7 +812,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment", "drop bbb comment"],
 			ViewState {
-				size: (10, 3),
+				size: Size::new(10, 3),
 				..ViewState::default()
 			},
 			&[Input::Right],
@@ -835,7 +837,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment", "drop bbb comment"],
 			ViewState {
-				size: (10, 3),
+				size: Size::new(10, 3),
 				..ViewState::default()
 			},
 			&[Input::Right, Input::Right, Input::Right, Input::Left],
@@ -860,7 +862,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment", "drop bbb comment"],
 			ViewState {
-				size: (10, 3),
+				size: Size::new(10, 3),
 				..ViewState::default()
 			},
 			&[Input::Down],
@@ -892,7 +894,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment", "drop bbb comment"],
 			ViewState {
-				size: (10, 3),
+				size: Size::new(10, 3),
 				..ViewState::default()
 			},
 			&[Input::Down, Input::Down, Input::Down, Input::Up],
@@ -924,7 +926,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment", "drop bbb comment"],
 			ViewState {
-				size: (10, 3),
+				size: Size::new(10, 3),
 				..ViewState::default()
 			},
 			&[Input::Resize],

@@ -1,6 +1,5 @@
 use super::*;
-// use crate::assert_process_result;
-// use crate::assert_rendered_output;
+use crate::display::size::Size;
 use crate::process::testutil::{process_module_test, TestContext, ViewState};
 use crate::todo_file::line::Line;
 use anyhow::anyhow;
@@ -11,7 +10,7 @@ fn window_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState {
-			size: (1, 1),
+			size: Size::new(1, 1),
 			..ViewState::default()
 		},
 		&[Input::Exit],
@@ -100,7 +99,7 @@ fn resize_window_size_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState {
-			size: (1, 1),
+			size: Size::new(1, 1),
 			..ViewState::default()
 		},
 		&[],

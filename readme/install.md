@@ -44,8 +44,7 @@ Download the `.deb` file from the [releases page][releases] and install with:
 
     sudo dpkg -i /path/to/git-interactive-rebase-tool_*.deb
 
-The executable will be installed to `/usr/bin`. You may need to install ncurses with `apt-get install libncursesw5` if
-it is not satisfied.
+The executable will be installed to `/usr/bin`.
 
 ### Remove
 

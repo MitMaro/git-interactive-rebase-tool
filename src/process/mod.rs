@@ -33,14 +33,17 @@ pub struct Process<'r> {
 impl<'r> Process<'r> {
 	pub(crate) const fn new(rebase_todo: TodoFile, view: View<'r>) -> Self {
 		Self {
-			state: State::List,
 			exit_status: None,
 			rebase_todo,
+			state: State::List,
 			view,
 		}
 	}
 
 	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
+		if self.view.start().is_err() {
+			return Ok(Some(ExitStatus::StateError));
+		}
 		let view_width = self.view.get_view_size().width();
 		let view_height = self.view.get_view_size().height();
 		if WindowSizeError::is_window_too_small(view_width, view_height) {
@@ -48,20 +51,25 @@ impl<'r> Process<'r> {
 		}
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
-			if let Err(_) = self
+			if self
 				.view
 				.render(modules.build_view_data(self.state, &self.view, &self.rebase_todo))
+				.is_err()
 			{
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
 			}
-			let result = modules.handle_input(self.state, &self.view, &mut self.rebase_todo);
+			let result = modules.handle_input(self.state, &mut self.view, &mut self.rebase_todo);
 			self.handle_process_result(&mut modules, &result);
 		}
-		self.view.end();
-
-		self.rebase_todo.write_file()?;
-
+		if self.view.end().is_err() {
+			return Ok(Some(ExitStatus::StateError));
+		}
+		if let Some(status) = self.exit_status {
+			if status != ExitStatus::Kill {
+				self.rebase_todo.write_file()?;
+			}
+		}
 		Ok(self.exit_status)
 	}
 
@@ -88,6 +96,9 @@ impl<'r> Process<'r> {
 		match result.input {
 			Some(Input::Exit) => {
 				self.exit_status = Some(ExitStatus::Abort);
+			},
+			Some(Input::Kill) => {
+				self.exit_status = Some(ExitStatus::Kill);
 			},
 			Some(Input::Resize) => {
 				let view_width = self.view.get_view_size().width();

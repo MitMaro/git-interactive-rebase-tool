@@ -67,7 +67,7 @@ impl<'l> ProcessModule for List<'l> {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
 		let view_height = view.get_view_size().height();
 		let input = view.get_input(InputMode::List);
 		let mut result = ProcessResult::new().input(input);
@@ -311,6 +311,7 @@ mod tests {
 	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
+	use crate::display::size::Size;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 
 	#[test]
@@ -368,7 +369,7 @@ mod tests {
 				"edit 11111111 comment 7",
 			],
 			ViewState {
-				size: (30, 100),
+				size: Size::new(30, 100),
 				..ViewState::default()
 			},
 			&[],
@@ -405,7 +406,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown],
@@ -437,7 +438,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown; 2],
@@ -469,7 +470,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown; 3],
@@ -501,7 +502,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown; 4],
@@ -527,7 +528,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -561,7 +562,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -597,7 +598,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorUp, Input::MoveCursorUp],
@@ -623,7 +624,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown; 4],
@@ -649,7 +650,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorPageUp],
@@ -682,7 +683,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown, Input::MoveCursorDown, Input::MoveCursorPageUp],
@@ -717,7 +718,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -757,7 +758,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown, Input::MoveCursorDown, Input::MoveCursorPageUp],
@@ -792,7 +793,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -834,7 +835,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -876,7 +877,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -917,7 +918,7 @@ mod tests {
 				"pick aaa c6",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -950,7 +951,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ToggleVisualMode],
@@ -976,7 +977,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ToggleVisualMode, Input::MoveCursorDown],
@@ -1009,7 +1010,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -1048,7 +1049,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ToggleVisualMode, Input::MoveCursorPageDown],
@@ -1082,7 +1083,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -1120,7 +1121,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -1159,7 +1160,7 @@ mod tests {
 				"pick aaa c5",
 			],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[
@@ -1195,7 +1196,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionDrop],
@@ -1219,7 +1220,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionEdit],
@@ -1243,7 +1244,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionFixup],
@@ -1268,7 +1269,7 @@ mod tests {
 		process_module_test(
 			&["drop aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionPick],
@@ -1292,7 +1293,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionReword],
@@ -1317,7 +1318,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionSquash],
@@ -1342,7 +1343,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionBreak],
@@ -1367,7 +1368,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "break"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorDown, Input::ActionBreak],
@@ -1391,7 +1392,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "break"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionBreak],
@@ -1416,7 +1417,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2"],
 			ViewState {
-				size: (120, 4),
+				size: Size::new(120, 4),
 				..ViewState::default()
 			},
 			&[Input::ActionSquash],
@@ -2481,7 +2482,7 @@ mod tests {
 				"pick cccccccccccc this comment needs to be longer than the width of the view",
 			],
 			ViewState {
-				size: (50, 4),
+				size: Size::new(50, 4),
 				..ViewState::default()
 			},
 			&[Input::MoveCursorRight; 3],
@@ -2513,7 +2514,7 @@ mod tests {
 				"pick cccccccccccc this comment needs to be longer than the width of the view",
 			],
 			ViewState {
-				size: (50, 4),
+				size: Size::new(50, 4),
 				..ViewState::default()
 			},
 			&[

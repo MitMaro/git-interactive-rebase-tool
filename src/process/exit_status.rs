@@ -6,6 +6,7 @@ pub enum ExitStatus {
 	FileWriteError,
 	Good,
 	StateError,
+	Kill,
 }
 
 impl ExitStatus {
@@ -17,6 +18,7 @@ impl ExitStatus {
 			Self::FileWriteError => 3,
 			Self::Good => 0,
 			Self::StateError => 4,
+			Self::Kill => 6,
 		}
 	}
 }
@@ -34,7 +36,8 @@ mod tests {
 		case::file_read_error(ExitStatus::FileReadError, 2),
 		case::file_write_error(ExitStatus::FileWriteError, 3),
 		case::good(ExitStatus::Good, 0),
-		case::state_error(ExitStatus::StateError, 4)
+		case::state_error(ExitStatus::StateError, 4),
+		case::kill(ExitStatus::Kill, 6)
 	)]
 	fn to_code(input: ExitStatus, expected: i32) {
 		assert_eq!(ExitStatus::to_code(input), expected);

@@ -21,7 +21,7 @@ impl ProcessModule for ConfirmAbort {
 		&self.view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
 		let input = view.get_input(InputMode::Confirm);
 		let mut result = ProcessResult::new().input(input);
 		match input {

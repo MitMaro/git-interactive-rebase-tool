@@ -50,7 +50,7 @@ impl ProcessModule for Help {
 		view_data
 	}
 
-	fn handle_input(&mut self, view: &View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
 		let input = view.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 		let mut view_data = self.view_data.as_mut().unwrap_or(&mut self.no_help_view_data);
@@ -127,6 +127,7 @@ mod tests {
 	use super::*;
 	use crate::assert_process_result;
 	use crate::assert_rendered_output;
+	use crate::display::size::Size;
 	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 
 	#[test]
@@ -151,7 +152,7 @@ mod tests {
 		process_module_test(
 			&[],
 			ViewState {
-				size: (22, 100),
+				size: Size::new(22, 100),
 				..ViewState::default()
 			},
 			&[],

@@ -1,6 +1,7 @@
 use super::*;
 use crate::assert_process_result;
 use crate::assert_rendered_output;
+use crate::display::size::Size;
 use crate::process::testutil::{process_module_test, TestContext, ViewState};
 use crate::show_commit::delta::Delta;
 use crate::show_commit::diff_line::DiffLine;
@@ -109,7 +110,7 @@ fn render_overview_minimal_commit_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (33, 100),
+			size: Size::new(33, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -167,7 +168,7 @@ fn render_overview_with_author_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (33, 100),
+			size: Size::new(33, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -227,7 +228,7 @@ fn render_overview_with_committer_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (33, 100),
+			size: Size::new(33, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -332,7 +333,7 @@ fn render_overview_with_file_stats_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (33, 100),
+			size: Size::new(33, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -545,7 +546,7 @@ fn render_diff_minimal_commit() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -575,7 +576,7 @@ fn render_diff_minimal_commit_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (33, 100),
+			size: Size::new(33, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -604,7 +605,7 @@ fn render_diff_basic_file_stats() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -657,7 +658,7 @@ fn render_diff_end_new_line_missing() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -698,7 +699,7 @@ fn render_diff_add_line() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -739,7 +740,7 @@ fn render_diff_delete_line() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -780,7 +781,7 @@ fn render_diff_context_add_remove_lines() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -827,7 +828,7 @@ fn render_diff_add_line_with_show_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -868,7 +869,7 @@ fn render_diff_delete_line_with_show_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -909,7 +910,7 @@ fn render_diff_context_add_remove_lines_with_show_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -979,7 +980,7 @@ fn render_diff_show_both_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -1030,7 +1031,7 @@ fn render_diff_show_leading_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -1081,7 +1082,7 @@ fn render_diff_show_no_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],
@@ -1129,7 +1130,7 @@ fn render_diff_show_whitespace_all_spaces() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
-			size: (50, 100),
+			size: Size::new(50, 100),
 			..ViewState::default()
 		},
 		&[],

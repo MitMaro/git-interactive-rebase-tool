@@ -4,7 +4,7 @@
 
 # Git Interactive Rebase Tool
 
-Native cross-platform full feature terminal based [sequence editor][git-sequence-editor] for interactive rebase in Git 1.7.8+. Written in Rust using ncurses.
+Native cross-platform full feature terminal based [sequence editor][git-sequence-editor] for interactive rebase in Git 1.7.8+.
 
 [![Git Interactive Rebase Tool](/docs/assets/images/girt-demo.gif?raw=true)](https://youtu.be/q3tzb-gQC0w)
 
@@ -155,11 +155,9 @@ To start developing the project, you will need to [install Rust][install-rust], 
 
 #### Debian and derivatives
 
-You will need `build-essential` and `libncursesw5-dev` to build the project. Additionally, you will need `pkg-config` and `liblzma-dev` if you wish to build a release. They can be installed using `apt-get`:
+If you plan to build a release package you will need `pkg-config` and `liblzma-dev`. They can be installed using `apt`:
 
-    sudo apt-get install build-essential libncursesw5-dev
-    sudo apt-get install pkg-config liblzma-dev
-
+    sudo apt install pkg-config liblzma-dev
 
 ### Build and run
 

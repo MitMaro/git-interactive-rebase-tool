@@ -7,7 +7,8 @@ pub mod view_line;
 
 use crate::constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH};
 use crate::display::display_color::DisplayColor;
-use crate::display::{Display, Size};
+use crate::display::size::Size;
+use crate::display::Display;
 use crate::input::input_handler::InputMode;
 use crate::input::Input;
 use crate::view::view_data::ViewData;
@@ -25,21 +26,11 @@ impl<'v> View<'v> {
 		Self { display, config }
 	}
 
-	pub(crate) fn get_view_size(&self) -> Size {
-		self.display.get_window_size()
+	pub(crate) fn start(&mut self) -> Result<()> {
+		self.display.start()
 	}
 
-	/// Leaves curses mode, runs the specified callback, and re-enables curses.
-	pub(crate) fn leave_temporarily<F, T>(&self, callback: F) -> T
-	where F: FnOnce() -> T {
-		self.display.def_prog_mode();
-		self.display.end();
-		let rv = callback();
-		self.display.reset_prog_mode();
-		rv
-	}
-
-	pub(crate) fn end(&self) {
+	pub(crate) fn end(&mut self) -> Result<()> {
 		self.display.end()
 	}
 
@@ -47,25 +38,30 @@ impl<'v> View<'v> {
 		self.display.get_input(mode)
 	}
 
+	pub(crate) fn get_view_size(&self) -> Size {
+		self.display.get_window_size()
+	}
+
 	pub(crate) fn render(&mut self, view_data: &ViewData) -> Result<()> {
 		self.display.clear()?;
 		let window_height = self.display.get_window_size().height();
 
-		let mut line_index = 0;
-
+		self.display.ensure_at_line_start()?;
 		if view_data.show_title() {
-			self.display.ensure_at_line_start(line_index)?;
-			line_index += 1;
+			self.display.ensure_at_line_start()?;
 			self.draw_title(view_data.show_help())?;
+			self.display.next_line()?;
 		}
 
 		if let Some(ref prompt) = *view_data.get_prompt() {
 			self.display.set_style(false, false, false)?;
-			self.display.draw_str("\n")?;
+			self.display.next_line()?;
 			self.display.draw_str(&format!(
 				"{} ({}/{})? ",
 				prompt, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
 			))?;
+			self.display.next_line()?;
+			self.display.refresh()?;
 			return Ok(());
 		}
 
@@ -79,44 +75,44 @@ impl<'v> View<'v> {
 		let scroll_indicator_index = view_data.get_scroll_index();
 
 		for line in leading_lines {
-			self.display.ensure_at_line_start(line_index)?;
-			line_index += 1;
+			self.display.ensure_at_line_start()?;
 			self.draw_view_line(line)?;
+			self.display.next_line()?;
 		}
 
 		for (index, line) in lines.iter().enumerate() {
-			self.display.ensure_at_line_start(line_index)?;
+			self.display.ensure_at_line_start()?;
 			self.draw_view_line(line)?;
 			if show_scroll_bar {
-				self.display.ensure_at_line_start(line_index)?;
 				self.display.move_from_end_of_line(1)?;
-				self.display.color(DisplayColor::Normal, false)?;
-				self.display.set_style(scroll_indicator_index != index, false, true)?;
-				self.display.draw_str(" ")?;
+				self.display.color(DisplayColor::Normal, true)?;
+				self.display
+					.draw_str(if scroll_indicator_index == index { "█" } else { " " })?;
 			}
 			self.display.color(DisplayColor::Normal, false)?;
 			self.display.set_style(false, false, false)?;
-			line_index += 1;
+			self.display.next_line()?;
 		}
 
 		if view_height > lines.len() {
 			self.display.color(DisplayColor::Normal, false)?;
 			self.display.set_style(false, false, false)?;
 			let draw_height = view_height - lines.len() - if view_data.show_title() { 1 } else { 0 };
-			self.display.ensure_at_line_start(line_index)?;
+			self.display.ensure_at_line_start()?;
 			for _x in 0..draw_height {
-				line_index += 1;
 				self.display
-					.draw_str(format!("{}\n", self.config.theme.character_vertical_spacing).as_str())?;
+					.draw_str(self.config.theme.character_vertical_spacing.as_str())?;
+				self.display.next_line()?;
 			}
 		}
 
 		for line in trailing_lines {
-			self.display.ensure_at_line_start(line_index)?;
-			line_index += 1;
+			self.display.ensure_at_line_start()?;
 			self.draw_view_line(line)?;
+			self.display.next_line()?;
 		}
-		self.display.refresh()
+		self.display.refresh()?;
+		Ok(())
 	}
 
 	fn draw_view_line(&mut self, line: &ViewLine) -> Result<()> {
@@ -130,7 +126,7 @@ impl<'v> View<'v> {
 		// reset style
 		self.display.color(DisplayColor::Normal, false)?;
 		self.display.set_style(false, false, false)?;
-		self.display.fill_end_of_line()
+		Ok(())
 	}
 
 	fn draw_title(&mut self, show_help: bool) -> Result<()> {
@@ -172,7 +168,8 @@ impl<'v> View<'v> {
 
 		// reset style
 		self.display.color(DisplayColor::Normal, false)?;
-		self.display.set_style(false, false, false)
+		self.display.set_style(false, false, false)?;
+		Ok(())
 	}
 }
 
@@ -181,9 +178,8 @@ mod tests {
 	use super::*;
 
 	use crate::config::Config;
-	use crate::display::curses::Curses;
+	use crate::display::CrossTerm;
 	use crate::input::input_handler::InputHandler;
-	use std::convert::TryInto;
 	use std::env::set_var;
 	use std::path::Path;
 
@@ -193,11 +189,11 @@ mod tests {
 
 	impl<'t> TestContext<'t> {
 		fn assert_output(expected: &[&str]) {
-			assert_eq!(Curses::get_output().join(""), expected.join(""));
+			assert_eq!(CrossTerm::get_output().join(""), format!("{}\n", expected.join("\n")));
 		}
 	}
 
-	pub fn view_module_test<F>(size: &Size, callback: F)
+	pub fn view_module_test<F>(size: Size, callback: F)
 	where F: FnOnce(TestContext<'_>) {
 		set_var(
 			"GIT_DIR",
@@ -209,84 +205,90 @@ mod tests {
 				.unwrap(),
 		);
 		let config = Config::new().unwrap();
-		let mut curses = Curses::new();
-		curses.erase();
-		curses.resize_term(size.height().try_into().unwrap(), size.width().try_into().unwrap());
+		let mut crossterm = CrossTerm::new();
+		crossterm.set_size(size);
 		let input_handler = InputHandler::new(&config.key_bindings);
-		let display = Display::new(input_handler, &mut curses, &config.theme);
+		let display = Display::new(input_handler, &mut crossterm, &config.theme);
 		let view = View::new(display, &config);
 		callback(TestContext { view });
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn get_view_size() {
-		view_module_test(&Size::new(20, 10), |test_context| {
+		view_module_test(Size::new(20, 10), |test_context| {
 			assert_eq!(test_context.view.get_view_size(), Size::new(20, 10));
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_empty() {
-		view_module_test(&Size::new(20, 10), |mut test_context| {
+		view_module_test(Size::new(20, 10), |mut test_context| {
 			let view_data = ViewData::new();
 			test_context.view.render(&view_data).unwrap();
-			TestContext::assert_output(&["~\n"; 10]);
+			TestContext::assert_output(&["~"; 10]);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_title_full_width() {
-		view_module_test(&Size::new(35, 10), |mut test_context| {
+		view_module_test(Size::new(35, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool        "];
-			expected.extend(vec!["~\n"; 9]);
+			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_title_short_title() {
-		view_module_test(&Size::new(26, 10), |mut test_context| {
+		view_module_test(Size::new(26, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Rebase                "];
-			expected.extend(vec!["~\n"; 9]);
+			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_title_full_width_with_help() {
-		view_module_test(&Size::new(35, 10), |mut test_context| {
+		view_module_test(Size::new(35, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
 			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool Help: ?"];
-			expected.extend(vec!["~\n"; 9]);
+			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_title_full_width_with_help_enabled_but_not_enough_length() {
-		view_module_test(&Size::new(34, 10), |mut test_context| {
+		view_module_test(Size::new(34, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
 			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool       "];
-			expected.extend(vec!["~\n"; 9]);
+			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_prompt() {
-		view_module_test(&Size::new(35, 10), |mut test_context| {
+		view_module_test(Size::new(35, 10), |mut test_context| {
 			let view_data = ViewData::new_confirm("This is a prompt");
 			test_context.view.render(&view_data).unwrap();
 			let expected = vec!["Git Interactive Rebase Tool        ", "\nThis is a prompt (y/n)? "];
@@ -295,66 +297,68 @@ mod tests {
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_leading_lines() {
-		view_module_test(&Size::new(30, 10), |mut test_context| {
+		view_module_test(Size::new(30, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&view_data).unwrap();
-			let mut expected = vec!["This is a leading line        {HLINE| |30}"];
-			expected.extend(vec!["~\n"; 9]);
+			let mut expected = vec!["This is a leading line        "];
+			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_normal_lines() {
-		view_module_test(&Size::new(30, 10), |mut test_context| {
+		view_module_test(Size::new(30, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&view_data).unwrap();
-			let mut expected = vec!["This is a line                {HLINE| |30}"];
-			expected.extend(vec!["~\n"; 9]);
+			let mut expected = vec!["This is a line                "];
+			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_tailing_lines() {
-		view_module_test(&Size::new(30, 10), |mut test_context| {
+		view_module_test(Size::new(30, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&view_data).unwrap();
-			let mut expected = vec!["~\n"; 9];
-			expected.push("This is a trailing line       {HLINE| |30}");
+			let mut expected = vec!["~"; 9];
+			expected.push("This is a trailing line       ");
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_all_lines() {
-		view_module_test(&Size::new(30, 10), |mut test_context| {
+		view_module_test(Size::new(30, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&view_data).unwrap();
-			let mut expected = vec![
-				"This is a leading line        {HLINE| |30}",
-				"This is a line                {HLINE| |30}",
-			];
-			expected.extend(vec!["~\n"; 7]);
-			expected.push("This is a trailing line       {HLINE| |30}");
+			let mut expected = vec!["This is a leading line        ", "This is a line                "];
+			expected.extend(vec!["~"; 7]);
+			expected.push("This is a trailing line       ");
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_with_full_screen_data() {
-		view_module_test(&Size::new(30, 6), |mut test_context| {
+		view_module_test(Size::new(30, 6), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.push_line(ViewLine::from("This is line 1"));
@@ -365,20 +369,21 @@ mod tests {
 			view_data.set_view_size(30, 6);
 			test_context.view.render(&view_data).unwrap();
 			let expected = vec![
-				"This is a leading line        {HLINE| |30}",
-				"This is line 1                {HLINE| |30}",
-				"This is line 2                {HLINE| |30}",
-				"This is line 3                {HLINE| |30}",
-				"This is line 4                {HLINE| |30}",
-				"This is a trailing line       {HLINE| |30}",
+				"This is a leading line        ",
+				"This is line 1                ",
+				"This is line 2                ",
+				"This is line 3                ",
+				"This is line 4                ",
+				"This is a trailing line       ",
 			];
 			TestContext::assert_output(&expected);
 		});
 	}
 
 	#[test]
+	#[serial_test::serial]
 	fn render_with_scroll_bar() {
-		view_module_test(&Size::new(30, 6), |mut test_context| {
+		view_module_test(Size::new(30, 6), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.push_line(ViewLine::from("This is line 1"));
@@ -390,12 +395,12 @@ mod tests {
 			view_data.set_view_size(30, 6);
 			test_context.view.render(&view_data).unwrap();
 			let expected = vec![
-				"This is a leading line        {HLINE| |30}",
-				"This is line 1               {HLINE| |30} ",
-				"This is line 2               {HLINE| |30} ",
-				"This is line 3               {HLINE| |30} ",
-				"This is line 4               {HLINE| |30} ",
-				"This is a trailing line       {HLINE| |30}",
+				"This is a leading line        ",
+				"This is line 1               █",
+				"This is line 2                ",
+				"This is line 3                ",
+				"This is line 4                ",
+				"This is a trailing line       ",
 			];
 			TestContext::assert_output(&expected);
 		});
