@@ -1,6 +1,6 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "1.2.1"
+version = "2.0.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Full feature terminal based sequence editor for git interactive rebase."
@@ -14,20 +14,10 @@ include = [
     "/Cargo.toml",
     "/CHANGELOG.md",
     "/LICENSE",
+    "/readme",
     "/README.md"
 ]
 edition = "2018"
-
-[badges.appveyor]
-repository = "MitMaro/git-interactive-rebase-tool"
-service = "github"
-project_name = "git-interactive-rebase-tool"
-
-[badges.travis-ci]
-repository = "MitMaro/git-interactive-rebase-tool"
-
-[badges.maintenance]
-status = "actively-developed"
 
 [[bin]]
 name = "interactive-rebase-tool"
@@ -67,7 +57,8 @@ section = "utility"
 priority = "optional"
 assets = [
     ["target/release/interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
-    ["README.md", "usr/share/doc/cargo-deb/README", "644"],
-    ["CHANGELOG.md", "usr/share/doc/cargo-deb/CHANGELOG", "644"],
+    ["README.md", "usr/share/doc/interactive-rebase-tool/", "644"],
+    ["readme/**/*.md", "usr/share/doc/interactive-rebase-tool/readme/", "644"],
+    ["CHANGELOG.md", "usr/share/doc/interactive-rebase-tool/", "644"],
     ["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
 ]
