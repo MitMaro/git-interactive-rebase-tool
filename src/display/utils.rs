@@ -80,7 +80,7 @@ pub fn register_selectable_color_pairs(
 fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 	match color {
 		Color::Default => CrosstermColor::Reset,
-		Color::LightBlack => CrosstermColor::Grey,
+		Color::LightBlack => CrosstermColor::DarkGrey,
 		Color::LightWhite | Color::LightGrey => CrosstermColor::White,
 		Color::LightBlue => CrosstermColor::Blue,
 		Color::LightCyan => CrosstermColor::Cyan,
@@ -192,9 +192,10 @@ mod tests {
 
 	fn clear_env() {
 		remove_var("COLORTERM");
-		remove_var("VTE_VERSION");
-		remove_var("TERM_PROGRAM");
 		remove_var("TERM");
+		remove_var("TERM_PROGRAM");
+		remove_var("VTE_VERSION");
+		remove_var("WT_SESSION");
 	}
 
 	#[test]
@@ -420,7 +421,7 @@ mod tests {
 		case::dark_white(Color::DarkWhite, CrosstermColor::White),
 		case::dark_white(Color::DarkGrey, CrosstermColor::Grey),
 		case::dark_yellow(Color::DarkYellow, CrosstermColor::Yellow),
-		case::light_black(Color::LightBlack, CrosstermColor::Grey),
+		case::light_black(Color::LightBlack, CrosstermColor::DarkGrey),
 		case::light_grey(Color::LightGrey, CrosstermColor::White),
 		case::light_blue(Color::LightBlue, CrosstermColor::Blue),
 		case::light_cyan(Color::LightCyan, CrosstermColor::Cyan),
@@ -486,7 +487,7 @@ mod tests {
 		case::dark_white(Color::DarkWhite, CrosstermColor::Grey),
 		case::dark_white(Color::DarkGrey, CrosstermColor::DarkGrey),
 		case::dark_yellow(Color::DarkYellow, CrosstermColor::DarkYellow),
-		case::light_black(Color::LightBlack, CrosstermColor::Grey),
+		case::light_black(Color::LightBlack, CrosstermColor::DarkGrey),
 		case::light_grey(Color::LightGrey, CrosstermColor::White),
 		case::light_blue(Color::LightBlue, CrosstermColor::Blue),
 		case::light_cyan(Color::LightCyan, CrosstermColor::Cyan),
