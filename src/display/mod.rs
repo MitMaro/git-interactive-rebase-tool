@@ -434,13 +434,13 @@ mod tests {
 		case::diff_whitespace(
 			DisplayColor::DiffWhitespaceColor,
 			false,
-			CrosstermColor::Grey,
+			CrosstermColor::DarkGrey,
 			CrosstermColor::Reset
 		),
 		case::diff_whitespace_selected(
 			DisplayColor::DiffWhitespaceColor,
 			true,
-			CrosstermColor::Grey,
+			CrosstermColor::DarkGrey,
 			CrosstermColor::AnsiValue(237)
 		)
 	)]
