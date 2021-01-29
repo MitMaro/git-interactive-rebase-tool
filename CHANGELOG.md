@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The Git "diff.renames" and "diff.rename_limit" options are now respected during show commit
 - End and Home support during edit
 - Optional rollback on error or invalid file during external edit
+- True color support on macOS
 
 ### Changed
 - No longer based on Curses and instead using Crossterm
