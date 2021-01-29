@@ -24,15 +24,6 @@ pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 		}
 	}
 
-	// Apple has some special cases
-	if let Ok(term_program) = var("TERM_PROGRAM") {
-		// Apple Terminal sometimes pretends to support TrueColor, but it's 8bit
-		// TODO iTerm does support truecolor, but does not support the way that colors are set
-		if term_program == "Apple_Terminal" || term_program == "iTerm.app" {
-			return ColorMode::EightBit;
-		}
-	}
-
 	// Assume terminals with `-256` are 8bit
 	if let Ok(term) = var("TERM") {
 		if term.contains("-256") {
@@ -193,7 +184,6 @@ mod tests {
 	fn clear_env() {
 		remove_var("COLORTERM");
 		remove_var("TERM");
-		remove_var("TERM_PROGRAM");
 		remove_var("VTE_VERSION");
 		remove_var("WT_SESSION");
 	}
@@ -268,30 +258,6 @@ mod tests {
 		clear_env();
 		set_var("TERM", "XTERM-256");
 		assert_eq!(detect_color_mode(0), ColorMode::EightBit);
-	}
-
-	#[test]
-	#[serial]
-	fn detect_color_mode_term_program_env_apple_terminal() {
-		clear_env();
-		set_var("TERM_PROGRAM", "Apple_Terminal");
-		assert_eq!(detect_color_mode(0), ColorMode::EightBit);
-	}
-
-	#[test]
-	#[serial]
-	fn detect_color_mode_term_program_env_iterm() {
-		clear_env();
-		set_var("TERM_PROGRAM", "iTerm.app");
-		assert_eq!(detect_color_mode(0), ColorMode::EightBit);
-	}
-
-	#[test]
-	#[serial]
-	fn detect_color_mode_term_program_env_other() {
-		clear_env();
-		set_var("TERM_PROGRAM", "other");
-		assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
 	}
 
 	#[test]
