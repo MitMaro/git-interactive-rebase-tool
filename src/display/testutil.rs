@@ -48,7 +48,7 @@ pub fn _create_key_event(c: KeyCode, modifiers: &[String]) -> Event {
 #[macro_export]
 macro_rules! create_key_event {
 	($char:expr) => {
-		crate::display::testutil::_create_key_event(crate::display::KeyCode::Char($char), &[]);
+		crate::display::testutil::_create_key_event(crate::display::KeyCode::Char($char), &[])
 	};
 	($char:expr, $($modifiers:expr),*) => {
 		{
@@ -58,12 +58,12 @@ macro_rules! create_key_event {
 		}
 	};
 	(code $code:expr) => {
-		crate::display::testutil::_create_key_event($code, &[]);
+		crate::display::testutil::_create_key_event($code, &[])
 	};
 	(code $code:expr, $($modifiers:expr),*) => {
 		let mut modifiers = vec![];
 		$( modifiers.push(String::from($modifiers)); )*
-		crate::display::testutil::_create_key_event($code, &modifiers);
+		crate::display::testutil::_create_key_event($code, &modifiers)
 	};
 }
 

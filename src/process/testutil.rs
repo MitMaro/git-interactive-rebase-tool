@@ -313,25 +313,25 @@ pub fn _assert_process_result(
 #[macro_export]
 macro_rules! assert_process_result {
 	($actual:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, None, &None);
+		crate::process::testutil::_assert_process_result(&$actual, None, None, None, &None)
 	};
 	($actual:expr, error = $error:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), &Some($error));
+		crate::process::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), &Some($error))
 	};
 	($actual:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &None);
+		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &None)
 	};
 	($actual:expr, state = $state:expr, error = $error:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &Some($error));
+		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &Some($error))
 	};
 	($actual:expr, input = $input:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, &None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, &None)
 	};
 	($actual:expr, input = $input:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), Some($state), None, &None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), Some($state), None, &None)
 	};
 	($actual:expr, input = $input:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), &None);
+		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), &None)
 	};
 }
 

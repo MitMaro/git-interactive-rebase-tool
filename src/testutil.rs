@@ -49,7 +49,7 @@ pub fn _assert_exit_status(actual: &Result<ExitStatus, Exit>, expected: &Result<
 #[macro_export]
 macro_rules! assert_exit_status {
 	($actual:expr, status = $status:expr) => {
-		crate::testutil::_assert_exit_status(&$actual, &Ok($status));
+		crate::testutil::_assert_exit_status(&$actual, &Ok($status))
 	};
 	($actual:expr, message = $message:expr, status = $status:expr) => {
 		crate::testutil::_assert_exit_status(
@@ -58,6 +58,6 @@ macro_rules! assert_exit_status {
 				message: String::from($message),
 				status: $status,
 			}),
-		);
+		)
 	};
 }
