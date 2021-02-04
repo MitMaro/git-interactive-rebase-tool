@@ -13,26 +13,30 @@ mod view_builder;
 #[cfg(test)]
 mod tests;
 
-use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
-use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
-use crate::config::Config;
-use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
-use crate::display::display_color::DisplayColor;
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::util::handle_view_data_scroll;
-use crate::show_commit::commit::{Commit, LoadCommitDiffOptions};
-use crate::show_commit::show_commit_state::ShowCommitState;
-use crate::show_commit::util::get_show_commit_help_lines;
-use crate::show_commit::view_builder::{ViewBuilder, ViewBuilderOptions};
-use crate::todo_file::TodoFile;
-use crate::view::line_segment::LineSegment;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
-use crate::view::View;
+use crate::{
+	config::{
+		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
+		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
+		Config,
+	},
+	constants::MINIMUM_FULL_WINDOW_WIDTH,
+	display::display_color::DisplayColor,
+	input::{input_handler::InputMode, Input},
+	process::{
+		process_module::ProcessModule,
+		process_result::ProcessResult,
+		state::State,
+		util::handle_view_data_scroll,
+	},
+	show_commit::{
+		commit::{Commit, LoadCommitDiffOptions},
+		show_commit_state::ShowCommitState,
+		util::get_show_commit_help_lines,
+		view_builder::{ViewBuilder, ViewBuilderOptions},
+	},
+	todo_file::TodoFile,
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+};
 
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,

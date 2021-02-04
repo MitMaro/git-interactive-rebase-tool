@@ -1,7 +1,8 @@
-use crate::config::key_bindings::KeyBindings;
-use crate::display::Event;
-use crate::display::{KeyCode, KeyModifiers, MouseEventKind};
-use crate::input::Input;
+use crate::{
+	config::key_bindings::KeyBindings,
+	display::{Event, KeyCode, KeyModifiers, MouseEventKind},
+	input::Input,
+};
 
 fn modifiers_to_string(modifiers: KeyModifiers, code: Option<KeyCode>) -> String {
 	let mut result = vec![];
@@ -216,14 +217,13 @@ impl<'i> InputHandler<'i> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::config::Config;
-	use crate::create_key_event;
-	use crate::create_mouse_event;
+	use std::{env::set_var, path::Path};
+
 	use crossterm::event::MouseEvent;
 	use rstest::rstest;
-	use std::env::set_var;
-	use std::path::Path;
+
+	use super::*;
+	use crate::{config::Config, create_key_event, create_mouse_event};
 
 	fn input_handler_test<C>(callback: C)
 	where C: for<'p> FnOnce(&'p InputHandler<'_>) {

@@ -13,15 +13,20 @@ mod tests;
 #[cfg(test)]
 pub mod testutil;
 
-use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::modules::Modules;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::window_size_error::WindowSizeError;
-use crate::todo_file::TodoFile;
-use crate::view::View;
 use anyhow::Result;
+
+use crate::{
+	input::Input,
+	process::{
+		exit_status::ExitStatus,
+		modules::Modules,
+		process_result::ProcessResult,
+		state::State,
+		window_size_error::WindowSizeError,
+	},
+	todo_file::TodoFile,
+	view::View,
+};
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,

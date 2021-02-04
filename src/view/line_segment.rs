@@ -1,8 +1,10 @@
-use crate::display::display_color::DisplayColor;
 use std::cell::RefCell;
+
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 use xi_unicode::EmojiExt;
+
+use crate::display::display_color::DisplayColor;
 
 fn unicode_column_width(s: &str) -> usize {
 	s.graphemes(true).map(grapheme_column_width).sum()

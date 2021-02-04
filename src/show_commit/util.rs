@@ -1,11 +1,12 @@
-use crate::config::key_bindings::KeyBindings;
-use crate::display::display_color::DisplayColor;
-use crate::show_commit::commit::Commit;
-use crate::show_commit::status::Status;
-use crate::view::line_segment::LineSegment;
-use crate::view::view_line::ViewLine;
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
+
+use crate::{
+	config::key_bindings::KeyBindings,
+	display::display_color::DisplayColor,
+	show_commit::{commit::Commit, status::Status},
+	view::{line_segment::LineSegment, view_line::ViewLine},
+};
 
 pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(String, String)> {
 	vec![

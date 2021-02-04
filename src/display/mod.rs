@@ -10,20 +10,22 @@ mod crossterm;
 mod mockcrossterm;
 #[cfg(test)]
 pub mod testutil;
-#[cfg(not(test))]
-use self::crossterm as ct;
-#[cfg(test)]
-use mockcrossterm as ct;
-
-use crate::config::theme::Theme;
-use crate::display::display_color::DisplayColor;
-use crate::display::size::Size;
-use crate::display::utils::register_selectable_color_pairs;
-use crate::input::input_handler::{InputHandler, InputMode};
-use crate::input::Input;
 use anyhow::Result;
 use ct::Color as CrosstermColor;
 pub use ct::{Colors, CrossTerm, Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind};
+#[cfg(test)]
+use mockcrossterm as ct;
+
+#[cfg(not(test))]
+use self::crossterm as ct;
+use crate::{
+	config::theme::Theme,
+	display::{display_color::DisplayColor, size::Size, utils::register_selectable_color_pairs},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
+};
 
 pub struct Display<'d> {
 	crossterm: &'d mut CrossTerm,
@@ -275,12 +277,17 @@ impl<'d> Display<'d> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::create_key_event;
-	use crate::display::mockcrossterm::State;
-	use crate::display::testutil::{display_module_test, TestContext};
 	use crossterm::event::MouseEvent;
 	use rstest::rstest;
+
+	use super::*;
+	use crate::{
+		create_key_event,
+		display::{
+			mockcrossterm::State,
+			testutil::{display_module_test, TestContext},
+		},
+	};
 
 	#[test]
 	#[serial_test::serial]

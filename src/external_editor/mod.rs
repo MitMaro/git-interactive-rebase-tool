@@ -1,23 +1,20 @@
 mod argument_tolkenizer;
 
-use crate::display::display_color::DisplayColor;
-use crate::external_editor::argument_tolkenizer::tolkenize;
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::todo_file::line::Line;
-use crate::todo_file::TodoFile;
-use crate::view::line_segment::LineSegment;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
-use crate::view::View;
+use std::{
+	ffi::OsString,
+	process::{Command, ExitStatus as ProcessExitStatus},
+};
+
 use anyhow::{anyhow, Error, Result};
-use std::ffi::OsString;
-use std::process::Command;
-use std::process::ExitStatus as ProcessExitStatus;
+
+use crate::{
+	display::display_color::DisplayColor,
+	external_editor::argument_tolkenizer::tolkenize,
+	input::{input_handler::InputMode, Input},
+	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
+	todo_file::{line::Line, TodoFile},
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+};
 
 #[derive(Debug)]
 enum ExternalEditorState {
@@ -250,12 +247,15 @@ impl ExternalEditor {
 
 #[cfg(all(unix, test))]
 mod tests {
-	use super::*;
-	use crate::assert_process_result;
-	use crate::assert_rendered_output;
-	use crate::display::size::Size;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use std::path::Path;
+
+	use super::*;
+	use crate::{
+		assert_process_result,
+		assert_rendered_output,
+		display::size::Size,
+		process::testutil::{process_module_test, TestContext, ViewState},
+	};
 
 	fn get_external_editor(content: &str, exit_code: &str) -> String {
 		format!(

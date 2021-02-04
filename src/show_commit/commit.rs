@@ -1,14 +1,18 @@
-use super::origin::Origin;
-use crate::show_commit::delta::Delta;
-use crate::show_commit::diff_line::DiffLine;
-use crate::show_commit::file_stat::FileStat;
-use crate::show_commit::file_stats_builder::FileStatsBuilder;
-use crate::show_commit::status::Status;
-use crate::show_commit::user::User;
+use std::sync::Mutex;
+
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Local, TimeZone};
 use git2::{DiffFindOptions, DiffOptions, Error, Repository};
-use std::sync::Mutex;
+
+use super::origin::Origin;
+use crate::show_commit::{
+	delta::Delta,
+	diff_line::DiffLine,
+	file_stat::FileStat,
+	file_stats_builder::FileStatsBuilder,
+	status::Status,
+	user::User,
+};
 
 #[derive(Copy, Clone, Debug)]
 pub(super) struct LoadCommitDiffOptions {
@@ -223,10 +227,11 @@ impl Commit {
 mod tests {
 	// some of this file is difficult to test because it would require a non-standard git repo, so
 	// we test what is possible
-	use super::*;
+	use std::{env::set_var, path::Path};
+
 	use serial_test::serial;
-	use std::env::set_var;
-	use std::path::Path;
+
+	use super::*;
 
 	fn set_git_dir(fixture: &str) {
 		set_var(

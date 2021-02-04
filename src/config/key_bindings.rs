@@ -1,6 +1,7 @@
-use crate::config::utils::get_input;
 use anyhow::Result;
 use git2::Config;
+
+use crate::config::utils::get_input;
 
 #[derive(Clone, Debug)]
 pub struct KeyBindings {

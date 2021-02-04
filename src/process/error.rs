@@ -1,15 +1,15 @@
-use crate::display::display_color::DisplayColor;
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::util::handle_view_data_scroll;
-use crate::todo_file::TodoFile;
-use crate::view::line_segment::LineSegment;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
-use crate::view::View;
+use crate::{
+	display::display_color::DisplayColor,
+	input::{input_handler::InputMode, Input},
+	process::{
+		process_module::ProcessModule,
+		process_result::ProcessResult,
+		state::State,
+		util::handle_view_data_scroll,
+	},
+	todo_file::TodoFile,
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+};
 
 pub struct Error {
 	return_state: State,
@@ -67,11 +67,14 @@ impl Error {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::assert_process_result;
-	use crate::assert_rendered_output;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use anyhow::anyhow;
+
+	use super::*;
+	use crate::{
+		assert_process_result,
+		assert_rendered_output,
+		process::testutil::{process_module_test, TestContext, ViewState},
+	};
 
 	#[test]
 	#[serial_test::serial]

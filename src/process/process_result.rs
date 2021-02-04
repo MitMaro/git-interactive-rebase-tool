@@ -1,7 +1,9 @@
-use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::state::State;
 use anyhow::Error;
+
+use crate::{
+	input::Input,
+	process::{exit_status::ExitStatus, state::State},
+};
 
 #[derive(Debug)]
 pub struct ProcessResult {
@@ -45,8 +47,9 @@ impl ProcessResult {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
 	use anyhow::anyhow;
+
+	use super::*;
 
 	#[test]
 	fn empty() {

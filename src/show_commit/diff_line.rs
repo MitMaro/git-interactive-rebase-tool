@@ -56,8 +56,7 @@ impl DiffLine {
 
 #[cfg(test)]
 mod tests {
-	use super::super::origin::Origin;
-	use super::*;
+	use super::{super::origin::Origin, *};
 
 	#[test]
 	fn new_without_end_of_file() {

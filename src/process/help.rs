@@ -1,16 +1,17 @@
-use crate::display::display_color::DisplayColor;
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::util::handle_view_data_scroll;
-use crate::todo_file::TodoFile;
-use crate::view::line_segment::LineSegment;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
-use crate::view::View;
 use unicode_segmentation::UnicodeSegmentation;
+
+use crate::{
+	display::display_color::DisplayColor,
+	input::{input_handler::InputMode, Input},
+	process::{
+		process_module::ProcessModule,
+		process_result::ProcessResult,
+		state::State,
+		util::handle_view_data_scroll,
+	},
+	todo_file::TodoFile,
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+};
 
 fn get_max_help_key_length(lines: &[(String, String)]) -> usize {
 	let mut max_length = 0;
@@ -125,10 +126,12 @@ impl Help {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::assert_process_result;
-	use crate::assert_rendered_output;
-	use crate::display::size::Size;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
+	use crate::{
+		assert_process_result,
+		assert_rendered_output,
+		display::size::Size,
+		process::testutil::{process_module_test, TestContext, ViewState},
+	};
 
 	#[test]
 	#[serial_test::serial]

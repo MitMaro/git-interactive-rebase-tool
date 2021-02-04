@@ -9,18 +9,20 @@ use anyhow::Result;
 #[cfg(test)]
 mod tests;
 
-use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
-use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
-use crate::config::git_config::GitConfig;
-use crate::config::key_bindings::KeyBindings;
-use crate::config::theme::Theme;
-use crate::config::utils::{
-	get_bool,
-	get_diff_ignore_whitespace,
-	get_diff_show_whitespace,
-	get_string,
-	get_unsigned_integer,
-	open_git_config,
+use crate::config::{
+	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
+	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
+	git_config::GitConfig,
+	key_bindings::KeyBindings,
+	theme::Theme,
+	utils::{
+		get_bool,
+		get_diff_ignore_whitespace,
+		get_diff_show_whitespace,
+		get_string,
+		get_unsigned_integer,
+		open_git_config,
+	},
 };
 
 #[derive(Clone, Debug)]

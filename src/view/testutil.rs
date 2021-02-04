@@ -1,6 +1,7 @@
-use crate::display::display_color::DisplayColor;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
+use crate::{
+	display::display_color::DisplayColor,
+	view::{view_data::ViewData, view_line::ViewLine},
+};
 
 // TODO change how style is passed to use a Struct
 #[allow(clippy::fn_params_excessive_bools)]

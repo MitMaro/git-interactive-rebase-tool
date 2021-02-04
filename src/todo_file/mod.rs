@@ -1,10 +1,14 @@
-use crate::todo_file::edit_content::EditContext;
+use std::{
+	fs::{read_to_string, File},
+	io::Write,
+	path::Path,
+};
+
 use action::Action;
 use anyhow::{anyhow, Result};
 use line::Line;
-use std::fs::{read_to_string, File};
-use std::io::Write;
-use std::path::Path;
+
+use crate::todo_file::edit_content::EditContext;
 
 pub mod action;
 pub mod edit_content;
@@ -129,8 +133,9 @@ impl TodoFile {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
 	use tempfile::{Builder, NamedTempFile};
+
+	use super::*;
 
 	fn create_todo_file(file_contents: &[&str]) -> NamedTempFile {
 		let todo_file = Builder::new()

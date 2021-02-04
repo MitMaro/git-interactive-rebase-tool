@@ -1,5 +1,4 @@
-use crate::display::display_color::DisplayColor;
-use crate::view::line_segment::LineSegment;
+use crate::{display::display_color::DisplayColor, view::line_segment::LineSegment};
 
 #[derive(Debug)]
 pub struct ViewLine {

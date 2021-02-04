@@ -5,16 +5,15 @@ pub mod testutil;
 pub mod view_data;
 pub mod view_line;
 
-use crate::constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH};
-use crate::display::display_color::DisplayColor;
-use crate::display::size::Size;
-use crate::display::Display;
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
-use crate::Config;
 use anyhow::Result;
+
+use crate::{
+	constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH},
+	display::{display_color::DisplayColor, size::Size, Display},
+	input::{input_handler::InputMode, Input},
+	view::{view_data::ViewData, view_line::ViewLine},
+	Config,
+};
 
 pub struct View<'v> {
 	config: &'v Config,
@@ -175,13 +174,10 @@ impl<'v> View<'v> {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use std::{env::set_var, path::Path};
 
-	use crate::config::Config;
-	use crate::display::CrossTerm;
-	use crate::input::input_handler::InputHandler;
-	use std::env::set_var;
-	use std::path::Path;
+	use super::*;
+	use crate::{config::Config, display::CrossTerm, input::input_handler::InputHandler};
 
 	pub struct TestContext<'t> {
 		pub view: View<'t>,

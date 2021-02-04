@@ -1,5 +1,4 @@
-use crate::process::exit_status::ExitStatus;
-use crate::Exit;
+use crate::{process::exit_status::ExitStatus, Exit};
 
 fn format_exit_status(exit: &Result<ExitStatus, Exit>) -> String {
 	format!(

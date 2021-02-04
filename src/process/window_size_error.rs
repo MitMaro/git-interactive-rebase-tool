@@ -1,13 +1,10 @@
-use crate::constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH};
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::todo_file::TodoFile;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
-use crate::view::View;
+use crate::{
+	constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH},
+	input::{input_handler::InputMode, Input},
+	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
+	todo_file::TodoFile,
+	view::{view_data::ViewData, view_line::ViewLine, View},
+};
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
 const SHORT_ERROR_MESSAGE: &str = "Window too small";
@@ -88,12 +85,15 @@ impl WindowSizeError {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::assert_process_result;
-	use crate::assert_rendered_output;
-	use crate::display::size::Size;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use rstest::rstest;
+
+	use super::*;
+	use crate::{
+		assert_process_result,
+		assert_rendered_output,
+		display::size::Size,
+		process::testutil::{process_module_test, TestContext, ViewState},
+	};
 
 	#[test]
 	fn is_window_too_small_width_too_small() {

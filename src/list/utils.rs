@@ -1,10 +1,12 @@
-use crate::config::key_bindings::KeyBindings;
-use crate::constants::MINIMUM_FULL_WINDOW_WIDTH;
-use crate::display::display_color::DisplayColor;
-use crate::todo_file::action::Action;
-use crate::todo_file::line::Line;
-use crate::view::line_segment::LineSegment;
 use std::cmp;
+
+use crate::{
+	config::key_bindings::KeyBindings,
+	constants::MINIMUM_FULL_WINDOW_WIDTH,
+	display::display_color::DisplayColor,
+	todo_file::{action::Action, line::Line},
+	view::line_segment::LineSegment,
+};
 
 pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(String, String)> {
 	vec![

@@ -1,5 +1,6 @@
-use anyhow::{anyhow, Error};
 use std::convert::TryFrom;
+
+use anyhow::{anyhow, Error};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Color {

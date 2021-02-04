@@ -1,13 +1,17 @@
-use crate::create_key_event;
-use crate::display::color_mode::ColorMode;
-use crate::display::size::Size;
-use crate::display::utils::detect_color_mode;
-use anyhow::{anyhow, Result};
-pub use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind};
-use crossterm::style::{Attribute, Attributes};
-pub use crossterm::style::{Color, Colors};
-use lazy_static::lazy_static;
 use std::sync::Mutex;
+
+use anyhow::{anyhow, Result};
+use crossterm::style::{Attribute, Attributes};
+pub use crossterm::{
+	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind},
+	style::{Color, Colors},
+};
+use lazy_static::lazy_static;
+
+use crate::{
+	create_key_event,
+	display::{color_mode::ColorMode, size::Size, utils::detect_color_mode},
+};
 
 lazy_static! {
 	static ref INPUT: Mutex<Vec<Event>> = Mutex::new(vec![create_key_event!('c', "Control")]);

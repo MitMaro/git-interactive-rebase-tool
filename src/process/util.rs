@@ -1,5 +1,4 @@
-use crate::input::Input;
-use crate::view::view_data::ViewData;
+use crate::{input::Input, view::view_data::ViewData};
 
 pub fn handle_view_data_scroll(input: Input, view_data: &mut ViewData) -> Option<Input> {
 	match input {
@@ -16,10 +15,10 @@ pub fn handle_view_data_scroll(input: Input, view_data: &mut ViewData) -> Option
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use crate::assert_rendered_output;
-	use crate::view::view_line::ViewLine;
 	use rstest::rstest;
+
+	use super::*;
+	use crate::{assert_rendered_output, view::view_line::ViewLine};
 
 	#[rstest(
 		input,
