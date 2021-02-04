@@ -19,8 +19,9 @@ impl From<char> for Origin {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
 	use rstest::rstest;
+
+	use super::*;
 
 	#[rstest(
 		input,

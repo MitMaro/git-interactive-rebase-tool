@@ -1,25 +1,31 @@
-use crate::display::color_mode::ColorMode;
-use crate::display::size::Size;
-use crate::display::utils::detect_color_mode;
-use anyhow::{anyhow, Error, Result};
-use crossterm::cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show};
-use crossterm::event::{read, DisableMouseCapture, EnableMouseCapture};
-pub use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind};
-use crossterm::style::{available_color_count, Attribute, Print, ResetColor, SetAttribute, SetColors};
-pub use crossterm::style::{Color, Colors};
-use crossterm::terminal::{
-	disable_raw_mode,
-	enable_raw_mode,
-	size,
-	Clear,
-	ClearType,
-	DisableLineWrap,
-	EnableLineWrap,
-	EnterAlternateScreen,
-	LeaveAlternateScreen,
-};
-use crossterm::{Command, ErrorKind, QueueableCommand};
 use std::io::{stdout, BufWriter, Stdout, Write};
+
+use anyhow::{anyhow, Error, Result};
+use crossterm::{
+	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
+	event::{read, DisableMouseCapture, EnableMouseCapture},
+	style::{available_color_count, Attribute, Print, ResetColor, SetAttribute, SetColors},
+	terminal::{
+		disable_raw_mode,
+		enable_raw_mode,
+		size,
+		Clear,
+		ClearType,
+		DisableLineWrap,
+		EnableLineWrap,
+		EnterAlternateScreen,
+		LeaveAlternateScreen,
+	},
+	Command,
+	ErrorKind,
+	QueueableCommand,
+};
+pub use crossterm::{
+	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind},
+	style::{Color, Colors},
+};
+
+use crate::display::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
 
 pub struct CrossTerm {
 	color_mode: ColorMode,

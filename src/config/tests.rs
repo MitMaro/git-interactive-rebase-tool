@@ -1,8 +1,12 @@
+use std::{
+	env::{remove_var, set_var},
+	path::Path,
+};
+
+use serial_test::serial;
+
 use super::*;
 use crate::display::color::Color;
-use serial_test::serial;
-use std::env::{remove_var, set_var};
-use std::path::Path;
 
 fn load_with_config_file(case: &str, test: &str) -> Config {
 	Config::new_from_config(

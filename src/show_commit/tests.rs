@@ -1,16 +1,14 @@
-use super::*;
-use crate::assert_process_result;
-use crate::assert_rendered_output;
-use crate::display::size::Size;
-use crate::process::testutil::{process_module_test, TestContext, ViewState};
-use crate::show_commit::delta::Delta;
-use crate::show_commit::diff_line::DiffLine;
-use crate::show_commit::file_stat::FileStat;
-use crate::show_commit::origin::Origin;
-use crate::show_commit::status::Status;
-use crate::show_commit::user::User;
 use anyhow::anyhow;
 use chrono::Local;
+
+use super::*;
+use crate::{
+	assert_process_result,
+	assert_rendered_output,
+	display::size::Size,
+	process::testutil::{process_module_test, TestContext, ViewState},
+	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
+};
 
 fn create_minimal_commit() -> Commit {
 	Commit {

@@ -1,6 +1,8 @@
-use crate::todo_file::action::Action;
-use anyhow::{anyhow, Result};
 use std::convert::TryFrom;
+
+use anyhow::{anyhow, Result};
+
+use crate::todo_file::action::Action;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line {
@@ -119,8 +121,9 @@ impl Line {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
 	use rstest::rstest;
+
+	use super::*;
 
 	#[rstest(
 		line,

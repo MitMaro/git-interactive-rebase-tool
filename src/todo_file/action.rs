@@ -1,5 +1,6 @@
-use anyhow::{anyhow, Error};
 use std::convert::TryFrom;
+
+use anyhow::{anyhow, Error};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Action {
@@ -72,8 +73,9 @@ impl TryFrom<&str> for Action {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
 	use rstest::rstest;
+
+	use super::*;
 
 	macro_rules! test_action_to_string {
 		($name:ident, $action:expr, $expected:expr) => {

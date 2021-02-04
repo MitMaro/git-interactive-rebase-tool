@@ -1,7 +1,6 @@
-use super::color::Color;
-use super::color_mode::ColorMode;
-use super::{Colors, CrosstermColor};
 use std::env::var;
+
+use super::{color::Color, color_mode::ColorMode, Colors, CrosstermColor};
 
 pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 	// respect COLORTERM being truecolor or 24bit
@@ -176,10 +175,12 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+	use std::env::{remove_var, set_var};
+
 	use rstest::rstest;
 	use serial_test::serial;
-	use std::env::{remove_var, set_var};
+
+	use super::*;
 
 	fn clear_env() {
 		remove_var("COLORTERM");

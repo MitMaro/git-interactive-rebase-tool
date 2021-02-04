@@ -1,24 +1,18 @@
-use crate::config::key_bindings::KeyBindings;
-use crate::config::Config;
-use crate::create_key_event;
-use crate::display::size::Size;
-use crate::display::{CrossTerm, Display, Event, KeyEvent};
-use crate::input::input_handler::InputHandler;
-use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::todo_file::line::Line;
-use crate::todo_file::TodoFile;
-use crate::view::view_data::ViewData;
-use crate::view::View;
+use std::{cell::Cell, env::set_var, path::Path};
+
 use anyhow::Error;
 use crossterm::event::{KeyCode, KeyModifiers};
-use std::cell::Cell;
-use std::env::set_var;
-use std::path::Path;
 use tempfile::{Builder, NamedTempFile};
+
+use crate::{
+	config::{key_bindings::KeyBindings, Config},
+	create_key_event,
+	display::{size::Size, CrossTerm, Display, Event, KeyEvent},
+	input::{input_handler::InputHandler, Input},
+	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
+	todo_file::{line::Line, TodoFile},
+	view::{view_data::ViewData, View},
+};
 
 pub struct TestContext<'t> {
 	pub config: &'t Config,

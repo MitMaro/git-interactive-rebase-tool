@@ -1,9 +1,12 @@
-use crate::config::Config;
-use crate::display::{CrossTerm, Event, KeyCode, KeyEvent, KeyModifiers};
-use crate::input::input_handler::InputHandler;
+use std::{env::set_var, path::Path};
+
 use crossterm::event::{MouseEvent, MouseEventKind};
-use std::env::set_var;
-use std::path::Path;
+
+use crate::{
+	config::Config,
+	display::{CrossTerm, Event, KeyCode, KeyEvent, KeyModifiers},
+	input::input_handler::InputHandler,
+};
 
 pub struct TestContext<'t> {
 	pub config: &'t Config,

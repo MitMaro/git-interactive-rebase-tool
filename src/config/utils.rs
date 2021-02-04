@@ -1,10 +1,18 @@
-use crate::config::diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting;
-use crate::config::diff_show_whitespace_setting::DiffShowWhitespaceSetting;
-use crate::display::color::Color;
+use std::{
+	convert::{TryFrom, TryInto},
+	env,
+};
+
 use anyhow::{anyhow, Result};
 use git2::Config;
-use std::convert::{TryFrom, TryInto};
-use std::env;
+
+use crate::{
+	config::{
+		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
+		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
+	},
+	display::color::Color,
+};
 
 pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<String> {
 	let value = get_string(config, name, default)?;

@@ -1,12 +1,9 @@
-use crate::input::input_handler::InputMode;
-use crate::input::Input;
-use crate::process::exit_status::ExitStatus;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::todo_file::TodoFile;
-use crate::view::view_data::ViewData;
-use crate::view::View;
+use crate::{
+	input::{input_handler::InputMode, Input},
+	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
+	todo_file::TodoFile,
+	view::{view_data::ViewData, View},
+};
 
 pub struct ConfirmRebase {
 	view_data: ViewData,
@@ -48,9 +45,11 @@ impl ConfirmRebase {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::assert_process_result;
-	use crate::assert_rendered_output;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
+	use crate::{
+		assert_process_result,
+		assert_rendered_output,
+		process::testutil::{process_module_test, TestContext, ViewState},
+	};
 
 	#[test]
 	#[serial_test::serial]

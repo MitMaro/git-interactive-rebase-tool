@@ -1,15 +1,13 @@
 use super::origin::Origin;
-use crate::display::display_color::DisplayColor;
-use crate::show_commit::commit::Commit;
-use crate::show_commit::diff_line::DiffLine;
-use crate::show_commit::util::{
-	get_files_changed_summary,
-	get_partition_index_on_whitespace_for_line,
-	get_stat_item_segments,
+use crate::{
+	display::display_color::DisplayColor,
+	show_commit::{
+		commit::Commit,
+		diff_line::DiffLine,
+		util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
+	},
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
 };
-use crate::view::line_segment::LineSegment;
-use crate::view::view_data::ViewData;
-use crate::view::view_line::ViewLine;
 
 pub(super) struct ViewBuilderOptions {
 	space_character: String,

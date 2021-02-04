@@ -1,8 +1,11 @@
-use super::*;
-use crate::display::size::Size;
-use crate::process::testutil::{process_module_test, TestContext, ViewState};
-use crate::todo_file::line::Line;
 use anyhow::anyhow;
+
+use super::*;
+use crate::{
+	display::size::Size,
+	process::testutil::{process_module_test, TestContext, ViewState},
+	todo_file::line::Line,
+};
 
 #[test]
 #[serial_test::serial]

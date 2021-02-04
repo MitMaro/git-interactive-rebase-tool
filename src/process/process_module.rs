@@ -1,8 +1,8 @@
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::todo_file::TodoFile;
-use crate::view::view_data::ViewData;
-use crate::view::View;
+use crate::{
+	process::{process_result::ProcessResult, state::State},
+	todo_file::TodoFile,
+	view::{view_data::ViewData, View},
+};
 
 pub trait ProcessModule {
 	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {

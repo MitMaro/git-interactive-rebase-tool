@@ -44,17 +44,17 @@ mod show_commit;
 mod todo_file;
 mod view;
 
-use crate::config::Config;
-use crate::constants::{NAME, VERSION};
-use crate::display::CrossTerm;
-use crate::display::Display;
-use crate::input::input_handler::InputHandler;
-use crate::process::exit_status::ExitStatus;
-use crate::process::modules::Modules;
-use crate::process::Process;
-use crate::todo_file::TodoFile;
-use crate::view::View;
 use clap::{App, Arg};
+
+use crate::{
+	config::Config,
+	constants::{NAME, VERSION},
+	display::{CrossTerm, Display},
+	input::input_handler::InputHandler,
+	process::{exit_status::ExitStatus, modules::Modules, Process},
+	todo_file::TodoFile,
+	view::View,
+};
 
 #[cfg(test)]
 pub mod testutil;
@@ -178,11 +178,10 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 
 #[cfg(all(unix, test))]
 mod tests {
+	use std::{env::set_var, fs::File, path::Path};
+
 	use super::*;
 	use crate::assert_exit_status;
-	use std::env::set_var;
-	use std::fs::File;
-	use std::path::Path;
 
 	fn set_git_directory(repo: &str) -> String {
 		let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("test").join(repo);

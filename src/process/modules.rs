@@ -1,19 +1,22 @@
-use crate::config::Config;
-use crate::confirm_abort::ConfirmAbort;
-use crate::confirm_rebase::ConfirmRebase;
-use crate::edit::Edit;
-use crate::external_editor::ExternalEditor;
-use crate::list::List;
-use crate::process::error::Error;
-use crate::process::help::Help;
-use crate::process::process_module::ProcessModule;
-use crate::process::process_result::ProcessResult;
-use crate::process::state::State;
-use crate::process::window_size_error::WindowSizeError;
-use crate::show_commit::ShowCommit;
-use crate::todo_file::TodoFile;
-use crate::view::view_data::ViewData;
-use crate::view::View;
+use crate::{
+	config::Config,
+	confirm_abort::ConfirmAbort,
+	confirm_rebase::ConfirmRebase,
+	edit::Edit,
+	external_editor::ExternalEditor,
+	list::List,
+	process::{
+		error::Error,
+		help::Help,
+		process_module::ProcessModule,
+		process_result::ProcessResult,
+		state::State,
+		window_size_error::WindowSizeError,
+	},
+	show_commit::ShowCommit,
+	todo_file::TodoFile,
+	view::{view_data::ViewData, View},
+};
 
 pub struct Modules<'m> {
 	pub confirm_abort: ConfirmAbort,
@@ -103,11 +106,14 @@ impl<'m> Modules<'m> {
 #[cfg(test)]
 mod tests {
 	// these tests just ensure that nothing panics
-	use super::*;
-	use crate::input::Input;
-	use crate::process::testutil::{process_module_test, TestContext, ViewState};
 	use anyhow::anyhow;
 	use rstest::rstest;
+
+	use super::*;
+	use crate::{
+		input::Input,
+		process::testutil::{process_module_test, TestContext, ViewState},
+	};
 
 	#[rstest(
 		state,
