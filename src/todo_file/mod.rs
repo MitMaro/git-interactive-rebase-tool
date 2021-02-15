@@ -30,7 +30,7 @@ impl TodoFile {
 			filepath: path.to_owned(),
 			lines: vec![],
 			is_noop: false,
-			selected_line_index: 1,
+			selected_line_index: 0,
 		}
 	}
 
@@ -76,19 +76,24 @@ impl TodoFile {
 	}
 
 	pub(crate) fn set_selected_line_index(&mut self, selected_line_index: usize) {
-		self.selected_line_index = selected_line_index;
+		self.selected_line_index = if selected_line_index >= self.lines.len() {
+			self.lines.len() - 1
+		}
+		else {
+			selected_line_index
+		}
 	}
 
 	pub(crate) fn swap_lines(&mut self, a: usize, b: usize) {
 		self.lines.swap(a, b);
 	}
 
-	pub(crate) fn add_line(&mut self, line_number: usize, line: Line) {
-		self.lines.insert(line_number - 1, line);
+	pub(crate) fn add_line(&mut self, index: usize, line: Line) {
+		self.lines.insert(index, line);
 	}
 
-	pub(crate) fn remove_line(&mut self, line_number: usize) {
-		self.lines.remove(line_number - 1);
+	pub(crate) fn remove_line(&mut self, index: usize) {
+		self.lines.remove(index);
 	}
 
 	pub(crate) fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
@@ -100,7 +105,7 @@ impl TodoFile {
 		};
 
 		for index in range {
-			let line = &mut self.lines[index - 1];
+			let line = &mut self.lines[index];
 			if let Some(action) = edit_context.get_action().as_ref() {
 				line.set_action(*action);
 			}
@@ -112,7 +117,7 @@ impl TodoFile {
 	}
 
 	pub(crate) fn get_selected_line(&self) -> &Line {
-		&self.lines[self.selected_line_index - 1]
+		&self.lines[self.selected_line_index]
 	}
 
 	pub(crate) const fn get_selected_line_index(&self) -> usize {
@@ -124,12 +129,7 @@ impl TodoFile {
 	}
 
 	pub(crate) fn get_line(&self, index: usize) -> Option<&Line> {
-		if index == 0 {
-			None
-		}
-		else {
-			self.lines.get(index - 1)
-		}
+		self.lines.get(index)
 	}
 
 	pub(crate) fn get_lines_owned(&self) -> Vec<Line> {
@@ -137,7 +137,13 @@ impl TodoFile {
 	}
 
 	pub(crate) fn get_maximum_line_index(&self) -> usize {
-		self.lines.len()
+		let len = self.lines.len();
+		if len == 0 {
+			0
+		}
+		else {
+			len - 1
+		}
 	}
 
 	pub(crate) const fn is_noop(&self) -> bool {
@@ -272,7 +278,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		todo_file.add_line(2, Line::new("fixup ddd comment").unwrap());
+		todo_file.add_line(1, Line::new("fixup ddd comment").unwrap());
 		assert_todo_lines!(
 			todo_file,
 			"pick aaa comment",
@@ -296,7 +302,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		todo_file.remove_line(2);
+		todo_file.remove_line(1);
 		assert_todo_lines!(todo_file, "pick aaa comment", "edit ccc comment");
 	}
 
@@ -305,7 +311,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		todo_file.update_range(1, 3, &EditContext::new().action(Action::Reword));
+		todo_file.update_range(0, 2, &EditContext::new().action(Action::Reword));
 		assert_todo_lines!(
 			todo_file,
 			"reword aaa comment",
@@ -319,7 +325,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		todo_file.update_range(1, 3, &EditContext::new().content("echo"));
+		todo_file.update_range(0, 2, &EditContext::new().content("echo"));
 		assert_todo_lines!(todo_file, "exec echo", "exec echo", "exec echo");
 	}
 
@@ -328,7 +334,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		todo_file.update_range(3, 1, &EditContext::new().action(Action::Reword));
+		todo_file.update_range(2, 0, &EditContext::new().action(Action::Reword));
 		assert_todo_lines!(
 			todo_file,
 			"reword aaa comment",
@@ -343,19 +349,18 @@ mod tests {
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let mut todo_file = TodoFile::new(filepath, "#");
 		todo_file.load_file().unwrap();
-		todo_file.set_selected_line_index(10);
-		assert_eq!(todo_file.get_selected_line_index(), 10);
+		todo_file.set_selected_line_index(1);
+		assert_eq!(todo_file.get_selected_line_index(), 1);
 	}
 
 	#[test]
-	#[should_panic]
-	fn selected_line_index_miss() {
+	fn selected_line_index_overflow() {
 		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let mut todo_file = TodoFile::new(filepath, "#");
 		todo_file.load_file().unwrap();
-		todo_file.set_selected_line_index(10);
-		todo_file.get_selected_line();
+		todo_file.set_selected_line_index(3);
+		assert_eq!(todo_file.get_selected_line_index(), 2);
 	}
 
 	#[test]
@@ -364,7 +369,7 @@ mod tests {
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let mut todo_file = TodoFile::new(filepath, "#");
 		todo_file.load_file().unwrap();
-		todo_file.set_selected_line_index(1);
+		todo_file.set_selected_line_index(0);
 		assert_eq!(todo_file.get_selected_line(), &Line::new("exec foo").unwrap());
 	}
 
@@ -378,21 +383,12 @@ mod tests {
 	}
 
 	#[test]
-	fn get_line_miss_low() {
-		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		let filepath = todo_file_path.path().to_str().unwrap();
-		let mut todo_file = TodoFile::new(filepath, "#");
-		todo_file.load_file().unwrap();
-		assert!(todo_file.get_line(0).is_none());
-	}
-
-	#[test]
 	fn get_line_hit() {
 		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let mut todo_file = TodoFile::new(filepath, "#");
 		todo_file.load_file().unwrap();
-		assert_eq!(todo_file.get_line(1).unwrap(), &Line::new("exec foo").unwrap());
+		assert_eq!(todo_file.get_line(1).unwrap(), &Line::new("exec bar").unwrap());
 	}
 
 	#[test]
@@ -409,7 +405,16 @@ mod tests {
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let mut todo_file = TodoFile::new(filepath, "#");
 		todo_file.load_file().unwrap();
-		assert_eq!(todo_file.get_maximum_line_index(), 3);
+		assert_eq!(todo_file.get_maximum_line_index(), 2);
+	}
+
+	#[test]
+	fn maximum_line_index_empty_todo() {
+		let todo_file_path = create_todo_file(&[]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert_eq!(todo_file.get_maximum_line_index(), 0);
 	}
 
 	#[test]
