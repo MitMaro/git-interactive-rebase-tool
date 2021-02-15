@@ -66,7 +66,7 @@ pub struct Exit {
 }
 
 // TODO use the termination trait once rust-lang/rust#43301 is stable
-#[allow(clippy::exit)]
+#[allow(clippy::exit, clippy::print_stderr)]
 fn main() {
 	let app = App::new(NAME)
 		.version(VERSION)
