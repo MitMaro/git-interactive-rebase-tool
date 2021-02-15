@@ -150,8 +150,8 @@ mod tests {
 	macro_rules! assert_todo_lines {
 		($todo_file_path:expr, $($arg:expr),*) => {
 			let actual_lines = $todo_file_path.get_lines();
-			let mut expected = vec![];
-			$( expected.push(Line::new($arg).unwrap()); )*
+
+			let expected = vec![$( Line::new($arg).unwrap(), )*];
 			assert_eq!(
 				actual_lines.iter().map(Line::to_text).collect::<String>(),
 				expected.iter().map(Line::to_text).collect::<String>()
@@ -161,8 +161,7 @@ mod tests {
 
 	macro_rules! assert_read_todo_file {
 		($todo_file_path:expr, $($arg:expr),*) => {
-			let mut expected = vec![];
-			$( expected.push($arg); )*
+			let expected = vec![$( $arg, )*];
 			let content = read_to_string(Path::new($todo_file_path.path().as_os_str().to_str().unwrap())).unwrap();
 			assert_eq!(content, format!("{}\n", expected.join("\n")));
 		};

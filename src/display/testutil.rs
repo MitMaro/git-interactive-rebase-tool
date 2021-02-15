@@ -55,8 +55,7 @@ macro_rules! create_key_event {
 	};
 	($char:expr, $($modifiers:expr),*) => {
 		{
-			let mut modifiers = vec![];
-			$( modifiers.push(String::from($modifiers)); )*
+			let modifiers = vec![$( String::from($modifiers), )*];
 			crate::display::testutil::_create_key_event(crate::display::KeyCode::Char($char), &modifiers)
 		}
 	};

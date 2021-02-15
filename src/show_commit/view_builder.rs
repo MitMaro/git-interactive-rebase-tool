@@ -120,22 +120,26 @@ impl ViewBuilder {
 		old_largest_line_number_length: usize,
 		new_largest_line_number_length: usize,
 	) -> Vec<LineSegment> {
-		let mut line_segments = vec![];
-		line_segments.push(match diff_line.old_line_number() {
-			Some(line_number) => {
-				LineSegment::new(format!("{:<width$}", line_number, width = old_largest_line_number_length).as_str())
+		let mut line_segments = vec![
+			match diff_line.old_line_number() {
+				Some(line_number) => {
+					LineSegment::new(
+						format!("{:<width$}", line_number, width = old_largest_line_number_length).as_str(),
+					)
+				},
+				None => LineSegment::new(" ".repeat(old_largest_line_number_length).as_str()),
 			},
-			None => LineSegment::new(" ".repeat(old_largest_line_number_length).as_str()),
-		});
-		line_segments.push(LineSegment::new(" "));
-
-		line_segments.push(match diff_line.new_line_number() {
-			Some(line_number) => {
-				LineSegment::new(format!("{:<width$}", line_number, width = new_largest_line_number_length).as_str())
+			LineSegment::new(" "),
+			match diff_line.new_line_number() {
+				Some(line_number) => {
+					LineSegment::new(
+						format!("{:<width$}", line_number, width = new_largest_line_number_length).as_str(),
+					)
+				},
+				None => LineSegment::new(" ".repeat(new_largest_line_number_length).as_str()),
 			},
-			None => LineSegment::new(" ".repeat(new_largest_line_number_length).as_str()),
-		});
-		line_segments.push(LineSegment::new("| "));
+			LineSegment::new("| "),
+		];
 
 		if self.show_leading_whitespace || self.show_trailing_whitespace {
 			let line = diff_line.line();
