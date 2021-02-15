@@ -24,7 +24,7 @@ pub enum Color {
 	DarkYellow,
 	DarkGrey,
 	Index(u8),
-	RGB { red: u8, green: u8, blue: u8 },
+	Rgb { red: u8, green: u8, blue: u8 },
 }
 
 impl TryFrom<&str> for Color {
@@ -73,7 +73,7 @@ impl TryFrom<&str> for Color {
 						let blue = matches[2].parse::<i16>().unwrap_or(-1);
 
 						if red >= 0 && green >= 0 && blue >= 0 && red < 256 && green < 256 && blue < 256 {
-							return Ok(Self::RGB {
+							return Ok(Self::Rgb {
 								red: red as u8,
 								green: green as u8,
 								blue: blue as u8,
@@ -141,7 +141,7 @@ mod tests {
 	test_color_try_from!(named_dark_yellow, "dark yellow", Color::DarkYellow);
 	test_color_try_from!(index_0, "0", Color::Index(0));
 	test_color_try_from!(index_255, "255", Color::Index(255));
-	test_color_try_from!(rgb, "100,101,102", Color::RGB {
+	test_color_try_from!(rgb, "100,101,102", Color::Rgb {
 		red: 100,
 		green: 101,
 		blue: 102

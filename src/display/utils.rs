@@ -146,8 +146,8 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 		},
 		// for indexed colored we assume 8bit color
 		Color::Index(i) => CrosstermColor::AnsiValue(i),
-		Color::RGB { red, green, blue } if color_mode.has_true_color() => CrosstermColor::from((red, green, blue)),
-		Color::RGB { red, green, blue } if color_mode.has_minimum_four_bit_color() => {
+		Color::Rgb { red, green, blue } if color_mode.has_true_color() => CrosstermColor::from((red, green, blue)),
+		Color::Rgb { red, green, blue } if color_mode.has_minimum_four_bit_color() => {
 			// If red, green and blue are equal then we assume a grey scale color
 			// shades less than 8 should go to pure black, while shades greater than 247 should go to pure white
 			if red == green && green == blue && red >= 8 && red < 247 {
@@ -163,7 +163,7 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 				CrosstermColor::AnsiValue((16 + 36 * r + 6 * g + b) as u8)
 			}
 		},
-		Color::RGB { red, green, blue } => {
+		Color::Rgb { red, green, blue } => {
 			// Have to hack it down to 8 colors.
 			let r = if red > 127 { 1 } else { 0 };
 			let g = if green > 127 { 1 } else { 0 };
@@ -369,7 +369,7 @@ mod tests {
 		case::white(155, 255, 255, 7)
 	)]
 	fn find_color_three_bit_rgb(red: u8, green: u8, blue: u8, expected_index: u8) {
-		let color = Color::RGB { red, green, blue };
+		let color = Color::Rgb { red, green, blue };
 		assert_eq!(
 			find_color(ColorMode::ThreeBit, color),
 			CrosstermColor::AnsiValue(expected_index)
@@ -435,7 +435,7 @@ mod tests {
 		case::sample(255, 95, 0, 208)
 	)]
 	fn find_color_four_bit_rgb(red: u8, green: u8, blue: u8, expected_index: u8) {
-		let color = Color::RGB { red, green, blue };
+		let color = Color::Rgb { red, green, blue };
 		assert_eq!(
 			find_color(ColorMode::FourBit, color),
 			CrosstermColor::AnsiValue(expected_index)
@@ -489,7 +489,7 @@ mod tests {
 		case::sample(255, 95, 0)
 	)]
 	fn find_color_true_rgb(red: u8, green: u8, blue: u8) {
-		let color = Color::RGB { red, green, blue };
+		let color = Color::Rgb { red, green, blue };
 		assert_eq!(find_color(ColorMode::TrueColor, color), CrosstermColor::Rgb {
 			r: red,
 			g: green,
