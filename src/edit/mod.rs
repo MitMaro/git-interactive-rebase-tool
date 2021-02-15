@@ -16,7 +16,7 @@ pub struct Edit {
 
 impl ProcessModule for Edit {
 	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
-		self.content = todo_file.get_selected_line().get_edit_content().to_string();
+		self.content = todo_file.get_selected_line().get_edit_content().to_owned();
 		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 		ProcessResult::new()
 	}

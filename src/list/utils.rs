@@ -183,7 +183,7 @@ pub(super) fn get_todo_line_segments(
 			}
 			else {
 				let max_index = cmp::min(line.get_hash().len(), 8);
-				format!("{:8} ", line.get_hash()[0..max_index].to_string())
+				format!("{:8} ", line.get_hash()[0..max_index].to_owned())
 			}
 			.as_str(),
 		));
@@ -211,7 +211,7 @@ pub(super) fn get_todo_line_segments(
 			}
 			else {
 				let max_index = cmp::min(line.get_hash().len(), 3);
-				format!("{:3} ", line.get_hash()[0..max_index].to_string())
+				format!("{:3} ", line.get_hash()[0..max_index].to_owned())
 			}
 			.as_str(),
 		));

@@ -71,7 +71,7 @@ impl<'i> InputHandler<'i> {
 						KeyCode::Char(c) if c == '\t' => String::from("Tab"),
 						KeyCode::Char(c) if c == '\n' => String::from("Enter"),
 						KeyCode::Char(c) if c == '\u{7f}' => String::from("Backspace"),
-						KeyCode::Char(c) => c.to_string(),
+						KeyCode::Char(c) => String::from(c),
 					}
 				);
 
@@ -233,7 +233,7 @@ mod tests {
 			.join("simple")
 			.to_str()
 			.unwrap()
-			.to_string();
+			.to_owned();
 
 		set_var("GIT_DIR", git_repo_dir.as_str());
 		let config = Config::new().unwrap();

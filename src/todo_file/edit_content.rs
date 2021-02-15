@@ -19,7 +19,7 @@ impl EditContext {
 	}
 
 	pub fn content(mut self, content: &str) -> Self {
-		self.content = Some(content.to_string());
+		self.content = Some(content.to_owned());
 		self
 	}
 

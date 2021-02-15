@@ -25,7 +25,7 @@ impl User {
 			Some(ref n) => {
 				match *email {
 					Some(ref e) => Some(format!("{} <{}>", *n, *e)),
-					None => Some(n.to_string()),
+					None => Some(n.to_owned()),
 				}
 			},
 			None => {

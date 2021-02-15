@@ -88,26 +88,26 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	let mut lines = vec![];
 	if view_data.show_title() {
 		if view_data.show_help() {
-			lines.push("{TITLE}{HELP}".to_string());
+			lines.push(String::from("{TITLE}{HELP}"));
 		}
 		else {
-			lines.push("{TITLE}".to_string());
+			lines.push(String::from("{TITLE}"));
 		}
 	}
 
 	if view_data.is_empty() {
-		lines.push("{EMPTY}".to_string());
+		lines.push(String::from("{EMPTY}"));
 	}
 
 	if let Some(ref prompt) = *view_data.get_prompt() {
-		lines.push("{PROMPT}".to_string());
-		lines.push(prompt.to_string());
+		lines.push(String::from("{PROMPT}"));
+		lines.push(prompt.to_owned());
 		return lines;
 	}
 
 	let leading_lines = view_data.get_leading_lines();
 	if !leading_lines.is_empty() {
-		lines.push("{LEADING}".to_string());
+		lines.push(String::from("{LEADING}"));
 		for line in leading_lines {
 			lines.push(render_view_line(line));
 		}
@@ -115,7 +115,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 
 	let body_lines = view_data.get_lines();
 	if !body_lines.is_empty() {
-		lines.push("{BODY}".to_string());
+		lines.push(String::from("{BODY}"));
 		for line in body_lines {
 			lines.push(render_view_line(line));
 		}
@@ -123,7 +123,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 
 	let trailing_lines = view_data.get_trailing_lines();
 	if !trailing_lines.is_empty() {
-		lines.push("{TRAILING}".to_string());
+		lines.push(String::from("{TRAILING}"));
 		for line in trailing_lines {
 			lines.push(render_view_line(line));
 		}
@@ -135,10 +135,10 @@ pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
 	let output = render_view_data(view_data);
 	let mut mismatch = false;
 	let mut error_output = vec![
-		"\nUnexpected output!".to_string(),
-		"--- Expected".to_string(),
-		"+++ Actual".to_string(),
-		"==========".to_string(),
+		String::from("\nUnexpected output!"),
+		String::from("--- Expected"),
+		String::from("+++ Actual"),
+		String::from("=========="),
 	];
 
 	for (expected_line, output_line) in expected.iter().zip(output.iter()) {
