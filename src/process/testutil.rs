@@ -58,7 +58,7 @@ impl<'t> TestContext<'t> {
 
 	pub fn get_todo_file_path(&self) -> String {
 		let t = self.todo_file.replace(NamedTempFile::new().unwrap());
-		let path = t.path().to_str().unwrap().to_string();
+		let path = t.path().to_str().unwrap().to_owned();
 		self.todo_file.replace(t);
 		path
 	}
@@ -134,7 +134,7 @@ fn map_input_to_event(key_bindings: &KeyBindings, input: Input) -> Event {
 		Input::ActionReword => map_str_to_event(key_bindings.action_reword.as_str()),
 		Input::ActionSquash => map_str_to_event(key_bindings.action_squash.as_str()),
 		Input::Backspace => map_str_to_event("Backspace"),
-		Input::Character(c) => map_str_to_event(c.to_string().as_str()),
+		Input::Character(c) => map_str_to_event(String::from(c).as_str()),
 		Input::Delete => map_str_to_event("Delete"),
 		Input::Down | Input::ScrollDown => map_str_to_event("Down"),
 		Input::Edit => map_str_to_event(key_bindings.edit.as_str()),
@@ -205,69 +205,69 @@ fn format_process_result(
 				State::WindowSizeError => "WindowSizeError",
 			}
 		}),
-		input.map_or("None".to_string(), |input| {
+		input.map_or(String::from("None"), |input| {
 			match input {
-				Input::Abort => "Abort".to_string(),
-				Input::ActionBreak => "ActionBreak".to_string(),
-				Input::ActionDrop => "ActionDrop".to_string(),
-				Input::ActionEdit => "ActionEdit".to_string(),
-				Input::ActionFixup => "ActionFixup".to_string(),
-				Input::ActionPick => "ActionPick".to_string(),
-				Input::ActionReword => "ActionReword".to_string(),
-				Input::ActionSquash => "ActionSquash".to_string(),
-				Input::Backspace => "Backspace".to_string(),
-				Input::BackTab => "BackTab".to_string(),
-				Input::Character(char) => char.to_string(),
-				Input::Delete => "Delete".to_string(),
-				Input::Down => "Down".to_string(),
-				Input::Edit => "Edit".to_string(),
-				Input::End => "End".to_string(),
-				Input::Enter => "Enter".to_string(),
-				Input::Escape => "Escape".to_string(),
-				Input::Exit => "Exit".to_string(),
-				Input::ForceAbort => "ForceAbort".to_string(),
-				Input::ForceRebase => "ForceRebase".to_string(),
-				Input::Help => "Help".to_string(),
-				Input::Home => "Home".to_string(),
-				Input::Ignore => "Ignore".to_string(),
-				Input::Insert => "Insert".to_string(),
-				Input::Kill => "Kill".to_string(),
-				Input::Left => "Left".to_string(),
-				Input::MoveCursorDown => "MoveCursorDown".to_string(),
-				Input::MoveCursorLeft => "MoveCursorLeft".to_string(),
-				Input::MoveCursorPageDown => "MoveCursorPageDown".to_string(),
-				Input::MoveCursorPageUp => "MoveCursorPageUp".to_string(),
-				Input::MoveCursorRight => "MoveCursorRight".to_string(),
-				Input::MoveCursorUp => "MoveCursorUp".to_string(),
-				Input::No => "No".to_string(),
-				Input::OpenInEditor => "OpenInEditor".to_string(),
-				Input::Other => "Other".to_string(),
-				Input::PageDown => "PageDown".to_string(),
-				Input::PageUp => "PageUp".to_string(),
-				Input::Rebase => "Rebase".to_string(),
-				Input::Resize => "Resize".to_string(),
-				Input::Right => "Right".to_string(),
-				Input::ScrollBottom => "ScrollBottom".to_string(),
-				Input::ScrollDown => "ScrollDown".to_string(),
-				Input::ScrollJumpDown => "ScrollJumpDown".to_string(),
-				Input::ScrollJumpUp => "ScrollJumpUp".to_string(),
-				Input::ScrollLeft => "ScrollLeft".to_string(),
-				Input::ScrollRight => "ScrollRight".to_string(),
-				Input::ScrollTop => "ScrollTop".to_string(),
-				Input::ScrollUp => "ScrollUp".to_string(),
-				Input::ShowCommit => "ShowCommit".to_string(),
-				Input::ShowDiff => "ShowDiff".to_string(),
-				Input::SwapSelectedDown => "SwapSelectedDown".to_string(),
-				Input::SwapSelectedUp => "SwapSelectedUp".to_string(),
-				Input::Tab => "Tab".to_string(),
-				Input::ToggleVisualMode => "ToggleVisualMode".to_string(),
-				Input::Up => "Up".to_string(),
-				Input::Yes => "Yes".to_string(),
+				Input::Abort => String::from("Abort"),
+				Input::ActionBreak => String::from("ActionBreak"),
+				Input::ActionDrop => String::from("ActionDrop"),
+				Input::ActionEdit => String::from("ActionEdit"),
+				Input::ActionFixup => String::from("ActionFixup"),
+				Input::ActionPick => String::from("ActionPick"),
+				Input::ActionReword => String::from("ActionReword"),
+				Input::ActionSquash => String::from("ActionSquash"),
+				Input::Backspace => String::from("Backspace"),
+				Input::BackTab => String::from("BackTab"),
+				Input::Character(char) => String::from(char),
+				Input::Delete => String::from("Delete"),
+				Input::Down => String::from("Down"),
+				Input::Edit => String::from("Edit"),
+				Input::End => String::from("End"),
+				Input::Enter => String::from("Enter"),
+				Input::Escape => String::from("Escape"),
+				Input::Exit => String::from("Exit"),
+				Input::ForceAbort => String::from("ForceAbort"),
+				Input::ForceRebase => String::from("ForceRebase"),
+				Input::Help => String::from("Help"),
+				Input::Home => String::from("Home"),
+				Input::Ignore => String::from("Ignore"),
+				Input::Insert => String::from("Insert"),
+				Input::Kill => String::from("Kill"),
+				Input::Left => String::from("Left"),
+				Input::MoveCursorDown => String::from("MoveCursorDown"),
+				Input::MoveCursorLeft => String::from("MoveCursorLeft"),
+				Input::MoveCursorPageDown => String::from("MoveCursorPageDown"),
+				Input::MoveCursorPageUp => String::from("MoveCursorPageUp"),
+				Input::MoveCursorRight => String::from("MoveCursorRight"),
+				Input::MoveCursorUp => String::from("MoveCursorUp"),
+				Input::No => String::from("No"),
+				Input::OpenInEditor => String::from("OpenInEditor"),
+				Input::Other => String::from("Other"),
+				Input::PageDown => String::from("PageDown"),
+				Input::PageUp => String::from("PageUp"),
+				Input::Rebase => String::from("Rebase"),
+				Input::Resize => String::from("Resize"),
+				Input::Right => String::from("Right"),
+				Input::ScrollBottom => String::from("ScrollBottom"),
+				Input::ScrollDown => String::from("ScrollDown"),
+				Input::ScrollJumpDown => String::from("ScrollJumpDown"),
+				Input::ScrollJumpUp => String::from("ScrollJumpUp"),
+				Input::ScrollLeft => String::from("ScrollLeft"),
+				Input::ScrollRight => String::from("ScrollRight"),
+				Input::ScrollTop => String::from("ScrollTop"),
+				Input::ScrollUp => String::from("ScrollUp"),
+				Input::ShowCommit => String::from("ShowCommit"),
+				Input::ShowDiff => String::from("ShowDiff"),
+				Input::SwapSelectedDown => String::from("SwapSelectedDown"),
+				Input::SwapSelectedUp => String::from("SwapSelectedUp"),
+				Input::Tab => String::from("Tab"),
+				Input::ToggleVisualMode => String::from("ToggleVisualMode"),
+				Input::Up => String::from("Up"),
+				Input::Yes => String::from("Yes"),
 			}
 		}),
 		error
 			.as_ref()
-			.map_or("None".to_string(), |error| { format!("{:#}", error) })
+			.map_or(String::from("None"), |error| { format!("{:#}", error) })
 	)
 }
 
@@ -340,7 +340,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.join("simple")
 		.to_str()
 		.unwrap()
-		.to_string();
+		.to_owned();
 
 	set_var("GIT_DIR", git_repo_dir.as_str());
 	let mut config = Config::new().unwrap();

@@ -91,12 +91,12 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				),
 				LineSegment::new(
 					if is_full_width {
-						commit.get_hash().to_string()
+						commit.get_hash().to_owned()
 					}
 					else {
 						let hash = commit.get_hash();
 						let max_index = hash.len().min(8);
-						format!("{:8}", hash[0..max_index].to_string())
+						format!("{:8}", hash[0..max_index].to_owned())
 					}
 					.as_str(),
 				),

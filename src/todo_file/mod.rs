@@ -25,8 +25,8 @@ pub struct TodoFile {
 impl TodoFile {
 	pub(crate) fn new(path: &str, comment_char: &str) -> Self {
 		Self {
-			comment_char: comment_char.to_string(),
-			filepath: path.to_string(),
+			comment_char: String::from(comment_char),
+			filepath: path.to_owned(),
 			lines: vec![],
 			is_noop: false,
 			selected_line_index: 1,
