@@ -183,8 +183,7 @@ macro_rules! assert_rendered_output {
 		crate::view::testutil::_assert_rendered_output(&$view_data, &expected);
 	};
 	($view_data:expr, $($arg:expr),*) => {
-		let mut expected = vec![];
-		$( expected.push(String::from($arg)); )*
+		let expected = vec![$( String::from($arg), )*];
 		crate::view::testutil::_assert_rendered_output(&$view_data, &expected);
 	};
 }
