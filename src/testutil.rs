@@ -31,17 +31,20 @@ pub fn _assert_exit_status(actual: &Result<ExitStatus, Exit>, expected: &Result<
 			}
 		},
 	} {
-		panic!(vec![
-			"\n",
-			"Exit result does not match",
-			"==========",
-			"Expected:",
-			format_exit_status(expected).as_str(),
-			"Actual:",
-			format_exit_status(actual).as_str(),
-			"==========\n"
-		]
-		.join("\n"));
+		panic!(
+			"{}",
+			vec![
+				"\n",
+				"Exit result does not match",
+				"==========",
+				"Expected:",
+				format_exit_status(expected).as_str(),
+				"Actual:",
+				format_exit_status(actual).as_str(),
+				"==========\n"
+			]
+			.join("\n")
+		);
 	}
 }
 

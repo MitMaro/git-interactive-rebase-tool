@@ -290,17 +290,20 @@ pub fn _assert_process_result(
 			.as_ref()
 			.map_or(false, |actual| format!("{:#}", expected) == format!("{:#}", actual))
 	})) {
-		panic!(vec![
-			"\n",
-			"ProcessResult does not match",
-			"==========",
-			"Expected State:",
-			format_process_result(input, state, exit_status, error).as_str(),
-			"Actual:",
-			format_process_result(actual.input, actual.state, actual.exit_status, &actual.error).as_str(),
-			"==========\n"
-		]
-		.join("\n"));
+		panic!(
+			"{}",
+			vec![
+				"\n",
+				"ProcessResult does not match",
+				"==========",
+				"Expected State:",
+				format_process_result(input, state, exit_status, error).as_str(),
+				"Actual:",
+				format_process_result(actual.input, actual.state, actual.exit_status, &actual.error).as_str(),
+				"==========\n"
+			]
+			.join("\n")
+		);
 	}
 }
 

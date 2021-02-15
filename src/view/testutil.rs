@@ -172,7 +172,7 @@ pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
 
 	if mismatch {
 		error_output.push(String::from("==========\n"));
-		panic!(error_output.join("\n"));
+		panic!("{}", error_output.join("\n"));
 	}
 }
 
