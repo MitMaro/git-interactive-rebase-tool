@@ -112,12 +112,13 @@ impl CrossTerm {
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn flush(&mut self) -> Result<()> {
 		self.dirty = false;
 		Ok(())
 	}
 
-	#[allow(clippy::unused_self)]
+	#[allow(clippy::unused_self, clippy::unnecessary_wraps)]
 	pub(super) fn print(&mut self, s: &str) -> Result<()> {
 		OUTPUT
 			.lock()
@@ -126,11 +127,13 @@ impl CrossTerm {
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_color(&mut self, colors: Colors) -> Result<()> {
 		self.colors = colors;
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_dim(&mut self, dim: bool) -> Result<()> {
 		if dim {
 			self.attributes.set(Attribute::Dim)
@@ -141,6 +144,7 @@ impl CrossTerm {
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_underline(&mut self, dim: bool) -> Result<()> {
 		if dim {
 			self.attributes.set(Attribute::Underlined)
@@ -151,6 +155,7 @@ impl CrossTerm {
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_reverse(&mut self, dim: bool) -> Result<()> {
 		if dim {
 			self.attributes.set(Attribute::Reverse)
@@ -179,6 +184,7 @@ impl CrossTerm {
 		self.size
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(crate) fn move_to_column(&mut self, x: u16) -> Result<()> {
 		self.position.0 = x;
 		Ok(())
@@ -194,11 +200,13 @@ impl CrossTerm {
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(crate) fn start(&mut self) -> Result<()> {
 		self.state = State::Normal;
 		Ok(())
 	}
 
+	#[allow(clippy::unnecessary_wraps)]
 	pub(crate) fn end(&mut self) -> Result<()> {
 		self.state = State::Ended;
 		Ok(())
