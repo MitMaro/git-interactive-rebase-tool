@@ -291,17 +291,20 @@ mod tests {
 		};
 
 		if actual_state != expected_state {
-			panic!(vec![
-				"\n",
-				"ExternalEditorState does not match",
-				"==========",
-				"Expected:",
-				expected_state.as_str(),
-				"Actual:",
-				actual_state.as_str(),
-				"==========\n"
-			]
-			.join("\n"));
+			panic!(
+				"{}",
+				vec![
+					"\n",
+					"ExternalEditorState does not match",
+					"==========",
+					"Expected:",
+					expected_state.as_str(),
+					"Actual:",
+					actual_state.as_str(),
+					"==========\n"
+				]
+				.join("\n")
+			);
 		}
 	}
 
