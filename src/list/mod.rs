@@ -40,7 +40,7 @@ impl<'l> ProcessModule for List<'l> {
 			- 1;
 		let selected_index = todo_file.get_selected_line_index() - 1;
 
-		for (index, line) in todo_file.get_lines().iter().enumerate() {
+		for (index, line) in todo_file.iter().enumerate() {
 			let selected_line = is_visual_mode
 				&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
 					|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
@@ -124,7 +124,7 @@ impl<'l> List<'l> {
 
 	pub(crate) fn move_cursor_down(rebase_todo: &mut TodoFile, amount: usize) {
 		let current_selected_line_index = rebase_todo.get_selected_line_index();
-		let lines_length = rebase_todo.get_lines().len();
+		let lines_length = rebase_todo.get_maximum_line_index();
 		rebase_todo.set_selected_line_index(cmp::min(current_selected_line_index + amount, lines_length));
 	}
 
@@ -166,7 +166,7 @@ impl<'l> List<'l> {
 	pub(crate) fn swap_range_down(&mut self, rebase_todo: &mut TodoFile) {
 		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
-		let lines_length = rebase_todo.get_lines().len();
+		let lines_length = rebase_todo.get_maximum_line_index();
 
 		if end_index == lines_length || start_index == lines_length {
 			return;
@@ -219,13 +219,9 @@ impl<'l> List<'l> {
 			Input::ActionBreak => {
 				let action = rebase_todo.get_selected_line().get_action();
 				let selected_line_index = rebase_todo.get_selected_line_index();
-				let lines = rebase_todo.get_lines();
-				let next_action_is_break = if selected_line_index < lines.len() {
-					lines[selected_line_index].get_action() == &Action::Break
-				}
-				else {
-					false
-				};
+				let next_action_is_break = rebase_todo
+					.get_line(selected_line_index + 1)
+					.map_or(false, |line| line.get_action() == &Action::Break);
 				if !next_action_is_break {
 					if action == &Action::Break {
 						rebase_todo.remove_line(rebase_todo.get_selected_line_index());
@@ -1596,7 +1592,7 @@ mod tests {
 					input = Input::ForceAbort,
 					exit_status = ExitStatus::Good
 				);
-				assert_eq!(test_context.rebase_todo_file.get_lines().len(), 0)
+				assert!(test_context.rebase_todo_file.is_empty());
 			},
 		);
 	}
@@ -2061,7 +2057,7 @@ mod tests {
 					input = Input::ForceAbort,
 					exit_status = ExitStatus::Good
 				);
-				assert_eq!(test_context.rebase_todo_file.get_lines().len(), 0)
+				assert!(test_context.rebase_todo_file.is_empty());
 			},
 		);
 	}

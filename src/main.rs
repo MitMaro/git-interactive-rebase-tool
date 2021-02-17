@@ -153,7 +153,7 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 		});
 	}
 
-	if todo_file.get_lines().is_empty() {
+	if todo_file.is_empty() {
 		return Err(Exit {
 			message: String::from("An empty rebase was provided, nothing to edit"),
 			status: ExitStatus::Good,

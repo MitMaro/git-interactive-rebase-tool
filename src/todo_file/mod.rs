@@ -2,6 +2,7 @@ use std::{
 	fs::{read_to_string, File},
 	io::Write,
 	path::Path,
+	slice::Iter,
 };
 
 use action::Action;
@@ -122,12 +123,33 @@ impl TodoFile {
 		self.filepath.as_str()
 	}
 
-	pub(crate) const fn get_lines(&self) -> &Vec<Line> {
-		&self.lines
+	pub(crate) fn get_line(&self, index: usize) -> Option<&Line> {
+		if index == 0 {
+			None
+		}
+		else {
+			self.lines.get(index - 1)
+		}
+	}
+
+	pub(crate) fn get_lines_owned(&self) -> Vec<Line> {
+		self.lines.to_owned()
+	}
+
+	pub(crate) fn get_maximum_line_index(&self) -> usize {
+		self.lines.len()
 	}
 
 	pub(crate) const fn is_noop(&self) -> bool {
 		self.is_noop
+	}
+
+	pub fn iter(&self) -> Iter<'_, Line> {
+		self.lines.iter()
+	}
+
+	pub(crate) fn is_empty(&self) -> bool {
+		self.lines.is_empty()
 	}
 }
 
@@ -149,7 +171,7 @@ mod tests {
 
 	macro_rules! assert_todo_lines {
 		($todo_file_path:expr, $($arg:expr),*) => {
-			let actual_lines = $todo_file_path.get_lines();
+			let actual_lines = $todo_file_path.get_lines_owned();
 
 			let expected = vec![$( Line::new($arg).unwrap(), )*];
 			assert_eq!(
@@ -180,7 +202,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["noop"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		assert_eq!(todo_file.get_lines(), &vec![]);
+		assert!(todo_file.is_empty());
 		assert!(todo_file.is_noop())
 	}
 
@@ -189,7 +211,7 @@ mod tests {
 		let todo_file_path = create_todo_file(&["# pick aaa comment", "pick aaa foo", "# pick aaa comment"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
-		assert_eq!(todo_file.get_lines(), &vec![Line::new("pick aaa foo").unwrap()]);
+		assert_todo_lines!(todo_file, "pick aaa foo");
 	}
 
 	#[test]
@@ -347,10 +369,75 @@ mod tests {
 	}
 
 	#[test]
+	fn get_line_miss_high() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.get_line(4).is_none());
+	}
+
+	#[test]
+	fn get_line_miss_low() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.get_line(0).is_none());
+	}
+
+	#[test]
+	fn get_line_hit() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert_eq!(todo_file.get_line(1).unwrap(), &Line::new("exec foo").unwrap());
+	}
+
+	#[test]
 	fn get_file_path() {
 		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let todo_file = TodoFile::new(filepath, "#");
 		assert_eq!(todo_file.get_filepath(), filepath);
+	}
+
+	#[test]
+	fn maximum_line_index() {
+		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert_eq!(todo_file.get_maximum_line_index(), 3);
+	}
+
+	#[test]
+	fn iter() {
+		let todo_file_path = create_todo_file(&["pick aaa comment"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert_eq!(
+			todo_file.iter().next().unwrap(),
+			&Line::new("pick aaa comment").unwrap()
+		);
+	}
+
+	#[test]
+	fn is_empty_true() {
+		let todo_file_path = create_todo_file(&[]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let todo_file = TodoFile::new(filepath, "#");
+		assert!(todo_file.is_empty());
+	}
+
+	#[test]
+	fn is_empty_false() {
+		let todo_file_path = create_todo_file(&["pick aaa comment"]);
+		let filepath = todo_file_path.path().to_str().unwrap();
+		let mut todo_file = TodoFile::new(filepath, "#");
+		todo_file.load_file().unwrap();
+		assert!(!todo_file.is_empty());
 	}
 }
