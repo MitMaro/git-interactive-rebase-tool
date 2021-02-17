@@ -80,7 +80,7 @@ mod tests {
 					input = Input::Yes,
 					exit_status = ExitStatus::Good
 				);
-				assert_eq!(test_context.rebase_todo_file.get_lines().len(), 1);
+				assert!(!test_context.rebase_todo_file.is_empty());
 			},
 		);
 	}

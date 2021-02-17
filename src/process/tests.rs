@@ -37,7 +37,7 @@ fn force_abort() {
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
 			process.rebase_todo.load_file().unwrap();
-			assert_eq!(process.rebase_todo.get_lines(), &vec![]);
+			assert!(process.rebase_todo.is_empty());
 		},
 	);
 }
@@ -54,9 +54,10 @@ fn force_rebase() {
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
 			process.rebase_todo.load_file().unwrap();
-			assert_eq!(process.rebase_todo.get_lines(), &vec![
-				Line::new("pick aaa comment").unwrap()
-			]);
+			assert_eq!(process.rebase_todo.get_lines_owned(), vec![Line::new(
+				"pick aaa comment"
+			)
+			.unwrap()]);
 		},
 	);
 }

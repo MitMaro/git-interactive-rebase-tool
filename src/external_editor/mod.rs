@@ -39,7 +39,7 @@ impl ProcessModule for ExternalEditor {
 			result = result.error(err).state(State::List);
 		}
 		else if self.lines.is_empty() {
-			self.lines = todo_file.get_lines().to_owned();
+			self.lines = todo_file.get_lines_owned();
 		}
 		result
 	}
@@ -115,7 +115,7 @@ impl ProcessModule for ExternalEditor {
 				else {
 					match todo_file.load_file() {
 						Ok(_) => {
-							if todo_file.get_lines().is_empty() || todo_file.is_noop() {
+							if todo_file.is_empty() || todo_file.is_noop() {
 								self.state = ExternalEditorState::Empty;
 							}
 							else {
@@ -318,7 +318,7 @@ mod tests {
 			|test_context: TestContext<'_>| {
 				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
 				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![
+				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
 					Line::new("pick aaa comment1").unwrap(),
 					Line::new("drop bbb comment2").unwrap()
 				]);
@@ -471,7 +471,7 @@ mod tests {
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('3'));
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![
+				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
 					Line::new("pick aaa comment").unwrap(),
 					Line::new("drop bbb comment").unwrap()
 				]);
@@ -708,7 +708,7 @@ mod tests {
 					input = Input::Character('1'),
 					exit_status = ExitStatus::Good
 				);
-				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![]);
+				assert!(test_context.rebase_todo_file.is_empty());
 			},
 		);
 	}
@@ -748,7 +748,7 @@ mod tests {
 					input = Input::Character('3'),
 					state = State::List
 				);
-				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![Line::new(
+				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![Line::new(
 					"pick aaa comment"
 				)
 				.unwrap()]);
@@ -770,7 +770,7 @@ mod tests {
 				test_context.build_view_data(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('4'));
 				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				assert_eq!(test_context.rebase_todo_file.get_lines(), &vec![Line::new(
+				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![Line::new(
 					"pick aaa comment"
 				)
 				.unwrap()]);
