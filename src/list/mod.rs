@@ -1,7 +1,5 @@
 mod utils;
 
-use std::cmp;
-
 use crate::{
 	config::Config,
 	input::{input_handler::InputMode, Input},
@@ -36,9 +34,8 @@ impl<'l> ProcessModule for List<'l> {
 		let is_visual_mode = self.state == ListState::Visual;
 		let visual_index = self
 			.visual_index_start
-			.unwrap_or_else(|| todo_file.get_selected_line_index())
-			- 1;
-		let selected_index = todo_file.get_selected_line_index() - 1;
+			.unwrap_or_else(|| todo_file.get_selected_line_index());
+		let selected_index = todo_file.get_selected_line_index();
 
 		for (index, line) in todo_file.iter().enumerate() {
 			let selected_line = is_visual_mode
@@ -55,7 +52,7 @@ impl<'l> ProcessModule for List<'l> {
 
 		self.view_data.rebuild();
 		if let Some(visual_index) = self.visual_index_start {
-			self.view_data.ensure_line_visible(visual_index - 1);
+			self.view_data.ensure_line_visible(visual_index);
 		}
 		self.view_data.ensure_line_visible(selected_index);
 		&self.view_data
@@ -113,8 +110,8 @@ impl<'l> List<'l> {
 	pub(crate) fn move_cursor_up(todo_file: &mut TodoFile, amount: usize) {
 		let current_selected_line_index = todo_file.get_selected_line_index();
 		todo_file.set_selected_line_index(
-			if amount >= current_selected_line_index {
-				1
+			if amount > current_selected_line_index {
+				0
 			}
 			else {
 				current_selected_line_index - amount
@@ -124,8 +121,7 @@ impl<'l> List<'l> {
 
 	pub(crate) fn move_cursor_down(rebase_todo: &mut TodoFile, amount: usize) {
 		let current_selected_line_index = rebase_todo.get_selected_line_index();
-		let lines_length = rebase_todo.get_maximum_line_index();
-		rebase_todo.set_selected_line_index(cmp::min(current_selected_line_index + amount, lines_length));
+		rebase_todo.set_selected_line_index(current_selected_line_index + amount);
 	}
 
 	fn set_selected_line_action(&self, rebase_todo: &mut TodoFile, action: Action, advanced_next: bool) {
@@ -142,7 +138,7 @@ impl<'l> List<'l> {
 		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
-		if end_index == 1 || start_index == 1 {
+		if end_index == 0 || start_index == 0 {
 			return;
 		}
 
@@ -154,7 +150,7 @@ impl<'l> List<'l> {
 		};
 
 		for index in range {
-			rebase_todo.swap_lines(index - 1, index - 2);
+			rebase_todo.swap_lines(index, index - 1);
 		}
 
 		if let Some(visual_index_start) = self.visual_index_start {
@@ -180,7 +176,7 @@ impl<'l> List<'l> {
 		};
 
 		for index in range.rev() {
-			rebase_todo.swap_lines(index - 1, index);
+			rebase_todo.swap_lines(index, index + 1);
 		}
 
 		if let Some(visual_index_start) = self.visual_index_start {
@@ -1694,7 +1690,7 @@ mod tests {
 			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::ToggleVisualMode);
-				assert_eq!(module.visual_index_start, Some(1));
+				assert_eq!(module.visual_index_start, Some(0));
 				assert_eq!(module.state, ListState::Visual);
 			},
 		);
@@ -2575,8 +2571,8 @@ mod tests {
 			&[],
 			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
-				test_context.rebase_todo_file.remove_line(1);
-				test_context.rebase_todo_file.add_line(1, Line::new("noop").unwrap());
+				test_context.rebase_todo_file.remove_line(0);
+				test_context.rebase_todo_file.add_line(0, Line::new("noop").unwrap());
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
 					view_data,
