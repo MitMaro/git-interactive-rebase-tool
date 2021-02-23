@@ -12,6 +12,8 @@ use crate::{
 pub struct Edit {
 	content: String,
 	cursor_position: usize,
+	description: Option<String>,
+	label: Option<String>,
 }
 
 impl Edit {
@@ -19,6 +21,8 @@ impl Edit {
 		Self {
 			content: String::from(""),
 			cursor_position: 0,
+			description: None,
+			label: None,
 		}
 	}
 
@@ -32,11 +36,32 @@ impl Edit {
 		let indicator = graphemes.clone().skip(pointer).take(1).collect::<String>();
 		let end = graphemes.skip(pointer + 1).collect::<String>();
 
-		let mut segments = vec![
-			LineSegment::new(start.as_str()),
-			LineSegment::new_with_color_and_style(indicator.as_str(), DisplayColor::Normal, false, true, false),
-			LineSegment::new(end.as_str()),
-		];
+		if let Some(description) = self.description.as_ref() {
+			view_data.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
+				description.as_str(),
+				DisplayColor::IndicatorColor,
+			)]));
+			view_data.push_leading_line(ViewLine::new_empty_line());
+		}
+		let mut segments = vec![];
+		if let Some(label) = self.label.as_ref() {
+			segments.push(LineSegment::new_with_color_and_style(
+				label.as_str(),
+				DisplayColor::Normal,
+				true,
+				false,
+				false,
+			));
+		}
+		segments.push(LineSegment::new(start.as_str()));
+		segments.push(LineSegment::new_with_color_and_style(
+			indicator.as_str(),
+			DisplayColor::Normal,
+			false,
+			true,
+			false,
+		));
+		segments.push(LineSegment::new(end.as_str()));
 		if indicator.is_empty() {
 			segments.push(LineSegment::new_with_color_and_style(
 				" ",
@@ -108,6 +133,14 @@ impl Edit {
 			_ => return false,
 		}
 		true
+	}
+
+	pub fn set_description(&mut self, description: &str) {
+		self.description = Some(String::from(description));
+	}
+
+	pub fn set_label(&mut self, label: &str) {
+		self.label = Some(String::from(label));
 	}
 
 	pub fn set_content(&mut self, content: &str) {

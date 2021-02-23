@@ -250,9 +250,13 @@ impl<'l> List<'l> {
 			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash, true),
 			Input::Edit => {
 				if rebase_todo.get_selected_line().get_action() == &Action::Exec {
+					let selected_line = rebase_todo.get_selected_line();
 					self.state = ListState::Edit;
+					self.edit.set_content(selected_line.get_edit_content());
 					self.edit
-						.set_content(rebase_todo.get_selected_line().get_edit_content());
+						.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
+					self.edit
+						.set_description(format!("Modifying line: {}", selected_line.to_text()).as_str());
 				}
 			},
 			Input::SwapSelectedDown => self.swap_range_down(rebase_todo),
@@ -2515,8 +2519,11 @@ mod tests {
 				assert_rendered_output!(
 					view_data,
 					"{TITLE}{HELP}",
+					"{LEADING}",
+					"{IndicatorColor}Modifying line: exec foo",
+					"",
 					"{BODY}",
-					"{Normal}foo{Normal,Underline} ",
+					"{Normal,Dimmed}exec {Normal}foo{Normal,Underline} ",
 					"{TRAILING}",
 					"{IndicatorColor}Enter to finish"
 				);
