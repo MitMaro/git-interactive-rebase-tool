@@ -2,7 +2,6 @@
 pub enum State {
 	ConfirmAbort,
 	ConfirmRebase,
-	Edit,
 	Error,
 	ExternalEditor,
 	Help,

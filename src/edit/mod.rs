@@ -1,35 +1,28 @@
+#[cfg(test)]
+mod tests;
+
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	display::display_color::DisplayColor,
-	input::{input_handler::InputMode, Input},
-	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
-	todo_file::{edit_content::EditContext, TodoFile},
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+	input::Input,
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
 };
 
 pub struct Edit {
 	content: String,
 	cursor_position: usize,
-	view_data: ViewData,
 }
 
-impl ProcessModule for Edit {
-	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
-		self.content = todo_file.get_selected_line().get_edit_content().to_owned();
-		self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
-		ProcessResult::new()
+impl Edit {
+	pub(crate) fn new() -> Self {
+		Self {
+			content: String::from(""),
+			cursor_position: 0,
+		}
 	}
 
-	fn deactivate(&mut self) {
-		self.content.clear();
-		self.view_data.clear();
-	}
-
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
-
+	pub fn update_view_data(&mut self, view_data: &mut ViewData) {
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
 
@@ -53,830 +46,76 @@ impl ProcessModule for Edit {
 				false,
 			));
 		}
-		self.view_data.clear();
-		self.view_data.push_line(ViewLine::from(segments));
-		self.view_data
-			.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
-				"Enter to finish",
-				DisplayColor::IndicatorColor,
-			)]));
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		self.view_data.ensure_column_visible(pointer);
-		&self.view_data
+		view_data.push_line(ViewLine::from(segments));
+		view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
+			"Enter to finish",
+			DisplayColor::IndicatorColor,
+		)]));
+		view_data.rebuild();
+		view_data.ensure_column_visible(pointer);
+		view_data.ensure_line_visible(0);
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
-		let result = loop {
-			let input = view.get_input(InputMode::Raw);
-			let result = ProcessResult::new().input(input);
-			match input {
-				Input::Character(c) => {
+	pub fn handle_input(&mut self, input: Input) -> bool {
+		match input {
+			Input::Character(c) => {
+				let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+					.take(self.cursor_position)
+					.collect::<String>();
+				let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+					.skip(self.cursor_position)
+					.collect::<String>();
+				self.content = format!("{}{}{}", start, c, end);
+				self.cursor_position += 1;
+			},
+			Input::Backspace => {
+				if self.cursor_position != 0 {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-						.take(self.cursor_position)
+						.take(self.cursor_position - 1)
 						.collect::<String>();
 					let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 						.skip(self.cursor_position)
 						.collect::<String>();
-					self.content = format!("{}{}{}", start, c, end);
+					self.content = format!("{}{}", start, end);
+					self.cursor_position -= 1;
+				}
+			},
+			Input::Delete => {
+				let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
+				if self.cursor_position != length {
+					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+						.take(self.cursor_position)
+						.collect::<String>();
+					let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+						.skip(self.cursor_position + 1)
+						.collect::<String>();
+					self.content = format!("{}{}", start, end);
+				}
+			},
+			Input::Home => self.cursor_position = 0,
+			Input::End => self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count(),
+			Input::Right => {
+				let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
+				if self.cursor_position < length {
 					self.cursor_position += 1;
-				},
-				Input::Backspace => {
-					if self.cursor_position != 0 {
-						let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-							.take(self.cursor_position - 1)
-							.collect::<String>();
-						let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-							.skip(self.cursor_position)
-							.collect::<String>();
-						self.content = format!("{}{}", start, end);
-						self.cursor_position -= 1;
-					}
-				},
-				Input::Delete => {
-					let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
-					if self.cursor_position != length {
-						let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-							.take(self.cursor_position)
-							.collect::<String>();
-						let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-							.skip(self.cursor_position + 1)
-							.collect::<String>();
-						self.content = format!("{}{}", start, end);
-					}
-				},
-				Input::Home => self.cursor_position = 0,
-				Input::End => {
-					self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count()
-				},
-				Input::Right => {
-					let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
-					if self.cursor_position < length {
-						self.cursor_position += 1;
-					}
-				},
-				Input::Left => {
-					if self.cursor_position != 0 {
-						self.cursor_position -= 1;
-					}
-				},
-				Input::Enter => {
-					let selected_index = todo_file.get_selected_line_index();
-					todo_file.update_range(
-						selected_index,
-						selected_index,
-						&EditContext::new().content(self.content.as_str()),
-					);
-					break result.state(State::List);
-				},
-				Input::Resize => {
-					let view_width = view.get_view_size().width();
-					let view_height = view.get_view_size().height();
-					self.view_data.set_view_size(view_width, view_height);
-				},
-				_ => {
-					continue;
-				},
-			}
-			break result;
-		};
-		result
-	}
-}
-
-impl Edit {
-	pub(crate) fn new() -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		Self {
-			content: String::from(""),
-			cursor_position: 0,
-			view_data,
+				}
+			},
+			Input::Left => {
+				if self.cursor_position != 0 {
+					self.cursor_position -= 1;
+				}
+			},
+			_ => return false,
 		}
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::{
-		assert_process_result,
-		assert_rendered_output,
-		process::testutil::{process_module_test, TestContext, ViewState},
-	};
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_end() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorRight],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}foobar{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
+		true
 	}
 
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_1_left() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}fooba{Normal,Underline}r",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
+	pub fn set_content(&mut self, content: &str) {
+		self.content = String::from(content);
+		self.cursor_position = UnicodeSegmentation::graphemes(content, true).count();
 	}
 
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_2_from_start() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 2],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}foob{Normal,Underline}a{Normal}r",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_1_from_start() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 5],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}f{Normal,Underline}o{Normal}obar",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_to_start() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 6],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}f{Normal}oobar",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_to_home() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::Home],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}f{Normal}oobar",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_to_end() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::End,
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}foobar{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_on_empty_content() {
-		process_module_test(
-			&["exec "],
-			ViewState::default(),
-			&[Input::MoveCursorLeft, Input::MoveCursorRight, Input::End, Input::Home],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_attempt_past_start() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 10],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}f{Normal}oobar",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn move_cursor_attempt_past_end() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 10],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}f{Normal}oobar",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn multiple_width_unicode_single_width() {
-		process_module_test(
-			&["exec a🗳b"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 2],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}a{Normal,Underline}🗳{Normal}b",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn multiple_width_unicode_emoji() {
-		process_module_test(
-			&["exec a😀b"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft; 2],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}a{Normal,Underline}😀{Normal}b",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn add_character_end() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[Input::Character('x')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}abcdx{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn add_character_one_from_end() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft, Input::Character('x')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}abcx{Normal,Underline}d",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn add_character_one_from_start() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::Character('x'),
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}ax{Normal,Underline}b{Normal}cd",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn add_character_at_start() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::Character('x'),
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}x{Normal,Underline}a{Normal}bcd",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn backspace_at_end() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[Input::Backspace],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}abc{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn backspace_one_from_end() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft, Input::Backspace],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}ab{Normal,Underline}d",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn backspace_one_from_start() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::Backspace,
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}b{Normal}cd",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn backspace_at_start() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::Backspace,
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}a{Normal}bcd",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn delete_at_end() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[Input::Delete],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}abcd{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn delete_last_character() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[Input::MoveCursorLeft, Input::Delete],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}abc{Normal,Underline} ",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn delete_second_character() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::Delete,
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}a{Normal,Underline}c{Normal}d",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn delete_first_character() {
-		process_module_test(
-			&["exec abcd"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::MoveCursorLeft,
-				Input::Delete,
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal,Underline}b{Normal}cd",
-					"{TRAILING}",
-					"{IndicatorColor}Enter to finish"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn resize() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::Resize],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn finish_edit_no_change() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::Enter],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Enter,
-					state = State::List
-				);
-				assert_eq!(
-					test_context.rebase_todo_file.get_selected_line().get_edit_content(),
-					"foobar"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn finish_edit_with_change() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::Character('x'), Input::Enter],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.handle_input(&mut module);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Enter,
-					state = State::List
-				);
-				assert_eq!(
-					test_context.rebase_todo_file.get_selected_line().get_edit_content(),
-					"foobarx"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn ignore_other_input() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::Other, Input::Enter],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Enter,
-					state = State::List
-				);
-				assert_eq!(
-					test_context.rebase_todo_file.get_selected_line().get_edit_content(),
-					"foobar"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn deactivate() {
-		process_module_test(
-			&["exec foobar"],
-			ViewState::default(),
-			&[Input::Other, Input::Enter],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Edit::new();
-				test_context.activate(&mut module, State::List);
-				test_context.deactivate(&mut module);
-				assert!(module.content.is_empty());
-			},
-		);
+	pub fn get_content(&self) -> &str {
+		self.content.as_str()
 	}
 }
