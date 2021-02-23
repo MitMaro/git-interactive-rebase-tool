@@ -2,6 +2,67 @@ use super::*;
 use crate::assert_rendered_output;
 
 #[test]
+fn with_description() {
+	let mut module = Edit::new();
+	module.set_content("foobar");
+	module.set_description("Description");
+	module.handle_input(Input::Right);
+	let view_data = &mut ViewData::new();
+	view_data.set_view_size(500, 30);
+	module.update_view_data(view_data);
+	assert_rendered_output!(
+		view_data,
+		"{LEADING}",
+		"{IndicatorColor}Description",
+		"",
+		"{BODY}",
+		"{Normal}foobar{Normal,Underline} ",
+		"{TRAILING}",
+		"{IndicatorColor}Enter to finish"
+	);
+}
+
+#[test]
+fn with_label() {
+	let mut module = Edit::new();
+	module.set_content("foobar");
+	module.set_label("Label: ");
+	module.handle_input(Input::Right);
+	let view_data = &mut ViewData::new();
+	view_data.set_view_size(500, 30);
+	module.update_view_data(view_data);
+	assert_rendered_output!(
+		view_data,
+		"{BODY}",
+		"{Normal,Dimmed}Label: {Normal}foobar{Normal,Underline} ",
+		"{TRAILING}",
+		"{IndicatorColor}Enter to finish"
+	);
+}
+
+#[test]
+fn with_label_and_description() {
+	let mut module = Edit::new();
+	module.set_content("foobar");
+	module.set_description("Description");
+	module.set_label("Label: ");
+	module.handle_input(Input::Right);
+	let view_data = &mut ViewData::new();
+	view_data.set_view_size(500, 30);
+	module.update_view_data(view_data);
+	assert_rendered_output!(
+		view_data,
+		"{LEADING}",
+		"{IndicatorColor}Description",
+		"",
+		"{BODY}",
+		"{Normal,Dimmed}Label: {Normal}foobar{Normal,Underline} ",
+		"{TRAILING}",
+		"{IndicatorColor}Enter to finish"
+	);
+}
+
+#[test]
 fn move_cursor_end() {
 	let mut module = Edit::new();
 	module.set_content("foobar");
