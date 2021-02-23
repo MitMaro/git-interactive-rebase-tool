@@ -2,7 +2,6 @@ use crate::{
 	config::Config,
 	confirm_abort::ConfirmAbort,
 	confirm_rebase::ConfirmRebase,
-	edit::Edit,
 	external_editor::ExternalEditor,
 	list::List,
 	process::{
@@ -21,7 +20,6 @@ use crate::{
 pub struct Modules<'m> {
 	pub confirm_abort: ConfirmAbort,
 	pub confirm_rebase: ConfirmRebase,
-	pub edit: Edit,
 	pub error: Error,
 	pub external_editor: ExternalEditor,
 	pub help: Help,
@@ -35,7 +33,6 @@ impl<'m> Modules<'m> {
 		Modules {
 			confirm_abort: ConfirmAbort::new(),
 			confirm_rebase: ConfirmRebase::new(),
-			edit: Edit::new(),
 			error: Error::new(),
 			external_editor: ExternalEditor::new(config.git.editor.as_str()),
 			help: Help::new(),
@@ -49,7 +46,6 @@ impl<'m> Modules<'m> {
 		match state {
 			State::ConfirmAbort => &self.confirm_abort as &dyn ProcessModule,
 			State::ConfirmRebase => &self.confirm_rebase as &dyn ProcessModule,
-			State::Edit => &self.edit as &dyn ProcessModule,
 			State::Error => &self.error as &dyn ProcessModule,
 			State::ExternalEditor => &self.external_editor as &dyn ProcessModule,
 			State::Help => &self.help as &dyn ProcessModule,
@@ -63,7 +59,6 @@ impl<'m> Modules<'m> {
 		match state {
 			State::ConfirmAbort => &mut self.confirm_abort as &mut dyn ProcessModule,
 			State::ConfirmRebase => &mut self.confirm_rebase as &mut dyn ProcessModule,
-			State::Edit => &mut self.edit as &mut dyn ProcessModule,
 			State::Error => &mut self.error as &mut dyn ProcessModule,
 			State::ExternalEditor => &mut self.external_editor as &mut dyn ProcessModule,
 			State::Help => &mut self.help as &mut dyn ProcessModule,
@@ -119,7 +114,6 @@ mod tests {
 		state,
 		case::confirm_abort(State::ConfirmAbort),
 		case::confirm_rabase(State::ConfirmRebase),
-		case::edit(State::Edit),
 		case::error(State::Error),
 		case::external_editor(State::ExternalEditor),
 		case::help(State::Help),

@@ -2,6 +2,7 @@ mod utils;
 
 use crate::{
 	config::Config,
+	edit::Edit,
 	input::{input_handler::InputMode, Input},
 	list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
@@ -13,10 +14,12 @@ use crate::{
 enum ListState {
 	Normal,
 	Visual,
+	Edit,
 }
 
 pub struct List<'l> {
 	config: &'l Config,
+	edit: Edit,
 	normal_mode_help_lines: Vec<(String, String)>,
 	state: ListState,
 	view_data: ViewData,
@@ -31,50 +34,60 @@ impl<'l> ProcessModule for List<'l> {
 		self.view_data.clear();
 		self.view_data.set_view_size(view_width, view_height);
 
-		let is_visual_mode = self.state == ListState::Visual;
-		let visual_index = self
-			.visual_index_start
-			.unwrap_or_else(|| todo_file.get_selected_line_index());
-		let selected_index = todo_file.get_selected_line_index();
+		match self.state {
+			ListState::Normal | ListState::Visual => {
+				let is_visual_mode = self.state == ListState::Visual;
+				let visual_index = self
+					.visual_index_start
+					.unwrap_or_else(|| todo_file.get_selected_line_index());
+				let selected_index = todo_file.get_selected_line_index();
 
-		for (index, line) in todo_file.iter().enumerate() {
-			let selected_line = is_visual_mode
-				&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
-					|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
-			self.view_data.push_line(
-				ViewLine::new_with_pinned_segments(
-					get_todo_line_segments(line, selected_index == index, selected_line, view_width),
-					if *line.get_action() == Action::Exec { 2 } else { 3 },
-				)
-				.set_selected(selected_index == index || selected_line),
-			);
+				for (index, line) in todo_file.iter().enumerate() {
+					let selected_line = is_visual_mode
+						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
+							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
+					self.view_data.push_line(
+						ViewLine::new_with_pinned_segments(
+							get_todo_line_segments(line, selected_index == index, selected_line, view_width),
+							if *line.get_action() == Action::Exec { 2 } else { 3 },
+						)
+						.set_selected(selected_index == index || selected_line),
+					);
+				}
+				self.view_data.rebuild();
+				if let Some(visual_index) = self.visual_index_start {
+					self.view_data.ensure_line_visible(visual_index);
+				}
+				self.view_data.ensure_line_visible(selected_index);
+			},
+			ListState::Edit => self.edit.update_view_data(&mut self.view_data),
 		}
 
-		self.view_data.rebuild();
-		if let Some(visual_index) = self.visual_index_start {
-			self.view_data.ensure_line_visible(visual_index);
-		}
-		self.view_data.ensure_line_visible(selected_index);
 		&self.view_data
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
-		let view_height = view.get_view_size().height();
-		let input = view.get_input(InputMode::List);
-		let mut result = ProcessResult::new().input(input);
-		match input {
-			Input::MoveCursorLeft => self.view_data.scroll_left(),
-			Input::MoveCursorRight => self.view_data.scroll_right(),
-			Input::MoveCursorDown => {
-				Self::move_cursor_down(todo_file, 1);
+		let mut result = ProcessResult::new();
+		match self.state {
+			ListState::Normal => {
+				let input = view.get_input(InputMode::List);
+				result = result.input(input);
+				if !self.handle_move_cursor_inputs(view, todo_file, input) {
+					result = self.handle_normal_mode_input(input, result, todo_file);
+				}
 			},
-			Input::MoveCursorUp => Self::move_cursor_up(todo_file, 1),
-			Input::MoveCursorPageDown => Self::move_cursor_down(todo_file, view_height / 2),
-			Input::MoveCursorPageUp => Self::move_cursor_up(todo_file, view_height / 2),
-			_ => {
-				result = match self.state {
-					ListState::Normal => self.handle_normal_mode_input(input, result, todo_file),
-					ListState::Visual => self.handle_visual_mode_input(input, result, todo_file),
+			ListState::Visual => {
+				let input = view.get_input(InputMode::List);
+				result = result.input(input);
+				if !self.handle_move_cursor_inputs(view, todo_file, input) {
+					result = self.handle_visual_mode_input(input, result, todo_file);
+				}
+			},
+			ListState::Edit => {
+				let input = view.get_input(InputMode::Raw);
+				result = result.input(input);
+				if !self.edit.handle_input(input) {
+					self.handle_edit_mode_input(input, todo_file);
 				}
 			},
 		}
@@ -82,11 +95,10 @@ impl<'l> ProcessModule for List<'l> {
 	}
 
 	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
-		if self.state == ListState::Normal {
-			Some(self.normal_mode_help_lines.clone())
-		}
-		else {
-			Some(self.visual_mode_help_lines.clone())
+		match self.state {
+			ListState::Normal => Some(self.normal_mode_help_lines.clone()),
+			ListState::Visual => Some(self.visual_mode_help_lines.clone()),
+			ListState::Edit => None,
 		}
 	}
 }
@@ -102,6 +114,7 @@ impl<'l> List<'l> {
 			normal_mode_help_lines: get_list_normal_mode_help_lines(&config.key_bindings),
 			state: ListState::Normal,
 			view_data,
+			edit: Edit::new(),
 			visual_index_start: None,
 			visual_mode_help_lines: get_list_visual_mode_help_lines(&config.key_bindings),
 		}
@@ -237,7 +250,9 @@ impl<'l> List<'l> {
 			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash, true),
 			Input::Edit => {
 				if rebase_todo.get_selected_line().get_action() == &Action::Exec {
-					result = result.state(State::Edit);
+					self.state = ListState::Edit;
+					self.edit
+						.set_content(rebase_todo.get_selected_line().get_edit_content());
 				}
 			},
 			Input::SwapSelectedDown => self.swap_range_down(rebase_todo),
@@ -289,6 +304,33 @@ impl<'l> List<'l> {
 			_ => {},
 		}
 		result
+	}
+
+	fn handle_edit_mode_input(&mut self, input: Input, todo_file: &mut TodoFile) {
+		if input == Input::Enter {
+			let selected_index = todo_file.get_selected_line_index();
+			todo_file.update_range(
+				selected_index,
+				selected_index,
+				&EditContext::new().content(self.edit.get_content()),
+			);
+			self.state = ListState::Normal;
+		}
+	}
+
+	fn handle_move_cursor_inputs(&mut self, view: &View<'_>, todo_file: &mut TodoFile, input: Input) -> bool {
+		match input {
+			Input::MoveCursorLeft => self.view_data.scroll_left(),
+			Input::MoveCursorRight => self.view_data.scroll_right(),
+			Input::MoveCursorDown => {
+				Self::move_cursor_down(todo_file, 1);
+			},
+			Input::MoveCursorUp => Self::move_cursor_up(todo_file, 1),
+			Input::MoveCursorPageDown => Self::move_cursor_down(todo_file, view.get_view_size().height() / 2),
+			Input::MoveCursorPageUp => Self::move_cursor_up(todo_file, view.get_view_size().height() / 2),
+			_ => return false,
+		}
+		true
 	}
 }
 
@@ -1639,11 +1681,8 @@ mod tests {
 			&[Input::Edit],
 			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Edit,
-					state = State::Edit
-				);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Edit);
+				assert_eq!(module.state, ListState::Edit);
 			},
 		);
 	}
@@ -1658,6 +1697,7 @@ mod tests {
 			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Edit);
+				assert_eq!(module.state, ListState::Normal);
 			},
 		);
 	}
@@ -2462,6 +2502,50 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
+	fn edit_mode_render() {
+		process_module_test(
+			&["exec foo"],
+			ViewState::default(),
+			&[Input::Edit],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.build_view_data(&mut module);
+				test_context.handle_all_inputs(&mut module);
+				let view_data = test_context.build_view_data(&mut module);
+				assert_rendered_output!(
+					view_data,
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal}foo{Normal,Underline} ",
+					"{TRAILING}",
+					"{IndicatorColor}Enter to finish"
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn edit_mode_handle_input() {
+		process_module_test(
+			&["exec foo"],
+			ViewState::default(),
+			&[Input::Edit, Input::Backspace, Input::Enter],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.build_view_data(&mut module);
+				test_context.handle_all_inputs(&mut module);
+				assert_eq!(
+					test_context.rebase_todo_file.get_line(0).unwrap().get_edit_content(),
+					"fo"
+				);
+				assert_eq!(module.state, ListState::Normal);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
 	fn scroll_right() {
 		process_module_test(
 			&[
@@ -2557,6 +2641,21 @@ mod tests {
 				module.state = ListState::Visual;
 				let help = module.get_help_keybindings_descriptions().unwrap();
 				assert_eq!(help.len(), 14);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn edit_mode_help() {
+		process_module_test(
+			&["pick aaa c1"],
+			ViewState::default(),
+			&[],
+			|test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				module.state = ListState::Edit;
+				assert!(module.get_help_keybindings_descriptions().is_none());
 			},
 		);
 	}

@@ -196,7 +196,6 @@ fn format_process_result(
 			match state {
 				State::ConfirmAbort => "ConfirmAbort",
 				State::ConfirmRebase => "ConfirmRebase",
-				State::Edit => "Edit",
 				State::Error => "Error",
 				State::ExternalEditor => "ExternalEditor",
 				State::Help => "Help",
