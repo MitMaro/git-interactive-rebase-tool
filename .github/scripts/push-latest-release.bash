@@ -14,7 +14,7 @@ assets="$(python -c "
 import json
 assets = json.loads('$assets')
 for asset in assets:
-    print asset['name'], asset['id']
+    print(asset['name'], asset['id'])
 ")"
 
 while read name id; do
