@@ -149,7 +149,7 @@ mod tests {
 					test_context.handle_input(&mut module),
 					input = Input::Character('a'),
 					state = State::ConfirmRebase
-				)
+				);
 			},
 		);
 	}
@@ -165,7 +165,7 @@ mod tests {
 				let mut module = Error::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize)
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
 			},
 		);
 	}

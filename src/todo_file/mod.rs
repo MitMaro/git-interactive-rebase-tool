@@ -209,7 +209,7 @@ mod tests {
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
 		assert!(todo_file.is_empty());
-		assert!(todo_file.is_noop())
+		assert!(todo_file.is_noop());
 	}
 
 	#[test]

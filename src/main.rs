@@ -197,7 +197,7 @@ mod tests {
 			try_main("does-not-exist"),
 			message = format!("Error loading git config: could not find repository from '{}'", path),
 			status = ExitStatus::ConfigError
-		)
+		);
 	}
 
 	#[test]
@@ -208,7 +208,7 @@ mod tests {
 			try_main("does-not-exist"),
 			message = "No such file or directory (os error 2)",
 			status = ExitStatus::FileReadError
-		)
+		);
 	}
 
 	#[test]
@@ -220,7 +220,7 @@ mod tests {
 			try_main(todo_file.to_str().unwrap()),
 			message = "A noop rebase was provided, skipping editing",
 			status = ExitStatus::Good
-		)
+		);
 	}
 
 	#[test]
@@ -232,7 +232,7 @@ mod tests {
 			try_main(todo_file.to_str().unwrap()),
 			message = "An empty rebase was provided, nothing to edit",
 			status = ExitStatus::Good
-		)
+		);
 	}
 
 	#[test]
@@ -249,7 +249,7 @@ mod tests {
 			try_main(todo_file_path.to_str().unwrap()),
 			message = format!("Error opening file: {}", todo_file_path.to_str().unwrap()),
 			status = ExitStatus::FileWriteError
-		)
+		);
 	}
 	#[test]
 	#[serial_test::serial]
@@ -257,6 +257,6 @@ mod tests {
 		CrossTerm::set_inputs(vec![create_key_event!('d', "Control")]);
 		let path = set_git_directory("fixtures/simple");
 		let todo_file = Path::new(path.as_str()).join("rebase-todo");
-		assert_exit_status!(try_main(todo_file.to_str().unwrap()), status = ExitStatus::Abort)
+		assert_exit_status!(try_main(todo_file.to_str().unwrap()), status = ExitStatus::Abort);
 	}
 }

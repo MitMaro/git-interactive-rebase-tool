@@ -67,7 +67,7 @@ impl<'t> TestContext<'t> {
 		self.todo_file
 			.replace(Builder::new().tempfile().unwrap())
 			.close()
-			.unwrap()
+			.unwrap();
 	}
 
 	pub fn set_todo_file_readonly(&self) {

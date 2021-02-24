@@ -83,7 +83,7 @@ impl Line {
 
 	pub(crate) fn edit_content(&mut self, content: &str) {
 		if let Action::Exec = self.action {
-			self.command = String::from(content)
+			self.command = String::from(content);
 		}
 	}
 

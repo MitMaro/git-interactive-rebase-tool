@@ -73,7 +73,7 @@ impl<'m> Modules<'m> {
 	}
 
 	pub fn deactivate(&mut self, state: State) {
-		self.get_mut_module(state).deactivate()
+		self.get_mut_module(state).deactivate();
 	}
 
 	pub fn build_view_data(&mut self, state: State, view: &View<'_>, rebase_todo: &TodoFile) -> &ViewData {
