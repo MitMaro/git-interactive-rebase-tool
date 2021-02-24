@@ -10,18 +10,18 @@ fn modifiers_to_string(modifiers: KeyModifiers, code: Option<KeyCode>) -> String
 	if modifiers.contains(KeyModifiers::SHIFT) {
 		if let Some(KeyCode::Char(k)) = code {
 			if k == '\t' || k == '\n' || k == '\u{7f}' {
-				result.push(String::from("Shift"))
+				result.push(String::from("Shift"));
 			}
 		}
 		else {
-			result.push(String::from("Shift"))
+			result.push(String::from("Shift"));
 		}
 	}
 	if modifiers.contains(KeyModifiers::CONTROL) {
-		result.push(String::from("Control"))
+		result.push(String::from("Control"));
 	}
 	if modifiers.contains(KeyModifiers::ALT) {
-		result.push(String::from("Alt"))
+		result.push(String::from("Alt"));
 	}
 	result.join("")
 }

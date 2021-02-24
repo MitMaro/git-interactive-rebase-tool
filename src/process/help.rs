@@ -39,7 +39,7 @@ impl ProcessModule for Help {
 	}
 
 	fn deactivate(&mut self) {
-		self.clear()
+		self.clear();
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
@@ -227,7 +227,7 @@ mod tests {
 					test_context.handle_input(&mut module),
 					input = Input::Character('a'),
 					state = State::ConfirmRebase
-				)
+				);
 			},
 		);
 	}
@@ -241,7 +241,7 @@ mod tests {
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Help::new();
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize)
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
 			},
 		);
 	}

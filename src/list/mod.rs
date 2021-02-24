@@ -2136,7 +2136,7 @@ mod tests {
 					input = Input::ForceRebase,
 					exit_status = ExitStatus::Good
 				);
-				assert!(!test_context.rebase_todo_file.is_noop())
+				assert!(!test_context.rebase_todo_file.is_noop());
 			},
 		);
 	}

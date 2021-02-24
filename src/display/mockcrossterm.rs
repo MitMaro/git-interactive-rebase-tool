@@ -136,10 +136,10 @@ impl CrossTerm {
 	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_dim(&mut self, dim: bool) -> Result<()> {
 		if dim {
-			self.attributes.set(Attribute::Dim)
+			self.attributes.set(Attribute::Dim);
 		}
 		else {
-			self.attributes.set(Attribute::NormalIntensity)
+			self.attributes.set(Attribute::NormalIntensity);
 		}
 		Ok(())
 	}
@@ -147,10 +147,10 @@ impl CrossTerm {
 	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_underline(&mut self, dim: bool) -> Result<()> {
 		if dim {
-			self.attributes.set(Attribute::Underlined)
+			self.attributes.set(Attribute::Underlined);
 		}
 		else {
-			self.attributes.set(Attribute::NoUnderline)
+			self.attributes.set(Attribute::NoUnderline);
 		}
 		Ok(())
 	}
@@ -158,10 +158,10 @@ impl CrossTerm {
 	#[allow(clippy::unnecessary_wraps)]
 	pub(super) fn set_reverse(&mut self, dim: bool) -> Result<()> {
 		if dim {
-			self.attributes.set(Attribute::Reverse)
+			self.attributes.set(Attribute::Reverse);
 		}
 		else {
-			self.attributes.set(Attribute::NoReverse)
+			self.attributes.set(Attribute::NoReverse);
 		}
 		Ok(())
 	}
