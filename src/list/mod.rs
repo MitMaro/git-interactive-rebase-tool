@@ -151,52 +151,25 @@ impl<'l> List<'l> {
 		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
-		if end_index == 0 || start_index == 0 {
-			return;
+		if rebase_todo.swap_range_up(start_index, end_index) {
+			if let Some(visual_index_start) = self.visual_index_start {
+				self.visual_index_start = Some(visual_index_start - 1);
+			}
+			Self::move_cursor_up(rebase_todo, 1);
 		}
-
-		let range = if end_index <= start_index {
-			end_index..=start_index
-		}
-		else {
-			start_index..=end_index
-		};
-
-		for index in range {
-			rebase_todo.swap_lines(index, index - 1);
-		}
-
-		if let Some(visual_index_start) = self.visual_index_start {
-			self.visual_index_start = Some(visual_index_start - 1);
-		}
-		Self::move_cursor_up(rebase_todo, 1);
 	}
 
 	pub(crate) fn swap_range_down(&mut self, rebase_todo: &mut TodoFile) {
 		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
-		let lines_length = rebase_todo.get_maximum_line_index();
 
-		if end_index == lines_length || start_index == lines_length {
-			return;
+		if rebase_todo.swap_range_down(start_index, end_index) {
+			if let Some(visual_index_start) = self.visual_index_start {
+				self.visual_index_start = Some(visual_index_start + 1);
+			}
+
+			Self::move_cursor_down(rebase_todo, 1);
 		}
-
-		let range = if end_index <= start_index {
-			end_index..=start_index
-		}
-		else {
-			start_index..=end_index
-		};
-
-		for index in range.rev() {
-			rebase_todo.swap_lines(index, index + 1);
-		}
-
-		if let Some(visual_index_start) = self.visual_index_start {
-			self.visual_index_start = Some(visual_index_start + 1);
-		}
-
-		Self::move_cursor_down(rebase_todo, 1);
 	}
 
 	fn handle_normal_mode_input(
@@ -1497,29 +1470,6 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn change_selected_line_swap_down_past_bottom() {
-		process_module_test(
-			&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
-			ViewState::default(),
-			&[Input::SwapSelectedDown; 3],
-			|mut test_context: TestContext<'_>| {
-				let mut module = List::new(test_context.config);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}{HELP}",
-					"{BODY}",
-					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
 	fn change_selected_line_swap_up() {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
@@ -1535,35 +1485,6 @@ mod tests {
 					"{BODY}",
 					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
 					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c3",
-					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn change_selected_line_swap_up_past_top() {
-		process_module_test(
-			&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
-			ViewState::default(),
-			&[
-				Input::MoveCursorDown,
-				Input::MoveCursorDown,
-				Input::SwapSelectedUp,
-				Input::SwapSelectedUp,
-				Input::SwapSelectedUp,
-			],
-			|mut test_context: TestContext<'_>| {
-				let mut module = List::new(test_context.config);
-				test_context.handle_all_inputs(&mut module);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}{HELP}",
-					"{BODY}",
-					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c3",
-					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
 					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2"
 				);
 			},
