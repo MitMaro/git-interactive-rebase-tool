@@ -84,8 +84,41 @@ impl TodoFile {
 		}
 	}
 
-	pub(crate) fn swap_lines(&mut self, a: usize, b: usize) {
-		self.lines.swap(a, b);
+	pub(crate) fn swap_range_up(&mut self, start_index: usize, end_index: usize) -> bool {
+		if end_index == 0 || start_index == 0 {
+			return false;
+		}
+		let range = if end_index <= start_index {
+			(end_index - 1)..start_index
+		}
+		else {
+			(start_index - 1)..end_index
+		};
+		for index in range {
+			self.lines.swap(index, index + 1);
+		}
+		true
+	}
+
+	pub(crate) fn swap_range_down(&mut self, start_index: usize, end_index: usize) -> bool {
+		let len = self.lines.len();
+		let max_index = if len == 0 { 0 } else { len - 1 };
+
+		if end_index == max_index || start_index == max_index {
+			return false;
+		}
+
+		let range = if end_index <= start_index {
+			end_index..=start_index
+		}
+		else {
+			start_index..=end_index
+		};
+
+		for index in range.rev() {
+			self.lines.swap(index, index + 1);
+		}
+		true
 	}
 
 	pub(crate) fn add_line(&mut self, index: usize, line: Line) {
@@ -136,16 +169,6 @@ impl TodoFile {
 		self.lines.to_owned()
 	}
 
-	pub(crate) fn get_maximum_line_index(&self) -> usize {
-		let len = self.lines.len();
-		if len == 0 {
-			0
-		}
-		else {
-			len - 1
-		}
-	}
-
 	pub(crate) const fn is_noop(&self) -> bool {
 		self.is_noop
 	}
@@ -181,8 +204,8 @@ mod tests {
 
 			let expected = vec![$( Line::new($arg).unwrap(), )*];
 			assert_eq!(
-				actual_lines.iter().map(Line::to_text).collect::<String>(),
-				expected.iter().map(Line::to_text).collect::<String>()
+				actual_lines.iter().map(Line::to_text).collect::<Vec<String>>().join(", "),
+				expected.iter().map(Line::to_text).collect::<Vec<String>>().join(", ")
 			);
 		};
 	}
@@ -244,24 +267,6 @@ mod tests {
 		todo_file.set_lines(vec![Line::new("noop").unwrap()]);
 		todo_file.write_file().unwrap();
 		assert_read_todo_file!(&todo_file_path, "noop");
-	}
-
-	#[test]
-	#[should_panic]
-	fn swap_lines_index_miss() {
-		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
-		todo_file.load_file().unwrap();
-		todo_file.swap_lines(100, 101);
-	}
-
-	#[test]
-	fn swap_lines() {
-		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
-		todo_file.load_file().unwrap();
-		todo_file.swap_lines(0, 1);
-		assert_todo_lines!(todo_file, "drop bbb comment", "pick aaa comment", "edit ccc comment");
 	}
 
 	#[test]
@@ -330,7 +335,7 @@ mod tests {
 	}
 
 	#[test]
-	fn update_range_swap_range() {
+	fn update_range_edit_action() {
 		let todo_file_path = create_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
 		todo_file.load_file().unwrap();
@@ -341,6 +346,96 @@ mod tests {
 			"reword bbb comment",
 			"reword ccc comment"
 		);
+	}
+
+	#[test]
+	fn swap_up() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.swap_range_up(1, 2));
+		assert_todo_lines!(todo_file, "pick bbb comment", "pick ccc comment", "pick aaa comment");
+	}
+
+	#[test]
+	fn swap_up_reverse_index() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.swap_range_up(2, 1));
+		assert_todo_lines!(todo_file, "pick bbb comment", "pick ccc comment", "pick aaa comment");
+	}
+
+	#[test]
+	fn swap_up_single_line() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.swap_range_up(1, 1));
+		assert_todo_lines!(todo_file, "pick bbb comment", "pick aaa comment", "pick ccc comment");
+	}
+
+	#[test]
+	fn swap_up_at_top_start_index() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(!todo_file.swap_range_up(0, 1));
+		assert_todo_lines!(todo_file, "pick aaa comment", "pick bbb comment", "pick ccc comment");
+	}
+
+	#[test]
+	fn swap_up_at_top_end_index() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(!todo_file.swap_range_up(1, 0));
+		assert_todo_lines!(todo_file, "pick aaa comment", "pick bbb comment", "pick ccc comment");
+	}
+
+	#[test]
+	fn swap_down() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.swap_range_down(0, 1));
+		assert_todo_lines!(todo_file, "pick ccc comment", "pick aaa comment", "pick bbb comment");
+	}
+
+	#[test]
+	fn swap_down_reverse_index() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.swap_range_down(1, 0));
+		assert_todo_lines!(todo_file, "pick ccc comment", "pick aaa comment", "pick bbb comment");
+	}
+
+	#[test]
+	fn swap_down_single_line() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(todo_file.swap_range_down(0, 0));
+		assert_todo_lines!(todo_file, "pick bbb comment", "pick aaa comment", "pick ccc comment");
+	}
+
+	#[test]
+	fn swap_down_at_bottom_end_index() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(!todo_file.swap_range_down(1, 2));
+		assert_todo_lines!(todo_file, "pick aaa comment", "pick bbb comment", "pick ccc comment");
+	}
+
+	#[test]
+	fn swap_down_at_bottom_start_index() {
+		let todo_file_path = create_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), "#");
+		todo_file.load_file().unwrap();
+		assert!(!todo_file.swap_range_down(2, 1));
+		assert_todo_lines!(todo_file, "pick aaa comment", "pick bbb comment", "pick ccc comment");
 	}
 
 	#[test]
@@ -397,24 +492,6 @@ mod tests {
 		let filepath = todo_file_path.path().to_str().unwrap();
 		let todo_file = TodoFile::new(filepath, "#");
 		assert_eq!(todo_file.get_filepath(), filepath);
-	}
-
-	#[test]
-	fn maximum_line_index() {
-		let todo_file_path = create_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		let filepath = todo_file_path.path().to_str().unwrap();
-		let mut todo_file = TodoFile::new(filepath, "#");
-		todo_file.load_file().unwrap();
-		assert_eq!(todo_file.get_maximum_line_index(), 2);
-	}
-
-	#[test]
-	fn maximum_line_index_empty_todo() {
-		let todo_file_path = create_todo_file(&[]);
-		let filepath = todo_file_path.path().to_str().unwrap();
-		let mut todo_file = TodoFile::new(filepath, "#");
-		todo_file.load_file().unwrap();
-		assert_eq!(todo_file.get_maximum_line_index(), 0);
 	}
 
 	#[test]
