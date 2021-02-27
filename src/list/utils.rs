@@ -145,6 +145,9 @@ const fn get_action_color(action: Action) -> DisplayColor {
 		Action::Pick => DisplayColor::ActionPick,
 		Action::Reword => DisplayColor::ActionReword,
 		Action::Squash => DisplayColor::ActionSquash,
+		Action::Label => DisplayColor::ActionLabel,
+		Action::Reset => DisplayColor::ActionReset,
+		Action::Merge => DisplayColor::ActionMerge,
 		// this is technically impossible, since noops should never be rendered
 		Action::Noop => DisplayColor::Normal,
 	}
@@ -174,19 +177,16 @@ pub(super) fn get_todo_line_segments(
 			get_action_color(*action),
 		));
 
-		segments.push(LineSegment::new(
-			if *action == Action::Exec {
-				String::from(line.get_command())
-			}
-			else if *action == Action::Break {
-				String::from("")
-			}
-			else {
+		match *action {
+			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 				let max_index = cmp::min(line.get_hash().len(), 8);
-				format!("{:8} ", line.get_hash()[0..max_index].to_owned())
-			}
-			.as_str(),
-		));
+				segments.push(LineSegment::new(
+					format!("{:8} ", line.get_hash()[0..max_index].to_string()).as_str(),
+				));
+			},
+			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
+		}
+		segments.push(LineSegment::new(line.get_content()));
 	}
 	else {
 		segments.push(LineSegment::new_with_color_and_style(
@@ -202,22 +202,16 @@ pub(super) fn get_todo_line_segments(
 			get_action_color(*action),
 		));
 
-		segments.push(LineSegment::new(
-			if *action == Action::Exec {
-				String::from(line.get_command())
-			}
-			else if *action == Action::Break {
-				String::from("")
-			}
-			else {
+		match *action {
+			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 				let max_index = cmp::min(line.get_hash().len(), 3);
-				format!("{:3} ", line.get_hash()[0..max_index].to_owned())
-			}
-			.as_str(),
-		));
-	}
-	if *action != Action::Exec && *action != Action::Break {
-		segments.push(LineSegment::new(line.get_comment()));
+				segments.push(LineSegment::new(
+					format!("{:3} ", line.get_hash()[0..max_index].to_string()).as_str(),
+				));
+			},
+			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
+		}
+		segments.push(LineSegment::new(line.get_content()));
 	}
 	segments
 }

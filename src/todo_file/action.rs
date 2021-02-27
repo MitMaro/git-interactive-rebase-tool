@@ -13,6 +13,9 @@ pub enum Action {
 	Pick,
 	Reword,
 	Squash,
+	Label,
+	Reset,
+	Merge,
 }
 
 impl Action {
@@ -23,8 +26,11 @@ impl Action {
 			Self::Edit => "edit",
 			Self::Exec => "exec",
 			Self::Fixup => "fixup",
+			Self::Label => "label",
+			Self::Merge => "merge",
 			Self::Noop => "noop",
 			Self::Pick => "pick",
+			Self::Reset => "reset",
 			Self::Reword => "reword",
 			Self::Squash => "squash",
 		})
@@ -37,8 +43,11 @@ impl Action {
 			Self::Edit => "e",
 			Self::Exec => "x",
 			Self::Fixup => "f",
+			Self::Label => "l",
+			Self::Merge => "m",
 			Self::Noop => "n",
 			Self::Pick => "p",
+			Self::Reset => "t",
 			Self::Reword => "r",
 			Self::Squash => "s",
 		})
@@ -46,7 +55,7 @@ impl Action {
 
 	pub const fn is_static(self) -> bool {
 		match self {
-			Self::Break | Self::Exec | Self::Noop => true,
+			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge => true,
 			Self::Drop | Self::Edit | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
 		}
 	}
@@ -66,6 +75,9 @@ impl TryFrom<&str> for Action {
 			"pick" | "p" => Ok(Self::Pick),
 			"reword" | "r" => Ok(Self::Reword),
 			"squash" | "s" => Ok(Self::Squash),
+			"label" | "l" => Ok(Self::Label),
+			"reset" | "t" => Ok(Self::Reset),
+			"merge" | "m" => Ok(Self::Merge),
 			_ => Err(anyhow!("Invalid action: {}", s)),
 		}
 	}
@@ -119,6 +131,9 @@ mod tests {
 	test_action_to_string!(pick, Action::Pick, "pick");
 	test_action_to_string!(reword, Action::Reword, "reword");
 	test_action_to_string!(squash, Action::Squash, "squash");
+	test_action_to_string!(label, Action::Label, "label");
+	test_action_to_string!(reset, Action::Reset, "reset");
+	test_action_to_string!(merge, Action::Merge, "merge");
 
 	test_action_try_from!(b, "b", Action::Break);
 	test_action_try_from!(break_str, "break", Action::Break);
@@ -138,9 +153,15 @@ mod tests {
 	test_action_try_from!(reword, "reword", Action::Reword);
 	test_action_try_from!(s, "s", Action::Squash);
 	test_action_try_from!(squash, "squash", Action::Squash);
+	test_action_try_from!(l, "l", Action::Label);
+	test_action_try_from!(label, "label", Action::Label);
+	test_action_try_from!(t, "t", Action::Reset);
+	test_action_try_from!(reset, "reset", Action::Reset);
+	test_action_try_from!(m, "m", Action::Merge);
+	test_action_try_from!(merge, "merge", Action::Merge);
 
 	#[test]
-	fn action_try_from_() {
+	fn action_try_from_invalid() {
 		assert_eq!(
 			Action::try_from("invalid").unwrap_err().to_string(),
 			"Invalid action: invalid"
@@ -156,6 +177,9 @@ mod tests {
 	test_action_to_abbreviation!(p, Action::Pick, "p");
 	test_action_to_abbreviation!(r, Action::Reword, "r");
 	test_action_to_abbreviation!(s, Action::Squash, "s");
+	test_action_to_abbreviation!(l, Action::Label, "l");
+	test_action_to_abbreviation!(t, Action::Reset, "t");
+	test_action_to_abbreviation!(m, Action::Merge, "m");
 
 	#[rstest(
 		action,
@@ -168,7 +192,10 @@ mod tests {
 		case::noop(Action::Noop, true),
 		case::pick(Action::Pick, false),
 		case::reword(Action::Reword, false),
-		case::squash(Action::Squash, false)
+		case::squash(Action::Squash, false),
+		case::squash(Action::Label, true),
+		case::squash(Action::Reset, true),
+		case::squash(Action::Merge, true)
 	)]
 	fn module_lifecycle(action: Action, expected: bool) {
 		assert_eq!(action.is_static(), expected);

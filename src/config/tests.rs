@@ -1150,6 +1150,24 @@ fn config_theme_color_action_squash() {
 }
 
 #[test]
+fn config_theme_color_action_label() {
+	let config = load_with_config_file("theme", "color-action-label.gitconfig");
+	assert_eq!(config.theme.color_action_label, Color::Index(10));
+}
+
+#[test]
+fn config_theme_color_action_reset() {
+	let config = load_with_config_file("theme", "color-action-reset.gitconfig");
+	assert_eq!(config.theme.color_action_reset, Color::Index(10));
+}
+
+#[test]
+fn config_theme_color_action_merge() {
+	let config = load_with_config_file("theme", "color-action-merge.gitconfig");
+	assert_eq!(config.theme.color_action_merge, Color::Index(10));
+}
+
+#[test]
 fn config_theme_color_background_default() {
 	let config = load_with_config_file("empty", ".gitconfig");
 	assert_eq!(config.theme.color_background, Color::Default);
