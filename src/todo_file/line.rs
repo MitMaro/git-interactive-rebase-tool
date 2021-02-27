@@ -7,9 +7,8 @@ use crate::todo_file::action::Action;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line {
 	action: Action,
+	content: String,
 	hash: String,
-	command: String,
-	comment: String,
 	mutated: bool,
 }
 
@@ -17,8 +16,7 @@ impl Line {
 	fn new_noop() -> Self {
 		Self {
 			action: Action::Noop,
-			command: String::from(""),
-			comment: String::from(""),
+			content: String::from(""),
 			hash: String::from(""),
 			mutated: false,
 		}
@@ -27,8 +25,7 @@ impl Line {
 	pub(crate) fn new_break() -> Self {
 		Self {
 			action: Action::Break,
-			command: String::from(""),
-			comment: String::from(""),
+			content: String::from(""),
 			hash: String::from(""),
 			mutated: false,
 		}
@@ -41,14 +38,21 @@ impl Line {
 		else if input_line.starts_with("break") || input_line.starts_with('b') {
 			return Ok(Self::new_break());
 		}
-		else if input_line.starts_with("exec") || input_line.starts_with('x') {
+		else if input_line.starts_with("exec")
+			|| input_line.starts_with('x')
+			|| input_line.starts_with("merge")
+			|| input_line.starts_with('m')
+			|| input_line.starts_with("label")
+			|| input_line.starts_with('l')
+			|| input_line.starts_with("reset")
+			|| input_line.starts_with('t')
+		{
 			let input: Vec<&str> = input_line.splitn(2, ' ').collect();
 			if input.len() == 2 {
 				return Ok(Self {
 					action: Action::try_from(input[0])?,
 					hash: String::from(""),
-					command: String::from(input[1]),
-					comment: String::from(""),
+					content: String::from(input[1]),
 					mutated: false,
 				});
 			}
@@ -59,8 +63,7 @@ impl Line {
 				return Ok(Self {
 					action: Action::try_from(input[0])?,
 					hash: String::from(input[1]),
-					command: String::from(""),
-					comment: if input.len() == 3 {
+					content: if input.len() == 3 {
 						String::from(input[2])
 					}
 					else {
@@ -82,15 +85,8 @@ impl Line {
 	}
 
 	pub(crate) fn edit_content(&mut self, content: &str) {
-		if let Action::Exec = self.action {
-			self.command = String::from(content);
-		}
-	}
-
-	pub(crate) fn get_edit_content(&self) -> &str {
-		match self.action {
-			Action::Exec => self.command.as_str(),
-			_ => self.comment.as_str(),
+		if self.is_editable() {
+			self.content = String::from(content)
 		}
 	}
 
@@ -98,23 +94,37 @@ impl Line {
 		&self.action
 	}
 
-	pub(crate) fn get_command(&self) -> &str {
-		self.command.as_str()
+	pub(crate) fn get_content(&self) -> &str {
+		self.content.as_str()
 	}
 
 	pub(crate) fn get_hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
-	pub(crate) fn get_comment(&self) -> &str {
-		self.comment.as_str()
+	pub(crate) const fn is_editable(&self) -> bool {
+		match self.action {
+			Action::Exec | Action::Label | Action::Reset | Action::Merge => true,
+			Action::Break
+			| Action::Drop
+			| Action::Edit
+			| Action::Fixup
+			| Action::Noop
+			| Action::Pick
+			| Action::Reword
+			| Action::Squash => false,
+		}
 	}
 
 	pub(crate) fn to_text(&self) -> String {
 		match self.action {
-			Action::Exec => format!("exec {}", self.command),
-			Action::Break => String::from("break"),
-			_ => format!("{} {} {}", self.action.as_string(), self.hash, self.comment),
+			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
+				format!("{} {} {}", self.action.as_string(), self.hash, self.content)
+			},
+			Action::Exec | Action::Label | Action::Reset | Action::Merge => {
+				format!("{} {}", self.action.as_string(), self.content)
+			},
+			Action::Noop | Action::Break => self.action.as_string(),
 		}
 	}
 }
@@ -131,71 +141,79 @@ mod tests {
 		case::pick_action("pick aaa comment", &Line {
 			action: Action::Pick,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from("comment"),
+			content: String::from("comment"),
 			mutated: false,
 		}),
 		case::reword_action("reword aaa comment", &Line {
 			action: Action::Reword,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from("comment"),
+			content: String::from("comment"),
 			mutated: false,
 		}),
 		case::edit_action("edit aaa comment", &Line {
 			action: Action::Edit,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from("comment"),
+			content: String::from("comment"),
 			mutated: false,
 		}),
 		case::squash_action("squash aaa comment", &Line {
 			action: Action::Squash,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from("comment"),
+			content: String::from("comment"),
 			mutated: false,
 		}),
 		case::fixup_action("fixup aaa comment", &Line {
 			action: Action::Fixup,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from("comment"),
+			content: String::from("comment"),
 			mutated: false,
 		}),
 		case::drop_action("drop aaa comment", &Line {
 			action: Action::Drop,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from("comment"),
+			content: String::from("comment"),
 			mutated: false,
 		}),
 		case::action_without_comment("pick aaa", &Line {
 			action: Action::Pick,
 			hash: String::from("aaa"),
-			command: String::from(""),
-			comment: String::from(""),
+			content: String::from(""),
 			mutated: false,
 		}),
 		case::exec_action("exec command", &Line {
 			action: Action::Exec,
 			hash: String::from(""),
-			command: String::from("command"),
-			comment: String::from(""),
+			content: String::from("command"),
+			mutated: false,
+		}),
+		case::label_action("label ref", &Line {
+			action: Action::Label,
+			hash: String::from(""),
+			content: String::from("ref"),
+			mutated: false,
+		}),
+		case::reset_action("reset ref", &Line {
+			action: Action::Reset,
+			hash: String::from(""),
+			content: String::from("ref"),
+			mutated: false,
+		}),
+		case::reset_action("merge command", &Line {
+			action: Action::Merge,
+			hash: String::from(""),
+			content: String::from("command"),
 			mutated: false,
 		}),
 		case::break_action("break", &Line {
 			action: Action::Break,
 			hash: String::from(""),
-			command: String::from(""),
-			comment: String::from(""),
+			content: String::from(""),
 			mutated: false,
 		}),
 		case::nnop( "noop", &Line {
 			action: Action::Noop,
 			hash: String::from(""),
-			command: String::from(""),
-			comment: String::from(""),
+			content: String::from(""),
 			mutated: false,
 		}),
 	)]
@@ -208,8 +226,7 @@ mod tests {
 		assert_eq!(Line::new_break(), Line {
 			action: Action::Break,
 			hash: String::from(""),
-			command: String::from(""),
-			comment: String::from(""),
+			content: String::from(""),
 			mutated: false,
 		});
 	}
@@ -225,7 +242,10 @@ mod tests {
 		case::squash_line_only("squash", "Invalid line: squash"),
 		case::fixup_line_only("fixup", "Invalid line: fixup"),
 		case::exec_line_only("exec", "Invalid line: exec"),
-		case::drop_line_only("drop", "Invalid line: drop")
+		case::drop_line_only("drop", "Invalid line: drop"),
+		case::label_line_only("label", "Invalid line: label"),
+		case::reset_line_only("reset", "Invalid line: reset"),
+		case::merge_line_only("merge", "Invalid line: merge")
 	)]
 	fn new_err(line: &str, expected_err: &str) {
 		assert_eq!(Line::new(line).unwrap_err().to_string(), expected_err);
@@ -252,6 +272,9 @@ mod tests {
 		from,
 		to,
 		case::break_action(Action::Break, Action::Fixup),
+		case::label_action(Action::Label, Action::Fixup),
+		case::reset_action(Action::Reset, Action::Fixup),
+		case::merge_action(Action::Merge, Action::Fixup),
 		case::exec(Action::Exec, Action::Fixup),
 		case::noop(Action::Noop, Action::Fixup)
 	)]
@@ -288,12 +311,15 @@ mod tests {
 		case::fixup("fixup aaa comment", "comment"),
 		case::pick("pick aaa comment", "comment"),
 		case::reword("reword aaa comment", "comment"),
-		case::squash("squash aaa comment", "comment")
+		case::squash("squash aaa comment", "comment"),
+		case::label("label ref", "new"),
+		case::reset("reset ref", "new"),
+		case::merge("merge command", "new")
 	)]
 	fn edit_content(line: &str, expected: &str) {
 		let mut line = Line::new(line).unwrap();
 		line.edit_content("new");
-		assert_eq!(line.get_edit_content(), expected);
+		assert_eq!(line.get_content(), expected);
 	}
 
 	#[rstest(
@@ -308,8 +334,8 @@ mod tests {
 		case::reword("reword aaa comment", "comment"),
 		case::squash("squash aaa comment", "comment")
 	)]
-	fn get_edit_content(line: &str, expected: &str) {
-		assert_eq!(Line::new(line).unwrap().get_edit_content(), expected);
+	fn get_content(line: &str, expected: &str) {
+		assert_eq!(Line::new(line).unwrap().get_content(), expected);
 	}
 
 	#[rstest(
@@ -332,22 +358,6 @@ mod tests {
 		line,
 		expected,
 		case::break_action("break", ""),
-		case::drop("drop aaa comment", ""),
-		case::edit("edit aaa comment", ""),
-		case::exec("exec git commit --amend 'foo'", "git commit --amend 'foo'"),
-		case::fixup("fixup aaa comment", ""),
-		case::pick("pick aaa comment", ""),
-		case::reword("reword aaa comment", ""),
-		case::squash("squash aaa comment", "")
-	)]
-	fn get_command(line: &str, expected: &str) {
-		assert_eq!(Line::new(line).unwrap().get_command(), expected);
-	}
-
-	#[rstest(
-		line,
-		expected,
-		case::break_action("break", ""),
 		case::drop("drop aaa comment", "aaa"),
 		case::edit("edit aaa comment", "aaa"),
 		case::exec("exec git commit --amend 'foo'", ""),
@@ -361,19 +371,24 @@ mod tests {
 	}
 
 	#[rstest(
-		line,
-		expected,
-		case::break_action("break", ""),
-		case::drop("drop aaa comment", "comment"),
-		case::edit("edit aaa comment", "comment"),
-		case::exec("exec git commit --amend 'foo'", ""),
-		case::fixup("fixup aaa comment", "comment"),
-		case::pick("pick aaa comment", "comment"),
-		case::reword("reword aaa comment", "comment"),
-		case::squash("squash aaa comment", "comment")
+		from,
+		editable,
+		case::drop(Action::Break, false),
+		case::drop(Action::Drop, false),
+		case::edit(Action::Edit, false),
+		case::fixup(Action::Fixup, false),
+		case::pick(Action::Noop, false),
+		case::pick(Action::Pick, false),
+		case::reword(Action::Reword, false),
+		case::squash(Action::Squash, false),
+		case::squash(Action::Exec, true),
+		case::squash(Action::Label, true),
+		case::squash(Action::Reset, true),
+		case::squash(Action::Merge, true)
 	)]
-	fn get_comment(line: &str, expected: &str) {
-		assert_eq!(Line::new(line).unwrap().get_comment(), expected);
+	fn is_editable(from: Action, editable: bool) {
+		let line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
+		assert_eq!(line.is_editable(), editable);
 	}
 
 	#[rstest(

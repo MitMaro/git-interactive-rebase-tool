@@ -22,6 +22,9 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 		DisplayColor::DiffWhitespaceColor => String::from("DiffWhitespaceColor"),
 		DisplayColor::IndicatorColor => String::from("IndicatorColor"),
 		DisplayColor::Normal => String::from("Normal"),
+		DisplayColor::ActionLabel => String::from("ActionLabel"),
+		DisplayColor::ActionReset => String::from("ActionReset"),
+		DisplayColor::ActionMerge => String::from("ActionMerge"),
 	};
 
 	if selected {

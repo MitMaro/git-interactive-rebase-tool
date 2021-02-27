@@ -38,6 +38,9 @@ pub struct Display<'d> {
 	action_pick: (Colors, Colors),
 	action_reword: (Colors, Colors),
 	action_squash: (Colors, Colors),
+	action_label: (Colors, Colors),
+	action_reset: (Colors, Colors),
+	action_merge: (Colors, Colors),
 	diff_add: (Colors, Colors),
 	diff_change: (Colors, Colors),
 	diff_remove: (Colors, Colors),
@@ -110,6 +113,24 @@ impl<'d> Display<'d> {
 			theme.color_background,
 			theme.color_selected_background,
 		);
+		let action_label = register_selectable_color_pairs(
+			color_mode,
+			theme.color_action_label,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_reset = register_selectable_color_pairs(
+			color_mode,
+			theme.color_action_reset,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_merge = register_selectable_color_pairs(
+			color_mode,
+			theme.color_action_merge,
+			theme.color_background,
+			theme.color_selected_background,
+		);
 		let diff_add = register_selectable_color_pairs(
 			color_mode,
 			theme.color_diff_add,
@@ -154,6 +175,9 @@ impl<'d> Display<'d> {
 			action_pick,
 			action_reword,
 			action_squash,
+			action_label,
+			action_reset,
+			action_merge,
 			diff_add,
 			diff_change,
 			diff_remove,
@@ -188,6 +212,9 @@ impl<'d> Display<'d> {
 					DisplayColor::ActionPick => self.action_pick.1,
 					DisplayColor::ActionReword => self.action_reword.1,
 					DisplayColor::ActionSquash => self.action_squash.1,
+					DisplayColor::ActionLabel => self.action_label.1,
+					DisplayColor::ActionReset => self.action_reset.1,
+					DisplayColor::ActionMerge => self.action_merge.1,
 					DisplayColor::Normal => self.normal.1,
 					DisplayColor::IndicatorColor => self.indicator.1,
 					DisplayColor::DiffAddColor => self.diff_add.1,
@@ -207,6 +234,9 @@ impl<'d> Display<'d> {
 					DisplayColor::ActionPick => self.action_pick.0,
 					DisplayColor::ActionReword => self.action_reword.0,
 					DisplayColor::ActionSquash => self.action_squash.0,
+					DisplayColor::ActionLabel => self.action_label.0,
+					DisplayColor::ActionReset => self.action_reset.0,
+					DisplayColor::ActionMerge => self.action_merge.0,
 					DisplayColor::Normal => self.normal.0,
 					DisplayColor::IndicatorColor => self.indicator.0,
 					DisplayColor::DiffAddColor => self.diff_add.0,
@@ -399,6 +429,27 @@ mod tests {
 			DisplayColor::ActionSquash,
 			true,
 			CrosstermColor::Cyan,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_label(DisplayColor::ActionLabel, false, CrosstermColor::DarkYellow, CrosstermColor::Reset),
+		case::action_label_selected(
+			DisplayColor::ActionLabel,
+			true,
+			CrosstermColor::DarkYellow,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_reset(DisplayColor::ActionReset, false, CrosstermColor::DarkYellow, CrosstermColor::Reset),
+		case::action_reset_selected(
+			DisplayColor::ActionReset,
+			true,
+			CrosstermColor::DarkYellow,
+			CrosstermColor::AnsiValue(237)
+		),
+		case::action_merge(DisplayColor::ActionMerge, false, CrosstermColor::DarkYellow, CrosstermColor::Reset),
+		case::action_merge_selected(
+			DisplayColor::ActionMerge,
+			true,
+			CrosstermColor::DarkYellow,
 			CrosstermColor::AnsiValue(237)
 		),
 		case::normal(DisplayColor::Normal, false, CrosstermColor::Reset, CrosstermColor::Reset),

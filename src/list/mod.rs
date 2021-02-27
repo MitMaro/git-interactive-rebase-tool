@@ -222,10 +222,10 @@ impl<'l> List<'l> {
 			Input::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword, true),
 			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash, true),
 			Input::Edit => {
-				if rebase_todo.get_selected_line().get_action() == &Action::Exec {
+				if rebase_todo.get_selected_line().is_editable() {
 					let selected_line = rebase_todo.get_selected_line();
 					self.state = ListState::Edit;
-					self.edit.set_content(selected_line.get_edit_content());
+					self.edit.set_content(selected_line.get_content());
 					self.edit
 						.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
 					self.edit
@@ -335,6 +335,9 @@ mod tests {
 				"break",
 				"squash ffffffff comment 6",
 				"edit 11111111 comment 7",
+				"label ref",
+				"reset ref",
+				"merge command",
 			],
 			ViewState::default(),
 			&[],
@@ -354,7 +357,10 @@ mod tests {
 					"{Normal}   {ActionReword}reword {Normal}eeeeeeee {Normal}comment 5",
 					"{Normal}   {ActionBreak}break  ",
 					"{Normal}   {ActionSquash}squash {Normal}ffffffff {Normal}comment 6",
-					"{Normal}   {ActionEdit}edit   {Normal}11111111 {Normal}comment 7"
+					"{Normal}   {ActionEdit}edit   {Normal}11111111 {Normal}comment 7",
+					"{Normal}   {ActionLabel}label  {Normal}ref",
+					"{Normal}   {ActionReset}reset  {Normal}ref",
+					"{Normal}   {ActionMerge}merge  {Normal}command"
 				);
 			},
 		);
@@ -374,6 +380,9 @@ mod tests {
 				"break",
 				"squash ffffffff comment 6",
 				"edit 11111111 comment 7",
+				"label ref",
+				"reset ref",
+				"merge command",
 			],
 			ViewState {
 				size: Size::new(30, 100),
@@ -395,7 +404,10 @@ mod tests {
 					"{Normal} {ActionReword}r {Normal}eee {Normal}comment 5",
 					"{Normal} {ActionBreak}b ",
 					"{Normal} {ActionSquash}s {Normal}fff {Normal}comment 6",
-					"{Normal} {ActionEdit}e {Normal}111 {Normal}comment 7"
+					"{Normal} {ActionEdit}e {Normal}111 {Normal}comment 7",
+					"{Normal} {ActionLabel}l {Normal}ref",
+					"{Normal} {ActionReset}t {Normal}ref",
+					"{Normal} {ActionMerge}m {Normal}command"
 				);
 			},
 		);
@@ -2463,10 +2475,7 @@ mod tests {
 				let mut module = List::new(test_context.config);
 				test_context.build_view_data(&mut module);
 				test_context.handle_all_inputs(&mut module);
-				assert_eq!(
-					test_context.rebase_todo_file.get_line(0).unwrap().get_edit_content(),
-					"fo"
-				);
+				assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().get_content(), "fo");
 				assert_eq!(module.state, ListState::Normal);
 			},
 		);
@@ -2605,7 +2614,7 @@ mod tests {
 					view_data,
 					"{TITLE}{HELP}",
 					"{BODY}",
-					"{Normal(selected)} > {Normal(selected)}noop   {Normal(selected)}         "
+					"{Normal(selected)} > {Normal(selected)}noop   "
 				);
 			},
 		);

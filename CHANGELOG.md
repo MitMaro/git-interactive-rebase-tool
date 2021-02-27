@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Label and description to commit edit
+- Basic support to merge rebasing
 
 ## [2.0.0] - 2021-01-28
 
