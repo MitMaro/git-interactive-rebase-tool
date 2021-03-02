@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Label and description to commit edit
 - Basic support to merge rebasing
+- Modifier keys can now be provided in any order
+
+### Fixed
+- Most modifier key combinations could not be used as key bindings
 
 ## [2.0.0] - 2021-01-28
 
