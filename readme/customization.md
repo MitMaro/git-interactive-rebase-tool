@@ -141,6 +141,7 @@ Keys that do not have easily printable characters, such as the arrow keys, are s
 | `Down`             | Down arrow key |
 | `End`              | End key |
 | `Enter`            | Enter key |
+| `Esc`              | Escape key |
 | `F{1..255}`        | Function X key |
 | `Home`             | Home key |
 | `Insert`           | Insert key |
@@ -153,7 +154,17 @@ Keys that do not have easily printable characters, such as the arrow keys, are s
 
 ### Modifier Keys
 
-Most keybindings can be prefixed with `Shift`, `Control` or `Alt`. These bindings can also be combined, but if combined must be combined in the order defined above. That is `ShiftAltEnter` is valid but `AltShiftEnter` is not. This is a limitation that hopefully will be removed in the future. `Shift` combined with any ASCII alphabetic character will not work and the uppercase character must be used instead.
+Most keybindings can be prefixed with `Shift`, `Control` or `Alt`, followed by a `+`. These bindings can also be combined in any order, for example `Alt+Control+Delete`. `Shift` combined with any ASCII alphabetic character will not work and the uppercase character must be used instead.
+
+### Restricted Keys
+
+Some key combinations are restricted as they have special meaning. They are:
+
+| Key                | Description |
+| ------------------ | ----------- |
+| `Control+c`        | Immediately aborts the program without writing the rebase todo file to disk |
+| `Control+d`        | Immediately writes the rebase todo file to disk and exits |
+
 
 ## External Editor
 
