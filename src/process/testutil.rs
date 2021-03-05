@@ -109,6 +109,8 @@ fn map_str_to_event(input: &str) -> Event {
 		"Up" | "ScrollUp" => create_key_event!(code KeyCode::Up),
 		"Right" | "ScrollRight" => create_key_event!(code KeyCode::Right),
 		"Down" | "ScrollDown" => create_key_event!(code KeyCode::Down),
+		"Controlz" => create_key_event!('z', "Control"),
+		"Controly" => create_key_event!('y', "Control"),
 		"Exit" => create_key_event!('d', "Control"),
 		"Resize" => Event::Resize(0, 0),
 		_ => {
@@ -158,6 +160,7 @@ fn map_input_to_event(key_bindings: &KeyBindings, input: Input) -> Event {
 		Input::PageDown | Input::ScrollJumpDown => map_str_to_event("PageDown"),
 		Input::PageUp | Input::ScrollJumpUp => map_str_to_event("PageUp"),
 		Input::Rebase => map_str_to_event(key_bindings.rebase.as_str()),
+		Input::Redo => map_str_to_event(key_bindings.redo.as_str()),
 		Input::Resize => map_str_to_event("Resize"),
 		Input::Right | Input::ScrollRight => map_str_to_event("Right"),
 		Input::ShowCommit => map_str_to_event(key_bindings.show_commit.as_str()),
@@ -165,6 +168,7 @@ fn map_input_to_event(key_bindings: &KeyBindings, input: Input) -> Event {
 		Input::SwapSelectedDown => map_str_to_event(key_bindings.move_selection_down.as_str()),
 		Input::SwapSelectedUp => map_str_to_event(key_bindings.move_selection_up.as_str()),
 		Input::ToggleVisualMode => map_str_to_event(key_bindings.toggle_visual_mode.as_str()),
+		Input::Undo => map_str_to_event(key_bindings.undo.as_str()),
 		Input::Up | Input::ScrollUp => map_str_to_event("Up"),
 		Input::Yes => map_str_to_event(key_bindings.confirm_yes.as_str()),
 		_ => {
@@ -262,6 +266,8 @@ fn format_process_result(
 				Input::ToggleVisualMode => String::from("ToggleVisualMode"),
 				Input::Up => String::from("Up"),
 				Input::Yes => String::from("Yes"),
+				Input::Redo => String::from("Redo"),
+				Input::Undo => String::from("Undo"),
 			}
 		}),
 		error
@@ -361,7 +367,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.tempfile_in(git_repo_dir.as_str())
 		.unwrap();
 
-	let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), "#");
+	let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), 1, "#");
 	rebase_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
 
 	callback(TestContext {

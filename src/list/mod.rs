@@ -172,6 +172,32 @@ impl<'l> List<'l> {
 		}
 	}
 
+	pub(crate) fn undo(&mut self, rebase_todo: &mut TodoFile) {
+		if let Some((start_index, end_index)) = rebase_todo.undo() {
+			rebase_todo.set_selected_line_index(start_index);
+			if start_index == end_index {
+				self.state = ListState::Normal;
+			}
+			else {
+				self.state = ListState::Visual;
+				self.visual_index_start = Some(end_index);
+			}
+		}
+	}
+
+	pub(crate) fn redo(&mut self, rebase_todo: &mut TodoFile) {
+		if let Some((start_index, end_index)) = rebase_todo.redo() {
+			rebase_todo.set_selected_line_index(start_index);
+			if start_index == end_index {
+				self.state = ListState::Normal;
+			}
+			else {
+				self.state = ListState::Visual;
+				self.visual_index_start = Some(end_index);
+			}
+		}
+	}
+
 	fn handle_normal_mode_input(
 		&mut self,
 		input: Input,
@@ -239,6 +265,8 @@ impl<'l> List<'l> {
 				self.state = ListState::Visual;
 			},
 			Input::OpenInEditor => result = result.state(State::ExternalEditor),
+			Input::Undo => self.undo(rebase_todo),
+			Input::Redo => self.redo(rebase_todo),
 			_ => {},
 		}
 
@@ -278,6 +306,8 @@ impl<'l> List<'l> {
 				self.visual_index_start = None;
 				self.state = ListState::Normal;
 			},
+			Input::Undo => self.undo(rebase_todo),
+			Input::Redo => self.redo(rebase_todo),
 			_ => {},
 		}
 		result
@@ -1659,6 +1689,109 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
+	fn normal_mode_undo() {
+		process_module_test(
+			&["pick aaa c1"],
+			ViewState::default(),
+			&[Input::ActionDrop, Input::Undo],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_input(&mut module);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Undo);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1"
+				);
+				assert_eq!(module.state, ListState::Normal);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn normal_mode_undo_visual_mode_change() {
+		process_module_test(
+			&["pick aaa c1", "pick bbb c2"],
+			ViewState::default(),
+			&[
+				Input::ToggleVisualMode,
+				Input::Down,
+				Input::ActionDrop,
+				Input::ToggleVisualMode,
+				Input::Undo,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
+					 {Normal(selected)}c1",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
+				);
+				assert_eq!(module.state, ListState::Visual);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn normal_mode_redo() {
+		process_module_test(
+			&["drop aaa c1"],
+			ViewState::default(),
+			&[Input::ActionPick, Input::Undo, Input::Redo],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_input(&mut module);
+				test_context.handle_input(&mut module);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Redo);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1"
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn normal_mode_redo_visual_mode_change() {
+		process_module_test(
+			&["drop aaa c1", "drop bbb c2"],
+			ViewState::default(),
+			&[
+				Input::ToggleVisualMode,
+				Input::Down,
+				Input::ActionPick,
+				Input::Undo,
+				Input::ToggleVisualMode,
+				Input::Redo,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
+					 {Normal(selected)}c1",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
+				);
+				assert_eq!(module.state, ListState::Visual);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
 	fn normal_mode_toggle_visual_mode() {
 		process_module_test(
 			&["pick aaa c1"],
@@ -2418,6 +2551,108 @@ mod tests {
 				test_context.handle_input(&mut module);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::ToggleVisualMode);
 				assert_eq!(module.visual_index_start, None);
+				assert_eq!(module.state, ListState::Normal);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_undo() {
+		process_module_test(
+			&["pick aaa c1", "pick bbb c2"],
+			ViewState::default(),
+			&[Input::ToggleVisualMode, Input::Down, Input::ActionDrop, Input::Undo],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_n_inputs(&mut module, 3);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Undo);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
+					 {Normal(selected)}c1",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_undo_normal_mode_change() {
+		process_module_test(
+			&["pick aaa c1", "pick bbb c2"],
+			ViewState::default(),
+			&[Input::ActionDrop, Input::ToggleVisualMode, Input::Down, Input::Undo],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_n_inputs(&mut module, 3);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Undo);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
+					"{Normal}   {ActionPick}pick   {Normal}bbb      {Normal}c2"
+				);
+				assert_eq!(module.state, ListState::Normal);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_redo() {
+		process_module_test(
+			&["drop aaa c1", "drop bbb c2"],
+			ViewState::default(),
+			&[
+				Input::ToggleVisualMode,
+				Input::Down,
+				Input::ActionPick,
+				Input::Undo,
+				Input::Redo,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
+					 {Normal(selected)}c1",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
+				);
+				assert_eq!(module.state, ListState::Visual);
+			},
+		);
+	}
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_redo_normal_mode_change() {
+		process_module_test(
+			&["drop aaa c1", "drop bbb c2"],
+			ViewState::default(),
+			&[
+				Input::ActionPick,
+				Input::ToggleVisualMode,
+				Input::Down,
+				Input::Undo,
+				Input::Redo,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
+					"{Normal}   {ActionDrop}drop   {Normal}bbb      {Normal}c2"
+				);
 				assert_eq!(module.state, ListState::Normal);
 			},
 		);

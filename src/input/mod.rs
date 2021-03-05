@@ -11,8 +11,8 @@ pub enum Input {
 	ActionPick,
 	ActionReword,
 	ActionSquash,
-	Escape,
 	Edit,
+	Escape,
 	Exit,
 	ForceAbort,
 	ForceRebase,
@@ -28,6 +28,7 @@ pub enum Input {
 	OpenInEditor,
 	Other,
 	Rebase,
+	Redo,
 	ScrollBottom,
 	ScrollDown,
 	ScrollJumpDown,
@@ -41,6 +42,7 @@ pub enum Input {
 	SwapSelectedDown,
 	SwapSelectedUp,
 	ToggleVisualMode,
+	Undo,
 	Yes,
 
 	// raw input values

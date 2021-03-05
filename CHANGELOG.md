@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Label and description to commit edit
 - Basic support to merge rebasing
 - Modifier keys can now be provided in any order
+- Undo and redo changes to the todo list
 
 ### Fixed
 - Most modifier key combinations could not be used as key bindings

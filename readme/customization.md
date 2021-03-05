@@ -47,6 +47,7 @@ Some values from your Git Config are directly used by this application.
 | `diffSpaceSymbol`          | ·       | String  | The visible symbol for the space character. Only used when `diffShowWhitespace` is enabled. |
 | `diffTabSymbol`            | →       | String  | The visible symbol for the tab character. Only used when `diffShowWhitespace` is enabled. |
 | `diffTabWidth`             | 4       | Integer | The width of the tab character |
+| `undoLimit`                | 5000    | Integer | Number of undo operations to store. |
 | `verticalSpacingCharacter` | ~       | String  | Vertical spacing character. Can be set to an empty string. |
 
 ¹ Ignore whitespace can be:
@@ -120,9 +121,11 @@ Most keys can be changed to any printable character or supported special charact
 | `inputMoveUp`              | Up       | String | Key for moving the cursor up |
 | `inputOpenInExternalEditor`| !        | String | Key for opening the external editor |
 | `inputRebase`              | w        | String | Key for rebasing with confirmation |
+| `inputRedo`                | Control+y| String | Key for redoing the previous undone change |
 | `inputShowCommit`          | c        | String | Key for showing the overview of the selected commit |
 | `inputShowDiff`            | d        | String | Key for showing the diff of the selected commit |
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
+| `inputUndo`                | Control+z| String | Key for undoing the previous change |
 
 
 ### Example
