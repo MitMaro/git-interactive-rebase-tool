@@ -29,9 +29,11 @@ pub struct KeyBindings {
 	pub(crate) move_up_step: String,
 	pub(crate) open_in_external_editor: String,
 	pub(crate) rebase: String,
+	pub(crate) redo: String,
 	pub(crate) show_commit: String,
 	pub(crate) show_diff: String,
 	pub(crate) toggle_visual_mode: String,
+	pub(crate) undo: String,
 }
 
 impl KeyBindings {
@@ -61,9 +63,11 @@ impl KeyBindings {
 			move_up: get_input(git_config, "interactive-rebase-tool.inputMoveUp", "Up")?,
 			open_in_external_editor: get_input(git_config, "interactive-rebase-tool.inputOpenInExternalEditor", "!")?,
 			rebase: get_input(git_config, "interactive-rebase-tool.inputRebase", "w")?,
+			redo: get_input(git_config, "interactive-rebase-tool.inputRedo", "control+y")?,
 			show_commit: get_input(git_config, "interactive-rebase-tool.inputShowCommit", "c")?,
 			show_diff: get_input(git_config, "interactive-rebase-tool.inputShowDiff", "d")?,
 			toggle_visual_mode: get_input(git_config, "interactive-rebase-tool.inputToggleVisualMode", "v")?,
+			undo: get_input(git_config, "interactive-rebase-tool.inputUndo", "control+z")?,
 		})
 	}
 }

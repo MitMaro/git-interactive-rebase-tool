@@ -118,7 +118,7 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 
 ### Default Key Bindings
 
-Key bindings can be configured, see [configuration](#configuration) for more information.
+Key bindings can be configured, see [configuration](readme/customization.md#key-bindings) for more information.
 
 | Key          | Mode   | Description |
 | ------------ | ------ | ----------- |
@@ -144,6 +144,8 @@ Key bindings can be configured, see [configuration](#configuration) for more inf
 |  `E`         | Normal | Edit the command of an exec action |
 |  `v`         | All    | Enter and exit visual mode |
 |  `d`         | Diff   | Show full commit diff |
+| `Control+z`  | All    | Undo the previous change |
+| `Control+y`  | All    | Redo the previously undone change |
 
 ## Development
 

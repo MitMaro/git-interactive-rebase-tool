@@ -332,7 +332,7 @@ fn config_diff_tab_width() {
 }
 
 #[test]
-fn config_diff_tab_invalid() {
+fn config_diff_tab_width_invalid() {
 	assert_eq!(
 		load_error(|git_config| {
 			git_config
@@ -344,7 +344,7 @@ fn config_diff_tab_invalid() {
 }
 
 #[test]
-fn config_diff_tab_invalid_range() {
+fn config_diff_tab_width_invalid_range() {
 	assert_eq!(
 		load_error(|git_config| {
 			git_config
@@ -402,6 +402,43 @@ fn config_diff_space_symbol() {
 			.unwrap();
 	});
 	assert_eq!(config.diff_space_symbol, "-");
+}
+
+#[test]
+fn config_undo_limit_default() {
+	let config = load(|_| {});
+	assert_eq!(config.undo_limit, 5000);
+}
+
+#[test]
+fn config_undo_limit() {
+	let config = load(|git_config| {
+		git_config.set_i32("interactive-rebase-tool.undoLimit", 14).unwrap();
+	});
+	assert_eq!(config.undo_limit, 14);
+}
+
+#[test]
+fn config_undo_limit_invalid() {
+	assert_eq!(
+		load_error(|git_config| {
+			git_config
+				.set_str("interactive-rebase-tool.undoLimit", "invalid")
+				.unwrap();
+		}),
+		"\"interactive-rebase-tool.undoLimit\" is not valid: failed to parse \'invalid\' as a 32-bit integer"
+	);
+}
+
+#[test]
+fn config_undo_limit_invalid_range() {
+	assert_eq!(
+		load_error(|git_config| {
+			git_config.set_str("interactive-rebase-tool.undoLimit", "-100").unwrap();
+		}),
+		"\"interactive-rebase-tool.undoLimit\" is not valid: \"-100\" is outside of valid range for an unsigned \
+		 32-bit integer"
+	);
 }
 
 #[test]
@@ -1080,6 +1117,20 @@ fn config_key_bindings_rebase() {
 }
 
 #[test]
+fn config_key_bindings_redo_default() {
+	let config = load(|_| {});
+	assert_eq!(config.key_bindings.redo, "Controly");
+}
+
+#[test]
+fn config_key_bindings_redo() {
+	let config = load(|git_config| {
+		git_config.set_str("interactive-rebase-tool.inputRedo", "X").unwrap();
+	});
+	assert_eq!(config.key_bindings.redo, "X");
+}
+
+#[test]
 fn config_key_bindings_show_commit_default() {
 	let config = load(|_| {});
 	assert_eq!(config.key_bindings.show_commit, "c");
@@ -1125,6 +1176,20 @@ fn config_key_bindings_toggle_visual_mode() {
 			.unwrap();
 	});
 	assert_eq!(config.key_bindings.toggle_visual_mode, "X");
+}
+
+#[test]
+fn config_key_bindings_undo_default() {
+	let config = load(|_| {});
+	assert_eq!(config.key_bindings.undo, "Controlz");
+}
+
+#[test]
+fn config_key_bindings_undo() {
+	let config = load(|git_config| {
+		git_config.set_str("interactive-rebase-tool.inputUndo", "X").unwrap();
+	});
+	assert_eq!(config.key_bindings.undo, "X");
 }
 
 #[test]

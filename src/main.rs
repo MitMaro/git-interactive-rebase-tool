@@ -138,7 +138,7 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 		}
 	})?;
 
-	let mut todo_file = TodoFile::new(filepath, config.git.comment_char.as_str());
+	let mut todo_file = TodoFile::new(filepath, config.undo_limit, config.git.comment_char.as_str());
 	todo_file.load_file().map_err(|err| {
 		Exit {
 			message: err.to_string(),
