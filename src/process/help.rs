@@ -13,10 +13,11 @@ use crate::{
 	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
 };
 
-fn get_max_help_key_length(lines: &[(String, String)]) -> usize {
+fn get_max_help_key_length(lines: &[(Vec<String>, String)]) -> usize {
 	let mut max_length = 0;
 	for &(ref key, _) in lines {
-		let len = UnicodeSegmentation::graphemes(key.as_str(), true).count();
+		let combined_key = key.join(", ");
+		let len = UnicodeSegmentation::graphemes(combined_key.as_str(), true).count();
 		if len > max_length {
 			max_length = len;
 		}
@@ -83,7 +84,7 @@ impl Help {
 		self.view_data = None;
 	}
 
-	pub fn update_from_keybindings_descriptions(&mut self, keybindings: &[(String, String)]) {
+	pub fn update_from_keybindings_descriptions(&mut self, keybindings: &[(Vec<String>, String)]) {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 
@@ -104,7 +105,7 @@ impl Help {
 			view_data.push_line(ViewLine::new_with_pinned_segments(
 				vec![
 					LineSegment::new_with_color(
-						format!(" {0:width$}", line.0, width = max_key_length).as_str(),
+						format!(" {0:width$}", line.0.join(", "), width = max_key_length).as_str(),
 						DisplayColor::IndicatorColor,
 					),
 					LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
@@ -162,8 +163,8 @@ mod tests {
 			|test_context: TestContext<'_>| {
 				let mut module = Help::new();
 				module.update_from_keybindings_descriptions(&[
-					(String::from("a"), String::from("Description A")),
-					(String::from("b"), String::from("Description B")),
+					(vec![String::from("a")], String::from("Description A")),
+					(vec![String::from("b")], String::from("Description B")),
 				]);
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(

@@ -14,60 +14,62 @@ use crate::{
 	display::color::Color,
 };
 
-pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<String> {
-	let mut value = get_string(config, name, default)?;
-	let mut modifiers = vec![];
+pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<Vec<String>> {
+	let mut values = vec![];
+	for mut value in get_string(config, name, default)?.split_whitespace().map(String::from) {
+		let mut modifiers = vec![];
 
-	if let Some(index) = value.to_lowercase().find("shift+") {
-		modifiers.push("Shift");
-		value.replace_range(index..index + 6, "");
-	}
-	if let Some(index) = value.to_lowercase().find("control+") {
-		modifiers.push("Control");
-		value.replace_range(index..index + 8, "");
-	}
-	if let Some(index) = value.to_lowercase().find("alt+") {
-		modifiers.push("Alt");
-		value.replace_range(index..index + 4, "");
-	}
+		if let Some(index) = value.to_lowercase().find("shift+") {
+			modifiers.push("Shift");
+			value.replace_range(index..index + 6, "");
+		}
+		if let Some(index) = value.to_lowercase().find("control+") {
+			modifiers.push("Control");
+			value.replace_range(index..index + 8, "");
+		}
+		if let Some(index) = value.to_lowercase().find("alt+") {
+			modifiers.push("Alt");
+			value.replace_range(index..index + 4, "");
+		}
 
-	Ok(format!(
-		"{}{}",
-		modifiers.join(""),
-		match value.to_lowercase().as_ref() {
-			"backspace" => String::from("Backspace"),
-			"backtab" => String::from("BackTab"),
-			"delete" => String::from("Delete"),
-			"down" => String::from("Down"),
-			"end" => String::from("End"),
-			"enter" => String::from("Enter"),
-			"esc" => String::from("Esc"),
-			"home" => String::from("Home"),
-			"insert" => String::from("Insert"),
-			"left" => String::from("Left"),
-			"pagedown" => String::from("PageDown"),
-			"pageup" => String::from("PageUp"),
-			"right" => String::from("Right"),
-			"tab" => String::from("Tab"),
-			"up" => String::from("Up"),
-			_ => {
-				if value.len() > 1 {
-					// allow F{number} values
-					if value.to_lowercase().starts_with('f') && value[1..].parse::<u8>().is_ok() {
-						value.to_uppercase()
+		values.push(format!(
+			"{}{}",
+			modifiers.join(""),
+			match value.to_lowercase().as_ref() {
+				"backspace" => String::from("Backspace"),
+				"backtab" => String::from("BackTab"),
+				"delete" => String::from("Delete"),
+				"down" => String::from("Down"),
+				"end" => String::from("End"),
+				"enter" => String::from("Enter"),
+				"esc" => String::from("Esc"),
+				"home" => String::from("Home"),
+				"insert" => String::from("Insert"),
+				"left" => String::from("Left"),
+				"pagedown" => String::from("PageDown"),
+				"pageup" => String::from("PageUp"),
+				"right" => String::from("Right"),
+				"tab" => String::from("Tab"),
+				"up" => String::from("Up"),
+				_ => {
+					if value.len() > 1 {
+						// allow F{number} values
+						if value.to_lowercase().starts_with('f') && value[1..].parse::<u8>().is_ok() {
+							value.to_uppercase()
+						}
+						else {
+							return Err(anyhow!("{} must contain only one character per binding", name)
+								.context("Error reading git config"));
+						}
 					}
 					else {
-						return Err(
-							anyhow!("{} must contain only one character", name).context("Error reading git config")
-						);
+						value
 					}
-				}
-				else {
-					value
-				}
-			},
-		}
-	))
+				},
+			}
+		));
+	}
+	Ok(values)
 }
 
 pub(super) fn get_string(config: &Config, name: &str, default: &str) -> Result<String> {

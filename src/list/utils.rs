@@ -8,7 +8,7 @@ use crate::{
 	view::line_segment::LineSegment,
 };
 
-pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(String, String)> {
+pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![
 		(key_bindings.move_up.clone(), String::from("Move selection up")),
 		(key_bindings.move_down.clone(), String::from("Move selection down")),
@@ -83,7 +83,7 @@ pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 	]
 }
 
-pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(String, String)> {
+pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![
 		(key_bindings.move_up.clone(), String::from("Move selection up")),
 		(key_bindings.move_down.clone(), String::from("Move selection down")),

@@ -20,11 +20,11 @@ enum ListState {
 pub struct List<'l> {
 	config: &'l Config,
 	edit: Edit,
-	normal_mode_help_lines: Vec<(String, String)>,
+	normal_mode_help_lines: Vec<(Vec<String>, String)>,
 	state: ListState,
 	view_data: ViewData,
 	visual_index_start: Option<usize>,
-	visual_mode_help_lines: Vec<(String, String)>,
+	visual_mode_help_lines: Vec<(Vec<String>, String)>,
 }
 
 impl<'l> ProcessModule for List<'l> {
@@ -94,7 +94,7 @@ impl<'l> ProcessModule for List<'l> {
 		result
 	}
 
-	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
+	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(Vec<String>, String)>> {
 		match self.state {
 			ListState::Normal => Some(self.normal_mode_help_lines.clone()),
 			ListState::Visual => Some(self.visual_mode_help_lines.clone()),

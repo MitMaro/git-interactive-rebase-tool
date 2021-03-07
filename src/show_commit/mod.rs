@@ -41,7 +41,7 @@ use crate::{
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,
 	config: &'s Config,
-	show_commit_help_lines: Vec<(String, String)>,
+	show_commit_help_lines: Vec<(Vec<String>, String)>,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
 	view_data: ViewData,
@@ -150,7 +150,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		result
 	}
 
-	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
+	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(Vec<String>, String)>> {
 		Some(self.show_commit_help_lines.clone())
 	}
 }

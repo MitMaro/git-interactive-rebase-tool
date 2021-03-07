@@ -93,7 +93,7 @@ The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `b
 
 ## Key Bindings
 
-Most keys can be changed to any printable character or supported special character. It is possible to provide conflicting keybindings, which will result in undefined behaviour. The `inputConfirmYes` binding has a special behaviour in that it responds to both the uppercase and lowercase letter of the value set, if the variant exist.
+Most keys can be changed to any printable character or supported special character. It is possible to provide conflicting bindings, which will result in undefined behaviour. The `inputConfirmYes` binding has a special behaviour in that it responds to both the uppercase and lowercase letter of the value set, if the variant exist.
 
 | Key                        | Default  | Type   | Description |
 | -------------------------- | -------- | ------ | ----------- |
@@ -127,7 +127,6 @@ Most keys can be changed to any printable character or supported special charact
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
 | `inputUndo`                | Control+z| String | Key for undoing the previous change |
 
-
 ### Example
 
     git config --global interactive-rebase-tool.inputRebase S
@@ -157,7 +156,11 @@ Keys that do not have easily printable characters, such as the arrow keys, are s
 
 ### Modifier Keys
 
-Most keybindings can be prefixed with `Shift`, `Control` or `Alt`, followed by a `+`. These bindings can also be combined in any order, for example `Alt+Control+Delete`. `Shift` combined with any ASCII alphabetic character will not work and the uppercase character must be used instead.
+Most bindings can be prefixed with `Shift`, `Control` or `Alt`, followed by a `+`. These bindings can also be combined in any order, for example `Alt+Control+Delete`. `Shift` combined with any ASCII alphabetic character will not work and the uppercase character must be used instead.
+
+### Multiple Key Bindings
+
+A single action can have multiple bindings by providing a whitespace separate list of keys. For example the binding, `"u Control+z Control+Z"` would respond to a keypress of `a`, `Control z` and `Control Z`.
 
 ### Restricted Keys
 

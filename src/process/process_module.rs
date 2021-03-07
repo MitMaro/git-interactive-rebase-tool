@@ -15,7 +15,7 @@ pub trait ProcessModule {
 
 	fn handle_input(&mut self, _view: &mut View<'_>, _rebase_todo: &mut TodoFile) -> ProcessResult;
 
-	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(String, String)>> {
+	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(Vec<String>, String)>> {
 		None
 	}
 }
