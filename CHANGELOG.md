@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Basic support to merge rebasing
 - Modifier keys can now be provided in any order
 - Undo and redo changes to the todo list
+- Support for multiple key bindings per configuration
 
 ### Fixed
 - Most modifier key combinations could not be used as key bindings
@@ -85,7 +86,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Horizontal and vertical overflow support
 
 ### Changed
-- Show git now uses libgit2 instead of external command
+- Show git now uses libgit2 instead of an external command
 
 ## [0.7.0] - 2018-10-28
 

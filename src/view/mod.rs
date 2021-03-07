@@ -57,7 +57,9 @@ impl<'v> View<'v> {
 			self.display.next_line()?;
 			self.display.draw_str(&format!(
 				"{} ({}/{})? ",
-				prompt, self.config.key_bindings.confirm_yes, self.config.key_bindings.confirm_no
+				prompt,
+				self.config.key_bindings.confirm_yes.join(","),
+				self.config.key_bindings.confirm_no.join(",")
 			))?;
 			self.display.next_line()?;
 			self.display.refresh()?;
@@ -133,7 +135,14 @@ impl<'v> View<'v> {
 		self.display.set_style(false, true, false)?;
 		let window_width = self.display.get_window_size().width();
 
-		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + self.config.key_bindings.help.len();
+		let help_indicator = self
+			.config
+			.key_bindings
+			.help
+			.first()
+			.map_or(String::from("?"), String::from);
+
+		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + help_indicator.len();
 
 		if window_width >= TITLE_LENGTH {
 			self.display.draw_str(TITLE)?;
@@ -144,8 +153,7 @@ impl<'v> View<'v> {
 					self.display.draw_str(padding.as_str())?;
 				}
 				if show_help {
-					self.display
-						.draw_str(format!("Help: {}", self.config.key_bindings.help).as_str())?;
+					self.display.draw_str(format!("Help: {}", help_indicator).as_str())?;
 				}
 				else {
 					let padding = " ".repeat(title_help_indicator_total_length);

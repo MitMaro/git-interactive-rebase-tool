@@ -675,7 +675,8 @@ fn config_git_editor_invalid() {
 	case::modifier_control_alt_shift_out_of_order_2("Shift+Control+Alt+End", "ShiftControlAltEnd"),
 	case::modifier_only_shift("Shift+End", "ShiftEnd"),
 	case::modifier_only_control("Control+End", "ControlEnd"),
-	case::modifier_only_control("Alt+End", "AltEnd")
+	case::modifier_only_control("a b c d", "a,b,c,d"),
+	case::modifier_only_control("Control+End Control+A", "ControlEnd,ControlA")
 )]
 fn config_key_bindings(binding: &str, expected: &str) {
 	let config = load(|git_config| {
@@ -683,7 +684,10 @@ fn config_key_bindings(binding: &str, expected: &str) {
 			.set_str("interactive-rebase-tool.inputAbort", binding)
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.abort, expected);
+	assert_eq!(
+		config.key_bindings.abort,
+		expected.split(',').map(String::from).collect::<Vec<String>>()
+	);
 }
 
 #[test]
@@ -710,7 +714,7 @@ fn config_key_bindings_key_multiple_characters() {
 				.set_str("interactive-rebase-tool.inputAbort", "abcd")
 				.unwrap();
 		}),
-		"Error reading git config: interactive-rebase-tool.inputAbort must contain only one character"
+		"Error reading git config: interactive-rebase-tool.inputAbort must contain only one character per binding"
 	);
 }
 
@@ -722,7 +726,19 @@ fn config_key_bindings_key_invalid_function_index() {
 				.set_str("interactive-rebase-tool.inputAbort", "F256")
 				.unwrap();
 		}),
-		"Error reading git config: interactive-rebase-tool.inputAbort must contain only one character"
+		"Error reading git config: interactive-rebase-tool.inputAbort must contain only one character per binding"
+	);
+}
+
+#[test]
+fn config_key_bindings_multiple_invalid() {
+	assert_eq!(
+		load_error(|git_config| {
+			git_config
+				.set_str("interactive-rebase-tool.inputAbort", "f foo")
+				.unwrap();
+		}),
+		"Error reading git config: interactive-rebase-tool.inputAbort must contain only one character per binding"
 	);
 }
 
@@ -745,7 +761,7 @@ fn config_key_bindings_key_invalid() {
 #[test]
 fn config_key_bindings_abort_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.abort, "q");
+	assert_eq!(config.key_bindings.abort, vec![String::from("q")]);
 }
 
 #[test]
@@ -753,13 +769,13 @@ fn config_key_bindings_abort() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputAbort", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.abort, "X");
+	assert_eq!(config.key_bindings.abort, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_break_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_break, "b");
+	assert_eq!(config.key_bindings.action_break, vec![String::from("b")]);
 }
 
 #[test]
@@ -769,13 +785,13 @@ fn config_key_bindings_action_break() {
 			.set_str("interactive-rebase-tool.inputActionBreak", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_break, "X");
+	assert_eq!(config.key_bindings.action_break, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_drop_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_drop, "d");
+	assert_eq!(config.key_bindings.action_drop, vec![String::from("d")]);
 }
 
 #[test]
@@ -785,13 +801,13 @@ fn config_key_bindings_action_drop() {
 			.set_str("interactive-rebase-tool.inputActionDrop", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_drop, "X");
+	assert_eq!(config.key_bindings.action_drop, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_edit_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_edit, "e");
+	assert_eq!(config.key_bindings.action_edit, vec![String::from("e")]);
 }
 
 #[test]
@@ -801,13 +817,13 @@ fn config_key_bindings_action_edit() {
 			.set_str("interactive-rebase-tool.inputActionEdit", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_edit, "X");
+	assert_eq!(config.key_bindings.action_edit, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_fixup_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_fixup, "f");
+	assert_eq!(config.key_bindings.action_fixup, vec![String::from("f")]);
 }
 
 #[test]
@@ -817,13 +833,13 @@ fn config_key_bindings_action_fixup() {
 			.set_str("interactive-rebase-tool.inputActionFixup", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_fixup, "X");
+	assert_eq!(config.key_bindings.action_fixup, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_pick_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_pick, "p");
+	assert_eq!(config.key_bindings.action_pick, vec![String::from("p")]);
 }
 
 #[test]
@@ -833,13 +849,13 @@ fn config_key_bindings_action_pick() {
 			.set_str("interactive-rebase-tool.inputActionPick", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_pick, "X");
+	assert_eq!(config.key_bindings.action_pick, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_reword_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_reword, "r");
+	assert_eq!(config.key_bindings.action_reword, vec![String::from("r")]);
 }
 
 #[test]
@@ -849,13 +865,13 @@ fn config_key_bindings_action_reword() {
 			.set_str("interactive-rebase-tool.inputActionReword", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_reword, "X");
+	assert_eq!(config.key_bindings.action_reword, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_action_squash_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.action_squash, "s");
+	assert_eq!(config.key_bindings.action_squash, vec![String::from("s")]);
 }
 
 #[test]
@@ -865,13 +881,13 @@ fn config_key_bindings_action_squash() {
 			.set_str("interactive-rebase-tool.inputActionSquash", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.action_squash, "X");
+	assert_eq!(config.key_bindings.action_squash, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_confirm_no_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.confirm_no, "n");
+	assert_eq!(config.key_bindings.confirm_no, vec![String::from("n")]);
 }
 
 #[test]
@@ -881,13 +897,13 @@ fn config_key_bindings_confirm_no() {
 			.set_str("interactive-rebase-tool.inputConfirmNo", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.confirm_no, "X");
+	assert_eq!(config.key_bindings.confirm_no, vec![String::from("x")]);
 }
 
 #[test]
 fn config_key_bindings_confirm_yes_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.confirm_yes, "y");
+	assert_eq!(config.key_bindings.confirm_yes, vec![String::from("y")]);
 }
 
 #[test]
@@ -897,13 +913,13 @@ fn config_key_bindings_confirm_yes() {
 			.set_str("interactive-rebase-tool.inputConfirmYes", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.confirm_yes, "X");
+	assert_eq!(config.key_bindings.confirm_yes, vec![String::from("x")]);
 }
 
 #[test]
 fn config_key_bindings_edit_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.edit, "E");
+	assert_eq!(config.key_bindings.edit, vec![String::from("E")]);
 }
 
 #[test]
@@ -911,13 +927,13 @@ fn config_key_bindings_confirm_edit() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputEdit", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.edit, "X");
+	assert_eq!(config.key_bindings.edit, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_force_abort_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.force_abort, "Q");
+	assert_eq!(config.key_bindings.force_abort, vec![String::from("Q")]);
 }
 
 #[test]
@@ -927,13 +943,13 @@ fn config_key_bindings_force_abort() {
 			.set_str("interactive-rebase-tool.inputForceAbort", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.force_abort, "X");
+	assert_eq!(config.key_bindings.force_abort, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_force_rebase_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.force_rebase, "W");
+	assert_eq!(config.key_bindings.force_rebase, vec![String::from("W")]);
 }
 
 #[test]
@@ -943,13 +959,13 @@ fn config_key_bindings_force_rebase() {
 			.set_str("interactive-rebase-tool.inputForceRebase", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.force_rebase, "X");
+	assert_eq!(config.key_bindings.force_rebase, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_help_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.help, "?");
+	assert_eq!(config.key_bindings.help, vec![String::from("?")]);
 }
 
 #[test]
@@ -957,13 +973,13 @@ fn config_key_bindings_help() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputHelp", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.help, "X");
+	assert_eq!(config.key_bindings.help, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_down_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_down, "Down");
+	assert_eq!(config.key_bindings.move_down, vec![String::from("Down")]);
 }
 
 #[test]
@@ -973,13 +989,13 @@ fn config_key_bindings_move_down() {
 			.set_str("interactive-rebase-tool.inputMoveDown", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_down, "X");
+	assert_eq!(config.key_bindings.move_down, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_left_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_left, "Left");
+	assert_eq!(config.key_bindings.move_left, vec![String::from("Left")]);
 }
 
 #[test]
@@ -989,13 +1005,13 @@ fn config_key_bindings_move_left() {
 			.set_str("interactive-rebase-tool.inputMoveLeft", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_left, "X");
+	assert_eq!(config.key_bindings.move_left, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_right_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_right, "Right");
+	assert_eq!(config.key_bindings.move_right, vec![String::from("Right")]);
 }
 
 #[test]
@@ -1005,13 +1021,13 @@ fn config_key_bindings_move_right() {
 			.set_str("interactive-rebase-tool.inputMoveRight", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_right, "X");
+	assert_eq!(config.key_bindings.move_right, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_step_up_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_up_step, "PageUp");
+	assert_eq!(config.key_bindings.move_up_step, vec![String::from("PageUp")]);
 }
 
 #[test]
@@ -1021,13 +1037,13 @@ fn config_key_bindings_move_step_up() {
 			.set_str("interactive-rebase-tool.inputMoveStepUp", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_up_step, "X");
+	assert_eq!(config.key_bindings.move_up_step, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_step_down_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_down_step, "PageDown");
+	assert_eq!(config.key_bindings.move_down_step, vec![String::from("PageDown")]);
 }
 
 #[test]
@@ -1037,13 +1053,13 @@ fn config_key_bindings_move_step_down() {
 			.set_str("interactive-rebase-tool.inputMoveStepDown", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_down_step, "X");
+	assert_eq!(config.key_bindings.move_down_step, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_selection_down_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_selection_down, "j");
+	assert_eq!(config.key_bindings.move_selection_down, vec![String::from("j")]);
 }
 
 #[test]
@@ -1053,13 +1069,13 @@ fn config_key_bindings_move_selection_down() {
 			.set_str("interactive-rebase-tool.inputMoveSelectionDown", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_selection_down, "X");
+	assert_eq!(config.key_bindings.move_selection_down, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_selection_up_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_selection_up, "k");
+	assert_eq!(config.key_bindings.move_selection_up, vec![String::from("k")]);
 }
 
 #[test]
@@ -1069,13 +1085,13 @@ fn config_key_bindings_move_selection_up() {
 			.set_str("interactive-rebase-tool.inputMoveSelectionUp", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.move_selection_up, "X");
+	assert_eq!(config.key_bindings.move_selection_up, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_move_up_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.move_up, "Up");
+	assert_eq!(config.key_bindings.move_up, vec![String::from("Up")]);
 }
 
 #[test]
@@ -1083,13 +1099,13 @@ fn config_key_bindings_move_up() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputMoveUp", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.move_up, "X");
+	assert_eq!(config.key_bindings.move_up, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_open_in_external_editor_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.open_in_external_editor, "!");
+	assert_eq!(config.key_bindings.open_in_external_editor, vec![String::from("!")]);
 }
 
 #[test]
@@ -1099,13 +1115,13 @@ fn config_key_bindings_open_in_external_editor() {
 			.set_str("interactive-rebase-tool.inputOpenInExternalEditor", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.open_in_external_editor, "X");
+	assert_eq!(config.key_bindings.open_in_external_editor, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_rebase_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.rebase, "w");
+	assert_eq!(config.key_bindings.rebase, vec![String::from("w")]);
 }
 
 #[test]
@@ -1113,13 +1129,13 @@ fn config_key_bindings_rebase() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputRebase", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.rebase, "X");
+	assert_eq!(config.key_bindings.rebase, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_redo_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.redo, "Controly");
+	assert_eq!(config.key_bindings.redo, vec![String::from("Controly")]);
 }
 
 #[test]
@@ -1127,13 +1143,13 @@ fn config_key_bindings_redo() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputRedo", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.redo, "X");
+	assert_eq!(config.key_bindings.redo, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_show_commit_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.show_commit, "c");
+	assert_eq!(config.key_bindings.show_commit, vec![String::from("c")]);
 }
 
 #[test]
@@ -1143,13 +1159,13 @@ fn config_key_bindings_show_commit() {
 			.set_str("interactive-rebase-tool.inputShowCommit", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.show_commit, "X");
+	assert_eq!(config.key_bindings.show_commit, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_show_diff_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.show_diff, "d");
+	assert_eq!(config.key_bindings.show_diff, vec![String::from("d")]);
 }
 
 #[test]
@@ -1159,13 +1175,13 @@ fn config_key_bindings_show_diff() {
 			.set_str("interactive-rebase-tool.inputShowDiff", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.show_diff, "X");
+	assert_eq!(config.key_bindings.show_diff, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_toggle_visual_mode_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.toggle_visual_mode, "v");
+	assert_eq!(config.key_bindings.toggle_visual_mode, vec![String::from("v")]);
 }
 
 #[test]
@@ -1175,13 +1191,13 @@ fn config_key_bindings_toggle_visual_mode() {
 			.set_str("interactive-rebase-tool.inputToggleVisualMode", "X")
 			.unwrap();
 	});
-	assert_eq!(config.key_bindings.toggle_visual_mode, "X");
+	assert_eq!(config.key_bindings.toggle_visual_mode, vec![String::from("X")]);
 }
 
 #[test]
 fn config_key_bindings_undo_default() {
 	let config = load(|_| {});
-	assert_eq!(config.key_bindings.undo, "Controlz");
+	assert_eq!(config.key_bindings.undo, vec![String::from("Controlz")]);
 }
 
 #[test]
@@ -1189,7 +1205,7 @@ fn config_key_bindings_undo() {
 	let config = load(|git_config| {
 		git_config.set_str("interactive-rebase-tool.inputUndo", "X").unwrap();
 	});
-	assert_eq!(config.key_bindings.undo, "X");
+	assert_eq!(config.key_bindings.undo, vec![String::from("X")]);
 }
 
 #[test]

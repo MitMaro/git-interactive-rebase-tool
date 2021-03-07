@@ -101,9 +101,9 @@ impl<'i> InputHandler<'i> {
 		match mode {
 			InputMode::Confirm => self.get_confirm(input.as_str()),
 			InputMode::Default => Self::get_default_input(input.as_str()),
-			InputMode::List => self.get_list_input(input.as_str()),
+			InputMode::List => self.get_list_input(input),
 			InputMode::Raw => Self::get_raw_input(input.as_str()),
-			InputMode::ShowCommit => self.get_show_commit_input(input.as_str()),
+			InputMode::ShowCommit => self.get_show_commit_input(input),
 		}
 	}
 
@@ -127,7 +127,7 @@ impl<'i> InputHandler<'i> {
 	fn get_confirm(&self, input: &str) -> Input {
 		Self::get_standard_inputs(input).unwrap_or_else(|| {
 			match input {
-				c if c.to_lowercase() == self.key_bindings.confirm_yes.to_lowercase() => Input::Yes,
+				c if self.key_bindings.confirm_yes.contains(&c.to_lowercase()) => Input::Yes,
 				_ => Input::No,
 			}
 		})
@@ -138,37 +138,38 @@ impl<'i> InputHandler<'i> {
 	}
 
 	#[allow(clippy::cognitive_complexity)]
-	fn get_list_input(&self, input: &str) -> Input {
+	fn get_list_input(&self, input: String) -> Input {
 		match input {
-			i if i == self.key_bindings.abort.as_str() => Input::Abort,
-			i if i == self.key_bindings.rebase.as_str() => Input::Rebase,
-			i if i == self.key_bindings.force_abort.as_str() => Input::ForceAbort,
-			i if i == self.key_bindings.force_rebase.as_str() => Input::ForceRebase,
-			i if i == self.key_bindings.open_in_external_editor.as_str() => Input::OpenInEditor,
-			i if i == self.key_bindings.show_commit.as_str() => Input::ShowCommit,
-			i if i == self.key_bindings.edit.as_str() => Input::Edit,
-			i if i == self.key_bindings.help.as_str() => Input::Help,
-			i if i == self.key_bindings.toggle_visual_mode.as_str() => Input::ToggleVisualMode,
-			i if i == self.key_bindings.action_break.as_str() => Input::ActionBreak,
-			i if i == self.key_bindings.action_drop.as_str() => Input::ActionDrop,
-			i if i == self.key_bindings.action_edit.as_str() => Input::ActionEdit,
-			i if i == self.key_bindings.action_fixup.as_str() => Input::ActionFixup,
-			i if i == self.key_bindings.action_pick.as_str() => Input::ActionPick,
-			i if i == self.key_bindings.action_reword.as_str() => Input::ActionReword,
-			i if i == self.key_bindings.action_squash.as_str() => Input::ActionSquash,
-			i if i == self.key_bindings.move_up.as_str() => Input::MoveCursorUp,
-			i if i == self.key_bindings.move_down.as_str() => Input::MoveCursorDown,
-			i if i == self.key_bindings.move_left.as_str() => Input::MoveCursorLeft,
-			i if i == self.key_bindings.move_right.as_str() => Input::MoveCursorRight,
-			i if i == self.key_bindings.move_up_step.as_str() => Input::MoveCursorPageUp,
-			i if i == self.key_bindings.move_down_step.as_str() => Input::MoveCursorPageDown,
-			i if i == self.key_bindings.move_selection_down.as_str() => Input::SwapSelectedDown,
-			i if i == self.key_bindings.move_selection_up.as_str() => Input::SwapSelectedUp,
-			i if i == self.key_bindings.undo.as_str() => Input::Undo,
-			i if i == self.key_bindings.redo.as_str() => Input::Redo,
-			"Exit" => Input::Exit,
-			"Kill" => Input::Kill,
-			"Resize" => Input::Resize,
+			i if self.key_bindings.abort.contains(&i) => Input::Abort,
+			i if self.key_bindings.abort.contains(&i) => Input::Abort,
+			i if self.key_bindings.rebase.contains(&i) => Input::Rebase,
+			i if self.key_bindings.force_abort.contains(&i) => Input::ForceAbort,
+			i if self.key_bindings.force_rebase.contains(&i) => Input::ForceRebase,
+			i if self.key_bindings.open_in_external_editor.contains(&i) => Input::OpenInEditor,
+			i if self.key_bindings.show_commit.contains(&i) => Input::ShowCommit,
+			i if self.key_bindings.edit.contains(&i) => Input::Edit,
+			i if self.key_bindings.help.contains(&i) => Input::Help,
+			i if self.key_bindings.toggle_visual_mode.contains(&i) => Input::ToggleVisualMode,
+			i if self.key_bindings.action_break.contains(&i) => Input::ActionBreak,
+			i if self.key_bindings.action_drop.contains(&i) => Input::ActionDrop,
+			i if self.key_bindings.action_edit.contains(&i) => Input::ActionEdit,
+			i if self.key_bindings.action_fixup.contains(&i) => Input::ActionFixup,
+			i if self.key_bindings.action_pick.contains(&i) => Input::ActionPick,
+			i if self.key_bindings.action_reword.contains(&i) => Input::ActionReword,
+			i if self.key_bindings.action_squash.contains(&i) => Input::ActionSquash,
+			i if self.key_bindings.move_up.contains(&i) => Input::MoveCursorUp,
+			i if self.key_bindings.move_down.contains(&i) => Input::MoveCursorDown,
+			i if self.key_bindings.move_left.contains(&i) => Input::MoveCursorLeft,
+			i if self.key_bindings.move_right.contains(&i) => Input::MoveCursorRight,
+			i if self.key_bindings.move_up_step.contains(&i) => Input::MoveCursorPageUp,
+			i if self.key_bindings.move_down_step.contains(&i) => Input::MoveCursorPageDown,
+			i if self.key_bindings.move_selection_down.contains(&i) => Input::SwapSelectedDown,
+			i if self.key_bindings.move_selection_up.contains(&i) => Input::SwapSelectedUp,
+			i if self.key_bindings.undo.contains(&i) => Input::Undo,
+			i if self.key_bindings.redo.contains(&i) => Input::Redo,
+			i if i.as_str() == "Exit" => Input::Exit,
+			i if i.as_str() == "Kill" => Input::Kill,
+			i if i.as_str() == "Resize" => Input::Resize,
 			_ => Input::Other,
 		}
 	}
@@ -206,11 +207,11 @@ impl<'i> InputHandler<'i> {
 		}
 	}
 
-	fn get_show_commit_input(&self, input: &str) -> Input {
-		Self::get_standard_inputs(input).unwrap_or_else(|| {
+	fn get_show_commit_input(&self, input: String) -> Input {
+		Self::get_standard_inputs(input.as_str()).unwrap_or_else(|| {
 			match input {
-				i if i == self.key_bindings.help.as_str() => Input::Help,
-				i if i == self.key_bindings.show_diff.as_str() => Input::ShowDiff,
+				i if self.key_bindings.help.contains(&i) => Input::Help,
+				i if self.key_bindings.show_diff.contains(&i) => Input::ShowDiff,
 				_ => Input::Other,
 			}
 		})
@@ -227,8 +228,11 @@ mod tests {
 	use super::*;
 	use crate::{config::Config, create_key_event, create_mouse_event};
 
-	fn input_handler_test<C>(callback: C)
-	where C: for<'p> FnOnce(&'p InputHandler<'_>) {
+	fn input_handler_test<G, C>(config_setup: G, callback: C)
+	where
+		G: for<'p> FnOnce(&'p mut Config),
+		C: for<'p> FnOnce(&'p InputHandler<'_>),
+	{
 		let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
 			.join("test")
 			.join("fixtures")
@@ -238,7 +242,8 @@ mod tests {
 			.to_owned();
 
 		set_var("GIT_DIR", git_repo_dir.as_str());
-		let config = Config::new().unwrap();
+		let mut config = Config::new().unwrap();
+		config_setup(&mut config);
 		let input_handler = InputHandler::new(&config.key_bindings);
 		callback(&input_handler);
 	}
@@ -313,20 +318,23 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn ignore_hack() {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(
-				input_handler.get_input(
-					InputMode::Confirm,
-					Event::Mouse(MouseEvent {
-						kind: MouseEventKind::Moved,
-						column: 0,
-						row: 0,
-						modifiers: KeyModifiers::NONE
-					})
-				),
-				Input::Ignore
-			);
-		});
+		input_handler_test(
+			|_| {},
+			|input_handler: &InputHandler<'_>| {
+				assert_eq!(
+					input_handler.get_input(
+						InputMode::Confirm,
+						Event::Mouse(MouseEvent {
+							kind: MouseEventKind::Moved,
+							column: 0,
+							row: 0,
+							modifiers: KeyModifiers::NONE
+						})
+					),
+					Input::Ignore
+				);
+			},
+		);
 	}
 	#[rstest(
 		input,
@@ -345,13 +353,19 @@ mod tests {
 		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
 		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
 		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
-		case::exit(create_key_event!('d', "Control"), Input::Exit)
+		case::exit(create_key_event!('d', "Control"), Input::Exit),
+		case::multiple_bindings(create_key_event!('7'), Input::Yes)
 	)]
 	#[serial_test::serial]
 	fn confirm_mode(input: Event, expected: Input) {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Confirm, input), expected);
-		});
+		input_handler_test(
+			|config| {
+				config.key_bindings.confirm_yes = vec![String::from('y'), String::from('7')];
+			},
+			|input_handler: &InputHandler<'_>| {
+				assert_eq!(input_handler.get_input(InputMode::Confirm, input), expected);
+			},
+		);
 	}
 
 	#[rstest(
@@ -381,9 +395,12 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn default_mode(input: Event, expected: Input) {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Default, input), expected);
-		});
+		input_handler_test(
+			|_| {},
+			|input_handler: &InputHandler<'_>| {
+				assert_eq!(input_handler.get_input(InputMode::Default, input), expected);
+			},
+		);
 	}
 
 	#[rstest(
@@ -419,12 +436,18 @@ mod tests {
 		case::other(create_key_event!('z'), Input::Other),
 		case::exit(create_key_event!('d', "Control"), Input::Exit),
 		case::exit(create_key_event!('c', "Control"), Input::Kill),
+		case::multiple_bindings(create_key_event!('7'), Input::Abort)
 	)]
 	#[serial_test::serial]
 	fn list_mode(input: Event, expected: Input) {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::List, input), expected);
-		});
+		input_handler_test(
+			|config| {
+				config.key_bindings.abort = vec![String::from('q'), String::from('7')];
+			},
+			|input_handler: &InputHandler<'_>| {
+				assert_eq!(input_handler.get_input(InputMode::List, input), expected);
+			},
+		);
 	}
 
 	#[rstest(
@@ -453,9 +476,12 @@ mod tests {
 	)]
 	#[serial_test::serial]
 	fn raw_mode(input: Event, expected: Input) {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::Raw, input), expected);
-		});
+		input_handler_test(
+			|_| {},
+			|input_handler: &InputHandler<'_>| {
+				assert_eq!(input_handler.get_input(InputMode::Raw, input), expected);
+			},
+		);
 	}
 
 	#[rstest(
@@ -473,11 +499,18 @@ mod tests {
 		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
 		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
 		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
+		case::multiple_bindings(create_key_event!('7'), Input::ShowDiff),
+
 	)]
 	#[serial_test::serial]
 	fn show_commit_mode(input: Event, expected: Input) {
-		input_handler_test(|input_handler: &InputHandler<'_>| {
-			assert_eq!(input_handler.get_input(InputMode::ShowCommit, input), expected);
-		});
+		input_handler_test(
+			|config| {
+				config.key_bindings.show_diff = vec![String::from('d'), String::from('7')];
+			},
+			|input_handler: &InputHandler<'_>| {
+				assert_eq!(input_handler.get_input(InputMode::ShowCommit, input), expected);
+			},
+		);
 	}
 }

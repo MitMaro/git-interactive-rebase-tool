@@ -8,7 +8,7 @@ use crate::{
 	view::{line_segment::LineSegment, view_line::ViewLine},
 };
 
-pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(String, String)> {
+pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![
 		(key_bindings.move_up.clone(), String::from("Scroll up")),
 		(key_bindings.move_down.clone(), String::from("Scroll down")),

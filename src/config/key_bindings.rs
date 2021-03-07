@@ -5,39 +5,47 @@ use crate::config::utils::get_input;
 
 #[derive(Clone, Debug)]
 pub struct KeyBindings {
-	pub(crate) abort: String,
-	pub(crate) action_break: String,
-	pub(crate) action_drop: String,
-	pub(crate) action_edit: String,
-	pub(crate) action_fixup: String,
-	pub(crate) action_pick: String,
-	pub(crate) action_reword: String,
-	pub(crate) action_squash: String,
-	pub(crate) confirm_no: String,
-	pub(crate) confirm_yes: String,
-	pub(crate) edit: String,
-	pub(crate) force_abort: String,
-	pub(crate) force_rebase: String,
-	pub(crate) help: String,
-	pub(crate) move_down: String,
-	pub(crate) move_down_step: String,
-	pub(crate) move_left: String,
-	pub(crate) move_right: String,
-	pub(crate) move_selection_down: String,
-	pub(crate) move_selection_up: String,
-	pub(crate) move_up: String,
-	pub(crate) move_up_step: String,
-	pub(crate) open_in_external_editor: String,
-	pub(crate) rebase: String,
-	pub(crate) redo: String,
-	pub(crate) show_commit: String,
-	pub(crate) show_diff: String,
-	pub(crate) toggle_visual_mode: String,
-	pub(crate) undo: String,
+	pub(crate) abort: Vec<String>,
+	pub(crate) action_break: Vec<String>,
+	pub(crate) action_drop: Vec<String>,
+	pub(crate) action_edit: Vec<String>,
+	pub(crate) action_fixup: Vec<String>,
+	pub(crate) action_pick: Vec<String>,
+	pub(crate) action_reword: Vec<String>,
+	pub(crate) action_squash: Vec<String>,
+	pub(crate) confirm_no: Vec<String>,
+	pub(crate) confirm_yes: Vec<String>,
+	pub(crate) edit: Vec<String>,
+	pub(crate) force_abort: Vec<String>,
+	pub(crate) force_rebase: Vec<String>,
+	pub(crate) help: Vec<String>,
+	pub(crate) move_down: Vec<String>,
+	pub(crate) move_down_step: Vec<String>,
+	pub(crate) move_left: Vec<String>,
+	pub(crate) move_right: Vec<String>,
+	pub(crate) move_selection_down: Vec<String>,
+	pub(crate) move_selection_up: Vec<String>,
+	pub(crate) move_up: Vec<String>,
+	pub(crate) move_up_step: Vec<String>,
+	pub(crate) open_in_external_editor: Vec<String>,
+	pub(crate) rebase: Vec<String>,
+	pub(crate) redo: Vec<String>,
+	pub(crate) show_commit: Vec<String>,
+	pub(crate) show_diff: Vec<String>,
+	pub(crate) toggle_visual_mode: Vec<String>,
+	pub(crate) undo: Vec<String>,
 }
 
 impl KeyBindings {
 	pub(super) fn new(git_config: &Config) -> Result<Self> {
+		let confirm_no = get_input(git_config, "interactive-rebase-tool.inputConfirmNo", "n")?
+			.iter()
+			.map(|s| s.as_str().to_lowercase())
+			.collect();
+		let confirm_yes = get_input(git_config, "interactive-rebase-tool.inputConfirmYes", "y")?
+			.iter()
+			.map(|s| s.as_str().to_lowercase())
+			.collect();
 		Ok(Self {
 			abort: get_input(git_config, "interactive-rebase-tool.inputAbort", "q")?,
 			action_break: get_input(git_config, "interactive-rebase-tool.inputActionBreak", "b")?,
@@ -47,8 +55,8 @@ impl KeyBindings {
 			action_pick: get_input(git_config, "interactive-rebase-tool.inputActionPick", "p")?,
 			action_reword: get_input(git_config, "interactive-rebase-tool.inputActionReword", "r")?,
 			action_squash: get_input(git_config, "interactive-rebase-tool.inputActionSquash", "s")?,
-			confirm_no: get_input(git_config, "interactive-rebase-tool.inputConfirmNo", "n")?,
-			confirm_yes: get_input(git_config, "interactive-rebase-tool.inputConfirmYes", "y")?,
+			confirm_no,
+			confirm_yes,
 			edit: get_input(git_config, "interactive-rebase-tool.inputEdit", "E")?,
 			force_abort: get_input(git_config, "interactive-rebase-tool.inputForceAbort", "Q")?,
 			force_rebase: get_input(git_config, "interactive-rebase-tool.inputForceRebase", "W")?,
