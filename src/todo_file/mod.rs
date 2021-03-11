@@ -100,12 +100,21 @@ impl TodoFile {
 	}
 
 	pub(crate) fn swap_range_up(&mut self, start_index: usize, end_index: usize) -> bool {
-		if end_index == 0 || start_index == 0 {
+		if end_index == 0 || start_index == 0 || self.lines.is_empty() {
 			return false;
 		}
 
-		swap_range_up(&mut self.lines, start_index, end_index);
-		self.history.record(HistoryItem::new_swap_up(start_index, end_index));
+		let max_index = self.lines.len() - 1;
+		let end = if end_index > max_index { max_index } else { end_index };
+		let start = if start_index > max_index {
+			max_index
+		}
+		else {
+			start_index
+		};
+
+		swap_range_up(&mut self.lines, start, end);
+		self.history.record(HistoryItem::new_swap_up(start, end));
 		true
 	}
 
@@ -123,22 +132,42 @@ impl TodoFile {
 	}
 
 	pub(crate) fn add_line(&mut self, index: usize, line: Line) {
-		self.lines.insert(index, line);
-		self.history.record(HistoryItem::new_add(index));
+		let i = if index > self.lines.len() {
+			self.lines.len()
+		}
+		else {
+			index
+		};
+		self.lines.insert(i, line);
+		self.history.record(HistoryItem::new_add(i));
 	}
 
-	pub(crate) fn remove_line(&mut self, index: usize) {
-		let removed_line = self.lines.remove(index);
-		self.history.record(HistoryItem::new_remove(index, removed_line));
+	pub(crate) fn remove_line(&mut self, index: usize) -> bool {
+		if index >= self.lines.len() {
+			false
+		}
+		else {
+			let removed_line = self.lines.remove(index);
+			self.history.record(HistoryItem::new_remove(index, removed_line));
+			true
+		}
 	}
 
 	pub(crate) fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
-		let range = if end_index <= start_index {
-			end_index..=start_index
+		if self.lines.is_empty() {
+			return;
+		}
+
+		let max_index = self.lines.len() - 1;
+		let end = if end_index > max_index { max_index } else { end_index };
+		let start = if start_index > max_index {
+			max_index
 		}
 		else {
-			start_index..=end_index
+			start_index
 		};
+
+		let range = if end <= start { end..=start } else { start..=end };
 
 		let mut lines = vec![];
 		for index in range {
@@ -152,8 +181,7 @@ impl TodoFile {
 				line.edit_content(content);
 			}
 		}
-		self.history
-			.record(HistoryItem::new_modify(start_index, end_index, lines));
+		self.history.record(HistoryItem::new_modify(start, end, lines));
 	}
 
 	pub(crate) fn undo(&mut self) -> Option<(usize, usize)> {
@@ -308,11 +336,17 @@ mod tests {
 	}
 
 	#[test]
-	#[should_panic]
 	fn add_line_index_miss() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		todo_file.add_line(100, Line::new("fixup ddd comment").unwrap());
+		assert_todo_lines!(
+			todo_file,
+			"pick aaa comment",
+			"drop bbb comment",
+			"edit ccc comment",
+			"fixup ddd comment"
+		);
 	}
 
 	#[test]
@@ -338,18 +372,17 @@ mod tests {
 	}
 
 	#[test]
-	#[should_panic]
 	fn remove_line_index_miss() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		todo_file.remove_line(100);
+		assert!(!todo_file.remove_line(100));
 	}
 
 	#[test]
 	fn remove_line() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		todo_file.remove_line(1);
+		assert!(todo_file.remove_line(1));
 		assert_todo_lines!(todo_file, "pick aaa comment", "edit ccc comment");
 	}
 
@@ -400,6 +433,26 @@ mod tests {
 		todo_file.update_range(0, 0, &EditContext::new().action(Action::Reword));
 		todo_file.undo();
 		assert_todo_lines!(todo_file, "pick aaa comment");
+	}
+
+	#[test]
+	fn update_range_empty_list() {
+		let (mut todo_file, _) = create_and_load_todo_file(&[]);
+		todo_file.update_range(0, 0, &EditContext::new().action(Action::Reword));
+	}
+
+	#[test]
+	fn update_range_start_index_overflow() {
+		let (mut todo_file, _) = create_and_load_todo_file(&["pick aaa comment", "pick bbb comment"]);
+		todo_file.update_range(2, 0, &EditContext::new().action(Action::Reword));
+		assert_todo_lines!(todo_file, "reword aaa comment", "reword bbb comment");
+	}
+
+	#[test]
+	fn update_range_end_index_overflow() {
+		let (mut todo_file, _) = create_and_load_todo_file(&["pick aaa comment", "pick bbb comment"]);
+		todo_file.update_range(0, 2, &EditContext::new().action(Action::Reword));
+		assert_todo_lines!(todo_file, "reword aaa comment", "reword bbb comment");
 	}
 
 	#[test]
@@ -460,6 +513,28 @@ mod tests {
 			create_and_load_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
 		assert!(!todo_file.swap_range_up(1, 0));
 		assert_todo_lines!(todo_file, "pick aaa comment", "pick bbb comment", "pick ccc comment");
+	}
+
+	#[test]
+	fn swap_up_start_index_overflow() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		assert!(todo_file.swap_range_up(3, 1));
+		assert_todo_lines!(todo_file, "pick bbb comment", "pick ccc comment", "pick aaa comment");
+	}
+
+	#[test]
+	fn swap_up_end_index_overflow() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		assert!(todo_file.swap_range_up(3, 1));
+		assert_todo_lines!(todo_file, "pick bbb comment", "pick ccc comment", "pick aaa comment");
+	}
+
+	#[test]
+	fn swap_up_empty_list_index_out_of_bounds() {
+		let (mut todo_file, _) = create_and_load_todo_file(&[]);
+		assert!(!todo_file.swap_range_up(1, 1));
 	}
 
 	#[test]

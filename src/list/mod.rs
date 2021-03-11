@@ -234,8 +234,9 @@ impl<'l> List<'l> {
 						.get_line(selected_line_index)
 						.map_or(false, |line| line.get_action() == &Action::Break);
 					if selected_action_is_break {
-						rebase_todo.remove_line(selected_line_index);
-						Self::move_cursor_up(rebase_todo, 1);
+						if rebase_todo.remove_line(selected_line_index) {
+							Self::move_cursor_up(rebase_todo, 1);
+						}
 					}
 					else {
 						rebase_todo.add_line(selected_line_index + 1, Line::new_break());
@@ -1459,6 +1460,25 @@ mod tests {
 					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
 					"{Normal}   {ActionBreak}break  "
 				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn change_selected_line_toggle_break_outside_of_range() {
+		process_module_test(
+			&["pick aaa c1", "break"],
+			ViewState {
+				size: Size::new(120, 4),
+				..ViewState::default()
+			},
+			&[Input::ActionBreak],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.rebase_todo_file.set_lines(vec![]);
+				test_context.handle_all_inputs(&mut module);
+				assert_eq!(test_context.rebase_todo_file.get_selected_line_index(), 0);
 			},
 		);
 	}
