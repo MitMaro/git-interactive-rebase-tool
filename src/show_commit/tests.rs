@@ -56,6 +56,19 @@ fn cached_commit_in_activate() {
 
 #[test]
 #[serial_test::serial]
+fn no_selected_line_in_activate() {
+	process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+		let mut module = ShowCommit::new(test_context.config);
+		assert_process_result!(
+			test_context.activate(&mut module, State::List),
+			state = State::List,
+			error = anyhow!("No valid commit to show")
+		);
+	});
+}
+
+#[test]
+#[serial_test::serial]
 fn activate_error() {
 	process_module_test(
 		&["pick aaaaaaaaaa comment1"],

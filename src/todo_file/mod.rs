@@ -85,7 +85,10 @@ impl TodoFile {
 	}
 
 	pub(crate) fn set_selected_line_index(&mut self, selected_line_index: usize) {
-		self.selected_line_index = if selected_line_index >= self.lines.len() {
+		self.selected_line_index = if self.lines.is_empty() {
+			0
+		}
+		else if selected_line_index >= self.lines.len() {
 			self.lines.len() - 1
 		}
 		else {
@@ -158,8 +161,8 @@ impl TodoFile {
 		self.history.redo(&mut self.lines)
 	}
 
-	pub(crate) fn get_selected_line(&self) -> &Line {
-		&self.lines[self.selected_line_index]
+	pub(crate) fn get_selected_line(&self) -> Option<&Line> {
+		self.lines.get(self.selected_line_index)
 	}
 
 	pub(crate) const fn get_selected_line_index(&self) -> usize {
@@ -507,7 +510,14 @@ mod tests {
 	fn selected_line() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
 		todo_file.set_selected_line_index(0);
-		assert_eq!(todo_file.get_selected_line(), &Line::new("exec foo").unwrap());
+		assert_eq!(todo_file.get_selected_line().unwrap(), &Line::new("exec foo").unwrap());
+	}
+
+	#[test]
+	fn selected_line_empty_list() {
+		let (mut todo_file, _) = create_and_load_todo_file(&[]);
+		todo_file.set_selected_line_index(0);
+		assert!(todo_file.get_selected_line().is_none());
 	}
 
 	#[test]

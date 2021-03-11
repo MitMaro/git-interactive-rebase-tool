@@ -13,6 +13,8 @@ mod view_builder;
 #[cfg(test)]
 mod tests;
 
+use anyhow::anyhow;
+
 use crate::{
 	config::{
 		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
@@ -49,31 +51,38 @@ pub struct ShowCommit<'s> {
 
 impl<'s> ProcessModule for ShowCommit<'s> {
 	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
-		// skip loading commit data if the currently loaded commit has not changed, this retains
-		// position after returning to the list view or help
-		if let Some(ref commit) = self.commit {
-			if commit.get_hash() == rebase_todo.get_selected_line().get_hash() {
-				return ProcessResult::new();
+		if let Some(selected_line) = rebase_todo.get_selected_line() {
+			// skip loading commit data if the currently loaded commit has not changed, this retains
+			// position after returning to the list view or help
+			if let Some(ref commit) = self.commit {
+				if commit.get_hash() == selected_line.get_hash() {
+					return ProcessResult::new();
+				}
+			}
+			self.view_data.reset();
+
+			let new_commit = Commit::new_from_hash(selected_line.get_hash(), LoadCommitDiffOptions {
+				context_lines: self.config.git.diff_context,
+				copies: self.config.git.diff_copies,
+				ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
+				ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
+				interhunk_lines: self.config.git.diff_interhunk_lines,
+				rename_limit: self.config.git.diff_rename_limit,
+				renames: self.config.git.diff_renames,
+			});
+
+			match new_commit {
+				Ok(c) => {
+					self.commit = Some(c);
+					ProcessResult::new()
+				},
+				Err(e) => ProcessResult::new().error(e).state(State::List),
 			}
 		}
-		self.view_data.reset();
-
-		let new_commit = Commit::new_from_hash(rebase_todo.get_selected_line().get_hash(), LoadCommitDiffOptions {
-			context_lines: self.config.git.diff_context,
-			copies: self.config.git.diff_copies,
-			ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
-			ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
-			interhunk_lines: self.config.git.diff_interhunk_lines,
-			rename_limit: self.config.git.diff_rename_limit,
-			renames: self.config.git.diff_renames,
-		});
-
-		match new_commit {
-			Ok(c) => {
-				self.commit = Some(c);
-				ProcessResult::new()
-			},
-			Err(e) => ProcessResult::new().error(e).state(State::List),
+		else {
+			ProcessResult::new()
+				.error(anyhow!("No valid commit to show"))
+				.state(State::List)
 		}
 	}
 

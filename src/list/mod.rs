@@ -37,10 +37,8 @@ impl<'l> ProcessModule for List<'l> {
 		match self.state {
 			ListState::Normal | ListState::Visual => {
 				let is_visual_mode = self.state == ListState::Visual;
-				let visual_index = self
-					.visual_index_start
-					.unwrap_or_else(|| todo_file.get_selected_line_index());
 				let selected_index = todo_file.get_selected_line_index();
+				let visual_index = self.visual_index_start.unwrap_or(selected_index);
 
 				for (index, line) in todo_file.iter().enumerate() {
 					let selected_line = is_visual_mode
@@ -207,8 +205,10 @@ impl<'l> List<'l> {
 		let mut result = result;
 		match input {
 			Input::ShowCommit => {
-				if !rebase_todo.get_selected_line().get_hash().is_empty() {
-					result = result.state(State::ShowCommit);
+				if let Some(selected_line) = rebase_todo.get_selected_line() {
+					if selected_line.has_reference() {
+						result = result.state(State::ShowCommit);
+					}
 				}
 			},
 			Input::Abort => {
@@ -225,18 +225,20 @@ impl<'l> List<'l> {
 				result = result.exit_status(ExitStatus::Good);
 			},
 			Input::ActionBreak => {
-				let action = rebase_todo.get_selected_line().get_action();
 				let selected_line_index = rebase_todo.get_selected_line_index();
 				let next_action_is_break = rebase_todo
 					.get_line(selected_line_index + 1)
 					.map_or(false, |line| line.get_action() == &Action::Break);
 				if !next_action_is_break {
-					if action == &Action::Break {
-						rebase_todo.remove_line(rebase_todo.get_selected_line_index());
+					let selected_action_is_break = rebase_todo
+						.get_line(selected_line_index)
+						.map_or(false, |line| line.get_action() == &Action::Break);
+					if selected_action_is_break {
+						rebase_todo.remove_line(selected_line_index);
 						Self::move_cursor_up(rebase_todo, 1);
 					}
 					else {
-						rebase_todo.add_line(rebase_todo.get_selected_line_index() + 1, Line::new_break());
+						rebase_todo.add_line(selected_line_index + 1, Line::new_break());
 						Self::move_cursor_down(rebase_todo, 1);
 					}
 				}
@@ -248,14 +250,15 @@ impl<'l> List<'l> {
 			Input::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword, true),
 			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash, true),
 			Input::Edit => {
-				if rebase_todo.get_selected_line().is_editable() {
-					let selected_line = rebase_todo.get_selected_line();
-					self.state = ListState::Edit;
-					self.edit.set_content(selected_line.get_content());
-					self.edit
-						.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
-					self.edit
-						.set_description(format!("Modifying line: {}", selected_line.to_text()).as_str());
+				if let Some(selected_line) = rebase_todo.get_selected_line() {
+					if selected_line.is_editable() {
+						self.state = ListState::Edit;
+						self.edit.set_content(selected_line.get_content());
+						self.edit
+							.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
+						self.edit
+							.set_description(format!("Modifying line: {}", selected_line.to_text()).as_str());
+					}
 				}
 			},
 			Input::SwapSelectedDown => self.swap_range_down(rebase_todo),
@@ -1553,6 +1556,20 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
+	fn normal_mode_show_commit_when_no_selected_line() {
+		process_module_test(
+			&[],
+			ViewState::default(),
+			&[Input::ShowCommit],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::ShowCommit);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
 	fn normal_mode_do_not_show_commit_when_hash_not_available() {
 		process_module_test(
 			&["exec echo foo"],
@@ -1659,6 +1676,21 @@ mod tests {
 	fn normal_mode_edit_without_edit_content() {
 		process_module_test(
 			&["pick aaa c1"],
+			ViewState::default(),
+			&[Input::Edit],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				assert_process_result!(test_context.handle_input(&mut module), input = Input::Edit);
+				assert_eq!(module.state, ListState::Normal);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn normal_mode_edit_without_selected_line() {
+		process_module_test(
+			&[],
 			ViewState::default(),
 			&[Input::Edit],
 			|mut test_context: TestContext<'_>| {

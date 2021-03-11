@@ -102,6 +102,10 @@ impl Line {
 		self.hash.as_str()
 	}
 
+	pub(crate) fn has_reference(&self) -> bool {
+		!self.hash.is_empty()
+	}
+
 	pub(crate) const fn is_editable(&self) -> bool {
 		match self.action {
 			Action::Exec | Action::Label | Action::Reset | Action::Merge => true,
@@ -368,6 +372,25 @@ mod tests {
 	)]
 	fn get_hash(line: &str, expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_hash(), expected);
+	}
+
+	#[rstest(
+		line,
+		expected,
+		case::break_action("break", false),
+		case::drop("drop aaa comment", true),
+		case::edit("edit aaa comment", true),
+		case::exec("exec git commit --amend 'foo'", false),
+		case::fixup("fixup aaa comment", true),
+		case::pick("pick aaa comment", true),
+		case::reword("reword aaa comment", true),
+		case::squash("squash aaa comment", true),
+		case::label("label ref", false),
+		case::reset("reset ref", false),
+		case::merge("merge command", false)
+	)]
+	fn has_reference(line: &str, expected: bool) {
+		assert_eq!(Line::new(line).unwrap().has_reference(), expected);
 	}
 
 	#[rstest(
