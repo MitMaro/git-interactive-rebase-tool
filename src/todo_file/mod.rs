@@ -50,6 +50,9 @@ impl TodoFile {
 		else {
 			lines.into_iter().filter(|l| l.get_action() != &Action::Noop).collect()
 		};
+		if self.selected_line_index >= self.lines.len() {
+			self.selected_line_index = if self.lines.is_empty() { 0 } else { self.lines.len() - 1 };
+		}
 		self.history.reset();
 	}
 
@@ -270,6 +273,22 @@ mod tests {
 		todo_file.history.record(HistoryItem::new_add(1));
 		todo_file.set_lines(vec![Line::new("pick bbb comment").unwrap()]);
 		assert!(todo_file.undo().is_none());
+	}
+
+	#[test]
+	fn set_lines_reset_selected_index() {
+		let (mut todo_file, _) = create_and_load_todo_file(&["pick a a", "pick b b", "pick c c"]);
+		todo_file.selected_line_index = 2;
+		todo_file.set_lines(vec![Line::new("pick a a").unwrap(), Line::new("pick b b").unwrap()]);
+		assert_eq!(todo_file.selected_line_index, 1);
+	}
+
+	#[test]
+	fn set_lines_reset_selected_index_empty_lis() {
+		let (mut todo_file, _) = create_and_load_todo_file(&["pick a a", "pick b b", "pick c c"]);
+		todo_file.selected_line_index = 2;
+		todo_file.set_lines(vec![]);
+		assert_eq!(todo_file.selected_line_index, 0);
 	}
 
 	#[test]
