@@ -310,6 +310,7 @@ impl<'l> List<'l> {
 				self.visual_index_start = None;
 				self.state = ListState::Normal;
 			},
+			Input::OpenInEditor => result = result.state(State::ExternalEditor),
 			Input::Undo => self.undo(rebase_todo),
 			Input::Redo => self.redo(rebase_todo),
 			_ => {},
@@ -2604,6 +2605,25 @@ mod tests {
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::ToggleVisualMode);
 				assert_eq!(module.visual_index_start, None);
 				assert_eq!(module.state, ListState::Normal);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_open_external_editor() {
+		process_module_test(
+			&["pick aaa c1"],
+			ViewState::default(),
+			&[Input::ToggleVisualMode, Input::OpenInEditor],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_input(&mut module);
+				assert_process_result!(
+					test_context.handle_input(&mut module),
+					input = Input::OpenInEditor,
+					state = State::ExternalEditor
+				);
 			},
 		);
 	}
