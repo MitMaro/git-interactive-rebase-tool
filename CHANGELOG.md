@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Undo and redo changes to the todo list
 - Support for multiple key bindings per configuration
 - Open external editor from visual mode
+- Delete selected lines from the todo list
 
 ### Fixed
 - Most modifier key combinations could not be used as key bindings

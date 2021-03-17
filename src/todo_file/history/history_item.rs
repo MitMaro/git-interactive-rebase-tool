@@ -18,21 +18,21 @@ impl HistoryItem {
 		}
 	}
 
-	pub const fn new_add(index: usize) -> Self {
+	pub const fn new_add(start_index: usize, end_index: usize) -> Self {
 		Self {
 			operation: Operation::Add,
-			start_index: index,
-			end_index: index,
+			start_index,
+			end_index,
 			lines: vec![],
 		}
 	}
 
-	pub fn new_remove(index: usize, line: Line) -> Self {
+	pub fn new_remove(start_index: usize, end_index: usize, lines: Vec<Line>) -> Self {
 		Self {
 			operation: Operation::Remove,
-			start_index: index,
-			end_index: index,
-			lines: vec![line],
+			start_index,
+			end_index,
+			lines,
 		}
 	}
 

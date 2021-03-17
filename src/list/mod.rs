@@ -1,13 +1,16 @@
 mod utils;
 
+use std::cmp::min;
+
 use crate::{
 	config::Config,
+	display::display_color::DisplayColor,
 	edit::Edit,
 	input::{input_handler::InputMode, Input},
 	list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
-	view::{view_data::ViewData, view_line::ViewLine, View},
+	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
 };
 
 #[derive(Debug, PartialEq)]
@@ -40,17 +43,26 @@ impl<'l> ProcessModule for List<'l> {
 				let selected_index = todo_file.get_selected_line_index();
 				let visual_index = self.visual_index_start.unwrap_or(selected_index);
 
-				for (index, line) in todo_file.iter().enumerate() {
-					let selected_line = is_visual_mode
-						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
-							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
-					self.view_data.push_line(
-						ViewLine::new_with_pinned_segments(
-							get_todo_line_segments(line, selected_index == index, selected_line, view_width),
-							if *line.get_action() == Action::Exec { 2 } else { 3 },
-						)
-						.set_selected(selected_index == index || selected_line),
-					);
+				if todo_file.is_empty() {
+					self.view_data
+						.push_leading_line(ViewLine::from(LineSegment::new_with_color(
+							"Rebase todo file is empty",
+							DisplayColor::IndicatorColor,
+						)));
+				}
+				else {
+					for (index, line) in todo_file.iter().enumerate() {
+						let selected_line = is_visual_mode
+							&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
+								|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
+						self.view_data.push_line(
+							ViewLine::new_with_pinned_segments(
+								get_todo_line_segments(line, selected_index == index, selected_line, view_width),
+								if *line.get_action() == Action::Exec { 2 } else { 3 },
+							)
+							.set_selected(selected_index == index || selected_line),
+						);
+					}
 				}
 				self.view_data.rebuild();
 				if let Some(visual_index) = self.visual_index_start {
@@ -145,6 +157,20 @@ impl<'l> List<'l> {
 		}
 	}
 
+	pub(crate) fn remove_lines(&mut self, rebase_todo: &mut TodoFile) {
+		let start_index = rebase_todo.get_selected_line_index();
+		let end_index = self.visual_index_start.unwrap_or(start_index);
+
+		rebase_todo.remove_lines(start_index, end_index);
+		let new_index = min(start_index, end_index);
+
+		rebase_todo.set_selected_line_index(new_index);
+
+		if self.state == ListState::Visual {
+			self.visual_index_start = Some(rebase_todo.get_selected_line_index());
+		}
+	}
+
 	pub(crate) fn swap_range_up(&mut self, rebase_todo: &mut TodoFile) {
 		let start_index = rebase_todo.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
@@ -175,6 +201,7 @@ impl<'l> List<'l> {
 			rebase_todo.set_selected_line_index(start_index);
 			if start_index == end_index {
 				self.state = ListState::Normal;
+				self.visual_index_start = None;
 			}
 			else {
 				self.state = ListState::Visual;
@@ -188,6 +215,7 @@ impl<'l> List<'l> {
 			rebase_todo.set_selected_line_index(start_index);
 			if start_index == end_index {
 				self.state = ListState::Normal;
+				self.visual_index_start = None;
 			}
 			else {
 				self.state = ListState::Visual;
@@ -234,9 +262,8 @@ impl<'l> List<'l> {
 						.get_line(selected_line_index)
 						.map_or(false, |line| line.get_action() == &Action::Break);
 					if selected_action_is_break {
-						if rebase_todo.remove_line(selected_line_index) {
-							Self::move_cursor_up(rebase_todo, 1);
-						}
+						rebase_todo.remove_lines(selected_line_index, selected_line_index);
+						Self::move_cursor_up(rebase_todo, 1);
 					}
 					else {
 						rebase_todo.add_line(selected_line_index + 1, Line::new_break());
@@ -271,6 +298,7 @@ impl<'l> List<'l> {
 			Input::OpenInEditor => result = result.state(State::ExternalEditor),
 			Input::Undo => self.undo(rebase_todo),
 			Input::Redo => self.redo(rebase_todo),
+			Input::Delete => self.remove_lines(rebase_todo),
 			_ => {},
 		}
 
@@ -313,6 +341,7 @@ impl<'l> List<'l> {
 			Input::OpenInEditor => result = result.state(State::ExternalEditor),
 			Input::Undo => self.undo(rebase_todo),
 			Input::Redo => self.redo(rebase_todo),
+			Input::Delete => self.remove_lines(rebase_todo),
 			_ => {},
 		}
 		result
@@ -326,6 +355,7 @@ impl<'l> List<'l> {
 				selected_index,
 				&EditContext::new().content(self.edit.get_content()),
 			);
+			self.visual_index_start = None;
 			self.state = ListState::Normal;
 		}
 	}
@@ -355,6 +385,21 @@ mod tests {
 		display::size::Size,
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
+
+	#[test]
+	#[serial_test::serial]
+	fn render_empty_list() {
+		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}{HELP}",
+				"{LEADING}",
+				"{IndicatorColor}Rebase todo file is empty"
+			);
+		});
+	}
 
 	#[test]
 	#[serial_test::serial]
@@ -1467,25 +1512,6 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn change_selected_line_toggle_break_outside_of_range() {
-		process_module_test(
-			&["pick aaa c1", "break"],
-			ViewState {
-				size: Size::new(120, 4),
-				..ViewState::default()
-			},
-			&[Input::ActionBreak],
-			|mut test_context: TestContext<'_>| {
-				let mut module = List::new(test_context.config);
-				test_context.rebase_todo_file.set_lines(vec![]);
-				test_context.handle_all_inputs(&mut module);
-				assert_eq!(test_context.rebase_todo_file.get_selected_line_index(), 0);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
 	fn change_selected_line_auto_select_next_with_next_line() {
 		process_module_test(
 			&["pick aaa c1", "pick aaa c2"],
@@ -1839,6 +1865,70 @@ mod tests {
 					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
 				);
 				assert_eq!(module.state, ListState::Visual);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn normal_mode_remove_line_first() {
+		process_module_test(
+			&[
+				"pick aaa c1",
+				"pick bbb c2",
+				"pick ccc c3",
+				"pick ddd c4",
+				"pick eee c5",
+			],
+			ViewState::default(),
+			&[Input::Delete],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2",
+					"{Normal}   {ActionPick}pick   {Normal}ccc      {Normal}c3",
+					"{Normal}   {ActionPick}pick   {Normal}ddd      {Normal}c4",
+					"{Normal}   {ActionPick}pick   {Normal}eee      {Normal}c5"
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn normal_mode_remove_line_end() {
+		process_module_test(
+			&[
+				"pick aaa c1",
+				"pick bbb c2",
+				"pick ccc c3",
+				"pick ddd c4",
+				"pick eee c5",
+			],
+			ViewState::default(),
+			&[
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::Delete,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+					"{Normal}   {ActionPick}pick   {Normal}bbb      {Normal}c2",
+					"{Normal}   {ActionPick}pick   {Normal}ccc      {Normal}c3",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}ddd      {Normal(selected)}c4"
+				);
 			},
 		);
 	}
@@ -2732,6 +2822,158 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
+	fn visual_mode_remove_lines_start_index_first() {
+		process_module_test(
+			&[
+				"pick aaa c1",
+				"pick bbb c2",
+				"pick ccc c3",
+				"pick ddd c4",
+				"pick eee c5",
+			],
+			ViewState::default(),
+			&[
+				Input::ToggleVisualMode,
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::Delete,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}ddd      {Normal(selected)}c4",
+					"{Normal}   {ActionPick}pick   {Normal}eee      {Normal}c5"
+				);
+				assert_eq!(
+					module.visual_index_start.unwrap(),
+					test_context.rebase_todo_file.get_selected_line_index()
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_remove_lines_end_index_first() {
+		process_module_test(
+			&[
+				"pick aaa c1",
+				"pick bbb c2",
+				"pick ccc c3",
+				"pick ddd c4",
+				"pick eee c5",
+			],
+			ViewState::default(),
+			&[
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::ToggleVisualMode,
+				Input::MoveCursorUp,
+				Input::MoveCursorUp,
+				Input::Delete,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}ddd      {Normal(selected)}c4",
+					"{Normal}   {ActionPick}pick   {Normal}eee      {Normal}c5"
+				);
+				assert_eq!(
+					module.visual_index_start.unwrap(),
+					test_context.rebase_todo_file.get_selected_line_index()
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_remove_lines_start_index_last() {
+		process_module_test(
+			&[
+				"pick aaa c1",
+				"pick bbb c2",
+				"pick ccc c3",
+				"pick ddd c4",
+				"pick eee c5",
+			],
+			ViewState::default(),
+			&[
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::ToggleVisualMode,
+				Input::MoveCursorUp,
+				Input::MoveCursorUp,
+				Input::Delete,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
+				);
+				assert_eq!(
+					module.visual_index_start.unwrap(),
+					test_context.rebase_todo_file.get_selected_line_index()
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn visual_mode_remove_lines_end_index_last() {
+		process_module_test(
+			&[
+				"pick aaa c1",
+				"pick bbb c2",
+				"pick ccc c3",
+				"pick ddd c4",
+				"pick eee c5",
+			],
+			ViewState::default(),
+			&[
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::ToggleVisualMode,
+				Input::MoveCursorDown,
+				Input::MoveCursorDown,
+				Input::Delete,
+			],
+			|mut test_context: TestContext<'_>| {
+				let mut module = List::new(test_context.config);
+				test_context.handle_all_inputs(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{BODY}",
+					"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+					"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}bbb      {Normal(selected)}c2"
+				);
+				assert_eq!(
+					module.visual_index_start.unwrap(),
+					test_context.rebase_todo_file.get_selected_line_index()
+				);
+			},
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
 	fn visual_mode_other_input() {
 		process_module_test(
 			&["pick aaa c1"],
@@ -2914,7 +3156,7 @@ mod tests {
 			&[],
 			|mut test_context: TestContext<'_>| {
 				let mut module = List::new(test_context.config);
-				test_context.rebase_todo_file.remove_line(0);
+				test_context.rebase_todo_file.remove_lines(0, 0);
 				test_context.rebase_todo_file.add_line(0, Line::new("noop").unwrap());
 				let view_data = test_context.build_view_data(&mut module);
 				assert_rendered_output!(
