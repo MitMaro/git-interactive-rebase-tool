@@ -4,12 +4,12 @@ mod operation;
 #[cfg(test)]
 mod tests;
 
-use std::collections::VecDeque;
+use std::{cmp::min, collections::VecDeque};
 
 use crate::todo_file::{
 	history::{history_item::HistoryItem, operation::Operation},
 	line::Line,
-	utils::{swap_range_down, swap_range_up},
+	utils::{add_range, remove_range, swap_range_down, swap_range_up},
 };
 
 pub struct History {
@@ -45,12 +45,12 @@ impl History {
 				HistoryItem::new_modify(operation.start_index, operation.end_index, changed_lines)
 			},
 			Operation::Add => {
-				let removed_line = lines.remove(operation.start_index);
-				HistoryItem::new_remove(operation.start_index, removed_line)
+				let removed_lines = remove_range(lines, operation.start_index, operation.end_index);
+				HistoryItem::new_remove(operation.start_index, operation.end_index, removed_lines)
 			},
 			Operation::Remove => {
-				lines.insert(operation.start_index, operation.lines[0].clone());
-				HistoryItem::new_add(operation.start_index)
+				add_range(lines, &operation.lines, operation.start_index, operation.end_index);
+				HistoryItem::new_add(operation.start_index, operation.end_index)
 			},
 			Operation::SwapUp => {
 				swap_range_down(lines, operation.start_index - 1, operation.end_index - 1);
@@ -72,11 +72,22 @@ impl History {
 		}
 	}
 
-	const fn get_last_index_range(history_item: &HistoryItem) -> (usize, usize) {
+	fn get_last_index_range(history_item: &HistoryItem, list_length: usize) -> (usize, usize) {
 		match history_item.operation {
-			Operation::Modify => (history_item.start_index, history_item.end_index),
-			Operation::Add => (history_item.start_index, history_item.start_index),
-			Operation::Remove | Operation::SwapUp => {
+			Operation::Add | Operation::Modify => (history_item.start_index, history_item.end_index),
+			Operation::Remove => {
+				let index = min(history_item.start_index, history_item.end_index);
+				if index == 0 || list_length == 0 {
+					(0, 0)
+				}
+				else if index >= list_length {
+					(list_length - 1, list_length - 1)
+				}
+				else {
+					(index, index)
+				}
+			},
+			Operation::SwapUp => {
 				let start_index = if history_item.start_index == 0 {
 					0
 				}
@@ -98,7 +109,7 @@ impl History {
 	pub fn undo(&mut self, current: &mut Vec<Line>) -> Option<(usize, usize)> {
 		self.undo_history.pop_back().map(|operation| {
 			let history = Self::apply_operation(current, &operation);
-			let update_range = Self::get_last_index_range(&history);
+			let update_range = Self::get_last_index_range(&history, current.len());
 			self.redo_history.push_back(history);
 			update_range
 		})
@@ -107,7 +118,7 @@ impl History {
 	pub fn redo(&mut self, current: &mut Vec<Line>) -> Option<(usize, usize)> {
 		self.redo_history.pop_back().map(|operation| {
 			let history = Self::apply_operation(current, &operation);
-			let update_range = Self::get_last_index_range(&history);
+			let update_range = Self::get_last_index_range(&history, current.len());
 			self.undo_history.push_back(history);
 			update_range
 		})

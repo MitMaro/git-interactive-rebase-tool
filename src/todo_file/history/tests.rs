@@ -97,24 +97,24 @@ fn new() {
 #[test]
 fn record_history() {
 	let mut history = History::new(5);
-	history.redo_history.push_front(HistoryItem::new_add(1));
-	history.record(HistoryItem::new_add(1));
-	assert_history_items!(history.undo_history, HistoryItem::new_add(1));
+	history.redo_history.push_front(HistoryItem::new_add(1, 1));
+	history.record(HistoryItem::new_add(1, 1));
+	assert_history_items!(history.undo_history, HistoryItem::new_add(1, 1));
 	assert!(history.redo_history.is_empty());
 }
 
 #[test]
 fn record_history_overflow_limit() {
 	let mut history = History::new(3);
-	history.record(HistoryItem::new_add(1));
-	history.record(HistoryItem::new_add(2));
-	history.record(HistoryItem::new_add(3));
-	history.record(HistoryItem::new_add(4));
+	history.record(HistoryItem::new_add(1, 1));
+	history.record(HistoryItem::new_add(2, 2));
+	history.record(HistoryItem::new_add(3, 3));
+	history.record(HistoryItem::new_add(4, 4));
 	assert_history_items!(
 		history.undo_history,
-		HistoryItem::new_add(2),
-		HistoryItem::new_add(3),
-		HistoryItem::new_add(4)
+		HistoryItem::new_add(2, 2),
+		HistoryItem::new_add(3, 3),
+		HistoryItem::new_add(4, 4)
 	);
 	assert!(history.redo_history.is_empty());
 }
@@ -122,7 +122,7 @@ fn record_history_overflow_limit() {
 #[test]
 fn undo_redo_add_start() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_add(0));
+	history.record(HistoryItem::new_add(0, 0));
 	let mut lines = create_lines();
 	assert_eq!(history.undo(&mut lines), Some((0, 0)));
 	assert_todo_lines!(lines, "pick bbb c2", "pick ccc c3", "pick ddd c4", "pick eee c5");
@@ -140,7 +140,7 @@ fn undo_redo_add_start() {
 #[test]
 fn undo_redo_add_end() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_add(4));
+	history.record(HistoryItem::new_add(4, 4));
 	let mut lines = create_lines();
 	assert_eq!(history.undo(&mut lines), Some((3, 3)));
 	assert_todo_lines!(lines, "pick aaa c1", "pick bbb c2", "pick ccc c3", "pick ddd c4");
@@ -158,9 +158,9 @@ fn undo_redo_add_end() {
 #[test]
 fn undo_redo_add_middle() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_add(2));
+	history.record(HistoryItem::new_add(2, 2));
 	let mut lines = create_lines();
-	assert_eq!(history.undo(&mut lines), Some((1, 1)));
+	assert_eq!(history.undo(&mut lines), Some((2, 2)));
 	assert_todo_lines!(lines, "pick aaa c1", "pick bbb c2", "pick ddd c4", "pick eee c5");
 	assert_eq!(history.redo(&mut lines), Some((2, 2)));
 	assert_todo_lines!(
@@ -174,9 +174,81 @@ fn undo_redo_add_middle() {
 }
 
 #[test]
+fn undo_redo_add_range_start_index_at_top() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_add(0, 1));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((0, 0)));
+	assert_todo_lines!(lines, "pick ccc c3", "pick ddd c4", "pick eee c5");
+	assert_eq!(history.redo(&mut lines), Some((0, 1)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_add_range_end_index_at_top() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_add(1, 0));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((0, 0)));
+	assert_todo_lines!(lines, "pick ccc c3", "pick ddd c4", "pick eee c5");
+	assert_eq!(history.redo(&mut lines), Some((1, 0)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_add_range_start_index_at_bottom() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_add(4, 3));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((2, 2)));
+	assert_todo_lines!(lines, "pick aaa c1", "pick bbb c2", "pick ccc c3");
+	assert_eq!(history.redo(&mut lines), Some((4, 3)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_add_range_end_index_at_bottom() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_add(3, 4));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((2, 2)));
+	assert_todo_lines!(lines, "pick aaa c1", "pick bbb c2", "pick ccc c3");
+	assert_eq!(history.redo(&mut lines), Some((3, 4)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
 fn undo_redo_remove_start() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_remove(0, Line::new("drop xxx cx").unwrap()));
+	history.record(HistoryItem::new_remove(0, 0, vec![Line::new("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_eq!(history.undo(&mut lines), Some((0, 0)));
 	assert_todo_lines!(
@@ -202,7 +274,7 @@ fn undo_redo_remove_start() {
 #[test]
 fn undo_redo_remove_end() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_remove(5, Line::new("drop xxx cx").unwrap()));
+	history.record(HistoryItem::new_remove(5, 5, vec![Line::new("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_eq!(history.undo(&mut lines), Some((5, 5)));
 	assert_todo_lines!(
@@ -228,7 +300,7 @@ fn undo_redo_remove_end() {
 #[test]
 fn undo_redo_remove_middle() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_remove(2, Line::new("drop xxx cx").unwrap()));
+	history.record(HistoryItem::new_remove(2, 2, vec![Line::new("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_eq!(history.undo(&mut lines), Some((2, 2)));
 	assert_todo_lines!(
@@ -240,7 +312,127 @@ fn undo_redo_remove_middle() {
 		"pick ddd c4",
 		"pick eee c5"
 	);
-	assert_eq!(history.redo(&mut lines), Some((1, 1)));
+	assert_eq!(history.redo(&mut lines), Some((2, 2)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_remove_range_start_index_top() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_remove(0, 1, vec![
+		Line::new("drop xxx cx").unwrap(),
+		Line::new("drop yyy cy").unwrap(),
+	]));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((0, 1)));
+	assert_todo_lines!(
+		lines,
+		"drop xxx cx",
+		"drop yyy cy",
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+	assert_eq!(history.redo(&mut lines), Some((0, 0)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_remove_range_start_index_bottom() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_remove(6, 5, vec![
+		Line::new("drop xxx cx").unwrap(),
+		Line::new("drop yyy cy").unwrap(),
+	]));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((6, 5)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5",
+		"drop xxx cx",
+		"drop yyy cy"
+	);
+	assert_eq!(history.redo(&mut lines), Some((4, 4)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_remove_range_end_index_top() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_remove(1, 0, vec![
+		Line::new("drop xxx cx").unwrap(),
+		Line::new("drop yyy cy").unwrap(),
+	]));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((1, 0)));
+	assert_todo_lines!(
+		lines,
+		"drop xxx cx",
+		"drop yyy cy",
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+	assert_eq!(history.redo(&mut lines), Some((0, 0)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5"
+	);
+}
+
+#[test]
+fn undo_redo_remove_range_end_index_bottom() {
+	let mut history = History::new(10);
+	history.record(HistoryItem::new_remove(5, 6, vec![
+		Line::new("drop xxx cx").unwrap(),
+		Line::new("drop yyy cy").unwrap(),
+	]));
+	let mut lines = create_lines();
+	assert_eq!(history.undo(&mut lines), Some((5, 6)));
+	assert_todo_lines!(
+		lines,
+		"pick aaa c1",
+		"pick bbb c2",
+		"pick ccc c3",
+		"pick ddd c4",
+		"pick eee c5",
+		"drop xxx cx",
+		"drop yyy cy"
+	);
+	assert_eq!(history.redo(&mut lines), Some((4, 4)));
 	assert_todo_lines!(
 		lines,
 		"pick aaa c1",
@@ -720,8 +912,8 @@ fn undo_redo_modify_range_up_index_end() {
 #[test]
 fn reset() {
 	let mut history = History::new(3);
-	history.redo_history.push_front(HistoryItem::new_add(1));
-	history.undo_history.push_front(HistoryItem::new_add(1));
+	history.redo_history.push_front(HistoryItem::new_add(1, 1));
+	history.undo_history.push_front(HistoryItem::new_add(1, 1));
 	history.reset();
 	assert!(history.undo_history.is_empty());
 	assert!(history.redo_history.is_empty());

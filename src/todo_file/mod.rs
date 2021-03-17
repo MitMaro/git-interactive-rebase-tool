@@ -12,7 +12,7 @@ use line::Line;
 use crate::todo_file::{
 	edit_content::EditContext,
 	history::{history_item::HistoryItem, History},
-	utils::{swap_range_down, swap_range_up},
+	utils::{remove_range, swap_range_down, swap_range_up},
 };
 
 pub mod action;
@@ -139,18 +139,25 @@ impl TodoFile {
 			index
 		};
 		self.lines.insert(i, line);
-		self.history.record(HistoryItem::new_add(i));
+		self.history.record(HistoryItem::new_add(i, i));
 	}
 
-	pub(crate) fn remove_line(&mut self, index: usize) -> bool {
-		if index >= self.lines.len() {
-			false
+	pub(crate) fn remove_lines(&mut self, start_index: usize, end_index: usize) {
+		if self.lines.is_empty() {
+			return;
+		}
+
+		let max_index = self.lines.len() - 1;
+		let end = if end_index > max_index { max_index } else { end_index };
+		let start = if start_index > max_index {
+			max_index
 		}
 		else {
-			let removed_line = self.lines.remove(index);
-			self.history.record(HistoryItem::new_remove(index, removed_line));
-			true
-		}
+			start_index
+		};
+
+		let removed_lines = remove_range(&mut self.lines, start, end);
+		self.history.record(HistoryItem::new_remove(start, end, removed_lines));
 	}
 
 	pub(crate) fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
@@ -298,7 +305,7 @@ mod tests {
 	#[test]
 	fn set_lines_reset_history() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
-		todo_file.history.record(HistoryItem::new_add(1));
+		todo_file.history.record(HistoryItem::new_add(1, 1));
 		todo_file.set_lines(vec![Line::new("pick bbb comment").unwrap()]);
 		assert!(todo_file.undo().is_none());
 	}
@@ -372,24 +379,47 @@ mod tests {
 	}
 
 	#[test]
-	fn remove_line_index_miss() {
+	fn remove_lines_index_miss_start() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		assert!(!todo_file.remove_line(100));
+		todo_file.remove_lines(100, 1);
+		assert_todo_lines!(todo_file, "pick aaa comment");
 	}
 
 	#[test]
-	fn remove_line() {
+	fn remove_lines_index_miss_end() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		assert!(todo_file.remove_line(1));
+		todo_file.remove_lines(1, 100);
+		assert_todo_lines!(todo_file, "pick aaa comment");
+	}
+
+	#[test]
+	fn remove_lines_index_miss_start_and_end() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		todo_file.remove_lines(100, 100);
+		assert_todo_lines!(todo_file, "pick aaa comment", "drop bbb comment");
+	}
+
+	#[test]
+	fn remove_lines() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		todo_file.remove_lines(1, 1);
 		assert_todo_lines!(todo_file, "pick aaa comment", "edit ccc comment");
 	}
 
 	#[test]
-	fn remove_line_record_history() {
+	fn remove_lines_empty_list() {
+		let (mut todo_file, _) = create_and_load_todo_file(&[]);
+		todo_file.remove_lines(1, 1);
+	}
+
+	#[test]
+	fn remove_lines_record_history() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["pick aaa comment", "edit ccc comment"]);
-		todo_file.remove_line(1);
+		todo_file.remove_lines(1, 1);
 		todo_file.undo();
 		assert_todo_lines!(todo_file, "pick aaa comment", "edit ccc comment");
 	}

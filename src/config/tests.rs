@@ -1147,6 +1147,20 @@ fn config_key_bindings_redo() {
 }
 
 #[test]
+fn config_key_bindings_remove_line_default() {
+	let config = load(|_| {});
+	assert_eq!(config.key_bindings.remove_line, vec![String::from("Delete")]);
+}
+
+#[test]
+fn config_key_bindings_remove_line() {
+	let config = load(|git_config| {
+		git_config.set_str("interactive-rebase-tool.removeLine", "X").unwrap();
+	});
+	assert_eq!(config.key_bindings.remove_line, vec![String::from("X")]);
+}
+
+#[test]
 fn config_key_bindings_show_commit_default() {
 	let config = load(|_| {});
 	assert_eq!(config.key_bindings.show_commit, vec![String::from("c")]);
