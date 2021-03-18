@@ -1,49 +1,49 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/) 
-and this project adheres to [Semantic Versioning](http://semver.org/).
+The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
 ### Added
-- Label and description to commit edit
-- Basic support to merge rebasing
-- Modifier keys can now be provided in any order
-- Undo and redo changes to the todo list
-- Support for multiple key bindings per configuration
-- Open external editor from visual mode
-- Delete selected lines from the todo list
+- Label and description to commit edit ([#429](https://github.com/MitMaro/git-interactive-rebase-tool/pull/429))
+- Basic support to merge rebasing ([#434](https://github.com/MitMaro/git-interactive-rebase-tool/pull/434))
+- Modifier keys can now be provided in any order ([#435](https://github.com/MitMaro/git-interactive-rebase-tool/pull/435))
+- Undo and redo changes to the todo list ([#436](https://github.com/MitMaro/git-interactive-rebase-tool/pull/436))
+- Support for multiple key bindings per configuration ([#437](https://github.com/MitMaro/git-interactive-rebase-tool/pull/437))
+- Open external editor from visual mode ([#442](https://github.com/MitMaro/git-interactive-rebase-tool/pull/442))
+- Delete selected lines from the todo list ([#443](https://github.com/MitMaro/git-interactive-rebase-tool/pull/443))
 
 ### Fixed
-- Most modifier key combinations could not be used as key bindings
+- Most modifier key combinations could not be used as key bindings ([#435](https://github.com/MitMaro/git-interactive-rebase-tool/pull/435))
+- Several index overflows when modifying the todo list with an external editor ([#441](https://github.com/MitMaro/git-interactive-rebase-tool/pull/441), [#440](https://github.com/MitMaro/git-interactive-rebase-tool/pull/440))
 
 ## [2.0.0] - 2021-01-28
 
 ### Added
-- A diff view to show commit
-- Page up and down to help view
-- Page up and down to show commit
-- Most missing key bindings for special keys
-- Builtin help for show commit
-- Number of files change in show commit
-- Number of total additions and deletions in show commit
-- The Git "diff.renames" and "diff.rename_limit" options are now respected during show commit
-- End and Home support during edit
-- Optional rollback on error or invalid file during external edit
-- True color support on macOS
+- A diff view to show commit ([#262](https://github.com/MitMaro/git-interactive-rebase-tool/pull/262))
+- Page up and down to help view ([#258](https://github.com/MitMaro/git-interactive-rebase-tool/pull/258))
+- Page up and down to show commit ([#258](https://github.com/MitMaro/git-interactive-rebase-tool/pull/258))
+- Most missing key bindings for special keys ([#239](https://github.com/MitMaro/git-interactive-rebase-tool/pull/239))
+- Builtin help for show commit ([#258](https://github.com/MitMaro/git-interactive-rebase-tool/pull/258))
+- Number of files change in show commit ([#258](https://github.com/MitMaro/git-interactive-rebase-tool/pull/258))
+- Number of total additions and deletions in show commit ([#258](https://github.com/MitMaro/git-interactive-rebase-tool/pull/258))
+- The Git "diff.renames" and "diff.rename_limit" options are now respected during show commit ([#258](https://github.com/MitMaro/git-interactive-rebase-tool/pull/258))
+- End and Home support during edit ([#309](https://github.com/MitMaro/git-interactive-rebase-tool/pull/309))
+- Optional rollback on error or invalid file during external edit ([#329](https://github.com/MitMaro/git-interactive-rebase-tool/pull/329))
+- True color support on macOS ([#417](https://github.com/MitMaro/git-interactive-rebase-tool/pull/417))
 
 ### Changed
-- Replace Curses with Crossterm for input and output
-- Change page up and page down to scroll half the height of the view area
-- Improved error handling for executing external editor
+- Replace Curses with Crossterm for input and output ([#415](https://github.com/MitMaro/git-interactive-rebase-tool/pull/415))
+- Change page up and page down to scroll half the height of the view area ([#230](https://github.com/MitMaro/git-interactive-rebase-tool/pull/230))
+- Improved error handling for executing external editor ([#329](https://github.com/MitMaro/git-interactive-rebase-tool/pull/329))
 
 ### Fixed
-- Scroll position resetting on resize
-- Unable to move edit edit cursor when `inputMoveLeft` or `inputMoveRight` were set to alphanumeric characters
+- Scroll position resetting on resize ([#261](https://github.com/MitMaro/git-interactive-rebase-tool/pull/261))
+- Unable to move edit cursor when `inputMoveLeft` or `inputMoveRight` were set to alphanumeric characters ([#309](https://github.com/MitMaro/git-interactive-rebase-tool/pull/309))
 
 ### Removed
-- Available actions footer from list and show commit views
+- Available actions footer from list and show commit views ([#330](https://github.com/MitMaro/git-interactive-rebase-tool/pull/330))
 
 ## [1.2.1] - 2020-01-26
 
@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - External editing loop when an external editor returns an empty file ([#196](https://github.com/MitMaro/git-interactive-rebase-tool/issues/196))
 
 ### Removed
-- Unused `errorColor` configuration
+- Unused `errorColor` configuration ([#168](https://github.com/MitMaro/git-interactive-rebase-tool/pull/168))
 
 ## [1.1.0] - 2019-08-15
 
