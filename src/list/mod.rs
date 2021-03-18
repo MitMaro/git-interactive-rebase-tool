@@ -3110,7 +3110,7 @@ mod tests {
 				let mut module = List::new(test_context.config);
 				module.state = ListState::Normal;
 				let help = module.get_help_keybindings_descriptions().unwrap();
-				assert_eq!(help.len(), 22);
+				assert_eq!(help.len(), 27);
 			},
 		);
 	}
@@ -3126,7 +3126,7 @@ mod tests {
 				let mut module = List::new(test_context.config);
 				module.state = ListState::Visual;
 				let help = module.get_help_keybindings_descriptions().unwrap();
-				assert_eq!(help.len(), 14);
+				assert_eq!(help.len(), 19);
 			},
 		);
 	}

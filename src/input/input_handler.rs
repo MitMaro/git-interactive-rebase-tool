@@ -141,7 +141,6 @@ impl<'i> InputHandler<'i> {
 	fn get_list_input(&self, input: String) -> Input {
 		match input {
 			i if self.key_bindings.abort.contains(&i) => Input::Abort,
-			i if self.key_bindings.abort.contains(&i) => Input::Abort,
 			i if self.key_bindings.rebase.contains(&i) => Input::Rebase,
 			i if self.key_bindings.force_abort.contains(&i) => Input::ForceAbort,
 			i if self.key_bindings.force_rebase.contains(&i) => Input::ForceRebase,
