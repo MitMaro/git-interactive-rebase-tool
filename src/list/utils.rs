@@ -20,6 +20,14 @@ pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 			key_bindings.move_down_step.clone(),
 			String::from("Move selection down 5 lines"),
 		),
+		(
+			key_bindings.move_left.clone(),
+			String::from("Scroll content to the left"),
+		),
+		(
+			key_bindings.move_right.clone(),
+			String::from("Scroll content to the right"),
+		),
 		(key_bindings.abort.clone(), String::from("Abort interactive rebase")),
 		(
 			key_bindings.force_abort.clone(),
@@ -77,6 +85,15 @@ pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 		),
 		(key_bindings.edit.clone(), String::from("Edit an exec action's command")),
 		(
+			key_bindings.remove_line.clone(),
+			String::from("Completely remove the selected line"),
+		),
+		(key_bindings.undo.clone(), String::from("Undo the last change")),
+		(
+			key_bindings.redo.clone(),
+			String::from("Redo the previous undone change"),
+		),
+		(
 			key_bindings.open_in_external_editor.clone(),
 			String::from("Open the todo file in the default editor"),
 		),
@@ -94,6 +111,14 @@ pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 		(
 			key_bindings.move_down_step.clone(),
 			String::from("Move selection down 5 lines"),
+		),
+		(
+			key_bindings.move_left.clone(),
+			String::from("Scroll content to the left"),
+		),
+		(
+			key_bindings.move_right.clone(),
+			String::from("Scroll content to the right"),
 		),
 		(key_bindings.help.clone(), String::from("Show help")),
 		(
@@ -127,6 +152,15 @@ pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 		(
 			key_bindings.action_drop.clone(),
 			String::from("Set selected commits to be dropped"),
+		),
+		(
+			key_bindings.remove_line.clone(),
+			String::from("Completely remove the selected lines"),
+		),
+		(key_bindings.undo.clone(), String::from("Undo the last change")),
+		(
+			key_bindings.redo.clone(),
+			String::from("Redo the previous undone change"),
 		),
 		(
 			key_bindings.toggle_visual_mode.clone(),
