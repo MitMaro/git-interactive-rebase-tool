@@ -6,9 +6,9 @@ mod tests;
 use std::cmp::min;
 
 use crate::{
+	components::Edit,
 	config::Config,
 	display::display_color::DisplayColor,
-	edit::Edit,
 	input::{input_handler::InputMode, Input},
 	list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
