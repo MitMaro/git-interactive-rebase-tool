@@ -30,12 +30,12 @@
 #![allow(clippy::wildcard_enum_match_arm)]
 #![allow(clippy::similar_names)]
 
+mod components;
 mod config;
 mod confirm_abort;
 mod confirm_rebase;
 mod constants;
 mod display;
-mod edit;
 mod external_editor;
 mod input;
 mod list;
