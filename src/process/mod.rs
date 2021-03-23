@@ -1,6 +1,5 @@
 pub mod error;
 pub mod exit_status;
-pub mod help;
 pub mod modules;
 pub mod process_module;
 pub mod process_result;
@@ -111,13 +110,6 @@ impl<'r> Process<'r> {
 				if self.state != State::WindowSizeError && WindowSizeError::is_window_too_small(view_width, view_height)
 				{
 					self.state = State::WindowSizeError;
-					self.activate(modules, previous_state);
-				}
-			},
-			Some(Input::Help) => {
-				if previous_state != State::Help {
-					self.state = State::Help;
-					modules.update_help_data(previous_state);
 					self.activate(modules, previous_state);
 				}
 			},

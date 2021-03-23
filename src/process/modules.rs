@@ -6,7 +6,6 @@ use crate::{
 	list::List,
 	process::{
 		error::Error,
-		help::Help,
 		process_module::ProcessModule,
 		process_result::ProcessResult,
 		state::State,
@@ -22,7 +21,6 @@ pub struct Modules<'m> {
 	pub confirm_rebase: ConfirmRebase,
 	pub error: Error,
 	pub external_editor: ExternalEditor,
-	pub help: Help,
 	pub list: List<'m>,
 	pub show_commit: ShowCommit<'m>,
 	pub window_size_error: WindowSizeError,
@@ -35,23 +33,9 @@ impl<'m> Modules<'m> {
 			confirm_rebase: ConfirmRebase::new(),
 			error: Error::new(),
 			external_editor: ExternalEditor::new(config.git.editor.as_str()),
-			help: Help::new(),
 			list: List::new(config),
 			show_commit: ShowCommit::new(config),
 			window_size_error: WindowSizeError::new(),
-		}
-	}
-
-	fn get_module(&self, state: State) -> &dyn ProcessModule {
-		match state {
-			State::ConfirmAbort => &self.confirm_abort as &dyn ProcessModule,
-			State::ConfirmRebase => &self.confirm_rebase as &dyn ProcessModule,
-			State::Error => &self.error as &dyn ProcessModule,
-			State::ExternalEditor => &self.external_editor as &dyn ProcessModule,
-			State::Help => &self.help as &dyn ProcessModule,
-			State::List => &self.list as &dyn ProcessModule,
-			State::ShowCommit => &self.show_commit as &dyn ProcessModule,
-			State::WindowSizeError => &self.window_size_error as &dyn ProcessModule,
 		}
 	}
 
@@ -61,7 +45,6 @@ impl<'m> Modules<'m> {
 			State::ConfirmRebase => &mut self.confirm_rebase as &mut dyn ProcessModule,
 			State::Error => &mut self.error as &mut dyn ProcessModule,
 			State::ExternalEditor => &mut self.external_editor as &mut dyn ProcessModule,
-			State::Help => &mut self.help as &mut dyn ProcessModule,
 			State::List => &mut self.list as &mut dyn ProcessModule,
 			State::ShowCommit => &mut self.show_commit as &mut dyn ProcessModule,
 			State::WindowSizeError => &mut self.window_size_error as &mut dyn ProcessModule,
@@ -87,15 +70,6 @@ impl<'m> Modules<'m> {
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
 		self.error.set_error_message(error);
 	}
-
-	pub fn update_help_data(&mut self, state: State) {
-		if let Some(ref keybindings_descriptions) = self.get_module(state).get_help_keybindings_descriptions() {
-			self.help.update_from_keybindings_descriptions(keybindings_descriptions);
-		}
-		else {
-			self.help.clear();
-		}
-	}
 }
 
 #[cfg(test)]
@@ -116,7 +90,6 @@ mod tests {
 		case::confirm_rabase(State::ConfirmRebase),
 		case::error(State::Error),
 		case::external_editor(State::ExternalEditor),
-		case::help(State::Help),
 		case::list(State::List),
 		case::show_commit(State::ShowCommit),
 		case::window_size_error(State::WindowSizeError)
@@ -135,7 +108,6 @@ mod tests {
 				modules.handle_input(state, &mut test_context.view, &mut test_context.rebase_todo_file);
 				modules.build_view_data(state, &test_context.view, &test_context.rebase_todo_file);
 				modules.deactivate(state);
-				modules.update_help_data(state);
 			},
 		);
 	}

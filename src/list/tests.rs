@@ -2716,13 +2716,68 @@ fn scroll_left() {
 fn normal_mode_help() {
 	process_module_test(
 		&["pick aaa c1"],
-		ViewState::default(),
-		&[],
-		|test_context: TestContext<'_>| {
+		ViewState {
+			size: Size::new(200, 100),
+			..ViewState::default()
+		},
+		&[Input::Help],
+		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			module.state = ListState::Normal;
-			let help = module.get_help_keybindings_descriptions().unwrap();
-			assert_eq!(help.len(), 27);
+			test_context.handle_all_inputs(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  ,184}",
+				"{BODY}",
+				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Move selection up",
+				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
+				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Move selection up 5 lines",
+				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Move selection down 5 lines",
+				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll content to the left",
+				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll content to the right",
+				"{IndicatorColor} q       {Normal,Dimmed}|{Normal}Abort interactive rebase",
+				"{IndicatorColor} Q       {Normal,Dimmed}|{Normal}Immediately abort interactive rebase",
+				"{IndicatorColor} w       {Normal,Dimmed}|{Normal}Write interactive rebase file",
+				"{IndicatorColor} W       {Normal,Dimmed}|{Normal}Immediately write interactive rebase file",
+				"{IndicatorColor} v       {Normal,Dimmed}|{Normal}Enter visual mode",
+				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
+				"{IndicatorColor} c       {Normal,Dimmed}|{Normal}Show commit information",
+				"{IndicatorColor} j       {Normal,Dimmed}|{Normal}Move selected commit down",
+				"{IndicatorColor} k       {Normal,Dimmed}|{Normal}Move selected commit up",
+				"{IndicatorColor} b       {Normal,Dimmed}|{Normal}Toggle break action",
+				"{IndicatorColor} p       {Normal,Dimmed}|{Normal}Set selected commit to be picked",
+				"{IndicatorColor} r       {Normal,Dimmed}|{Normal}Set selected commit to be reworded",
+				"{IndicatorColor} e       {Normal,Dimmed}|{Normal}Set selected commit to be edited",
+				"{IndicatorColor} s       {Normal,Dimmed}|{Normal}Set selected commit to be squashed",
+				"{IndicatorColor} f       {Normal,Dimmed}|{Normal}Set selected commit to be fixed-up",
+				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Set selected commit to be dropped",
+				"{IndicatorColor} E       {Normal,Dimmed}|{Normal}Edit an exec action's command",
+				"{IndicatorColor} Delete  {Normal,Dimmed}|{Normal}Completely remove the selected line",
+				"{IndicatorColor} Controlz{Normal,Dimmed}|{Normal}Undo the last change",
+				"{IndicatorColor} Controly{Normal,Dimmed}|{Normal}Redo the previous undone change",
+				"{IndicatorColor} !       {Normal,Dimmed}|{Normal}Open the todo file in the default editor",
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to close"
+			);
+		},
+	);
+}
+
+#[test]
+#[serial_test::serial]
+fn normal_mode_help_input() {
+	process_module_test(
+		&["pick aaa c1"],
+		ViewState::default(),
+		&[Input::Help, Input::SwapSelectedDown],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			module.state = ListState::Normal;
+			test_context.handle_all_inputs(&mut module);
+			assert!(!module.normal_mode_help.is_active());
 		},
 	);
 }
@@ -2732,28 +2787,60 @@ fn normal_mode_help() {
 fn visual_mode_help() {
 	process_module_test(
 		&["pick aaa c1"],
-		ViewState::default(),
-		&[],
-		|test_context: TestContext<'_>| {
+		ViewState {
+			size: Size::new(200, 100),
+			..ViewState::default()
+		},
+		&[Input::Help],
+		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			module.state = ListState::Visual;
-			let help = module.get_help_keybindings_descriptions().unwrap();
-			assert_eq!(help.len(), 19);
+			test_context.handle_all_inputs(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  ,184}",
+				"{BODY}",
+				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Move selection up",
+				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
+				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Move selection up 5 lines",
+				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Move selection down 5 lines",
+				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll content to the left",
+				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll content to the right",
+				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
+				"{IndicatorColor} j       {Normal,Dimmed}|{Normal}Move selected commits down",
+				"{IndicatorColor} k       {Normal,Dimmed}|{Normal}Move selected commits up",
+				"{IndicatorColor} p       {Normal,Dimmed}|{Normal}Set selected commits to be picked",
+				"{IndicatorColor} r       {Normal,Dimmed}|{Normal}Set selected commits to be reworded",
+				"{IndicatorColor} e       {Normal,Dimmed}|{Normal}Set selected commits to be edited",
+				"{IndicatorColor} s       {Normal,Dimmed}|{Normal}Set selected commits to be squashed",
+				"{IndicatorColor} f       {Normal,Dimmed}|{Normal}Set selected commits to be fixed-up",
+				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Set selected commits to be dropped",
+				"{IndicatorColor} Delete  {Normal,Dimmed}|{Normal}Completely remove the selected lines",
+				"{IndicatorColor} Controlz{Normal,Dimmed}|{Normal}Undo the last change",
+				"{IndicatorColor} Controly{Normal,Dimmed}|{Normal}Redo the previous undone change",
+				"{IndicatorColor} v       {Normal,Dimmed}|{Normal}Exit visual mode",
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to close"
+			);
 		},
 	);
 }
 
 #[test]
 #[serial_test::serial]
-fn edit_mode_help() {
+fn visual_mode_help_input() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[],
-		|test_context: TestContext<'_>| {
+		&[Input::Help, Input::SwapSelectedDown],
+		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			module.state = ListState::Edit;
-			assert!(module.get_help_keybindings_descriptions().is_none());
+			module.state = ListState::Visual;
+			test_context.handle_all_inputs(&mut module);
+			assert!(!module.visual_mode_help.is_active());
 		},
 	);
 }

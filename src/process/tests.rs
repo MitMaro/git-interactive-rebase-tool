@@ -151,23 +151,6 @@ fn help_start() {
 
 #[test]
 #[serial_test::serial]
-fn help_exit() {
-	process_module_test(
-		&["pick aaa comment"],
-		ViewState::default(),
-		&[],
-		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
-			let mut modules = Modules::new(test_context.config);
-			process.state = State::Help;
-			let result = ProcessResult::new().input(Input::Help);
-			process.handle_process_result(&mut modules, &result);
-		},
-	);
-}
-
-#[test]
-#[serial_test::serial]
 fn other_input() {
 	process_module_test(
 		&["pick aaa comment"],
