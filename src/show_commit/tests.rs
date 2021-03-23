@@ -1231,14 +1231,53 @@ fn handle_input_resize() {
 
 #[test]
 #[serial_test::serial]
-fn handle_input_help() {
+fn render_help() {
 	process_module_test(
-		&["pick 0123456789abcdef0123456789abcdef c1"],
-		ViewState::default(),
+		&["pick aaa c1"],
+		ViewState {
+			size: Size::new(200, 100),
+			..ViewState::default()
+		},
 		&[Input::Help],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ShowCommit::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Help);
+			test_context.handle_all_inputs(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  ,184}",
+				"{BODY}",
+				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
+				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
+				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
+				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
+				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
+				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
+				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
+				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to close"
+			);
+		},
+	);
+}
+
+#[test]
+#[serial_test::serial]
+fn handle_help_input() {
+	process_module_test(
+		&["pick aaa c1"],
+		ViewState {
+			size: Size::new(200, 100),
+			..ViewState::default()
+		},
+		&[Input::Help, Input::ShowDiff],
+		|mut test_context: TestContext<'_>| {
+			let mut module = ShowCommit::new(test_context.config);
+			test_context.handle_all_inputs(&mut module);
+			assert!(!module.help.is_active());
 		},
 	);
 }

@@ -6,7 +6,7 @@ mod tests;
 use std::cmp::min;
 
 use crate::{
-	components::Edit,
+	components::{Edit, Help},
 	config::Config,
 	display::display_color::DisplayColor,
 	input::{input_handler::InputMode, Input},
@@ -26,11 +26,11 @@ enum ListState {
 pub struct List<'l> {
 	config: &'l Config,
 	edit: Edit,
-	normal_mode_help_lines: Vec<(Vec<String>, String)>,
+	normal_mode_help: Help,
 	state: ListState,
 	view_data: ViewData,
 	visual_index_start: Option<usize>,
-	visual_mode_help_lines: Vec<(Vec<String>, String)>,
+	visual_mode_help: Help,
 }
 
 impl<'l> ProcessModule for List<'l> {
@@ -41,11 +41,13 @@ impl<'l> ProcessModule for List<'l> {
 		self.view_data.set_view_size(view_width, view_height);
 
 		match self.state {
-			ListState::Normal | ListState::Visual => self.update_list_view_data(todo_file, view_width),
-			ListState::Edit => self.edit.update_view_data(&mut self.view_data),
+			ListState::Normal => self.get_normal_mode_view_data(todo_file, view),
+			ListState::Visual => self.get_visual_mode_view_data(todo_file, view),
+			ListState::Edit => {
+				self.edit.update_view_data(&mut self.view_data);
+				&self.view_data
+			},
 		}
-
-		&self.view_data
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
@@ -53,14 +55,6 @@ impl<'l> ProcessModule for List<'l> {
 			ListState::Normal => self.handle_normal_mode_input(view, todo_file),
 			ListState::Visual => self.handle_visual_mode_input(view, todo_file),
 			ListState::Edit => self.handle_edit_mode_input(view, todo_file),
-		}
-	}
-
-	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(Vec<String>, String)>> {
-		match self.state {
-			ListState::Normal => Some(self.normal_mode_help_lines.clone()),
-			ListState::Visual => Some(self.visual_mode_help_lines.clone()),
-			ListState::Edit => None,
 		}
 	}
 }
@@ -73,12 +67,12 @@ impl<'l> List<'l> {
 
 		Self {
 			config,
-			normal_mode_help_lines: get_list_normal_mode_help_lines(&config.key_bindings),
+			edit: Edit::new(),
+			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
 			state: ListState::Normal,
 			view_data,
-			edit: Edit::new(),
 			visual_index_start: None,
-			visual_mode_help_lines: get_list_visual_mode_help_lines(&config.key_bindings),
+			visual_mode_help: Help::new_from_keybindings(&get_list_visual_mode_help_lines(&config.key_bindings)),
 		}
 	}
 
@@ -109,7 +103,9 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn update_list_view_data(&mut self, todo_file: &TodoFile, view_width: usize) {
+	fn update_list_view_data(&mut self, todo_file: &TodoFile, view_width: usize, view_height: usize) {
+		self.view_data.clear();
+		self.view_data.set_view_size(view_width, view_height);
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
@@ -140,6 +136,32 @@ impl<'l> List<'l> {
 			self.view_data.ensure_line_visible(visual_index);
 		}
 		self.view_data.ensure_line_visible(selected_index);
+	}
+
+	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &ViewData {
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
+
+		if self.visual_mode_help.is_active() {
+			self.visual_mode_help.get_view_data(view_width, view_height)
+		}
+		else {
+			self.update_list_view_data(todo_file, view_width, view_height);
+			&self.view_data
+		}
+	}
+
+	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &ViewData {
+		let view_width = view.get_view_size().width();
+		let view_height = view.get_view_size().height();
+
+		if self.normal_mode_help.is_active() {
+			self.normal_mode_help.get_view_data(view_width, view_height)
+		}
+		else {
+			self.update_list_view_data(todo_file, view_width, view_height);
+			&self.view_data
+		}
 	}
 
 	fn handle_common_list_input(
@@ -242,6 +264,14 @@ impl<'l> List<'l> {
 					self.visual_index_start = Some(rebase_todo.get_selected_line_index());
 				}
 			},
+			Input::Help => {
+				if self.state == ListState::Visual {
+					self.visual_mode_help.set_active();
+				}
+				else {
+					self.normal_mode_help.set_active();
+				}
+			},
 			_ => return None,
 		}
 
@@ -249,6 +279,12 @@ impl<'l> List<'l> {
 	}
 
 	fn handle_normal_mode_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+		if self.normal_mode_help.is_active() {
+			let input = view.get_input(InputMode::Default);
+			self.normal_mode_help.handle_input(input);
+			return ProcessResult::new().input(input);
+		}
+
 		let input = view.get_input(InputMode::List);
 		if let Some(result) = self.handle_common_list_input(input, view, rebase_todo) {
 			result
@@ -301,6 +337,12 @@ impl<'l> List<'l> {
 	}
 
 	fn handle_visual_mode_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+		if self.visual_mode_help.is_active() {
+			let input = view.get_input(InputMode::Default);
+			self.visual_mode_help.handle_input(input);
+			return ProcessResult::new().input(input);
+		}
+
 		let input = view.get_input(InputMode::List);
 		self.handle_common_list_input(input, view, rebase_todo)
 			.map_or_else(|| ProcessResult::new().input(input), |result| result)

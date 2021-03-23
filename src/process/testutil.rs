@@ -202,7 +202,6 @@ fn format_process_result(
 				State::ConfirmRebase => "ConfirmRebase",
 				State::Error => "Error",
 				State::ExternalEditor => "ExternalEditor",
-				State::Help => "Help",
 				State::List => "List",
 				State::ShowCommit => "ShowCommit",
 				State::WindowSizeError => "WindowSizeError",

@@ -16,6 +16,7 @@ mod tests;
 use anyhow::anyhow;
 
 use crate::{
+	components::Help,
 	config::{
 		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
@@ -43,7 +44,7 @@ use crate::{
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,
 	config: &'s Config,
-	show_commit_help_lines: Vec<(Vec<String>, String)>,
+	help: Help,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
 	view_data: ViewData,
@@ -89,8 +90,12 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let view_width = view.get_view_size().width();
 		let view_height = view.get_view_size().height();
-		let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
+		if self.help.is_active() {
+			return self.help.get_view_data(view_width, view_height);
+		}
+
 		if self.view_data.is_empty() {
+			let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
 			let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
 
 			self.view_data.push_leading_line(ViewLine::from(vec![
@@ -128,6 +133,12 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+		if self.help.is_active() {
+			let input = view.get_input(InputMode::Default);
+			self.help.handle_input(input);
+			return ProcessResult::new().input(input);
+		}
+
 		let input = view.get_input(InputMode::ShowCommit);
 		let mut result = ProcessResult::new().input(input);
 
@@ -143,7 +154,9 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				Input::Resize => {
 					self.view_data.clear();
 				},
-				Input::Help => {},
+				Input::Help => {
+					self.help.set_active();
+				},
 				_ => {
 					if self.state == ShowCommitState::Diff {
 						self.view_data.reset();
@@ -157,10 +170,6 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			}
 		}
 		result
-	}
-
-	fn get_help_keybindings_descriptions(&self) -> Option<Vec<(Vec<String>, String)>> {
-		Some(self.show_commit_help_lines.clone())
 	}
 }
 
@@ -181,7 +190,7 @@ impl<'s> ShowCommit<'s> {
 		Self {
 			commit: None,
 			config,
-			show_commit_help_lines: get_show_commit_help_lines(&config.key_bindings),
+			help: Help::new_from_keybindings(&get_show_commit_help_lines(&config.key_bindings)),
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options),
 			view_data,

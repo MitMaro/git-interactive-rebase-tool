@@ -4,7 +4,6 @@ pub enum State {
 	ConfirmRebase,
 	Error,
 	ExternalEditor,
-	Help,
 	List,
 	ShowCommit,
 	WindowSizeError,
