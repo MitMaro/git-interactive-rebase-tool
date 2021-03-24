@@ -1,4 +1,4 @@
-mod argument_tolkenizer;
+mod argument_tokenizer;
 
 use std::{
 	ffi::OsString,
@@ -9,7 +9,7 @@ use anyhow::{anyhow, Error, Result};
 
 use crate::{
 	display::display_color::DisplayColor,
-	external_editor::argument_tolkenizer::tolkenize,
+	external_editor::argument_tokenizer::tokenize,
 	input::{input_handler::InputMode, Input},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
@@ -205,7 +205,7 @@ impl ExternalEditor {
 	}
 
 	fn run_editor(&mut self, view: &mut View<'_>, todo_file: &TodoFile) -> Result<()> {
-		let mut arguments = tolkenize(self.editor.as_str())
+		let mut arguments = tokenize(self.editor.as_str())
 			.map_or(Err(anyhow!("Invalid editor: \"{}\"", self.editor)), |args| {
 				if args.is_empty() {
 					Err(anyhow!("No editor configured"))
