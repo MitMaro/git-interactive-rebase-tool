@@ -1,33 +1,32 @@
+mod action;
 mod argument_tokenizer;
+mod external_editor_state;
+
+#[cfg(all(unix, test))]
+mod tests;
 
 use std::{
 	ffi::OsString,
 	process::{Command, ExitStatus as ProcessExitStatus},
 };
 
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, Result};
 
 use crate::{
-	display::display_color::DisplayColor,
-	external_editor::argument_tokenizer::tokenize,
+	components::Choice,
+	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
 	input::{input_handler::InputMode, Input},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+	view::{view_data::ViewData, view_line::ViewLine, View},
 };
 
-#[derive(Debug)]
-enum ExternalEditorState {
-	Active,
-	Empty,
-	Error(Error),
-}
-
 pub struct ExternalEditor {
+	empty_choice: Choice<Action>,
+	error_choice: Choice<Action>,
 	editor: String,
 	state: ExternalEditorState,
 	view_data: ViewData,
-	invalid_selection: bool,
 	lines: Vec<Line>,
 }
 
@@ -46,63 +45,28 @@ impl ProcessModule for ExternalEditor {
 
 	fn deactivate(&mut self) {
 		self.lines.clear();
-		self.invalid_selection = false;
 		self.view_data.reset();
 	}
 
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
 		let view_width = view.get_view_size().width();
 		let view_height = view.get_view_size().height();
-		self.view_data.clear();
 
 		match self.state {
-			ExternalEditorState::Active => self.view_data.push_leading_line(ViewLine::from("Editing...")),
-			ExternalEditorState::Empty => {
-				self.view_data
-					.push_leading_line(ViewLine::from("The rebase file is empty."));
-				self.view_data.push_line(ViewLine::new_empty_line());
-				self.view_data.push_line(ViewLine::from("1) Abort rebase"));
-				self.view_data.push_line(ViewLine::from("2) Edit rebase file"));
-				self.view_data
-					.push_line(ViewLine::from("3) Undo modifications and edit rebase file"));
-				self.view_data.push_line(ViewLine::new_empty_line());
+			ExternalEditorState::Active => {
+				self.view_data.clear();
+				self.view_data.push_leading_line(ViewLine::from("Editing..."));
+				self.view_data.set_view_size(view_width, view_height);
+				self.view_data.rebuild();
+				&self.view_data
 			},
+			ExternalEditorState::Empty => self.empty_choice.get_view_data(view_width, view_height),
 			ExternalEditorState::Error(ref error) => {
-				for cause in error.chain() {
-					self.view_data.push_line(ViewLine::from(format!("{:#}", cause)));
-				}
-				self.view_data.push_line(ViewLine::new_empty_line());
-				self.view_data.push_line(ViewLine::from("1) Abort rebase"));
-				self.view_data.push_line(ViewLine::from("2) Edit rebase file"));
-				self.view_data
-					.push_line(ViewLine::from("3) Restore rebase file and abort edit"));
-				self.view_data
-					.push_line(ViewLine::from("4) Undo modifications and edit rebase file"));
-				self.view_data.push_line(ViewLine::new_empty_line());
+				self.error_choice
+					.set_prompt(error.chain().map(|c| ViewLine::from(format!("{:#}", c))).collect());
+				self.error_choice.get_view_data(view_width, view_height)
 			},
 		}
-
-		match &self.state {
-			&ExternalEditorState::Active => {},
-			&ExternalEditorState::Empty | &ExternalEditorState::Error(_) => {
-				if self.invalid_selection {
-					self.view_data.push_line(ViewLine::from(LineSegment::new_with_color(
-						"Invalid option selected. Please choose an option.",
-						DisplayColor::IndicatorColor,
-					)));
-				}
-				else {
-					self.view_data.push_line(ViewLine::from(LineSegment::new_with_color(
-						"Please choose an option.",
-						DisplayColor::IndicatorColor,
-					)));
-				}
-			},
-		}
-
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
@@ -130,42 +94,39 @@ impl ProcessModule for ExternalEditor {
 			ExternalEditorState::Empty => {
 				let input = view.get_input(InputMode::Default);
 				result = result.input(input);
-				if let Some(input) = self.handle_standard_inputs(view, input) {
-					self.invalid_selection = false;
-					match input {
-						Input::Character('1') => result = result.exit_status(ExitStatus::Good),
-						Input::Character('2') => self.state = ExternalEditorState::Active,
-						Input::Character('3') => {
+				if let Some(action) = self.empty_choice.handle_input(input) {
+					match *action {
+						Action::AbortRebase => result = result.exit_status(ExitStatus::Good),
+						Action::EditRebase => self.state = ExternalEditorState::Active,
+						Action::UndoAndEdit => {
 							todo_file.set_lines(self.lines.to_vec());
 							self.activate(todo_file, State::ExternalEditor);
 						},
-						_ => self.invalid_selection = true,
+						Action::RestoreAndAbortEdit => {},
 					}
 				}
 			},
 			ExternalEditorState::Error(_) => {
 				let input = view.get_input(InputMode::Default);
 				result = result.input(input);
-				if let Some(input) = self.handle_standard_inputs(view, input) {
-					self.invalid_selection = false;
-					match input {
-						Input::Character('1') => {
+				if let Some(action) = self.error_choice.handle_input(input) {
+					match *action {
+						Action::AbortRebase => {
 							todo_file.set_lines(vec![]);
 							result = result.exit_status(ExitStatus::Good);
 						},
-						Input::Character('2') => self.state = ExternalEditorState::Active,
-						Input::Character('3') => {
+						Action::EditRebase => self.state = ExternalEditorState::Active,
+						Action::RestoreAndAbortEdit => {
 							todo_file.set_lines(self.lines.to_vec());
 							result = result.state(State::List);
 							if let Err(err) = todo_file.write_file() {
 								result = result.error(err);
 							}
 						},
-						Input::Character('4') => {
+						Action::UndoAndEdit => {
 							todo_file.set_lines(self.lines.to_vec());
 							self.activate(todo_file, State::ExternalEditor);
 						},
-						_ => self.invalid_selection = true,
 					}
 				}
 			},
@@ -179,29 +140,40 @@ impl ExternalEditor {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 
+		let mut empty_choice = Choice::new(vec![
+			(Action::AbortRebase, '1', String::from("Abort rebase")),
+			(Action::EditRebase, '2', String::from("Edit rebase file")),
+			(
+				Action::UndoAndEdit,
+				'3',
+				String::from("Undo modifications and edit rebase file"),
+			),
+		]);
+		empty_choice.set_prompt(vec![ViewLine::from("The rebase file is empty.")]);
+
+		let error_choice = Choice::new(vec![
+			(Action::AbortRebase, '1', String::from("Abort rebase")),
+			(Action::EditRebase, '2', String::from("Edit rebase file")),
+			(
+				Action::RestoreAndAbortEdit,
+				'3',
+				String::from("Restore rebase file and abort edit"),
+			),
+			(
+				Action::UndoAndEdit,
+				'4',
+				String::from("Undo modifications and edit rebase file"),
+			),
+		]);
+
 		Self {
+			empty_choice,
+			error_choice,
 			editor: String::from(editor),
 			state: ExternalEditorState::Active,
 			view_data,
-			invalid_selection: false,
 			lines: vec![],
 		}
-	}
-
-	fn handle_standard_inputs(&mut self, view: &View<'_>, input: Input) -> Option<Input> {
-		match input {
-			Input::ScrollLeft => self.view_data.scroll_left(),
-			Input::ScrollRight => self.view_data.scroll_right(),
-			Input::ScrollDown => self.view_data.scroll_down(),
-			Input::ScrollUp => self.view_data.scroll_up(),
-			Input::Resize => {
-				let view_width = view.get_view_size().width();
-				let view_height = view.get_view_size().height();
-				self.view_data.set_view_size(view_width, view_height);
-			},
-			_ => return Some(input),
-		}
-		None
 	}
 
 	fn run_editor(&mut self, view: &mut View<'_>, todo_file: &TodoFile) -> Result<()> {
@@ -242,708 +214,5 @@ impl ExternalEditor {
 			return Err(anyhow!("Editor returned a non-zero exit status"));
 		}
 		Ok(())
-	}
-}
-
-#[cfg(all(unix, test))]
-mod tests {
-	use std::path::Path;
-
-	use super::*;
-	use crate::{
-		assert_process_result,
-		assert_rendered_output,
-		display::size::Size,
-		process::testutil::{process_module_test, TestContext, ViewState},
-	};
-
-	fn get_external_editor(content: &str, exit_code: &str) -> String {
-		format!(
-			"{} \"{}\" % \"{}\"",
-			Path::new(env!("CARGO_MANIFEST_DIR"))
-				.join("test")
-				.join("write-content.sh")
-				.to_str()
-				.unwrap(),
-			content,
-			exit_code
-		)
-	}
-
-	#[macro_export]
-	macro_rules! assert_external_editor_state_eq {
-		($actual:expr, $expected:expr) => {
-			assert_external_editor_state_eq(&$actual, &$expected);
-		};
-	}
-
-	fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
-		let actual_state = match *actual {
-			ExternalEditorState::Active => String::from("Active"),
-			ExternalEditorState::Empty => String::from("Empty"),
-			ExternalEditorState::Error(ref err) => format!("Error({:#})", err),
-		};
-
-		let expected_state = match *expected {
-			ExternalEditorState::Active => String::from("Active"),
-			ExternalEditorState::Empty => String::from("Empty"),
-			ExternalEditorState::Error(ref err) => format!("Error({:#})", err),
-		};
-
-		if actual_state != expected_state {
-			panic!(
-				"{}",
-				vec![
-					"\n",
-					"ExternalEditorState does not match",
-					"==========",
-					"Expected:",
-					expected_state.as_str(),
-					"Actual:",
-					actual_state.as_str(),
-					"==========\n"
-				]
-				.join("\n")
-			);
-		}
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn activate() {
-		process_module_test(
-			&["pick aaa comment1", "drop bbb comment2"],
-			ViewState::default(),
-			&[Input::Up],
-			|test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
-					Line::new("pick aaa comment1").unwrap(),
-					Line::new("drop bbb comment2").unwrap()
-				]);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn activate_write_file_fail() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|test_context: TestContext<'_>| {
-				let todo_path = test_context.get_todo_file_path();
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
-				test_context.set_todo_file_readonly();
-				assert_process_result!(
-					test_context.activate(&mut module, State::List),
-					state = State::List,
-					error = anyhow!("Error opening file: {}: Permission denied (os error 13)", todo_path)
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn deactivate() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment2"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
-				test_context.deactivate(&mut module);
-				assert_eq!(module.lines, vec![]);
-				assert_eq!(module.invalid_selection, false);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn edit_success() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Other,
-					state = State::List
-				);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn empty_edit_error() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('1')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{LEADING}",
-					"{Normal}The rebase file is empty.",
-					"{BODY}",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn empty_edit_abort_rebase() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('1')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Character('1'),
-					exit_status = ExitStatus::Good
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn empty_edit_re_edit_rebase_file() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('2')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('2'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn empty_edit_undo_and_edit() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState::default(),
-			&[Input::Character('3')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('3'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
-					Line::new("pick aaa comment").unwrap(),
-					Line::new("drop bbb comment").unwrap()
-				]);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn empty_edit_invalid_selection() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState::default(),
-			&[Input::Character('4')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('4'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{LEADING}",
-					"{Normal}The rebase file is empty.",
-					"{BODY}",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Invalid option selected. Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn empty_edit_noop() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('1')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("noop", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{LEADING}",
-					"{Normal}The rebase file is empty.",
-					"{BODY}",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn no_editor_set() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new("");
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(
-					module.state,
-					ExternalEditorState::Error(
-						anyhow!("Please see the git \"core.editor\" configuration for details")
-							.context(anyhow!("No editor configured"))
-					)
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}No editor configured",
-					"{Normal}Please see the git \"core.editor\" configuration for details",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Restore rebase file and abort edit",
-					"{Normal}4) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn invalid_editor_set() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(
-					Path::new(env!("CARGO_MANIFEST_DIR"))
-						.join("test")
-						.join("not-executable.sh")
-						.to_str()
-						.unwrap(),
-				);
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(
-					module.state,
-					ExternalEditorState::Error(
-						anyhow!("Permission denied (os error 13)").context(anyhow!("Unable to run editor"))
-					)
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}Unable to run editor",
-					"{Normal}Permission denied (os error 13)",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Restore rebase file and abort edit",
-					"{Normal}4) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn editor_non_zero_exit() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "1").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(
-					module.state,
-					ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status"))
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}Editor returned a non-zero exit status",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Restore rebase file and abort edit",
-					"{Normal}4) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn editor_reload_error() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let todo_path = test_context.get_todo_file_path();
-				let mut module = ExternalEditor::new("true");
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				test_context.delete_todo_file();
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_external_editor_state_eq!(
-					module.state,
-					ExternalEditorState::Error(
-						anyhow!("Error reading file: {}", todo_path).context("No such file or directory (os error 2)")
-					)
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}No such file or directory (os error 2)",
-					format!("{{Normal}}Error reading file: {}", todo_path),
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Restore rebase file and abort edit",
-					"{Normal}4) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn error_abort_rebase() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('1')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "1").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Character('1'),
-					exit_status = ExitStatus::Good
-				);
-				assert!(test_context.rebase_todo_file.is_empty());
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn error_edit_rebase() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('2')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("pick aaa comment", "1").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('2'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn error_restore_and_abort() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('3')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("drop aaa comment", "1").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Character('3'),
-					state = State::List
-				);
-				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![Line::new(
-					"pick aaa comment"
-				)
-				.unwrap()]);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn error_undo_modifications_and_reedit() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('4')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("rdop aaa comment", "1").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('4'));
-				assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-				assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![Line::new(
-					"pick aaa comment"
-				)
-				.unwrap()]);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn error_invalid_selection() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('5')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new("");
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('5'));
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}No editor configured",
-					"{Normal}Please see the git \"core.editor\" configuration for details",
-					"",
-					"{Normal}1) Abort rebase",
-					"{Normal}2) Edit rebase file",
-					"{Normal}3) Restore rebase file and abort edit",
-					"{Normal}4) Undo modifications and edit rebase file",
-					"",
-					"{IndicatorColor}Invalid option selected. Please choose an option."
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn scroll_right() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState {
-				size: Size::new(10, 3),
-				..ViewState::default()
-			},
-			&[Input::Right],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_all_inputs(&mut module).last().unwrap(),
-					input = Input::ScrollRight
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}he rebase ", "{BODY}", "");
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn scroll_left() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState {
-				size: Size::new(10, 3),
-				..ViewState::default()
-			},
-			&[Input::Right, Input::Right, Input::Right, Input::Left],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_all_inputs(&mut module).last().unwrap(),
-					input = Input::ScrollLeft
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}e rebase f", "{BODY}", "");
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn scroll_down() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState {
-				size: Size::new(10, 3),
-				..ViewState::default()
-			},
-			&[Input::Down],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_all_inputs(&mut module).last().unwrap(),
-					input = Input::ScrollDown
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{LEADING}",
-					"{Normal}The rebase",
-					"{BODY}",
-					"{Normal}1) Abort "
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn scroll_up() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState {
-				size: Size::new(10, 3),
-				..ViewState::default()
-			},
-			&[Input::Down, Input::Down, Input::Down, Input::Up],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				test_context.build_view_data(&mut module);
-				assert_process_result!(
-					test_context.handle_all_inputs(&mut module).last().unwrap(),
-					input = Input::ScrollUp
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{LEADING}",
-					"{Normal}The rebase",
-					"{BODY}",
-					"{Normal}2) Edit r"
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn resize() {
-		process_module_test(
-			&["pick aaa comment", "drop bbb comment"],
-			ViewState {
-				size: Size::new(10, 3),
-				..ViewState::default()
-			},
-			&[Input::Resize],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ExternalEditor::new(get_external_editor("", "0").as_str());
-				assert_process_result!(test_context.activate(&mut module, State::List));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
-				assert_process_result!(
-					test_context.handle_all_inputs(&mut module).last().unwrap(),
-					input = Input::Resize
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}The rebase", "{BODY}", "");
-			},
-		);
 	}
 }
