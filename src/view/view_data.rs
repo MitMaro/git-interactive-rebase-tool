@@ -63,6 +63,11 @@ impl ViewData {
 		self.prompt = None;
 	}
 
+	pub(crate) fn clear_body(&mut self) {
+		self.lines.clear();
+		self.lines_cache = None;
+	}
+
 	pub(crate) fn scroll_up(&mut self) {
 		self.lines_cache = None;
 		self.scroll_position.scroll_up();
@@ -613,6 +618,24 @@ mod tests {
 
 		assert_rendered_output!(view_data, "{EMPTY}");
 		assert_eq!(view_data.scroll_position.get_top_position(), 1);
+	}
+
+	#[test]
+	fn clear_body() {
+		let mut view_data = create_mocked_view_data();
+		view_data.set_view_size(100, 100);
+		view_data.clear_body();
+
+		assert_rendered_output!(
+			view_data,
+			"{LEADING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line",
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
