@@ -977,6 +977,20 @@ fn config_key_bindings_help() {
 }
 
 #[test]
+fn config_key_bindings_insert_line_default() {
+	let config = load(|_| {});
+	assert_eq!(config.key_bindings.insert_line, vec![String::from("I")]);
+}
+
+#[test]
+fn config_key_bindings_insert_line() {
+	let config = load(|git_config| {
+		git_config.set_str("interactive-rebase-tool.insertLine", "X").unwrap();
+	});
+	assert_eq!(config.key_bindings.insert_line, vec![String::from("X")]);
+}
+
+#[test]
 fn config_key_bindings_move_down_default() {
 	let config = load(|_| {});
 	assert_eq!(config.key_bindings.move_down, vec![String::from("Down")]);

@@ -522,3 +522,12 @@ fn set_get_content() {
 	assert_eq!(module.cursor_position, 4);
 	assert_eq!(module.get_content(), "abcd");
 }
+
+#[test]
+fn clear_content() {
+	let mut module = Edit::new();
+	module.set_content("abcd");
+	module.clear();
+	assert_eq!(module.cursor_position, 0);
+	assert_eq!(module.get_content(), "");
+}

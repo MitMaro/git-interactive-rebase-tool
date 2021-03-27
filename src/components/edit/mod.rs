@@ -148,7 +148,12 @@ impl Edit {
 		self.cursor_position = UnicodeSegmentation::graphemes(content, true).count();
 	}
 
-	pub fn get_content(&self) -> &str {
-		self.content.as_str()
+	pub fn clear(&mut self) {
+		self.content.clear();
+		self.cursor_position = 0;
+	}
+
+	pub fn get_content(&self) -> String {
+		self.content.clone()
 	}
 }

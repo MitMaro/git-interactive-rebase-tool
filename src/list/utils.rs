@@ -84,6 +84,7 @@ pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 			String::from("Set selected commit to be dropped"),
 		),
 		(key_bindings.edit.clone(), String::from("Edit an exec action's command")),
+		(key_bindings.insert_line.clone(), String::from("Insert a new line")),
 		(
 			key_bindings.remove_line.clone(),
 			String::from("Completely remove the selected line"),

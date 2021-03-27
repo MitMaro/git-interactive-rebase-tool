@@ -330,6 +330,7 @@ impl<'l> List<'l> {
 						}
 					}
 				},
+				Input::InsertLine => result = result.state(State::Insert),
 				_ => {},
 			}
 			result
@@ -355,7 +356,7 @@ impl<'l> List<'l> {
 			rebase_todo.update_range(
 				selected_index,
 				selected_index,
-				&EditContext::new().content(self.edit.get_content()),
+				&EditContext::new().content(self.edit.get_content().as_str()),
 			);
 			self.visual_index_start = None;
 			self.state = ListState::Normal;
