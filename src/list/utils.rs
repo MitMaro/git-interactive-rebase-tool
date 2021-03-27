@@ -21,6 +21,14 @@ pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 			String::from("Move selection down 5 lines"),
 		),
 		(
+			key_bindings.move_home.clone(),
+			String::from("Move selection to top of the list"),
+		),
+		(
+			key_bindings.move_end.clone(),
+			String::from("Move selection to end of the list"),
+		),
+		(
 			key_bindings.move_left.clone(),
 			String::from("Scroll content to the left"),
 		),
@@ -112,6 +120,14 @@ pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 		(
 			key_bindings.move_down_step.clone(),
 			String::from("Move selection down 5 lines"),
+		),
+		(
+			key_bindings.move_home.clone(),
+			String::from("Move selection to top of the list"),
+		),
+		(
+			key_bindings.move_end.clone(),
+			String::from("Move selection to end of the list"),
 		),
 		(
 			key_bindings.move_left.clone(),

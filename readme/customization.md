@@ -113,6 +113,8 @@ Most keys can be changed to any printable character or supported special charact
 | `inputHelp`                | ?        | String | Key for showing the help |
 | `inputInsertLine`          | I        | String | Key for inserting a new line |
 | `inputMoveDown`            | Down     | String | Key for moving the cursor down |
+| `inputMoveEnd`             | End      | String | Key for moving the cursor to the end of the list |
+| `inputMoveHome`            | Home     | String | Key for moving the cursor to the top of the list |
 | `inputMoveLeft`            | Left     | String | Key for moving the cursor left |
 | `inputMoveRight`           | Right    | String | Key for moving the cursor right |
 | `inputMoveSelectionDown`   | j        | String | Key for moving the selected line(s) down |

@@ -203,6 +203,16 @@ impl TodoFile {
 		self.lines.get(self.selected_line_index)
 	}
 
+	pub(crate) fn get_max_selected_line_index(&self) -> usize {
+		let len = self.lines.len();
+		if len == 0 {
+			0
+		}
+		else {
+			len - 1
+		}
+	}
+
 	pub(crate) const fn get_selected_line_index(&self) -> usize {
 		self.selected_line_index
 	}
@@ -642,6 +652,18 @@ mod tests {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
 		todo_file.set_selected_line_index(0);
 		assert!(todo_file.get_selected_line().is_none());
+	}
+
+	#[test]
+	fn get_max_selected_line() {
+		let (todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
+		assert_eq!(todo_file.get_max_selected_line_index(), 2);
+	}
+
+	#[test]
+	fn get_max_selected_line_empty_list() {
+		let (todo_file, _) = create_and_load_todo_file(&[]);
+		assert_eq!(todo_file.get_max_selected_line_index(), 0);
 	}
 
 	#[test]

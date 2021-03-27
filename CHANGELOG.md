@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Open external editor from visual mode ([#442](https://github.com/MitMaro/git-interactive-rebase-tool/pull/442))
 - Delete selected lines from the todo list ([#443](https://github.com/MitMaro/git-interactive-rebase-tool/pull/443))
 - Insert new exec, label, reset or merge line ([#454](https://github.com/MitMaro/git-interactive-rebase-tool/pull/454))
+- Support home and end in list view ([#455](https://github.com/MitMaro/git-interactive-rebase-tool/pull/455))
 
 ### Fixed
 - Most modifier key combinations could not be used as key bindings ([#435](https://github.com/MitMaro/git-interactive-rebase-tool/pull/435))

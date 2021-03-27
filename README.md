@@ -126,6 +126,8 @@ Key bindings can be configured, see [configuration](readme/customization.md#key-
 |  Down        | All    | Move selection down |
 |  Page Up     | All    | Move selection up five lines |
 |  Page Down   | All    | Move selection down five lines |
+|  Home        | All    | Move selection to start of list |
+|  End         | All    | Move selection to home of list |
 |  `q`         | Normal | Abort interactive rebase |
 |  `Q`         | Normal | Immediately abort interactive rebase |
 |  `w`         | Normal | Write interactive rebase file |

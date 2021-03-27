@@ -20,6 +20,8 @@ pub enum Input {
 	InsertLine,
 	Kill,
 	MoveCursorDown,
+	MoveCursorEnd,
+	MoveCursorHome,
 	MoveCursorLeft,
 	MoveCursorPageDown,
 	MoveCursorPageUp,
