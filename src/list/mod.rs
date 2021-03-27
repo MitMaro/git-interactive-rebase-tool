@@ -178,6 +178,8 @@ impl<'l> List<'l> {
 			Input::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
 			Input::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, view.get_view_size().height() / 2),
 			Input::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, view.get_view_size().height() / 2),
+			Input::MoveCursorHome => rebase_todo.set_selected_line_index(0),
+			Input::MoveCursorEnd => rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index()),
 			Input::Abort => result = result.state(State::ConfirmAbort),
 			Input::ForceAbort => {
 				rebase_todo.set_lines(vec![]);

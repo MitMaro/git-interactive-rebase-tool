@@ -543,6 +543,63 @@ fn move_cursor_page_up_from_bottom() {
 
 #[test]
 #[serial_test::serial]
+fn move_cursor_page_home() {
+	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
+		&[Input::MoveCursorEnd],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			test_context.handle_n_inputs(&mut module, 5);
+			test_context.build_view_data(&mut module);
+			test_context.handle_input(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}{HELP}",
+				"{BODY}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
+			);
+		},
+	);
+}
+
+#[test]
+#[serial_test::serial]
+fn move_cursor_page_end() {
+	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
+		&[
+			Input::MoveCursorDown,
+			Input::MoveCursorDown,
+			Input::MoveCursorDown,
+			Input::MoveCursorHome,
+		],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			test_context.handle_n_inputs(&mut module, 5);
+			test_context.build_view_data(&mut module);
+			test_context.handle_input(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}{HELP}",
+				"{BODY}",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+			);
+		},
+	);
+}
+
+#[test]
+#[serial_test::serial]
 fn move_cursor_page_down_from_bottom() {
 	process_module_test(
 		&[
@@ -2754,6 +2811,8 @@ fn normal_mode_help() {
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
 				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Move selection up 5 lines",
 				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Move selection down 5 lines",
+				"{IndicatorColor} Home    {Normal,Dimmed}|{Normal}Move selection to top of the list",
+				"{IndicatorColor} End     {Normal,Dimmed}|{Normal}Move selection to end of the list",
 				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll content to the left",
 				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll content to the right",
 				"{IndicatorColor} q       {Normal,Dimmed}|{Normal}Abort interactive rebase",
@@ -2826,6 +2885,8 @@ fn visual_mode_help() {
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
 				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Move selection up 5 lines",
 				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Move selection down 5 lines",
+				"{IndicatorColor} Home    {Normal,Dimmed}|{Normal}Move selection to top of the list",
+				"{IndicatorColor} End     {Normal,Dimmed}|{Normal}Move selection to end of the list",
 				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll content to the left",
 				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll content to the right",
 				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",

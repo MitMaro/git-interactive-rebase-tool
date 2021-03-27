@@ -1071,6 +1071,36 @@ fn config_key_bindings_move_step_down() {
 }
 
 #[test]
+fn config_key_bindings_move_home_default() {
+	let config = load(|_| {});
+	assert_eq!(config.key_bindings.move_home, vec![String::from("Home")]);
+}
+
+#[test]
+fn config_key_bindings_move_home() {
+	let config = load(|git_config| {
+		git_config
+			.set_str("interactive-rebase-tool.inputMoveHome", "X")
+			.unwrap();
+	});
+	assert_eq!(config.key_bindings.move_home, vec![String::from("X")]);
+}
+
+#[test]
+fn config_key_bindings_move_end_default() {
+	let config = load(|_| {});
+	assert_eq!(config.key_bindings.move_end, vec![String::from("End")]);
+}
+
+#[test]
+fn config_key_bindings_move_end() {
+	let config = load(|git_config| {
+		git_config.set_str("interactive-rebase-tool.inputMoveEnd", "X").unwrap();
+	});
+	assert_eq!(config.key_bindings.move_end, vec![String::from("X")]);
+}
+
+#[test]
 fn config_key_bindings_move_selection_down_default() {
 	let config = load(|_| {});
 	assert_eq!(config.key_bindings.move_selection_down, vec![String::from("j")]);
