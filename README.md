@@ -144,6 +144,8 @@ Key bindings can be configured, see [configuration](readme/customization.md#key-
 |  `E`         | Normal | Edit the command of an exec action |
 |  `v`         | All    | Enter and exit visual mode |
 |  `d`         | Diff   | Show full commit diff |
+|  `I`         | Normal | Insert a new line |
+|  `Delete`    | All    | Remove selected lines |
 | `Control+z`  | All    | Undo the previous change |
 | `Control+y`  | All    | Redo the previously undone change |
 

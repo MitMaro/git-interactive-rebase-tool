@@ -5,6 +5,7 @@ pub enum State {
 	Error,
 	ExternalEditor,
 	List,
+	Insert,
 	ShowCommit,
 	WindowSizeError,
 }

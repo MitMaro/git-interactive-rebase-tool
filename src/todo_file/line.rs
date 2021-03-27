@@ -31,6 +31,42 @@ impl Line {
 		}
 	}
 
+	pub(crate) fn new_exec(command: &str) -> Self {
+		Self {
+			action: Action::Exec,
+			content: String::from(command),
+			hash: String::from(""),
+			mutated: false,
+		}
+	}
+
+	pub(crate) fn new_merge(command: &str) -> Self {
+		Self {
+			action: Action::Merge,
+			content: String::from(command),
+			hash: String::from(""),
+			mutated: false,
+		}
+	}
+
+	pub(crate) fn new_label(label: &str) -> Self {
+		Self {
+			action: Action::Label,
+			content: String::from(label),
+			hash: String::from(""),
+			mutated: false,
+		}
+	}
+
+	pub(crate) fn new_reset(label: &str) -> Self {
+		Self {
+			action: Action::Reset,
+			content: String::from(label),
+			hash: String::from(""),
+			mutated: false,
+		}
+	}
+
 	pub(crate) fn new(input_line: &str) -> Result<Self> {
 		if input_line.starts_with("noop") {
 			return Ok(Self::new_noop());
@@ -231,6 +267,46 @@ mod tests {
 			action: Action::Break,
 			hash: String::from(""),
 			content: String::from(""),
+			mutated: false,
+		});
+	}
+
+	#[test]
+	fn line_new_exec() {
+		assert_eq!(Line::new_exec("command"), Line {
+			action: Action::Exec,
+			hash: String::from(""),
+			content: String::from("command"),
+			mutated: false,
+		});
+	}
+
+	#[test]
+	fn line_new_merge() {
+		assert_eq!(Line::new_merge("command"), Line {
+			action: Action::Merge,
+			hash: String::from(""),
+			content: String::from("command"),
+			mutated: false,
+		});
+	}
+
+	#[test]
+	fn line_new_label() {
+		assert_eq!(Line::new_label("label"), Line {
+			action: Action::Label,
+			hash: String::from(""),
+			content: String::from("label"),
+			mutated: false,
+		});
+	}
+
+	#[test]
+	fn line_new_reset() {
+		assert_eq!(Line::new_reset("label"), Line {
+			action: Action::Reset,
+			hash: String::from(""),
+			content: String::from("label"),
 			mutated: false,
 		});
 	}

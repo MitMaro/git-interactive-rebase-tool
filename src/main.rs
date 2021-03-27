@@ -29,6 +29,8 @@
 #![allow(clippy::unwrap_used)]
 #![allow(clippy::wildcard_enum_match_arm)]
 #![allow(clippy::similar_names)]
+#![allow(clippy::unreachable)]
+#![allow(clippy::missing_panics_doc)]
 
 mod components;
 mod config;
@@ -38,11 +40,15 @@ mod constants;
 mod display;
 mod external_editor;
 mod input;
+mod insert;
 mod list;
 mod process;
 mod show_commit;
 mod todo_file;
 mod view;
+
+#[cfg(test)]
+pub mod testutil;
 
 use clap::{App, Arg};
 
@@ -55,9 +61,6 @@ use crate::{
 	todo_file::TodoFile,
 	view::View,
 };
-
-#[cfg(test)]
-pub mod testutil;
 
 #[derive(Debug)]
 pub struct Exit {

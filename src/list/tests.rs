@@ -1367,6 +1367,24 @@ fn normal_mode_edit_without_selected_line() {
 
 #[test]
 #[serial_test::serial]
+fn normal_mode_insert_line() {
+	process_module_test(
+		&[],
+		ViewState::default(),
+		&[Input::InsertLine],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			assert_process_result!(
+				test_context.handle_input(&mut module),
+				input = Input::InsertLine,
+				state = State::Insert
+			);
+		},
+	);
+}
+
+#[test]
+#[serial_test::serial]
 fn normal_mode_open_external_editor() {
 	process_module_test(
 		&["pick aaa c1"],
@@ -2755,6 +2773,7 @@ fn normal_mode_help() {
 				"{IndicatorColor} f       {Normal,Dimmed}|{Normal}Set selected commit to be fixed-up",
 				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Set selected commit to be dropped",
 				"{IndicatorColor} E       {Normal,Dimmed}|{Normal}Edit an exec action's command",
+				"{IndicatorColor} I       {Normal,Dimmed}|{Normal}Insert a new line",
 				"{IndicatorColor} Delete  {Normal,Dimmed}|{Normal}Completely remove the selected line",
 				"{IndicatorColor} Controlz{Normal,Dimmed}|{Normal}Undo the last change",
 				"{IndicatorColor} Controly{Normal,Dimmed}|{Normal}Redo the previous undone change",

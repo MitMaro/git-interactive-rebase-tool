@@ -17,6 +17,7 @@ pub enum Input {
 	ForceAbort,
 	ForceRebase,
 	Help,
+	InsertLine,
 	Kill,
 	MoveCursorDown,
 	MoveCursorLeft,

@@ -111,6 +111,7 @@ Most keys can be changed to any printable character or supported special charact
 | `inputForceAbort`          | Q        | String | Key for forcing an abort of the rebase |
 | `inputForceRebase`         | W        | String | Key for forcing a rebase |
 | `inputHelp`                | ?        | String | Key for showing the help |
+| `inputInsertLine`          | I        | String | Key for inserting a new line |
 | `inputMoveDown`            | Down     | String | Key for moving the cursor down |
 | `inputMoveLeft`            | Left     | String | Key for moving the cursor left |
 | `inputMoveRight`           | Right    | String | Key for moving the cursor right |
@@ -122,6 +123,7 @@ Most keys can be changed to any printable character or supported special charact
 | `inputOpenInExternalEditor`| !        | String | Key for opening the external editor |
 | `inputRebase`              | w        | String | Key for rebasing with confirmation |
 | `inputRedo`                | Control+y| String | Key for redoing the previous undone change |
+| `inputRemoveLine`          | Delete   | String | Key for removing selected commits |
 | `inputShowCommit`          | c        | String | Key for showing the overview of the selected commit |
 | `inputShowDiff`            | d        | String | Key for showing the diff of the selected commit |
 | `inputToggleVisualMode`    | v        | String | Key for toggling visual mode |
