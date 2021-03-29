@@ -102,12 +102,6 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 		lines.push(String::from("{EMPTY}"));
 	}
 
-	if let Some(ref prompt) = *view_data.get_prompt() {
-		lines.push(String::from("{PROMPT}"));
-		lines.push(prompt.to_owned());
-		return lines;
-	}
-
 	let leading_lines = view_data.get_leading_lines();
 	if !leading_lines.is_empty() {
 		lines.push(String::from("{LEADING}"));

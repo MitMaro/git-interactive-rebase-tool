@@ -1,44 +1,41 @@
 use crate::{
-	input::{input_handler::InputMode, Input},
+	components::Confirm,
+	input::input_handler::InputMode,
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{view_data::ViewData, View},
 };
 
 pub struct ConfirmAbort {
-	view_data: ViewData,
+	dialog: Confirm,
 }
 
 impl ProcessModule for ConfirmAbort {
 	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
+		let view_size = view.get_view_size();
+		self.dialog.get_view_data(view_size.width(), view_size.height())
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
 		let input = view.get_input(InputMode::Confirm);
 		let mut result = ProcessResult::new().input(input);
-		match input {
-			Input::Yes => {
+		if let Some(confirmed) = self.dialog.handle_input(input) {
+			if confirmed {
 				rebase_todo.set_lines(vec![]);
 				result = result.exit_status(ExitStatus::Good);
-			},
-			Input::No => {
+			}
+			else {
 				result = result.state(State::List);
-			},
-			_ => {},
+			}
 		}
 		result
 	}
 }
 
 impl ConfirmAbort {
-	pub(crate) fn new() -> Self {
+	pub(crate) fn new(confirm_yes: &[String], confirm_no: &[String]) -> Self {
 		Self {
-			view_data: ViewData::new_confirm("Are you sure you want to abort"),
+			dialog: Confirm::new("Are you sure you want to abort", confirm_yes, confirm_no),
 		}
 	}
 }
@@ -49,6 +46,7 @@ mod tests {
 	use crate::{
 		assert_process_result,
 		assert_rendered_output,
+		input::Input,
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
 
@@ -60,9 +58,17 @@ mod tests {
 			ViewState::default(),
 			&[],
 			|test_context: TestContext<'_>| {
-				let mut module = ConfirmAbort::new();
+				let mut module = ConfirmAbort::new(
+					&test_context.config.key_bindings.confirm_yes,
+					&test_context.config.key_bindings.confirm_no,
+				);
 				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(view_data, "{TITLE}", "{PROMPT}", "Are you sure you want to abort");
+				assert_rendered_output!(
+					view_data,
+					"{TITLE}",
+					"{BODY}",
+					"{Normal}Are you sure you want to abort (y/n)? "
+				);
 			},
 		);
 	}
@@ -75,7 +81,10 @@ mod tests {
 			ViewState::default(),
 			&[Input::Yes],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ConfirmAbort::new();
+				let mut module = ConfirmAbort::new(
+					&test_context.config.key_bindings.confirm_yes,
+					&test_context.config.key_bindings.confirm_no,
+				);
 				assert_process_result!(
 					test_context.handle_input(&mut module),
 					input = Input::Yes,
@@ -94,7 +103,10 @@ mod tests {
 			ViewState::default(),
 			&[Input::No],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ConfirmAbort::new();
+				let mut module = ConfirmAbort::new(
+					&test_context.config.key_bindings.confirm_yes,
+					&test_context.config.key_bindings.confirm_no,
+				);
 				assert_process_result!(
 					test_context.handle_input(&mut module),
 					input = Input::No,
@@ -106,31 +118,16 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn handle_input_any_key() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[Input::Character('x')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = ConfirmAbort::new();
-				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::No,
-					state = State::List
-				);
-			},
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn handle_input_resize() {
+	fn handle_input_no_match_key() {
 		process_module_test(
 			&["pick aaa comment"],
 			ViewState::default(),
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
-				let mut module = ConfirmAbort::new();
+				let mut module = ConfirmAbort::new(
+					&test_context.config.key_bindings.confirm_yes,
+					&test_context.config.key_bindings.confirm_no,
+				);
 				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
 			},
 		);

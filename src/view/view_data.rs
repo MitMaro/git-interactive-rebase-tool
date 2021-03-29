@@ -13,7 +13,6 @@ pub struct ViewData {
 	trailing_lines_cache: Option<Vec<ViewLine>>,
 	show_title: bool,
 	show_help: bool,
-	prompt: Option<String>,
 	max_leading_line_length: usize,
 	max_line_length: usize,
 	max_trailing_line_length: usize,
@@ -31,7 +30,6 @@ impl ViewData {
 			max_leading_line_length: 0,
 			max_line_length: 0,
 			max_trailing_line_length: 0,
-			prompt: None,
 			scroll_position: ScrollPosition::new(),
 			show_help: false,
 			show_title: false,
@@ -39,13 +37,6 @@ impl ViewData {
 			trailing_lines_cache: None,
 			width: 0,
 		}
-	}
-
-	pub(crate) fn new_confirm(prompt: &str) -> Self {
-		let mut inst = Self::new();
-		inst.set_show_title(true);
-		inst.prompt = Some(String::from(prompt));
-		inst
 	}
 
 	pub(crate) fn reset(&mut self) {
@@ -60,7 +51,6 @@ impl ViewData {
 		self.lines_cache = None;
 		self.trailing_lines.clear();
 		self.trailing_lines_cache = None;
-		self.prompt = None;
 	}
 
 	pub(crate) fn clear_body(&mut self) {
@@ -269,14 +259,7 @@ impl ViewData {
 	}
 
 	pub(crate) fn is_empty(&self) -> bool {
-		self.lines.is_empty()
-			&& self.leading_lines.is_empty()
-			&& self.trailing_lines.is_empty()
-			&& self.prompt.is_none()
-	}
-
-	pub(super) const fn get_prompt(&self) -> &Option<String> {
-		&self.prompt
+		self.lines.is_empty() && self.leading_lines.is_empty() && self.trailing_lines.is_empty()
 	}
 
 	pub(super) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
@@ -601,12 +584,6 @@ mod tests {
 		view_data.set_show_title(true);
 		view_data.set_show_help(false);
 		assert_rendered_output!(view_data, "{TITLE}", "{EMPTY}");
-	}
-
-	#[test]
-	fn with_prompt() {
-		let view_data = ViewData::new_confirm("This is a prompt");
-		assert_rendered_output!(view_data, "{TITLE}", "{PROMPT}", "This is a prompt");
 	}
 
 	#[test]

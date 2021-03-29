@@ -31,8 +31,8 @@ pub struct Modules<'m> {
 impl<'m> Modules<'m> {
 	pub fn new(config: &'m Config) -> Self {
 		Modules {
-			confirm_abort: ConfirmAbort::new(),
-			confirm_rebase: ConfirmRebase::new(),
+			confirm_abort: ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
+			confirm_rebase: ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
 			error: Error::new(),
 			external_editor: ExternalEditor::new(config.git.editor.as_str()),
 			insert: Insert::new(),
