@@ -52,20 +52,6 @@ impl<'v> View<'v> {
 			self.display.next_line()?;
 		}
 
-		if let Some(ref prompt) = *view_data.get_prompt() {
-			self.display.set_style(false, false, false)?;
-			self.display.next_line()?;
-			self.display.draw_str(&format!(
-				"{} ({}/{})? ",
-				prompt,
-				self.config.key_bindings.confirm_yes.join(","),
-				self.config.key_bindings.confirm_no.join(",")
-			))?;
-			self.display.next_line()?;
-			self.display.refresh()?;
-			return Ok(());
-		}
-
 		let leading_lines = view_data.get_leading_lines();
 		let lines = view_data.get_lines();
 		let trailing_lines = view_data.get_trailing_lines();
@@ -285,17 +271,6 @@ mod tests {
 			test_context.view.render(&view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool       "];
 			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_prompt() {
-		view_module_test(Size::new(35, 10), |mut test_context| {
-			let view_data = ViewData::new_confirm("This is a prompt");
-			test_context.view.render(&view_data).unwrap();
-			let expected = vec!["Git Interactive Rebase Tool        ", "\nThis is a prompt (y/n)? "];
 			TestContext::assert_output(&expected);
 		});
 	}
