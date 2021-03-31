@@ -35,7 +35,7 @@ mod tests {
 		view_data.scroll_right();
 		view_data.scroll_right();
 		assert_eq!(handle_view_data_scroll(input, &mut view_data), Some(input));
-		assert_rendered_output!(view_data, "{BODY}", format!("{{Normal}}{}", result));
+		assert_rendered_output!(&mut view_data, "{BODY}", format!("{{Normal}}{}", result));
 	}
 
 	#[rstest(
@@ -67,7 +67,7 @@ mod tests {
 		view_data.scroll_down();
 		assert_eq!(handle_view_data_scroll(input, &mut view_data), Some(input));
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{BODY}",
 			format!("{{Normal}}{}", result[0]),
 			format!("{{Normal}}{}", result[1]),
@@ -82,6 +82,6 @@ mod tests {
 		view_data.push_line(ViewLine::from("012345678"));
 		view_data.set_view_size(5, 10);
 		assert_eq!(handle_view_data_scroll(Input::Character('a'), &mut view_data), None);
-		assert_rendered_output!(view_data, "{BODY}", "{Normal}01234");
+		assert_rendered_output!(&mut view_data, "{BODY}", "{Normal}01234");
 	}
 }

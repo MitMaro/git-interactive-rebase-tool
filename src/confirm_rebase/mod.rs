@@ -11,9 +11,8 @@ pub struct ConfirmRebase {
 }
 
 impl ProcessModule for ConfirmRebase {
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let view_size = view.get_view_size();
-		self.dialog.get_view_data(view_size.width(), view_size.height())
+	fn build_view_data(&mut self, _: &View<'_>, _: &TodoFile) -> &mut ViewData {
+		self.dialog.get_view_data()
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {

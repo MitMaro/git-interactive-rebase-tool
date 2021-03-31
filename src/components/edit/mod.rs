@@ -76,7 +76,6 @@ impl Edit {
 			"Enter to finish",
 			DisplayColor::IndicatorColor,
 		)]));
-		view_data.rebuild();
 		view_data.ensure_column_visible(pointer);
 		view_data.ensure_line_visible(0);
 	}

@@ -22,7 +22,7 @@ impl ProcessModule for WindowSizeError {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &mut ViewData {
 		let view_width = view.get_view_size().width();
 		let view_height = view.get_view_size().height();
 		let message = if view_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
@@ -49,9 +49,7 @@ impl ProcessModule for WindowSizeError {
 
 		self.view_data.clear();
 		self.view_data.push_line(ViewLine::from(message));
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
+		&mut self.view_data
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
@@ -146,7 +144,6 @@ mod tests {
 			&[],
 			ViewState {
 				size: Size::new(width, height),
-				..ViewState::default()
 			},
 			&[],
 			|test_context: TestContext<'_>| {
@@ -162,10 +159,7 @@ mod tests {
 	fn input_resize_window_still_small() {
 		process_module_test(
 			&[],
-			ViewState {
-				size: Size::new(1, 1),
-				..ViewState::default()
-			},
+			ViewState { size: Size::new(1, 1) },
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
@@ -182,7 +176,6 @@ mod tests {
 			&[],
 			ViewState {
 				size: Size::new(100, 100),
-				..ViewState::default()
 			},
 			&[Input::Resize],
 			|mut test_context: TestContext<'_>| {
@@ -202,7 +195,7 @@ mod tests {
 	fn input_other_character() {
 		process_module_test(
 			&[],
-			ViewState { ..ViewState::default() },
+			ViewState::default(),
 			&[Input::Character('a')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();

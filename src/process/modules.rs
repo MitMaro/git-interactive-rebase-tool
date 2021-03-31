@@ -63,7 +63,7 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).deactivate();
 	}
 
-	pub fn build_view_data(&mut self, state: State, view: &View<'_>, rebase_todo: &TodoFile) -> &ViewData {
+	pub fn build_view_data(&mut self, state: State, view: &View<'_>, rebase_todo: &TodoFile) -> &mut ViewData {
 		self.get_mut_module(state).build_view_data(view, rebase_todo)
 	}
 

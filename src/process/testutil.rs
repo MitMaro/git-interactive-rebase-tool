@@ -32,8 +32,17 @@ impl<'t> TestContext<'t> {
 		module.deactivate();
 	}
 
-	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
-		module.build_view_data(&self.view, &self.rebase_todo_file)
+	pub fn update_view_data_size(&self, module: &'_ mut dyn ProcessModule) {
+		let view_data = module.build_view_data(&self.view, &self.rebase_todo_file);
+		let size = self.view.get_view_size();
+		view_data.set_view_size(size.width(), size.height());
+	}
+
+	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc mut ViewData {
+		let view_data = module.build_view_data(&self.view, &self.rebase_todo_file);
+		let size = self.view.get_view_size();
+		view_data.set_view_size(size.width(), size.height());
+		view_data
 	}
 
 	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
@@ -82,14 +91,12 @@ impl<'t> TestContext<'t> {
 
 #[derive(Copy, Clone, Debug)]
 pub struct ViewState {
-	pub position: (u16, u16),
 	pub size: Size,
 }
 
 impl Default for ViewState {
 	fn default() -> Self {
 		Self {
-			position: (0, 0),
 			size: Size::new(500, 30),
 		}
 	}

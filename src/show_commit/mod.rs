@@ -87,11 +87,10 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &mut ViewData {
 		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
 		if self.help.is_active() {
-			return self.help.get_view_data(view_width, view_height);
+			return self.help.get_view_data();
 		}
 
 		if self.view_data.is_empty() {
@@ -127,9 +126,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				},
 			}
 		}
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
+		&mut self.view_data
 	}
 
 	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {

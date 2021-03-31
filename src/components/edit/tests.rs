@@ -8,7 +8,6 @@ fn with_description() {
 	module.set_description("Description");
 	module.handle_input(Input::Right);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -29,7 +28,6 @@ fn with_label() {
 	module.set_label("Label: ");
 	module.handle_input(Input::Right);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -48,7 +46,6 @@ fn with_label_and_description() {
 	module.set_label("Label: ");
 	module.handle_input(Input::Right);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -68,7 +65,6 @@ fn move_cursor_end() {
 	module.set_content("foobar");
 	module.handle_input(Input::Right);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -85,7 +81,6 @@ fn move_cursor_1_left() {
 	module.set_content("foobar");
 	module.handle_input(Input::Left);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -103,7 +98,6 @@ fn move_cursor_2_from_start() {
 	module.handle_input(Input::Left);
 	module.handle_input(Input::Left);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -122,7 +116,6 @@ fn move_cursor_1_from_start() {
 		module.handle_input(Input::Left);
 	}
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -141,7 +134,6 @@ fn move_cursor_to_start() {
 		module.handle_input(Input::Left);
 	}
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -158,7 +150,6 @@ fn move_cursor_to_home() {
 	module.set_content("foobar");
 	module.handle_input(Input::Home);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -178,7 +169,6 @@ fn move_cursor_to_end() {
 	}
 	module.handle_input(Input::End);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -197,7 +187,6 @@ fn move_cursor_on_empty_content() {
 	module.handle_input(Input::End);
 	module.handle_input(Input::Home);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -216,7 +205,6 @@ fn move_cursor_attempt_past_start() {
 		module.handle_input(Input::Left);
 	}
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -235,7 +223,6 @@ fn move_cursor_attempt_past_end() {
 		module.handle_input(Input::Right);
 	}
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -254,7 +241,6 @@ fn multiple_width_unicode_single_width() {
 		module.handle_input(Input::Left);
 	}
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -273,7 +259,6 @@ fn multiple_width_unicode_emoji() {
 		module.handle_input(Input::Left);
 	}
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -290,7 +275,6 @@ fn add_character_end() {
 	module.set_content("abcd");
 	module.handle_input(Input::Character('x'));
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -308,7 +292,6 @@ fn add_character_one_from_end() {
 	module.handle_input(Input::Left);
 	module.handle_input(Input::Character('x'));
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -328,7 +311,6 @@ fn add_character_one_from_start() {
 	}
 	module.handle_input(Input::Character('x'));
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -348,7 +330,6 @@ fn add_character_at_start() {
 	}
 	module.handle_input(Input::Character('x'));
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -365,7 +346,6 @@ fn backspace_at_end() {
 	module.set_content("abcd");
 	module.handle_input(Input::Backspace);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -383,7 +363,6 @@ fn backspace_one_from_end() {
 	module.handle_input(Input::Left);
 	module.handle_input(Input::Backspace);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -403,7 +382,6 @@ fn backspace_one_from_start() {
 	}
 	module.handle_input(Input::Backspace);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -423,7 +401,6 @@ fn backspace_at_start() {
 	}
 	module.handle_input(Input::Backspace);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -440,7 +417,6 @@ fn delete_at_end() {
 	module.set_content("abcd");
 	module.handle_input(Input::Delete);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -458,7 +434,6 @@ fn delete_last_character() {
 	module.handle_input(Input::Left);
 	module.handle_input(Input::Delete);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -478,7 +453,6 @@ fn delete_second_character() {
 	}
 	module.handle_input(Input::Delete);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,
@@ -498,7 +472,6 @@ fn delete_first_character() {
 	}
 	module.handle_input(Input::Delete);
 	let view_data = &mut ViewData::new();
-	view_data.set_view_size(500, 30);
 	module.update_view_data(view_data);
 	assert_rendered_output!(
 		view_data,

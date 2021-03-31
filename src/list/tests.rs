@@ -86,7 +86,6 @@ fn render_compact() {
 		],
 		ViewState {
 			size: Size::new(30, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -126,11 +125,11 @@ fn move_cursor_down_1() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -158,11 +157,11 @@ fn move_cursor_down_view_end() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown; 2],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -190,11 +189,11 @@ fn move_cursor_down_scroll_1() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown; 3],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -222,11 +221,11 @@ fn move_cursor_down_scroll_bottom() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown; 4],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -248,7 +247,6 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -259,6 +257,7 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 4);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -282,7 +281,6 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -295,6 +293,7 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 4);
 			test_context.build_view_data(&mut module);
 			test_context.handle_n_inputs(&mut module, 3);
@@ -318,11 +317,11 @@ fn move_cursor_up_attempt_above_top() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorUp, Input::MoveCursorUp],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -344,11 +343,11 @@ fn move_cursor_down_attempt_below_bottom() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown; 4],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -370,11 +369,11 @@ fn move_cursor_page_up_from_top() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorPageUp],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -403,11 +402,11 @@ fn move_cursor_page_up_from_one_page_down() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown, Input::MoveCursorDown, Input::MoveCursorPageUp],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 2);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -438,7 +437,6 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -448,6 +446,7 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 3);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -478,11 +477,11 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown, Input::MoveCursorDown, Input::MoveCursorPageUp],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 2);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -513,7 +512,6 @@ fn move_cursor_page_up_from_bottom() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -525,6 +523,7 @@ fn move_cursor_page_up_from_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 5);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -550,6 +549,7 @@ fn move_cursor_page_home() {
 		&[Input::MoveCursorEnd],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 5);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -581,6 +581,7 @@ fn move_cursor_page_end() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 5);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -612,7 +613,6 @@ fn move_cursor_page_down_from_bottom() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -624,6 +624,7 @@ fn move_cursor_page_down_from_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 5);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -654,7 +655,6 @@ fn move_cursor_page_down_one_from_bottom() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -665,6 +665,7 @@ fn move_cursor_page_down_one_from_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 4);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -695,7 +696,6 @@ fn move_cursor_page_down_one_page_from_bottom() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorDown,
@@ -705,6 +705,7 @@ fn move_cursor_page_down_one_page_from_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_n_inputs(&mut module, 3);
 			test_context.build_view_data(&mut module);
 			test_context.handle_input(&mut module);
@@ -728,7 +729,6 @@ fn visual_mode_start() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ToggleVisualMode],
 		|mut test_context: TestContext<'_>| {
@@ -754,11 +754,11 @@ fn visual_mode_start_cursor_down_one() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ToggleVisualMode, Input::MoveCursorDown],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -787,7 +787,6 @@ fn visual_mode_start_move_down_below_view() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::ToggleVisualMode,
@@ -797,6 +796,7 @@ fn visual_mode_start_move_down_below_view() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -826,11 +826,11 @@ fn visual_mode_start_cursor_page_down() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ToggleVisualMode, Input::MoveCursorPageDown],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -860,7 +860,6 @@ fn visual_mode_start_cursor_page_down_below_view() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::ToggleVisualMode,
@@ -869,6 +868,7 @@ fn visual_mode_start_cursor_page_down_below_view() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -898,7 +898,6 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorPageDown,
@@ -909,6 +908,7 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -937,7 +937,6 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 		],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[
 			Input::MoveCursorPageDown,
@@ -950,6 +949,7 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -973,7 +973,6 @@ fn change_selected_line_to_drop() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionDrop],
 		|mut test_context: TestContext<'_>| {
@@ -997,7 +996,6 @@ fn change_selected_line_to_edit() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionEdit],
 		|mut test_context: TestContext<'_>| {
@@ -1021,7 +1019,6 @@ fn change_selected_line_to_fixup() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionFixup],
 		|mut test_context: TestContext<'_>| {
@@ -1045,7 +1042,6 @@ fn change_selected_line_to_pick() {
 		&["drop aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionPick],
 		|mut test_context: TestContext<'_>| {
@@ -1069,7 +1065,6 @@ fn change_selected_line_to_reword() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionReword],
 		|mut test_context: TestContext<'_>| {
@@ -1093,7 +1088,6 @@ fn change_selected_line_to_squash() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionSquash],
 		|mut test_context: TestContext<'_>| {
@@ -1117,7 +1111,6 @@ fn change_selected_line_toggle_break_add() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionBreak],
 		|mut test_context: TestContext<'_>| {
@@ -1142,7 +1135,6 @@ fn change_selected_line_toggle_break_remove() {
 		&["pick aaa c1", "break"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::MoveCursorDown, Input::ActionBreak],
 		|mut test_context: TestContext<'_>| {
@@ -1166,7 +1158,6 @@ fn change_selected_line_toggle_break_above_existing() {
 		&["pick aaa c1", "break"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionBreak],
 		|mut test_context: TestContext<'_>| {
@@ -1191,7 +1182,6 @@ fn change_selected_line_auto_select_next_with_next_line() {
 		&["pick aaa c1", "pick aaa c2"],
 		ViewState {
 			size: Size::new(120, 4),
-			..ViewState::default()
 		},
 		&[Input::ActionSquash],
 		|mut test_context: TestContext<'_>| {
@@ -2726,13 +2716,11 @@ fn scroll_right() {
 			"pick bbbbbbbbbbbb this comment needs to be longer than the width of the view",
 			"pick cccccccccccc this comment needs to be longer than the width of the view",
 		],
-		ViewState {
-			size: Size::new(50, 4),
-			..ViewState::default()
-		},
+		ViewState { size: Size::new(50, 4) },
 		&[Input::MoveCursorRight; 3],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
 			test_context.build_view_data(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -2758,10 +2746,7 @@ fn scroll_left() {
 			"pick bbbbbbbbbbbb this comment needs to be longer than the width of the view",
 			"pick cccccccccccc this comment needs to be longer than the width of the view",
 		],
-		ViewState {
-			size: Size::new(50, 4),
-			..ViewState::default()
-		},
+		ViewState { size: Size::new(50, 4) },
 		&[
 			Input::MoveCursorRight,
 			Input::MoveCursorRight,
@@ -2770,7 +2755,7 @@ fn scroll_left() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
+			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_inputs(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2793,7 +2778,6 @@ fn normal_mode_help() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(200, 100),
-			..ViewState::default()
 		},
 		&[Input::Help],
 		|mut test_context: TestContext<'_>| {
@@ -2805,7 +2789,7 @@ fn normal_mode_help() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  ,184}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  }",
 				"{BODY}",
 				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Move selection up",
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
@@ -2867,7 +2851,6 @@ fn visual_mode_help() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(200, 100),
-			..ViewState::default()
 		},
 		&[Input::Help],
 		|mut test_context: TestContext<'_>| {
@@ -2879,7 +2862,7 @@ fn visual_mode_help() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  ,184}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  }",
 				"{BODY}",
 				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Move selection up",
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
