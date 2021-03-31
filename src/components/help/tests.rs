@@ -8,10 +8,10 @@ use crate::assert_rendered_output;
 fn empty() {
 	let mut module = Help::new_from_keybindings(&[]);
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
-		"{Normal,Underline} Key Action{Normal,Underline}{Pad  ,89}",
+		"{Normal,Underline} Key Action{Normal,Underline}{Pad  }",
 		"{TRAILING}",
 		"{IndicatorColor}Press any key to close"
 	);
@@ -25,10 +25,10 @@ fn from_key_bindings() {
 		(vec![String::from("b")], String::from("Description B")),
 	]);
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
-		"{Normal,Underline} Key Action{Normal,Underline}{Pad  ,89}",
+		"{Normal,Underline} Key Action{Normal,Underline}{Pad  }",
 		"{BODY}",
 		"{IndicatorColor} a{Normal,Dimmed}|{Normal}Description A",
 		"{IndicatorColor} b{Normal,Dimmed}|{Normal}Description B",

@@ -41,9 +41,12 @@ impl<'v> View<'v> {
 		self.display.get_window_size()
 	}
 
-	pub(crate) fn render(&mut self, view_data: &ViewData) -> Result<()> {
+	pub(crate) fn render(&mut self, view_data: &mut ViewData) -> Result<()> {
+		let view_size = self.display.get_window_size();
+		let window_height = view_size.height();
+		view_data.set_view_size(view_size.width(), window_height);
+
 		self.display.clear()?;
-		let window_height = self.display.get_window_size().height();
 
 		self.display.ensure_at_line_start()?;
 		if view_data.show_title() {
@@ -215,8 +218,8 @@ mod tests {
 	#[serial_test::serial]
 	fn render_empty() {
 		view_module_test(Size::new(20, 10), |mut test_context| {
-			let view_data = ViewData::new();
-			test_context.view.render(&view_data).unwrap();
+			let mut view_data = ViewData::new();
+			test_context.view.render(&mut view_data).unwrap();
 			TestContext::assert_output(&["~"; 10]);
 		});
 	}
@@ -227,7 +230,7 @@ mod tests {
 		view_module_test(Size::new(35, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool        "];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
@@ -240,7 +243,7 @@ mod tests {
 		view_module_test(Size::new(26, 10), |mut test_context| {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["Git Rebase                "];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
@@ -254,7 +257,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool Help: ?"];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
@@ -268,7 +271,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool       "];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
@@ -282,7 +285,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["This is a leading line        "];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
@@ -296,7 +299,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["This is a line                "];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
@@ -310,7 +313,7 @@ mod tests {
 			let mut view_data = ViewData::new();
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["~"; 9];
 			expected.push("This is a trailing line       ");
 			TestContext::assert_output(&expected);
@@ -326,7 +329,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["This is a leading line        ", "This is a line                "];
 			expected.extend(vec!["~"; 7]);
 			expected.push("This is a trailing line       ");
@@ -346,7 +349,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is line 4"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 6);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let expected = vec![
 				"This is a leading line        ",
 				"This is line 1                ",
@@ -372,7 +375,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is line 5"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 6);
-			test_context.view.render(&view_data).unwrap();
+			test_context.view.render(&mut view_data).unwrap();
 			let expected = vec![
 				"This is a leading line        ",
 				"This is line 1               █",

@@ -66,10 +66,8 @@ impl Help {
 		}
 	}
 
-	pub fn get_view_data(&mut self, view_width: usize, view_height: usize) -> &ViewData {
-		self.view_data.set_view_size(view_width, view_height);
-		self.view_data.rebuild();
-		&self.view_data
+	pub fn get_view_data(&mut self) -> &mut ViewData {
+		&mut self.view_data
 	}
 
 	pub fn handle_input(&mut self, input: Input) {

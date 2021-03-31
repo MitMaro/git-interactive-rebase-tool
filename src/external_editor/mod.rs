@@ -48,23 +48,18 @@ impl ProcessModule for ExternalEditor {
 		self.view_data.reset();
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
-
+	fn build_view_data(&mut self, _: &View<'_>, _: &TodoFile) -> &mut ViewData {
 		match self.state {
 			ExternalEditorState::Active => {
 				self.view_data.clear();
 				self.view_data.push_leading_line(ViewLine::from("Editing..."));
-				self.view_data.set_view_size(view_width, view_height);
-				self.view_data.rebuild();
-				&self.view_data
+				&mut self.view_data
 			},
-			ExternalEditorState::Empty => self.empty_choice.get_view_data(view_width, view_height),
+			ExternalEditorState::Empty => self.empty_choice.get_view_data(),
 			ExternalEditorState::Error(ref error) => {
 				self.error_choice
 					.set_prompt(error.chain().map(|c| ViewLine::from(format!("{:#}", c))).collect());
-				self.error_choice.get_view_data(view_width, view_height)
+				self.error_choice.get_view_data()
 			},
 		}
 	}

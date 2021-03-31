@@ -46,8 +46,7 @@ where T: Clone
 		self.view_data.push_leading_line(ViewLine::new_empty_line());
 	}
 
-	pub fn get_view_data(&mut self, view_width: usize, view_height: usize) -> &ViewData {
-		self.view_data.set_view_size(view_width, view_height);
+	pub fn get_view_data(&mut self) -> &mut ViewData {
 		self.view_data.clear_body();
 		for &(_, ref key, ref description) in &self.options {
 			self.view_data
@@ -66,8 +65,7 @@ where T: Clone
 				DisplayColor::IndicatorColor,
 			)));
 		}
-		self.view_data.rebuild();
-		&self.view_data
+		&mut self.view_data
 	}
 
 	pub fn handle_input(&mut self, input: Input) -> Option<&T> {

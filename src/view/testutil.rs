@@ -1,5 +1,5 @@
 use crate::{
-	display::display_color::DisplayColor,
+	display::{display_color::DisplayColor, size::Size},
 	view::{view_data::ViewData, view_line::ViewLine},
 };
 
@@ -78,7 +78,7 @@ fn render_view_line(view_line: &ViewLine) -> String {
 		);
 		// only render
 		if is_padding {
-			line.push_str(format!("{{Pad {},{}}}", view_line.padding_character(), content.len()).as_str());
+			line.push_str(format!("{{Pad {}}}", view_line.padding_character()).as_str());
 		}
 		else {
 			line.push_str(segment.get_content());
@@ -87,7 +87,8 @@ fn render_view_line(view_line: &ViewLine) -> String {
 	line
 }
 
-fn render_view_data(view_data: &ViewData) -> Vec<String> {
+fn render_view_data(view_data: &mut ViewData, size: &Size) -> Vec<String> {
+	view_data.set_view_size(size.width(), size.height());
 	let mut lines = vec![];
 	if view_data.show_title() {
 		if view_data.show_help() {
@@ -128,8 +129,15 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	lines
 }
 
-pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
-	let output = render_view_data(view_data);
+pub fn _assert_rendered_output(view_data: &mut ViewData, expected: &[String]) {
+	let (width, height) = view_data.get_size();
+	let output = render_view_data(
+		view_data,
+		&Size::new(
+			if width == 0 && height == 0 { 500 } else { width },
+			if width == 0 && height == 0 { 100 } else { height },
+		),
+	);
 	let mut mismatch = false;
 	let mut error_output = vec![
 		String::from("\nUnexpected output!"),
@@ -177,10 +185,10 @@ pub fn _assert_rendered_output(view_data: &ViewData, expected: &[String]) {
 macro_rules! assert_rendered_output {
 	($view_data:expr) => {
 		let expected: Vec<String> = vec![];
-		crate::view::testutil::_assert_rendered_output(&$view_data, &expected);
+		crate::view::testutil::_assert_rendered_output($view_data, &expected);
 	};
 	($view_data:expr, $($arg:expr),*) => {
 		let expected = vec![$( String::from($arg), )*];
-		crate::view::testutil::_assert_rendered_output(&$view_data, &expected);
+		crate::view::testutil::_assert_rendered_output($view_data, &expected);
 	};
 }
