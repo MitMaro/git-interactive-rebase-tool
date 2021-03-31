@@ -23,6 +23,10 @@ pub struct TestContext<'t> {
 }
 
 impl<'t> TestContext<'t> {
+	fn get_build_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc mut ViewData {
+		module.build_view_data(&self.view.get_render_context(), &self.rebase_todo_file)
+	}
+
 	pub fn activate(&self, module: &'_ mut dyn ProcessModule, state: State) -> ProcessResult {
 		module.activate(&self.rebase_todo_file, state)
 	}
@@ -33,15 +37,15 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn update_view_data_size(&self, module: &'_ mut dyn ProcessModule) {
-		let view_data = module.build_view_data(&self.view, &self.rebase_todo_file);
-		let size = self.view.get_view_size();
-		view_data.set_view_size(size.width(), size.height());
+		let view_data = self.get_build_data(module);
+		let context = self.view.get_render_context();
+		view_data.set_view_size(context.width(), context.height());
 	}
 
 	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc mut ViewData {
-		let view_data = module.build_view_data(&self.view, &self.rebase_todo_file);
-		let size = self.view.get_view_size();
-		view_data.set_view_size(size.width(), size.height());
+		let view_data = self.get_build_data(module);
+		let context = self.view.get_render_context();
+		view_data.set_view_size(context.width(), context.height());
 		view_data
 	}
 

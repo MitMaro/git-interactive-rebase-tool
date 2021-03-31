@@ -1,4 +1,5 @@
 pub mod line_segment;
+pub mod render_context;
 pub mod scroll_position;
 #[cfg(test)]
 pub mod testutil;
@@ -9,9 +10,9 @@ use anyhow::Result;
 
 use crate::{
 	constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH},
-	display::{display_color::DisplayColor, size::Size, Display},
+	display::{display_color::DisplayColor, Display},
 	input::{input_handler::InputMode, Input},
-	view::{view_data::ViewData, view_line::ViewLine},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 	Config,
 };
 
@@ -37,8 +38,9 @@ impl<'v> View<'v> {
 		self.display.get_input(mode)
 	}
 
-	pub(crate) fn get_view_size(&self) -> Size {
-		self.display.get_window_size()
+	pub(crate) fn get_render_context(&self) -> RenderContext {
+		let size = self.display.get_window_size();
+		RenderContext::new(size.width(), size.height())
 	}
 
 	pub(crate) fn render(&mut self, view_data: &mut ViewData) -> Result<()> {
@@ -174,7 +176,11 @@ mod tests {
 	use std::{env::set_var, path::Path};
 
 	use super::*;
-	use crate::{config::Config, display::CrossTerm, input::input_handler::InputHandler};
+	use crate::{
+		config::Config,
+		display::{size::Size, CrossTerm},
+		input::input_handler::InputHandler,
+	};
 
 	pub struct TestContext<'t> {
 		pub view: View<'t>,
@@ -204,14 +210,6 @@ mod tests {
 		let display = Display::new(input_handler, &mut crossterm, &config.theme);
 		let view = View::new(display, &config);
 		callback(TestContext { view });
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn get_view_size() {
-		view_module_test(Size::new(20, 10), |test_context| {
-			assert_eq!(test_context.view.get_view_size(), Size::new(20, 10));
-		});
 	}
 
 	#[test]

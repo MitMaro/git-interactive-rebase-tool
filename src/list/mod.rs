@@ -13,7 +13,7 @@ use crate::{
 	list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
 };
 
 #[derive(Debug, PartialEq)]
@@ -34,12 +34,12 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn build_view_data(&mut self, view: &View<'_>, todo_file: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &mut ViewData {
 		self.view_data.clear();
 
 		match self.state {
-			ListState::Normal => self.get_normal_mode_view_data(todo_file, view),
-			ListState::Visual => self.get_visual_mode_view_data(todo_file, view),
+			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
+			ListState::Visual => self.get_visual_mode_view_data(todo_file, context),
 			ListState::Edit => {
 				self.edit.update_view_data(&mut self.view_data);
 				&mut self.view_data
@@ -100,7 +100,7 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn update_list_view_data(&mut self, todo_file: &TodoFile, view_width: usize) {
+	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) {
 		self.view_data.clear();
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
@@ -120,7 +120,7 @@ impl<'l> List<'l> {
 						|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
 				self.view_data.push_line(
 					ViewLine::new_with_pinned_segments(
-						get_todo_line_segments(line, selected_index == index, selected_line, view_width),
+						get_todo_line_segments(line, selected_index == index, selected_line, context.is_full_width()),
 						if *line.get_action() == Action::Exec { 2 } else { 3 },
 					)
 					.set_selected(selected_index == index || selected_line),
@@ -133,26 +133,22 @@ impl<'l> List<'l> {
 		self.view_data.ensure_line_visible(selected_index);
 	}
 
-	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &mut ViewData {
-		let view_width = view.get_view_size().width();
-
+	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &mut ViewData {
 		if self.visual_mode_help.is_active() {
 			self.visual_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(todo_file, view_width);
+			self.update_list_view_data(context, todo_file);
 			&mut self.view_data
 		}
 	}
 
-	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &mut ViewData {
-		let view_width = view.get_view_size().width();
-
+	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &mut ViewData {
 		if self.normal_mode_help.is_active() {
 			self.normal_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(todo_file, view_width);
+			self.update_list_view_data(context, todo_file);
 			&mut self.view_data
 		}
 	}
@@ -169,8 +165,8 @@ impl<'l> List<'l> {
 			Input::MoveCursorRight => self.view_data.scroll_right(),
 			Input::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
 			Input::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
-			Input::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, view.get_view_size().height() / 2),
-			Input::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, view.get_view_size().height() / 2),
+			Input::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, view.get_render_context().height() / 2),
+			Input::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, view.get_render_context().height() / 2),
 			Input::MoveCursorHome => rebase_todo.set_selected_line_index(0),
 			Input::MoveCursorEnd => rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index()),
 			Input::Abort => result = result.state(State::ConfirmAbort),

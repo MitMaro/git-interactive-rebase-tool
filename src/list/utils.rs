@@ -2,7 +2,6 @@ use std::cmp;
 
 use crate::{
 	config::key_bindings::KeyBindings,
-	constants::MINIMUM_FULL_WINDOW_WIDTH,
 	display::display_color::DisplayColor,
 	todo_file::{action::Action, line::Line},
 	view::line_segment::LineSegment,
@@ -208,13 +207,13 @@ pub(super) fn get_todo_line_segments(
 	line: &Line,
 	is_cursor_line: bool,
 	selected: bool,
-	view_width: usize,
+	is_full_width: bool,
 ) -> Vec<LineSegment> {
 	let mut segments: Vec<LineSegment> = vec![];
 
 	let action = line.get_action();
 
-	if view_width >= MINIMUM_FULL_WINDOW_WIDTH {
+	if is_full_width {
 		segments.push(LineSegment::new_with_color_and_style(
 			if is_cursor_line || selected { " > " } else { "   " },
 			DisplayColor::Normal,

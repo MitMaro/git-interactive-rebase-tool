@@ -8,7 +8,7 @@ use crate::{
 		util::handle_view_data_scroll,
 	},
 	todo_file::TodoFile,
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
 };
 
 pub struct Error {
@@ -22,7 +22,7 @@ impl ProcessModule for Error {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, _: &View<'_>, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
 		&mut self.view_data
 	}
 
