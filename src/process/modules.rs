@@ -64,7 +64,8 @@ impl<'m> Modules<'m> {
 	}
 
 	pub fn build_view_data(&mut self, state: State, view: &View<'_>, rebase_todo: &TodoFile) -> &mut ViewData {
-		self.get_mut_module(state).build_view_data(view, rebase_todo)
+		let render_context = view.get_render_context();
+		self.get_mut_module(state).build_view_data(&render_context, rebase_todo)
 	}
 
 	pub fn handle_input(&mut self, state: State, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {

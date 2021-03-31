@@ -3,7 +3,7 @@ use crate::{
 	input::input_handler::InputMode,
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{view_data::ViewData, View},
+	view::{render_context::RenderContext, view_data::ViewData, View},
 };
 
 pub struct ConfirmAbort {
@@ -11,7 +11,7 @@ pub struct ConfirmAbort {
 }
 
 impl ProcessModule for ConfirmAbort {
-	fn build_view_data(&mut self, _: &View<'_>, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
 		self.dialog.get_view_data()
 	}
 

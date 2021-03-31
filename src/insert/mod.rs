@@ -10,7 +10,7 @@ use crate::{
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{view_data::ViewData, view_line::ViewLine, View},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
 };
 
 pub struct Insert {
@@ -28,7 +28,7 @@ impl ProcessModule for Insert {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, _: &View<'_>, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
 		match self.state {
 			InsertState::Prompt => self.action_choices.get_view_data(),
 			InsertState::Edit => {

@@ -1,15 +1,13 @@
 use crate::{
-	constants::{MINIMUM_COMPACT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH},
 	input::{input_handler::InputMode, Input},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{view_data::ViewData, view_line::ViewLine, View},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
 };
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
 const SHORT_ERROR_MESSAGE: &str = "Window too small";
 const SIZE_ERROR_MESSAGE: &str = "Size!";
-const BUG_WINDOW_SIZE_MESSAGE: &str = "Bug: window size is invalid!";
 
 pub struct WindowSizeError {
 	return_state: State,
@@ -22,10 +20,9 @@ impl ProcessModule for WindowSizeError {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &mut ViewData {
-		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
-		let message = if view_width <= MINIMUM_COMPACT_WINDOW_WIDTH {
+	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &mut ViewData {
+		let view_width = context.width();
+		let message = if !context.is_minimum_view_width() {
 			if view_width >= SHORT_ERROR_MESSAGE.len() {
 				SHORT_ERROR_MESSAGE
 			}
@@ -34,17 +31,12 @@ impl ProcessModule for WindowSizeError {
 				SIZE_ERROR_MESSAGE
 			}
 		}
-		else if view_height <= MINIMUM_WINDOW_HEIGHT {
-			if view_width >= MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH {
-				HEIGHT_ERROR_MESSAGE
-			}
-			else {
-				// this message will always be safe here
-				SHORT_ERROR_MESSAGE
-			}
+		else if view_width >= HEIGHT_ERROR_MESSAGE.len() {
+			HEIGHT_ERROR_MESSAGE
 		}
 		else {
-			BUG_WINDOW_SIZE_MESSAGE
+			// this message will always be safe here
+			SHORT_ERROR_MESSAGE
 		};
 
 		self.view_data.clear();
@@ -56,12 +48,8 @@ impl ProcessModule for WindowSizeError {
 		let input = view.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 
-		if input == Input::Resize {
-			let view_width = view.get_view_size().width();
-			let view_height = view.get_view_size().height();
-			if !Self::is_window_too_small(view_width, view_height) {
-				result = result.state(self.return_state);
-			}
+		if input == Input::Resize && !view.get_render_context().is_window_too_small() {
+			result = result.state(self.return_state);
 		}
 
 		result
@@ -74,10 +62,6 @@ impl WindowSizeError {
 			return_state: State::List,
 			view_data: ViewData::new(),
 		}
-	}
-
-	pub const fn is_window_too_small(window_width: usize, window_height: usize) -> bool {
-		window_width <= MINIMUM_COMPACT_WINDOW_WIDTH || window_height <= MINIMUM_WINDOW_HEIGHT
 	}
 }
 
@@ -93,41 +77,11 @@ mod tests {
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
 
-	#[test]
-	fn is_window_too_small_width_too_small() {
-		assert!(WindowSizeError::is_window_too_small(
-			MINIMUM_COMPACT_WINDOW_WIDTH,
-			MINIMUM_WINDOW_HEIGHT + 1
-		));
-	}
-
-	#[test]
-	fn is_window_too_small_height_too_small() {
-		assert!(WindowSizeError::is_window_too_small(
-			MINIMUM_COMPACT_WINDOW_WIDTH + 1,
-			MINIMUM_WINDOW_HEIGHT
-		));
-	}
-
-	#[test]
-	fn is_window_too_small_height_and_width_too_small() {
-		assert!(WindowSizeError::is_window_too_small(
-			MINIMUM_COMPACT_WINDOW_WIDTH,
-			MINIMUM_WINDOW_HEIGHT
-		));
-	}
-
-	#[test]
-	fn is_window_too_small_width_and_height_large() {
-		assert!(!WindowSizeError::is_window_too_small(
-			MINIMUM_COMPACT_WINDOW_WIDTH + 1,
-			MINIMUM_WINDOW_HEIGHT + 1
-		));
-	}
+	const MINIMUM_WINDOW_HEIGHT: usize = 5;
+	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
 
 	#[rstest(
 		width, height, expected,
-		case::not_too_small(100, 100, "Bug: window size is invalid!"),
 		case::width_too_small_long_message(SHORT_ERROR_MESSAGE.len(), MINIMUM_WINDOW_HEIGHT + 1, "Window too small"),
 		case::width_too_small_short_message(SHORT_ERROR_MESSAGE.len() - 1, MINIMUM_WINDOW_HEIGHT + 1, "Size!"),
 		case::height_too_small_long_message(
