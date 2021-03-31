@@ -11,7 +11,7 @@ pub trait ProcessModule {
 
 	fn deactivate(&mut self) {}
 
-	fn build_view_data(&mut self, _view: &View<'_>, _rebase_todo: &TodoFile) -> &ViewData;
+	fn build_view_data(&mut self, _view: &View<'_>, _rebase_todo: &TodoFile) -> &mut ViewData;
 
 	fn handle_input(&mut self, _view: &mut View<'_>, _rebase_todo: &mut TodoFile) -> ProcessResult;
 }

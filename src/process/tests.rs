@@ -12,10 +12,7 @@ use crate::{
 fn window_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState {
-			size: Size::new(1, 1),
-			..ViewState::default()
-		},
+		ViewState { size: Size::new(1, 1) },
 		&[Input::Exit],
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
@@ -102,10 +99,7 @@ fn resize_window_size_okay() {
 fn resize_window_size_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState {
-			size: Size::new(1, 1),
-			..ViewState::default()
-		},
+		ViewState { size: Size::new(1, 1) },
 		&[],
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);

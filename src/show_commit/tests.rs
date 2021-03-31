@@ -122,7 +122,6 @@ fn render_overview_minimal_commit_compact() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(33, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -180,7 +179,6 @@ fn render_overview_with_author_compact() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(33, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -240,7 +238,6 @@ fn render_overview_with_committer_compact() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(33, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -345,7 +342,6 @@ fn render_overview_with_file_stats_compact() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(33, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -558,7 +554,6 @@ fn render_diff_minimal_commit() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -575,7 +570,7 @@ fn render_diff_minimal_commit() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}"
+				"{Normal}{Pad ―}"
 			);
 		},
 	);
@@ -588,7 +583,6 @@ fn render_diff_minimal_commit_compact() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(33, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -604,7 +598,7 @@ fn render_diff_minimal_commit_compact() {
 				"{Normal}01234567",
 				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
 				"{BODY}",
-				"{Normal}{Pad ―,99}"
+				"{Normal}{Pad ―}"
 			);
 		},
 	);
@@ -617,7 +611,6 @@ fn render_diff_basic_file_stats() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -644,19 +637,19 @@ fn render_diff_basic_file_stats() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffAddColor}   added: {DiffAddColor}file.2a",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{Normal} unknown: {Normal}file.7a"
 			);
 		},
@@ -670,7 +663,6 @@ fn render_diff_end_new_line_missing() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -692,11 +684,11 @@ fn render_diff_end_new_line_missing() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
 				"{Normal}       {DiffContextColor}\\ No newline at end of file"
 			);
@@ -711,7 +703,6 @@ fn render_diff_add_line() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -734,11 +725,11 @@ fn render_diff_add_line() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
 			);
 		},
@@ -752,7 +743,6 @@ fn render_diff_delete_line() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -775,11 +765,11 @@ fn render_diff_delete_line() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
 			);
 		},
@@ -793,7 +783,6 @@ fn render_diff_context_add_remove_lines() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -819,11 +808,11 @@ fn render_diff_context_add_remove_lines() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
 				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
 				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
@@ -840,7 +829,6 @@ fn render_diff_add_line_with_show_whitespace() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -863,11 +851,11 @@ fn render_diff_add_line_with_show_whitespace() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
 			);
 		},
@@ -881,7 +869,6 @@ fn render_diff_delete_line_with_show_whitespace() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -904,11 +891,11 @@ fn render_diff_delete_line_with_show_whitespace() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
 			);
 		},
@@ -922,7 +909,6 @@ fn render_diff_context_add_remove_lines_with_show_whitespace() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -948,11 +934,11 @@ fn render_diff_context_add_remove_lines_with_show_whitespace() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
 				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
 				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
@@ -992,7 +978,6 @@ fn render_diff_show_both_whitespace() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -1016,11 +1001,11 @@ fn render_diff_show_both_whitespace() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    content",
 				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}# # ",
 				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    \
@@ -1043,7 +1028,6 @@ fn render_diff_show_leading_whitespace() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -1067,11 +1051,11 @@ fn render_diff_show_leading_whitespace() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    content",
 				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}    ",
 				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    \
@@ -1094,7 +1078,6 @@ fn render_diff_show_no_whitespace() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -1118,11 +1101,11 @@ fn render_diff_show_no_whitespace() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal}1{Normal} {Normal}1{Normal}| {DiffContextColor}    sp tabs    content",
 				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content    ",
 				"{Normal}3{Normal} {Normal}3{Normal}| {DiffContextColor}    sp tabs    content    ",
@@ -1142,7 +1125,6 @@ fn render_diff_show_whitespace_all_spaces() {
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		ViewState {
 			size: Size::new(50, 100),
-			..ViewState::default()
 		},
 		&[],
 		|test_context: TestContext<'_>| {
@@ -1168,11 +1150,11 @@ fn render_diff_show_whitespace_all_spaces() {
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{BODY}",
-				"{Normal}{Pad ―,150}",
+				"{Normal}{Pad ―}",
 				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad ┈,150}",
+				"{Normal,Dimmed}{Pad ┈}",
 				"{Normal} {Normal} {Normal}1{Normal}| {DiffWhitespaceColor}%%%%"
 			);
 		},
@@ -1236,7 +1218,6 @@ fn render_help() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(200, 100),
-			..ViewState::default()
 		},
 		&[Input::Help],
 		|mut test_context: TestContext<'_>| {
@@ -1247,7 +1228,7 @@ fn render_help() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  ,184}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad  }",
 				"{BODY}",
 				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
@@ -1271,7 +1252,6 @@ fn handle_help_input() {
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(200, 100),
-			..ViewState::default()
 		},
 		&[Input::Help, Input::ShowDiff],
 		|mut test_context: TestContext<'_>| {

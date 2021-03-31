@@ -34,18 +34,15 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn build_view_data(&mut self, view: &View<'_>, todo_file: &TodoFile) -> &ViewData {
-		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
+	fn build_view_data(&mut self, view: &View<'_>, todo_file: &TodoFile) -> &mut ViewData {
 		self.view_data.clear();
-		self.view_data.set_view_size(view_width, view_height);
 
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, view),
 			ListState::Visual => self.get_visual_mode_view_data(todo_file, view),
 			ListState::Edit => {
 				self.edit.update_view_data(&mut self.view_data);
-				&self.view_data
+				&mut self.view_data
 			},
 		}
 	}
@@ -103,9 +100,8 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn update_list_view_data(&mut self, todo_file: &TodoFile, view_width: usize, view_height: usize) {
+	fn update_list_view_data(&mut self, todo_file: &TodoFile, view_width: usize) {
 		self.view_data.clear();
-		self.view_data.set_view_size(view_width, view_height);
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
@@ -131,36 +127,33 @@ impl<'l> List<'l> {
 				);
 			}
 		}
-		self.view_data.rebuild();
 		if let Some(visual_index) = self.visual_index_start {
 			self.view_data.ensure_line_visible(visual_index);
 		}
 		self.view_data.ensure_line_visible(selected_index);
 	}
 
-	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &ViewData {
+	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &mut ViewData {
 		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
 
 		if self.visual_mode_help.is_active() {
-			self.visual_mode_help.get_view_data(view_width, view_height)
+			self.visual_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(todo_file, view_width, view_height);
-			&self.view_data
+			self.update_list_view_data(todo_file, view_width);
+			&mut self.view_data
 		}
 	}
 
-	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &ViewData {
+	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, view: &View<'_>) -> &mut ViewData {
 		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
 
 		if self.normal_mode_help.is_active() {
-			self.normal_mode_help.get_view_data(view_width, view_height)
+			self.normal_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(todo_file, view_width, view_height);
-			&self.view_data
+			self.update_list_view_data(todo_file, view_width);
+			&mut self.view_data
 		}
 	}
 

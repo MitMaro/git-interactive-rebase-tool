@@ -10,7 +10,7 @@ fn render() {
 		String::from("X"),
 	]);
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}Prompt message (y,Z/n,X)? "

@@ -122,7 +122,7 @@ impl ViewData {
 		}
 	}
 
-	pub(crate) fn set_view_size(&mut self, view_width: usize, view_height: usize) {
+	pub fn set_view_size(&mut self, view_width: usize, view_height: usize) {
 		if self.height != view_height
 			|| self.width != view_width
 			|| self.leading_lines_cache.is_none()
@@ -284,7 +284,7 @@ impl ViewData {
 	}
 
 	#[allow(clippy::cognitive_complexity)]
-	pub(crate) fn rebuild(&mut self) {
+	fn rebuild(&mut self) {
 		if self.leading_lines_cache.is_none() {
 			self.leading_lines_cache = Some(
 				if self.leading_lines.is_empty() {
@@ -479,6 +479,11 @@ impl ViewData {
 			})
 			.collect::<Vec<ViewLine>>()
 	}
+
+	#[cfg(test)]
+	pub const fn get_size(&self) -> (usize, usize) {
+		(self.width, self.height)
+	}
 }
 
 #[cfg(test)]
@@ -566,8 +571,8 @@ mod tests {
 
 	#[test]
 	fn render_empty() {
-		let view_data = ViewData::new();
-		assert_rendered_output!(view_data, "{EMPTY}");
+		let mut view_data = ViewData::new();
+		assert_rendered_output!(&mut view_data, "{EMPTY}");
 	}
 
 	#[test]
@@ -575,7 +580,7 @@ mod tests {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 		view_data.set_show_help(true);
-		assert_rendered_output!(view_data, "{TITLE}{HELP}", "{EMPTY}");
+		assert_rendered_output!(&mut view_data, "{TITLE}{HELP}", "{EMPTY}");
 	}
 
 	#[test]
@@ -583,7 +588,7 @@ mod tests {
 		let mut view_data = ViewData::new();
 		view_data.set_show_title(true);
 		view_data.set_show_help(false);
-		assert_rendered_output!(view_data, "{TITLE}", "{EMPTY}");
+		assert_rendered_output!(&mut view_data, "{TITLE}", "{EMPTY}");
 	}
 
 	#[test]
@@ -593,7 +598,7 @@ mod tests {
 		view_data.scroll_position.scroll_down();
 		view_data.clear();
 
-		assert_rendered_output!(view_data, "{EMPTY}");
+		assert_rendered_output!(&mut view_data, "{EMPTY}");
 		assert_eq!(view_data.scroll_position.get_top_position(), 1);
 	}
 
@@ -604,7 +609,7 @@ mod tests {
 		view_data.clear_body();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -622,7 +627,7 @@ mod tests {
 		view_data.scroll_position.scroll_down();
 		view_data.reset();
 
-		assert_rendered_output!(view_data, "{EMPTY}");
+		assert_rendered_output!(&mut view_data, "{EMPTY}");
 		assert_eq!(view_data.scroll_position.get_top_position(), 0);
 	}
 
@@ -635,7 +640,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{BODY}",
 			"{Normal}Mocked Line",
 			"{TRAILING}",
@@ -652,7 +657,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{TRAILING}",
@@ -669,7 +674,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{BODY}",
@@ -684,7 +689,7 @@ mod tests {
 		view_data.set_view_size(100, 12);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{TITLE}",
 			"{LEADING}",
 			"{Normal}Mocked Line",
@@ -708,7 +713,7 @@ mod tests {
 		view_data.set_view_size(100, 12);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -731,7 +736,7 @@ mod tests {
 		view_data.set_view_size(100, 10);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{TITLE}",
 			"{LEADING}",
 			"{Normal}Mocked Line",
@@ -755,7 +760,7 @@ mod tests {
 		view_data.set_view_size(100, 9);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -777,7 +782,7 @@ mod tests {
 		view_data.set_view_size(100, 8);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -798,7 +803,7 @@ mod tests {
 		view_data.set_view_size(100, 6);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -817,7 +822,7 @@ mod tests {
 		view_data.set_view_size(100, 5);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -834,7 +839,7 @@ mod tests {
 		view_data.set_view_size(100, 4);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -850,7 +855,7 @@ mod tests {
 		view_data.set_view_size(100, 3);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{TRAILING}",
@@ -868,7 +873,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{TITLE}",
 			"{LEADING}",
 			"{Normal}Mocked Line",
@@ -895,7 +900,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{TITLE}",
 			"{LEADING}",
 			"{Normal}Mocked Line",
@@ -922,7 +927,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{TITLE}",
 			"{LEADING}",
 			"{Normal}Mocked Line",
@@ -945,7 +950,12 @@ mod tests {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 2);
 
-		assert_rendered_output!(view_data, "{TRAILING}", "{Normal}Mocked Line", "{Normal}Mocked Line");
+		assert_rendered_output!(
+			&mut view_data,
+			"{TRAILING}",
+			"{Normal}Mocked Line",
+			"{Normal}Mocked Line"
+		);
 	}
 
 	#[test]
@@ -953,7 +963,7 @@ mod tests {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 1);
 
-		assert_rendered_output!(view_data, "{TRAILING}", "{Normal}Mocked Line");
+		assert_rendered_output!(&mut view_data, "{TRAILING}", "{Normal}Mocked Line");
 	}
 
 	#[test]
@@ -969,7 +979,7 @@ mod tests {
 		view_data.rebuild();
 
 		// cache should still be empty after rebuild
-		assert_rendered_output!(view_data);
+		assert_rendered_output!(&mut view_data);
 	}
 
 	#[test]
@@ -977,7 +987,7 @@ mod tests {
 		let mut view_data = create_mocked_view_data();
 		view_data.set_view_size(100, 0);
 
-		assert_rendered_output!(view_data);
+		assert_rendered_output!(&mut view_data);
 	}
 
 	#[test]
@@ -986,7 +996,7 @@ mod tests {
 		view_data.set_show_title(true);
 		view_data.set_view_size(100, 1);
 
-		assert_rendered_output!(view_data, "{TITLE}");
+		assert_rendered_output!(&mut view_data, "{TITLE}");
 	}
 
 	#[test]
@@ -1007,7 +1017,7 @@ mod tests {
 		view_data.push_line(ViewLine::from("a").set_selected(true));
 		view_data.rebuild();
 
-		assert_rendered_output!(view_data, "{BODY}", "{Normal(selected)}a");
+		assert_rendered_output!(&mut view_data, "{BODY}", "{Normal(selected)}a");
 	}
 
 	#[test]
@@ -1016,7 +1026,7 @@ mod tests {
 		view_data.scroll_down();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1040,7 +1050,7 @@ mod tests {
 		view_data.scroll_down();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1066,7 +1076,7 @@ mod tests {
 		}
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1092,7 +1102,7 @@ mod tests {
 		}
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1121,7 +1131,7 @@ mod tests {
 		view_data.scroll_up();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1151,7 +1161,7 @@ mod tests {
 		view_data.scroll_up();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1182,7 +1192,7 @@ mod tests {
 		}
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1213,7 +1223,7 @@ mod tests {
 		}
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1237,7 +1247,7 @@ mod tests {
 		view_data.page_down();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1263,7 +1273,7 @@ mod tests {
 		view_data.page_down();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1292,7 +1302,7 @@ mod tests {
 		view_data.page_up();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1323,7 +1333,7 @@ mod tests {
 		view_data.page_up();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1350,7 +1360,7 @@ mod tests {
 		view_data.scroll_left();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}lllllll",
 			"{BODY}",
@@ -1373,7 +1383,7 @@ mod tests {
 		view_data.scroll_right();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}lllllll",
 			"{BODY}",
@@ -1398,7 +1408,7 @@ mod tests {
 		}
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}llllll",
 			"{BODY}",
@@ -1423,7 +1433,7 @@ mod tests {
 		}
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}llllll",
 			"{BODY}",
@@ -1459,7 +1469,7 @@ mod tests {
 			view_data.scroll_down();
 		}
 
-		assert_rendered_output!(view_data, "{BODY}", "{Normal}aaaaa", "{Normal}aaaa", "{Normal}aaa");
+		assert_rendered_output!(&mut view_data, "{BODY}", "{Normal}aaaaa", "{Normal}aaaa", "{Normal}aaa");
 	}
 
 	#[test]
@@ -1524,7 +1534,7 @@ mod tests {
 		view_data.rebuild();
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1554,7 +1564,7 @@ mod tests {
 		view_data.ensure_line_visible(1);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1581,7 +1591,7 @@ mod tests {
 		view_data.ensure_line_visible(4);
 
 		assert_rendered_output!(
-			view_data,
+			&mut view_data,
 			"{LEADING}",
 			"{Normal}Mocked Line",
 			"{Normal}Mocked Line",
@@ -1609,7 +1619,7 @@ mod tests {
 		}
 
 		view_data.ensure_column_visible(2);
-		assert_rendered_output!(view_data, "{BODY}", "{Normal}23456");
+		assert_rendered_output!(&mut view_data, "{BODY}", "{Normal}23456");
 	}
 
 	#[test]
@@ -1623,7 +1633,7 @@ mod tests {
 		}
 
 		view_data.ensure_column_visible(6);
-		assert_rendered_output!(view_data, "{BODY}", "{Normal}56789");
+		assert_rendered_output!(&mut view_data, "{BODY}", "{Normal}56789");
 	}
 
 	#[test]

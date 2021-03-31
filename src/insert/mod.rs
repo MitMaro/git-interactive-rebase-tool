@@ -28,17 +28,13 @@ impl ProcessModule for Insert {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &ViewData {
-		let view_width = view.get_view_size().width();
-		let view_height = view.get_view_size().height();
-
+	fn build_view_data(&mut self, _: &View<'_>, _: &TodoFile) -> &mut ViewData {
 		match self.state {
-			InsertState::Prompt => self.action_choices.get_view_data(view_width, view_height),
+			InsertState::Prompt => self.action_choices.get_view_data(),
 			InsertState::Edit => {
 				self.edit_view_data.clear();
-				self.edit_view_data.set_view_size(view_width, view_height);
 				self.edit.update_view_data(&mut self.edit_view_data);
-				&self.edit_view_data
+				&mut self.edit_view_data
 			},
 		}
 	}

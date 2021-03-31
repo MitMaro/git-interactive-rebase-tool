@@ -22,7 +22,7 @@ fn create_choices() -> Vec<(TestAction, char, String)> {
 fn render_options_no_prompt() {
 	let mut module = Choice::new(create_choices());
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}a) Description A",
@@ -38,7 +38,7 @@ fn render_options_prompt() {
 	let mut module = Choice::new(create_choices());
 	module.set_prompt(vec![ViewLine::from("Prompt")]);
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
 		"{Normal}Prompt",
@@ -57,7 +57,7 @@ fn invalid_selection_character() {
 	let mut module = Choice::new(create_choices());
 	assert!(module.handle_input(Input::Character('z')).is_none());
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}a) Description A",
@@ -73,7 +73,7 @@ fn invalid_selection_other() {
 	let mut module = Choice::new(create_choices());
 	assert!(module.handle_input(Input::Other).is_none());
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}a) Description A",
@@ -89,7 +89,7 @@ fn valid_selection() {
 	let mut module = Choice::new(create_choices());
 	assert_eq!(module.handle_input(Input::Character('b')).unwrap(), &TestAction::B);
 	assert_rendered_output!(
-		module.get_view_data(100, 100),
+		module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}a) Description A",
