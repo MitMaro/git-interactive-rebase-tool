@@ -16,13 +16,7 @@ use anyhow::Result;
 
 use crate::{
 	input::Input,
-	process::{
-		exit_status::ExitStatus,
-		modules::Modules,
-		process_result::ProcessResult,
-		state::State,
-		window_size_error::WindowSizeError,
-	},
+	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::View,
 };
@@ -48,9 +42,7 @@ impl<'r> Process<'r> {
 		if self.view.start().is_err() {
 			return Ok(Some(ExitStatus::StateError));
 		}
-		let view_width = self.view.get_view_size().width();
-		let view_height = self.view.get_view_size().height();
-		if WindowSizeError::is_window_too_small(view_width, view_height) {
+		if self.view.get_render_context().is_window_too_small() {
 			self.handle_process_result(&mut modules, &ProcessResult::new().state(State::WindowSizeError));
 		}
 		self.activate(&mut modules, State::List);
@@ -105,10 +97,7 @@ impl<'r> Process<'r> {
 				self.exit_status = Some(ExitStatus::Kill);
 			},
 			Some(Input::Resize) => {
-				let view_width = self.view.get_view_size().width();
-				let view_height = self.view.get_view_size().height();
-				if self.state != State::WindowSizeError && WindowSizeError::is_window_too_small(view_width, view_height)
-				{
+				if self.state != State::WindowSizeError && self.view.get_render_context().is_window_too_small() {
 					self.state = State::WindowSizeError;
 					self.activate(modules, previous_state);
 				}

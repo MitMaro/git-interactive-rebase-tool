@@ -22,7 +22,6 @@ use crate::{
 		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 		Config,
 	},
-	constants::MINIMUM_FULL_WINDOW_WIDTH,
 	display::display_color::DisplayColor,
 	input::{input_handler::InputMode, Input},
 	process::{
@@ -38,7 +37,7 @@ use crate::{
 		view_builder::{ViewBuilder, ViewBuilderOptions},
 	},
 	todo_file::TodoFile,
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, View},
+	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
 };
 
 pub struct ShowCommit<'s> {
@@ -87,15 +86,14 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 	}
 
-	fn build_view_data(&mut self, view: &View<'_>, _: &TodoFile) -> &mut ViewData {
-		let view_width = view.get_view_size().width();
+	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &mut ViewData {
 		if self.help.is_active() {
 			return self.help.get_view_data();
 		}
 
 		if self.view_data.is_empty() {
 			let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
-			let is_full_width = view_width >= MINIMUM_FULL_WINDOW_WIDTH;
+			let is_full_width = context.is_full_width();
 
 			self.view_data.push_leading_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
