@@ -9,12 +9,15 @@ pub mod view_line;
 use anyhow::Result;
 
 use crate::{
-	constants::{TITLE, TITLE_HELP_INDICATOR_LENGTH, TITLE_LENGTH, TITLE_SHORT, TITLE_SHORT_LENGTH},
 	display::{display_color::DisplayColor, Display},
 	input::{input_handler::InputMode, Input},
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 	Config,
 };
+
+const TITLE: &str = "Git Interactive Rebase Tool";
+const TITLE_SHORT: &str = "Git Rebase";
+const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
 
 pub struct View<'v> {
 	config: &'v Config,
@@ -133,33 +136,34 @@ impl<'v> View<'v> {
 			.first()
 			.map_or(String::from("?"), String::from);
 
-		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LENGTH + help_indicator.len();
+		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LABEL.len() + help_indicator.len();
 
-		if window_width >= TITLE_LENGTH {
+		if window_width >= TITLE.len() {
 			self.display.draw_str(TITLE)?;
 			// only draw help if there is room
-			if window_width > TITLE_LENGTH + title_help_indicator_total_length {
-				if (window_width - TITLE_LENGTH - title_help_indicator_total_length) > 0 {
-					let padding = " ".repeat(window_width - TITLE_LENGTH - title_help_indicator_total_length);
+			if window_width > TITLE.len() + title_help_indicator_total_length {
+				if (window_width - TITLE.len() - title_help_indicator_total_length) > 0 {
+					let padding = " ".repeat(window_width - TITLE.len() - title_help_indicator_total_length);
 					self.display.draw_str(padding.as_str())?;
 				}
 				if show_help {
-					self.display.draw_str(format!("Help: {}", help_indicator).as_str())?;
+					self.display
+						.draw_str(format!("{}{}", TITLE_HELP_INDICATOR_LABEL, help_indicator).as_str())?;
 				}
 				else {
 					let padding = " ".repeat(title_help_indicator_total_length);
 					self.display.draw_str(padding.as_str())?;
 				}
 			}
-			else if (window_width - TITLE_LENGTH) > 0 {
-				let padding = " ".repeat(window_width - TITLE_LENGTH);
+			else if (window_width - TITLE.len()) > 0 {
+				let padding = " ".repeat(window_width - TITLE.len());
 				self.display.draw_str(padding.as_str())?;
 			}
 		}
 		else {
 			self.display.draw_str(TITLE_SHORT)?;
-			if (window_width - TITLE_SHORT_LENGTH) > 0 {
-				let padding = " ".repeat(window_width - TITLE_SHORT_LENGTH);
+			if (window_width - TITLE_SHORT.len()) > 0 {
+				let padding = " ".repeat(window_width - TITLE_SHORT.len());
 				self.display.draw_str(padding.as_str())?;
 			}
 		}
