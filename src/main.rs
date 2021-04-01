@@ -36,7 +36,6 @@ mod components;
 mod config;
 mod confirm_abort;
 mod confirm_rebase;
-mod constants;
 mod display;
 mod external_editor;
 mod input;
@@ -54,13 +53,18 @@ use clap::{App, Arg};
 
 use crate::{
 	config::Config,
-	constants::{NAME, VERSION},
 	display::{CrossTerm, Display},
 	input::input_handler::InputHandler,
 	process::{exit_status::ExitStatus, modules::Modules, Process},
 	todo_file::TodoFile,
 	view::View,
 };
+
+const NAME: &str = "interactive-rebase-tool";
+#[cfg(not(feature = "dev"))]
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+#[cfg(feature = "dev")]
+const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "-dev");
 
 #[derive(Debug)]
 pub struct Exit {
