@@ -376,8 +376,8 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 			.collect(),
 	);
 	let input_handler = InputHandler::new(&config.key_bindings);
-	let display = Display::new(input_handler, &mut crossterm, &config.theme);
-	let view = View::new(display, &config);
+	let display = Display::new(&mut crossterm, &config.theme);
+	let view = View::new(input_handler, display, &config);
 	let todo_file = Builder::new()
 		.prefix("git-rebase-todo-scratch")
 		.suffix("")
