@@ -168,9 +168,12 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 	}
 
 	let mut crossterm = CrossTerm::new();
-	let display = Display::new(InputHandler::new(&config.key_bindings), &mut crossterm, &config.theme);
+	let display = Display::new(&mut crossterm, &config.theme);
 	let modules = Modules::new(&config);
-	let mut process = Process::new(todo_file, View::new(display, &config));
+	let mut process = Process::new(
+		todo_file,
+		View::new(InputHandler::new(&config.key_bindings), display, &config),
+	);
 	let result = process.run(modules);
 
 	result

@@ -9,8 +9,11 @@ pub mod view_line;
 use anyhow::Result;
 
 use crate::{
-	display::{display_color::DisplayColor, Display},
-	input::{input_handler::InputMode, Input},
+	display::{display_color::DisplayColor, CrossTerm, Display},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 	Config,
 };
@@ -22,11 +25,16 @@ const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
 pub struct View<'v> {
 	config: &'v Config,
 	display: Display<'v>,
+	input_handler: InputHandler<'v>,
 }
 
 impl<'v> View<'v> {
-	pub(crate) const fn new(display: Display<'v>, config: &'v Config) -> Self {
-		Self { display, config }
+	pub(crate) const fn new(input_handler: InputHandler<'v>, display: Display<'v>, config: &'v Config) -> Self {
+		Self {
+			config,
+			display,
+			input_handler,
+		}
 	}
 
 	pub(crate) fn start(&mut self) -> Result<()> {
@@ -38,7 +46,13 @@ impl<'v> View<'v> {
 	}
 
 	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
-		self.display.get_input(mode)
+		// TODO remove ignore hack
+		loop {
+			let input = CrossTerm::read_event().map_or(Input::Other, |input| self.input_handler.get_input(mode, input));
+			if input != Input::Ignore {
+				return input;
+			}
+		}
 	}
 
 	pub(crate) fn get_render_context(&self) -> RenderContext {
@@ -211,8 +225,8 @@ mod tests {
 		let mut crossterm = CrossTerm::new();
 		crossterm.set_size(size);
 		let input_handler = InputHandler::new(&config.key_bindings);
-		let display = Display::new(input_handler, &mut crossterm, &config.theme);
-		let view = View::new(display, &config);
+		let display = Display::new(&mut crossterm, &config.theme);
+		let view = View::new(input_handler, display, &config);
 		callback(TestContext { view });
 	}
 
