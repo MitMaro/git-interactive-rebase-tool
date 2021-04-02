@@ -21,15 +21,10 @@ use self::crossterm as ct;
 use crate::{
 	config::theme::Theme,
 	display::{display_color::DisplayColor, size::Size, utils::register_selectable_color_pairs},
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
-	},
 };
 
 pub struct Display<'d> {
 	crossterm: &'d mut CrossTerm,
-	input_handler: InputHandler<'d>,
 	action_break: (Colors, Colors),
 	action_drop: (Colors, Colors),
 	action_edit: (Colors, Colors),
@@ -51,7 +46,7 @@ pub struct Display<'d> {
 }
 
 impl<'d> Display<'d> {
-	pub(crate) fn new(input_handler: InputHandler<'d>, crossterm: &'d mut CrossTerm, theme: &'d Theme) -> Self {
+	pub(crate) fn new(crossterm: &'d mut CrossTerm, theme: &'d Theme) -> Self {
 		let color_mode = crossterm.get_color_mode();
 		let normal = register_selectable_color_pairs(
 			color_mode,
@@ -164,7 +159,6 @@ impl<'d> Display<'d> {
 
 		Self {
 			crossterm,
-			input_handler,
 			normal,
 			indicator,
 			action_break,
@@ -271,16 +265,6 @@ impl<'d> Display<'d> {
 		self.crossterm.get_size()
 	}
 
-	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
-		// TODO remove ignore hack
-		loop {
-			let input = CrossTerm::read_event().map_or(Input::Other, |input| self.input_handler.get_input(mode, input));
-			if input != Input::Ignore {
-				return input;
-			}
-		}
-	}
-
 	pub(crate) fn ensure_at_line_start(&mut self) -> Result<()> {
 		self.crossterm.move_to_column(1)
 	}
@@ -307,27 +291,19 @@ impl<'d> Display<'d> {
 
 #[cfg(test)]
 mod tests {
-	use crossterm::event::MouseEvent;
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{
-		create_key_event,
-		display::{
-			mockcrossterm::State,
-			testutil::{display_module_test, TestContext},
-		},
+	use crate::display::{
+		mockcrossterm::State,
+		testutil::{display_module_test, TestContext},
 	};
 
 	#[test]
 	#[serial_test::serial]
 	fn draw_str() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.draw_str("Test String").unwrap();
 			let output = CrossTerm::get_output();
 			assert_eq!(output, vec!["Test String"]);
@@ -342,11 +318,7 @@ mod tests {
 			test_context.crossterm.set_dim(true).unwrap();
 			test_context.crossterm.set_reverse(true).unwrap();
 			test_context.crossterm.set_underline(true).unwrap();
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.clear().unwrap();
 			assert!(CrossTerm::get_output().is_empty());
 			assert!(CrossTerm::get_output().is_empty());
@@ -360,11 +332,7 @@ mod tests {
 	#[serial_test::serial]
 	fn refresh() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.refresh().unwrap();
 			assert!(!test_context.crossterm.is_dirty());
 		});
@@ -510,11 +478,7 @@ mod tests {
 		expected_background: CrosstermColor,
 	) {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.color(display_color, selected).unwrap();
 			assert!(test_context
 				.crossterm
@@ -538,11 +502,7 @@ mod tests {
 	#[serial_test::serial()]
 	fn style(dim: bool, underline: bool, reverse: bool) {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.set_style(dim, underline, reverse).unwrap();
 			assert_eq!(test_context.crossterm.is_dimmed(), dim);
 			assert_eq!(test_context.crossterm.is_underline(), underline);
@@ -552,64 +512,10 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn get_input_success() {
-		display_module_test(|mut test_context: TestContext<'_>| {
-			CrossTerm::set_inputs(vec![create_key_event!('z')]);
-			let display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
-			assert_eq!(display.get_input(InputMode::Default), Input::Character('z'));
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn get_input_fail() {
-		display_module_test(|mut test_context: TestContext<'_>| {
-			CrossTerm::set_inputs(vec![]);
-			let display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
-			assert_eq!(display.get_input(InputMode::Default), Input::Other);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn get_input_ignore_hack() {
-		display_module_test(|mut test_context: TestContext<'_>| {
-			CrossTerm::set_inputs(vec![
-				Event::Mouse(MouseEvent {
-					kind: MouseEventKind::Moved,
-					column: 0,
-					row: 0,
-					modifiers: KeyModifiers::NONE,
-				}),
-				create_key_event!('z'),
-			]);
-			let display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
-			assert_eq!(display.get_input(InputMode::Default), Input::Character('z'));
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
 	fn get_window_size() {
 		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.crossterm.set_size(Size::new(12, 10));
-			let display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			assert_eq!(display.get_window_size(), Size::new(12, 10));
 		});
 	}
@@ -618,11 +524,7 @@ mod tests {
 	#[serial_test::serial]
 	fn ensure_at_line_start() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.ensure_at_line_start().unwrap();
 			assert_eq!(test_context.crossterm.get_position(), (1, 0));
 		});
@@ -633,11 +535,7 @@ mod tests {
 	fn move_from_end_of_line() {
 		display_module_test(|mut test_context: TestContext<'_>| {
 			test_context.crossterm.set_size(Size::new(20, 10));
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.move_from_end_of_line(5).unwrap();
 			// character after the 15th character (16th)
 			assert_eq!(test_context.crossterm.get_position(), (16, 0));
@@ -648,11 +546,7 @@ mod tests {
 	#[serial_test::serial]
 	fn start() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.start().unwrap();
 			assert_eq!(test_context.crossterm.get_state(), State::Normal);
 		});
@@ -662,11 +556,7 @@ mod tests {
 	#[serial_test::serial]
 	fn end() {
 		display_module_test(|mut test_context: TestContext<'_>| {
-			let mut display = Display::new(
-				test_context.input_handler,
-				&mut test_context.crossterm,
-				&test_context.config.theme,
-			);
+			let mut display = Display::new(&mut test_context.crossterm, &test_context.config.theme);
 			display.end().unwrap();
 			assert_eq!(test_context.crossterm.get_state(), State::Ended);
 		});
