@@ -9,9 +9,10 @@ pub mod view_line;
 use anyhow::Result;
 
 use crate::{
-	display::{display_color::DisplayColor, CrossTerm, Display},
+	display::{display_color::DisplayColor, Display},
 	input::{
 		input_handler::{InputHandler, InputMode},
+		EventHandler,
 		Input,
 	},
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
@@ -46,13 +47,7 @@ impl<'v> View<'v> {
 	}
 
 	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
-		// TODO remove ignore hack
-		loop {
-			let input = CrossTerm::read_event().map_or(Input::Other, |input| self.input_handler.get_input(mode, input));
-			if input != Input::Ignore {
-				return input;
-			}
-		}
+		self.input_handler.get_input(mode, EventHandler::poll_event())
 	}
 
 	pub(crate) fn get_render_context(&self) -> RenderContext {
@@ -196,6 +191,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		config::Config,
+		create_key_event,
 		display::{size::Size, CrossTerm},
 		input::input_handler::InputHandler,
 	};
@@ -228,6 +224,15 @@ mod tests {
 		let display = Display::new(&mut crossterm, &config.theme);
 		let view = View::new(input_handler, display, &config);
 		callback(TestContext { view });
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn get_input() {
+		view_module_test(Size::new(20, 10), |test_context| {
+			CrossTerm::set_inputs(vec![create_key_event!('z')]);
+			assert_eq!(test_context.view.get_input(InputMode::Default), Input::Character('z'));
+		});
 	}
 
 	#[test]
