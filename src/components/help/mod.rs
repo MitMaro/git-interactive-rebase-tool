@@ -1,13 +1,17 @@
 #[cfg(test)]
 mod tests;
+use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	display::display_color::DisplayColor,
-	input::Input,
-	process::util::handle_view_data_scroll,
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
+	input::{Event, EventHandler, InputOptions},
+	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
 };
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+}
 
 pub struct Help {
 	active: bool,
@@ -70,10 +74,16 @@ impl Help {
 		&mut self.view_data
 	}
 
-	pub fn handle_input(&mut self, input: Input) {
-		if input != Input::Resize && handle_view_data_scroll(input, &mut self.view_data).is_none() {
-			self.active = false;
+	pub fn handle_event(&mut self, event_handler: &EventHandler) -> Event {
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+
+		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+			if let Event::Key(_) = event {
+				self.active = false;
+			}
 		}
+
+		event
 	}
 
 	pub fn set_active(&mut self) {

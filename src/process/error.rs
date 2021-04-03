@@ -1,18 +1,23 @@
+use lazy_static::lazy_static;
+
 use crate::{
 	display::display_color::DisplayColor,
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
-	},
-	process::{
-		process_module::ProcessModule,
-		process_result::ProcessResult,
-		state::State,
-		util::handle_view_data_scroll,
-	},
+	input::{Event, EventHandler, InputOptions},
+	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
+	view::{
+		handle_view_data_scroll,
+		line_segment::LineSegment,
+		render_context::RenderContext,
+		view_data::ViewData,
+		view_line::ViewLine,
+		View,
+	},
 };
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+}
 
 pub struct Error {
 	return_state: State,
@@ -29,11 +34,13 @@ impl ProcessModule for Error {
 		&mut self.view_data
 	}
 
-	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::Default);
-		let mut result = ProcessResult::new().input(input);
-		if handle_view_data_scroll(input, &mut self.view_data).is_none() && input != Input::Resize {
-			result = result.state(self.return_state);
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+		let mut result = ProcessResult::from(event);
+		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+			if let Event::Key(_) = event {
+				result = result.state(self.return_state)
+			}
 		}
 		result
 	}
@@ -72,11 +79,11 @@ mod tests {
 	use crate::{
 		assert_process_result,
 		assert_rendered_output,
+		input::{Event, MetaEvent},
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
 
 	#[test]
-	#[serial_test::serial]
 	fn simple_error() {
 		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
 			let mut module = Error::new();
@@ -94,7 +101,6 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn error_with_contest() {
 		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
 			let mut module = Error::new();
@@ -113,7 +119,6 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn error_with_newlines() {
 		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
 			let mut module = Error::new();
@@ -134,19 +139,18 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn return_state() {
 		process_module_test(
 			&[],
 			ViewState::default(),
-			&[Input::Character('a')],
+			&[Event::from('a')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Error::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
 				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Character('a'),
+					test_context.handle_event(&mut module),
+					event = Event::from('a'),
 					state = State::ConfirmRebase
 				);
 			},
@@ -154,45 +158,61 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn resize() {
 		process_module_test(
 			&[],
 			ViewState::default(),
-			&[Input::Resize],
+			&[Event::Resize(100, 100)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Error::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
+				assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
 			},
 		);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn scroll_events() {
 		process_module_test(
 			&[],
 			ViewState::default(),
 			&[
-				Input::ScrollLeft,
-				Input::ScrollRight,
-				Input::ScrollDown,
-				Input::ScrollUp,
-				Input::ScrollJumpDown,
-				Input::ScrollJumpUp,
+				Event::from(MetaEvent::ScrollLeft),
+				Event::from(MetaEvent::ScrollRight),
+				Event::from(MetaEvent::ScrollDown),
+				Event::from(MetaEvent::ScrollUp),
+				Event::from(MetaEvent::ScrollJumpDown),
+				Event::from(MetaEvent::ScrollJumpUp),
 			],
 			|mut test_context: TestContext<'_>| {
 				let mut module = Error::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
 				module.set_error_message(&anyhow!("Test Error"));
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollLeft);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollRight);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollDown);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollUp);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollJumpDown);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::ScrollJumpUp);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ScrollLeft)
+				);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ScrollRight)
+				);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ScrollDown)
+				);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ScrollUp)
+				);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ScrollJumpDown)
+				);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ScrollJumpUp)
+				);
 			},
 		);
 	}

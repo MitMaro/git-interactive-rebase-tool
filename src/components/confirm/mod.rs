@@ -1,11 +1,18 @@
+mod confirmed;
 #[cfg(test)]
 mod tests;
 
+pub use confirmed::Confirmed;
+use lazy_static::lazy_static;
+
 use crate::{
-	input::Input,
-	process::util::handle_view_data_scroll,
+	input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, MetaEvent},
 	view::{view_data::ViewData, view_line::ViewLine},
 };
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+}
 
 pub struct Confirm {
 	view_data: ViewData,
@@ -28,16 +35,36 @@ impl Confirm {
 		&mut self.view_data
 	}
 
-	pub fn handle_input(&mut self, input: Input) -> Option<bool> {
-		if handle_view_data_scroll(input, &mut self.view_data).is_none() {
-			match input {
-				Input::Yes => Some(true),
-				Input::No => Some(false),
-				_ => None,
+	#[allow(clippy::unused_self)]
+	pub fn handle_event(&self, event_handler: &EventHandler) -> (Confirmed, Event) {
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, key_bindings| {
+			if let Event::Key(key) = event {
+				if let KeyCode::Char(c) = key.code {
+					let event_lower = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_lowercase()), key.modifiers));
+					let event_upper = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_uppercase()), key.modifiers));
+
+					return if key_bindings.confirm_yes.contains(&event_lower)
+						|| key_bindings.confirm_yes.contains(&event_upper)
+					{
+						Event::from(MetaEvent::Yes)
+					}
+					else {
+						Event::from(MetaEvent::No)
+					};
+				}
+			}
+			event
+		});
+		let confirmed = if let Event::Meta(meta_event) = event {
+			match meta_event {
+				MetaEvent::Yes => Confirmed::Yes,
+				MetaEvent::No => Confirmed::No,
+				_ => Confirmed::Other,
 			}
 		}
 		else {
-			None
-		}
+			Confirmed::Other
+		};
+		(confirmed, event)
 	}
 }

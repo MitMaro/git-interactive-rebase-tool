@@ -1,10 +1,12 @@
 use rstest::rstest;
 
 use super::*;
-use crate::assert_rendered_output;
+use crate::{
+	assert_rendered_output,
+	input::{testutil::with_event_handler, MetaEvent},
+};
 
 #[test]
-#[serial_test::serial]
 fn empty() {
 	let mut module = Help::new_from_keybindings(&[]);
 	assert_rendered_output!(
@@ -18,7 +20,6 @@ fn empty() {
 }
 
 #[test]
-#[serial_test::serial]
 fn from_key_bindings() {
 	let mut module = Help::new_from_keybindings(&[
 		(vec![String::from("a")], String::from("Description A")),
@@ -38,26 +39,30 @@ fn from_key_bindings() {
 }
 
 #[rstest(
-	input,
-	case::resize(Input::Resize),
-	case::scroll_left(Input::ScrollLeft),
-	case::scroll_right(Input::ScrollRight),
-	case::scroll_down(Input::ScrollDown),
-	case::scroll_up(Input::ScrollUp),
-	case::scroll_jump_down(Input::ScrollJumpDown),
-	case::scroll_jump_up(Input::ScrollJumpUp)
+	event,
+	case::resize(Event::Resize(100, 100)),
+	case::scroll_left(Event::from(MetaEvent::ScrollLeft)),
+	case::scroll_right(Event::from(MetaEvent::ScrollRight)),
+	case::scroll_down(Event::from(MetaEvent::ScrollDown)),
+	case::scroll_up(Event::from(MetaEvent::ScrollUp)),
+	case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown)),
+	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
 )]
-fn input_continue_active(input: Input) {
-	let mut module = Help::new_from_keybindings(&[]);
-	module.set_active();
-	module.handle_input(input);
-	assert!(module.is_active());
+fn input_continue_active(event: Event) {
+	with_event_handler(&[event], |context| {
+		let mut module = Help::new_from_keybindings(&[]);
+		module.set_active();
+		module.handle_event(&context.event_handler);
+		assert!(module.is_active());
+	});
 }
 
 #[test]
 fn input_other() {
-	let mut module = Help::new_from_keybindings(&[]);
-	module.set_active();
-	module.handle_input(Input::Character('a'));
-	assert!(!module.is_active());
+	with_event_handler(&[Event::from('a')], |context| {
+		let mut module = Help::new_from_keybindings(&[]);
+		module.set_active();
+		module.handle_event(&context.event_handler);
+		assert!(!module.is_active());
+	});
 }

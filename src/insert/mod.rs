@@ -5,11 +5,8 @@ mod line_type;
 mod tests;
 
 use crate::{
-	components::{Choice, Edit},
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
-	},
+	components::{choice::Choice, edit::Edit},
+	input::EventHandler,
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
@@ -42,18 +39,17 @@ impl ProcessModule for Insert {
 		}
 	}
 
-	fn handle_input(
+	fn handle_events(
 		&mut self,
-		input_handler: &InputHandler<'_>,
+		event_handler: &EventHandler,
 		_: &mut View<'_>,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
-		let mut result = ProcessResult::new();
 		match self.state {
 			InsertState::Prompt => {
-				let input = input_handler.get_input(InputMode::Default);
-				result = result.input(input);
-				if let Some(action) = self.action_choices.handle_input(input) {
+				let (choice, event) = self.action_choices.handle_event(event_handler);
+				let mut result = ProcessResult::from(event);
+				if let Some(action) = choice {
 					if action == &LineType::Cancel {
 						result = result.state(State::List);
 					}
@@ -63,11 +59,11 @@ impl ProcessModule for Insert {
 						self.state = InsertState::Edit;
 					}
 				}
+				result
 			},
 			InsertState::Edit => {
-				let input = input_handler.get_input(InputMode::Raw);
-				result = result.input(input);
-				if !self.edit.handle_input(input) && input == Input::Enter {
+				let mut result = ProcessResult::from(self.edit.handle_event(event_handler));
+				if self.edit.is_finished() {
 					let content = self.edit.get_content();
 					result = result.state(State::List);
 					if !content.is_empty() {
@@ -85,10 +81,9 @@ impl ProcessModule for Insert {
 						rebase_todo.set_selected_line_index(new_line_index);
 					}
 				}
+				result
 			},
 		}
-
-		result
 	}
 }
 

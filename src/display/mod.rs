@@ -8,11 +8,9 @@ mod utils;
 mod crossterm;
 #[cfg(test)]
 mod mockcrossterm;
-#[cfg(test)]
-pub mod testutil;
 use anyhow::Result;
 use ct::Color as CrosstermColor;
-pub use ct::{Colors, CrossTerm, Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind};
+pub use ct::{Colors, CrossTerm};
 #[cfg(test)]
 use mockcrossterm as ct;
 
@@ -294,10 +292,25 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::display::{
-		mockcrossterm::State,
-		testutil::{display_module_test, TestContext},
+	use crate::{
+		config::{testutil::create_config, Config},
+		display::mockcrossterm::State,
 	};
+
+	pub struct TestContext<'t> {
+		pub config: &'t Config,
+		pub crossterm: CrossTerm,
+	}
+
+	pub fn display_module_test<F>(callback: F)
+	where F: FnOnce(TestContext<'_>) {
+		let config = create_config();
+		let crossterm = CrossTerm::new();
+		callback(TestContext {
+			config: &config,
+			crossterm,
+		});
+	}
 
 	#[test]
 	#[serial_test::serial]

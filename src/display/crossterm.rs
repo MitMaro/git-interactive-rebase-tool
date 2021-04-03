@@ -21,7 +21,7 @@ use crossterm::{
 	QueueableCommand,
 };
 pub use crossterm::{
-	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind},
+	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind},
 	style::{Color, Colors},
 };
 

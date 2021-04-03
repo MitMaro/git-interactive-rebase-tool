@@ -2,12 +2,17 @@
 mod tests;
 use std::collections::HashMap;
 
+use lazy_static::lazy_static;
+
 use crate::{
 	display::display_color::DisplayColor,
-	input::Input,
-	process::util::handle_view_data_scroll,
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
+	input::{Event, EventHandler, InputOptions, KeyCode},
+	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
 };
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+}
 
 pub struct Choice<T> {
 	map: HashMap<char, T>,
@@ -68,22 +73,20 @@ where T: Clone
 		&mut self.view_data
 	}
 
-	pub fn handle_input(&mut self, input: Input) -> Option<&T> {
-		if handle_view_data_scroll(input, &mut self.view_data).is_none() {
-			match input {
-				Input::Resize => {},
-				Input::Character(c) => {
+	pub fn handle_event(&mut self, event_handler: &EventHandler) -> (Option<&T>, Event) {
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+
+		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+			if let Event::Key(key_event) = event {
+				if let KeyCode::Char(c) = key_event.code {
 					if let Some(v) = self.map.get(&c) {
 						self.invalid_selection = false;
-						return Some(v);
+						return (Some(v), event);
 					}
-					self.invalid_selection = true;
-				},
-				_ => {
-					self.invalid_selection = true;
-				},
+				}
+				self.invalid_selection = true;
 			}
 		}
-		None
+		(None, event)
 	}
 }

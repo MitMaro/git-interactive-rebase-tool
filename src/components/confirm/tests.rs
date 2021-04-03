@@ -1,7 +1,7 @@
 use rstest::rstest;
 
 use super::*;
-use crate::assert_rendered_output;
+use crate::{assert_rendered_output, input::testutil::with_event_handler};
 
 #[test]
 fn render() {
@@ -18,29 +18,50 @@ fn render() {
 }
 
 #[test]
-fn handle_input_yes() {
-	let mut module = Confirm::new("Prompt message", &[], &[]);
-	assert!(module.handle_input(Input::Yes).unwrap());
+fn handle_event_yes_uppercase() {
+	with_event_handler(&[Event::from('Y')], |context| {
+		let module = Confirm::new("Prompt message", &[], &[]);
+		let (confirmed, event) = module.handle_event(&context.event_handler);
+		assert_eq!(event, Event::from(MetaEvent::Yes));
+		assert_eq!(confirmed, Confirmed::Yes);
+	});
 }
 
 #[test]
-fn handle_input_no() {
-	let mut module = Confirm::new("Prompt message", &[], &[]);
-	assert!(!module.handle_input(Input::No).unwrap());
+fn handle_event_yes_lowercase() {
+	with_event_handler(&[Event::from('y')], |context| {
+		let module = Confirm::new("Prompt message", &[], &[]);
+		let (confirmed, event) = module.handle_event(&context.event_handler);
+		assert_eq!(event, Event::from(MetaEvent::Yes));
+		assert_eq!(confirmed, Confirmed::Yes);
+	});
+}
+
+#[test]
+fn handle_event_no() {
+	with_event_handler(&[Event::from('n')], |context| {
+		let module = Confirm::new("Prompt message", &[], &[]);
+		let (confirmed, event) = module.handle_event(&context.event_handler);
+		assert_eq!(event, Event::from(MetaEvent::No));
+		assert_eq!(confirmed, Confirmed::No);
+	});
 }
 
 #[rstest(
-	input,
-	case::other(Input::Character('x')),
-	case::resize(Input::Resize),
-	case::scroll_left(Input::ScrollLeft),
-	case::scroll_right(Input::ScrollRight),
-	case::scroll_down(Input::ScrollDown),
-	case::scroll_up(Input::ScrollUp),
-	case::scroll_jump_down(Input::ScrollJumpDown),
-	case::scroll_jump_up(Input::ScrollJumpUp)
+	event,
+	case::resize(Event::Resize(100, 100)),
+	case::scroll_left(Event::from(MetaEvent::ScrollLeft)),
+	case::scroll_right(Event::from(MetaEvent::ScrollRight)),
+	case::scroll_down(Event::from(MetaEvent::ScrollDown)),
+	case::scroll_up(Event::from(MetaEvent::ScrollUp)),
+	case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown)),
+	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
 )]
-fn input_standard(input: Input) {
-	let mut module = Confirm::new("Prompt message", &[], &[]);
-	assert!(module.handle_input(input).is_none());
+fn input_standard(event: Event) {
+	with_event_handler(&[event], |context| {
+		let module = Confirm::new("Prompt message", &[], &[]);
+		let (confirmed, evt) = module.handle_event(&context.event_handler);
+		assert_eq!(evt, event);
+		assert_eq!(confirmed, Confirmed::Other);
+	});
 }
