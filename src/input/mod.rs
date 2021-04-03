@@ -1,4 +1,7 @@
+mod event_handler;
 pub mod input_handler;
+
+pub use event_handler::EventHandler;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Input {
@@ -65,7 +68,4 @@ pub enum Input {
 	Right,
 	Tab,
 	Up,
-
-	// some events should be
-	Ignore,
 }

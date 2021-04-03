@@ -246,7 +246,6 @@ fn format_process_result(
 				Input::ForceRebase => String::from("ForceRebase"),
 				Input::Help => String::from("Help"),
 				Input::Home => String::from("Home"),
-				Input::Ignore => String::from("Ignore"),
 				Input::Insert => String::from("Insert"),
 				Input::InsertLine => String::from("InsertLine"),
 				Input::Kill => String::from("Kill"),
