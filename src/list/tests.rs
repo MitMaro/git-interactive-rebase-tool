@@ -3,11 +3,11 @@ use crate::{
 	assert_process_result,
 	assert_rendered_output,
 	display::size::Size,
+	input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind},
 	process::testutil::{process_module_test, TestContext, ViewState},
 };
 
 #[test]
-#[serial_test::serial]
 fn render_empty_list() {
 	process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
 		let mut module = List::new(test_context.config);
@@ -22,7 +22,6 @@ fn render_empty_list() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_full() {
 	process_module_test(
 		&[
@@ -67,7 +66,6 @@ fn render_full() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_compact() {
 	process_module_test(
 		&[
@@ -113,7 +111,6 @@ fn render_compact() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_1() {
 	process_module_test(
 		&[
@@ -126,11 +123,11 @@ fn move_cursor_down_1() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown],
+		&[Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -145,7 +142,6 @@ fn move_cursor_down_1() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_view_end() {
 	process_module_test(
 		&[
@@ -158,11 +154,11 @@ fn move_cursor_down_view_end() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown; 2],
+		&[Event::from(MetaEvent::MoveCursorDown); 2],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -177,7 +173,6 @@ fn move_cursor_down_view_end() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_scroll_1() {
 	process_module_test(
 		&[
@@ -190,11 +185,11 @@ fn move_cursor_down_scroll_1() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown; 3],
+		&[Event::from(MetaEvent::MoveCursorDown); 3],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -209,7 +204,6 @@ fn move_cursor_down_scroll_1() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_scroll_bottom() {
 	process_module_test(
 		&[
@@ -222,11 +216,11 @@ fn move_cursor_down_scroll_bottom() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown; 4],
+		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -241,7 +235,6 @@ fn move_cursor_down_scroll_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_scroll_bottom_move_up_one() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
@@ -249,18 +242,18 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -275,7 +268,6 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_scroll_bottom_move_up_top() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
@@ -283,20 +275,20 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			test_context.build_view_data(&mut module);
-			test_context.handle_n_inputs(&mut module, 3);
+			test_context.handle_n_events(&mut module, 3);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -311,18 +303,20 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_up_attempt_above_top() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorUp, Input::MoveCursorUp],
+		&[
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -337,18 +331,17 @@ fn move_cursor_up_attempt_above_top() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_down_attempt_below_bottom() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown; 4],
+		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -363,18 +356,17 @@ fn move_cursor_down_attempt_below_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_up_from_top() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorPageUp],
+		&[Event::from(MetaEvent::MoveCursorPageUp)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -389,7 +381,6 @@ fn move_cursor_page_up_from_top() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_up_from_one_page_down() {
 	process_module_test(
 		&[
@@ -403,13 +394,17 @@ fn move_cursor_page_up_from_one_page_down() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown, Input::MoveCursorDown, Input::MoveCursorPageUp],
+		&[
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageUp),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 2);
+			test_context.handle_n_events(&mut module, 2);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -424,7 +419,6 @@ fn move_cursor_page_up_from_one_page_down() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_up_from_one_page_down_plus_1() {
 	process_module_test(
 		&[
@@ -439,17 +433,17 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorPageUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 3);
+			test_context.handle_n_events(&mut module, 3);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -464,7 +458,6 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_up_from_one_page_down_minus_1() {
 	process_module_test(
 		&[
@@ -478,13 +471,17 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown, Input::MoveCursorDown, Input::MoveCursorPageUp],
+		&[
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageUp),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 2);
+			test_context.handle_n_events(&mut module, 2);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -499,7 +496,6 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_up_from_bottom() {
 	process_module_test(
 		&[
@@ -514,19 +510,19 @@ fn move_cursor_page_up_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorPageUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 5);
+			test_context.handle_n_events(&mut module, 5);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -541,18 +537,17 @@ fn move_cursor_page_up_from_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_home() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState::default(),
-		&[Input::MoveCursorEnd],
+		&[Event::from(MetaEvent::MoveCursorEnd)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 5);
+			test_context.handle_n_events(&mut module, 5);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -568,23 +563,22 @@ fn move_cursor_page_home() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_end() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorHome,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorHome),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 5);
+			test_context.handle_n_events(&mut module, 5);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -600,7 +594,6 @@ fn move_cursor_page_end() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_down_from_bottom() {
 	process_module_test(
 		&[
@@ -615,19 +608,19 @@ fn move_cursor_page_down_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorPageDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 5);
+			test_context.handle_n_events(&mut module, 5);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -642,7 +635,6 @@ fn move_cursor_page_down_from_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_down_one_from_bottom() {
 	process_module_test(
 		&[
@@ -657,18 +649,18 @@ fn move_cursor_page_down_one_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorPageDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -683,7 +675,6 @@ fn move_cursor_page_down_one_from_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
 fn move_cursor_page_down_one_page_from_bottom() {
 	process_module_test(
 		&[
@@ -698,17 +689,17 @@ fn move_cursor_page_down_one_page_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorPageDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_inputs(&mut module, 3);
+			test_context.handle_n_events(&mut module, 3);
 			test_context.build_view_data(&mut module);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -723,17 +714,72 @@ fn move_cursor_page_down_one_page_from_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
+fn mouse_scroll() {
+	process_module_test(
+		&[
+			"pick aaa c1",
+			"pick aaa c2",
+			"pick aaa c3",
+			"pick aaa c4",
+			"pick aaa c5",
+		],
+		ViewState {
+			size: Size::new(120, 4),
+		},
+		&[
+			Event::Mouse(MouseEvent {
+				kind: MouseEventKind::ScrollDown,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::empty(),
+			}),
+			Event::Mouse(MouseEvent {
+				kind: MouseEventKind::ScrollDown,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::empty(),
+			}),
+			Event::Mouse(MouseEvent {
+				kind: MouseEventKind::ScrollUp,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::empty(),
+			}),
+			Event::Mouse(MouseEvent {
+				kind: MouseEventKind::Moved,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::empty(),
+			}),
+		],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			test_context.update_view_data_size(&mut module);
+			test_context.handle_all_events(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}{HELP}",
+				"{BODY}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+			);
+		},
+	);
+}
+
+#[test]
 fn visual_mode_start() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ToggleVisualMode],
+		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -748,18 +794,20 @@ fn visual_mode_start() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_start_cursor_down_one() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ToggleVisualMode, Input::MoveCursorDown],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -775,7 +823,6 @@ fn visual_mode_start_cursor_down_one() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_start_move_down_below_view() {
 	process_module_test(
 		&[
@@ -789,15 +836,15 @@ fn visual_mode_start_move_down_below_view() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -814,7 +861,6 @@ fn visual_mode_start_move_down_below_view() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_start_cursor_page_down() {
 	process_module_test(
 		&[
@@ -827,11 +873,14 @@ fn visual_mode_start_cursor_page_down() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ToggleVisualMode, Input::MoveCursorPageDown],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorPageDown),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -848,7 +897,6 @@ fn visual_mode_start_cursor_page_down() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_start_cursor_page_down_below_view() {
 	process_module_test(
 		&[
@@ -862,14 +910,14 @@ fn visual_mode_start_cursor_page_down_below_view() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::ToggleVisualMode,
-			Input::MoveCursorPageDown,
-			Input::MoveCursorPageDown,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -886,7 +934,6 @@ fn visual_mode_start_cursor_page_down_below_view() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_start_cursor_from_bottom_move_up() {
 	process_module_test(
 		&[
@@ -900,16 +947,16 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorPageDown,
-			Input::MoveCursorPageDown,
-			Input::MoveCursorPageDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -925,7 +972,6 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_start_cursor_from_bottom_to_top() {
 	process_module_test(
 		&[
@@ -939,18 +985,18 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Input::MoveCursorPageDown,
-			Input::MoveCursorPageDown,
-			Input::MoveCursorPageDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorPageUp,
-			Input::MoveCursorPageUp,
-			Input::MoveCursorPageUp,
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorPageUp),
+			Event::from(MetaEvent::MoveCursorPageUp),
+			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -967,17 +1013,16 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_to_drop() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionDrop],
+		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -990,17 +1035,16 @@ fn change_selected_line_to_drop() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_to_edit() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionEdit],
+		&[Event::from(MetaEvent::ActionEdit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1013,17 +1057,16 @@ fn change_selected_line_to_edit() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_to_fixup() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionFixup],
+		&[Event::from(MetaEvent::ActionFixup)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1036,17 +1079,16 @@ fn change_selected_line_to_fixup() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_to_pick() {
 	process_module_test(
 		&["drop aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionPick],
+		&[Event::from(MetaEvent::ActionPick)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1059,17 +1101,16 @@ fn change_selected_line_to_pick() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_to_reword() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionReword],
+		&[Event::from(MetaEvent::ActionReword)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1082,17 +1123,16 @@ fn change_selected_line_to_reword() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_to_squash() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionSquash],
+		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1105,17 +1145,16 @@ fn change_selected_line_to_squash() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_toggle_break_add() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionBreak],
+		&[Event::from(MetaEvent::ActionBreak)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1129,17 +1168,19 @@ fn change_selected_line_toggle_break_add() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_toggle_break_remove() {
 	process_module_test(
 		&["pick aaa c1", "break"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::MoveCursorDown, Input::ActionBreak],
+		&[
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionBreak),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1152,17 +1193,16 @@ fn change_selected_line_toggle_break_remove() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_toggle_break_above_existing() {
 	process_module_test(
 		&["pick aaa c1", "break"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionBreak],
+		&[Event::from(MetaEvent::ActionBreak)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1176,19 +1216,18 @@ fn change_selected_line_toggle_break_above_existing() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_auto_select_next_with_next_line() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2"],
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Input::ActionSquash],
+		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context: TestContext<'_>| {
 			let mut config = test_context.config.clone();
 			config.auto_select_next = true;
 			let mut module = List::new(&config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1202,15 +1241,14 @@ fn change_selected_line_auto_select_next_with_next_line() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_swap_down() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState::default(),
-		&[Input::SwapSelectedDown],
+		&[Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1225,15 +1263,18 @@ fn change_selected_line_swap_down() {
 }
 
 #[test]
-#[serial_test::serial]
 fn change_selected_line_swap_up() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState::default(),
-		&[Input::MoveCursorDown, Input::MoveCursorDown, Input::SwapSelectedUp],
+		&[
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::SwapSelectedUp),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1248,17 +1289,16 @@ fn change_selected_line_swap_up() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_show_commit_when_hash_available() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ShowCommit],
+		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::ShowCommit,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ShowCommit),
 				state = State::ShowCommit
 			);
 		},
@@ -1266,45 +1306,48 @@ fn normal_mode_show_commit_when_hash_available() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_show_commit_when_no_selected_line() {
 	process_module_test(
 		&[],
 		ViewState::default(),
-		&[Input::ShowCommit],
+		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::ShowCommit);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ShowCommit)
+			);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_do_not_show_commit_when_hash_not_available() {
 	process_module_test(
 		&["exec echo foo"],
 		ViewState::default(),
-		&[Input::ShowCommit],
+		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::ShowCommit);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ShowCommit)
+			);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_abort() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Abort],
+		&[Event::from(MetaEvent::Abort)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Abort,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Abort),
 				state = State::ConfirmAbort
 			);
 		},
@@ -1312,17 +1355,16 @@ fn normal_mode_abort() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_force_abort() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ForceAbort],
+		&[Event::from(MetaEvent::ForceAbort)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::ForceAbort,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ForceAbort),
 				exit_status = ExitStatus::Good
 			);
 			assert!(test_context.rebase_todo_file.is_empty());
@@ -1331,17 +1373,16 @@ fn normal_mode_force_abort() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_rebase() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Rebase],
+		&[Event::from(MetaEvent::Rebase)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Rebase,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Rebase),
 				state = State::ConfirmRebase
 			);
 		},
@@ -1349,17 +1390,16 @@ fn normal_mode_rebase() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_force_rebase() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ForceRebase],
+		&[Event::from(MetaEvent::ForceRebase)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::ForceRebase,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ForceRebase),
 				exit_status = ExitStatus::Good
 			);
 			assert!(!test_context.rebase_todo_file.is_noop());
@@ -1368,62 +1408,67 @@ fn normal_mode_force_rebase() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_edit_with_edit_content() {
 	process_module_test(
 		&["exec echo foo"],
 		ViewState::default(),
-		&[Input::Edit],
+		&[Event::from(MetaEvent::Edit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Edit);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Edit)
+			);
 			assert_eq!(module.state, ListState::Edit);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_edit_without_edit_content() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Edit],
+		&[Event::from(MetaEvent::Edit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Edit);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Edit)
+			);
 			assert_eq!(module.state, ListState::Normal);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_edit_without_selected_line() {
 	process_module_test(
 		&[],
 		ViewState::default(),
-		&[Input::Edit],
+		&[Event::from(MetaEvent::Edit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Edit);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Edit)
+			);
 			assert_eq!(module.state, ListState::Normal);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_insert_line() {
 	process_module_test(
 		&[],
 		ViewState::default(),
-		&[Input::InsertLine],
+		&[Event::from(MetaEvent::InsertLine)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::InsertLine,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::InsertLine),
 				state = State::Insert
 			);
 		},
@@ -1431,17 +1476,16 @@ fn normal_mode_insert_line() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_open_external_editor() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::OpenInEditor],
+		&[Event::from(MetaEvent::OpenInEditor)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::OpenInEditor,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::OpenInEditor),
 				state = State::ExternalEditor
 			);
 		},
@@ -1449,16 +1493,18 @@ fn normal_mode_open_external_editor() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_undo() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ActionDrop, Input::Undo],
+		&[Event::from(MetaEvent::ActionDrop), Event::from(MetaEvent::Undo)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Undo);
+			test_context.handle_event(&mut module);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Undo)
+			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -1471,21 +1517,20 @@ fn normal_mode_undo() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_undo_visual_mode_change() {
 	process_module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		ViewState::default(),
 		&[
-			Input::ToggleVisualMode,
-			Input::Down,
-			Input::ActionDrop,
-			Input::ToggleVisualMode,
-			Input::Undo,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionDrop),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::Undo),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -1500,17 +1545,23 @@ fn normal_mode_undo_visual_mode_change() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_redo() {
 	process_module_test(
 		&["drop aaa c1"],
 		ViewState::default(),
-		&[Input::ActionPick, Input::Undo, Input::Redo],
+		&[
+			Event::from(MetaEvent::ActionPick),
+			Event::from(MetaEvent::Undo),
+			Event::from(MetaEvent::Redo),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
-			test_context.handle_input(&mut module);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Redo);
+			test_context.handle_event(&mut module);
+			test_context.handle_event(&mut module);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Redo)
+			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -1522,22 +1573,21 @@ fn normal_mode_redo() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_redo_visual_mode_change() {
 	process_module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		ViewState::default(),
 		&[
-			Input::ToggleVisualMode,
-			Input::Down,
-			Input::ActionPick,
-			Input::Undo,
-			Input::ToggleVisualMode,
-			Input::Redo,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionPick),
+			Event::from(MetaEvent::Undo),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -1552,7 +1602,6 @@ fn normal_mode_redo_visual_mode_change() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_remove_line_first() {
 	process_module_test(
 		&[
@@ -1563,10 +1612,10 @@ fn normal_mode_remove_line_first() {
 			"pick eee c5",
 		],
 		ViewState::default(),
-		&[Input::Delete],
+		&[Event::from(MetaEvent::Delete)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -1581,7 +1630,6 @@ fn normal_mode_remove_line_first() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_remove_line_end() {
 	process_module_test(
 		&[
@@ -1593,15 +1641,15 @@ fn normal_mode_remove_line_end() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::Delete,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -1616,15 +1664,17 @@ fn normal_mode_remove_line_end() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_toggle_visual_mode() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode],
+		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::ToggleVisualMode);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ToggleVisualMode)
+			);
 			assert_eq!(module.visual_index_start, Some(0));
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -1632,35 +1682,36 @@ fn normal_mode_toggle_visual_mode() {
 }
 
 #[test]
-#[serial_test::serial]
-fn normal_mode_other_input() {
+fn normal_mode_other_event() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Other],
+		&[Event::from(KeyCode::Null)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Null)
+			);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_top_bottom() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState::default(),
 		&[
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionReword,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1677,23 +1728,22 @@ fn visual_mode_action_change_top_bottom() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_bottom_top() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::ActionReword,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1710,7 +1760,6 @@ fn visual_mode_action_change_bottom_top() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_drop() {
 	process_module_test(
 		&[
@@ -1722,16 +1771,16 @@ fn visual_mode_action_change_drop() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionDrop,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionDrop),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1750,7 +1799,6 @@ fn visual_mode_action_change_drop() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_edit() {
 	process_module_test(
 		&[
@@ -1762,16 +1810,16 @@ fn visual_mode_action_change_edit() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionEdit,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionEdit),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1790,7 +1838,6 @@ fn visual_mode_action_change_edit() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_fixup() {
 	process_module_test(
 		&[
@@ -1802,16 +1849,16 @@ fn visual_mode_action_change_fixup() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionFixup,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionFixup),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1830,7 +1877,6 @@ fn visual_mode_action_change_fixup() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_pick() {
 	process_module_test(
 		&[
@@ -1842,16 +1888,16 @@ fn visual_mode_action_change_pick() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionPick,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionPick),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1870,7 +1916,6 @@ fn visual_mode_action_change_pick() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_reword() {
 	process_module_test(
 		&[
@@ -1882,16 +1927,16 @@ fn visual_mode_action_change_reword() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionReword,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1910,7 +1955,6 @@ fn visual_mode_action_change_reword() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_action_change_squash() {
 	process_module_test(
 		&[
@@ -1922,16 +1966,16 @@ fn visual_mode_action_change_squash() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ActionSquash,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionSquash),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -1950,18 +1994,17 @@ fn visual_mode_action_change_squash() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_abort() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::Abort],
+		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Abort)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Abort,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Abort),
 				state = State::ConfirmAbort
 			);
 		},
@@ -1969,18 +2012,20 @@ fn visual_mode_abort() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_force_abort() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::ForceAbort],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::ForceAbort),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::ForceAbort,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ForceAbort),
 				exit_status = ExitStatus::Good
 			);
 			assert!(test_context.rebase_todo_file.is_empty());
@@ -1989,18 +2034,17 @@ fn visual_mode_force_abort() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_rebase() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::Rebase],
+		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Rebase)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Rebase,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Rebase),
 				state = State::ConfirmRebase
 			);
 		},
@@ -2008,18 +2052,20 @@ fn visual_mode_rebase() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_force_rebase() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::ForceRebase],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::ForceRebase),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::ForceRebase,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ForceRebase),
 				exit_status = ExitStatus::Good
 			);
 			assert!(!test_context.rebase_todo_file.is_noop());
@@ -2028,7 +2074,6 @@ fn visual_mode_force_rebase() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_down_from_top_to_bottom_selection() {
 	process_module_test(
 		&[
@@ -2040,16 +2085,16 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::SwapSelectedDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2068,7 +2113,6 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_down_from_bottom_to_top_selection() {
 	process_module_test(
 		&[
@@ -2080,18 +2124,18 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::SwapSelectedDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2110,7 +2154,6 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_up_from_top_to_bottom_selection() {
 	process_module_test(
 		&[
@@ -2122,16 +2165,16 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::SwapSelectedUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2150,7 +2193,6 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_up_from_bottom_to_top_selection() {
 	process_module_test(
 		&[
@@ -2162,18 +2204,18 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::SwapSelectedUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2192,7 +2234,6 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 	process_module_test(
 		&[
@@ -2204,19 +2245,19 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::SwapSelectedDown,
-			Input::SwapSelectedDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::SwapSelectedDown),
+			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2235,7 +2276,6 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 	process_module_test(
 		&[
@@ -2247,17 +2287,17 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::SwapSelectedDown,
-			Input::SwapSelectedDown,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::SwapSelectedDown),
+			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2276,7 +2316,6 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 	process_module_test(
 		&[
@@ -2288,17 +2327,17 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::SwapSelectedUp,
-			Input::SwapSelectedUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::SwapSelectedUp),
+			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2317,7 +2356,6 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 	process_module_test(
 		&[
@@ -2329,19 +2367,19 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::SwapSelectedUp,
-			Input::SwapSelectedUp,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::SwapSelectedUp),
+			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2360,16 +2398,21 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_toggle_visual_mode() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::ToggleVisualMode],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::ToggleVisualMode),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::ToggleVisualMode);
+			test_context.handle_event(&mut module);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ToggleVisualMode)
+			);
 			assert_eq!(module.visual_index_start, None);
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -2377,18 +2420,20 @@ fn visual_mode_toggle_visual_mode() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_open_external_editor() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::OpenInEditor],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::OpenInEditor),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_input(&mut module);
+			test_context.handle_event(&mut module);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::OpenInEditor,
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::OpenInEditor),
 				state = State::ExternalEditor
 			);
 		},
@@ -2396,16 +2441,23 @@ fn visual_mode_open_external_editor() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_undo() {
 	process_module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		ViewState::default(),
-		&[Input::ToggleVisualMode, Input::Down, Input::ActionDrop, Input::Undo],
+		&[
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionDrop),
+			Event::from(MetaEvent::Undo),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_n_inputs(&mut module, 3);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Undo);
+			test_context.handle_n_events(&mut module, 3);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Undo)
+			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2419,16 +2471,23 @@ fn visual_mode_undo() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_undo_normal_mode_change() {
 	process_module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		ViewState::default(),
-		&[Input::ActionDrop, Input::ToggleVisualMode, Input::Down, Input::Undo],
+		&[
+			Event::from(MetaEvent::ActionDrop),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::Undo),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_n_inputs(&mut module, 3);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Undo);
+			test_context.handle_n_events(&mut module, 3);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::Undo)
+			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2442,21 +2501,20 @@ fn visual_mode_undo_normal_mode_change() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_redo() {
 	process_module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		ViewState::default(),
 		&[
-			Input::ToggleVisualMode,
-			Input::Down,
-			Input::ActionPick,
-			Input::Undo,
-			Input::Redo,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ActionPick),
+			Event::from(MetaEvent::Undo),
+			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2470,21 +2528,20 @@ fn visual_mode_redo() {
 	);
 }
 #[test]
-#[serial_test::serial]
 fn visual_mode_redo_normal_mode_change() {
 	process_module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		ViewState::default(),
 		&[
-			Input::ActionPick,
-			Input::ToggleVisualMode,
-			Input::Down,
-			Input::Undo,
-			Input::Redo,
+			Event::from(MetaEvent::ActionPick),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::Undo),
+			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2498,7 +2555,6 @@ fn visual_mode_redo_normal_mode_change() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_remove_lines_start_index_first() {
 	process_module_test(
 		&[
@@ -2510,14 +2566,14 @@ fn visual_mode_remove_lines_start_index_first() {
 		],
 		ViewState::default(),
 		&[
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::Delete,
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2534,7 +2590,6 @@ fn visual_mode_remove_lines_start_index_first() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_remove_lines_end_index_first() {
 	process_module_test(
 		&[
@@ -2546,16 +2601,16 @@ fn visual_mode_remove_lines_end_index_first() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::Delete,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2572,7 +2627,6 @@ fn visual_mode_remove_lines_end_index_first() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_remove_lines_start_index_last() {
 	process_module_test(
 		&[
@@ -2584,18 +2638,18 @@ fn visual_mode_remove_lines_start_index_last() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorUp,
-			Input::MoveCursorUp,
-			Input::Delete,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2612,7 +2666,6 @@ fn visual_mode_remove_lines_start_index_last() {
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_remove_lines_end_index_last() {
 	process_module_test(
 		&[
@@ -2624,16 +2677,16 @@ fn visual_mode_remove_lines_end_index_last() {
 		],
 		ViewState::default(),
 		&[
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::ToggleVisualMode,
-			Input::MoveCursorDown,
-			Input::MoveCursorDown,
-			Input::Delete,
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
@@ -2650,30 +2703,31 @@ fn visual_mode_remove_lines_end_index_last() {
 }
 
 #[test]
-#[serial_test::serial]
-fn visual_mode_other_input() {
+fn visual_mode_other_event() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Other],
+		&[Event::from(KeyCode::Null)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			assert_process_result!(test_context.handle_input(&mut module), input = Input::Other);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Null)
+			);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_mode_render() {
 	process_module_test(
 		&["exec foo"],
 		ViewState::default(),
-		&[Input::Edit],
+		&[Event::from(MetaEvent::Edit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2691,16 +2745,19 @@ fn edit_mode_render() {
 }
 
 #[test]
-#[serial_test::serial]
-fn edit_mode_handle_input() {
+fn edit_mode_handle_event() {
 	process_module_test(
 		&["exec foo"],
 		ViewState::default(),
-		&[Input::Edit, Input::Backspace, Input::Enter],
+		&[
+			Event::from(MetaEvent::Edit),
+			Event::from(KeyCode::Backspace),
+			Event::from(KeyCode::Enter),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().get_content(), "fo");
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -2708,7 +2765,6 @@ fn edit_mode_handle_input() {
 }
 
 #[test]
-#[serial_test::serial]
 fn scroll_right() {
 	process_module_test(
 		&[
@@ -2717,12 +2773,12 @@ fn scroll_right() {
 			"pick cccccccccccc this comment needs to be longer than the width of the view",
 		],
 		ViewState { size: Size::new(50, 4) },
-		&[Input::MoveCursorRight; 3],
+		&[Event::from(MetaEvent::MoveCursorRight); 3],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
 			test_context.build_view_data(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2738,7 +2794,6 @@ fn scroll_right() {
 }
 
 #[test]
-#[serial_test::serial]
 fn scroll_left() {
 	process_module_test(
 		&[
@@ -2748,15 +2803,15 @@ fn scroll_left() {
 		],
 		ViewState { size: Size::new(50, 4) },
 		&[
-			Input::MoveCursorRight,
-			Input::MoveCursorRight,
-			Input::MoveCursorRight,
-			Input::MoveCursorLeft,
+			Event::from(MetaEvent::MoveCursorRight),
+			Event::from(MetaEvent::MoveCursorRight),
+			Event::from(MetaEvent::MoveCursorRight),
+			Event::from(MetaEvent::MoveCursorLeft),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2772,18 +2827,17 @@ fn scroll_left() {
 }
 
 #[test]
-#[serial_test::serial]
 fn normal_mode_help() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(200, 100),
 		},
-		&[Input::Help],
+		&[Event::from(MetaEvent::Help)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			module.state = ListState::Normal;
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2829,34 +2883,32 @@ fn normal_mode_help() {
 }
 
 #[test]
-#[serial_test::serial]
-fn normal_mode_help_input() {
+fn normal_mode_help_event() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Help, Input::SwapSelectedDown],
+		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			module.state = ListState::Normal;
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert!(!module.normal_mode_help.is_active());
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn visual_mode_help() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState {
 			size: Size::new(200, 100),
 		},
-		&[Input::Help],
+		&[Event::from(MetaEvent::Help)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			module.state = ListState::Visual;
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -2893,16 +2945,15 @@ fn visual_mode_help() {
 }
 
 #[test]
-#[serial_test::serial]
-fn visual_mode_help_input() {
+fn visual_mode_help_event() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
-		&[Input::Help, Input::SwapSelectedDown],
+		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			module.state = ListState::Visual;
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert!(!module.visual_mode_help.is_active());
 		},
 	);
@@ -2910,7 +2961,6 @@ fn visual_mode_help_input() {
 
 // this can technically never happen, but it's worth testing, just in case of an invalid state
 #[test]
-#[serial_test::serial]
 fn render_noop_list() {
 	process_module_test(
 		&["break"],

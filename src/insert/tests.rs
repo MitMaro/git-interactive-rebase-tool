@@ -2,11 +2,11 @@ use super::*;
 use crate::{
 	assert_process_result,
 	assert_rendered_output,
+	input::{Event, KeyCode},
 	process::testutil::{process_module_test, TestContext, ViewState},
 };
 
 #[test]
-#[serial_test::serial]
 fn activate() {
 	process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
 		let mut module = Insert::new();
@@ -15,7 +15,6 @@ fn activate() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_prompt() {
 	process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
 		let mut module = Insert::new();
@@ -40,17 +39,16 @@ fn render_prompt() {
 }
 
 #[test]
-#[serial_test::serial]
 fn prompt_cancel() {
 	process_module_test(
 		&[],
 		ViewState::default(),
-		&[Input::Character('q')],
+		&[Event::from('q')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Character('q'),
+				test_context.handle_event(&mut module),
+				event = Event::from('q'),
 				state = State::List
 			);
 		},
@@ -58,21 +56,20 @@ fn prompt_cancel() {
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_render_exec() {
 	process_module_test(
 		&[],
 		ViewState::default(),
 		&[
-			Input::Character('e'),
-			Input::Character('f'),
-			Input::Character('o'),
-			Input::Character('o'),
-			Input::Enter,
+			Event::from('e'),
+			Event::from('f'),
+			Event::from('o'),
+			Event::from('o'),
+			Event::from(KeyCode::Enter),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -86,8 +83,8 @@ fn edit_render_exec() {
 				"{IndicatorColor}Enter to finish"
 			);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Enter,
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Enter),
 				state = State::List
 			);
 			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().to_text(), "exec foo");
@@ -102,15 +99,15 @@ fn edit_render_pick() {
 		&[],
 		ViewState::default(),
 		&[
-			Input::Character('p'),
-			Input::Character('a'),
-			Input::Character('b'),
-			Input::Character('c'),
-			Input::Enter,
+			Event::from('p'),
+			Event::from('a'),
+			Event::from('b'),
+			Event::from('c'),
+			Event::from(KeyCode::Enter),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -124,8 +121,8 @@ fn edit_render_pick() {
 				"{IndicatorColor}Enter to finish"
 			);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Enter,
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Enter),
 				state = State::List
 			);
 			assert_eq!(
@@ -143,15 +140,15 @@ fn edit_render_label() {
 		&[],
 		ViewState::default(),
 		&[
-			Input::Character('l'),
-			Input::Character('f'),
-			Input::Character('o'),
-			Input::Character('o'),
-			Input::Enter,
+			Event::from('l'),
+			Event::from('f'),
+			Event::from('o'),
+			Event::from('o'),
+			Event::from(KeyCode::Enter),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -165,8 +162,8 @@ fn edit_render_label() {
 				"{IndicatorColor}Enter to finish"
 			);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Enter,
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Enter),
 				state = State::List
 			);
 			assert_eq!(
@@ -178,21 +175,20 @@ fn edit_render_label() {
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_render_reset() {
 	process_module_test(
 		&[],
 		ViewState::default(),
 		&[
-			Input::Character('r'),
-			Input::Character('f'),
-			Input::Character('o'),
-			Input::Character('o'),
-			Input::Enter,
+			Event::from('r'),
+			Event::from('f'),
+			Event::from('o'),
+			Event::from('o'),
+			Event::from(KeyCode::Enter),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -206,8 +202,8 @@ fn edit_render_reset() {
 				"{IndicatorColor}Enter to finish"
 			);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Enter,
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Enter),
 				state = State::List
 			);
 			assert_eq!(
@@ -219,21 +215,20 @@ fn edit_render_reset() {
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_render_merge() {
 	process_module_test(
 		&[],
 		ViewState::default(),
 		&[
-			Input::Character('m'),
-			Input::Character('f'),
-			Input::Character('o'),
-			Input::Character('o'),
-			Input::Enter,
+			Event::from('m'),
+			Event::from('f'),
+			Event::from('o'),
+			Event::from('o'),
+			Event::from(KeyCode::Enter),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_n_inputs(&mut module, 4);
+			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -247,8 +242,8 @@ fn edit_render_merge() {
 				"{IndicatorColor}Enter to finish"
 			);
 			assert_process_result!(
-				test_context.handle_input(&mut module),
-				input = Input::Enter,
+				test_context.handle_event(&mut module),
+				event = Event::from(KeyCode::Enter),
 				state = State::List
 			);
 			assert_eq!(
@@ -260,36 +255,34 @@ fn edit_render_merge() {
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_select_next_index() {
 	process_module_test(
 		&["pick aaa c1"],
 		ViewState::default(),
 		&[
-			Input::Character('e'),
-			Input::Character('f'),
-			Input::Character('o'),
-			Input::Character('o'),
-			Input::Enter,
+			Event::from('e'),
+			Event::from('f'),
+			Event::from('o'),
+			Event::from('o'),
+			Event::from(KeyCode::Enter),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert_eq!(test_context.rebase_todo_file.get_selected_line_index(), 1);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn cancel_edit() {
 	process_module_test(
 		&[],
 		ViewState::default(),
-		&[Input::Character('e'), Input::Enter],
+		&[Event::from('e'), Event::from(KeyCode::Enter)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
-			test_context.handle_all_inputs(&mut module);
+			test_context.handle_all_events(&mut module);
 			assert!(test_context.rebase_todo_file.is_empty());
 		},
 	);

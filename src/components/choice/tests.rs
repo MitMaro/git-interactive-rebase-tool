@@ -1,7 +1,10 @@
 use rstest::rstest;
 
 use super::*;
-use crate::assert_rendered_output;
+use crate::{
+	assert_rendered_output,
+	input::{testutil::with_event_handler, MetaEvent},
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TestAction {
@@ -53,65 +56,59 @@ fn render_options_prompt() {
 }
 
 #[test]
-fn invalid_selection_character() {
-	let mut module = Choice::new(create_choices());
-	assert!(module.handle_input(Input::Character('z')).is_none());
-	assert_rendered_output!(
-		module.get_view_data(),
-		"{TITLE}",
-		"{BODY}",
-		"{Normal}a) Description A",
-		"{Normal}b) Description B",
-		"{Normal}c) Description C",
-		"",
-		"{IndicatorColor}Invalid option selected. Please choose an option."
-	);
-}
-
-#[test]
-fn invalid_selection_other() {
-	let mut module = Choice::new(create_choices());
-	assert!(module.handle_input(Input::Other).is_none());
-	assert_rendered_output!(
-		module.get_view_data(),
-		"{TITLE}",
-		"{BODY}",
-		"{Normal}a) Description A",
-		"{Normal}b) Description B",
-		"{Normal}c) Description C",
-		"",
-		"{IndicatorColor}Invalid option selected. Please choose an option."
-	);
-}
-
-#[test]
 fn valid_selection() {
-	let mut module = Choice::new(create_choices());
-	assert_eq!(module.handle_input(Input::Character('b')).unwrap(), &TestAction::B);
-	assert_rendered_output!(
-		module.get_view_data(),
-		"{TITLE}",
-		"{BODY}",
-		"{Normal}a) Description A",
-		"{Normal}b) Description B",
-		"{Normal}c) Description C",
-		"",
-		"{IndicatorColor}Please choose an option."
-	);
+	with_event_handler(&[Event::from('b')], |context| {
+		let mut module = Choice::new(create_choices());
+		let (choice, event) = module.handle_event(&context.event_handler);
+		assert_eq!(choice.unwrap(), &TestAction::B);
+		assert_eq!(event, Event::from('b'));
+		assert_rendered_output!(
+			module.get_view_data(),
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}a) Description A",
+			"{Normal}b) Description B",
+			"{Normal}c) Description C",
+			"",
+			"{IndicatorColor}Please choose an option."
+		);
+	});
+}
+
+#[test]
+fn invalid_selection_character() {
+	with_event_handler(&[Event::from('z')], |context| {
+		let mut module = Choice::new(create_choices());
+		let (choice, event) = module.handle_event(&context.event_handler);
+		assert!(choice.is_none());
+		assert_eq!(event, Event::from('z'));
+		assert_rendered_output!(
+			module.get_view_data(),
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}a) Description A",
+			"{Normal}b) Description B",
+			"{Normal}c) Description C",
+			"",
+			"{IndicatorColor}Invalid option selected. Please choose an option."
+		);
+	});
 }
 
 #[rstest(
-	input,
-	case::resize(Input::Resize),
-	case::scroll_left(Input::ScrollLeft),
-	case::scroll_right(Input::ScrollRight),
-	case::scroll_down(Input::ScrollDown),
-	case::scroll_up(Input::ScrollUp),
-	case::scroll_jump_down(Input::ScrollJumpDown),
-	case::scroll_jump_up(Input::ScrollJumpUp)
+	event,
+	case::resize(Event::Resize(100, 100)),
+	case::scroll_left(Event::from(MetaEvent::ScrollLeft)),
+	case::scroll_right(Event::from(MetaEvent::ScrollRight)),
+	case::scroll_down(Event::from(MetaEvent::ScrollDown)),
+	case::scroll_up(Event::from(MetaEvent::ScrollUp)),
+	case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown)),
+	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
 )]
-fn input_standard(input: Input) {
-	let mut module = Choice::new(create_choices());
-	module.handle_input(input);
-	assert!(!module.invalid_selection);
+fn event_standard(event: Event) {
+	with_event_handler(&[event], |context| {
+		let mut module = Choice::new(create_choices());
+		module.handle_event(&context.event_handler);
+		assert!(!module.invalid_selection);
+	});
 }

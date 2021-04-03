@@ -51,7 +51,7 @@ use clap::{App, Arg};
 use crate::{
 	config::Config,
 	display::{CrossTerm, Display},
-	input::input_handler::InputHandler,
+	input::{EventHandler, KeyBindings},
 	process::{exit_status::ExitStatus, modules::Modules, Process},
 	todo_file::TodoFile,
 	view::View,
@@ -169,7 +169,7 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 	let modules = Modules::new(&config);
 	let mut process = Process::new(
 		todo_file,
-		InputHandler::new(&config.key_bindings),
+		EventHandler::new(KeyBindings::new(&config.key_bindings)),
 		View::new(display, &config),
 	);
 	let result = process.run(modules);
@@ -191,7 +191,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		assert_exit_status,
-		input::{testutil::setup_mocked_inputs, Input},
+		input::{testutil::setup_mocked_events, Event, MetaEvent},
 	};
 
 	fn set_git_directory(repo: &str) -> String {
@@ -250,11 +250,10 @@ mod tests {
 	#[serial_test::serial]
 	fn error_process() {
 		let path = set_git_directory("fixtures/simple");
-		let config = Config::new().unwrap();
 		let todo_file_path = Path::new(path.as_str()).join("rebase-todo-readonly");
 		let todo_file = File::open(todo_file_path.as_path()).unwrap();
 		let mut permissions = todo_file.metadata().unwrap().permissions();
-		setup_mocked_inputs(&[Input::Exit], &config.key_bindings);
+		setup_mocked_events(&[Event::from(MetaEvent::Exit)]);
 		permissions.set_readonly(true);
 		todo_file.set_permissions(permissions).unwrap();
 		assert_exit_status!(
@@ -267,9 +266,8 @@ mod tests {
 	#[serial_test::serial]
 	fn success() {
 		let path = set_git_directory("fixtures/simple");
-		let config = Config::new().unwrap();
 		let todo_file = Path::new(path.as_str()).join("rebase-todo");
-		setup_mocked_inputs(&[Input::Exit], &config.key_bindings);
+		setup_mocked_events(&[Event::from(MetaEvent::Exit)]);
 		assert_exit_status!(try_main(todo_file.to_str().unwrap()), status = ExitStatus::Abort);
 	}
 }

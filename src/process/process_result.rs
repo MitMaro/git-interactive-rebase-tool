@@ -1,7 +1,7 @@
 use anyhow::Error;
 
 use crate::{
-	input::Input,
+	input::Event,
 	process::{exit_status::ExitStatus, state::State},
 };
 
@@ -9,7 +9,7 @@ use crate::{
 pub struct ProcessResult {
 	pub(super) error: Option<Error>,
 	pub(super) exit_status: Option<ExitStatus>,
-	pub(super) input: Option<Input>,
+	pub(super) event: Option<Event>,
 	pub(super) state: Option<State>,
 }
 
@@ -18,13 +18,13 @@ impl ProcessResult {
 		Self {
 			error: None,
 			exit_status: None,
-			input: None,
+			event: None,
 			state: None,
 		}
 	}
 
-	pub(crate) const fn input(mut self, input: Input) -> Self {
-		self.input = Some(input);
+	pub(crate) const fn event(mut self, event: Event) -> Self {
+		self.event = Some(event);
 		self
 	}
 
@@ -45,6 +45,17 @@ impl ProcessResult {
 	}
 }
 
+impl From<Event> for ProcessResult {
+	fn from(event: Event) -> Self {
+		Self {
+			error: None,
+			exit_status: None,
+			event: Some(event),
+			state: None,
+		}
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
@@ -56,16 +67,16 @@ mod tests {
 		let result = ProcessResult::new();
 		assert!(result.error.is_none());
 		assert_eq!(result.exit_status, None);
-		assert_eq!(result.input, None);
+		assert_eq!(result.event, None);
 		assert_eq!(result.state, None);
 	}
 
 	#[test]
-	fn with_input() {
-		let result = ProcessResult::new().input(Input::Character('a'));
+	fn with_event() {
+		let result = ProcessResult::new().event(Event::from('a'));
 		assert!(result.error.is_none());
 		assert_eq!(result.exit_status, None);
-		assert_eq!(result.input, Some(Input::Character('a')));
+		assert_eq!(result.event, Some(Event::from('a')));
 		assert_eq!(result.state, None);
 	}
 
@@ -74,7 +85,7 @@ mod tests {
 		let result = ProcessResult::new().error(anyhow!("Test Error"));
 		assert_eq!(result.error.unwrap().to_string(), String::from("Test Error"));
 		assert_eq!(result.exit_status, None);
-		assert_eq!(result.input, None);
+		assert_eq!(result.event, None);
 		assert_eq!(result.state, None);
 	}
 
@@ -83,7 +94,7 @@ mod tests {
 		let result = ProcessResult::new().exit_status(ExitStatus::Good);
 		assert!(result.error.is_none());
 		assert_eq!(result.exit_status, Some(ExitStatus::Good));
-		assert_eq!(result.input, None);
+		assert_eq!(result.event, None);
 		assert_eq!(result.state, None);
 	}
 
@@ -92,7 +103,7 @@ mod tests {
 		let result = ProcessResult::new().state(State::List);
 		assert!(result.error.is_none());
 		assert_eq!(result.exit_status, None);
-		assert_eq!(result.input, None);
+		assert_eq!(result.event, None);
 		assert_eq!(result.state, Some(State::List));
 	}
 
@@ -102,10 +113,10 @@ mod tests {
 			.error(anyhow!("Test Error"))
 			.state(State::List)
 			.exit_status(ExitStatus::Good)
-			.input(Input::Character('a'));
+			.event(Event::from('a'));
 		assert_eq!(result.error.unwrap().to_string(), String::from("Test Error"));
 		assert_eq!(result.exit_status, Some(ExitStatus::Good));
-		assert_eq!(result.input, Some(Input::Character('a')));
+		assert_eq!(result.event, Some(Event::from('a')));
 		assert_eq!(result.state, Some(State::List));
 	}
 }

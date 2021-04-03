@@ -1,12 +1,15 @@
 pub mod line_segment;
 pub mod render_context;
 pub mod scroll_position;
-#[cfg(test)]
-pub mod testutil;
+mod util;
 pub mod view_data;
 pub mod view_line;
 
+#[cfg(test)]
+pub mod testutil;
+
 use anyhow::Result;
+pub use util::handle_view_data_scroll;
 
 use crate::{
 	display::{display_color::DisplayColor, Display},

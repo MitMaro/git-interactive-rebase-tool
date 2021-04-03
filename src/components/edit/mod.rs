@@ -1,18 +1,24 @@
 #[cfg(test)]
 mod tests;
 
+use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	display::display_color::DisplayColor,
-	input::Input,
+	input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, KeyModifiers},
 	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
 };
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
+}
 
 pub struct Edit {
 	content: String,
 	cursor_position: usize,
 	description: Option<String>,
+	finished: bool,
 	label: Option<String>,
 }
 
@@ -22,6 +28,7 @@ impl Edit {
 			content: String::from(""),
 			cursor_position: 0,
 			description: None,
+			finished: false,
 			label: None,
 		}
 	}
@@ -80,19 +87,14 @@ impl Edit {
 		view_data.ensure_line_visible(0);
 	}
 
-	pub fn handle_input(&mut self, input: Input) -> bool {
-		match input {
-			Input::Character(c) => {
-				let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-					.take(self.cursor_position)
-					.collect::<String>();
-				let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
-					.skip(self.cursor_position)
-					.collect::<String>();
-				self.content = format!("{}{}{}", start, c, end);
-				self.cursor_position += 1;
-			},
-			Input::Backspace => {
+	pub fn handle_event(&mut self, event_handler: &EventHandler) -> Event {
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+
+		match event {
+			Event::Key(KeyEvent {
+				code: KeyCode::Backspace,
+				modifiers: KeyModifiers::NONE,
+			}) => {
 				if self.cursor_position != 0 {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 						.take(self.cursor_position - 1)
@@ -104,7 +106,10 @@ impl Edit {
 					self.cursor_position -= 1;
 				}
 			},
-			Input::Delete => {
+			Event::Key(KeyEvent {
+				code: KeyCode::Delete,
+				modifiers: KeyModifiers::NONE,
+			}) => {
 				let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 				if self.cursor_position != length {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
@@ -116,22 +121,52 @@ impl Edit {
 					self.content = format!("{}{}", start, end);
 				}
 			},
-			Input::Home => self.cursor_position = 0,
-			Input::End => self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count(),
-			Input::Right => {
+			Event::Key(KeyEvent {
+				code: KeyCode::Home,
+				modifiers: KeyModifiers::NONE,
+			}) => self.cursor_position = 0,
+			Event::Key(KeyEvent {
+				code: KeyCode::End,
+				modifiers: KeyModifiers::NONE,
+			}) => self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count(),
+			Event::Key(KeyEvent {
+				code: KeyCode::Right,
+				modifiers: KeyModifiers::NONE,
+			}) => {
 				let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 				if self.cursor_position < length {
 					self.cursor_position += 1;
 				}
 			},
-			Input::Left => {
+			Event::Key(KeyEvent {
+				code: KeyCode::Left,
+				modifiers: KeyModifiers::NONE,
+			}) => {
 				if self.cursor_position != 0 {
 					self.cursor_position -= 1;
 				}
 			},
-			_ => return false,
+			Event::Key(KeyEvent {
+				code: KeyCode::Enter,
+				modifiers: KeyModifiers::NONE,
+			}) => self.finished = true,
+			Event::Key(KeyEvent {
+				code: KeyCode::Char(c),
+				modifiers: KeyModifiers::NONE,
+			}) => {
+				let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+					.take(self.cursor_position)
+					.collect::<String>();
+				let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
+					.skip(self.cursor_position)
+					.collect::<String>();
+				self.content = format!("{}{}{}", start, c, end);
+				self.cursor_position += 1;
+			},
+			_ => {},
 		}
-		true
+
+		event
 	}
 
 	pub fn set_description(&mut self, description: &str) {
@@ -150,6 +185,11 @@ impl Edit {
 	pub fn clear(&mut self) {
 		self.content.clear();
 		self.cursor_position = 0;
+		self.finished = false;
+	}
+
+	pub const fn is_finished(&self) -> bool {
+		self.finished
 	}
 
 	pub fn get_content(&self) -> String {

@@ -1,6 +1,6 @@
 use crate::{
-	components::Confirm,
-	input::input_handler::{InputHandler, InputMode},
+	components::confirm::{Confirm, Confirmed},
+	input::EventHandler,
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{render_context::RenderContext, view_data::ViewData, View},
@@ -15,16 +15,17 @@ impl ProcessModule for ConfirmRebase {
 		self.dialog.get_view_data()
 	}
 
-	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::Confirm);
-		let mut result = ProcessResult::new().input(input);
-		if let Some(confirmed) = self.dialog.handle_input(input) {
-			if confirmed {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+		let (confirmed, event) = self.dialog.handle_event(event_handler);
+		let mut result = ProcessResult::from(event);
+		match confirmed {
+			Confirmed::Yes => {
 				result = result.exit_status(ExitStatus::Good);
-			}
-			else {
+			},
+			Confirmed::No => {
 				result = result.state(State::List);
-			}
+			},
+			Confirmed::Other => {},
 		}
 		result
 	}
@@ -40,16 +41,16 @@ impl ConfirmRebase {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 	use crate::{
 		assert_process_result,
 		assert_rendered_output,
-		input::Input,
+		input::{Event, KeyCode, MetaEvent},
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
 
 	#[test]
-	#[serial_test::serial]
 	fn build_view_data() {
 		process_module_test(
 			&["pick aaa comment"],
@@ -72,20 +73,19 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
-	fn handle_input_yes() {
+	fn handle_event_yes() {
 		process_module_test(
 			&["pick aaa comment"],
 			ViewState::default(),
-			&[Input::Yes],
+			&[Event::from(MetaEvent::Yes)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ConfirmRebase::new(
 					&test_context.config.key_bindings.confirm_yes,
 					&test_context.config.key_bindings.confirm_no,
 				);
 				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Yes,
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::Yes),
 					exit_status = ExitStatus::Good
 				);
 				assert!(!test_context.rebase_todo_file.is_empty());
@@ -94,20 +94,19 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
-	fn handle_input_no() {
+	fn handle_event_no() {
 		process_module_test(
 			&["pick aaa comment"],
 			ViewState::default(),
-			&[Input::No],
+			&[Event::from(MetaEvent::No)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ConfirmRebase::new(
 					&test_context.config.key_bindings.confirm_yes,
 					&test_context.config.key_bindings.confirm_no,
 				);
 				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::No,
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::No),
 					state = State::List
 				);
 			},
@@ -115,18 +114,20 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
-	fn handle_input_no_match_key() {
+	fn handle_event_no_match_key() {
 		process_module_test(
 			&["pick aaa comment"],
 			ViewState::default(),
-			&[Input::Resize],
+			&[Event::from(KeyCode::Null)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ConfirmRebase::new(
 					&test_context.config.key_bindings.confirm_yes,
 					&test_context.config.key_bindings.confirm_no,
 				);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(KeyCode::Null)
+				);
 			},
 		);
 	}

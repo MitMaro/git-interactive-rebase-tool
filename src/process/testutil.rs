@@ -1,4 +1,4 @@
-use std::{cell::Cell, path::Path};
+use std::{cell::Cell, env::set_var, path::Path};
 
 use anyhow::Error;
 use tempfile::{Builder, NamedTempFile};
@@ -6,7 +6,10 @@ use tempfile::{Builder, NamedTempFile};
 use crate::{
 	config::{testutil::create_config, Config},
 	display::{size::Size, CrossTerm, Display},
-	input::{input_handler::InputHandler, testutil::setup_mocked_inputs, Input},
+	input::{
+		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
+		Event,
+	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
 	view::{view_data::ViewData, View},
@@ -14,12 +17,12 @@ use crate::{
 };
 
 pub struct TestContext<'t> {
+	git_directory: String,
 	pub config: &'t Config,
+	pub event_handler_context: EventHandlerTestContext,
 	pub rebase_todo_file: TodoFile,
-	todo_file: Cell<NamedTempFile>,
 	pub view: View<'t>,
-	pub input_handler: InputHandler<'t>,
-	num_inputs: usize,
+	todo_file: Cell<NamedTempFile>,
 }
 
 impl<'t> TestContext<'t> {
@@ -49,22 +52,34 @@ impl<'t> TestContext<'t> {
 		view_data
 	}
 
-	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_input(&self.input_handler, &mut self.view, &mut self.rebase_todo_file)
+	pub fn handle_event(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
+		module.handle_events(
+			&self.event_handler_context.event_handler,
+			&mut self.view,
+			&mut self.rebase_todo_file,
+		)
 	}
 
-	pub fn handle_n_inputs(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
+	pub fn handle_n_events(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_input(&self.input_handler, &mut self.view, &mut self.rebase_todo_file));
+			results.push(module.handle_events(
+				&self.event_handler_context.event_handler,
+				&mut self.view,
+				&mut self.rebase_todo_file,
+			));
 		}
 		results
 	}
 
-	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
+	pub fn handle_all_events(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
-		for _ in 0..self.num_inputs {
-			results.push(module.handle_input(&self.input_handler, &mut self.view, &mut self.rebase_todo_file));
+		for _ in 0..self.event_handler_context.number_events {
+			results.push(module.handle_events(
+				&self.event_handler_context.event_handler,
+				&mut self.view,
+				&mut self.rebase_todo_file,
+			));
 		}
 		results
 	}
@@ -85,6 +100,10 @@ impl<'t> TestContext<'t> {
 			.replace(Builder::new().tempfile().unwrap())
 			.close()
 			.unwrap();
+	}
+
+	pub fn set_git_directory_environment(&self) {
+		set_var("GIT_DIR", self.git_directory.as_str());
 	}
 
 	pub fn set_todo_file_readonly(&self) {
@@ -111,13 +130,13 @@ impl Default for ViewState {
 }
 
 fn format_process_result(
-	input: Option<Input>,
+	event: Option<Event>,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
 	error: &Option<Error>,
 ) -> String {
 	format!(
-		"ExitStatus({}), State({}), Input({}), Error({})",
+		"ExitStatus({}), State({}), Event({}), Error({})",
 		exit_status.map_or("None", |exit_status| {
 			match exit_status {
 				ExitStatus::Abort => "Abort",
@@ -141,70 +160,7 @@ fn format_process_result(
 				State::WindowSizeError => "WindowSizeError",
 			}
 		}),
-		input.map_or(String::from("None"), |input| {
-			match input {
-				Input::Abort => String::from("Abort"),
-				Input::ActionBreak => String::from("ActionBreak"),
-				Input::ActionDrop => String::from("ActionDrop"),
-				Input::ActionEdit => String::from("ActionEdit"),
-				Input::ActionFixup => String::from("ActionFixup"),
-				Input::ActionPick => String::from("ActionPick"),
-				Input::ActionReword => String::from("ActionReword"),
-				Input::ActionSquash => String::from("ActionSquash"),
-				Input::Backspace => String::from("Backspace"),
-				Input::BackTab => String::from("BackTab"),
-				Input::Character(char) => String::from(char),
-				Input::Delete => String::from("Delete"),
-				Input::Down => String::from("Down"),
-				Input::Edit => String::from("Edit"),
-				Input::End => String::from("End"),
-				Input::Enter => String::from("Enter"),
-				Input::Escape => String::from("Escape"),
-				Input::Exit => String::from("Exit"),
-				Input::ForceAbort => String::from("ForceAbort"),
-				Input::ForceRebase => String::from("ForceRebase"),
-				Input::Help => String::from("Help"),
-				Input::Home => String::from("Home"),
-				Input::Insert => String::from("Insert"),
-				Input::InsertLine => String::from("InsertLine"),
-				Input::Kill => String::from("Kill"),
-				Input::Left => String::from("Left"),
-				Input::MoveCursorDown => String::from("MoveCursorDown"),
-				Input::MoveCursorEnd => String::from("MoveCursorEnd"),
-				Input::MoveCursorHome => String::from("MoveCursorHome"),
-				Input::MoveCursorLeft => String::from("MoveCursorLeft"),
-				Input::MoveCursorPageDown => String::from("MoveCursorPageDown"),
-				Input::MoveCursorPageUp => String::from("MoveCursorPageUp"),
-				Input::MoveCursorRight => String::from("MoveCursorRight"),
-				Input::MoveCursorUp => String::from("MoveCursorUp"),
-				Input::No => String::from("No"),
-				Input::OpenInEditor => String::from("OpenInEditor"),
-				Input::Other => String::from("Other"),
-				Input::PageDown => String::from("PageDown"),
-				Input::PageUp => String::from("PageUp"),
-				Input::Rebase => String::from("Rebase"),
-				Input::Redo => String::from("Redo"),
-				Input::Resize => String::from("Resize"),
-				Input::Right => String::from("Right"),
-				Input::ScrollBottom => String::from("ScrollBottom"),
-				Input::ScrollDown => String::from("ScrollDown"),
-				Input::ScrollJumpDown => String::from("ScrollJumpDown"),
-				Input::ScrollJumpUp => String::from("ScrollJumpUp"),
-				Input::ScrollLeft => String::from("ScrollLeft"),
-				Input::ScrollRight => String::from("ScrollRight"),
-				Input::ScrollTop => String::from("ScrollTop"),
-				Input::ScrollUp => String::from("ScrollUp"),
-				Input::ShowCommit => String::from("ShowCommit"),
-				Input::ShowDiff => String::from("ShowDiff"),
-				Input::SwapSelectedDown => String::from("SwapSelectedDown"),
-				Input::SwapSelectedUp => String::from("SwapSelectedUp"),
-				Input::Tab => String::from("Tab"),
-				Input::ToggleVisualMode => String::from("ToggleVisualMode"),
-				Input::Undo => String::from("Undo"),
-				Input::Up => String::from("Up"),
-				Input::Yes => String::from("Yes"),
-			}
-		}),
+		event.map_or(String::from("None"), |evt| { format!("{:?}", evt) }),
 		error
 			.as_ref()
 			.map_or(String::from("None"), |error| { format!("{:#}", error) })
@@ -213,7 +169,7 @@ fn format_process_result(
 
 pub fn _assert_process_result(
 	actual: &ProcessResult,
-	input: Option<Input>,
+	event: Option<Event>,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,
 	error: &Option<Error>,
@@ -222,8 +178,8 @@ pub fn _assert_process_result(
 		actual.exit_status.map_or(false, |actual| expected == actual)
 	}) && state.map_or(actual.state.is_none(), |expected| {
 		actual.state.map_or(false, |actual| expected == actual)
-	}) && input.map_or(actual.input.is_none(), |expected| {
-		actual.input.map_or(false, |actual| expected == actual)
+	}) && event.map_or(actual.event.is_none(), |expected| {
+		actual.event.map_or(false, |actual| expected == actual)
 	}) && error.as_ref().map_or(actual.error.is_none(), |expected| {
 		actual
 			.error
@@ -237,9 +193,9 @@ pub fn _assert_process_result(
 				"ProcessResult does not match",
 				"==========",
 				"Expected State:",
-				format_process_result(input, state, exit_status, error).as_str(),
+				format_process_result(event, state, exit_status, error).as_str(),
 				"Actual:",
-				format_process_result(actual.input, actual.state, actual.exit_status, &actual.error).as_str(),
+				format_process_result(actual.event, actual.state, actual.exit_status, &actual.error).as_str(),
 				"==========\n"
 			]
 			.join("\n")
@@ -261,51 +217,49 @@ macro_rules! assert_process_result {
 	($actual:expr, state = $state:expr, error = $error:expr) => {
 		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &Some($error))
 	};
-	($actual:expr, input = $input:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, None, &None)
+	($actual:expr, event = $event:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, Some($event), None, None, &None)
 	};
-	($actual:expr, input = $input:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), Some($state), None, &None)
+	($actual:expr, event = $event:expr, state = $state:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, Some($event), Some($state), None, &None)
 	};
-	($actual:expr, input = $input:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($input), None, Some($exit_status), &None)
+	($actual:expr, event = $event:expr, exit_status = $exit_status:expr) => {
+		crate::process::testutil::_assert_process_result(&$actual, Some($event), None, Some($exit_status), &None)
 	};
 }
 
-pub fn process_module_test<C>(lines: &[&str], view_state: ViewState, inputs: &[Input], callback: C)
+pub fn process_module_test<C>(lines: &[&str], view_state: ViewState, events: &[Event], callback: C)
 where C: for<'p> FnOnce(TestContext<'p>) {
-	let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-		.join("test")
-		.join("fixtures")
-		.join("simple")
-		.to_str()
-		.unwrap()
-		.to_owned();
+	with_event_handler(events, |event_handler_context| {
+		let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("test")
+			.join("fixtures")
+			.join("simple")
+			.to_str()
+			.unwrap()
+			.to_owned();
+		let config = create_config();
+		let mut crossterm = CrossTerm::new();
+		crossterm.set_size(view_state.size);
+		let display = Display::new(&mut crossterm, &config.theme);
+		let view = View::new(display, &config);
+		let todo_file = Builder::new()
+			.prefix("git-rebase-todo-scratch")
+			.suffix("")
+			.tempfile_in(git_repo_dir.as_str())
+			.unwrap();
 
-	let mut config = create_config();
-	config.git.editor = String::from("true");
-	let mut crossterm = CrossTerm::new();
-	crossterm.set_size(view_state.size);
-	setup_mocked_inputs(inputs, &config.key_bindings);
-	let input_handler = InputHandler::new(&config.key_bindings);
-	let display = Display::new(&mut crossterm, &config.theme);
-	let view = View::new(display, &config);
-	let todo_file = Builder::new()
-		.prefix("git-rebase-todo-scratch")
-		.suffix("")
-		.tempfile_in(git_repo_dir.as_str())
-		.unwrap();
+		let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), 1, "#");
+		rebase_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
 
-	let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), 1, "#");
-	rebase_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
-
-	callback(TestContext {
-		config: &config,
-		input_handler,
-		num_inputs: inputs.len(),
-		rebase_todo_file,
-		todo_file: Cell::new(todo_file),
-		view,
+		callback(TestContext {
+			config: &config,
+			event_handler_context,
+			rebase_todo_file,
+			todo_file: Cell::new(todo_file),
+			view,
+			git_directory: git_repo_dir,
+		});
 	});
 }
 

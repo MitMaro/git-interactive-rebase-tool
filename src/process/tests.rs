@@ -8,16 +8,15 @@ use crate::{
 };
 
 #[test]
-#[serial_test::serial]
 fn window_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState { size: Size::new(1, 1) },
-		&[Input::Exit],
+		&[Event::from(MetaEvent::Exit)],
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let modules = Modules::new(test_context.config);
@@ -27,17 +26,16 @@ fn window_too_small() {
 }
 
 #[test]
-#[serial_test::serial]
 fn force_abort() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState::default(),
-		&[Input::ForceAbort],
+		&[Event::from(MetaEvent::ForceAbort)],
 		|test_context: TestContext<'_>| {
 			let mut shadow_rebase_file = test_context.new_todo_file();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let modules = Modules::new(test_context.config);
@@ -49,17 +47,16 @@ fn force_abort() {
 }
 
 #[test]
-#[serial_test::serial]
 fn force_rebase() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState::default(),
-		&[Input::ForceRebase],
+		&[Event::from(MetaEvent::ForceRebase)],
 		|test_context: TestContext<'_>| {
 			let mut shadow_rebase_file = test_context.new_todo_file();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let modules = Modules::new(test_context.config);
@@ -74,18 +71,17 @@ fn force_rebase() {
 }
 
 #[test]
-#[serial_test::serial]
 fn error_write_todo() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState::default(),
-		&[Input::ForceRebase],
+		&[Event::from(MetaEvent::ForceRebase)],
 		|test_context: TestContext<'_>| {
 			let todo_path = test_context.get_todo_file_path();
 			test_context.set_todo_file_readonly();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let modules = Modules::new(test_context.config);
@@ -98,16 +94,15 @@ fn error_write_todo() {
 }
 
 #[test]
-#[serial_test::serial]
 fn resize_window_size_okay() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState::default(),
-		&[Input::Resize, Input::Exit],
+		&[Event::Resize(100, 100), Event::from(MetaEvent::Exit)],
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let modules = Modules::new(test_context.config);
@@ -117,7 +112,6 @@ fn resize_window_size_okay() {
 }
 
 #[test]
-#[serial_test::serial]
 fn resize_window_size_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
@@ -126,19 +120,18 @@ fn resize_window_size_too_small() {
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let mut modules = Modules::new(test_context.config);
 			process.state = State::List;
-			let result = ProcessResult::new().input(Input::Resize);
+			let result = ProcessResult::new().event(Event::Resize(0, 0));
 			process.handle_process_result(&mut modules, &result);
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
 fn error() {
 	process_module_test(
 		&["pick aaa comment"],
@@ -147,7 +140,7 @@ fn error() {
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let mut modules = Modules::new(test_context.config);
@@ -158,8 +151,7 @@ fn error() {
 }
 
 #[test]
-#[serial_test::serial]
-fn help_start() {
+fn handle_exit_event() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState::default(),
@@ -168,18 +160,38 @@ fn help_start() {
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
-			let result = ProcessResult::new().input(Input::Help);
+			let result = ProcessResult::new().event(Event::from(MetaEvent::Exit));
 			process.handle_process_result(&mut modules, &result);
+			assert_eq!(process.exit_status, Some(ExitStatus::Abort));
 		},
 	);
 }
 
 #[test]
-#[serial_test::serial]
-fn other_input() {
+fn handle_kill_event() {
+	process_module_test(
+		&["pick aaa comment"],
+		ViewState::default(),
+		&[],
+		|test_context: TestContext<'_>| {
+			let mut modules = Modules::new(test_context.config);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.event_handler_context.event_handler,
+				test_context.view,
+			);
+			let result = ProcessResult::new().event(Event::from(MetaEvent::Kill));
+			process.handle_process_result(&mut modules, &result);
+			assert_eq!(process.exit_status, Some(ExitStatus::Kill));
+		},
+	);
+}
+
+#[test]
+fn other_event() {
 	process_module_test(
 		&["pick aaa comment"],
 		ViewState::default(),
@@ -187,11 +199,11 @@ fn other_input() {
 		|test_context: TestContext<'_>| {
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
-				test_context.input_handler,
+				test_context.event_handler_context.event_handler,
 				test_context.view,
 			);
 			let mut modules = Modules::new(test_context.config);
-			let result = ProcessResult::new().input(Input::Character('a'));
+			let result = ProcessResult::new().event(Event::from('a'));
 			process.handle_process_result(&mut modules, &result);
 		},
 	);
