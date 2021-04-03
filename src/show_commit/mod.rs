@@ -39,7 +39,6 @@ use crate::{
 		render_context::RenderContext,
 		view_data::ViewData,
 		view_line::ViewLine,
-		View,
 	},
 };
 
@@ -138,7 +137,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		&mut self.view_data
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &RenderContext, _: &mut TodoFile) -> ProcessResult {
 		if self.help.is_active() {
 			return ProcessResult::from(self.help.handle_event(event_handler));
 		}

@@ -17,7 +17,7 @@ use crate::{
 	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
-	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
+	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 };
 
 #[derive(Debug, PartialEq)]
@@ -54,12 +54,12 @@ impl<'l> ProcessModule for List<'l> {
 	fn handle_events(
 		&mut self,
 		event_handler: &EventHandler,
-		view: &mut View<'_>,
+		render_context: &RenderContext,
 		todo_file: &mut TodoFile,
 	) -> ProcessResult {
 		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(event_handler, view, todo_file),
-			ListState::Visual => self.handle_visual_mode_input(event_handler, view, todo_file),
+			ListState::Normal => self.handle_normal_mode_input(event_handler, render_context, todo_file),
+			ListState::Visual => self.handle_visual_mode_input(event_handler, render_context, todo_file),
 			ListState::Edit => self.handle_edit_mode_input(event_handler, todo_file),
 		}
 	}
@@ -165,7 +165,7 @@ impl<'l> List<'l> {
 	fn handle_common_list_input(
 		&mut self,
 		event: Event,
-		view: &View<'_>,
+		render_context: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> Option<ProcessResult> {
 		let mut result = ProcessResult::from(event);
@@ -175,12 +175,8 @@ impl<'l> List<'l> {
 				MetaEvent::MoveCursorRight => self.view_data.scroll_right(),
 				MetaEvent::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
 				MetaEvent::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
-				MetaEvent::MoveCursorPageDown => {
-					Self::move_cursor_down(rebase_todo, view.get_render_context().height() / 2)
-				},
-				MetaEvent::MoveCursorPageUp => {
-					Self::move_cursor_up(rebase_todo, view.get_render_context().height() / 2)
-				},
+				MetaEvent::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, render_context.height() / 2),
+				MetaEvent::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, render_context.height() / 2),
 				MetaEvent::MoveCursorHome => rebase_todo.set_selected_line_index(0),
 				MetaEvent::MoveCursorEnd => {
 					rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index())
@@ -292,7 +288,7 @@ impl<'l> List<'l> {
 	fn handle_normal_mode_input(
 		&mut self,
 		event_handler: &EventHandler,
-		view: &View<'_>,
+		render_context: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		if self.normal_mode_help.is_active() {
@@ -300,7 +296,7 @@ impl<'l> List<'l> {
 		}
 
 		let event = get_event(event_handler);
-		if let Some(result) = self.handle_common_list_input(event, view, rebase_todo) {
+		if let Some(result) = self.handle_common_list_input(event, render_context, rebase_todo) {
 			result
 		}
 		else {
@@ -356,7 +352,7 @@ impl<'l> List<'l> {
 	fn handle_visual_mode_input(
 		&mut self,
 		event_handler: &EventHandler,
-		view: &View<'_>,
+		render_context: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		if self.visual_mode_help.is_active() {
@@ -364,7 +360,7 @@ impl<'l> List<'l> {
 		}
 
 		let event = get_event(event_handler);
-		self.handle_common_list_input(event, view, rebase_todo)
+		self.handle_common_list_input(event, render_context, rebase_todo)
 			.unwrap_or_else(|| ProcessResult::from(event))
 	}
 

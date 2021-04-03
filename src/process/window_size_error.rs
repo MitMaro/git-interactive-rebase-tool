@@ -4,7 +4,7 @@ use crate::{
 	input::{Event, EventHandler, InputOptions},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 };
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
@@ -50,12 +50,17 @@ impl ProcessModule for WindowSizeError {
 		&mut self.view_data
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(
+		&mut self,
+		event_handler: &EventHandler,
+		render_context: &RenderContext,
+		_: &mut TodoFile,
+	) -> ProcessResult {
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 		let mut result = ProcessResult::from(event);
 
 		if let Event::Resize(..) = event {
-			if !view.get_render_context().is_window_too_small() {
+			if !render_context.is_window_too_small() {
 				result = result.state(self.return_state);
 			}
 		}

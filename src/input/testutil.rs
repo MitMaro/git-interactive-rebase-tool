@@ -75,6 +75,8 @@ fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
 					}
 				},
 				MetaEvent::Yes => KeyEvent::from(KeyCode::Char('y')),
+				MetaEvent::ExternalCommandSuccess => KeyEvent::from(KeyCode::Null),
+				MetaEvent::ExternalCommandError => KeyEvent::from(KeyCode::Null),
 			};
 			crossterm::event::Event::Key(key_event)
 		},

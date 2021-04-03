@@ -1,8 +1,12 @@
+use std::path::Path;
+
 use anyhow::anyhow;
 
 use super::*;
 use crate::{
-	display::size::Size,
+	assert_rendered_output,
+	display::{size::Size, CrossTerm, Display},
+	input::InputOptions,
 	process::testutil::{process_module_test, TestContext, ViewState},
 	todo_file::line::Line,
 };
@@ -14,10 +18,17 @@ fn window_too_small() {
 		ViewState { size: Size::new(1, 1) },
 		&[Event::from(MetaEvent::Exit)],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Abort);
@@ -32,11 +43,18 @@ fn force_abort() {
 		ViewState::default(),
 		&[Event::from(MetaEvent::ForceAbort)],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut shadow_rebase_file = test_context.new_todo_file();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
@@ -53,11 +71,18 @@ fn force_rebase() {
 		ViewState::default(),
 		&[Event::from(MetaEvent::ForceRebase)],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut shadow_rebase_file = test_context.new_todo_file();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
@@ -77,12 +102,19 @@ fn error_write_todo() {
 		ViewState::default(),
 		&[Event::from(MetaEvent::ForceRebase)],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let todo_path = test_context.get_todo_file_path();
 			test_context.set_todo_file_readonly();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(
@@ -100,10 +132,17 @@ fn resize_window_size_okay() {
 		ViewState::default(),
 		&[Event::Resize(100, 100), Event::from(MetaEvent::Exit)],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Abort);
@@ -118,10 +157,17 @@ fn resize_window_size_too_small() {
 		ViewState { size: Size::new(1, 1) },
 		&[],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let mut modules = Modules::new(test_context.config);
 			process.state = State::List;
@@ -138,10 +184,17 @@ fn error() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let mut modules = Modules::new(test_context.config);
 			let result = ProcessResult::new().error(anyhow!("Test error"));
@@ -157,11 +210,18 @@ fn handle_exit_event() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let result = ProcessResult::new().event(Event::from(MetaEvent::Exit));
 			process.handle_process_result(&mut modules, &result);
@@ -177,11 +237,18 @@ fn handle_kill_event() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let result = ProcessResult::new().event(Event::from(MetaEvent::Kill));
 			process.handle_process_result(&mut modules, &result);
@@ -197,14 +264,181 @@ fn other_event() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
-				test_context.view,
+				view,
 			);
 			let mut modules = Modules::new(test_context.config);
 			let result = ProcessResult::new().event(Event::from('a'));
 			process.handle_process_result(&mut modules, &result);
+		},
+	);
+}
+
+#[test]
+fn handle_external_command_not_executable() {
+	process_module_test(
+		&["pick aaa comment"],
+		ViewState::default(),
+		&[],
+		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
+			let mut modules = Modules::new(test_context.config);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.event_handler_context.event_handler,
+				view,
+			);
+			let command = String::from(
+				Path::new(env!("CARGO_MANIFEST_DIR"))
+					.join("test")
+					.join("not-executable.sh")
+					.to_str()
+					.unwrap(),
+			);
+			let result = ProcessResult::new().external_command(command.clone(), vec![]);
+			process.handle_process_result(&mut modules, &result);
+			assert_eq!(process.state, State::Error);
+			let view_data = modules.build_view_data(process.state, &process.render_context, &process.rebase_todo);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{BODY}",
+				format!("{{Normal}}Unable to run {} ", command),
+				if cfg!(windows) {
+					"{Normal}%1 is not a valid Win32 application. (os error 193)"
+				}
+				else {
+					"{Normal}Permission denied (os error 13)"
+				},
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to continue"
+			);
+		},
+	);
+}
+
+#[test]
+fn handle_external_command_executable_not_found() {
+	process_module_test(
+		&["pick aaa comment"],
+		ViewState::default(),
+		&[],
+		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
+			let mut modules = Modules::new(test_context.config);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.event_handler_context.event_handler,
+				view,
+			);
+			let command = String::from(
+				Path::new(env!("CARGO_MANIFEST_DIR"))
+					.join("test")
+					.join("not-found.sh")
+					.to_str()
+					.unwrap(),
+			);
+			let result = ProcessResult::new().external_command(command.clone(), vec![]);
+			process.handle_process_result(&mut modules, &result);
+			assert_eq!(process.state, State::Error);
+			let view_data = modules.build_view_data(process.state, &process.render_context, &process.rebase_todo);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{BODY}",
+				format!("{{Normal}}Unable to run {} ", command),
+				if cfg!(windows) {
+					"{Normal}The system cannot find the file specified. (os error 2)"
+				}
+				else {
+					"{Normal}No such file or directory (os error 2)"
+				},
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to continue"
+			);
+		},
+	);
+}
+
+#[test]
+fn handle_external_command_status_success() {
+	process_module_test(
+		&["pick aaa comment"],
+		ViewState::default(),
+		&[],
+		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
+			let mut modules = Modules::new(test_context.config);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.event_handler_context.event_handler,
+				view,
+			);
+			let command = String::from("true");
+			let result = ProcessResult::new().external_command(command, vec![]);
+			process.handle_process_result(&mut modules, &result);
+			assert_eq!(
+				process.event_handler.read_event(&InputOptions::new(), |e, _| e),
+				Event::from(MetaEvent::ExternalCommandSuccess)
+			);
+		},
+	);
+}
+
+#[test]
+fn handle_external_command_status_error() {
+	process_module_test(
+		&["pick aaa comment"],
+		ViewState::default(),
+		&[],
+		|test_context: TestContext<'_>| {
+			let mut crossterm = CrossTerm::new();
+			crossterm.set_size(Size::new(
+				test_context.render_context.width(),
+				test_context.render_context.height(),
+			));
+			let display = Display::new(&mut crossterm, &test_context.config.theme);
+			let view = View::new(display, test_context.config);
+			let mut modules = Modules::new(test_context.config);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.event_handler_context.event_handler,
+				view,
+			);
+			let command = String::from("false");
+			let result = ProcessResult::new().external_command(command, vec![]);
+			process.handle_process_result(&mut modules, &result);
+			assert_eq!(
+				process.event_handler.read_event(&InputOptions::new(), |e, _| e),
+				Event::from(MetaEvent::ExternalCommandError)
+			);
 		},
 	);
 }

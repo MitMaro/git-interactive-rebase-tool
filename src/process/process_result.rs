@@ -11,6 +11,7 @@ pub struct ProcessResult {
 	pub(super) exit_status: Option<ExitStatus>,
 	pub(super) event: Option<Event>,
 	pub(super) state: Option<State>,
+	pub(super) external_command: Option<(String, Vec<String>)>,
 }
 
 impl ProcessResult {
@@ -20,6 +21,7 @@ impl ProcessResult {
 			exit_status: None,
 			event: None,
 			state: None,
+			external_command: None,
 		}
 	}
 
@@ -43,6 +45,11 @@ impl ProcessResult {
 		self.state = Some(new_state);
 		self
 	}
+
+	pub(crate) fn external_command(mut self, command: String, arguments: Vec<String>) -> Self {
+		self.external_command = Some((command, arguments));
+		self
+	}
 }
 
 impl From<Event> for ProcessResult {
@@ -52,6 +59,7 @@ impl From<Event> for ProcessResult {
 			exit_status: None,
 			event: Some(event),
 			state: None,
+			external_command: None,
 		}
 	}
 }
@@ -69,6 +77,7 @@ mod tests {
 		assert_eq!(result.exit_status, None);
 		assert_eq!(result.event, None);
 		assert_eq!(result.state, None);
+		assert_eq!(result.external_command, None);
 	}
 
 	#[test]
@@ -78,6 +87,7 @@ mod tests {
 		assert_eq!(result.exit_status, None);
 		assert_eq!(result.event, Some(Event::from('a')));
 		assert_eq!(result.state, None);
+		assert_eq!(result.external_command, None);
 	}
 
 	#[test]
@@ -87,6 +97,7 @@ mod tests {
 		assert_eq!(result.exit_status, None);
 		assert_eq!(result.event, None);
 		assert_eq!(result.state, None);
+		assert_eq!(result.external_command, None);
 	}
 
 	#[test]
@@ -96,6 +107,7 @@ mod tests {
 		assert_eq!(result.exit_status, Some(ExitStatus::Good));
 		assert_eq!(result.event, None);
 		assert_eq!(result.state, None);
+		assert_eq!(result.external_command, None);
 	}
 
 	#[test]
@@ -105,6 +117,21 @@ mod tests {
 		assert_eq!(result.exit_status, None);
 		assert_eq!(result.event, None);
 		assert_eq!(result.state, Some(State::List));
+		assert_eq!(result.external_command, None);
+	}
+
+	#[test]
+	fn external_command() {
+		let result = ProcessResult::new()
+			.external_command(String::from("editor"), vec![String::from("arg1"), String::from("arg2")]);
+		assert!(result.error.is_none());
+		assert_eq!(result.exit_status, None);
+		assert_eq!(result.event, None);
+		assert_eq!(result.state, None);
+		assert_eq!(
+			result.external_command,
+			Some((String::from("editor"), vec![String::from("arg1"), String::from("arg2")]))
+		);
 	}
 
 	#[test]
@@ -113,10 +140,15 @@ mod tests {
 			.error(anyhow!("Test Error"))
 			.state(State::List)
 			.exit_status(ExitStatus::Good)
-			.event(Event::from('a'));
+			.event(Event::from('a'))
+			.external_command(String::from("editor"), vec![String::from("arg1"), String::from("arg2")]);
 		assert_eq!(result.error.unwrap().to_string(), String::from("Test Error"));
 		assert_eq!(result.exit_status, Some(ExitStatus::Good));
 		assert_eq!(result.event, Some(Event::from('a')));
 		assert_eq!(result.state, Some(State::List));
+		assert_eq!(
+			result.external_command,
+			Some((String::from("editor"), vec![String::from("arg1"), String::from("arg2")]))
+		);
 	}
 }
