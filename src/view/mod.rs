@@ -12,8 +12,8 @@ use anyhow::Result;
 pub use util::handle_view_data_scroll;
 
 use crate::{
-	display::{display_color::DisplayColor, Display},
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
+	display::{display_color::DisplayColor, size::Size, Display},
+	view::{view_data::ViewData, view_line::ViewLine},
 	Config,
 };
 
@@ -39,13 +39,12 @@ impl<'v> View<'v> {
 		self.display.end()
 	}
 
-	pub(crate) fn get_render_context(&self) -> RenderContext {
-		let size = self.display.get_window_size();
-		RenderContext::new(size.width(), size.height())
+	pub(crate) fn get_view_size(&self) -> Size {
+		self.display.get_window_size()
 	}
 
 	pub(crate) fn render(&mut self, view_data: &mut ViewData) -> Result<()> {
-		let view_size = self.display.get_window_size();
+		let view_size = self.get_view_size();
 		let window_height = view_size.height();
 		view_data.set_view_size(view_size.width(), window_height);
 

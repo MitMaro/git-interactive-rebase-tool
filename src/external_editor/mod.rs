@@ -5,42 +5,48 @@ mod external_editor_state;
 #[cfg(all(unix, test))]
 mod tests;
 
-use std::{
-	ffi::OsString,
-	process::{Command, ExitStatus as ProcessExitStatus},
-};
-
 use anyhow::{anyhow, Result};
+use lazy_static::lazy_static;
 
 use crate::{
 	components::choice::Choice,
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
-	input::EventHandler,
+	input::{Event, EventHandler, InputOptions, MetaEvent},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 };
 
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
+}
+
 pub struct ExternalEditor {
+	editor: String,
 	empty_choice: Choice<Action>,
 	error_choice: Choice<Action>,
-	editor: String,
+	external_command: (String, Vec<String>),
+	lines: Vec<Line>,
 	state: ExternalEditorState,
 	view_data: ViewData,
-	lines: Vec<Line>,
 }
 
 impl ProcessModule for ExternalEditor {
 	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
-		let mut result = ProcessResult::new();
-		self.state = ExternalEditorState::Active;
+		let result = ProcessResult::new();
 		if let Err(err) = todo_file.write_file() {
-			result = result.error(err).state(State::List);
+			return result.error(err).state(State::List);
 		}
-		else if self.lines.is_empty() {
+
+		if self.lines.is_empty() {
 			self.lines = todo_file.get_lines_owned();
 		}
-		result
+
+		match self.get_command(todo_file) {
+			Ok(external_command) => self.external_command = external_command,
+			Err(err) => return result.error(err).state(State::List),
+		}
+		self.set_state(result, ExternalEditorState::Active)
 	}
 
 	fn deactivate(&mut self) {
@@ -67,27 +73,35 @@ impl ProcessModule for ExternalEditor {
 	fn handle_events(
 		&mut self,
 		event_handler: &EventHandler,
-		view: &mut View<'_>,
+		_: &RenderContext,
 		todo_file: &mut TodoFile,
 	) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
-				if let Err(e) = self.run_editor(view, todo_file) {
-					self.state = ExternalEditorState::Error(e);
-				}
-				else {
-					match todo_file.load_file() {
-						Ok(_) => {
-							if todo_file.is_empty() || todo_file.is_noop() {
-								self.state = ExternalEditorState::Empty;
-							}
-							else {
-								result = result.state(State::List);
-							}
-						},
-						Err(e) => self.state = ExternalEditorState::Error(e),
-					}
+				let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+				result = result.event(event);
+				match event {
+					Event::Meta(MetaEvent::ExternalCommandSuccess) => {
+						match todo_file.load_file() {
+							Ok(_) => {
+								if todo_file.is_empty() || todo_file.is_noop() {
+									result = self.set_state(result, ExternalEditorState::Empty);
+								}
+								else {
+									result = result.state(State::List);
+								}
+							},
+							Err(e) => result = self.set_state(result, ExternalEditorState::Error(e)),
+						}
+					},
+					Event::Meta(MetaEvent::ExternalCommandError) => {
+						result = self.set_state(
+							result,
+							ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status")),
+						);
+					},
+					_ => {},
 				}
 			},
 			ExternalEditorState::Empty => {
@@ -96,10 +110,10 @@ impl ProcessModule for ExternalEditor {
 				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => result = result.exit_status(ExitStatus::Good),
-						Action::EditRebase => self.state = ExternalEditorState::Active,
+						Action::EditRebase => result = self.set_state(result, ExternalEditorState::Active),
 						Action::UndoAndEdit => {
 							todo_file.set_lines(self.lines.to_vec());
-							self.activate(todo_file, State::ExternalEditor);
+							result = self.undo_and_edit(result, todo_file);
 						},
 						Action::RestoreAndAbortEdit => {},
 					}
@@ -114,7 +128,7 @@ impl ProcessModule for ExternalEditor {
 							todo_file.set_lines(vec![]);
 							result = result.exit_status(ExitStatus::Good);
 						},
-						Action::EditRebase => self.state = ExternalEditorState::Active,
+						Action::EditRebase => result = self.set_state(result, ExternalEditorState::Active),
 						Action::RestoreAndAbortEdit => {
 							todo_file.set_lines(self.lines.to_vec());
 							result = result.state(State::List);
@@ -124,7 +138,7 @@ impl ProcessModule for ExternalEditor {
 						},
 						Action::UndoAndEdit => {
 							todo_file.set_lines(self.lines.to_vec());
-							self.activate(todo_file, State::ExternalEditor);
+							result = self.undo_and_edit(result, todo_file);
 						},
 					}
 				}
@@ -166,52 +180,64 @@ impl ExternalEditor {
 		]);
 
 		Self {
+			editor: String::from(editor),
 			empty_choice,
 			error_choice,
-			editor: String::from(editor),
+			external_command: (String::from(""), vec![]),
+			lines: vec![],
 			state: ExternalEditorState::Active,
 			view_data,
-			lines: vec![],
 		}
 	}
 
-	fn run_editor(&mut self, view: &mut View<'_>, todo_file: &TodoFile) -> Result<()> {
-		let mut arguments = tokenize(self.editor.as_str())
+	fn set_state(&mut self, result: ProcessResult, new_state: ExternalEditorState) -> ProcessResult {
+		let result = match new_state {
+			ExternalEditorState::Active => {
+				result.external_command(self.external_command.0.clone(), self.external_command.1.clone())
+			},
+			ExternalEditorState::Empty | ExternalEditorState::Error(_) => result,
+		};
+		self.state = new_state;
+		result
+	}
+
+	fn undo_and_edit(&mut self, result: ProcessResult, todo_file: &mut TodoFile) -> ProcessResult {
+		todo_file.set_lines(self.lines.to_vec());
+		if let Err(err) = todo_file.write_file() {
+			return result.error(err).state(State::List);
+		}
+		self.set_state(result, ExternalEditorState::Active)
+	}
+
+	fn get_command(&mut self, todo_file: &TodoFile) -> Result<(String, Vec<String>)> {
+		let mut parameters = tokenize(self.editor.as_str())
 			.map_or(Err(anyhow!("Invalid editor: \"{}\"", self.editor)), |args| {
 				if args.is_empty() {
 					Err(anyhow!("No editor configured"))
 				}
 				else {
-					Ok(args.into_iter().map(OsString::from))
+					Ok(args.into_iter())
 				}
 			})
 			.map_err(|e| anyhow!("Please see the git \"core.editor\" configuration for details").context(e))?;
 
 		let filepath = todo_file.get_filepath();
-		let callback = || -> Result<ProcessExitStatus> {
-			let mut file_pattern_found = false;
-			let mut cmd = Command::new(arguments.next().unwrap());
-			for arg in arguments {
-				if arg.as_os_str() == "%" {
+		let mut file_pattern_found = false;
+		let command = parameters.next().unwrap_or_else(|| String::from("false"));
+		let mut arguments = parameters
+			.map(|a| {
+				if a.as_str() == "%" {
 					file_pattern_found = true;
-					cmd.arg(filepath);
+					String::from(filepath)
 				}
 				else {
-					cmd.arg(arg);
+					a
 				}
-			}
-			if !file_pattern_found {
-				cmd.arg(filepath);
-			}
-			cmd.status().map_err(|e| anyhow!(e).context("Unable to run editor"))
-		};
-		view.end()?;
-		let exit_status = callback();
-		view.start()?;
-		let exit_status = exit_status?;
-		if !exit_status.success() {
-			return Err(anyhow!("Editor returned a non-zero exit status"));
+			})
+			.collect::<Vec<String>>();
+		if !file_pattern_found {
+			arguments.push(String::from(filepath));
 		}
-		Ok(())
+		Ok((command, arguments))
 	}
 }

@@ -11,26 +11,31 @@ mod tests;
 #[cfg(test)]
 pub mod testutil;
 
-use anyhow::Result;
+use std::process::Command;
+
+use anyhow::{anyhow, Result};
 
 use crate::{
 	input::{Event, EventHandler, MetaEvent},
 	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::View,
+	view::{render_context::RenderContext, View},
 };
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,
 	event_handler: EventHandler,
 	rebase_todo: TodoFile,
+	render_context: RenderContext,
 	state: State,
 	view: View<'r>,
 }
 
 impl<'r> Process<'r> {
-	pub(crate) const fn new(rebase_todo: TodoFile, event_handler: EventHandler, view: View<'r>) -> Self {
+	pub(crate) fn new(rebase_todo: TodoFile, event_handler: EventHandler, view: View<'r>) -> Self {
+		let view_size = view.get_view_size();
 		Self {
+			render_context: RenderContext::new(view_size.width() as u16, view_size.height() as u16),
 			exit_status: None,
 			event_handler,
 			rebase_todo,
@@ -43,17 +48,26 @@ impl<'r> Process<'r> {
 		if self.view.start().is_err() {
 			return Ok(Some(ExitStatus::StateError));
 		}
-		if self.view.get_render_context().is_window_too_small() {
-			self.handle_process_result(&mut modules, &ProcessResult::new().state(State::WindowSizeError));
-		}
+		self.handle_process_result(
+			&mut modules,
+			&ProcessResult::new().event(Event::Resize(
+				self.render_context.width() as u16,
+				self.render_context.height() as u16,
+			)),
+		);
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
-			let view_data = modules.build_view_data(self.state, &self.view, &self.rebase_todo);
+			let view_data = modules.build_view_data(self.state, &self.render_context, &self.rebase_todo);
 			if self.view.render(view_data).is_err() {
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
 			}
-			let result = modules.handle_input(self.state, &self.event_handler, &mut self.view, &mut self.rebase_todo);
+			let result = modules.handle_input(
+				self.state,
+				&self.event_handler,
+				&self.render_context,
+				&mut self.rebase_todo,
+			);
 			self.handle_process_result(&mut modules, &result);
 		}
 		if self.view.end().is_err() {
@@ -67,7 +81,7 @@ impl<'r> Process<'r> {
 		Ok(self.exit_status)
 	}
 
-	fn handle_process_result(&mut self, modules: &mut Modules<'r>, result: &ProcessResult) -> bool {
+	fn handle_process_result(&mut self, modules: &mut Modules<'r>, result: &ProcessResult) {
 		let previous_state = self.state;
 
 		if let Some(exit_status) = result.exit_status {
@@ -94,8 +108,9 @@ impl<'r> Process<'r> {
 			Some(Event::Meta(MetaEvent::Kill)) => {
 				self.exit_status = Some(ExitStatus::Kill);
 			},
-			Some(Event::Resize(..)) => {
-				if self.state != State::WindowSizeError && self.view.get_render_context().is_window_too_small() {
+			Some(Event::Resize(width, height)) => {
+				self.render_context.update(width, height);
+				if self.state != State::WindowSizeError && self.render_context.is_window_too_small() {
 					self.state = State::WindowSizeError;
 					self.activate(modules, previous_state);
 				}
@@ -103,7 +118,44 @@ impl<'r> Process<'r> {
 			_ => {},
 		};
 
-		previous_state != self.state
+		if let Some(ref external_command) = result.external_command {
+			match self.run_command(external_command) {
+				Ok(meta_event) => self.event_handler.push_event(Event::from(meta_event)),
+				Err(err) => {
+					self.handle_process_result(
+						modules,
+						&ProcessResult::new().error(err.context(format!(
+							"Unable to run {} {}",
+							external_command.0,
+							external_command.1.join(" ")
+						))),
+					)
+				},
+			}
+		}
+	}
+
+	fn run_command(&mut self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
+		self.view.end()?;
+
+		let mut cmd = Command::new(external_command.0.clone());
+		cmd.args(external_command.1.clone());
+
+		let result = cmd
+			.status()
+			.map(|status| {
+				if status.success() {
+					MetaEvent::ExternalCommandSuccess
+				}
+				else {
+					MetaEvent::ExternalCommandError
+				}
+			})
+			.map_err(|err| anyhow!(err));
+
+		self.view.start()?;
+
+		result
 	}
 
 	fn activate(&mut self, modules: &mut Modules<'r>, previous_state: State) {

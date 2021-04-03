@@ -2,7 +2,7 @@ use crate::{
 	input::EventHandler,
 	process::{process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData, View},
+	view::{render_context::RenderContext, view_data::ViewData},
 };
 
 pub trait ProcessModule {
@@ -17,7 +17,7 @@ pub trait ProcessModule {
 	fn handle_events(
 		&mut self,
 		_event_handler: &EventHandler,
-		_view: &mut View<'_>,
+		_render_context: &RenderContext,
 		_rebase_todo: &mut TodoFile,
 	) -> ProcessResult;
 }

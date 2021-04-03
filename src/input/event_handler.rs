@@ -1,3 +1,5 @@
+use std::{cell::RefCell, collections::VecDeque};
+
 use anyhow::Result;
 
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -7,15 +9,17 @@ use crate::{
 };
 
 pub struct EventHandler {
-	key_bindings: KeyBindings,
 	event_provider: Box<dyn Fn() -> Result<crossterm::event::Event>>,
+	event_queue: RefCell<VecDeque<Event>>,
+	key_bindings: KeyBindings,
 }
 
 impl EventHandler {
 	pub(crate) fn new(key_bindings: KeyBindings) -> Self {
 		Self {
-			key_bindings,
 			event_provider: Box::new(CrossTerm::read_event),
+			event_queue: RefCell::new(VecDeque::new()),
+			key_bindings,
 		}
 	}
 
@@ -26,12 +30,19 @@ impl EventHandler {
 	}
 
 	pub fn poll_event(&self) -> Event {
-		if let Ok(event) = (self.event_provider)() {
+		if let Some(event) = self.event_queue.borrow_mut().pop_front() {
+			event
+		}
+		else if let Ok(event) = (self.event_provider)() {
 			Event::from(event)
 		}
 		else {
 			Event::from(KeyCode::Null)
 		}
+	}
+
+	pub(crate) fn push_event(&self, event: Event) {
+		self.event_queue.borrow_mut().push_back(event);
 	}
 
 	pub(crate) fn read_event<F>(&self, input_options: &InputOptions, callback: F) -> Event

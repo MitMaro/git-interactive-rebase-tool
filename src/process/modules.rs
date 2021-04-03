@@ -15,7 +15,7 @@ use crate::{
 	},
 	show_commit::ShowCommit,
 	todo_file::TodoFile,
-	view::{view_data::ViewData, View},
+	view::{render_context::RenderContext, view_data::ViewData},
 };
 
 pub struct Modules<'m> {
@@ -64,20 +64,24 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).deactivate();
 	}
 
-	pub fn build_view_data(&mut self, state: State, view: &View<'_>, rebase_todo: &TodoFile) -> &mut ViewData {
-		let render_context = view.get_render_context();
-		self.get_mut_module(state).build_view_data(&render_context, rebase_todo)
+	pub fn build_view_data(
+		&mut self,
+		state: State,
+		render_context: &RenderContext,
+		rebase_todo: &TodoFile,
+	) -> &mut ViewData {
+		self.get_mut_module(state).build_view_data(render_context, rebase_todo)
 	}
 
-	pub fn handle_input<'r>(
+	pub fn handle_input(
 		&mut self,
 		state: State,
 		event_handler: &EventHandler,
-		view: &mut View<'r>,
+		render_context: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		self.get_mut_module(state)
-			.handle_events(event_handler, view, rebase_todo)
+			.handle_events(event_handler, render_context, rebase_todo)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
@@ -94,7 +98,6 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		assert_process_result,
 		input::Event,
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
@@ -120,14 +123,14 @@ mod tests {
 				test_context.set_git_directory_environment();
 				let config = test_context.config.clone();
 				let mut modules = Modules::new(&config);
-				assert_process_result!(modules.activate(state, &test_context.rebase_todo_file, State::List));
+				modules.activate(state, &test_context.rebase_todo_file, State::List);
 				modules.handle_input(
 					state,
 					&test_context.event_handler_context.event_handler,
-					&mut test_context.view,
+					&test_context.render_context,
 					&mut test_context.rebase_todo_file,
 				);
-				modules.build_view_data(state, &test_context.view, &test_context.rebase_todo_file);
+				modules.build_view_data(state, &test_context.render_context, &test_context.rebase_todo_file);
 				modules.deactivate(state);
 			},
 		);

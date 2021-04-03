@@ -10,7 +10,7 @@ use crate::{
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 };
 
 pub struct Insert {
@@ -42,7 +42,7 @@ impl ProcessModule for Insert {
 	fn handle_events(
 		&mut self,
 		event_handler: &EventHandler,
-		_: &mut View<'_>,
+		_: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		match self.state {

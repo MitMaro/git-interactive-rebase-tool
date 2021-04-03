@@ -3,7 +3,7 @@ use crate::{
 	input::EventHandler,
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData, View},
+	view::{render_context::RenderContext, view_data::ViewData},
 };
 
 pub struct ConfirmAbort {
@@ -18,7 +18,7 @@ impl ProcessModule for ConfirmAbort {
 	fn handle_events(
 		&mut self,
 		event_handler: &EventHandler,
-		_: &mut View<'_>,
+		_: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		let (confirmed, event) = self.dialog.handle_event(event_handler);

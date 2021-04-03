@@ -9,8 +9,16 @@ pub struct RenderContext {
 }
 
 impl RenderContext {
-	pub const fn new(width: usize, height: usize) -> Self {
-		Self { height, width }
+	pub const fn new(width: u16, height: u16) -> Self {
+		Self {
+			height: height as usize,
+			width: width as usize,
+		}
+	}
+
+	pub fn update(&mut self, width: u16, height: u16) {
+		self.width = width as usize;
+		self.height = height as usize;
 	}
 
 	pub const fn width(&self) -> usize {
@@ -41,6 +49,14 @@ impl RenderContext {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn update() {
+		let mut context = RenderContext { width: 10, height: 20 };
+		context.update(100, 200);
+		assert_eq!(context.width(), 100);
+		assert_eq!(context.height(), 200);
+	}
 
 	#[test]
 	fn is_window_too_small_width_too_small() {
