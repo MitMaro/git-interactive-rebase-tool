@@ -1,74 +1,16 @@
+mod event;
 mod event_handler;
-pub mod input_handler;
+mod input_options;
+mod key_bindings;
+mod meta_event;
 
 #[cfg(test)]
 pub mod testutil;
 
-pub use event_handler::EventHandler;
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Input {
-	// meta key bindings
-	Abort,
-	ActionBreak,
-	ActionDrop,
-	ActionEdit,
-	ActionFixup,
-	ActionPick,
-	ActionReword,
-	ActionSquash,
-	Edit,
-	Escape,
-	Exit,
-	ForceAbort,
-	ForceRebase,
-	Help,
-	InsertLine,
-	Kill,
-	MoveCursorDown,
-	MoveCursorEnd,
-	MoveCursorHome,
-	MoveCursorLeft,
-	MoveCursorPageDown,
-	MoveCursorPageUp,
-	MoveCursorRight,
-	MoveCursorUp,
-	No,
-	OpenInEditor,
-	Other,
-	Rebase,
-	Redo,
-	ScrollBottom,
-	ScrollDown,
-	ScrollJumpDown,
-	ScrollJumpUp,
-	ScrollLeft,
-	ScrollRight,
-	ScrollTop,
-	ScrollUp,
-	ShowCommit,
-	ShowDiff,
-	SwapSelectedDown,
-	SwapSelectedUp,
-	ToggleVisualMode,
-	Undo,
-	Yes,
-
-	// raw input values
-	Backspace,
-	BackTab,
-	Character(char),
-	Delete,
-	Down,
-	End,
-	Enter,
-	Home,
-	Insert,
-	Left,
-	PageDown,
-	PageUp,
-	Resize,
-	Right,
-	Tab,
-	Up,
-}
+pub use self::{
+	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind},
+	event_handler::EventHandler,
+	input_options::InputOptions,
+	key_bindings::KeyBindings,
+	meta_event::MetaEvent,
+};

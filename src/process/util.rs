@@ -81,7 +81,7 @@ mod tests {
 		let mut view_data = ViewData::new();
 		view_data.push_line(ViewLine::from("012345678"));
 		view_data.set_view_size(5, 10);
-		assert_eq!(handle_view_data_scroll(Input::Character('a'), &mut view_data), None);
+		assert_eq!(handle_view_data_scroll(Event::from('a'), &mut view_data), None);
 		assert_rendered_output!(&mut view_data, "{BODY}", "{Normal}01234");
 	}
 }

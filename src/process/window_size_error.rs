@@ -1,8 +1,7 @@
+use lazy_static::lazy_static;
+
 use crate::{
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
-	},
+	input::{Event, EventHandler, InputOptions},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
@@ -11,6 +10,10 @@ use crate::{
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
 const SHORT_ERROR_MESSAGE: &str = "Window too small";
 const SIZE_ERROR_MESSAGE: &str = "Size!";
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true).resize(false);
+}
 
 pub struct WindowSizeError {
 	return_state: State,
@@ -47,17 +50,14 @@ impl ProcessModule for WindowSizeError {
 		&mut self.view_data
 	}
 
-	fn handle_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		view: &mut View<'_>,
-		_: &mut TodoFile,
-	) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::Default);
-		let mut result = ProcessResult::new().input(input);
+	fn handle_events(&mut self, event_handler: &EventHandler, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+		let mut result = ProcessResult::from(event);
 
-		if input == Input::Resize && !view.get_render_context().is_window_too_small() {
-			result = result.state(self.return_state);
+		if let Event::Resize(..) = event {
+			if !view.get_render_context().is_window_too_small() {
+				result = result.state(self.return_state);
+			}
 		}
 
 		result
@@ -100,7 +100,6 @@ mod tests {
 		)
 	)]
 	#[allow(clippy::cast_possible_wrap)]
-	#[serial_test::serial]
 	fn build_view_data(width: usize, height: usize, expected: &str) {
 		process_module_test(
 			&[],
@@ -117,35 +116,33 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
-	fn input_resize_window_still_small() {
+	fn event_resize_window_still_small() {
 		process_module_test(
 			&[],
 			ViewState { size: Size::new(1, 1) },
-			&[Input::Resize],
+			&[Event::Resize(1, 1)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Resize);
+				assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(1, 1));
 			},
 		);
 	}
 
 	#[test]
-	#[serial_test::serial]
-	fn input_resize_window_no_longer_too_small() {
+	fn event_resize_window_no_longer_too_small() {
 		process_module_test(
 			&[],
 			ViewState {
 				size: Size::new(100, 100),
 			},
-			&[Input::Resize],
+			&[Event::Resize(100, 100)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
 				assert_process_result!(
-					test_context.handle_input(&mut module),
-					input = Input::Resize,
+					test_context.handle_event(&mut module),
+					event = Event::Resize(100, 100),
 					state = State::ConfirmRebase
 				);
 			},
@@ -153,16 +150,15 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
-	fn input_other_character() {
+	fn event_other_character() {
 		process_module_test(
 			&[],
 			ViewState::default(),
-			&[Input::Character('a')],
+			&[Event::from('a')],
 			|mut test_context: TestContext<'_>| {
 				let mut module = WindowSizeError::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
-				assert_process_result!(test_context.handle_input(&mut module), input = Input::Character('a'));
+				assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));
 			},
 		);
 	}

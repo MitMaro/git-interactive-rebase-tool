@@ -8,13 +8,13 @@ pub use crossterm::{
 };
 use lazy_static::lazy_static;
 
-use crate::{
-	create_key_event,
-	display::{color_mode::ColorMode, size::Size, utils::detect_color_mode},
-};
+use crate::display::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
 
 lazy_static! {
-	static ref INPUT: Mutex<Vec<Event>> = Mutex::new(vec![create_key_event!('c', "Control")]);
+	static ref EVENTS: Mutex<Vec<Event>> = Mutex::new(vec![crossterm::event::Event::Key(KeyEvent {
+		code: KeyCode::Char('z'),
+		modifiers: KeyModifiers::CONTROL,
+	})]);
 }
 
 lazy_static! {
@@ -77,10 +77,10 @@ impl CrossTerm {
 		self.attributes.has(Attribute::Underlined)
 	}
 
-	pub(crate) fn set_inputs(mut input: Vec<Event>) {
-		input.reverse();
-		INPUT.lock().unwrap().clear();
-		INPUT.lock().unwrap().append(&mut input);
+	pub(crate) fn set_events(mut events: Vec<Event>) {
+		events.reverse();
+		EVENTS.lock().unwrap().clear();
+		EVENTS.lock().unwrap().append(&mut events);
 	}
 
 	pub(crate) fn set_size(&mut self, size: Size) {
@@ -167,12 +167,12 @@ impl CrossTerm {
 	}
 
 	pub(crate) fn read_event() -> Result<Event> {
-		if let Some(input) = INPUT
+		if let Some(event) = EVENTS
 			.lock()
 			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
 			.pop()
 		{
-			Ok(input)
+			Ok(event)
 		}
 		else {
 			Err(anyhow!("Error"))

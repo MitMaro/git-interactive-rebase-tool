@@ -14,25 +14,18 @@ mod view_builder;
 mod tests;
 
 use anyhow::anyhow;
+use lazy_static::lazy_static;
 
 use crate::{
-	components::Help,
+	components::help::Help,
 	config::{
 		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 		Config,
 	},
 	display::display_color::DisplayColor,
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
-	},
-	process::{
-		process_module::ProcessModule,
-		process_result::ProcessResult,
-		state::State,
-		util::handle_view_data_scroll,
-	},
+	input::{Event, EventHandler, InputOptions, MetaEvent},
+	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	show_commit::{
 		commit::{Commit, LoadCommitDiffOptions},
 		show_commit_state::ShowCommitState,
@@ -40,8 +33,23 @@ use crate::{
 		view_builder::{ViewBuilder, ViewBuilderOptions},
 	},
 	todo_file::TodoFile,
-	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
+	view::{
+		handle_view_data_scroll,
+		line_segment::LineSegment,
+		render_context::RenderContext,
+		view_data::ViewData,
+		view_line::ViewLine,
+		View,
+	},
 };
+
+lazy_static! {
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::new()
+		.movement(true)
+		.undo_redo(true)
+		.help(true)
+		.resize(false);
+}
 
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,
@@ -130,32 +138,33 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		&mut self.view_data
 	}
 
-	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
 		if self.help.is_active() {
-			let input = input_handler.get_input(InputMode::Default);
-			self.help.handle_input(input);
-			return ProcessResult::new().input(input);
+			return ProcessResult::from(self.help.handle_event(event_handler));
 		}
 
-		let input = input_handler.get_input(InputMode::ShowCommit);
-		let mut result = ProcessResult::new().input(input);
+		let event = event_handler.read_event(&INPUT_OPTIONS, |event, key_bindings| {
+			if key_bindings.show_diff.contains(&event) {
+				Event::from(MetaEvent::ShowDiff)
+			}
+			else {
+				event
+			}
+		});
 
-		if handle_view_data_scroll(input, &mut self.view_data).is_none() {
-			match input {
-				Input::ShowDiff => {
+		let mut result = ProcessResult::from(event);
+
+		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+			match event {
+				Event::Meta(meta_event) if meta_event == MetaEvent::ShowDiff => {
 					self.view_data.reset();
 					self.state = match self.state {
 						ShowCommitState::Overview => ShowCommitState::Diff,
 						ShowCommitState::Diff => ShowCommitState::Overview,
 					}
 				},
-				Input::Resize => {
-					self.view_data.clear();
-				},
-				Input::Help => {
-					self.help.set_active();
-				},
-				_ => {
+				Event::Meta(meta_event) if meta_event == MetaEvent::Help => self.help.set_active(),
+				Event::Key(_) => {
 					if self.state == ShowCommitState::Diff {
 						self.view_data.reset();
 						self.state = ShowCommitState::Overview;
@@ -165,6 +174,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 						result = result.state(State::List);
 					}
 				},
+				Event::Resize(..) => self.view_data.clear(),
+				_ => {},
 			}
 		}
 		result

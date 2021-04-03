@@ -1,100 +1,183 @@
+use std::cell::RefCell;
+
+use anyhow::anyhow;
+
 use crate::{
-	config::key_bindings::KeyBindings,
-	create_key_event,
-	display::{CrossTerm, Event, KeyCode, KeyEvent, KeyModifiers},
-	input::Input,
+	display::CrossTerm,
+	input::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent},
 };
 
-fn map_str_to_event(input: &str) -> Event {
-	match input {
-		"Backspace" => create_key_event!(code KeyCode::Backspace),
-		"Enter" => create_key_event!(code KeyCode::Enter),
-		"Delete" => create_key_event!(code KeyCode::Delete),
-		"End" => create_key_event!(code KeyCode::End),
-		"Home" => create_key_event!(code KeyCode::Home),
-		"Other" => create_key_event!(code KeyCode::Null),
-		"Left" => create_key_event!(code KeyCode::Left),
-		"PageUp" | "ScrollJumpUp" => create_key_event!(code KeyCode::PageUp),
-		"PageDown" | "ScrollJumpDown" => create_key_event!(code KeyCode::PageDown),
-		"Up" | "ScrollUp" => create_key_event!(code KeyCode::Up),
-		"Right" | "ScrollRight" => create_key_event!(code KeyCode::Right),
-		"Down" | "ScrollDown" => create_key_event!(code KeyCode::Down),
-		"Controlz" => create_key_event!('z', "Control"),
-		"Controly" => create_key_event!('y', "Control"),
-		"Exit" => create_key_event!('d', "Control"),
-		"Resize" => Event::Resize(0, 0),
-		_ => {
-			if input.len() > 1 {
-				panic!("Unexpected input: {}", input);
+#[allow(clippy::match_same_arms)]
+fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
+	match event {
+		Event::Meta(meta_event) => {
+			let key_event = match meta_event {
+				MetaEvent::Abort => KeyEvent::from(KeyCode::Char('q')),
+				MetaEvent::ActionBreak => KeyEvent::from(KeyCode::Char('b')),
+				MetaEvent::ActionDrop => KeyEvent::from(KeyCode::Char('d')),
+				MetaEvent::ActionEdit => KeyEvent::from(KeyCode::Char('e')),
+				MetaEvent::ActionFixup => KeyEvent::from(KeyCode::Char('f')),
+				MetaEvent::ActionPick => KeyEvent::from(KeyCode::Char('p')),
+				MetaEvent::ActionReword => KeyEvent::from(KeyCode::Char('r')),
+				MetaEvent::ActionSquash => KeyEvent::from(KeyCode::Char('s')),
+				MetaEvent::Delete => KeyEvent::from(KeyCode::Delete),
+				MetaEvent::Edit => KeyEvent::from(KeyCode::Char('E')),
+				MetaEvent::Exit => {
+					KeyEvent {
+						code: KeyCode::Char('d'),
+						modifiers: KeyModifiers::CONTROL,
+					}
+				},
+				MetaEvent::ForceAbort => KeyEvent::from(KeyCode::Char('Q')),
+				MetaEvent::ForceRebase => KeyEvent::from(KeyCode::Char('W')),
+				MetaEvent::Help => KeyEvent::from(KeyCode::Char('?')),
+				MetaEvent::InsertLine => KeyEvent::from(KeyCode::Char('I')),
+				MetaEvent::Kill => {
+					KeyEvent {
+						code: KeyCode::Char('c'),
+						modifiers: KeyModifiers::CONTROL,
+					}
+				},
+				MetaEvent::MoveCursorDown => KeyEvent::from(KeyCode::Down),
+				MetaEvent::MoveCursorEnd => KeyEvent::from(KeyCode::End),
+				MetaEvent::MoveCursorHome => KeyEvent::from(KeyCode::Home),
+				MetaEvent::MoveCursorLeft => KeyEvent::from(KeyCode::Left),
+				MetaEvent::MoveCursorPageDown => KeyEvent::from(KeyCode::PageDown),
+				MetaEvent::MoveCursorPageUp => KeyEvent::from(KeyCode::PageUp),
+				MetaEvent::MoveCursorRight => KeyEvent::from(KeyCode::Right),
+				MetaEvent::MoveCursorUp => KeyEvent::from(KeyCode::Up),
+				MetaEvent::No => KeyEvent::from(KeyCode::Char('n')),
+				MetaEvent::OpenInEditor => KeyEvent::from(KeyCode::Char('!')),
+				MetaEvent::Rebase => KeyEvent::from(KeyCode::Char('w')),
+				MetaEvent::Redo => {
+					KeyEvent {
+						code: KeyCode::Char('y'),
+						modifiers: KeyModifiers::CONTROL,
+					}
+				},
+				MetaEvent::ScrollBottom => KeyEvent::from(KeyCode::End),
+				MetaEvent::ScrollDown => KeyEvent::from(KeyCode::Down),
+				MetaEvent::ScrollJumpDown => KeyEvent::from(KeyCode::PageDown),
+				MetaEvent::ScrollJumpUp => KeyEvent::from(KeyCode::PageUp),
+				MetaEvent::ScrollLeft => KeyEvent::from(KeyCode::Left),
+				MetaEvent::ScrollRight => KeyEvent::from(KeyCode::Right),
+				MetaEvent::ScrollTop => KeyEvent::from(KeyCode::Home),
+				MetaEvent::ScrollUp => KeyEvent::from(KeyCode::Up),
+				MetaEvent::ShowCommit => KeyEvent::from(KeyCode::Char('c')),
+				MetaEvent::ShowDiff => KeyEvent::from(KeyCode::Char('d')),
+				MetaEvent::SwapSelectedDown => KeyEvent::from(KeyCode::Char('j')),
+				MetaEvent::SwapSelectedUp => KeyEvent::from(KeyCode::Char('k')),
+				MetaEvent::ToggleVisualMode => KeyEvent::from(KeyCode::Char('v')),
+				MetaEvent::Undo => {
+					KeyEvent {
+						code: KeyCode::Char('z'),
+						modifiers: KeyModifiers::CONTROL,
+					}
+				},
+				MetaEvent::Yes => KeyEvent::from(KeyCode::Char('y')),
+			};
+			crossterm::event::Event::Key(key_event)
+		},
+		Event::Key(key_event) => crossterm::event::Event::Key(key_event),
+		Event::Mouse(mouse_event) => crossterm::event::Event::Mouse(mouse_event),
+		Event::Resize(width, height) => crossterm::event::Event::Resize(width, height),
+	}
+}
+
+pub fn setup_mocked_events(inputs: &[Event]) {
+	CrossTerm::set_events(inputs.iter().map(|input| map_event_to_crossterm(*input)).collect());
+}
+
+fn create_test_keybindings() -> KeyBindings {
+	KeyBindings {
+		abort: vec![Event::from(KeyCode::Char('q'))],
+		action_break: vec![Event::from(KeyCode::Char('b'))],
+		action_drop: vec![Event::from(KeyCode::Char('d'))],
+		action_edit: vec![Event::from(KeyCode::Char('e'))],
+		action_fixup: vec![Event::from(KeyCode::Char('f'))],
+		action_pick: vec![Event::from(KeyCode::Char('p'))],
+		action_reword: vec![Event::from(KeyCode::Char('r'))],
+		action_squash: vec![Event::from(KeyCode::Char('s'))],
+		confirm_yes: vec![Event::from(KeyCode::Char('y'))],
+		edit: vec![Event::from(KeyCode::Char('E'))],
+		force_abort: vec![Event::from(KeyCode::Char('Q'))],
+		force_rebase: vec![Event::from(KeyCode::Char('W'))],
+		help: vec![Event::from(KeyCode::Char('?'))],
+		insert_line: vec![Event::from(KeyCode::Char('I'))],
+		move_down: vec![Event::from(KeyCode::Down)],
+		move_down_step: vec![Event::from(KeyCode::PageDown)],
+		move_end: vec![Event::from(KeyCode::End)],
+		move_home: vec![Event::from(KeyCode::Home)],
+		move_left: vec![Event::from(KeyCode::Left)],
+		move_right: vec![Event::from(KeyCode::Right)],
+		move_selection_down: vec![Event::from(KeyCode::Char('j'))],
+		move_selection_up: vec![Event::from(KeyCode::Char('k'))],
+		move_up: vec![Event::from(KeyCode::Up)],
+		move_up_step: vec![Event::from(KeyCode::PageUp)],
+		open_in_external_editor: vec![Event::from(KeyCode::Char('!'))],
+		rebase: vec![Event::from(KeyCode::Char('w'))],
+		redo: vec![Event::Key({
+			KeyEvent {
+				code: KeyCode::Char('y'),
+				modifiers: KeyModifiers::CONTROL,
 			}
-			Event::Key(KeyEvent::new(
-				KeyCode::Char(input.chars().next().unwrap()),
-				KeyModifiers::NONE,
-			))
-		},
+		})],
+		remove_line: vec![Event::from(KeyCode::Delete)],
+		show_commit: vec![Event::from(KeyCode::Char('c'))],
+		show_diff: vec![Event::from(KeyCode::Char('d'))],
+		toggle_visual_mode: vec![Event::from(KeyCode::Char('v'))],
+		undo: vec![Event::Key({
+			KeyEvent {
+				code: KeyCode::Char('z'),
+				modifiers: KeyModifiers::CONTROL,
+			}
+		})],
 	}
 }
 
-fn map_input_to_event(key_bindings: &KeyBindings, input: Input) -> Event {
-	match input {
-		Input::Abort => map_str_to_event(key_bindings.abort.first().unwrap().as_str()),
-		Input::ActionBreak => map_str_to_event(key_bindings.action_break.first().unwrap().as_str()),
-		Input::ActionDrop => map_str_to_event(key_bindings.action_drop.first().unwrap().as_str()),
-		Input::ActionEdit => map_str_to_event(key_bindings.action_edit.first().unwrap().as_str()),
-		Input::ActionFixup => map_str_to_event(key_bindings.action_fixup.first().unwrap().as_str()),
-		Input::ActionPick => map_str_to_event(key_bindings.action_pick.first().unwrap().as_str()),
-		Input::ActionReword => map_str_to_event(key_bindings.action_reword.first().unwrap().as_str()),
-		Input::ActionSquash => map_str_to_event(key_bindings.action_squash.first().unwrap().as_str()),
-		Input::Backspace => map_str_to_event("Backspace"),
-		Input::Character(c) => map_str_to_event(String::from(c).as_str()),
-		Input::Delete => map_str_to_event("Delete"),
-		Input::Down | Input::ScrollDown => map_str_to_event("Down"),
-		Input::Edit => map_str_to_event(key_bindings.edit.first().unwrap().as_str()),
-		Input::End | Input::ScrollBottom => map_str_to_event("End"),
-		Input::Enter => map_str_to_event("Enter"),
-		Input::Exit => map_str_to_event("Exit"),
-		Input::ForceAbort => map_str_to_event(key_bindings.force_abort.first().unwrap().as_str()),
-		Input::ForceRebase => map_str_to_event(key_bindings.force_rebase.first().unwrap().as_str()),
-		Input::Help => map_str_to_event(key_bindings.help.first().unwrap().as_str()),
-		Input::Home | Input::ScrollTop => map_str_to_event("Home"),
-		Input::InsertLine => map_str_to_event(key_bindings.insert_line.first().unwrap().as_str()),
-		Input::Left | Input::ScrollLeft => map_str_to_event("Left"),
-		Input::MoveCursorDown => map_str_to_event(key_bindings.move_down.first().unwrap().as_str()),
-		Input::MoveCursorEnd => map_str_to_event(key_bindings.move_end.first().unwrap().as_str()),
-		Input::MoveCursorHome => map_str_to_event(key_bindings.move_home.first().unwrap().as_str()),
-		Input::MoveCursorLeft => map_str_to_event(key_bindings.move_left.first().unwrap().as_str()),
-		Input::MoveCursorPageDown => map_str_to_event(key_bindings.move_down_step.first().unwrap().as_str()),
-		Input::MoveCursorPageUp => map_str_to_event(key_bindings.move_up_step.first().unwrap().as_str()),
-		Input::MoveCursorRight => map_str_to_event(key_bindings.move_right.first().unwrap().as_str()),
-		Input::MoveCursorUp => map_str_to_event(key_bindings.move_up.first().unwrap().as_str()),
-		Input::No => map_str_to_event(key_bindings.confirm_no.first().unwrap().as_str()),
-		Input::OpenInEditor => map_str_to_event(key_bindings.open_in_external_editor.first().unwrap().as_str()),
-		Input::Other => map_str_to_event("Other"),
-		Input::PageDown | Input::ScrollJumpDown => map_str_to_event("PageDown"),
-		Input::PageUp | Input::ScrollJumpUp => map_str_to_event("PageUp"),
-		Input::Rebase => map_str_to_event(key_bindings.rebase.first().unwrap().as_str()),
-		Input::Redo => map_str_to_event(key_bindings.redo.first().unwrap().as_str()),
-		Input::Resize => map_str_to_event("Resize"),
-		Input::Right | Input::ScrollRight => map_str_to_event("Right"),
-		Input::ShowCommit => map_str_to_event(key_bindings.show_commit.first().unwrap().as_str()),
-		Input::ShowDiff => map_str_to_event(key_bindings.show_diff.first().unwrap().as_str()),
-		Input::SwapSelectedDown => map_str_to_event(key_bindings.move_selection_down.first().unwrap().as_str()),
-		Input::SwapSelectedUp => map_str_to_event(key_bindings.move_selection_up.first().unwrap().as_str()),
-		Input::ToggleVisualMode => map_str_to_event(key_bindings.toggle_visual_mode.first().unwrap().as_str()),
-		Input::Undo => map_str_to_event(key_bindings.undo.first().unwrap().as_str()),
-		Input::Up | Input::ScrollUp => map_str_to_event("Up"),
-		Input::Yes => map_str_to_event(key_bindings.confirm_yes.first().unwrap().as_str()),
-		_ => {
-			panic!("Unsupported input: {:?}", input);
-		},
+pub fn create_event_handler() -> EventHandler {
+	EventHandler::new(create_test_keybindings())
+}
+
+pub struct TestContext {
+	pub event_handler: EventHandler,
+	pub number_events: usize,
+}
+
+impl TestContext {
+	pub fn for_each_event<C, T>(&self, mut callback: C) -> Vec<T>
+	where C: FnMut(&EventHandler) -> T {
+		let mut results = vec![];
+		for _ in 0..self.number_events {
+			results.push(callback(&self.event_handler));
+		}
+		results
 	}
 }
 
-pub fn setup_mocked_inputs(inputs: &[Input], key_bindings: &KeyBindings) {
-	CrossTerm::set_inputs(
-		inputs
+pub fn with_event_handler<C>(events: &[Event], callback: C)
+where C: FnOnce(TestContext) {
+	let crossterm_events = RefCell::new(
+		events
 			.iter()
-			.map(|input| map_input_to_event(key_bindings, *input))
-			.collect(),
+			.map(|input| map_event_to_crossterm(*input))
+			.collect::<Vec<crossterm::event::Event>>(),
 	);
+	crossterm_events.borrow_mut().reverse();
+	let mut event_handler = create_event_handler();
+
+	event_handler.set_event_provider(move || {
+		let mut ct_events = crossterm_events.borrow_mut();
+		if let Some(event) = ct_events.pop() {
+			Ok(event)
+		}
+		else {
+			Err(anyhow!("Error"))
+		}
+	});
+
+	callback(TestContext {
+		event_handler,
+		number_events: events.len(),
+	});
 }

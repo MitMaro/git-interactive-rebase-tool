@@ -13,12 +13,9 @@ use std::{
 use anyhow::{anyhow, Result};
 
 use crate::{
-	components::Choice,
+	components::choice::Choice,
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
-	},
+	input::EventHandler,
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
@@ -67,9 +64,9 @@ impl ProcessModule for ExternalEditor {
 		}
 	}
 
-	fn handle_input(
+	fn handle_events(
 		&mut self,
-		input_handler: &InputHandler<'_>,
+		event_handler: &EventHandler,
 		view: &mut View<'_>,
 		todo_file: &mut TodoFile,
 	) -> ProcessResult {
@@ -92,12 +89,11 @@ impl ProcessModule for ExternalEditor {
 						Err(e) => self.state = ExternalEditorState::Error(e),
 					}
 				}
-				result = result.input(Input::Other);
 			},
 			ExternalEditorState::Empty => {
-				let input = input_handler.get_input(InputMode::Default);
-				result = result.input(input);
-				if let Some(action) = self.empty_choice.handle_input(input) {
+				let (choice, event) = self.empty_choice.handle_event(event_handler);
+				result = result.event(event);
+				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => result = result.exit_status(ExitStatus::Good),
 						Action::EditRebase => self.state = ExternalEditorState::Active,
@@ -110,9 +106,9 @@ impl ProcessModule for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let input = input_handler.get_input(InputMode::Default);
-				result = result.input(input);
-				if let Some(action) = self.error_choice.handle_input(input) {
+				let (choice, event) = self.error_choice.handle_event(event_handler);
+				result = result.event(event);
+				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => {
 							todo_file.set_lines(vec![]);

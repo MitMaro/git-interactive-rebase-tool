@@ -1,3 +1,4 @@
+mod input;
 mod utils;
 
 #[cfg(all(unix, test))]
@@ -6,14 +7,14 @@ mod tests;
 use std::cmp::min;
 
 use crate::{
-	components::{Edit, Help},
+	components::{edit::Edit, help::Help},
 	config::Config,
 	display::display_color::DisplayColor,
-	input::{
-		input_handler::{InputHandler, InputMode},
-		Input,
+	input::{Event, EventHandler, MetaEvent},
+	list::{
+		input::get_event,
+		utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	},
-	list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
 	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
@@ -50,16 +51,16 @@ impl<'l> ProcessModule for List<'l> {
 		}
 	}
 
-	fn handle_input(
+	fn handle_events(
 		&mut self,
-		input_handler: &InputHandler<'_>,
+		event_handler: &EventHandler,
 		view: &mut View<'_>,
 		todo_file: &mut TodoFile,
 	) -> ProcessResult {
 		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(input_handler, view, todo_file),
-			ListState::Visual => self.handle_visual_mode_input(input_handler, view, todo_file),
-			ListState::Edit => self.handle_edit_mode_input(input_handler, todo_file),
+			ListState::Normal => self.handle_normal_mode_input(event_handler, view, todo_file),
+			ListState::Visual => self.handle_visual_mode_input(event_handler, view, todo_file),
+			ListState::Edit => self.handle_edit_mode_input(event_handler, todo_file),
 		}
 	}
 }
@@ -163,115 +164,126 @@ impl<'l> List<'l> {
 
 	fn handle_common_list_input(
 		&mut self,
-		input: Input,
+		event: Event,
 		view: &View<'_>,
 		rebase_todo: &mut TodoFile,
 	) -> Option<ProcessResult> {
-		let mut result = ProcessResult::new().input(input);
-		match input {
-			Input::MoveCursorLeft => self.view_data.scroll_left(),
-			Input::MoveCursorRight => self.view_data.scroll_right(),
-			Input::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
-			Input::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
-			Input::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, view.get_render_context().height() / 2),
-			Input::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, view.get_render_context().height() / 2),
-			Input::MoveCursorHome => rebase_todo.set_selected_line_index(0),
-			Input::MoveCursorEnd => rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index()),
-			Input::Abort => result = result.state(State::ConfirmAbort),
-			Input::ForceAbort => {
-				rebase_todo.set_lines(vec![]);
-				result = result.exit_status(ExitStatus::Good);
-			},
-			Input::Rebase => result = result.state(State::ConfirmRebase),
-			Input::ForceRebase => result = result.exit_status(ExitStatus::Good),
-			Input::SwapSelectedDown => {
-				let start_index = rebase_todo.get_selected_line_index();
-				let end_index = self.visual_index_start.unwrap_or(start_index);
+		let mut result = ProcessResult::from(event);
+		if let Event::Meta(meta_event) = event {
+			match meta_event {
+				MetaEvent::MoveCursorLeft => self.view_data.scroll_left(),
+				MetaEvent::MoveCursorRight => self.view_data.scroll_right(),
+				MetaEvent::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
+				MetaEvent::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
+				MetaEvent::MoveCursorPageDown => {
+					Self::move_cursor_down(rebase_todo, view.get_render_context().height() / 2)
+				},
+				MetaEvent::MoveCursorPageUp => {
+					Self::move_cursor_up(rebase_todo, view.get_render_context().height() / 2)
+				},
+				MetaEvent::MoveCursorHome => rebase_todo.set_selected_line_index(0),
+				MetaEvent::MoveCursorEnd => {
+					rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index())
+				},
+				MetaEvent::Abort => result = result.state(State::ConfirmAbort),
+				MetaEvent::ForceAbort => {
+					rebase_todo.set_lines(vec![]);
+					result = result.exit_status(ExitStatus::Good);
+				},
+				MetaEvent::Rebase => result = result.state(State::ConfirmRebase),
+				MetaEvent::ForceRebase => result = result.exit_status(ExitStatus::Good),
+				MetaEvent::SwapSelectedDown => {
+					let start_index = rebase_todo.get_selected_line_index();
+					let end_index = self.visual_index_start.unwrap_or(start_index);
 
-				if rebase_todo.swap_range_down(start_index, end_index) {
-					if let Some(visual_index_start) = self.visual_index_start {
-						self.visual_index_start = Some(visual_index_start + 1);
+					if rebase_todo.swap_range_down(start_index, end_index) {
+						if let Some(visual_index_start) = self.visual_index_start {
+							self.visual_index_start = Some(visual_index_start + 1);
+						}
+
+						Self::move_cursor_down(rebase_todo, 1);
 					}
+				},
+				MetaEvent::SwapSelectedUp => {
+					let start_index = rebase_todo.get_selected_line_index();
+					let end_index = self.visual_index_start.unwrap_or(start_index);
 
-					Self::move_cursor_down(rebase_todo, 1);
-				}
-			},
-			Input::SwapSelectedUp => {
-				let start_index = rebase_todo.get_selected_line_index();
-				let end_index = self.visual_index_start.unwrap_or(start_index);
-
-				if rebase_todo.swap_range_up(start_index, end_index) {
-					if let Some(visual_index_start) = self.visual_index_start {
-						self.visual_index_start = Some(visual_index_start - 1);
+					if rebase_todo.swap_range_up(start_index, end_index) {
+						if let Some(visual_index_start) = self.visual_index_start {
+							self.visual_index_start = Some(visual_index_start - 1);
+						}
+						Self::move_cursor_up(rebase_todo, 1);
 					}
-					Self::move_cursor_up(rebase_todo, 1);
-				}
-			},
-			Input::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
-			Input::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
-			Input::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
-			Input::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick),
-			Input::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
-			Input::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
-			Input::Undo => {
-				if let Some((start_index, end_index)) = rebase_todo.undo() {
-					rebase_todo.set_selected_line_index(start_index);
-					if start_index == end_index {
+				},
+				MetaEvent::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
+				MetaEvent::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
+				MetaEvent::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
+				MetaEvent::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick),
+				MetaEvent::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
+				MetaEvent::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
+				MetaEvent::Undo => {
+					if let Some((start_index, end_index)) = rebase_todo.undo() {
+						rebase_todo.set_selected_line_index(start_index);
+						if start_index == end_index {
+							self.state = ListState::Normal;
+							self.visual_index_start = None;
+						}
+						else {
+							self.state = ListState::Visual;
+							self.visual_index_start = Some(end_index);
+						}
+					}
+				},
+				MetaEvent::Redo => {
+					if let Some((start_index, end_index)) = rebase_todo.redo() {
+						rebase_todo.set_selected_line_index(start_index);
+						if start_index == end_index {
+							self.state = ListState::Normal;
+							self.visual_index_start = None;
+						}
+						else {
+							self.state = ListState::Visual;
+							self.visual_index_start = Some(end_index);
+						}
+					}
+				},
+				MetaEvent::Delete => {
+					let start_index = rebase_todo.get_selected_line_index();
+					let end_index = self.visual_index_start.unwrap_or(start_index);
+
+					rebase_todo.remove_lines(start_index, end_index);
+					let new_index = min(start_index, end_index);
+
+					rebase_todo.set_selected_line_index(new_index);
+
+					if self.state == ListState::Visual {
+						self.visual_index_start = Some(rebase_todo.get_selected_line_index());
+					}
+				},
+				MetaEvent::OpenInEditor => result = result.state(State::ExternalEditor),
+				MetaEvent::ToggleVisualMode => {
+					if self.state == ListState::Visual {
 						self.state = ListState::Normal;
 						self.visual_index_start = None;
 					}
 					else {
 						self.state = ListState::Visual;
-						self.visual_index_start = Some(end_index);
+						self.visual_index_start = Some(rebase_todo.get_selected_line_index());
 					}
-				}
-			},
-			Input::Redo => {
-				if let Some((start_index, end_index)) = rebase_todo.redo() {
-					rebase_todo.set_selected_line_index(start_index);
-					if start_index == end_index {
-						self.state = ListState::Normal;
-						self.visual_index_start = None;
+				},
+				MetaEvent::Help => {
+					if self.state == ListState::Visual {
+						self.visual_mode_help.set_active();
 					}
 					else {
-						self.state = ListState::Visual;
-						self.visual_index_start = Some(end_index);
+						self.normal_mode_help.set_active();
 					}
-				}
-			},
-			Input::Delete => {
-				let start_index = rebase_todo.get_selected_line_index();
-				let end_index = self.visual_index_start.unwrap_or(start_index);
-
-				rebase_todo.remove_lines(start_index, end_index);
-				let new_index = min(start_index, end_index);
-
-				rebase_todo.set_selected_line_index(new_index);
-
-				if self.state == ListState::Visual {
-					self.visual_index_start = Some(rebase_todo.get_selected_line_index());
-				}
-			},
-			Input::OpenInEditor => result = result.state(State::ExternalEditor),
-			Input::ToggleVisualMode => {
-				if self.state == ListState::Visual {
-					self.state = ListState::Normal;
-					self.visual_index_start = None;
-				}
-				else {
-					self.state = ListState::Visual;
-					self.visual_index_start = Some(rebase_todo.get_selected_line_index());
-				}
-			},
-			Input::Help => {
-				if self.state == ListState::Visual {
-					self.visual_mode_help.set_active();
-				}
-				else {
-					self.normal_mode_help.set_active();
-				}
-			},
-			_ => return None,
+				},
+				_ => return None,
+			}
+		}
+		else {
+			return None;
 		}
 
 		Some(result)
@@ -279,63 +291,63 @@ impl<'l> List<'l> {
 
 	fn handle_normal_mode_input(
 		&mut self,
-		input_handler: &InputHandler<'_>,
+		event_handler: &EventHandler,
 		view: &View<'_>,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		if self.normal_mode_help.is_active() {
-			let input = input_handler.get_input(InputMode::Default);
-			self.normal_mode_help.handle_input(input);
-			return ProcessResult::new().input(input);
+			return ProcessResult::from(self.normal_mode_help.handle_event(event_handler));
 		}
 
-		let input = input_handler.get_input(InputMode::List);
-		if let Some(result) = self.handle_common_list_input(input, view, rebase_todo) {
+		let event = get_event(event_handler);
+		if let Some(result) = self.handle_common_list_input(event, view, rebase_todo) {
 			result
 		}
 		else {
-			let mut result = ProcessResult::new().input(input);
-			match input {
-				Input::ShowCommit => {
-					if let Some(selected_line) = rebase_todo.get_selected_line() {
-						if selected_line.has_reference() {
-							result = result.state(State::ShowCommit);
+			let mut result = ProcessResult::from(event);
+			if let Event::Meta(meta_event) = event {
+				match meta_event {
+					MetaEvent::ShowCommit => {
+						if let Some(selected_line) = rebase_todo.get_selected_line() {
+							if selected_line.has_reference() {
+								result = result.state(State::ShowCommit);
+							}
 						}
-					}
-				},
-				Input::ActionBreak => {
-					let selected_line_index = rebase_todo.get_selected_line_index();
-					let next_action_is_break = rebase_todo
-						.get_line(selected_line_index + 1)
-						.map_or(false, |line| line.get_action() == &Action::Break);
-					if !next_action_is_break {
-						let selected_action_is_break = rebase_todo
-							.get_line(selected_line_index)
+					},
+					MetaEvent::ActionBreak => {
+						let selected_line_index = rebase_todo.get_selected_line_index();
+						let next_action_is_break = rebase_todo
+							.get_line(selected_line_index + 1)
 							.map_or(false, |line| line.get_action() == &Action::Break);
-						if selected_action_is_break {
-							rebase_todo.remove_lines(selected_line_index, selected_line_index);
-							Self::move_cursor_up(rebase_todo, 1);
+						if !next_action_is_break {
+							let selected_action_is_break = rebase_todo
+								.get_line(selected_line_index)
+								.map_or(false, |line| line.get_action() == &Action::Break);
+							if selected_action_is_break {
+								rebase_todo.remove_lines(selected_line_index, selected_line_index);
+								Self::move_cursor_up(rebase_todo, 1);
+							}
+							else {
+								rebase_todo.add_line(selected_line_index + 1, Line::new_break());
+								Self::move_cursor_down(rebase_todo, 1);
+							}
 						}
-						else {
-							rebase_todo.add_line(selected_line_index + 1, Line::new_break());
-							Self::move_cursor_down(rebase_todo, 1);
+					},
+					MetaEvent::Edit => {
+						if let Some(selected_line) = rebase_todo.get_selected_line() {
+							if selected_line.is_editable() {
+								self.state = ListState::Edit;
+								self.edit.set_content(selected_line.get_content());
+								self.edit
+									.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
+								self.edit
+									.set_description(format!("Modifying line: {}", selected_line.to_text()).as_str());
+							}
 						}
-					}
-				},
-				Input::Edit => {
-					if let Some(selected_line) = rebase_todo.get_selected_line() {
-						if selected_line.is_editable() {
-							self.state = ListState::Edit;
-							self.edit.set_content(selected_line.get_content());
-							self.edit
-								.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
-							self.edit
-								.set_description(format!("Modifying line: {}", selected_line.to_text()).as_str());
-						}
-					}
-				},
-				Input::InsertLine => result = result.state(State::Insert),
-				_ => {},
+					},
+					MetaEvent::InsertLine => result = result.state(State::Insert),
+					_ => {},
+				}
 			}
 			result
 		}
@@ -343,28 +355,22 @@ impl<'l> List<'l> {
 
 	fn handle_visual_mode_input(
 		&mut self,
-		input_handler: &InputHandler<'_>,
+		event_handler: &EventHandler,
 		view: &View<'_>,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		if self.visual_mode_help.is_active() {
-			let input = input_handler.get_input(InputMode::Default);
-			self.visual_mode_help.handle_input(input);
-			return ProcessResult::new().input(input);
+			return ProcessResult::from(self.visual_mode_help.handle_event(event_handler));
 		}
 
-		let input = input_handler.get_input(InputMode::List);
-		self.handle_common_list_input(input, view, rebase_todo)
-			.map_or_else(|| ProcessResult::new().input(input), |result| result)
+		let event = get_event(event_handler);
+		self.handle_common_list_input(event, view, rebase_todo)
+			.unwrap_or_else(|| ProcessResult::from(event))
 	}
 
-	fn handle_edit_mode_input(
-		&mut self,
-		input_handler: &InputHandler<'_>,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
-		let input = input_handler.get_input(InputMode::Raw);
-		if !self.edit.handle_input(input) && input == Input::Enter {
+	fn handle_edit_mode_input(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
+		let result = ProcessResult::from(self.edit.handle_event(event_handler));
+		if self.edit.is_finished() {
 			let selected_index = rebase_todo.get_selected_line_index();
 			rebase_todo.update_range(
 				selected_index,
@@ -374,6 +380,6 @@ impl<'l> List<'l> {
 			self.visual_index_start = None;
 			self.state = ListState::Normal;
 		}
-		ProcessResult::new().input(input)
+		result
 	}
 }

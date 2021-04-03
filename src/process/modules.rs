@@ -3,7 +3,7 @@ use crate::{
 	confirm_abort::ConfirmAbort,
 	confirm_rebase::ConfirmRebase,
 	external_editor::ExternalEditor,
-	input::input_handler::InputHandler,
+	input::EventHandler,
 	insert::Insert,
 	list::List,
 	process::{
@@ -72,12 +72,12 @@ impl<'m> Modules<'m> {
 	pub fn handle_input<'r>(
 		&mut self,
 		state: State,
-		input_handler: &InputHandler<'r>,
+		event_handler: &EventHandler,
 		view: &mut View<'r>,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
 		self.get_mut_module(state)
-			.handle_input(input_handler, view, rebase_todo)
+			.handle_events(event_handler, view, rebase_todo)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
@@ -88,12 +88,14 @@ impl<'m> Modules<'m> {
 #[cfg(test)]
 mod tests {
 	// these tests just ensure that nothing panics
+
 	use anyhow::anyhow;
 	use rstest::rstest;
 
 	use super::*;
 	use crate::{
-		input::Input,
+		assert_process_result,
+		input::Event,
 		process::testutil::{process_module_test, TestContext, ViewState},
 	};
 
@@ -113,15 +115,15 @@ mod tests {
 		process_module_test(
 			&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment"],
 			ViewState::default(),
-			&[Input::Resize],
+			&[Event::Resize(100, 100)],
 			|mut test_context: TestContext<'_>| {
-				let mut config = test_context.config.clone();
-				config.git.editor = String::from("true");
+				test_context.set_git_directory_environment();
+				let config = test_context.config.clone();
 				let mut modules = Modules::new(&config);
-				modules.activate(state, &test_context.rebase_todo_file, State::List);
+				assert_process_result!(modules.activate(state, &test_context.rebase_todo_file, State::List));
 				modules.handle_input(
 					state,
-					&test_context.input_handler,
+					&test_context.event_handler_context.event_handler,
 					&mut test_context.view,
 					&mut test_context.rebase_todo_file,
 				);
@@ -132,7 +134,6 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn set_error_message() {
 		process_module_test(
 			&["pick aaa comment"],

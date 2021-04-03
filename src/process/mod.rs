@@ -4,7 +4,6 @@ pub mod modules;
 pub mod process_module;
 pub mod process_result;
 pub mod state;
-pub mod util;
 pub mod window_size_error;
 
 #[cfg(test)]
@@ -15,7 +14,7 @@ pub mod testutil;
 use anyhow::Result;
 
 use crate::{
-	input::{input_handler::InputHandler, Input},
+	input::{Event, EventHandler, MetaEvent},
 	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::View,
@@ -23,17 +22,17 @@ use crate::{
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,
-	input_handler: InputHandler<'r>,
+	event_handler: EventHandler,
 	rebase_todo: TodoFile,
 	state: State,
 	view: View<'r>,
 }
 
 impl<'r> Process<'r> {
-	pub(crate) const fn new(rebase_todo: TodoFile, input_handler: InputHandler<'r>, view: View<'r>) -> Self {
+	pub(crate) const fn new(rebase_todo: TodoFile, event_handler: EventHandler, view: View<'r>) -> Self {
 		Self {
 			exit_status: None,
-			input_handler,
+			event_handler,
 			rebase_todo,
 			state: State::List,
 			view,
@@ -54,7 +53,7 @@ impl<'r> Process<'r> {
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
 			}
-			let result = modules.handle_input(self.state, &self.input_handler, &mut self.view, &mut self.rebase_todo);
+			let result = modules.handle_input(self.state, &self.event_handler, &mut self.view, &mut self.rebase_todo);
 			self.handle_process_result(&mut modules, &result);
 		}
 		if self.view.end().is_err() {
@@ -88,14 +87,14 @@ impl<'r> Process<'r> {
 			}
 		}
 
-		match result.input {
-			Some(Input::Exit) => {
+		match result.event {
+			Some(Event::Meta(MetaEvent::Exit)) => {
 				self.exit_status = Some(ExitStatus::Abort);
 			},
-			Some(Input::Kill) => {
+			Some(Event::Meta(MetaEvent::Kill)) => {
 				self.exit_status = Some(ExitStatus::Kill);
 			},
-			Some(Input::Resize) => {
+			Some(Event::Resize(..)) => {
 				if self.state != State::WindowSizeError && self.view.get_render_context().is_window_too_small() {
 					self.state = State::WindowSizeError;
 					self.activate(modules, previous_state);
