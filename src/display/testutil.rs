@@ -90,11 +90,11 @@ pub fn _create_mouse_event(kind: MouseEventKind, column: u16, row: u16, modifier
 #[macro_export]
 macro_rules! create_mouse_event {
 	($kind:expr) => {
-		Event::Mouse(MouseEvent {
-			kind: $kind,
-			column: 0,
-			row: 0,
-			modifiers: KeyModifiers::NONE,
-		})
+		crate::display::testutil::_create_mouse_event($kind, 0, 0, &[])
+	};
+	($kind:expr, $($modifiers:expr),*) => {
+		{
+			crate::display::testutil::_create_mouse_event($kind, 0, 0, &[$( String::from($modifiers))*])
+		}
 	};
 }
