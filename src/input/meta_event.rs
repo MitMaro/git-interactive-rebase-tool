@@ -43,4 +43,6 @@ pub enum MetaEvent {
 	ToggleVisualMode,
 	Undo,
 	Yes,
+	ExternalCommandSuccess,
+	ExternalCommandError,
 }
