@@ -172,7 +172,8 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 	let modules = Modules::new(&config);
 	let mut process = Process::new(
 		todo_file,
-		View::new(InputHandler::new(&config.key_bindings), display, &config),
+		InputHandler::new(&config.key_bindings),
+		View::new(display, &config),
 	);
 	let result = process.run(modules);
 
@@ -191,7 +192,10 @@ mod tests {
 	use std::{env::set_var, fs::File, path::Path};
 
 	use super::*;
-	use crate::assert_exit_status;
+	use crate::{
+		assert_exit_status,
+		input::{testutil::setup_mocked_inputs, Input},
+	};
 
 	fn set_git_directory(repo: &str) -> String {
 		let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("test").join(repo);
@@ -248,11 +252,12 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn error_process() {
-		CrossTerm::set_inputs(vec![create_key_event!('d', "Control")]);
 		let path = set_git_directory("fixtures/simple");
+		let config = Config::new().unwrap();
 		let todo_file_path = Path::new(path.as_str()).join("rebase-todo-readonly");
 		let todo_file = File::open(todo_file_path.as_path()).unwrap();
 		let mut permissions = todo_file.metadata().unwrap().permissions();
+		setup_mocked_inputs(&[Input::Exit], &config.key_bindings);
 		permissions.set_readonly(true);
 		todo_file.set_permissions(permissions).unwrap();
 		assert_exit_status!(
@@ -264,9 +269,10 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn success() {
-		CrossTerm::set_inputs(vec![create_key_event!('d', "Control")]);
 		let path = set_git_directory("fixtures/simple");
+		let config = Config::new().unwrap();
 		let todo_file = Path::new(path.as_str()).join("rebase-todo");
+		setup_mocked_inputs(&[Input::Exit], &config.key_bindings);
 		assert_exit_status!(try_main(todo_file.to_str().unwrap()), status = ExitStatus::Abort);
 	}
 }

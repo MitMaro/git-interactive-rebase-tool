@@ -1,6 +1,9 @@
 use crate::{
 	display::display_color::DisplayColor,
-	input::{input_handler::InputMode, Input},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	process::{
 		process_module::ProcessModule,
 		process_result::ProcessResult,
@@ -26,8 +29,8 @@ impl ProcessModule for Error {
 		&mut self.view_data
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
-		let input = view.get_input(InputMode::Default);
+	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+		let input = input_handler.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 		if handle_view_data_scroll(input, &mut self.view_data).is_none() && input != Input::Resize {
 			result = result.state(self.return_state);

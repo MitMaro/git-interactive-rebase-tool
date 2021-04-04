@@ -1,4 +1,5 @@
 use crate::{
+	input::input_handler::InputHandler,
 	process::{process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{render_context::RenderContext, view_data::ViewData, View},
@@ -13,5 +14,10 @@ pub trait ProcessModule {
 
 	fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &mut ViewData;
 
-	fn handle_input(&mut self, _view: &mut View<'_>, _rebase_todo: &mut TodoFile) -> ProcessResult;
+	fn handle_input(
+		&mut self,
+		_input_handler: &InputHandler<'_>,
+		_view: &mut View<'_>,
+		_rebase_todo: &mut TodoFile,
+	) -> ProcessResult;
 }
