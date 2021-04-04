@@ -6,7 +6,10 @@ mod tests;
 
 use crate::{
 	components::{Choice, Edit},
-	input::{input_handler::InputMode, Input},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
@@ -39,11 +42,16 @@ impl ProcessModule for Insert {
 		}
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		_: &mut View<'_>,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			InsertState::Prompt => {
-				let input = view.get_input(InputMode::Default);
+				let input = input_handler.get_input(InputMode::Default);
 				result = result.input(input);
 				if let Some(action) = self.action_choices.handle_input(input) {
 					if action == &LineType::Cancel {
@@ -57,7 +65,7 @@ impl ProcessModule for Insert {
 				}
 			},
 			InsertState::Edit => {
-				let input = view.get_input(InputMode::Raw);
+				let input = input_handler.get_input(InputMode::Raw);
 				result = result.input(input);
 				if !self.edit.handle_input(input) && input == Input::Enter {
 					let content = self.edit.get_content();

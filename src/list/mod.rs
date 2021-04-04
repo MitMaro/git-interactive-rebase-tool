@@ -9,7 +9,10 @@ use crate::{
 	components::{Edit, Help},
 	config::Config,
 	display::display_color::DisplayColor,
-	input::{input_handler::InputMode, Input},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	list::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
@@ -47,11 +50,16 @@ impl<'l> ProcessModule for List<'l> {
 		}
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		view: &mut View<'_>,
+		todo_file: &mut TodoFile,
+	) -> ProcessResult {
 		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(view, todo_file),
-			ListState::Visual => self.handle_visual_mode_input(view, todo_file),
-			ListState::Edit => self.handle_edit_mode_input(view, todo_file),
+			ListState::Normal => self.handle_normal_mode_input(input_handler, view, todo_file),
+			ListState::Visual => self.handle_visual_mode_input(input_handler, view, todo_file),
+			ListState::Edit => self.handle_edit_mode_input(input_handler, todo_file),
 		}
 	}
 }
@@ -269,14 +277,19 @@ impl<'l> List<'l> {
 		Some(result)
 	}
 
-	fn handle_normal_mode_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_normal_mode_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		view: &View<'_>,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
 		if self.normal_mode_help.is_active() {
-			let input = view.get_input(InputMode::Default);
+			let input = input_handler.get_input(InputMode::Default);
 			self.normal_mode_help.handle_input(input);
 			return ProcessResult::new().input(input);
 		}
 
-		let input = view.get_input(InputMode::List);
+		let input = input_handler.get_input(InputMode::List);
 		if let Some(result) = self.handle_common_list_input(input, view, rebase_todo) {
 			result
 		}
@@ -328,20 +341,29 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn handle_visual_mode_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_visual_mode_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		view: &View<'_>,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
 		if self.visual_mode_help.is_active() {
-			let input = view.get_input(InputMode::Default);
+			let input = input_handler.get_input(InputMode::Default);
 			self.visual_mode_help.handle_input(input);
 			return ProcessResult::new().input(input);
 		}
 
-		let input = view.get_input(InputMode::List);
+		let input = input_handler.get_input(InputMode::List);
 		self.handle_common_list_input(input, view, rebase_todo)
 			.map_or_else(|| ProcessResult::new().input(input), |result| result)
 	}
 
-	fn handle_edit_mode_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
-		let input = view.get_input(InputMode::Raw);
+	fn handle_edit_mode_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
+		let input = input_handler.get_input(InputMode::Raw);
 		if !self.edit.handle_input(input) && input == Input::Enter {
 			let selected_index = rebase_todo.get_selected_line_index();
 			rebase_todo.update_range(

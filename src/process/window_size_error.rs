@@ -1,5 +1,8 @@
 use crate::{
-	input::{input_handler::InputMode, Input},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
@@ -44,8 +47,13 @@ impl ProcessModule for WindowSizeError {
 		&mut self.view_data
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
-		let input = view.get_input(InputMode::Default);
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		view: &mut View<'_>,
+		_: &mut TodoFile,
+	) -> ProcessResult {
+		let input = input_handler.get_input(InputMode::Default);
 		let mut result = ProcessResult::new().input(input);
 
 		if input == Input::Resize && !view.get_render_context().is_window_too_small() {

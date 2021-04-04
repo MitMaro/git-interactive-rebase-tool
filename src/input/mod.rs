@@ -1,6 +1,9 @@
 mod event_handler;
 pub mod input_handler;
 
+#[cfg(test)]
+pub mod testutil;
+
 pub use event_handler::EventHandler;
 
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -1,14 +1,12 @@
 use std::{cell::Cell, env::set_var, path::Path};
 
 use anyhow::Error;
-use crossterm::event::{KeyCode, KeyModifiers};
 use tempfile::{Builder, NamedTempFile};
 
 use crate::{
-	config::{key_bindings::KeyBindings, Config},
-	create_key_event,
-	display::{size::Size, CrossTerm, Display, Event, KeyEvent},
-	input::{input_handler::InputHandler, Input},
+	config::Config,
+	display::{size::Size, CrossTerm, Display},
+	input::{input_handler::InputHandler, testutil::setup_mocked_inputs, Input},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
 	view::{view_data::ViewData, View},
@@ -19,6 +17,7 @@ pub struct TestContext<'t> {
 	pub rebase_todo_file: TodoFile,
 	todo_file: Cell<NamedTempFile>,
 	pub view: View<'t>,
+	pub input_handler: InputHandler<'t>,
 	num_inputs: usize,
 }
 
@@ -50,13 +49,13 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn handle_input(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_input(&mut self.view, &mut self.rebase_todo_file)
+		module.handle_input(&self.input_handler, &mut self.view, &mut self.rebase_todo_file)
 	}
 
 	pub fn handle_n_inputs(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_input(&mut self.view, &mut self.rebase_todo_file));
+			results.push(module.handle_input(&self.input_handler, &mut self.view, &mut self.rebase_todo_file));
 		}
 		results
 	}
@@ -64,9 +63,13 @@ impl<'t> TestContext<'t> {
 	pub fn handle_all_inputs(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.num_inputs {
-			results.push(module.handle_input(&mut self.view, &mut self.rebase_todo_file));
+			results.push(module.handle_input(&self.input_handler, &mut self.view, &mut self.rebase_todo_file));
 		}
 		results
+	}
+
+	pub fn new_todo_file(&self) -> TodoFile {
+		TodoFile::new(self.get_todo_file_path().as_str(), 1, "#")
 	}
 
 	pub fn get_todo_file_path(&self) -> String {
@@ -103,91 +106,6 @@ impl Default for ViewState {
 		Self {
 			size: Size::new(500, 30),
 		}
-	}
-}
-
-fn map_str_to_event(input: &str) -> Event {
-	match input {
-		"Backspace" => create_key_event!(code KeyCode::Backspace),
-		"Enter" => create_key_event!(code KeyCode::Enter),
-		"Delete" => create_key_event!(code KeyCode::Delete),
-		"End" => create_key_event!(code KeyCode::End),
-		"Home" => create_key_event!(code KeyCode::Home),
-		"Other" => create_key_event!(code KeyCode::Null),
-		"Left" => create_key_event!(code KeyCode::Left),
-		"PageUp" | "ScrollJumpUp" => create_key_event!(code KeyCode::PageUp),
-		"PageDown" | "ScrollJumpDown" => create_key_event!(code KeyCode::PageDown),
-		"Up" | "ScrollUp" => create_key_event!(code KeyCode::Up),
-		"Right" | "ScrollRight" => create_key_event!(code KeyCode::Right),
-		"Down" | "ScrollDown" => create_key_event!(code KeyCode::Down),
-		"Controlz" => create_key_event!('z', "Control"),
-		"Controly" => create_key_event!('y', "Control"),
-		"Exit" => create_key_event!('d', "Control"),
-		"Resize" => Event::Resize(0, 0),
-		_ => {
-			if input.len() > 1 {
-				panic!("Unexpected input: {}", input);
-			}
-			Event::Key(KeyEvent::new(
-				KeyCode::Char(input.chars().next().unwrap()),
-				KeyModifiers::NONE,
-			))
-		},
-	}
-}
-
-fn map_input_to_event(key_bindings: &KeyBindings, input: Input) -> Event {
-	match input {
-		Input::Abort => map_str_to_event(key_bindings.abort.first().unwrap().as_str()),
-		Input::ActionBreak => map_str_to_event(key_bindings.action_break.first().unwrap().as_str()),
-		Input::ActionDrop => map_str_to_event(key_bindings.action_drop.first().unwrap().as_str()),
-		Input::ActionEdit => map_str_to_event(key_bindings.action_edit.first().unwrap().as_str()),
-		Input::ActionFixup => map_str_to_event(key_bindings.action_fixup.first().unwrap().as_str()),
-		Input::ActionPick => map_str_to_event(key_bindings.action_pick.first().unwrap().as_str()),
-		Input::ActionReword => map_str_to_event(key_bindings.action_reword.first().unwrap().as_str()),
-		Input::ActionSquash => map_str_to_event(key_bindings.action_squash.first().unwrap().as_str()),
-		Input::Backspace => map_str_to_event("Backspace"),
-		Input::Character(c) => map_str_to_event(String::from(c).as_str()),
-		Input::Delete => map_str_to_event("Delete"),
-		Input::Down | Input::ScrollDown => map_str_to_event("Down"),
-		Input::Edit => map_str_to_event(key_bindings.edit.first().unwrap().as_str()),
-		Input::End | Input::ScrollBottom => map_str_to_event("End"),
-		Input::Enter => map_str_to_event("Enter"),
-		Input::Exit => map_str_to_event("Exit"),
-		Input::ForceAbort => map_str_to_event(key_bindings.force_abort.first().unwrap().as_str()),
-		Input::ForceRebase => map_str_to_event(key_bindings.force_rebase.first().unwrap().as_str()),
-		Input::Help => map_str_to_event(key_bindings.help.first().unwrap().as_str()),
-		Input::Home | Input::ScrollTop => map_str_to_event("Home"),
-		Input::InsertLine => map_str_to_event(key_bindings.insert_line.first().unwrap().as_str()),
-		Input::Left | Input::ScrollLeft => map_str_to_event("Left"),
-		Input::MoveCursorDown => map_str_to_event(key_bindings.move_down.first().unwrap().as_str()),
-		Input::MoveCursorEnd => map_str_to_event(key_bindings.move_end.first().unwrap().as_str()),
-		Input::MoveCursorHome => map_str_to_event(key_bindings.move_home.first().unwrap().as_str()),
-		Input::MoveCursorLeft => map_str_to_event(key_bindings.move_left.first().unwrap().as_str()),
-		Input::MoveCursorPageDown => map_str_to_event(key_bindings.move_down_step.first().unwrap().as_str()),
-		Input::MoveCursorPageUp => map_str_to_event(key_bindings.move_up_step.first().unwrap().as_str()),
-		Input::MoveCursorRight => map_str_to_event(key_bindings.move_right.first().unwrap().as_str()),
-		Input::MoveCursorUp => map_str_to_event(key_bindings.move_up.first().unwrap().as_str()),
-		Input::No => map_str_to_event(key_bindings.confirm_no.first().unwrap().as_str()),
-		Input::OpenInEditor => map_str_to_event(key_bindings.open_in_external_editor.first().unwrap().as_str()),
-		Input::Other => map_str_to_event("Other"),
-		Input::PageDown | Input::ScrollJumpDown => map_str_to_event("PageDown"),
-		Input::PageUp | Input::ScrollJumpUp => map_str_to_event("PageUp"),
-		Input::Rebase => map_str_to_event(key_bindings.rebase.first().unwrap().as_str()),
-		Input::Redo => map_str_to_event(key_bindings.redo.first().unwrap().as_str()),
-		Input::Resize => map_str_to_event("Resize"),
-		Input::Right | Input::ScrollRight => map_str_to_event("Right"),
-		Input::ShowCommit => map_str_to_event(key_bindings.show_commit.first().unwrap().as_str()),
-		Input::ShowDiff => map_str_to_event(key_bindings.show_diff.first().unwrap().as_str()),
-		Input::SwapSelectedDown => map_str_to_event(key_bindings.move_selection_down.first().unwrap().as_str()),
-		Input::SwapSelectedUp => map_str_to_event(key_bindings.move_selection_up.first().unwrap().as_str()),
-		Input::ToggleVisualMode => map_str_to_event(key_bindings.toggle_visual_mode.first().unwrap().as_str()),
-		Input::Undo => map_str_to_event(key_bindings.undo.first().unwrap().as_str()),
-		Input::Up | Input::ScrollUp => map_str_to_event("Up"),
-		Input::Yes => map_str_to_event(key_bindings.confirm_yes.first().unwrap().as_str()),
-		_ => {
-			panic!("Unsupported input: {:?}", input);
-		},
 	}
 }
 
@@ -353,7 +271,7 @@ macro_rules! assert_process_result {
 	};
 }
 
-pub fn process_module_test<C>(lines: &[&str], view_state: ViewState, input: &[Input], callback: C)
+pub fn process_module_test<C>(lines: &[&str], view_state: ViewState, inputs: &[Input], callback: C)
 where C: for<'p> FnOnce(TestContext<'p>) {
 	let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
 		.join("test")
@@ -368,15 +286,10 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 	config.git.editor = String::from("true");
 	let mut crossterm = CrossTerm::new();
 	crossterm.set_size(view_state.size);
-	CrossTerm::set_inputs(
-		input
-			.iter()
-			.map(|i| map_input_to_event(&config.key_bindings, *i))
-			.collect(),
-	);
+	setup_mocked_inputs(inputs, &config.key_bindings);
 	let input_handler = InputHandler::new(&config.key_bindings);
 	let display = Display::new(&mut crossterm, &config.theme);
-	let view = View::new(input_handler, display, &config);
+	let view = View::new(display, &config);
 	let todo_file = Builder::new()
 		.prefix("git-rebase-todo-scratch")
 		.suffix("")
@@ -388,9 +301,10 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 
 	callback(TestContext {
 		config: &config,
+		input_handler,
+		num_inputs: inputs.len(),
 		rebase_todo_file,
 		todo_file: Cell::new(todo_file),
 		view,
-		num_inputs: input.len(),
 	});
 }

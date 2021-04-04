@@ -15,7 +15,10 @@ use anyhow::{anyhow, Result};
 use crate::{
 	components::Choice,
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
-	input::{input_handler::InputMode, Input},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, View},
@@ -64,7 +67,12 @@ impl ProcessModule for ExternalEditor {
 		}
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		view: &mut View<'_>,
+		todo_file: &mut TodoFile,
+	) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
@@ -87,7 +95,7 @@ impl ProcessModule for ExternalEditor {
 				result = result.input(Input::Other);
 			},
 			ExternalEditorState::Empty => {
-				let input = view.get_input(InputMode::Default);
+				let input = input_handler.get_input(InputMode::Default);
 				result = result.input(input);
 				if let Some(action) = self.empty_choice.handle_input(input) {
 					match *action {
@@ -102,7 +110,7 @@ impl ProcessModule for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let input = view.get_input(InputMode::Default);
+				let input = input_handler.get_input(InputMode::Default);
 				result = result.input(input);
 				if let Some(action) = self.error_choice.handle_input(input) {
 					match *action {

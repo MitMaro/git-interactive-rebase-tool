@@ -1,6 +1,6 @@
 use crate::{
 	components::Confirm,
-	input::input_handler::InputMode,
+	input::input_handler::{InputHandler, InputMode},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{render_context::RenderContext, view_data::ViewData, View},
@@ -15,8 +15,13 @@ impl ProcessModule for ConfirmAbort {
 		self.dialog.get_view_data()
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
-		let input = view.get_input(InputMode::Confirm);
+	fn handle_input(
+		&mut self,
+		input_handler: &InputHandler<'_>,
+		_: &mut View<'_>,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
+		let input = input_handler.get_input(InputMode::Confirm);
 		let mut result = ProcessResult::new().input(input);
 		if let Some(confirmed) = self.dialog.handle_input(input) {
 			if confirmed {
