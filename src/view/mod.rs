@@ -10,11 +10,6 @@ use anyhow::Result;
 
 use crate::{
 	display::{display_color::DisplayColor, Display},
-	input::{
-		input_handler::{InputHandler, InputMode},
-		EventHandler,
-		Input,
-	},
 	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
 	Config,
 };
@@ -26,16 +21,11 @@ const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
 pub struct View<'v> {
 	config: &'v Config,
 	display: Display<'v>,
-	input_handler: InputHandler<'v>,
 }
 
 impl<'v> View<'v> {
-	pub(crate) const fn new(input_handler: InputHandler<'v>, display: Display<'v>, config: &'v Config) -> Self {
-		Self {
-			config,
-			display,
-			input_handler,
-		}
+	pub(crate) const fn new(display: Display<'v>, config: &'v Config) -> Self {
+		Self { config, display }
 	}
 
 	pub(crate) fn start(&mut self) -> Result<()> {
@@ -44,10 +34,6 @@ impl<'v> View<'v> {
 
 	pub(crate) fn end(&mut self) -> Result<()> {
 		self.display.end()
-	}
-
-	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
-		self.input_handler.get_input(mode, EventHandler::poll_event())
 	}
 
 	pub(crate) fn get_render_context(&self) -> RenderContext {
@@ -191,9 +177,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		config::Config,
-		create_key_event,
 		display::{size::Size, CrossTerm},
-		input::input_handler::InputHandler,
 	};
 
 	pub struct TestContext<'t> {
@@ -220,19 +204,9 @@ mod tests {
 		let config = Config::new().unwrap();
 		let mut crossterm = CrossTerm::new();
 		crossterm.set_size(size);
-		let input_handler = InputHandler::new(&config.key_bindings);
 		let display = Display::new(&mut crossterm, &config.theme);
-		let view = View::new(input_handler, display, &config);
+		let view = View::new(display, &config);
 		callback(TestContext { view });
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn get_input() {
-		view_module_test(Size::new(20, 10), |test_context| {
-			CrossTerm::set_inputs(vec![create_key_event!('z')]);
-			assert_eq!(test_context.view.get_input(InputMode::Default), Input::Character('z'));
-		});
 	}
 
 	#[test]

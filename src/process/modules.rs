@@ -3,6 +3,7 @@ use crate::{
 	confirm_abort::ConfirmAbort,
 	confirm_rebase::ConfirmRebase,
 	external_editor::ExternalEditor,
+	input::input_handler::InputHandler,
 	insert::Insert,
 	list::List,
 	process::{
@@ -68,8 +69,15 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).build_view_data(&render_context, rebase_todo)
 	}
 
-	pub fn handle_input(&mut self, state: State, view: &mut View<'_>, rebase_todo: &mut TodoFile) -> ProcessResult {
-		self.get_mut_module(state).handle_input(view, rebase_todo)
+	pub fn handle_input<'r>(
+		&mut self,
+		state: State,
+		input_handler: &InputHandler<'r>,
+		view: &mut View<'r>,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
+		self.get_mut_module(state)
+			.handle_input(input_handler, view, rebase_todo)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
@@ -111,7 +119,12 @@ mod tests {
 				config.git.editor = String::from("true");
 				let mut modules = Modules::new(&config);
 				modules.activate(state, &test_context.rebase_todo_file, State::List);
-				modules.handle_input(state, &mut test_context.view, &mut test_context.rebase_todo_file);
+				modules.handle_input(
+					state,
+					&test_context.input_handler,
+					&mut test_context.view,
+					&mut test_context.rebase_todo_file,
+				);
 				modules.build_view_data(state, &test_context.view, &test_context.rebase_todo_file);
 				modules.deactivate(state);
 			},

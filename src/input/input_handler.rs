@@ -1,4 +1,7 @@
-use crate::{config::key_bindings::KeyBindings, input::Input};
+use crate::{
+	config::key_bindings::KeyBindings,
+	input::{EventHandler, Input},
+};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum InputMode {
@@ -18,7 +21,9 @@ impl<'i> InputHandler<'i> {
 		Self { key_bindings }
 	}
 
-	pub(crate) fn get_input(&self, mode: InputMode, input: String) -> Input {
+	pub(crate) fn get_input(&self, mode: InputMode) -> Input {
+		let input = EventHandler::poll_event();
+
 		match mode {
 			InputMode::Confirm => self.get_confirm(input.as_str()),
 			InputMode::Default => Self::get_default_input(input.as_str()),
@@ -126,6 +131,7 @@ impl<'i> InputHandler<'i> {
 					Input::Character(c.chars().next().unwrap())
 				}
 				else {
+					// Mostly for F(x) keys that are not supported in raw mode
 					Input::Other
 				}
 			},
@@ -150,9 +156,13 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::config::Config;
+	use crate::{
+		config::Config,
+		create_key_event,
+		display::{CrossTerm, Event, KeyCode},
+	};
 
-	fn input_handler_test<G, C>(config_setup: G, callback: C)
+	fn input_handler_test<G, C>(events: &[Event], config_setup: G, callback: C)
 	where
 		G: for<'p> FnOnce(&'p mut Config),
 		C: for<'p> FnOnce(&'p InputHandler<'_>),
@@ -168,6 +178,7 @@ mod tests {
 		set_var("GIT_DIR", git_repo_dir.as_str());
 		let mut config = Config::new().unwrap();
 		config_setup(&mut config);
+		CrossTerm::set_inputs(events.to_vec());
 		let input_handler = InputHandler::new(&config.key_bindings);
 		callback(&input_handler);
 	}
@@ -175,35 +186,33 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::yes_lower("y", Input::Yes),
-		case::yes_upper("Y", Input::Yes),
-		case::no_n_lower("n", Input::No),
-		case::no_n_upper("N", Input::No),
-		case::no_other("x", Input::No),
-		case::multiple_bindings("7", Input::Yes),
-		case::standard_resize("Resize", Input::Resize),
-		case::standard_move_up("Up", Input::ScrollUp),
-		case::standard_move_down("Down", Input::ScrollDown),
-		case::standard_move_left("Left", Input::ScrollLeft),
-		case::standard_move_right("Right", Input::ScrollRight),
-		case::standard_move_jump_up("PageUp", Input::ScrollJumpUp),
-		case::standard_move_jump_down("PageDown", Input::ScrollJumpDown),
-		case::standard_move_end("End", Input::ScrollBottom),
-		case::standard_move_home("Home", Input::ScrollTop),
-		case::standard_exit("Exit", Input::Exit),
-		case::standard_kill("Kill", Input::Kill)
+		case::yes_lower(create_key_event!('y'), Input::Yes),
+		case::yes_upper(create_key_event!('Y'), Input::Yes),
+		case::no_n_lower(create_key_event!('n'), Input::No),
+		case::no_n_upper(create_key_event!('N'), Input::No),
+		case::no_other(create_key_event!('x'), Input::No),
+		case::multiple_bindings(create_key_event!('7'), Input::Yes),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_move_up(create_key_event!(code KeyCode::Up), Input::ScrollUp),
+		case::standard_move_down(create_key_event!(code KeyCode::Down), Input::ScrollDown),
+		case::standard_move_left(create_key_event!(code KeyCode::Left), Input::ScrollLeft),
+		case::standard_move_right(create_key_event!(code KeyCode::Right), Input::ScrollRight),
+		case::standard_move_jump_up(create_key_event!(code KeyCode::PageUp), Input::ScrollJumpUp),
+		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
+		case::standard_move_end(create_key_event!(code KeyCode::End), Input::ScrollBottom),
+		case::standard_move_home(create_key_event!(code KeyCode::Home), Input::ScrollTop),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill)
 	)]
 	#[serial_test::serial]
-	fn confirm_mode(input: &str, expected: Input) {
+	fn confirm_mode(input: Event, expected: Input) {
 		input_handler_test(
+			&[input],
 			|config| {
 				config.key_bindings.confirm_yes = vec![String::from('y'), String::from('7')];
 			},
 			|input_handler: &InputHandler<'_>| {
-				assert_eq!(
-					input_handler.get_input(InputMode::Confirm, String::from(input)),
-					expected
-				);
+				assert_eq!(input_handler.get_input(InputMode::Confirm), expected);
 			},
 		);
 	}
@@ -211,37 +220,34 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::character("a", Input::Character('a')),
-		case::backspace_key("Backspace", Input::Backspace),
-		case::tab_character("BackTab", Input::BackTab),
-		case::delete("Delete", Input::Delete),
-		case::enter("Enter", Input::Enter),
-		case::escape("Esc", Input::Escape),
-		case::insert("Insert", Input::Insert),
-		case::other_characters("AB", Input::Other),
-		case::other("Other", Input::Other),
-		case::tab_character("Tab", Input::Tab),
-		case::standard_resize("Resize", Input::Resize),
-		case::standard_move_up("Up", Input::ScrollUp),
-		case::standard_move_down("Down", Input::ScrollDown),
-		case::standard_move_left("Left", Input::ScrollLeft),
-		case::standard_move_right("Right", Input::ScrollRight),
-		case::standard_move_jump_up("PageUp", Input::ScrollJumpUp),
-		case::standard_move_jump_down("PageDown", Input::ScrollJumpDown),
-		case::standard_move_end("End", Input::ScrollBottom),
-		case::standard_move_home("Home", Input::ScrollTop),
-		case::standard_exit("Exit", Input::Exit),
-		case::standard_kill("Kill", Input::Kill)
+		case::character(create_key_event!('a'), Input::Character('a')),
+		case::backspace_key(create_key_event!(code KeyCode::Backspace), Input::Backspace),
+		case::tab_character(create_key_event!(code KeyCode::BackTab), Input::BackTab),
+		case::delete(create_key_event!(code KeyCode::Delete), Input::Delete),
+		case::enter(create_key_event!(code KeyCode::Enter), Input::Enter),
+		case::escape(create_key_event!(code KeyCode::Esc), Input::Escape),
+		case::insert(create_key_event!(code KeyCode::Insert), Input::Insert),
+		case::other(create_key_event!(code KeyCode::Null), Input::Other),
+		case::tab_character(create_key_event!(code KeyCode::Tab), Input::Tab),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_move_up(create_key_event!(code KeyCode::Up), Input::ScrollUp),
+		case::standard_move_down(create_key_event!(code KeyCode::Down), Input::ScrollDown),
+		case::standard_move_left(create_key_event!(code KeyCode::Left), Input::ScrollLeft),
+		case::standard_move_right(create_key_event!(code KeyCode::Right), Input::ScrollRight),
+		case::standard_move_jump_up(create_key_event!(code KeyCode::PageUp), Input::ScrollJumpUp),
+		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
+		case::standard_move_end(create_key_event!(code KeyCode::End), Input::ScrollBottom),
+		case::standard_move_home(create_key_event!(code KeyCode::Home), Input::ScrollTop),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill)
 	)]
 	#[serial_test::serial]
-	fn default_mode(input: &str, expected: Input) {
+	fn default_mode(input: Event, expected: Input) {
 		input_handler_test(
+			&[input],
 			|_| {},
 			|input_handler: &InputHandler<'_>| {
-				assert_eq!(
-					input_handler.get_input(InputMode::Default, String::from(input)),
-					expected
-				);
+				assert_eq!(input_handler.get_input(InputMode::Default), expected);
 			},
 		);
 	}
@@ -249,50 +255,51 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::abort("q", Input::Abort),
-		case::action_break("b", Input::ActionBreak),
-		case::action_drop("d", Input::ActionDrop),
-		case::action_edit("e", Input::ActionEdit),
-		case::action_fixup("f", Input::ActionFixup),
-		case::action_pick("p", Input::ActionPick),
-		case::action_reword("r", Input::ActionReword),
-		case::action_squash("s", Input::ActionSquash),
-		case::edit("E", Input::Edit),
-		case::force_abort("Q", Input::ForceAbort),
-		case::force_rebase("W", Input::ForceRebase),
-		case::help("?", Input::Help),
-		case::insert_line("I", Input::InsertLine),
-		case::move_down("Down", Input::MoveCursorDown),
-		case::move_end("End", Input::MoveCursorEnd),
-		case::move_home("Home", Input::MoveCursorHome),
-		case::move_left("Left", Input::MoveCursorLeft),
-		case::move_page_down("PageDown", Input::MoveCursorPageDown),
-		case::move_page_up("PageUp", Input::MoveCursorPageUp),
-		case::move_right("Right", Input::MoveCursorRight),
-		case::move_up("Up", Input::MoveCursorUp),
-		case::open_in_external_editor("!", Input::OpenInEditor),
-		case::rebase("w", Input::Rebase),
-		case::redo("Controly", Input::Redo),
-		case::remove_line("Delete", Input::Delete),
-		case::show_commit("c", Input::ShowCommit),
-		case::swap_selected_down("j", Input::SwapSelectedDown),
-		case::swap_selected_up("k", Input::SwapSelectedUp),
-		case::toggle_visual_mode("v", Input::ToggleVisualMode),
-		case::undo("Controlz", Input::Undo),
-		case::other("z", Input::Other),
-		case::standard_exit("Exit", Input::Exit),
-		case::standard_kill("Kill", Input::Kill),
-		case::standard_resize("Resize", Input::Resize),
-		case::multiple_bindings("7", Input::Abort)
+		case::abort(create_key_event!('q'), Input::Abort),
+		case::action_break(create_key_event!('b'), Input::ActionBreak),
+		case::action_drop(create_key_event!('d'), Input::ActionDrop),
+		case::action_edit(create_key_event!('e'), Input::ActionEdit),
+		case::action_fixup(create_key_event!('f'), Input::ActionFixup),
+		case::action_pick(create_key_event!('p'), Input::ActionPick),
+		case::action_reword(create_key_event!('r'), Input::ActionReword),
+		case::action_squash(create_key_event!('s'), Input::ActionSquash),
+		case::edit(create_key_event!('E'), Input::Edit),
+		case::force_abort(create_key_event!('Q'), Input::ForceAbort),
+		case::force_rebase(create_key_event!('W'), Input::ForceRebase),
+		case::help(create_key_event!('?'), Input::Help),
+		case::insert_line(create_key_event!('I'), Input::InsertLine),
+		case::move_down(create_key_event!(code KeyCode::Down), Input::MoveCursorDown),
+		case::move_end(create_key_event!(code KeyCode::End), Input::MoveCursorEnd),
+		case::move_home(create_key_event!(code KeyCode::Home), Input::MoveCursorHome),
+		case::move_left(create_key_event!(code KeyCode::Left), Input::MoveCursorLeft),
+		case::move_page_down(create_key_event!(code KeyCode::PageDown), Input::MoveCursorPageDown),
+		case::move_page_up(create_key_event!(code KeyCode::PageUp), Input::MoveCursorPageUp),
+		case::move_right(create_key_event!(code KeyCode::Right), Input::MoveCursorRight),
+		case::move_up(create_key_event!(code KeyCode::Up), Input::MoveCursorUp),
+		case::open_in_external_editor(create_key_event!('!'), Input::OpenInEditor),
+		case::rebase(create_key_event!('w'), Input::Rebase),
+		case::redo(create_key_event!('y', "Control"), Input::Redo),
+		case::remove_line(create_key_event!(code KeyCode::Delete), Input::Delete),
+		case::show_commit(create_key_event!('c'), Input::ShowCommit),
+		case::swap_selected_down(create_key_event!('j'), Input::SwapSelectedDown),
+		case::swap_selected_up(create_key_event!('k'), Input::SwapSelectedUp),
+		case::toggle_visual_mode(create_key_event!('v'), Input::ToggleVisualMode),
+		case::undo(create_key_event!('z', "Control"), Input::Undo),
+		case::other(create_key_event!('z'), Input::Other),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
+		case::multiple_bindings(create_key_event!('7'), Input::Abort)
 	)]
 	#[serial_test::serial]
-	fn list_mode(input: &str, expected: Input) {
+	fn list_mode(input: Event, expected: Input) {
 		input_handler_test(
+			&[input],
 			|config| {
 				config.key_bindings.abort = vec![String::from('q'), String::from('7')];
 			},
 			|input_handler: &InputHandler<'_>| {
-				assert_eq!(input_handler.get_input(InputMode::List, String::from(input)), expected);
+				assert_eq!(input_handler.get_input(InputMode::List), expected);
 			},
 		);
 	}
@@ -300,34 +307,35 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::backspace_character("Backspace", Input::Backspace),
-		case::backtab_key("BackTab", Input::BackTab),
-		case::delete_key("Delete", Input::Delete),
-		case::down_key("Down", Input::Down),
-		case::end_key("End", Input::End),
-		case::enter_key("Enter", Input::Enter),
-		case::escape_key("Esc", Input::Escape),
-		case::standard_exit("Exit", Input::Exit),
-		case::home_key("Home", Input::Home),
-		case::insert_key("Insert", Input::Insert),
-		case::standard_kill("Kill", Input::Kill),
-		case::left_key("Left", Input::Left),
-		case::other("Other", Input::Other),
-		case::page_down_key("PageDown", Input::PageDown),
-		case::page_up_key("PageUp", Input::PageUp),
-		case::standard_resize("Resize", Input::Resize),
-		case::right_key("Right", Input::Right),
-		case::tab_key("Tab", Input::Tab),
-		case::up_key("Up", Input::Up),
-		case::character("a", Input::Character('a')),
-		case::unknown("F(1)", Input::Other)
+		case::backspace_character(create_key_event!(code KeyCode::Backspace), Input::Backspace),
+		case::backtab_key(create_key_event!(code KeyCode::BackTab), Input::BackTab),
+		case::delete_key(create_key_event!(code KeyCode::Delete), Input::Delete),
+		case::down_key(create_key_event!(code KeyCode::Down), Input::Down),
+		case::end_key(create_key_event!(code KeyCode::End), Input::End),
+		case::enter_key(create_key_event!(code KeyCode::Enter), Input::Enter),
+		case::escape_key(create_key_event!(code KeyCode::Esc), Input::Escape),
+		case::home_key(create_key_event!(code KeyCode::Home), Input::Home),
+		case::insert_key(create_key_event!(code KeyCode::Insert), Input::Insert),
+		case::left_key(create_key_event!(code KeyCode::Left), Input::Left),
+		case::other(create_key_event!(code KeyCode::Null), Input::Other),
+		case::page_down_key(create_key_event!(code KeyCode::PageDown), Input::PageDown),
+		case::page_up_key(create_key_event!(code KeyCode::PageUp), Input::PageUp),
+		case::right_key(create_key_event!(code KeyCode::Right), Input::Right),
+		case::tab_key(create_key_event!(code KeyCode::Tab), Input::Tab),
+		case::up_key(create_key_event!(code KeyCode::Up), Input::Up),
+		case::character(create_key_event!('a'), Input::Character('a')),
+		case::unknown(create_key_event!(code KeyCode::F(1)), Input::Other),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill),
 	)]
 	#[serial_test::serial]
-	fn raw_mode(input: &str, expected: Input) {
+	fn raw_mode(input: Event, expected: Input) {
 		input_handler_test(
+			&[input],
 			|_| {},
 			|input_handler: &InputHandler<'_>| {
-				assert_eq!(input_handler.get_input(InputMode::Raw, String::from(input)), expected);
+				assert_eq!(input_handler.get_input(InputMode::Raw), expected);
 			},
 		);
 	}
@@ -335,31 +343,31 @@ mod tests {
 	#[rstest(
 		input,
 		expected,
-		case::help("?", Input::Help),
-		case::show_diff("d", Input::ShowDiff),
-		case::other("Null", Input::Other),
-		case::standard_resize("Resize", Input::Resize),
-		case::standard_move_up("Up", Input::ScrollUp),
-		case::standard_move_down("Down", Input::ScrollDown),
-		case::standard_move_left("Left", Input::ScrollLeft),
-		case::standard_move_right("Right", Input::ScrollRight),
-		case::standard_move_jump_up("PageUp", Input::ScrollJumpUp),
-		case::standard_move_jump_down("PageDown", Input::ScrollJumpDown),
-		case::standard_exit("Exit", Input::Exit),
-		case::standard_kill("Kill", Input::Kill),
-		case::multiple_bindings("7", Input::ShowDiff)
+		case::help(create_key_event!('?'), Input::Help),
+		case::show_diff(create_key_event!('d'), Input::ShowDiff),
+		case::other(create_key_event!(code KeyCode::Null), Input::Other),
+		case::multiple_bindings(create_key_event!('7'), Input::ShowDiff),
+		case::standard_resize(Event::Resize(0, 0), Input::Resize),
+		case::standard_move_up(create_key_event!(code KeyCode::Up), Input::ScrollUp),
+		case::standard_move_down(create_key_event!(code KeyCode::Down), Input::ScrollDown),
+		case::standard_move_left(create_key_event!(code KeyCode::Left), Input::ScrollLeft),
+		case::standard_move_right(create_key_event!(code KeyCode::Right), Input::ScrollRight),
+		case::standard_move_jump_up(create_key_event!(code KeyCode::PageUp), Input::ScrollJumpUp),
+		case::standard_move_jump_down(create_key_event!(code KeyCode::PageDown), Input::ScrollJumpDown),
+		case::standard_move_end(create_key_event!(code KeyCode::End), Input::ScrollBottom),
+		case::standard_move_home(create_key_event!(code KeyCode::Home), Input::ScrollTop),
+		case::standard_exit(create_key_event!('d', "Control"), Input::Exit),
+		case::standard_kill(create_key_event!('c', "Control"), Input::Kill)
 	)]
 	#[serial_test::serial]
-	fn show_commit_mode(input: &str, expected: Input) {
+	fn show_commit_mode(input: Event, expected: Input) {
 		input_handler_test(
+			&[input],
 			|config| {
 				config.key_bindings.show_diff = vec![String::from('d'), String::from('7')];
 			},
 			|input_handler: &InputHandler<'_>| {
-				assert_eq!(
-					input_handler.get_input(InputMode::ShowCommit, String::from(input)),
-					expected
-				);
+				assert_eq!(input_handler.get_input(InputMode::ShowCommit), expected);
 			},
 		);
 	}

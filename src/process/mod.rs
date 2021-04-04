@@ -15,7 +15,7 @@ pub mod testutil;
 use anyhow::Result;
 
 use crate::{
-	input::Input,
+	input::{input_handler::InputHandler, Input},
 	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::View,
@@ -23,22 +23,24 @@ use crate::{
 
 pub struct Process<'r> {
 	exit_status: Option<ExitStatus>,
+	input_handler: InputHandler<'r>,
 	rebase_todo: TodoFile,
 	state: State,
 	view: View<'r>,
 }
 
 impl<'r> Process<'r> {
-	pub(crate) const fn new(rebase_todo: TodoFile, view: View<'r>) -> Self {
+	pub(crate) const fn new(rebase_todo: TodoFile, input_handler: InputHandler<'r>, view: View<'r>) -> Self {
 		Self {
 			exit_status: None,
+			input_handler,
 			rebase_todo,
 			state: State::List,
 			view,
 		}
 	}
 
-	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
+	pub(crate) fn run(&'r mut self, mut modules: Modules<'r>) -> Result<Option<ExitStatus>> {
 		if self.view.start().is_err() {
 			return Ok(Some(ExitStatus::StateError));
 		}
@@ -47,15 +49,12 @@ impl<'r> Process<'r> {
 		}
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
-			if self
-				.view
-				.render(modules.build_view_data(self.state, &self.view, &self.rebase_todo))
-				.is_err()
-			{
+			let view_data = modules.build_view_data(self.state, &self.view, &self.rebase_todo);
+			if self.view.render(view_data).is_err() {
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
 			}
-			let result = modules.handle_input(self.state, &mut self.view, &mut self.rebase_todo);
+			let result = modules.handle_input(self.state, &self.input_handler, &mut self.view, &mut self.rebase_todo);
 			self.handle_process_result(&mut modules, &result);
 		}
 		if self.view.end().is_err() {
@@ -69,7 +68,7 @@ impl<'r> Process<'r> {
 		Ok(self.exit_status)
 	}
 
-	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) -> bool {
+	fn handle_process_result(&mut self, modules: &mut Modules<'r>, result: &ProcessResult) -> bool {
 		let previous_state = self.state;
 
 		if let Some(exit_status) = result.exit_status {
@@ -108,7 +107,7 @@ impl<'r> Process<'r> {
 		previous_state != self.state
 	}
 
-	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
+	fn activate(&mut self, modules: &mut Modules<'r>, previous_state: State) {
 		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
 		self.handle_process_result(modules, &result);
 	}

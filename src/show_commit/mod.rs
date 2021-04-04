@@ -23,7 +23,10 @@ use crate::{
 		Config,
 	},
 	display::display_color::DisplayColor,
-	input::{input_handler::InputMode, Input},
+	input::{
+		input_handler::{InputHandler, InputMode},
+		Input,
+	},
 	process::{
 		process_module::ProcessModule,
 		process_result::ProcessResult,
@@ -127,14 +130,14 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		&mut self.view_data
 	}
 
-	fn handle_input(&mut self, view: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
+	fn handle_input(&mut self, input_handler: &InputHandler<'_>, _: &mut View<'_>, _: &mut TodoFile) -> ProcessResult {
 		if self.help.is_active() {
-			let input = view.get_input(InputMode::Default);
+			let input = input_handler.get_input(InputMode::Default);
 			self.help.handle_input(input);
 			return ProcessResult::new().input(input);
 		}
 
-		let input = view.get_input(InputMode::ShowCommit);
+		let input = input_handler.get_input(InputMode::ShowCommit);
 		let mut result = ProcessResult::new().input(input);
 
 		if handle_view_data_scroll(input, &mut self.view_data).is_none() {

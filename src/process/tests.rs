@@ -15,7 +15,11 @@ fn window_too_small() {
 		ViewState { size: Size::new(1, 1) },
 		&[Input::Exit],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Abort);
 		},
@@ -30,11 +34,16 @@ fn force_abort() {
 		ViewState::default(),
 		&[Input::ForceAbort],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut shadow_rebase_file = test_context.new_todo_file();
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
-			process.rebase_todo.load_file().unwrap();
-			assert!(process.rebase_todo.is_empty());
+			shadow_rebase_file.load_file().unwrap();
+			assert!(shadow_rebase_file.is_empty());
 		},
 	);
 }
@@ -47,11 +56,16 @@ fn force_rebase() {
 		ViewState::default(),
 		&[Input::ForceRebase],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut shadow_rebase_file = test_context.new_todo_file();
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
-			process.rebase_todo.load_file().unwrap();
-			assert_eq!(process.rebase_todo.get_lines_owned(), vec![Line::new(
+			shadow_rebase_file.load_file().unwrap();
+			assert_eq!(shadow_rebase_file.get_lines_owned(), vec![Line::new(
 				"pick aaa comment"
 			)
 			.unwrap()]);
@@ -69,7 +83,11 @@ fn error_write_todo() {
 		|test_context: TestContext<'_>| {
 			let todo_path = test_context.get_todo_file_path();
 			test_context.set_todo_file_readonly();
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(
 				process.run(modules).unwrap_err().to_string(),
@@ -87,7 +105,11 @@ fn resize_window_size_okay() {
 		ViewState::default(),
 		&[Input::Resize, Input::Exit],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let modules = Modules::new(test_context.config);
 			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Abort);
 		},
@@ -102,7 +124,11 @@ fn resize_window_size_too_small() {
 		ViewState { size: Size::new(1, 1) },
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let mut modules = Modules::new(test_context.config);
 			process.state = State::List;
 			let result = ProcessResult::new().input(Input::Resize);
@@ -119,7 +145,11 @@ fn error() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let mut modules = Modules::new(test_context.config);
 			let result = ProcessResult::new().error(anyhow!("Test error"));
 			process.handle_process_result(&mut modules, &result);
@@ -135,8 +165,12 @@ fn help_start() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
 			let mut modules = Modules::new(test_context.config);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let result = ProcessResult::new().input(Input::Help);
 			process.handle_process_result(&mut modules, &result);
 		},
@@ -151,7 +185,11 @@ fn other_input() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut process = Process::new(test_context.rebase_todo_file, test_context.view);
+			let mut process = Process::new(
+				test_context.rebase_todo_file,
+				test_context.input_handler,
+				test_context.view,
+			);
 			let mut modules = Modules::new(test_context.config);
 			let result = ProcessResult::new().input(Input::Character('a'));
 			process.handle_process_result(&mut modules, &result);
