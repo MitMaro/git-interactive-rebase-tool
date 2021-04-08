@@ -22,6 +22,15 @@ impl Line {
 		}
 	}
 
+	pub(crate) fn new_pick(hash: &str) -> Self {
+		Self {
+			action: Action::Pick,
+			content: String::from(""),
+			hash: String::from(hash),
+			mutated: false,
+		}
+	}
+
 	pub(crate) fn new_break() -> Self {
 		Self {
 			action: Action::Break,
@@ -259,6 +268,16 @@ mod tests {
 	)]
 	fn new(line: &str, expected: &Line) {
 		assert_eq!(&Line::new(line).unwrap(), expected);
+	}
+
+	#[test]
+	fn line_new_pick() {
+		assert_eq!(Line::new_pick("abc123"), Line {
+			action: Action::Pick,
+			hash: String::from("abc123"),
+			content: String::from(""),
+			mutated: false,
+		});
 	}
 
 	#[test]

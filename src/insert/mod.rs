@@ -69,6 +69,7 @@ impl ProcessModule for Insert {
 					if !content.is_empty() {
 						let line = match self.line_type {
 							LineType::Exec => Line::new_exec(content.as_str()),
+							LineType::Pick => Line::new_pick(content.as_str()),
 							LineType::Label => Line::new_label(content.as_str()),
 							LineType::Reset => Line::new_reset(content.as_str()),
 							LineType::Merge => Line::new_merge(content.as_str()),
@@ -94,6 +95,7 @@ impl Insert {
 
 		let mut action_choices = Choice::new(vec![
 			(LineType::Exec, 'e', String::from("exec <command>")),
+			(LineType::Pick, 'p', String::from("pick <hash>")),
 			(LineType::Label, 'l', String::from("label <label>")),
 			(LineType::Reset, 'r', String::from("reset <label>")),
 			(
@@ -101,7 +103,7 @@ impl Insert {
 				'm',
 				String::from("merge [-C <commit> | -c <commit>] <label> [# <oneline>]"),
 			),
-			(LineType::Cancel, 'c', String::from("Cancel add line")),
+			(LineType::Cancel, 'q', String::from("Cancel add line")),
 		]);
 		action_choices.set_prompt(vec![ViewLine::from("Select the type of line to insert:")]);
 		let mut edit_view_data = ViewData::new();
