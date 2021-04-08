@@ -28,10 +28,11 @@ fn render_prompt() {
 			"",
 			"{BODY}",
 			"{Normal}e) exec <command>",
+			"{Normal}p) pick <hash>",
 			"{Normal}l) label <label>",
 			"{Normal}r) reset <label>",
 			"{Normal}m) merge [-C <commit> | -c <commit>] <label> [# <oneline>]",
-			"{Normal}c) Cancel add line",
+			"{Normal}q) Cancel add line",
 			"",
 			"{IndicatorColor}Please choose an option."
 		);
@@ -44,12 +45,12 @@ fn prompt_cancel() {
 	process_module_test(
 		&[],
 		ViewState::default(),
-		&[Input::Character('c')],
+		&[Input::Character('q')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = Insert::new();
 			assert_process_result!(
 				test_context.handle_input(&mut module),
-				input = Input::Character('c'),
+				input = Input::Character('q'),
 				state = State::List
 			);
 		},
@@ -90,6 +91,47 @@ fn edit_render_exec() {
 				state = State::List
 			);
 			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().to_text(), "exec foo");
+		},
+	);
+}
+
+#[test]
+#[serial_test::serial]
+fn edit_render_pick() {
+	process_module_test(
+		&[],
+		ViewState::default(),
+		&[
+			Input::Character('p'),
+			Input::Character('a'),
+			Input::Character('b'),
+			Input::Character('c'),
+			Input::Enter,
+		],
+		|mut test_context: TestContext<'_>| {
+			let mut module = Insert::new();
+			test_context.handle_n_inputs(&mut module, 4);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"",
+				"{BODY}",
+				"{Normal,Dimmed}pick {Normal}abc{Normal,Underline} ",
+				"{TRAILING}",
+				"{IndicatorColor}Enter to finish"
+			);
+			assert_process_result!(
+				test_context.handle_input(&mut module),
+				input = Input::Enter,
+				state = State::List
+			);
+			assert_eq!(
+				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
+				"pick abc "
+			);
 		},
 	);
 }

@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Support for multiple key bindings per configuration ([#437](https://github.com/MitMaro/git-interactive-rebase-tool/pull/437))
 - Open external editor from visual mode ([#442](https://github.com/MitMaro/git-interactive-rebase-tool/pull/442))
 - Delete selected lines from the todo list ([#443](https://github.com/MitMaro/git-interactive-rebase-tool/pull/443))
-- Insert new exec, label, reset or merge line ([#454](https://github.com/MitMaro/git-interactive-rebase-tool/pull/454))
+- Insert new exec, commit, label, reset or merge line ([#454](https://github.com/MitMaro/git-interactive-rebase-tool/pull/454), [#458](https://github.com/MitMaro/git-interactive-rebase-tool/pull/458))
 - Support home and end in list view ([#455](https://github.com/MitMaro/git-interactive-rebase-tool/pull/455))
 
 ### Fixed
