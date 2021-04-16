@@ -1,10 +1,10 @@
-use std::{cell::Cell, env::set_var, path::Path};
+use std::{cell::Cell, path::Path};
 
 use anyhow::Error;
 use tempfile::{Builder, NamedTempFile};
 
 use crate::{
-	config::Config,
+	config::{testutil::create_config, Config},
 	display::{size::Size, CrossTerm, Display},
 	input::{input_handler::InputHandler, testutil::setup_mocked_inputs, Input},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
@@ -281,8 +281,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 		.unwrap()
 		.to_owned();
 
-	set_var("GIT_DIR", git_repo_dir.as_str());
-	let mut config = Config::new().unwrap();
+	let mut config = create_config();
 	config.git.editor = String::from("true");
 	let mut crossterm = CrossTerm::new();
 	crossterm.set_size(view_state.size);
