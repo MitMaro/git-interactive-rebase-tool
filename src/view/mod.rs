@@ -172,11 +172,9 @@ impl<'v> View<'v> {
 
 #[cfg(test)]
 mod tests {
-	use std::{env::set_var, path::Path};
-
 	use super::*;
 	use crate::{
-		config::Config,
+		config::testutil::create_config,
 		display::{size::Size, CrossTerm},
 	};
 
@@ -192,16 +190,7 @@ mod tests {
 
 	pub fn view_module_test<F>(size: Size, callback: F)
 	where F: FnOnce(TestContext<'_>) {
-		set_var(
-			"GIT_DIR",
-			Path::new(env!("CARGO_MANIFEST_DIR"))
-				.join("test")
-				.join("fixtures")
-				.join("simple")
-				.to_str()
-				.unwrap(),
-		);
-		let config = Config::new().unwrap();
+		let config = create_config();
 		let mut crossterm = CrossTerm::new();
 		crossterm.set_size(size);
 		let display = Display::new(&mut crossterm, &config.theme);

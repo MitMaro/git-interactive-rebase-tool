@@ -151,13 +151,11 @@ impl<'i> InputHandler<'i> {
 
 #[cfg(test)]
 mod tests {
-	use std::{env::set_var, path::Path};
-
 	use rstest::rstest;
 
 	use super::*;
 	use crate::{
-		config::Config,
+		config::{testutil::create_config, Config},
 		create_key_event,
 		display::{CrossTerm, Event, KeyCode},
 	};
@@ -167,16 +165,7 @@ mod tests {
 		G: for<'p> FnOnce(&'p mut Config),
 		C: for<'p> FnOnce(&'p InputHandler<'_>),
 	{
-		let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join("simple")
-			.to_str()
-			.unwrap()
-			.to_owned();
-
-		set_var("GIT_DIR", git_repo_dir.as_str());
-		let mut config = Config::new().unwrap();
+		let mut config = create_config();
 		config_setup(&mut config);
 		CrossTerm::set_inputs(events.to_vec());
 		let input_handler = InputHandler::new(&config.key_bindings);

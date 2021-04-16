@@ -8,12 +8,15 @@ use anyhow::Result;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+pub mod testutil;
+
+pub use key_bindings::KeyBindings;
 
 use crate::config::{
 	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 	git_config::GitConfig,
-	key_bindings::KeyBindings,
 	theme::Theme,
 	utils::{
 		get_bool,
