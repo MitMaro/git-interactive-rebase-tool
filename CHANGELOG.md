@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.1.0] - 2021-04-20
 
 ### Added
 - Label and description to commit edit ([#429](https://github.com/MitMaro/git-interactive-rebase-tool/pull/429))
@@ -153,7 +153,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.1.0...HEAD
+[2.1.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.1...2.0.0
 [1.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.1.0...1.2.0
