@@ -46,9 +46,6 @@ mod show_commit;
 mod todo_file;
 mod view;
 
-#[cfg(test)]
-pub mod testutil;
-
 use clap::{App, Arg};
 
 use crate::{
