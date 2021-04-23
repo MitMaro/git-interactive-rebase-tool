@@ -23,7 +23,7 @@ Native cross-platform full feature terminal based [sequence editor][git-sequence
 
 ## Features
 
-### Cross platform
+### Cross-platform
 
 Built and works on Linux, macOS, Windows and BSD.
 
@@ -51,7 +51,7 @@ Change action and reorder multiple lines at once with visual mode.
 
 ### View commit details and diff 
 
-View the commit overview and a full commit diff with a press of a key.
+View the commit overview, and a full commit diff with a press of a key.
 
 ![Commit overview](/docs/assets/images/girt-commit-overview.gif?raw=true)
 
@@ -83,7 +83,7 @@ Need to do something in your Git editor? Quickly shell out to your editor, make 
 
 ### Windows
 
-#### Standard Command Pompt
+#### Standard Command Prompt
 
     git config --global sequence.editor "'C:/path/to/interactive-rebase-tool.exe'"
 
