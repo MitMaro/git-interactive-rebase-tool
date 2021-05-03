@@ -2731,7 +2731,7 @@ fn edit_mode_render() {
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
-				"{TITLE}{HELP}",
+				"{TITLE}",
 				"{LEADING}",
 				"{IndicatorColor}Modifying line: exec foo",
 				"",

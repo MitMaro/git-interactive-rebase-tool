@@ -20,20 +20,24 @@ pub struct Edit {
 	description: Option<String>,
 	finished: bool,
 	label: Option<String>,
+	view_data: ViewData,
 }
 
 impl Edit {
 	pub(crate) fn new() -> Self {
+		let mut view_data = ViewData::new();
+		view_data.set_show_title(true);
 		Self {
 			content: String::from(""),
 			cursor_position: 0,
 			description: None,
 			finished: false,
 			label: None,
+			view_data,
 		}
 	}
 
-	pub fn update_view_data(&mut self, view_data: &mut ViewData) {
+	pub fn get_view_data(&mut self) -> &mut ViewData {
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
 
@@ -43,13 +47,6 @@ impl Edit {
 		let indicator = graphemes.clone().skip(pointer).take(1).collect::<String>();
 		let end = graphemes.skip(pointer + 1).collect::<String>();
 
-		if let Some(description) = self.description.as_ref() {
-			view_data.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
-				description.as_str(),
-				DisplayColor::IndicatorColor,
-			)]));
-			view_data.push_leading_line(ViewLine::new_empty_line());
-		}
 		let mut segments = vec![];
 		if let Some(label) = self.label.as_ref() {
 			segments.push(LineSegment::new_with_color_and_style(
@@ -78,13 +75,27 @@ impl Edit {
 				false,
 			));
 		}
-		view_data.push_line(ViewLine::from(segments));
-		view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
-			"Enter to finish",
-			DisplayColor::IndicatorColor,
-		)]));
-		view_data.ensure_column_visible(pointer);
-		view_data.ensure_line_visible(0);
+
+		let description = self.description.as_ref();
+
+		self.view_data.clear();
+		if let Some(description) = description {
+			self.view_data
+				.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
+					description.as_str(),
+					DisplayColor::IndicatorColor,
+				)]));
+			self.view_data.push_leading_line(ViewLine::new_empty_line());
+		}
+		self.view_data.push_line(ViewLine::from(segments));
+		self.view_data
+			.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
+				"Enter to finish",
+				DisplayColor::IndicatorColor,
+			)]));
+		self.view_data.ensure_column_visible(pointer);
+		self.view_data.ensure_line_visible(0);
+		&mut self.view_data
 	}
 
 	pub fn handle_event(&mut self, event_handler: &EventHandler) -> Event {

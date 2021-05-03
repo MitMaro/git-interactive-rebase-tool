@@ -16,7 +16,6 @@ use crate::{
 pub struct Insert {
 	action_choices: Choice<LineType>,
 	edit: Edit,
-	edit_view_data: ViewData,
 	line_type: LineType,
 	state: InsertState,
 }
@@ -31,11 +30,7 @@ impl ProcessModule for Insert {
 	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
 		match self.state {
 			InsertState::Prompt => self.action_choices.get_view_data(),
-			InsertState::Edit => {
-				self.edit_view_data.clear();
-				self.edit.update_view_data(&mut self.edit_view_data);
-				&mut self.edit_view_data
-			},
+			InsertState::Edit => self.edit.get_view_data(),
 		}
 	}
 
@@ -105,13 +100,10 @@ impl Insert {
 			(LineType::Cancel, 'q', String::from("Cancel add line")),
 		]);
 		action_choices.set_prompt(vec![ViewLine::from("Select the type of line to insert:")]);
-		let mut edit_view_data = ViewData::new();
-		edit_view_data.set_show_title(true);
 
 		Self {
 			state: InsertState::Prompt,
 			edit,
-			edit_view_data,
 			action_choices,
 			line_type: LineType::Exec,
 		}
