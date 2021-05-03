@@ -44,10 +44,7 @@ impl<'l> ProcessModule for List<'l> {
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
 			ListState::Visual => self.get_visual_mode_view_data(todo_file, context),
-			ListState::Edit => {
-				self.edit.update_view_data(&mut self.view_data);
-				&mut self.view_data
-			},
+			ListState::Edit => self.edit.get_view_data(),
 		}
 	}
 
