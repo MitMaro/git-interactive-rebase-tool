@@ -39,8 +39,6 @@ pub struct List<'l> {
 
 impl<'l> ProcessModule for List<'l> {
 	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &mut ViewData {
-		self.view_data.clear();
-
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
 			ListState::Visual => self.get_visual_mode_view_data(todo_file, context),
@@ -64,9 +62,10 @@ impl<'l> ProcessModule for List<'l> {
 
 impl<'l> List<'l> {
 	pub(crate) fn new(config: &'l Config) -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.set_show_help(true);
+		let view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.set_show_help(true);
+		});
 
 		Self {
 			config,
@@ -106,37 +105,44 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) {
-		self.view_data.clear();
+	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &mut ViewData {
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
 
-		if todo_file.is_empty() {
-			self.view_data
-				.push_leading_line(ViewLine::from(LineSegment::new_with_color(
+		self.view_data.update_view_data(|updater| {
+			updater.clear();
+			if todo_file.is_empty() {
+				updater.push_leading_line(ViewLine::from(LineSegment::new_with_color(
 					"Rebase todo file is empty",
 					DisplayColor::IndicatorColor,
 				)));
-		}
-		else {
-			for (index, line) in todo_file.iter().enumerate() {
-				let selected_line = is_visual_mode
-					&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
-						|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
-				self.view_data.push_line(
-					ViewLine::new_with_pinned_segments(
-						get_todo_line_segments(line, selected_index == index, selected_line, context.is_full_width()),
-						if *line.get_action() == Action::Exec { 2 } else { 3 },
-					)
-					.set_selected(selected_index == index || selected_line),
-				);
 			}
-		}
-		if let Some(visual_index) = self.visual_index_start {
-			self.view_data.ensure_line_visible(visual_index);
-		}
-		self.view_data.ensure_line_visible(selected_index);
+			else {
+				for (index, line) in todo_file.iter().enumerate() {
+					let selected_line = is_visual_mode
+						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
+							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
+					updater.push_line(
+						ViewLine::new_with_pinned_segments(
+							get_todo_line_segments(
+								line,
+								selected_index == index,
+								selected_line,
+								context.is_full_width(),
+							),
+							if *line.get_action() == Action::Exec { 2 } else { 3 },
+						)
+						.set_selected(selected_index == index || selected_line),
+					);
+				}
+			}
+			if visual_index != selected_index {
+				updater.ensure_line_visible(visual_index);
+			}
+			updater.ensure_line_visible(selected_index);
+		});
+		&mut self.view_data
 	}
 
 	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &mut ViewData {
@@ -144,8 +150,7 @@ impl<'l> List<'l> {
 			self.visual_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(context, todo_file);
-			&mut self.view_data
+			self.update_list_view_data(context, todo_file)
 		}
 	}
 
@@ -154,8 +159,7 @@ impl<'l> List<'l> {
 			self.normal_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(context, todo_file);
-			&mut self.view_data
+			self.update_list_view_data(context, todo_file)
 		}
 	}
 
@@ -168,8 +172,8 @@ impl<'l> List<'l> {
 		let mut result = ProcessResult::from(event);
 		if let Event::Meta(meta_event) = event {
 			match meta_event {
-				MetaEvent::MoveCursorLeft => self.view_data.scroll_left(),
-				MetaEvent::MoveCursorRight => self.view_data.scroll_right(),
+				MetaEvent::MoveCursorLeft => self.view_data.update_view_data(|updater| updater.scroll_left()),
+				MetaEvent::MoveCursorRight => self.view_data.update_view_data(|updater| updater.scroll_right()),
 				MetaEvent::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
 				MetaEvent::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
 				MetaEvent::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, render_context.height() / 2),

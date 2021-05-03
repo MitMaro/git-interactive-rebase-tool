@@ -30,7 +30,7 @@ mod tests {
 		case::scroll_right(MetaEvent::ScrollRight, "34567")
 	)]
 	fn handle_view_data_scroll_horizontal(meta_event: MetaEvent, result: &str) {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::from("012345678"));
 		view_data.set_view_size(5, 10);
 		view_data.scroll_right();
@@ -51,7 +51,7 @@ mod tests {
 		case::jump_up(MetaEvent::ScrollJumpUp, ["0", "1", "2", "3"]),
 	)]
 	fn handle_view_data_scroll_vertical(meta_event: MetaEvent, result: [&str; 4]) {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::from("0"));
 		view_data.push_line(ViewLine::from("1"));
 		view_data.push_line(ViewLine::from("2"));
@@ -81,7 +81,7 @@ mod tests {
 
 	#[test]
 	fn handle_view_data_scroll_other_input() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::from("012345678"));
 		view_data.set_view_size(5, 10);
 		assert_eq!(handle_view_data_scroll(Event::from('a'), &mut view_data), None);

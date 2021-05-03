@@ -31,6 +31,7 @@
 #![allow(clippy::similar_names)]
 #![allow(clippy::unreachable)]
 #![allow(clippy::missing_panics_doc)]
+#![allow(clippy::redundant_closure_for_method_calls)] // too many false positives
 #![allow(clippy::default_numeric_fallback)]
 
 mod components;

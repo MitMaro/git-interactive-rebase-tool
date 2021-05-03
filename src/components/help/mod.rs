@@ -33,37 +33,38 @@ impl Help {
 
 	pub fn new_from_keybindings(keybindings: &[(Vec<String>, String)]) -> Self {
 		let max_key_length = Self::get_max_help_key_length(keybindings);
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.push_leading_line(
-			ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
-				format!(" {0:width$} Action", "Key", width = max_key_length).as_str(),
-				DisplayColor::Normal,
-				false,
-				true,
-				false,
-			)])
-			.set_padding_color_and_style(DisplayColor::Normal, false, true, false),
-		);
+		let view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.push_leading_line(
+				ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
+					format!(" {0:width$} Action", "Key", width = max_key_length).as_str(),
+					DisplayColor::Normal,
+					false,
+					true,
+					false,
+				)])
+				.set_padding_color_and_style(DisplayColor::Normal, false, true, false),
+			);
 
-		for line in keybindings {
-			view_data.push_line(ViewLine::new_with_pinned_segments(
-				vec![
-					LineSegment::new_with_color(
-						format!(" {0:width$}", line.0.join(", "), width = max_key_length).as_str(),
-						DisplayColor::IndicatorColor,
-					),
-					LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
-					LineSegment::new(line.1.as_str()),
-				],
-				2,
-			));
-		}
+			for line in keybindings {
+				updater.push_line(ViewLine::new_with_pinned_segments(
+					vec![
+						LineSegment::new_with_color(
+							format!(" {0:width$}", line.0.join(", "), width = max_key_length).as_str(),
+							DisplayColor::IndicatorColor,
+						),
+						LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
+						LineSegment::new(line.1.as_str()),
+					],
+					2,
+				));
+			}
 
-		view_data.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
-			"Press any key to close",
-			DisplayColor::IndicatorColor,
-		)]));
+			updater.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
+				"Press any key to close",
+				DisplayColor::IndicatorColor,
+			)]));
+		});
 		Self {
 			active: false,
 			view_data,

@@ -1,26 +1,28 @@
-use crate::view::{line_segment::LineSegment, scroll_position::ScrollPosition, view_line::ViewLine};
+use crate::view::{line_segment::LineSegment, scroll_position::ScrollPosition, view_line::ViewLine, ViewDataUpdater};
 
 pub struct ViewData {
-	scroll_position: ScrollPosition,
-	height: usize,
-	width: usize,
 	empty_lines: Vec<ViewLine>,
+	height: usize,
 	leading_lines: Vec<ViewLine>,
 	leading_lines_cache: Option<Vec<ViewLine>>,
 	lines: Vec<ViewLine>,
 	lines_cache: Option<Vec<ViewLine>>,
-	trailing_lines: Vec<ViewLine>,
-	trailing_lines_cache: Option<Vec<ViewLine>>,
-	show_title: bool,
-	show_help: bool,
 	max_leading_line_length: usize,
 	max_line_length: usize,
 	max_trailing_line_length: usize,
+	scroll_position: ScrollPosition,
+	show_help: bool,
+	show_title: bool,
+	trailing_lines: Vec<ViewLine>,
+	trailing_lines_cache: Option<Vec<ViewLine>>,
+	version: u32,
+	width: usize,
 }
 
 impl ViewData {
-	pub(crate) const fn new() -> Self {
-		Self {
+	pub(crate) fn new<C>(callback: C) -> Self
+	where C: FnOnce(&mut ViewDataUpdater<'_>) {
+		let mut view_data = Self {
 			empty_lines: vec![],
 			height: 0,
 			leading_lines: vec![],
@@ -35,16 +37,29 @@ impl ViewData {
 			show_title: false,
 			trailing_lines: vec![],
 			trailing_lines_cache: None,
+			version: 0,
 			width: 0,
+		};
+		let mut view_data_updater = ViewDataUpdater::new(&mut view_data);
+		callback(&mut view_data_updater);
+		view_data
+	}
+
+	pub(crate) fn update_view_data<C>(&mut self, callback: C)
+	where C: FnOnce(&mut ViewDataUpdater<'_>) {
+		let mut view_data_updater = ViewDataUpdater::new(self);
+		callback(&mut view_data_updater);
+		if view_data_updater.is_modified() {
+			self.version += 1;
 		}
 	}
 
-	pub(crate) fn reset(&mut self) {
+	pub(super) fn reset(&mut self) {
 		self.clear();
 		self.scroll_position.reset();
 	}
 
-	pub(crate) fn clear(&mut self) {
+	pub(super) fn clear(&mut self) {
 		self.leading_lines.clear();
 		self.leading_lines_cache = None;
 		self.lines.clear();
@@ -53,36 +68,36 @@ impl ViewData {
 		self.trailing_lines_cache = None;
 	}
 
-	pub(crate) fn clear_body(&mut self) {
+	pub(super) fn clear_body(&mut self) {
 		self.lines.clear();
 		self.lines_cache = None;
 	}
 
-	pub(crate) fn scroll_up(&mut self) {
+	pub(super) fn scroll_up(&mut self) {
 		self.lines_cache = None;
 		self.scroll_position.scroll_up();
 		self.rebuild();
 	}
 
-	pub(crate) fn scroll_down(&mut self) {
+	pub(super) fn scroll_down(&mut self) {
 		self.lines_cache = None;
 		self.scroll_position.scroll_down();
 		self.rebuild();
 	}
 
-	pub(crate) fn page_up(&mut self) {
+	pub(super) fn page_up(&mut self) {
 		self.lines_cache = None;
 		self.scroll_position.page_up();
 		self.rebuild();
 	}
 
-	pub(crate) fn page_down(&mut self) {
+	pub(super) fn page_down(&mut self) {
 		self.lines_cache = None;
 		self.scroll_position.page_down();
 		self.rebuild();
 	}
 
-	pub(crate) fn scroll_left(&mut self) {
+	pub(super) fn scroll_left(&mut self) {
 		self.leading_lines_cache = None;
 		self.lines_cache = None;
 		self.trailing_lines_cache = None;
@@ -90,7 +105,7 @@ impl ViewData {
 		self.rebuild();
 	}
 
-	pub(crate) fn scroll_right(&mut self) {
+	pub(super) fn scroll_right(&mut self) {
 		self.leading_lines_cache = None;
 		self.lines_cache = None;
 		self.trailing_lines_cache = None;
@@ -98,7 +113,7 @@ impl ViewData {
 		self.rebuild();
 	}
 
-	pub(crate) fn ensure_line_visible(&mut self, new_cursor_position: usize) {
+	pub(super) fn ensure_line_visible(&mut self, new_cursor_position: usize) {
 		let previous_top = self.scroll_position.get_top_position();
 		self.scroll_position.ensure_line_visible(new_cursor_position);
 
@@ -110,7 +125,7 @@ impl ViewData {
 		}
 	}
 
-	pub(crate) fn ensure_column_visible(&mut self, new_cursor_position: usize) {
+	pub(super) fn ensure_column_visible(&mut self, new_cursor_position: usize) {
 		let previous_left = self.scroll_position.get_left_position();
 		self.scroll_position.ensure_column_visible(new_cursor_position);
 
@@ -157,33 +172,33 @@ impl ViewData {
 		}
 	}
 
-	pub(crate) fn set_show_title(&mut self, show: bool) {
+	pub(super) fn set_show_title(&mut self, show: bool) {
 		self.show_title = show;
 	}
 
-	pub(crate) fn set_show_help(&mut self, show: bool) {
+	pub(super) fn set_show_help(&mut self, show: bool) {
 		self.show_help = show;
 	}
 
-	pub(crate) fn push_leading_line(&mut self, view_line: ViewLine) {
+	pub(super) fn push_leading_line(&mut self, view_line: ViewLine) {
 		self.leading_lines_cache = None;
 		self.lines_cache = None;
 		self.trailing_lines_cache = None;
 		self.leading_lines.push(view_line);
 	}
 
-	pub(crate) fn push_line(&mut self, view_line: ViewLine) {
+	pub(super) fn push_line(&mut self, view_line: ViewLine) {
 		self.lines_cache = None;
 		self.lines.push(view_line);
 	}
 
-	pub(crate) fn push_trailing_line(&mut self, view_line: ViewLine) {
+	pub(super) fn push_trailing_line(&mut self, view_line: ViewLine) {
 		self.lines_cache = None;
 		self.trailing_lines_cache = None;
 		self.trailing_lines.push(view_line);
 	}
 
-	pub(crate) fn should_show_scroll_bar(&self) -> bool {
+	pub(super) fn should_show_scroll_bar(&self) -> bool {
 		if self.lines.is_empty() {
 			return false;
 		}
@@ -496,65 +511,65 @@ mod tests {
 	}
 
 	fn create_mocked_view_data() -> ViewData {
-		let mut view_data = ViewData::new();
-		view_data.push_leading_line(create_mock_view_line());
-		view_data.push_leading_line(create_mock_view_line());
-		view_data.push_leading_line(create_mock_view_line());
+		let mut view_data = ViewData::new(|updater| {
+			updater.push_leading_line(create_mock_view_line());
+			updater.push_leading_line(create_mock_view_line());
+			updater.push_leading_line(create_mock_view_line());
 
-		view_data.push_line(create_mock_view_line());
-		view_data.push_line(create_mock_view_line());
-		view_data.push_line(create_mock_view_line());
-		view_data.push_line(create_mock_view_line());
+			updater.push_line(create_mock_view_line());
+			updater.push_line(create_mock_view_line());
+			updater.push_line(create_mock_view_line());
+			updater.push_line(create_mock_view_line());
 
-		view_data.push_trailing_line(create_mock_view_line());
-		view_data.push_trailing_line(create_mock_view_line());
+			updater.push_trailing_line(create_mock_view_line());
+			updater.push_trailing_line(create_mock_view_line());
+		});
 		view_data.rebuild();
-
 		view_data
 	}
 
 	fn create_mocked_scroll_vertical_view_data() -> ViewData {
-		let mut view_data = ViewData::new();
-		view_data.push_leading_line(create_mock_view_line());
-		view_data.push_leading_line(create_mock_view_line());
-		view_data.push_leading_line(create_mock_view_line());
+		let mut view_data = ViewData::new(|updater| {
+			updater.push_leading_line(create_mock_view_line());
+			updater.push_leading_line(create_mock_view_line());
+			updater.push_leading_line(create_mock_view_line());
 
-		view_data.push_line(ViewLine::from("a"));
-		view_data.push_line(ViewLine::from("b"));
-		view_data.push_line(ViewLine::from("c"));
-		view_data.push_line(ViewLine::from("d"));
-		view_data.push_line(ViewLine::from("1"));
-		view_data.push_line(ViewLine::from("2"));
-		view_data.push_line(ViewLine::from("3"));
-		view_data.push_line(ViewLine::from("4"));
-		view_data.push_line(ViewLine::from("5"));
+			updater.push_line(ViewLine::from("a"));
+			updater.push_line(ViewLine::from("b"));
+			updater.push_line(ViewLine::from("c"));
+			updater.push_line(ViewLine::from("d"));
+			updater.push_line(ViewLine::from("1"));
+			updater.push_line(ViewLine::from("2"));
+			updater.push_line(ViewLine::from("3"));
+			updater.push_line(ViewLine::from("4"));
+			updater.push_line(ViewLine::from("5"));
 
-		view_data.push_trailing_line(create_mock_view_line());
-		view_data.push_trailing_line(create_mock_view_line());
+			updater.push_trailing_line(create_mock_view_line());
+			updater.push_trailing_line(create_mock_view_line());
+		});
 		view_data.set_view_size(100, 10);
-
 		view_data
 	}
 
 	fn create_mocked_scroll_horizontal_view_data() -> ViewData {
-		let mut view_data = ViewData::new();
-		view_data.push_leading_line(ViewLine::from("llllllllllllll"));
-		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
-		view_data.push_line(ViewLine::from("aaaaaaaaaaaaaaa"));
-		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
-		view_data.push_line(ViewLine::from("aaaaa"));
-		view_data.push_line(ViewLine::from("aaaa"));
-		view_data.push_line(ViewLine::from("aaa"));
-		view_data.push_line(ViewLine::from("aa"));
-		view_data.push_line(ViewLine::from("a"));
-		view_data.push_trailing_line(ViewLine::from("ttttttttttttttt"));
+		let mut view_data = ViewData::new(|updater| {
+			updater.push_leading_line(ViewLine::from("llllllllllllll"));
+			updater.push_line(ViewLine::from("aaaaaaaaaa"));
+			updater.push_line(ViewLine::from("aaaaaaaaaaaaaaa"));
+			updater.push_line(ViewLine::from("aaaaaaaaaa"));
+			updater.push_line(ViewLine::from("aaaaa"));
+			updater.push_line(ViewLine::from("aaaa"));
+			updater.push_line(ViewLine::from("aaa"));
+			updater.push_line(ViewLine::from("aa"));
+			updater.push_line(ViewLine::from("a"));
+			updater.push_trailing_line(ViewLine::from("ttttttttttttttt"));
+		});
 		view_data.set_view_size(7, 20);
-
 		view_data
 	}
 
 	fn create_mocked_scroll_index_data(number_of_items: usize, height: usize, scroll_position: usize) -> ViewData {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 
 		for _ in 0..number_of_items {
 			view_data.push_line(create_mock_view_line());
@@ -571,23 +586,25 @@ mod tests {
 
 	#[test]
 	fn render_empty() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		assert_rendered_output!(&mut view_data, "{EMPTY}");
 	}
 
 	#[test]
 	fn with_title_with_help() {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.set_show_help(true);
+		let mut view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.set_show_help(true);
+		});
 		assert_rendered_output!(&mut view_data, "{TITLE}{HELP}", "{EMPTY}");
 	}
 
 	#[test]
 	fn with_title_without_help() {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.set_show_help(false);
+		let mut view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.set_show_help(false);
+		});
 		assert_rendered_output!(&mut view_data, "{TITLE}", "{EMPTY}");
 	}
 
@@ -633,7 +650,7 @@ mod tests {
 
 	#[test]
 	fn rebuild_no_leading_lines() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.set_view_size(100, 10);
 		view_data.push_line(create_mock_view_line());
 		view_data.push_trailing_line(create_mock_view_line());
@@ -650,7 +667,7 @@ mod tests {
 
 	#[test]
 	fn rebuild_no_body_lines() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.set_view_size(100, 10);
 		view_data.push_leading_line(create_mock_view_line());
 		view_data.push_trailing_line(create_mock_view_line());
@@ -667,7 +684,7 @@ mod tests {
 
 	#[test]
 	fn rebuild_no_trailing_lines() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.set_view_size(100, 10);
 		view_data.push_leading_line(create_mock_view_line());
 		view_data.push_line(create_mock_view_line());
@@ -1001,7 +1018,7 @@ mod tests {
 
 	#[test]
 	fn rebuild_retains_selected() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.set_view_size(100, 10);
 		view_data.push_line(ViewLine::new_empty_line().set_padding_character("*"));
 		view_data.rebuild();
@@ -1012,7 +1029,7 @@ mod tests {
 
 	#[test]
 	fn rebuild_retains_padding_character() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.set_view_size(100, 10);
 		view_data.push_line(ViewLine::from("a").set_selected(true));
 		view_data.rebuild();
@@ -1452,7 +1469,7 @@ mod tests {
 
 	#[test]
 	fn scroll_down_trigger_shorter_width() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
 		view_data.push_line(ViewLine::from("aaaaaaaaaaaaaaa"));
 		view_data.push_line(ViewLine::from("aaaaaaaaaa"));
@@ -1610,7 +1627,7 @@ mod tests {
 
 	#[test]
 	fn ensure_column_visible_with_scroll_change() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::from("0123456789"));
 		view_data.set_view_size(5, 1);
 		// set scroll position to right
@@ -1624,7 +1641,7 @@ mod tests {
 
 	#[test]
 	fn ensure_column_visible_without_scroll_change() {
-		let mut view_data = ViewData::new();
+		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::from("0123456789"));
 		view_data.set_view_size(5, 1);
 		// set scroll position to right
@@ -1644,7 +1661,7 @@ mod tests {
 
 	#[test]
 	fn get_scroll_index_empty_lines() {
-		let view_data = ViewData::new();
+		let view_data = ViewData::new(|_| {});
 		assert_eq!(view_data.get_scroll_index(), 0);
 	}
 

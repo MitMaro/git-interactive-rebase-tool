@@ -6,7 +6,7 @@ use crate::{
 		diff_line::DiffLine,
 		util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
 	},
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
+	view::{line_segment::LineSegment, view_line::ViewLine, ViewDataUpdater},
 };
 
 pub(super) struct ViewBuilderOptions {
@@ -66,8 +66,13 @@ impl ViewBuilder {
 	}
 
 	#[allow(clippy::unused_self)]
-	pub(super) fn build_view_data_for_overview(&self, view_data: &mut ViewData, commit: &Commit, is_full_width: bool) {
-		view_data.push_line(ViewLine::from(vec![
+	pub(super) fn build_view_data_for_overview(
+		&self,
+		updater: &mut ViewDataUpdater<'_>,
+		commit: &Commit,
+		is_full_width: bool,
+	) {
+		updater.push_line(ViewLine::from(vec![
 			LineSegment::new_with_color(
 				if is_full_width { "Date: " } else { "D: " },
 				DisplayColor::IndicatorColor,
@@ -76,7 +81,7 @@ impl ViewBuilder {
 		]));
 
 		if let Some(author) = commit.get_author().to_string() {
-			view_data.push_line(ViewLine::from(vec![
+			updater.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Author: " } else { "A: " },
 					DisplayColor::IndicatorColor,
@@ -86,7 +91,7 @@ impl ViewBuilder {
 		}
 
 		if let Some(committer) = commit.get_committer().to_string() {
-			view_data.push_line(ViewLine::from(vec![
+			updater.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Committer: " } else { "C: " },
 					DisplayColor::IndicatorColor,
@@ -97,15 +102,15 @@ impl ViewBuilder {
 
 		if let Some(ref body) = *commit.get_body() {
 			for line in body.lines() {
-				view_data.push_line(ViewLine::from(line));
+				updater.push_line(ViewLine::from(line));
 			}
 		}
 
-		view_data.push_line(ViewLine::from(""));
+		updater.push_line(ViewLine::from(""));
 
-		view_data.push_line(get_files_changed_summary(commit, is_full_width));
+		updater.push_line(get_files_changed_summary(commit, is_full_width));
 		for stat in commit.get_file_stats() {
-			view_data.push_line(ViewLine::from(get_stat_item_segments(
+			updater.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name(),
 				stat.get_from_name(),
@@ -190,13 +195,13 @@ impl ViewBuilder {
 		line_segments
 	}
 
-	pub(super) fn build_view_data_diff(&self, view_data: &mut ViewData, commit: &Commit, is_full_width: bool) {
-		view_data.push_leading_line(get_files_changed_summary(commit, is_full_width));
-		view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
+	pub(super) fn build_view_data_diff(&self, updater: &mut ViewDataUpdater<'_>, commit: &Commit, is_full_width: bool) {
+		updater.push_leading_line(get_files_changed_summary(commit, is_full_width));
+		updater.push_line(ViewLine::new_empty_line().set_padding_character("―"));
 
 		let file_stats = commit.get_file_stats();
 		for (s_i, stat) in file_stats.iter().enumerate() {
-			view_data.push_line(ViewLine::from(get_stat_item_segments(
+			updater.push_line(ViewLine::from(get_stat_item_segments(
 				stat.get_status(),
 				stat.get_to_name(),
 				stat.get_from_name(),
@@ -206,8 +211,8 @@ impl ViewBuilder {
 			let old_largest_line_number_length = stat.largest_old_line_number().to_string().len();
 			let new_largest_line_number_length = stat.largest_new_line_number().to_string().len();
 			for delta in stat.deltas() {
-				view_data.push_line(ViewLine::new_empty_line());
-				view_data.push_line(ViewLine::from(vec![
+				updater.push_line(ViewLine::new_empty_line());
+				updater.push_line(ViewLine::from(vec![
 					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, true, false, false),
 					LineSegment::new_with_color(
 						format!(
@@ -226,7 +231,7 @@ impl ViewBuilder {
 						DisplayColor::DiffContextColor,
 					),
 				]));
-				view_data.push_line(
+				updater.push_line(
 					ViewLine::new_pinned(vec![])
 						.set_padding_color_and_style(DisplayColor::Normal, true, false, false)
 						.set_padding_character("┈"),
@@ -234,7 +239,7 @@ impl ViewBuilder {
 
 				for line in delta.lines() {
 					if line.end_of_file() && line.line() != "\n" {
-						view_data.push_line(ViewLine::from(vec![
+						updater.push_line(ViewLine::from(vec![
 							LineSegment::new(
 								" ".repeat(old_largest_line_number_length + new_largest_line_number_length + 3)
 									.as_str(),
@@ -244,7 +249,7 @@ impl ViewBuilder {
 						continue;
 					}
 
-					view_data.push_line(ViewLine::from(self.get_diff_line_segments(
+					updater.push_line(ViewLine::from(self.get_diff_line_segments(
 						line,
 						old_largest_line_number_length,
 						new_largest_line_number_length,
@@ -252,7 +257,7 @@ impl ViewBuilder {
 				}
 			}
 			if s_i + 1 != file_stats.len() {
-				view_data.push_line(ViewLine::new_empty_line().set_padding_character("―"));
+				updater.push_line(ViewLine::new_empty_line().set_padding_character("―"));
 			}
 		}
 	}

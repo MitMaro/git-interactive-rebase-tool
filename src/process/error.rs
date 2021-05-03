@@ -46,27 +46,27 @@ impl ProcessModule for Error {
 }
 
 impl Error {
-	pub const fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			return_state: State::List,
-			view_data: ViewData::new(),
+			view_data: ViewData::new(|updater| updater.set_show_title(true)),
 		}
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
-		self.view_data.reset();
-		self.view_data.set_show_title(true);
-		for cause in error.chain() {
-			let error_text = format!("{:#}", cause);
-			for err in error_text.split('\n') {
-				self.view_data.push_line(ViewLine::from(err));
+		self.view_data.update_view_data(|updater| {
+			updater.clear();
+			for cause in error.chain() {
+				let error_text = format!("{:#}", cause);
+				for err in error_text.split('\n') {
+					updater.push_line(ViewLine::from(err));
+				}
 			}
-		}
-		self.view_data
-			.push_trailing_line(ViewLine::from(LineSegment::new_with_color(
+			updater.push_trailing_line(ViewLine::from(LineSegment::new_with_color(
 				"Press any key to continue",
 				DisplayColor::IndicatorColor,
 			)));
+		});
 	}
 }
 

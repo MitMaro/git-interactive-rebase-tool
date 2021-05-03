@@ -51,14 +51,16 @@ impl ProcessModule for ExternalEditor {
 
 	fn deactivate(&mut self) {
 		self.lines.clear();
-		self.view_data.reset();
+		self.view_data.update_view_data(|updater| updater.clear());
 	}
 
 	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
 		match self.state {
 			ExternalEditorState::Active => {
-				self.view_data.clear();
-				self.view_data.push_leading_line(ViewLine::from("Editing..."));
+				self.view_data.update_view_data(|updater| {
+					updater.clear();
+					updater.push_leading_line(ViewLine::from("Editing..."));
+				});
 				&mut self.view_data
 			},
 			ExternalEditorState::Empty => self.empty_choice.get_view_data(),
@@ -150,8 +152,9 @@ impl ProcessModule for ExternalEditor {
 
 impl ExternalEditor {
 	pub(crate) fn new(editor: &str) -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
+		let view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+		});
 
 		let mut empty_choice = Choice::new(vec![
 			(Action::AbortRebase, '1', String::from("Abort rebase")),
