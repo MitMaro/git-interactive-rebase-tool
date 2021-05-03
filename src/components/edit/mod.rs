@@ -25,8 +25,9 @@ pub struct Edit {
 
 impl Edit {
 	pub(crate) fn new() -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
+		let view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+		});
 		Self {
 			content: String::from(""),
 			cursor_position: 0,
@@ -77,24 +78,23 @@ impl Edit {
 		}
 
 		let description = self.description.as_ref();
-
-		self.view_data.clear();
-		if let Some(description) = description {
-			self.view_data
-				.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
+		self.view_data.update_view_data(|updater| {
+			updater.clear();
+			if let Some(description) = description {
+				updater.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
 					description.as_str(),
 					DisplayColor::IndicatorColor,
 				)]));
-			self.view_data.push_leading_line(ViewLine::new_empty_line());
-		}
-		self.view_data.push_line(ViewLine::from(segments));
-		self.view_data
-			.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
+				updater.push_leading_line(ViewLine::new_empty_line());
+			}
+			updater.push_line(ViewLine::from(segments));
+			updater.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
 				"Enter to finish",
 				DisplayColor::IndicatorColor,
 			)]));
-		self.view_data.ensure_column_visible(pointer);
-		self.view_data.ensure_line_visible(0);
+			updater.ensure_column_visible(pointer);
+			updater.ensure_line_visible(0);
+		});
 		&mut self.view_data
 	}
 

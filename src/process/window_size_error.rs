@@ -45,8 +45,10 @@ impl ProcessModule for WindowSizeError {
 			SHORT_ERROR_MESSAGE
 		};
 
-		self.view_data.clear();
-		self.view_data.push_line(ViewLine::from(message));
+		self.view_data.update_view_data(|updater| {
+			updater.clear();
+			updater.push_line(ViewLine::from(message));
+		});
 		&mut self.view_data
 	}
 
@@ -70,10 +72,10 @@ impl ProcessModule for WindowSizeError {
 }
 
 impl WindowSizeError {
-	pub const fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			return_state: State::List,
-			view_data: ViewData::new(),
+			view_data: ViewData::new(|_| {}),
 		}
 	}
 }

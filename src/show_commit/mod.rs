@@ -69,7 +69,10 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 					return ProcessResult::new();
 				}
 			}
-			self.view_data.reset();
+			self.view_data.update_view_data(|updater| {
+				updater.clear();
+				updater.reset();
+			});
 
 			let new_commit = Commit::new_from_hash(selected_line.get_hash(), LoadCommitDiffOptions {
 				context_lines: self.config.git.diff_context,
@@ -102,37 +105,40 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 
 		if self.view_data.is_empty() {
-			let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
-			let is_full_width = context.is_full_width();
+			let commit = self.commit.as_ref();
+			let state = &self.state;
+			let view_builder = &self.view_builder;
+			self.view_data.update_view_data(|updater| {
+				let commit = commit.as_ref().unwrap(); // will only fail on programmer error
+				let is_full_width = context.is_full_width();
 
-			self.view_data.push_leading_line(ViewLine::from(vec![
-				LineSegment::new_with_color(
-					if is_full_width { "Commit: " } else { "" },
-					DisplayColor::IndicatorColor,
-				),
-				LineSegment::new(
-					if is_full_width {
-						commit.get_hash().to_owned()
-					}
-					else {
-						let hash = commit.get_hash();
-						let max_index = hash.len().min(8);
-						format!("{:8}", hash[0..max_index].to_owned())
-					}
-					.as_str(),
-				),
-			]));
+				updater.push_leading_line(ViewLine::from(vec![
+					LineSegment::new_with_color(
+						if is_full_width { "Commit: " } else { "" },
+						DisplayColor::IndicatorColor,
+					),
+					LineSegment::new(
+						if is_full_width {
+							commit.get_hash().to_owned()
+						}
+						else {
+							let hash = commit.get_hash();
+							let max_index = hash.len().min(8);
+							format!("{:8}", hash[0..max_index].to_owned())
+						}
+						.as_str(),
+					),
+				]));
 
-			match self.state {
-				ShowCommitState::Overview => {
-					self.view_builder
-						.build_view_data_for_overview(&mut self.view_data, commit, is_full_width);
-				},
-				ShowCommitState::Diff => {
-					self.view_builder
-						.build_view_data_diff(&mut self.view_data, commit, is_full_width);
-				},
-			}
+				match *state {
+					ShowCommitState::Overview => {
+						view_builder.build_view_data_for_overview(updater, commit, is_full_width);
+					},
+					ShowCommitState::Diff => {
+						view_builder.build_view_data_diff(updater, commit, is_full_width);
+					},
+				}
+			});
 		}
 		&mut self.view_data
 	}
@@ -156,7 +162,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
 			match event {
 				Event::Meta(meta_event) if meta_event == MetaEvent::ShowDiff => {
-					self.view_data.reset();
+					self.view_data.update_view_data(|updater| updater.clear());
 					self.state = match self.state {
 						ShowCommitState::Overview => ShowCommitState::Diff,
 						ShowCommitState::Diff => ShowCommitState::Overview,
@@ -164,16 +170,15 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				},
 				Event::Meta(meta_event) if meta_event == MetaEvent::Help => self.help.set_active(),
 				Event::Key(_) => {
+					self.view_data.update_view_data(|updater| updater.clear());
 					if self.state == ShowCommitState::Diff {
-						self.view_data.reset();
 						self.state = ShowCommitState::Overview;
 					}
 					else {
-						self.view_data.clear();
 						result = result.state(State::List);
 					}
 				},
-				Event::Resize(..) => self.view_data.clear(),
+				Event::Resize(..) => self.view_data.update_view_data(|updater| updater.clear()),
 				_ => {},
 			}
 		}
@@ -183,9 +188,10 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 
 impl<'s> ShowCommit<'s> {
 	pub(crate) fn new(config: &'s Config) -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.set_show_help(true);
+		let view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.set_show_help(true);
+		});
 		let view_builder_options = ViewBuilderOptions::new(
 			config.diff_tab_width as usize,
 			config.diff_tab_symbol.as_str(),

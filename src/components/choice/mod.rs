@@ -33,43 +33,48 @@ where T: Clone
 				(c, t)
 			})
 			.collect::<HashMap<char, T>>();
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
 		Self {
 			map,
 			options,
-			view_data,
+			view_data: ViewData::new(|updater| {
+				updater.set_show_title(true);
+			}),
 			invalid_selection: false,
 		}
 	}
 
 	pub fn set_prompt(&mut self, prompt_lines: Vec<ViewLine>) {
-		self.view_data.clear();
-		for line in prompt_lines {
-			self.view_data.push_leading_line(line);
-		}
-		self.view_data.push_leading_line(ViewLine::new_empty_line());
+		self.view_data.update_view_data(|updater| {
+			updater.clear();
+			for line in prompt_lines {
+				updater.push_leading_line(line);
+			}
+			updater.push_leading_line(ViewLine::new_empty_line());
+		});
 	}
 
 	pub fn get_view_data(&mut self) -> &mut ViewData {
-		self.view_data.clear_body();
-		for &(_, ref key, ref description) in &self.options {
-			self.view_data
-				.push_line(ViewLine::from(format!("{}) {}", key, description)));
-		}
-		self.view_data.push_line(ViewLine::new_empty_line());
-		if self.invalid_selection {
-			self.view_data.push_line(ViewLine::from(LineSegment::new_with_color(
-				"Invalid option selected. Please choose an option.",
-				DisplayColor::IndicatorColor,
-			)));
-		}
-		else {
-			self.view_data.push_line(ViewLine::from(LineSegment::new_with_color(
-				"Please choose an option.",
-				DisplayColor::IndicatorColor,
-			)));
-		}
+		let options = &self.options;
+		let invalid_selection = self.invalid_selection;
+		self.view_data.update_view_data(|updater| {
+			updater.clear_body();
+			for &(_, ref key, ref description) in options {
+				updater.push_line(ViewLine::from(format!("{}) {}", key, description)));
+			}
+			updater.push_line(ViewLine::new_empty_line());
+			if invalid_selection {
+				updater.push_line(ViewLine::from(LineSegment::new_with_color(
+					"Invalid option selected. Please choose an option.",
+					DisplayColor::IndicatorColor,
+				)));
+			}
+			else {
+				updater.push_line(ViewLine::from(LineSegment::new_with_color(
+					"Please choose an option.",
+					DisplayColor::IndicatorColor,
+				)));
+			}
+		});
 		&mut self.view_data
 	}
 

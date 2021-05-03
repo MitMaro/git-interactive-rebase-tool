@@ -1137,7 +1137,9 @@ fn handle_event_toggle_diff_to_overview() {
 		&[Event::from(MetaEvent::ShowDiff)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ShowCommit::new(test_context.config);
-			module.view_data.push_line(ViewLine::from("foo"));
+			module
+				.view_data
+				.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
 			module.state = ShowCommitState::Diff;
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1157,7 +1159,9 @@ fn handle_event_toggle_overview_to_diff() {
 		&[Event::from(MetaEvent::ShowDiff)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ShowCommit::new(test_context.config);
-			module.view_data.push_line(ViewLine::from("foo"));
+			module
+				.view_data
+				.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
 			module.state = ShowCommitState::Overview;
 			assert_process_result!(
 				test_context.handle_event(&mut module),

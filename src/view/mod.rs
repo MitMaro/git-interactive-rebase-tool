@@ -3,14 +3,15 @@ pub mod render_context;
 pub mod scroll_position;
 mod util;
 pub mod view_data;
+mod view_data_updater;
 pub mod view_line;
 
 #[cfg(test)]
 pub mod testutil;
 
 use anyhow::Result;
-pub use util::handle_view_data_scroll;
 
+pub use self::{util::handle_view_data_scroll, view_data_updater::ViewDataUpdater};
 use crate::{
 	display::{display_color::DisplayColor, size::Size, Display},
 	view::{view_data::ViewData, view_line::ViewLine},
@@ -204,7 +205,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_empty() {
 		view_module_test(Size::new(20, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			test_context.view.render(&mut view_data).unwrap();
 			TestContext::assert_output(&["~"; 10]);
 		});
@@ -214,7 +215,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_title_full_width() {
 		view_module_test(Size::new(35, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.set_show_title(true);
 			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["Git Interactive Rebase Tool        "];
@@ -227,7 +228,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_title_short_title() {
 		view_module_test(Size::new(26, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.set_show_title(true);
 			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["Git Rebase                "];
@@ -240,7 +241,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_title_full_width_with_help() {
 		view_module_test(Size::new(35, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
 			test_context.view.render(&mut view_data).unwrap();
@@ -254,7 +255,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_title_full_width_with_help_enabled_but_not_enough_length() {
 		view_module_test(Size::new(34, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.set_show_title(true);
 			view_data.set_show_help(true);
 			test_context.view.render(&mut view_data).unwrap();
@@ -268,7 +269,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_leading_lines() {
 		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
@@ -282,7 +283,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_normal_lines() {
 		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
@@ -296,7 +297,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_tailing_lines() {
 		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
@@ -310,7 +311,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_all_lines() {
 		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
@@ -327,7 +328,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_with_full_screen_data() {
 		view_module_test(Size::new(30, 6), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.push_line(ViewLine::from("This is line 1"));
 			view_data.push_line(ViewLine::from("This is line 2"));
@@ -352,7 +353,7 @@ mod tests {
 	#[serial_test::serial]
 	fn render_with_scroll_bar() {
 		view_module_test(Size::new(30, 6), |mut test_context| {
-			let mut view_data = ViewData::new();
+			let mut view_data = ViewData::new(|_| {});
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.push_line(ViewLine::from("This is line 1"));
 			view_data.push_line(ViewLine::from("This is line 2"));
