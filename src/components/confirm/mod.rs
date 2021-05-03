@@ -20,14 +20,15 @@ pub struct Confirm {
 
 impl Confirm {
 	pub fn new(prompt: &str, confirm_yes: &[String], confirm_no: &[String]) -> Self {
-		let mut view_data = ViewData::new();
-		view_data.set_show_title(true);
-		view_data.push_line(ViewLine::from(format!(
-			"{} ({}/{})? ",
-			prompt,
-			confirm_yes.join(","),
-			confirm_no.join(",")
-		)));
+		let view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.push_line(ViewLine::from(format!(
+				"{} ({}/{})? ",
+				prompt,
+				confirm_yes.join(","),
+				confirm_no.join(",")
+			)));
+		});
 		Self { view_data }
 	}
 
