@@ -1,9 +1,12 @@
-use std::io::{stdout, BufWriter, Stdout, Write};
+use std::{
+	io::{stdout, BufWriter, Stdout, Write},
+	time::Duration,
+};
 
 use anyhow::{anyhow, Error, Result};
 use crossterm::{
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
-	event::{read, DisableMouseCapture, EnableMouseCapture},
+	event::{poll, read, DisableMouseCapture, EnableMouseCapture},
 	style::{available_color_count, Attribute, Print, ResetColor, SetAttribute, SetColors},
 	terminal::{
 		disable_raw_mode,
@@ -114,8 +117,13 @@ impl CrossTerm {
 		))
 	}
 
-	pub(crate) fn read_event() -> Result<Event> {
-		read().map_err(Self::map_err)
+	pub(crate) fn read_event() -> Result<Option<Event>> {
+		if poll(Duration::from_millis(20)).unwrap_or(false) {
+			read().map(Some).map_err(Self::map_err)
+		}
+		else {
+			Ok(None)
+		}
 	}
 
 	#[allow(clippy::unused_self)]

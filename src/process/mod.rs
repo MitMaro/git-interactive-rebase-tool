@@ -62,8 +62,17 @@ impl<'r> Process<'r> {
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
 			}
-			let result = modules.handle_input(self.state, &self.event_handler, &mut self.rebase_todo);
-			self.handle_process_result(&mut modules, &result);
+
+			loop {
+				let result = modules.handle_input(self.state, &self.event_handler, &mut self.rebase_todo);
+
+				if let Some(event) = result.event {
+					if event != Event::None {
+						self.handle_process_result(&mut modules, &result);
+						break;
+					}
+				}
+			}
 		}
 		if self.view.end().is_err() {
 			return Ok(Some(ExitStatus::StateError));

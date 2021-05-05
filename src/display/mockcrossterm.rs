@@ -166,13 +166,13 @@ impl CrossTerm {
 		Ok(())
 	}
 
-	pub(crate) fn read_event() -> Result<Event> {
+	pub(crate) fn read_event() -> Result<Option<Event>> {
 		if let Some(event) = EVENTS
 			.lock()
 			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
 			.pop()
 		{
-			Ok(event)
+			Ok(Some(event))
 		}
 		else {
 			Err(anyhow!("Error"))

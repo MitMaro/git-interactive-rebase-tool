@@ -1,7 +1,5 @@
 use std::cell::RefCell;
 
-use anyhow::anyhow;
-
 use crate::{
 	display::CrossTerm,
 	input::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent},
@@ -83,6 +81,7 @@ fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
 		Event::Key(key_event) => crossterm::event::Event::Key(key_event),
 		Event::Mouse(mouse_event) => crossterm::event::Event::Mouse(mouse_event),
 		Event::Resize(width, height) => crossterm::event::Event::Resize(width, height),
+		Event::None => crossterm::event::Event::Key(KeyEvent::from(KeyCode::Null)),
 	}
 }
 
@@ -170,12 +169,7 @@ where C: FnOnce(TestContext) {
 
 	event_handler.set_event_provider(move || {
 		let mut ct_events = crossterm_events.borrow_mut();
-		if let Some(event) = ct_events.pop() {
-			Ok(event)
-		}
-		else {
-			Err(anyhow!("Error"))
-		}
+		Ok(ct_events.pop())
 	});
 
 	callback(TestContext {

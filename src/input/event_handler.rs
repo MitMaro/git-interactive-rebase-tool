@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct EventHandler {
-	event_provider: Box<dyn Fn() -> Result<crossterm::event::Event>>,
+	event_provider: Box<dyn Fn() -> Result<Option<crossterm::event::Event>>>,
 	event_queue: RefCell<VecDeque<Event>>,
 	key_bindings: KeyBindings,
 }
@@ -25,7 +25,7 @@ impl EventHandler {
 
 	#[cfg(test)]
 	pub fn set_event_provider<F: 'static>(&mut self, event_provider: F)
-	where F: Fn() -> Result<crossterm::event::Event> {
+	where F: Fn() -> Result<Option<crossterm::event::Event>> {
 		self.event_provider = Box::new(event_provider);
 	}
 
@@ -33,11 +33,11 @@ impl EventHandler {
 		if let Some(event) = self.event_queue.borrow_mut().pop_front() {
 			event
 		}
-		else if let Ok(event) = (self.event_provider)() {
+		else if let Ok(Some(event)) = (self.event_provider)() {
 			Event::from(event)
 		}
 		else {
-			Event::from(KeyCode::Null)
+			Event::None
 		}
 	}
 
@@ -48,6 +48,9 @@ impl EventHandler {
 	pub(crate) fn read_event<F>(&self, input_options: &InputOptions, callback: F) -> Event
 	where F: FnOnce(Event, &KeyBindings) -> Event {
 		let event = self.poll_event();
+		if event == Event::None {
+			return event;
+		}
 
 		if let Some(e) = Self::handle_standard_inputs(event) {
 			return e;
@@ -143,10 +146,11 @@ impl EventHandler {
 
 #[cfg(test)]
 mod tests {
+	use anyhow::anyhow;
 	use rstest::rstest;
 
 	use super::*;
-	use crate::input::testutil::with_event_handler;
+	use crate::input::testutil::{create_event_handler, with_event_handler};
 
 	#[test]
 	fn poll_event_ok() {
@@ -158,8 +162,15 @@ mod tests {
 	#[test]
 	fn poll_event_miss() {
 		with_event_handler(&[], |context| {
-			assert_eq!(context.event_handler.poll_event(), Event::from(KeyCode::Null));
+			assert_eq!(context.event_handler.poll_event(), Event::None);
 		});
+	}
+
+	#[test]
+	fn poll_event_error() {
+		let mut event_handler = create_event_handler();
+		event_handler.set_event_provider(move || Err(anyhow!("Read Event Error")));
+		assert_eq!(event_handler.poll_event(), Event::None);
 	}
 
 	#[rstest(

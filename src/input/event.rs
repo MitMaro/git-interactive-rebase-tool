@@ -4,9 +4,10 @@ use super::MetaEvent;
 
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 pub enum Event {
-	Meta(MetaEvent),
 	Key(KeyEvent),
+	Meta(MetaEvent),
 	Mouse(MouseEvent),
+	None,
 	Resize(u16, u16),
 }
 
