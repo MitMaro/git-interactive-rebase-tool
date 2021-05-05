@@ -9,6 +9,7 @@ use crate::{
 	display::size::Size,
 	process::testutil::{process_module_test, TestContext, ViewState},
 	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
+	view::view_line::ViewLine,
 };
 
 fn create_minimal_commit() -> Commit {
@@ -1138,14 +1139,14 @@ fn handle_event_toggle_diff_to_overview() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = ShowCommit::new(test_context.config);
 			module
-				.view_data
+				.diff_view_data
 				.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
 			module.state = ShowCommitState::Diff;
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ShowDiff)
 			);
-			assert!(module.view_data.is_empty());
+			assert!(module.diff_view_data.is_empty());
 			assert_eq!(module.state, ShowCommitState::Overview);
 		},
 	);
@@ -1160,14 +1161,14 @@ fn handle_event_toggle_overview_to_diff() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = ShowCommit::new(test_context.config);
 			module
-				.view_data
+				.overview_view_data
 				.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
 			module.state = ShowCommitState::Overview;
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ShowDiff)
 			);
-			assert!(module.view_data.is_empty());
+			assert!(module.diff_view_data.is_empty());
 			assert_eq!(module.state, ShowCommitState::Diff);
 		},
 	);

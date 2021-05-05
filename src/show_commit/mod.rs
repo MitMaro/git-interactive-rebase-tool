@@ -23,7 +23,6 @@ use crate::{
 		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 		Config,
 	},
-	display::display_color::DisplayColor,
 	input::{Event, EventHandler, InputOptions, MetaEvent},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	show_commit::{
@@ -33,13 +32,7 @@ use crate::{
 		view_builder::{ViewBuilder, ViewBuilderOptions},
 	},
 	todo_file::TodoFile,
-	view::{
-		handle_view_data_scroll,
-		line_segment::LineSegment,
-		render_context::RenderContext,
-		view_data::ViewData,
-		view_line::ViewLine,
-	},
+	view::{handle_view_data_scroll, render_context::RenderContext, view_data::ViewData},
 };
 
 lazy_static! {
@@ -53,10 +46,11 @@ lazy_static! {
 pub struct ShowCommit<'s> {
 	commit: Option<Commit>,
 	config: &'s Config,
+	diff_view_data: ViewData,
 	help: Help,
+	overview_view_data: ViewData,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
-	view_data: ViewData,
 }
 
 impl<'s> ProcessModule for ShowCommit<'s> {
@@ -69,7 +63,12 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 					return ProcessResult::new();
 				}
 			}
-			self.view_data.update_view_data(|updater| {
+			self.overview_view_data.update_view_data(|updater| {
+				updater.clear();
+				updater.reset();
+			});
+
+			self.diff_view_data.update_view_data(|updater| {
 				updater.clear();
 				updater.reset();
 			});
@@ -104,43 +103,29 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			return self.help.get_view_data();
 		}
 
-		if self.view_data.is_empty() {
-			let commit = self.commit.as_ref();
-			let state = &self.state;
-			let view_builder = &self.view_builder;
-			self.view_data.update_view_data(|updater| {
-				let commit = commit.as_ref().unwrap(); // will only fail on programmer error
-				let is_full_width = context.is_full_width();
+		let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
+		let state = &self.state;
+		let view_builder = &self.view_builder;
+		let is_full_width = context.is_full_width();
 
-				updater.push_leading_line(ViewLine::from(vec![
-					LineSegment::new_with_color(
-						if is_full_width { "Commit: " } else { "" },
-						DisplayColor::IndicatorColor,
-					),
-					LineSegment::new(
-						if is_full_width {
-							commit.get_hash().to_owned()
-						}
-						else {
-							let hash = commit.get_hash();
-							let max_index = hash.len().min(8);
-							format!("{:8}", hash[0..max_index].to_owned())
-						}
-						.as_str(),
-					),
-				]));
-
-				match *state {
-					ShowCommitState::Overview => {
+		match *state {
+			ShowCommitState::Overview => {
+				if self.overview_view_data.is_empty() {
+					self.overview_view_data.update_view_data(|updater| {
 						view_builder.build_view_data_for_overview(updater, commit, is_full_width);
-					},
-					ShowCommitState::Diff => {
-						view_builder.build_view_data_diff(updater, commit, is_full_width);
-					},
+					});
 				}
-			});
+				&mut self.overview_view_data
+			},
+			ShowCommitState::Diff => {
+				if self.diff_view_data.is_empty() {
+					self.diff_view_data.update_view_data(|updater| {
+						view_builder.build_view_data_diff(updater, commit, is_full_width);
+					});
+				}
+				&mut self.diff_view_data
+			},
 		}
-		&mut self.view_data
 	}
 
 	fn handle_events(&mut self, event_handler: &EventHandler, _: &RenderContext, _: &mut TodoFile) -> ProcessResult {
@@ -159,10 +144,15 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 
 		let mut result = ProcessResult::from(event);
 
-		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+		let active_view_data = match self.state {
+			ShowCommitState::Overview => &mut self.overview_view_data,
+			ShowCommitState::Diff => &mut self.diff_view_data,
+		};
+
+		if handle_view_data_scroll(event, active_view_data).is_none() {
 			match event {
 				Event::Meta(meta_event) if meta_event == MetaEvent::ShowDiff => {
-					self.view_data.update_view_data(|updater| updater.clear());
+					active_view_data.update_view_data(|updater| updater.clear());
 					self.state = match self.state {
 						ShowCommitState::Overview => ShowCommitState::Diff,
 						ShowCommitState::Diff => ShowCommitState::Overview,
@@ -170,7 +160,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				},
 				Event::Meta(meta_event) if meta_event == MetaEvent::Help => self.help.set_active(),
 				Event::Key(_) => {
-					self.view_data.update_view_data(|updater| updater.clear());
+					active_view_data.update_view_data(|updater| updater.clear());
 					if self.state == ShowCommitState::Diff {
 						self.state = ShowCommitState::Overview;
 					}
@@ -178,7 +168,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 						result = result.state(State::List);
 					}
 				},
-				Event::Resize(..) => self.view_data.update_view_data(|updater| updater.clear()),
+				Event::Resize(..) => active_view_data.update_view_data(|updater| updater.clear()),
 				_ => {},
 			}
 		}
@@ -188,7 +178,11 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 
 impl<'s> ShowCommit<'s> {
 	pub(crate) fn new(config: &'s Config) -> Self {
-		let view_data = ViewData::new(|updater| {
+		let overview_view_data = ViewData::new(|updater| {
+			updater.set_show_title(true);
+			updater.set_show_help(true);
+		});
+		let diff_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
 		});
@@ -204,10 +198,11 @@ impl<'s> ShowCommit<'s> {
 		Self {
 			commit: None,
 			config,
+			diff_view_data,
 			help: Help::new_from_keybindings(&get_show_commit_help_lines(&config.key_bindings)),
+			overview_view_data,
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options),
-			view_data,
 		}
 	}
 }
