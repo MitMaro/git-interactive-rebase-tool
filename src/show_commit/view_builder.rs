@@ -65,6 +65,26 @@ impl ViewBuilder {
 		s.replace("\n", "")
 	}
 
+	fn build_leading_summary(commit: &Commit, is_full_width: bool) -> ViewLine {
+		ViewLine::from(vec![
+			LineSegment::new_with_color(
+				if is_full_width { "Commit: " } else { "" },
+				DisplayColor::IndicatorColor,
+			),
+			LineSegment::new(
+				if is_full_width {
+					commit.get_hash().to_owned()
+				}
+				else {
+					let hash = commit.get_hash();
+					let max_index = hash.len().min(8);
+					format!("{:8}", hash[0..max_index].to_owned())
+				}
+				.as_str(),
+			),
+		])
+	}
+
 	#[allow(clippy::unused_self)]
 	pub(super) fn build_view_data_for_overview(
 		&self,
@@ -72,6 +92,7 @@ impl ViewBuilder {
 		commit: &Commit,
 		is_full_width: bool,
 	) {
+		updater.push_leading_line(Self::build_leading_summary(commit, is_full_width));
 		updater.push_line(ViewLine::from(vec![
 			LineSegment::new_with_color(
 				if is_full_width { "Date: " } else { "D: " },
@@ -196,6 +217,7 @@ impl ViewBuilder {
 	}
 
 	pub(super) fn build_view_data_diff(&self, updater: &mut ViewDataUpdater<'_>, commit: &Commit, is_full_width: bool) {
+		updater.push_leading_line(Self::build_leading_summary(commit, is_full_width));
 		updater.push_leading_line(get_files_changed_summary(commit, is_full_width));
 		updater.push_line(ViewLine::new_empty_line().set_padding_character("―"));
 
