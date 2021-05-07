@@ -43,7 +43,7 @@ impl Help {
 					true,
 					false,
 				)])
-				.set_padding_color_and_style(DisplayColor::Normal, false, true, false),
+				.set_padding_with_color_and_style(' ', DisplayColor::Normal, false, true, false),
 			);
 
 			for line in keybindings {

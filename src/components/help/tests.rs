@@ -13,7 +13,7 @@ fn empty() {
 		module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
-		"{Normal,Underline} Key Action{Normal,Underline}{Pad  }",
+		"{Normal,Underline} Key Action{Normal,Underline}{Pad( )}",
 		"{TRAILING}",
 		"{IndicatorColor}Press any key to close"
 	);
@@ -29,7 +29,7 @@ fn from_key_bindings() {
 		module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
-		"{Normal,Underline} Key Action{Normal,Underline}{Pad  }",
+		"{Normal,Underline} Key Action{Normal,Underline}{Pad( )}",
 		"{BODY}",
 		"{IndicatorColor} a{Normal,Dimmed}|{Normal}Description A",
 		"{IndicatorColor} b{Normal,Dimmed}|{Normal}Description B",

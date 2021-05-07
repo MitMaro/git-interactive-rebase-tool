@@ -277,25 +277,16 @@ impl ViewData {
 		self.lines.is_empty() && self.leading_lines.is_empty() && self.trailing_lines.is_empty()
 	}
 
-	pub(super) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
-		match self.leading_lines_cache {
-			Some(ref lines) => lines,
-			None => &self.empty_lines,
-		}
+	pub(super) fn get_leading_lines(&self) -> &Vec<ViewLine> {
+		self.leading_lines_cache.as_ref().unwrap_or(&self.empty_lines)
 	}
 
-	pub(super) const fn get_lines(&self) -> &Vec<ViewLine> {
-		match self.lines_cache {
-			Some(ref lines) => lines,
-			None => &self.empty_lines,
-		}
+	pub(super) fn get_lines(&self) -> &Vec<ViewLine> {
+		self.lines_cache.as_ref().unwrap_or(&self.empty_lines)
 	}
 
-	pub(super) const fn get_trailing_lines(&self) -> &Vec<ViewLine> {
-		match self.trailing_lines_cache {
-			Some(ref lines) => lines,
-			None => &self.empty_lines,
-		}
+	pub(super) fn get_trailing_lines(&self) -> &Vec<ViewLine> {
+		self.trailing_lines_cache.as_ref().unwrap_or(&self.empty_lines)
 	}
 
 	#[allow(clippy::cognitive_complexity)]
@@ -477,20 +468,33 @@ impl ViewData {
 				}
 
 				if start < window_width {
-					let padding = line.padding_character().repeat(window_width - start);
-
-					segments.push(LineSegment::new_with_color_and_style(
-						padding.as_str(),
-						line.get_padding_color(),
-						line.is_padding_dimmed(),
-						line.is_padding_underlined(),
-						line.is_padding_reversed(),
-					));
+					if let Some(padding) = line.get_padding().as_ref() {
+						segments.push(LineSegment::new_with_color_and_style(
+							padding.get_content().repeat(window_width - start).as_str(),
+							padding.get_color(),
+							padding.is_dimmed(),
+							padding.is_underlined(),
+							padding.is_reversed(),
+						));
+					}
 				}
 
-				ViewLine::new_with_pinned_segments(segments, line.get_number_of_pinned_segment())
-					.set_selected(line.get_selected())
-					.set_padding_character(line.padding_character())
+				let mut view_line = ViewLine::new_with_pinned_segments(segments, line.get_number_of_pinned_segment())
+					.set_selected(line.get_selected());
+
+				if let Some(padding) = line.get_padding().as_ref() {
+					view_line = view_line.set_padding_with_color_and_style(
+						padding.get_content().chars().next().unwrap_or(' '),
+						padding.get_color(),
+						padding.is_dimmed(),
+						padding.is_underlined(),
+						padding.is_reversed(),
+					);
+				}
+				else {
+					view_line = view_line.set_padding(' ');
+				}
+				view_line
 			})
 			.collect::<Vec<ViewLine>>()
 	}
@@ -1020,11 +1024,18 @@ mod tests {
 	fn rebuild_retains_selected() {
 		let mut view_data = ViewData::new(|_| {});
 		view_data.set_view_size(100, 10);
-		view_data.push_line(ViewLine::new_empty_line().set_padding_character("*"));
+		view_data.push_line(ViewLine::new_empty_line().set_padding('*'));
 		view_data.rebuild();
 
 		// padding characters are stripped by the test render, so test it directly
-		assert_eq!(view_data.lines_cache.unwrap()[0].padding_character(), "*");
+		assert_eq!(
+			view_data.lines_cache.unwrap()[0]
+				.get_padding()
+				.as_ref()
+				.unwrap()
+				.get_content(),
+			"*"
+		);
 	}
 
 	#[test]

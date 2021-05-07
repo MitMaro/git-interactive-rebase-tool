@@ -219,7 +219,7 @@ impl ViewBuilder {
 	pub(super) fn build_view_data_diff(&self, updater: &mut ViewDataUpdater<'_>, commit: &Commit, is_full_width: bool) {
 		updater.push_leading_line(Self::build_leading_summary(commit, is_full_width));
 		updater.push_leading_line(get_files_changed_summary(commit, is_full_width));
-		updater.push_line(ViewLine::new_empty_line().set_padding_character("―"));
+		updater.push_line(ViewLine::new_empty_line().set_padding('―'));
 
 		let file_stats = commit.get_file_stats();
 		for (s_i, stat) in file_stats.iter().enumerate() {
@@ -253,11 +253,13 @@ impl ViewBuilder {
 						DisplayColor::DiffContextColor,
 					),
 				]));
-				updater.push_line(
-					ViewLine::new_pinned(vec![])
-						.set_padding_color_and_style(DisplayColor::Normal, true, false, false)
-						.set_padding_character("┈"),
-				);
+				updater.push_line(ViewLine::new_pinned(vec![]).set_padding_with_color_and_style(
+					'┈',
+					DisplayColor::Normal,
+					true,
+					false,
+					false,
+				));
 
 				for line in delta.lines() {
 					if line.end_of_file() && line.line() != "\n" {
@@ -279,7 +281,7 @@ impl ViewBuilder {
 				}
 			}
 			if s_i + 1 != file_stats.len() {
-				updater.push_line(ViewLine::new_empty_line().set_padding_character("―"));
+				updater.push_line(ViewLine::new_empty_line().set_padding('―'));
 			}
 		}
 	}
