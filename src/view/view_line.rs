@@ -5,11 +5,7 @@ pub struct ViewLine {
 	pinned_segments: usize,
 	segments: Vec<LineSegment>,
 	selected: bool,
-	padding_color: DisplayColor,
-	padding_dim: bool,
-	padding_reverse: bool,
-	padding_underline: bool,
-	padding_character: String,
+	padding: Option<LineSegment>,
 }
 
 impl ViewLine {
@@ -27,11 +23,7 @@ impl ViewLine {
 			selected: false,
 			segments,
 			pinned_segments,
-			padding_color: DisplayColor::Normal,
-			padding_dim: false,
-			padding_reverse: false,
-			padding_underline: false,
-			padding_character: String::from(" "),
+			padding: None,
 		}
 	}
 
@@ -40,22 +32,26 @@ impl ViewLine {
 		self
 	}
 
-	pub(crate) fn set_padding_character(mut self, character: &str) -> Self {
-		self.padding_character = String::from(character);
+	pub(crate) fn set_padding(mut self, c: char) -> Self {
+		self.padding = Some(LineSegment::new(String::from(c).as_str()));
 		self
 	}
 
-	pub(crate) const fn set_padding_color_and_style(
+	pub(crate) fn set_padding_with_color_and_style(
 		mut self,
+		c: char,
 		color: DisplayColor,
 		dim: bool,
 		underline: bool,
 		reverse: bool,
 	) -> Self {
-		self.padding_color = color;
-		self.padding_dim = dim;
-		self.padding_underline = underline;
-		self.padding_reverse = reverse;
+		self.padding = Some(LineSegment::new_with_color_and_style(
+			String::from(c).as_str(),
+			color,
+			dim,
+			underline,
+			reverse,
+		));
 		self
 	}
 
@@ -71,24 +67,8 @@ impl ViewLine {
 		self.selected
 	}
 
-	pub(super) const fn get_padding_color(&self) -> DisplayColor {
-		self.padding_color
-	}
-
-	pub(super) const fn is_padding_dimmed(&self) -> bool {
-		self.padding_dim
-	}
-
-	pub(super) const fn is_padding_underlined(&self) -> bool {
-		self.padding_underline
-	}
-
-	pub(super) const fn is_padding_reversed(&self) -> bool {
-		self.padding_reverse
-	}
-
-	pub(super) fn padding_character(&self) -> &str {
-		self.padding_character.as_str()
+	pub(super) const fn get_padding(&self) -> &Option<LineSegment> {
+		&self.padding
 	}
 }
 
@@ -202,20 +182,22 @@ mod tests {
 	}
 
 	#[test]
-	fn set_padding_color_and_style() {
+	fn set_padding_with_color_and_style() {
 		let view_line =
-			ViewLine::from("foo").set_padding_color_and_style(DisplayColor::IndicatorColor, true, true, true);
+			ViewLine::from("foo").set_padding_with_color_and_style(' ', DisplayColor::IndicatorColor, true, true, true);
 
-		assert_eq!(view_line.get_padding_color(), DisplayColor::IndicatorColor);
-		assert_eq!(view_line.is_padding_dimmed(), true);
-		assert_eq!(view_line.is_padding_underlined(), true);
-		assert_eq!(view_line.is_padding_reversed(), true);
+		let padding = view_line.get_padding().as_ref().unwrap();
+		assert_eq!(padding.get_content(), " ");
+		assert_eq!(padding.get_color(), DisplayColor::IndicatorColor);
+		assert!(padding.is_dimmed());
+		assert!(padding.is_underlined());
+		assert!(padding.is_reversed());
 	}
 
 	#[test]
-	fn set_padding_character() {
-		let view_line = ViewLine::from("foo").set_padding_character("@");
+	fn set_padding() {
+		let view_line = ViewLine::from("foo").set_padding('@');
 
-		assert_eq!(view_line.padding_character(), "@");
+		assert_eq!(view_line.get_padding().as_ref().unwrap().get_content(), "@");
 	}
 }

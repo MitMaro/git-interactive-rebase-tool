@@ -53,19 +53,23 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 fn render_view_line(view_line: &ViewLine) -> String {
 	let mut line = String::new();
 	let segments = view_line.get_segments();
-	for (index, segment) in segments.iter().enumerate() {
-		let content = segment.get_content();
-		let is_padding = index + 1 == segments.len() && content.replace(view_line.padding_character(), "").is_empty();
-		// skip standard padding
-		if is_padding
-			&& view_line.padding_character() == " "
-			&& segment.get_color() == DisplayColor::Normal
-			&& !segment.is_dimmed()
-			&& !segment.is_reversed()
-			&& !segment.is_underlined()
-		{
-			continue;
+
+	let should_add_padding = view_line.get_padding().as_ref().map_or(false, |padding| {
+		!(padding.get_content() == " "
+			&& padding.get_color() == DisplayColor::Normal
+			&& !padding.is_dimmed()
+			&& !padding.is_reversed()
+			&& !padding.is_underlined())
+	});
+	let segments_iter = segments.iter().take(
+		if should_add_padding {
+			segments.len() - 1
 		}
+		else {
+			segments.len()
+		},
+	);
+	for segment in segments_iter {
 		line.push_str(
 			render_style(
 				segment.get_color(),
@@ -76,12 +80,22 @@ fn render_view_line(view_line: &ViewLine) -> String {
 			)
 			.as_str(),
 		);
-		// only render
-		if is_padding {
-			line.push_str(format!("{{Pad {}}}", view_line.padding_character()).as_str());
-		}
-		else {
-			line.push_str(segment.get_content());
+		line.push_str(segment.get_content());
+	}
+	if let Some(padding) = view_line.get_padding().as_ref() {
+		// TODO remove once ViewData doesn't add a "fake" padding segment
+		if should_add_padding {
+			line.push_str(
+				render_style(
+					padding.get_color(),
+					view_line.get_selected(),
+					padding.is_dimmed(),
+					padding.is_underlined(),
+					padding.is_reversed(),
+				)
+				.as_str(),
+			);
+			line.push_str(format!("{{Pad({})}}", padding.get_content()).as_str());
 		}
 	}
 	line

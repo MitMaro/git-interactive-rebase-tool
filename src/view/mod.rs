@@ -269,7 +269,7 @@ mod tests {
 			view_data.push_leading_line(ViewLine::from("This is a leading line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["This is a leading line        "];
+			let mut expected = vec!["This is a leading line"];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
@@ -283,7 +283,7 @@ mod tests {
 			view_data.push_line(ViewLine::from("This is a line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["This is a line                "];
+			let mut expected = vec!["This is a line"];
 			expected.extend(vec!["~"; 9]);
 			TestContext::assert_output(&expected);
 		});
@@ -298,7 +298,7 @@ mod tests {
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
 			let mut expected = vec!["~"; 9];
-			expected.push("This is a trailing line       ");
+			expected.push("This is a trailing line");
 			TestContext::assert_output(&expected);
 		});
 	}
@@ -313,9 +313,9 @@ mod tests {
 			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
 			view_data.set_view_size(30, 10);
 			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["This is a leading line        ", "This is a line                "];
+			let mut expected = vec!["This is a leading line", "This is a line"];
 			expected.extend(vec!["~"; 7]);
-			expected.push("This is a trailing line       ");
+			expected.push("This is a trailing line");
 			TestContext::assert_output(&expected);
 		});
 	}
@@ -334,12 +334,12 @@ mod tests {
 			view_data.set_view_size(30, 6);
 			test_context.view.render(&mut view_data).unwrap();
 			let expected = vec![
-				"This is a leading line        ",
-				"This is line 1                ",
-				"This is line 2                ",
-				"This is line 3                ",
-				"This is line 4                ",
-				"This is a trailing line       ",
+				"This is a leading line",
+				"This is line 1",
+				"This is line 2",
+				"This is line 3",
+				"This is line 4",
+				"This is a trailing line",
 			];
 			TestContext::assert_output(&expected);
 		});
@@ -360,12 +360,12 @@ mod tests {
 			view_data.set_view_size(30, 6);
 			test_context.view.render(&mut view_data).unwrap();
 			let expected = vec![
-				"This is a leading line        ",
-				"This is line 1               █",
-				"This is line 2                ",
-				"This is line 3                ",
-				"This is line 4                ",
-				"This is a trailing line       ",
+				"This is a leading line",
+				"This is line 1█",
+				"This is line 2 ",
+				"This is line 3 ",
+				"This is line 4 ",
+				"This is a trailing line",
 			];
 			TestContext::assert_output(&expected);
 		});
