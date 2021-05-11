@@ -51,21 +51,13 @@ impl<'t> TestContext<'t> {
 	}
 
 	pub fn handle_event(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_events(
-			&self.event_handler_context.event_handler,
-			&self.render_context,
-			&mut self.rebase_todo_file,
-		)
+		module.handle_events(&self.event_handler_context.event_handler, &mut self.rebase_todo_file)
 	}
 
 	pub fn handle_n_events(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_events(
-				&self.event_handler_context.event_handler,
-				&self.render_context,
-				&mut self.rebase_todo_file,
-			));
+			results.push(module.handle_events(&self.event_handler_context.event_handler, &mut self.rebase_todo_file));
 		}
 		results
 	}
@@ -73,11 +65,7 @@ impl<'t> TestContext<'t> {
 	pub fn handle_all_events(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.event_handler_context.number_events {
-			results.push(module.handle_events(
-				&self.event_handler_context.event_handler,
-				&self.render_context,
-				&mut self.rebase_todo_file,
-			));
+			results.push(module.handle_events(&self.event_handler_context.event_handler, &mut self.rebase_todo_file));
 		}
 		results
 	}

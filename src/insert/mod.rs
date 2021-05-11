@@ -34,12 +34,7 @@ impl ProcessModule for Insert {
 		}
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		_: &RenderContext,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
 		match self.state {
 			InsertState::Prompt => {
 				let (choice, event) = self.action_choices.handle_event(event_handler);

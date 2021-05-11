@@ -52,16 +52,12 @@ impl ProcessModule for WindowSizeError {
 		&mut self.view_data
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		render_context: &RenderContext,
-		_: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut TodoFile) -> ProcessResult {
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 		let mut result = ProcessResult::from(event);
 
-		if let Event::Resize(..) = event {
+		if let Event::Resize(width, height) = event {
+			let render_context = RenderContext::new(width, height);
 			if !render_context.is_window_too_small() {
 				result = result.state(self.return_state);
 			}

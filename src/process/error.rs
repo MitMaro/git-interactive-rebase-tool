@@ -33,7 +33,7 @@ impl ProcessModule for Error {
 		&mut self.view_data
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &RenderContext, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut TodoFile) -> ProcessResult {
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 		let mut result = ProcessResult::from(event);
 		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
