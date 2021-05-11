@@ -19,21 +19,16 @@ impl User {
 	/// The user if formatted with "Name \<Email\>", which matches the Git CLI. If name or email are
 	/// `None` then they are omitted from the result. If neither are set, `None` is returned.
 	pub(super) fn to_string(&self) -> Option<String> {
-		let name = &self.name;
-		let email = &self.email;
-		match *name {
-			Some(ref n) => {
-				match *email {
-					Some(ref e) => Some(format!("{} <{}>", *n, *e)),
-					None => Some(n.to_owned()),
-				}
-			},
-			None => {
-				match *email {
-					Some(ref e) => Some(format!("<{}>", *e)),
-					None => None,
-				}
-			},
+		if let Some(name) = self.name.as_ref() {
+			if let Some(email) = self.email.as_ref() {
+				Some(format!("{} <{}>", name, email))
+			}
+			else {
+				Some(String::from(name))
+			}
+		}
+		else {
+			self.email.as_ref().map(|email| format!("<{}>", email))
 		}
 	}
 }
