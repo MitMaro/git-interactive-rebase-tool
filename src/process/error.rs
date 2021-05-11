@@ -38,7 +38,7 @@ impl ProcessModule for Error {
 		let mut result = ProcessResult::from(event);
 		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
 			if let Event::Key(_) = event {
-				result = result.state(self.return_state)
+				result = result.state(self.return_state);
 			}
 		}
 		result

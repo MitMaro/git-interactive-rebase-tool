@@ -69,7 +69,7 @@ fn activate() {
 				(String::from("editor"), vec![String::from(
 					test_context.rebase_todo_file.get_filepath()
 				)])
-			)
+			);
 		},
 	);
 }
