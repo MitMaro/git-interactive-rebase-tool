@@ -226,7 +226,7 @@ impl TodoFile {
 	}
 
 	pub(crate) fn get_lines_owned(&self) -> Vec<Line> {
-		self.lines.to_owned()
+		self.lines.clone()
 	}
 
 	pub(crate) const fn is_noop(&self) -> bool {
