@@ -31,6 +31,7 @@
 #![allow(clippy::similar_names)]
 #![allow(clippy::unreachable)]
 #![allow(clippy::missing_panics_doc)]
+#![allow(clippy::default_numeric_fallback)]
 
 mod components;
 mod config;
