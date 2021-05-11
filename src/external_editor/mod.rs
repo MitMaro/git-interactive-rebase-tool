@@ -112,7 +112,7 @@ impl ProcessModule for ExternalEditor {
 						Action::AbortRebase => result = result.exit_status(ExitStatus::Good),
 						Action::EditRebase => result = self.set_state(result, ExternalEditorState::Active),
 						Action::UndoAndEdit => {
-							todo_file.set_lines(self.lines.to_vec());
+							todo_file.set_lines(self.lines.clone());
 							result = self.undo_and_edit(result, todo_file);
 						},
 						Action::RestoreAndAbortEdit => {},
@@ -130,14 +130,14 @@ impl ProcessModule for ExternalEditor {
 						},
 						Action::EditRebase => result = self.set_state(result, ExternalEditorState::Active),
 						Action::RestoreAndAbortEdit => {
-							todo_file.set_lines(self.lines.to_vec());
+							todo_file.set_lines(self.lines.clone());
 							result = result.state(State::List);
 							if let Err(err) = todo_file.write_file() {
 								result = result.error(err);
 							}
 						},
 						Action::UndoAndEdit => {
-							todo_file.set_lines(self.lines.to_vec());
+							todo_file.set_lines(self.lines.clone());
 							result = self.undo_and_edit(result, todo_file);
 						},
 					}
@@ -202,7 +202,7 @@ impl ExternalEditor {
 	}
 
 	fn undo_and_edit(&mut self, result: ProcessResult, todo_file: &mut TodoFile) -> ProcessResult {
-		todo_file.set_lines(self.lines.to_vec());
+		todo_file.set_lines(self.lines.clone());
 		if let Err(err) = todo_file.write_file() {
 			return result.error(err).state(State::List);
 		}
