@@ -131,7 +131,7 @@ impl Line {
 
 	pub(crate) fn edit_content(&mut self, content: &str) {
 		if self.is_editable() {
-			self.content = String::from(content)
+			self.content = String::from(content);
 		}
 	}
 

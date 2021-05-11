@@ -45,15 +45,15 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 			let mut modifiers = KeyModifiers::empty();
 			if key.contains("Control") {
 				key = key.replace("Control", "");
-				modifiers.insert(KeyModifiers::CONTROL)
+				modifiers.insert(KeyModifiers::CONTROL);
 			}
 			if key.contains("Alt") {
 				key = key.replace("Alt", "");
-				modifiers.insert(KeyModifiers::ALT)
+				modifiers.insert(KeyModifiers::ALT);
 			}
 			if key.contains("Shift") {
 				key = key.replace("Shift", "");
-				modifiers.insert(KeyModifiers::SHIFT)
+				modifiers.insert(KeyModifiers::SHIFT);
 			}
 
 			let code = match key.as_str() {

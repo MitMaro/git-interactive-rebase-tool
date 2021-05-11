@@ -179,7 +179,7 @@ impl<'l> List<'l> {
 				MetaEvent::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, render_context.height() / 2),
 				MetaEvent::MoveCursorHome => rebase_todo.set_selected_line_index(0),
 				MetaEvent::MoveCursorEnd => {
-					rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index())
+					rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index());
 				},
 				MetaEvent::Abort => result = result.state(State::ConfirmAbort),
 				MetaEvent::ForceAbort => {

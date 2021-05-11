@@ -129,7 +129,7 @@ impl<'r> Process<'r> {
 							external_command.0,
 							external_command.1.join(" ")
 						))),
-					)
+					);
 				},
 			}
 		}
