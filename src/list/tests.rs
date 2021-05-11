@@ -123,7 +123,7 @@ fn move_cursor_down_1() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Event::from(MetaEvent::MoveCursorDown)],
+		&[Event::Resize(120, 4), Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
@@ -154,7 +154,11 @@ fn move_cursor_down_view_end() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Event::from(MetaEvent::MoveCursorDown); 2],
+		&[
+			Event::Resize(120, 4),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
@@ -185,7 +189,12 @@ fn move_cursor_down_scroll_1() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Event::from(MetaEvent::MoveCursorDown); 3],
+		&[
+			Event::Resize(120, 4),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
@@ -216,7 +225,13 @@ fn move_cursor_down_scroll_bottom() {
 		ViewState {
 			size: Size::new(120, 4),
 		},
-		&[Event::from(MetaEvent::MoveCursorDown); 4],
+		&[
+			Event::Resize(120, 4),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
@@ -395,6 +410,7 @@ fn move_cursor_page_up_from_one_page_down() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorPageUp),
@@ -402,7 +418,7 @@ fn move_cursor_page_up_from_one_page_down() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 2);
+			test_context.handle_n_events(&mut module, 3);
 			test_context.build_view_data(&mut module);
 			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -433,6 +449,7 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -441,7 +458,7 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 3);
+			test_context.handle_n_events(&mut module, 4);
 			test_context.build_view_data(&mut module);
 			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -472,6 +489,7 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorPageUp),
@@ -479,7 +497,7 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 2);
+			test_context.handle_n_events(&mut module, 3);
 			test_context.build_view_data(&mut module);
 			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -510,6 +528,7 @@ fn move_cursor_page_up_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -520,7 +539,7 @@ fn move_cursor_page_up_from_bottom() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 5);
+			test_context.handle_n_events(&mut module, 6);
 			test_context.build_view_data(&mut module);
 			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -649,6 +668,7 @@ fn move_cursor_page_down_one_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(100, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -658,7 +678,7 @@ fn move_cursor_page_down_one_from_bottom() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 4);
+			test_context.handle_n_events(&mut module, 5);
 			test_context.build_view_data(&mut module);
 			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -689,6 +709,7 @@ fn move_cursor_page_down_one_page_from_bottom() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(100, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -697,7 +718,7 @@ fn move_cursor_page_down_one_page_from_bottom() {
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
 			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 3);
+			test_context.handle_n_events(&mut module, 4);
 			test_context.build_view_data(&mut module);
 			test_context.handle_event(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -801,6 +822,7 @@ fn visual_mode_start_cursor_down_one() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
 		],
@@ -836,6 +858,7 @@ fn visual_mode_start_move_down_below_view() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -874,6 +897,7 @@ fn visual_mode_start_cursor_page_down() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
@@ -910,6 +934,7 @@ fn visual_mode_start_cursor_page_down_below_view() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorPageDown),
 			Event::from(MetaEvent::MoveCursorPageDown),
@@ -947,6 +972,7 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorPageDown),
 			Event::from(MetaEvent::MoveCursorPageDown),
 			Event::from(MetaEvent::MoveCursorPageDown),
@@ -985,6 +1011,7 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 			size: Size::new(120, 4),
 		},
 		&[
+			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorPageDown),
 			Event::from(MetaEvent::MoveCursorPageDown),
 			Event::from(MetaEvent::MoveCursorPageDown),

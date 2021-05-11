@@ -128,7 +128,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &RenderContext, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut TodoFile) -> ProcessResult {
 		if self.help.is_active() {
 			return ProcessResult::from(self.help.handle_event(event_handler));
 		}

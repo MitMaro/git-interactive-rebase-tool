@@ -14,10 +14,5 @@ pub trait ProcessModule {
 
 	fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &mut ViewData;
 
-	fn handle_events(
-		&mut self,
-		_event_handler: &EventHandler,
-		_render_context: &RenderContext,
-		_rebase_todo: &mut TodoFile,
-	) -> ProcessResult;
+	fn handle_events(&mut self, _event_handler: &EventHandler, _rebase_todo: &mut TodoFile) -> ProcessResult;
 }

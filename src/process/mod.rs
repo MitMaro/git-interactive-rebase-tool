@@ -62,12 +62,7 @@ impl<'r> Process<'r> {
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
 			}
-			let result = modules.handle_input(
-				self.state,
-				&self.event_handler,
-				&self.render_context,
-				&mut self.rebase_todo,
-			);
+			let result = modules.handle_input(self.state, &self.event_handler, &mut self.rebase_todo);
 			self.handle_process_result(&mut modules, &result);
 		}
 		if self.view.end().is_err() {
@@ -160,6 +155,11 @@ impl<'r> Process<'r> {
 
 	fn activate(&mut self, modules: &mut Modules<'r>, previous_state: State) {
 		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
+		// always trigger a resize on activate, for modules that track size
+		self.event_handler.push_event(Event::Resize(
+			self.render_context.width() as u16,
+			self.render_context.height() as u16,
+		));
 		self.handle_process_result(modules, &result);
 	}
 }
