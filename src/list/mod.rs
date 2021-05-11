@@ -30,6 +30,7 @@ enum ListState {
 pub struct List<'l> {
 	config: &'l Config,
 	edit: Edit,
+	height: usize,
 	normal_mode_help: Help,
 	state: ListState,
 	view_data: ViewData,
@@ -46,15 +47,10 @@ impl<'l> ProcessModule for List<'l> {
 		}
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		render_context: &RenderContext,
-		todo_file: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, todo_file: &mut TodoFile) -> ProcessResult {
 		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(event_handler, render_context, todo_file),
-			ListState::Visual => self.handle_visual_mode_input(event_handler, render_context, todo_file),
+			ListState::Normal => self.handle_normal_mode_input(event_handler, todo_file),
+			ListState::Visual => self.handle_visual_mode_input(event_handler, todo_file),
 			ListState::Edit => self.handle_edit_mode_input(event_handler, todo_file),
 		}
 	}
@@ -70,6 +66,7 @@ impl<'l> List<'l> {
 		Self {
 			config,
 			edit: Edit::new(),
+			height: 0,
 			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
 			state: ListState::Normal,
 			view_data,
@@ -163,141 +160,133 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn handle_common_list_input(
-		&mut self,
-		event: Event,
-		render_context: &RenderContext,
-		rebase_todo: &mut TodoFile,
-	) -> Option<ProcessResult> {
+	fn handle_common_list_input(&mut self, event: Event, rebase_todo: &mut TodoFile) -> Option<ProcessResult> {
 		let mut result = ProcessResult::from(event);
-		if let Event::Meta(meta_event) = event {
-			match meta_event {
-				MetaEvent::MoveCursorLeft => self.view_data.update_view_data(|updater| updater.scroll_left()),
-				MetaEvent::MoveCursorRight => self.view_data.update_view_data(|updater| updater.scroll_right()),
-				MetaEvent::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
-				MetaEvent::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
-				MetaEvent::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, render_context.height() / 2),
-				MetaEvent::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, render_context.height() / 2),
-				MetaEvent::MoveCursorHome => rebase_todo.set_selected_line_index(0),
-				MetaEvent::MoveCursorEnd => {
-					rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index());
-				},
-				MetaEvent::Abort => result = result.state(State::ConfirmAbort),
-				MetaEvent::ForceAbort => {
-					rebase_todo.set_lines(vec![]);
-					result = result.exit_status(ExitStatus::Good);
-				},
-				MetaEvent::Rebase => result = result.state(State::ConfirmRebase),
-				MetaEvent::ForceRebase => result = result.exit_status(ExitStatus::Good),
-				MetaEvent::SwapSelectedDown => {
-					let start_index = rebase_todo.get_selected_line_index();
-					let end_index = self.visual_index_start.unwrap_or(start_index);
+		match event {
+			Event::Meta(meta_event) => {
+				match meta_event {
+					MetaEvent::MoveCursorLeft => self.view_data.update_view_data(|updater| updater.scroll_left()),
+					MetaEvent::MoveCursorRight => self.view_data.update_view_data(|updater| updater.scroll_right()),
+					MetaEvent::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
+					MetaEvent::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
+					MetaEvent::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, self.height / 2),
+					MetaEvent::MoveCursorPageUp => Self::move_cursor_up(rebase_todo, self.height / 2),
+					MetaEvent::MoveCursorHome => rebase_todo.set_selected_line_index(0),
+					MetaEvent::MoveCursorEnd => {
+						rebase_todo.set_selected_line_index(rebase_todo.get_max_selected_line_index());
+					},
+					MetaEvent::Abort => result = result.state(State::ConfirmAbort),
+					MetaEvent::ForceAbort => {
+						rebase_todo.set_lines(vec![]);
+						result = result.exit_status(ExitStatus::Good);
+					},
+					MetaEvent::Rebase => result = result.state(State::ConfirmRebase),
+					MetaEvent::ForceRebase => result = result.exit_status(ExitStatus::Good),
+					MetaEvent::SwapSelectedDown => {
+						let start_index = rebase_todo.get_selected_line_index();
+						let end_index = self.visual_index_start.unwrap_or(start_index);
 
-					if rebase_todo.swap_range_down(start_index, end_index) {
-						if let Some(visual_index_start) = self.visual_index_start {
-							self.visual_index_start = Some(visual_index_start + 1);
+						if rebase_todo.swap_range_down(start_index, end_index) {
+							if let Some(visual_index_start) = self.visual_index_start {
+								self.visual_index_start = Some(visual_index_start + 1);
+							}
+							Self::move_cursor_down(rebase_todo, 1);
 						}
+					},
+					MetaEvent::SwapSelectedUp => {
+						let start_index = rebase_todo.get_selected_line_index();
+						let end_index = self.visual_index_start.unwrap_or(start_index);
 
-						Self::move_cursor_down(rebase_todo, 1);
-					}
-				},
-				MetaEvent::SwapSelectedUp => {
-					let start_index = rebase_todo.get_selected_line_index();
-					let end_index = self.visual_index_start.unwrap_or(start_index);
-
-					if rebase_todo.swap_range_up(start_index, end_index) {
-						if let Some(visual_index_start) = self.visual_index_start {
-							self.visual_index_start = Some(visual_index_start - 1);
+						if rebase_todo.swap_range_up(start_index, end_index) {
+							if let Some(visual_index_start) = self.visual_index_start {
+								self.visual_index_start = Some(visual_index_start - 1);
+							}
+							Self::move_cursor_up(rebase_todo, 1);
 						}
-						Self::move_cursor_up(rebase_todo, 1);
-					}
-				},
-				MetaEvent::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
-				MetaEvent::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
-				MetaEvent::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
-				MetaEvent::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick),
-				MetaEvent::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
-				MetaEvent::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
-				MetaEvent::Undo => {
-					if let Some((start_index, end_index)) = rebase_todo.undo() {
-						rebase_todo.set_selected_line_index(start_index);
-						if start_index == end_index {
+					},
+					MetaEvent::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
+					MetaEvent::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
+					MetaEvent::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
+					MetaEvent::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick),
+					MetaEvent::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
+					MetaEvent::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
+					MetaEvent::Undo => {
+						if let Some((start_index, end_index)) = rebase_todo.undo() {
+							rebase_todo.set_selected_line_index(start_index);
+							if start_index == end_index {
+								self.state = ListState::Normal;
+								self.visual_index_start = None;
+							}
+							else {
+								self.state = ListState::Visual;
+								self.visual_index_start = Some(end_index);
+							}
+						}
+					},
+					MetaEvent::Redo => {
+						if let Some((start_index, end_index)) = rebase_todo.redo() {
+							rebase_todo.set_selected_line_index(start_index);
+							if start_index == end_index {
+								self.state = ListState::Normal;
+								self.visual_index_start = None;
+							}
+							else {
+								self.state = ListState::Visual;
+								self.visual_index_start = Some(end_index);
+							}
+						}
+					},
+					MetaEvent::Delete => {
+						let start_index = rebase_todo.get_selected_line_index();
+						let end_index = self.visual_index_start.unwrap_or(start_index);
+
+						rebase_todo.remove_lines(start_index, end_index);
+						let new_index = min(start_index, end_index);
+
+						rebase_todo.set_selected_line_index(new_index);
+
+						if self.state == ListState::Visual {
+							self.visual_index_start = Some(rebase_todo.get_selected_line_index());
+						}
+					},
+					MetaEvent::OpenInEditor => result = result.state(State::ExternalEditor),
+					MetaEvent::ToggleVisualMode => {
+						if self.state == ListState::Visual {
 							self.state = ListState::Normal;
 							self.visual_index_start = None;
 						}
 						else {
 							self.state = ListState::Visual;
-							self.visual_index_start = Some(end_index);
+							self.visual_index_start = Some(rebase_todo.get_selected_line_index());
 						}
-					}
-				},
-				MetaEvent::Redo => {
-					if let Some((start_index, end_index)) = rebase_todo.redo() {
-						rebase_todo.set_selected_line_index(start_index);
-						if start_index == end_index {
-							self.state = ListState::Normal;
-							self.visual_index_start = None;
+					},
+					MetaEvent::Help => {
+						if self.state == ListState::Visual {
+							self.visual_mode_help.set_active();
 						}
 						else {
-							self.state = ListState::Visual;
-							self.visual_index_start = Some(end_index);
+							self.normal_mode_help.set_active();
 						}
-					}
-				},
-				MetaEvent::Delete => {
-					let start_index = rebase_todo.get_selected_line_index();
-					let end_index = self.visual_index_start.unwrap_or(start_index);
-
-					rebase_todo.remove_lines(start_index, end_index);
-					let new_index = min(start_index, end_index);
-
-					rebase_todo.set_selected_line_index(new_index);
-
-					if self.state == ListState::Visual {
-						self.visual_index_start = Some(rebase_todo.get_selected_line_index());
-					}
-				},
-				MetaEvent::OpenInEditor => result = result.state(State::ExternalEditor),
-				MetaEvent::ToggleVisualMode => {
-					if self.state == ListState::Visual {
-						self.state = ListState::Normal;
-						self.visual_index_start = None;
-					}
-					else {
-						self.state = ListState::Visual;
-						self.visual_index_start = Some(rebase_todo.get_selected_line_index());
-					}
-				},
-				MetaEvent::Help => {
-					if self.state == ListState::Visual {
-						self.visual_mode_help.set_active();
-					}
-					else {
-						self.normal_mode_help.set_active();
-					}
-				},
-				_ => return None,
-			}
-		}
-		else {
-			return None;
+					},
+					_ => return None,
+				}
+			},
+			Event::Resize(_, height) => {
+				self.height = height as usize;
+			},
+			_ => {},
 		}
 
 		Some(result)
 	}
 
-	fn handle_normal_mode_input(
-		&mut self,
-		event_handler: &EventHandler,
-		render_context: &RenderContext,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_normal_mode_input(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
 		if self.normal_mode_help.is_active() {
 			return ProcessResult::from(self.normal_mode_help.handle_event(event_handler));
 		}
 
 		let event = get_event(event_handler);
-		if let Some(result) = self.handle_common_list_input(event, render_context, rebase_todo) {
+		if let Some(result) = self.handle_common_list_input(event, rebase_todo) {
 			result
 		}
 		else {
@@ -350,18 +339,13 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn handle_visual_mode_input(
-		&mut self,
-		event_handler: &EventHandler,
-		render_context: &RenderContext,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_visual_mode_input(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
 		if self.visual_mode_help.is_active() {
 			return ProcessResult::from(self.visual_mode_help.handle_event(event_handler));
 		}
 
 		let event = get_event(event_handler);
-		self.handle_common_list_input(event, render_context, rebase_todo)
+		self.handle_common_list_input(event, rebase_todo)
 			.unwrap_or_else(|| ProcessResult::from(event))
 	}
 

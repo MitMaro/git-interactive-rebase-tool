@@ -72,12 +72,7 @@ impl ProcessModule for ExternalEditor {
 		}
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		_: &RenderContext,
-		todo_file: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, todo_file: &mut TodoFile) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {

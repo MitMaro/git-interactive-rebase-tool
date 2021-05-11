@@ -15,12 +15,7 @@ impl ProcessModule for ConfirmAbort {
 		self.dialog.get_view_data()
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		_: &RenderContext,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
 		let (confirmed, event) = self.dialog.handle_event(event_handler);
 		let mut result = ProcessResult::from(event);
 		match confirmed {

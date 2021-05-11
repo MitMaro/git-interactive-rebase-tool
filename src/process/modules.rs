@@ -77,11 +77,9 @@ impl<'m> Modules<'m> {
 		&mut self,
 		state: State,
 		event_handler: &EventHandler,
-		render_context: &RenderContext,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
-		self.get_mut_module(state)
-			.handle_events(event_handler, render_context, rebase_todo)
+		self.get_mut_module(state).handle_events(event_handler, rebase_todo)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
@@ -127,7 +125,6 @@ mod tests {
 				modules.handle_input(
 					state,
 					&test_context.event_handler_context.event_handler,
-					&test_context.render_context,
 					&mut test_context.rebase_todo_file,
 				);
 				modules.build_view_data(state, &test_context.render_context, &test_context.rebase_todo_file);
