@@ -236,7 +236,10 @@ pub(super) fn get_todo_line_segments(
 			},
 			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
 		}
-		segments.push(LineSegment::new(line.get_content()));
+		let content = line.get_content();
+		if !content.is_empty() {
+			segments.push(LineSegment::new(line.get_content()));
+		}
 	}
 	else {
 		segments.push(LineSegment::new_with_color_and_style(
@@ -261,7 +264,10 @@ pub(super) fn get_todo_line_segments(
 			},
 			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
 		}
-		segments.push(LineSegment::new(line.get_content()));
+		let content = line.get_content();
+		if !content.is_empty() {
+			segments.push(LineSegment::new(line.get_content()));
+		}
 	}
 	segments
 }
