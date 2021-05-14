@@ -58,25 +58,20 @@ impl Edit {
 				false,
 			));
 		}
-		segments.push(LineSegment::new(start.as_str()));
-		segments.push(LineSegment::new_with_color_and_style(
-			indicator.as_str(),
-			DisplayColor::Normal,
-			false,
-			true,
-			false,
-		));
-		segments.push(LineSegment::new(end.as_str()));
-		if indicator.is_empty() {
-			segments.push(LineSegment::new_with_color_and_style(
-				" ",
-				DisplayColor::Normal,
-				false,
-				true,
-				false,
-			));
+		if !start.is_empty() {
+			segments.push(LineSegment::new(start.as_str()));
 		}
-
+		segments.push(
+			if indicator.is_empty() {
+				LineSegment::new_with_color_and_style(" ", DisplayColor::Normal, false, true, false)
+			}
+			else {
+				LineSegment::new_with_color_and_style(indicator.as_str(), DisplayColor::Normal, false, true, false)
+			},
+		);
+		if !end.is_empty() {
+			segments.push(LineSegment::new(end.as_str()));
+		}
 		let description = self.description.as_ref();
 		self.view_data.update_view_data(|updater| {
 			updater.clear();

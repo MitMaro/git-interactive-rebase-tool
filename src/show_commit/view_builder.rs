@@ -66,23 +66,22 @@ impl ViewBuilder {
 	}
 
 	fn build_leading_summary(commit: &Commit, is_full_width: bool) -> ViewLine {
-		ViewLine::from(vec![
-			LineSegment::new_with_color(
-				if is_full_width { "Commit: " } else { "" },
-				DisplayColor::IndicatorColor,
-			),
-			LineSegment::new(
-				if is_full_width {
-					commit.get_hash().to_owned()
-				}
-				else {
-					let hash = commit.get_hash();
-					let max_index = hash.len().min(8);
-					format!("{:8}", hash[0..max_index].to_owned())
-				}
-				.as_str(),
-			),
-		])
+		let mut segments = vec![];
+		if is_full_width {
+			segments.push(LineSegment::new_with_color("Commit: ", DisplayColor::IndicatorColor));
+		}
+		segments.push(LineSegment::new(
+			if is_full_width {
+				commit.get_hash().to_owned()
+			}
+			else {
+				let hash = commit.get_hash();
+				let max_index = hash.len().min(8);
+				format!("{:8}", hash[0..max_index].to_owned())
+			}
+			.as_str(),
+		));
+		ViewLine::from(segments)
 	}
 
 	#[allow(clippy::unused_self)]
@@ -185,22 +184,28 @@ impl ViewBuilder {
 				)
 			};
 
-			line_segments.push(LineSegment::new_with_color(
-				leading.as_str(),
-				DisplayColor::DiffWhitespaceColor,
-			));
-			line_segments.push(LineSegment::new_with_color(
-				content.as_str(),
-				match *diff_line.origin() {
-					Origin::Addition => DisplayColor::DiffAddColor,
-					Origin::Deletion => DisplayColor::DiffRemoveColor,
-					Origin::Context => DisplayColor::DiffContextColor,
-				},
-			));
-			line_segments.push(LineSegment::new_with_color(
-				trailing.as_str(),
-				DisplayColor::DiffWhitespaceColor,
-			));
+			if !leading.is_empty() {
+				line_segments.push(LineSegment::new_with_color(
+					leading.as_str(),
+					DisplayColor::DiffWhitespaceColor,
+				));
+			}
+			if !content.is_empty() {
+				line_segments.push(LineSegment::new_with_color(
+					content.as_str(),
+					match *diff_line.origin() {
+						Origin::Addition => DisplayColor::DiffAddColor,
+						Origin::Deletion => DisplayColor::DiffRemoveColor,
+						Origin::Context => DisplayColor::DiffContextColor,
+					},
+				));
+			}
+			if !trailing.is_empty() {
+				line_segments.push(LineSegment::new_with_color(
+					trailing.as_str(),
+					DisplayColor::DiffWhitespaceColor,
+				));
+			}
 		}
 		else {
 			line_segments.push(LineSegment::new_with_color(
