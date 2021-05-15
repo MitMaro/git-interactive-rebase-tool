@@ -213,61 +213,59 @@ pub(super) fn get_todo_line_segments(
 
 	let action = line.get_action();
 
-	if is_full_width {
-		segments.push(LineSegment::new_with_color_and_style(
-			if is_cursor_line || selected { " > " } else { "   " },
-			DisplayColor::Normal,
-			!is_cursor_line && selected,
-			false,
-			false,
-		));
-
-		segments.push(LineSegment::new_with_color(
-			format!("{:6} ", action.as_string()).as_str(),
-			get_action_color(*action),
-		));
-
-		match *action {
-			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
-				let max_index = cmp::min(line.get_hash().len(), 8);
-				segments.push(LineSegment::new(
-					format!("{:8} ", line.get_hash()[0..max_index].to_string()).as_str(),
-				));
-			},
-			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
+	let indicator = if is_cursor_line || selected {
+		if is_full_width {
+			" > "
 		}
-		let content = line.get_content();
-		if !content.is_empty() {
-			segments.push(LineSegment::new(line.get_content()));
+		else {
+			">"
 		}
 	}
+	else if is_full_width {
+		"   "
+	}
 	else {
-		segments.push(LineSegment::new_with_color_and_style(
-			if is_cursor_line || selected { ">" } else { " " },
-			DisplayColor::Normal,
-			!is_cursor_line && selected,
-			false,
-			false,
-		));
+		" "
+	};
 
-		segments.push(LineSegment::new_with_color(
-			format!("{:1} ", line.get_action().to_abbreviation()).as_str(),
-			get_action_color(*action),
-		));
+	segments.push(LineSegment::new_with_color_and_style(
+		indicator,
+		DisplayColor::Normal,
+		!is_cursor_line && selected,
+		false,
+		false,
+	));
 
-		match *action {
-			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
-				let max_index = cmp::min(line.get_hash().len(), 3);
-				segments.push(LineSegment::new(
-					format!("{:3} ", line.get_hash()[0..max_index].to_string()).as_str(),
-				));
-			},
-			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
-		}
-		let content = line.get_content();
-		if !content.is_empty() {
-			segments.push(LineSegment::new(line.get_content()));
-		}
+	let action_name = if is_full_width {
+		format!("{:6} ", action.as_string())
+	}
+	else {
+		format!("{:1} ", action.to_abbreviation())
+	};
+
+	segments.push(LineSegment::new_with_color(
+		action_name.as_str(),
+		get_action_color(*action),
+	));
+
+	match *action {
+		Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
+			let action_width = if is_full_width { 8 } else { 3 };
+			let max_index = cmp::min(line.get_hash().len(), action_width);
+			segments.push(LineSegment::new(
+				format!(
+					"{:width$} ",
+					line.get_hash()[0..max_index].to_string(),
+					width = action_width
+				)
+				.as_str(),
+			));
+		},
+		Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
+	}
+	let content = line.get_content();
+	if !content.is_empty() {
+		segments.push(LineSegment::new(content));
 	}
 	segments
 }
