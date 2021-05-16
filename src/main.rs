@@ -166,13 +166,21 @@ fn try_main(filepath: &str) -> Result<ExitStatus, Exit> {
 		});
 	}
 
-	let mut crossterm = CrossTerm::new();
-	let display = Display::new(&mut crossterm, &config.theme);
+	let display = Display::new(CrossTerm::new(), &config.theme);
 	let modules = Modules::new(&config);
 	let mut process = Process::new(
 		todo_file,
 		EventHandler::new(KeyBindings::new(&config.key_bindings)),
-		View::new(display, &config),
+		View::new(
+			display,
+			config.theme.character_vertical_spacing.as_str(),
+			config
+				.key_bindings
+				.help
+				.first()
+				.map_or(String::from("?"), String::from)
+				.as_str(),
+		),
 	);
 	let result = process.run(modules);
 

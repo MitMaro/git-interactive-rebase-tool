@@ -22,17 +22,17 @@ use crate::{
 	view::{render_context::RenderContext, View},
 };
 
-pub struct Process<'r> {
+pub struct Process {
 	exit_status: Option<ExitStatus>,
 	event_handler: EventHandler,
 	rebase_todo: TodoFile,
 	render_context: RenderContext,
 	state: State,
-	view: View<'r>,
+	view: View,
 }
 
-impl<'r> Process<'r> {
-	pub(crate) fn new(rebase_todo: TodoFile, event_handler: EventHandler, view: View<'r>) -> Self {
+impl Process {
+	pub(crate) fn new(rebase_todo: TodoFile, event_handler: EventHandler, view: View) -> Self {
 		let view_size = view.get_view_size();
 		Self {
 			render_context: RenderContext::new(view_size.width() as u16, view_size.height() as u16),
@@ -44,7 +44,7 @@ impl<'r> Process<'r> {
 		}
 	}
 
-	pub(crate) fn run(&'r mut self, mut modules: Modules<'r>) -> Result<Option<ExitStatus>> {
+	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
 		if self.view.start().is_err() {
 			return Ok(Some(ExitStatus::StateError));
 		}
@@ -85,7 +85,7 @@ impl<'r> Process<'r> {
 		Ok(self.exit_status)
 	}
 
-	fn handle_process_result(&mut self, modules: &mut Modules<'r>, result: &ProcessResult) {
+	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) {
 		let previous_state = self.state;
 
 		if let Some(exit_status) = result.exit_status {
@@ -162,7 +162,7 @@ impl<'r> Process<'r> {
 		result
 	}
 
-	fn activate(&mut self, modules: &mut Modules<'r>, previous_state: State) {
+	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
 		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
 		// always trigger a resize on activate, for modules that track size
 		self.event_handler.push_event(Event::Resize(
