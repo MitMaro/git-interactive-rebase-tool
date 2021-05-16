@@ -15,21 +15,25 @@ pub use self::{util::handle_view_data_scroll, view_data_updater::ViewDataUpdater
 use crate::{
 	display::{display_color::DisplayColor, size::Size, Display},
 	view::{view_data::ViewData, view_line::ViewLine},
-	Config,
 };
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
 const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
 
-pub struct View<'v> {
-	config: &'v Config,
-	display: Display<'v>,
+pub struct View {
+	character_vertical_spacing: String,
+	display: Display,
+	help_indicator_key: String,
 }
 
-impl<'v> View<'v> {
-	pub(crate) const fn new(display: Display<'v>, config: &'v Config) -> Self {
-		Self { config, display }
+impl View {
+	pub(crate) fn new(display: Display, character_vertical_spacing: &str, help_indicator_key: &str) -> Self {
+		Self {
+			character_vertical_spacing: String::from(character_vertical_spacing),
+			display,
+			help_indicator_key: String::from(help_indicator_key),
+		}
 	}
 
 	pub(crate) fn start(&mut self) -> Result<()> {
@@ -93,8 +97,7 @@ impl<'v> View<'v> {
 			let draw_height = view_height - lines.len() - if view_data.show_title() { 1 } else { 0 };
 			self.display.ensure_at_line_start()?;
 			for _x in 0..draw_height {
-				self.display
-					.draw_str(self.config.theme.character_vertical_spacing.as_str())?;
+				self.display.draw_str(self.character_vertical_spacing.as_str())?;
 				self.display.next_line()?;
 			}
 		}
@@ -127,14 +130,7 @@ impl<'v> View<'v> {
 		self.display.set_style(false, true, false)?;
 		let window_width = self.display.get_window_size().width();
 
-		let help_indicator = self
-			.config
-			.key_bindings
-			.help
-			.first()
-			.map_or(String::from("?"), String::from);
-
-		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LABEL.len() + help_indicator.len();
+		let title_help_indicator_total_length = TITLE_HELP_INDICATOR_LABEL.len() + self.help_indicator_key.len();
 
 		if window_width >= TITLE.len() {
 			self.display.draw_str(TITLE)?;
@@ -146,7 +142,7 @@ impl<'v> View<'v> {
 				}
 				if show_help {
 					self.display
-						.draw_str(format!("{}{}", TITLE_HELP_INDICATOR_LABEL, help_indicator).as_str())?;
+						.draw_str(format!("{}{}", TITLE_HELP_INDICATOR_LABEL, self.help_indicator_key).as_str())?;
 				}
 				else {
 					let padding = " ".repeat(title_help_indicator_total_length);
@@ -181,23 +177,23 @@ mod tests {
 		display::{size::Size, CrossTerm},
 	};
 
-	pub struct TestContext<'t> {
-		pub view: View<'t>,
+	pub struct TestContext {
+		pub view: View,
 	}
 
-	impl<'t> TestContext<'t> {
+	impl<'t> TestContext {
 		fn assert_output(expected: &[&str]) {
 			assert_eq!(CrossTerm::get_output().join(""), format!("{}\n", expected.join("\n")));
 		}
 	}
 
 	pub fn view_module_test<F>(size: Size, callback: F)
-	where F: FnOnce(TestContext<'_>) {
+	where F: FnOnce(TestContext) {
 		let config = create_config();
 		let mut crossterm = CrossTerm::new();
 		crossterm.set_size(size);
-		let display = Display::new(&mut crossterm, &config.theme);
-		let view = View::new(display, &config);
+		let display = Display::new(crossterm, &config.theme);
+		let view = View::new(display, "~", "?");
 		callback(TestContext { view });
 	}
 
