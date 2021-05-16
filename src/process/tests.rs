@@ -23,8 +23,8 @@ fn window_too_small() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
@@ -48,8 +48,8 @@ fn force_abort() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut shadow_rebase_file = test_context.new_todo_file();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -76,8 +76,8 @@ fn force_rebase() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut shadow_rebase_file = test_context.new_todo_file();
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -107,8 +107,8 @@ fn error_write_todo() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let todo_path = test_context.get_todo_file_path();
 			test_context.set_todo_file_readonly();
 			let mut process = Process::new(
@@ -137,8 +137,8 @@ fn resize_window_size_okay() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
@@ -162,8 +162,8 @@ fn resize_window_size_too_small() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
@@ -189,8 +189,8 @@ fn error() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
@@ -215,8 +215,8 @@ fn handle_exit_event() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -242,8 +242,8 @@ fn handle_kill_event() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -269,8 +269,8 @@ fn other_event() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
 				test_context.event_handler_context.event_handler,
@@ -295,8 +295,8 @@ fn handle_external_command_not_executable() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -344,8 +344,8 @@ fn handle_external_command_executable_not_found() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -393,8 +393,8 @@ fn handle_external_command_status_success() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
@@ -424,8 +424,8 @@ fn handle_external_command_status_error() {
 				test_context.render_context.width(),
 				test_context.render_context.height(),
 			));
-			let display = Display::new(&mut crossterm, &test_context.config.theme);
-			let view = View::new(display, test_context.config);
+			let display = Display::new(crossterm, &test_context.config.theme);
+			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
 			let mut process = Process::new(
 				test_context.rebase_todo_file,
