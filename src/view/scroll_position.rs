@@ -13,6 +13,7 @@ pub struct ScrollPosition {
 	top_value: usize,
 	view_height: usize,
 	view_width: usize,
+	version: u32,
 }
 
 impl ScrollPosition {
@@ -24,6 +25,7 @@ impl ScrollPosition {
 			top_value: 0,
 			view_height: 0,
 			view_width: 0,
+			version: 0,
 		}
 	}
 
@@ -102,42 +104,58 @@ impl ScrollPosition {
 		self.left_value
 	}
 
-	pub(super) fn view_resize(&mut self, view_height: usize, view_width: usize) {
-		if self.view_height != view_height || self.view_width != view_width {
+	pub(super) fn set_version(&mut self, version: u32) {
+		self.version = version;
+	}
+
+	pub(super) const fn get_version(&self) -> u32 {
+		self.version
+	}
+
+	pub(super) fn set_lines_length(&mut self, lines_length: usize) {
+		self.lines_length = lines_length;
+		self.recalculate_top();
+	}
+
+	pub(super) fn set_max_line_length(&mut self, max_line_length: usize) {
+		self.max_line_width = max_line_length;
+		self.recalculate_left();
+	}
+
+	pub(super) fn resize(&mut self, view_height: usize, view_width: usize) {
+		if self.view_height != view_height {
 			self.view_height = view_height;
+			self.recalculate_top();
+		}
+
+		if self.view_width != view_width {
 			self.view_width = view_width;
-			self.recalulate();
+			self.recalculate_left();
 		}
 	}
 
-	pub(super) fn set_line_maximums(&mut self, max_line_width: usize, lines_length: usize) {
-		if self.lines_length != lines_length || self.max_line_width != max_line_width {
-			self.lines_length = lines_length;
-			self.max_line_width = max_line_width;
-			self.recalulate();
-		}
-	}
-
-	fn recalulate(&mut self) {
-		if self.view_height >= self.lines_length {
-			self.top_value = 0;
-		}
-		// recalculate top to remove any padding space below the set of lines
-		else if self.lines_length > self.view_height && (self.lines_length - self.top_value) < self.view_height {
-			self.update_top(
-				self.view_height + self.top_value - self.lines_length,
-				ScrollDirection::Up,
-			);
-		}
-
+	fn recalculate_left(&mut self) {
 		if self.view_width >= self.max_line_width {
 			self.left_value = 0;
 		}
 		// recalculate left to remove any padding space to the right
-		else if self.max_line_width > self.view_width && (self.max_line_width - self.left_value) < self.view_width {
+		else if self.max_line_width > self.view_width && self.max_line_width <= (self.view_width + self.left_value) {
 			self.update_left(
 				self.view_width + self.left_value - self.max_line_width,
 				ScrollDirection::Left,
+			);
+		}
+	}
+
+	fn recalculate_top(&mut self) {
+		if self.view_height >= self.lines_length {
+			self.top_value = 0;
+		}
+		// recalculate top to remove any padding space below the set of lines
+		else if self.lines_length > self.view_height && self.lines_length <= (self.view_height + self.top_value) {
+			self.update_top(
+				self.view_height + self.top_value - self.lines_length,
+				ScrollDirection::Up,
 			);
 		}
 	}
@@ -556,172 +574,172 @@ mod tests {
 	}
 
 	#[test]
-	fn scroll_position_view_resize_set_height_width() {
+	fn scroll_position_resize_set_height_width() {
 		let mut scroll_position = ScrollPosition::new();
-		scroll_position.view_resize(111, 222);
+		scroll_position.resize(111, 222);
 		assert_eq!(scroll_position.view_height, 111);
 		assert_eq!(scroll_position.view_width, 222);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_and_width_greater_than_number_of_lines_max_line_length() {
+	fn scroll_position_resize_view_height_and_width_greater_than_number_of_lines_max_line_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 25;
 		scroll_position.top_value = 25;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(100, 100);
+		scroll_position.resize(100, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_and_width_zero() {
+	fn scroll_position_resize_view_height_and_width_zero() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 25;
 		scroll_position.top_value = 26;
 		scroll_position.lines_length = 50;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(0, 0);
+		scroll_position.resize(0, 0);
 		assert_eq!(scroll_position.get_left_position(), 25);
 		assert_eq!(scroll_position.get_top_position(), 26);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_one_greater_than_lines_length() {
+	fn scroll_position_resize_view_height_one_greater_than_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 25;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(51, 100);
+		scroll_position.resize(51, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_exactly_lines_length() {
+	fn scroll_position_resize_view_height_exactly_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 25;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(50, 100);
+		scroll_position.resize(50, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_one_less_than_lines_length() {
+	fn scroll_position_resize_view_height_one_less_than_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 25;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(49, 100);
+		scroll_position.resize(49, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 1);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_large_resize_greater_lines_length() {
+	fn scroll_position_resize_view_height_large_resize_greater_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 10;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(20, 100);
+		scroll_position.resize(20, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 10);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_large_resize_greater_at_limit() {
+	fn scroll_position_resize_view_height_large_resize_greater_at_limit() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 10;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(40, 100);
+		scroll_position.resize(40, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 10);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_large_resize_greater_one_pass_limit() {
+	fn scroll_position_resize_view_height_large_resize_greater_one_pass_limit() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 10;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(41, 100);
+		scroll_position.resize(41, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 9);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_height_large_resize_greater_one_remain_limit() {
+	fn scroll_position_resize_view_height_large_resize_greater_one_remain_limit() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.top_value = 10;
 		scroll_position.lines_length = 50;
-		scroll_position.view_resize(49, 100);
+		scroll_position.resize(49, 100);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 1);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_one_greater_than_max_line_length() {
+	fn scroll_position_resize_view_width_one_greater_than_max_line_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 25;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 52);
+		scroll_position.resize(100, 52);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_exactly_lines_length() {
+	fn scroll_position_resize_view_width_exactly_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 25;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 51);
+		scroll_position.resize(100, 51);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_one_less_than_lines_length() {
+	fn scroll_position_resize_view_width_one_less_than_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 25;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 50);
+		scroll_position.resize(100, 50);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_large_resize_greater_lines_length() {
+	fn scroll_position_resize_view_width_large_resize_greater_lines_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 10;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 21);
+		scroll_position.resize(100, 21);
 		assert_eq!(scroll_position.get_left_position(), 10);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_large_resize_greater_at_limit() {
+	fn scroll_position_resize_view_width_large_resize_greater_at_limit() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 10;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 40);
+		scroll_position.resize(100, 40);
 		assert_eq!(scroll_position.get_left_position(), 10);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_large_resize_greater_one_pass_limit() {
+	fn scroll_position_resize_view_width_large_resize_greater_one_pass_limit() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 10;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 41);
+		scroll_position.resize(100, 41);
 		assert_eq!(scroll_position.get_left_position(), 9);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]
-	fn scroll_position_view_resize_view_width_large_resize_greater_one_remain_limit() {
+	fn scroll_position_resize_view_width_large_resize_greater_one_remain_limit() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.left_value = 10;
 		scroll_position.max_line_width = 50;
-		scroll_position.view_resize(100, 50);
+		scroll_position.resize(100, 50);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
@@ -730,7 +748,7 @@ mod tests {
 	fn scroll_position_ensure_line_visible_move_index_down_to_scroll_boundary() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 		scroll_position.ensure_line_visible(1);
@@ -747,7 +765,7 @@ mod tests {
 	fn scroll_position_ensure_line_visible_move_index_down_from_scroll_boundary_to_bottom_of_list() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(5);
 		assert_eq!(scroll_position.get_top_position(), 1);
 		scroll_position.ensure_line_visible(6);
@@ -764,7 +782,7 @@ mod tests {
 	fn scroll_position_ensure_line_visible_move_index_down_past_list_length() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(100);
 		assert_eq!(scroll_position.get_top_position(), 5);
 	}
@@ -773,7 +791,7 @@ mod tests {
 	fn scroll_position_ensure_line_visible_move_index_jump_to_bottom() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(9);
 		assert_eq!(scroll_position.get_top_position(), 5);
 	}
@@ -783,7 +801,7 @@ mod tests {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
 		scroll_position.top_value = 5;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(9);
 		assert_eq!(scroll_position.get_top_position(), 5);
 		scroll_position.ensure_line_visible(8);
@@ -801,7 +819,7 @@ mod tests {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
 		scroll_position.top_value = 5;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(4);
 		assert_eq!(scroll_position.get_top_position(), 4);
 		scroll_position.ensure_line_visible(3);
@@ -819,7 +837,7 @@ mod tests {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.lines_length = 10;
 		scroll_position.top_value = 5;
-		scroll_position.view_resize(5, 0);
+		scroll_position.resize(5, 0);
 		scroll_position.ensure_line_visible(0);
 		assert_eq!(scroll_position.get_top_position(), 0);
 	}
@@ -828,7 +846,7 @@ mod tests {
 	fn ensure_column_visible_move_index_right_to_boundary() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(0);
 		assert_eq!(scroll_position.get_left_position(), 0);
 		scroll_position.ensure_column_visible(1);
@@ -845,7 +863,7 @@ mod tests {
 	fn ensure_column_visible_move_index_right_to_end_of_line() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(5);
 		assert_eq!(scroll_position.get_left_position(), 1);
 		scroll_position.ensure_column_visible(6);
@@ -862,7 +880,7 @@ mod tests {
 	fn ensure_column_visible_move_index_right_past_end_of_line() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(100);
 		assert_eq!(scroll_position.get_left_position(), 5);
 	}
@@ -871,7 +889,7 @@ mod tests {
 	fn ensure_column_visible_move_index_jump_right_to_end() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(9);
 		assert_eq!(scroll_position.get_left_position(), 5);
 	}
@@ -881,7 +899,7 @@ mod tests {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
 		scroll_position.left_value = 5;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(9);
 		assert_eq!(scroll_position.get_left_position(), 5);
 		scroll_position.ensure_column_visible(8);
@@ -899,7 +917,7 @@ mod tests {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
 		scroll_position.left_value = 5;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(4);
 		assert_eq!(scroll_position.get_left_position(), 4);
 		scroll_position.ensure_column_visible(3);
@@ -917,28 +935,26 @@ mod tests {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 10;
 		scroll_position.left_value = 5;
-		scroll_position.view_resize(1, 5);
+		scroll_position.resize(1, 5);
 		scroll_position.ensure_column_visible(0);
 		assert_eq!(scroll_position.get_left_position(), 0);
 	}
 
 	#[test]
-	fn set_line_maximums() {
+	fn set_line_width_maximum() {
 		let mut scroll_position = ScrollPosition::new();
 		scroll_position.max_line_width = 1;
 		scroll_position.lines_length = 1;
-		scroll_position.set_line_maximums(10, 20);
+		scroll_position.set_max_line_length(10);
 		assert_eq!(scroll_position.max_line_width, 10);
-		assert_eq!(scroll_position.lines_length, 20);
 	}
 
 	#[test]
-	fn set_line_maximums_no_change() {
+	fn set_lines_maximum() {
 		let mut scroll_position = ScrollPosition::new();
-		scroll_position.max_line_width = 10;
-		scroll_position.lines_length = 20;
-		scroll_position.set_line_maximums(10, 20);
-		assert_eq!(scroll_position.max_line_width, 10);
+		scroll_position.max_line_width = 1;
+		scroll_position.lines_length = 1;
+		scroll_position.set_lines_length(20);
 		assert_eq!(scroll_position.lines_length, 20);
 	}
 }

@@ -104,7 +104,7 @@ fn render_overview_minimal_commit() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -132,7 +132,7 @@ fn render_overview_minimal_commit_compact() {
 				"{Normal}01234567",
 				"{BODY}",
 				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
 			);
 		},
@@ -159,7 +159,7 @@ fn render_overview_with_author() {
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
 				"{IndicatorColor}Author: {Normal}John Doe <john.doe@example.com>",
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -188,8 +188,8 @@ fn render_overview_with_author_compact() {
 				"{Normal}01234567",
 				"{BODY}",
 				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"{IndicatorColor}A: {Normal}John Doe <john.doe@example.com",
-				"",
+				"{IndicatorColor}A: {Normal}John Doe <john.doe@example.com>",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
 			);
 		},
@@ -216,7 +216,7 @@ fn render_overview_with_committer() {
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
 				"{IndicatorColor}Committer: {Normal}John Doe <john.doe@example.com>",
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -245,8 +245,8 @@ fn render_overview_with_committer_compact() {
 				"{Normal}01234567",
 				"{BODY}",
 				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"{IndicatorColor}C: {Normal}John Doe <john.doe@example.com",
-				"",
+				"{IndicatorColor}C: {Normal}John Doe <john.doe@example.com>",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
 			);
 		},
@@ -273,9 +273,9 @@ fn render_overview_with_commit_body() {
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
 				"{Normal}Commit title",
-				"",
+				"{Normal}",
 				"{Normal}Commit body",
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -310,7 +310,7 @@ fn render_overview_with_file_stats() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions",
 				"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
@@ -354,7 +354,7 @@ fn render_overview_with_file_stats_compact() {
 				"{Normal}01234567",
 				"{BODY}",
 				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
 				"{DiffChangeColor}R {DiffRemoveColor}file.1b{Normal}→{DiffAddColor}file.1a",
 				"{DiffAddColor}A {DiffAddColor}file.2a",
@@ -387,7 +387,7 @@ fn render_overview_single_file_changed() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}1{Normal} file{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -414,7 +414,7 @@ fn render_overview_more_than_one_file_changed() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}2{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -441,7 +441,7 @@ fn render_overview_single_insertion() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}1{Normal} insertion{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -468,7 +468,7 @@ fn render_overview_more_than_one_insertion() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}2{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}0{Normal} deletions"
 			);
@@ -495,7 +495,7 @@ fn render_overview_single_deletion() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}1{Normal} deletion"
 			);
@@ -522,7 +522,7 @@ fn render_overview_more_than_one_deletion() {
 				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 				"{BODY}",
 				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"",
+				"{Normal}",
 				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 				 {DiffRemoveColor}2{Normal} deletions"
 			);

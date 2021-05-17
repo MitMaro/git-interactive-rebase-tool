@@ -1,6 +1,7 @@
 use super::*;
 use crate::{
 	assert_process_result,
+	assert_render_action,
 	assert_rendered_output,
 	display::size::Size,
 	input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind},
@@ -86,7 +87,8 @@ fn render_compact() {
 			size: Size::new(30, 100),
 		},
 		&[],
-		|test_context: TestContext<'_>| {
+		|mut test_context: TestContext<'_>| {
+			test_context.render_context.update(30, 300);
 			let mut module = List::new(test_context.config);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -113,20 +115,11 @@ fn render_compact() {
 #[test]
 fn move_cursor_down_1() {
 	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[Event::Resize(120, 4), Event::from(MetaEvent::MoveCursorDown)],
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
+		ViewState::default(),
+		&[Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -144,24 +137,11 @@ fn move_cursor_down_1() {
 #[test]
 fn move_cursor_down_view_end() {
 	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-		],
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
+		ViewState::default(),
+		&[Event::from(MetaEvent::MoveCursorDown); 2],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -177,73 +157,22 @@ fn move_cursor_down_view_end() {
 }
 
 #[test]
-fn move_cursor_down_scroll_1() {
+fn move_cursor_down_past_end() {
 	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-		],
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
+		ViewState::default(),
+		&[Event::from(MetaEvent::MoveCursorDown); 3],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
-			);
-		},
-	);
-}
-
-#[test]
-fn move_cursor_down_scroll_bottom() {
-	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-		],
-		|mut test_context: TestContext<'_>| {
-			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c5"
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c3"
 			);
 		},
 	);
@@ -252,31 +181,24 @@ fn move_cursor_down_scroll_bottom() {
 #[test]
 fn move_cursor_down_scroll_bottom_move_up_one() {
 	process_module_test(
-		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
-		ViewState {
-			size: Size::new(120, 4),
-		},
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
+		ViewState::default(),
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 4);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
 			);
 		},
 	);
@@ -285,25 +207,16 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 #[test]
 fn move_cursor_down_scroll_bottom_move_up_top() {
 	process_module_test(
-		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
-		ViewState {
-			size: Size::new(120, 4),
-		},
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
+		ViewState::default(),
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorUp),
 			Event::from(MetaEvent::MoveCursorUp),
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 4);
-			test_context.build_view_data(&mut module);
-			test_context.handle_n_events(&mut module, 3);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -330,7 +243,6 @@ fn move_cursor_up_attempt_above_top() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -339,7 +251,8 @@ fn move_cursor_up_attempt_above_top() {
 				"{BODY}",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
 			);
 		},
 	);
@@ -355,13 +268,13 @@ fn move_cursor_down_attempt_below_bottom() {
 		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
@@ -380,7 +293,7 @@ fn move_cursor_page_up_from_top() {
 		&[Event::from(MetaEvent::MoveCursorPageUp)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
+			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -389,7 +302,8 @@ fn move_cursor_page_up_from_top() {
 				"{BODY}",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
 			);
 		},
 	);
@@ -398,29 +312,17 @@ fn move_cursor_page_up_from_top() {
 #[test]
 fn move_cursor_page_up_from_one_page_down() {
 	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
 		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 3);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			module.height = 4;
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -428,45 +330,6 @@ fn move_cursor_page_up_from_one_page_down() {
 				"{BODY}",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
-			);
-		},
-	);
-}
-
-#[test]
-fn move_cursor_page_up_from_one_page_down_plus_1() {
-	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageUp),
-		],
-		|mut test_context: TestContext<'_>| {
-			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 4);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c2",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
 			);
@@ -477,29 +340,17 @@ fn move_cursor_page_up_from_one_page_down_plus_1() {
 #[test]
 fn move_cursor_page_up_from_one_page_down_minus_1() {
 	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
 		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 3);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			module.height = 4;
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -507,7 +358,8 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 				"{BODY}",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
 			);
 		},
 	);
@@ -516,21 +368,9 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 #[test]
 fn move_cursor_page_up_from_bottom() {
 	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
 		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -538,35 +378,58 @@ fn move_cursor_page_up_from_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 6);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			module.height = 4;
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c6"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
 			);
 		},
 	);
 }
 
 #[test]
-fn move_cursor_page_home() {
+fn move_cursor_home() {
+	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
+		&[
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorHome),
+		],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			test_context.handle_all_events(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}{HELP}",
+				"{BODY}",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+			);
+		},
+	);
+}
+
+#[test]
+fn move_cursor_end() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState::default(),
 		&[Event::from(MetaEvent::MoveCursorEnd)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 5);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -582,72 +445,24 @@ fn move_cursor_page_home() {
 }
 
 #[test]
-fn move_cursor_page_end() {
+fn move_cursor_page_down_past_bottom() {
 	process_module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		ViewState::default(),
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorHome),
-		],
+		&[Event::from(MetaEvent::MoveCursorPageDown); 3],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 5);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			module.height = 4;
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
-			);
-		},
-	);
-}
-
-#[test]
-fn move_cursor_page_down_from_bottom() {
-	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
-		],
-		|mut test_context: TestContext<'_>| {
-			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 5);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c6"
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
 			);
 		},
 	);
@@ -656,20 +471,9 @@ fn move_cursor_page_down_from_bottom() {
 #[test]
 fn move_cursor_page_down_one_from_bottom() {
 	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
 		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(100, 4),
-			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
@@ -677,18 +481,16 @@ fn move_cursor_page_down_one_from_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 5);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c6"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
 			);
 		},
 	);
@@ -697,38 +499,25 @@ fn move_cursor_page_down_one_from_bottom() {
 #[test]
 fn move_cursor_page_down_one_page_from_bottom() {
 	process_module_test(
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
+		ViewState::default(),
 		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-			"pick aaa c6",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(100, 4),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_n_events(&mut module, 4);
-			test_context.build_view_data(&mut module);
-			test_context.handle_event(&mut module);
+			module.height = 4;
+			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c6"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
 			);
 		},
 	);
@@ -737,16 +526,8 @@ fn move_cursor_page_down_one_page_from_bottom() {
 #[test]
 fn mouse_scroll() {
 	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
+		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
+		ViewState::default(),
 		&[
 			Event::Mouse(MouseEvent {
 				kind: MouseEventKind::ScrollDown,
@@ -766,16 +547,9 @@ fn mouse_scroll() {
 				row: 0,
 				modifiers: KeyModifiers::empty(),
 			}),
-			Event::Mouse(MouseEvent {
-				kind: MouseEventKind::Moved,
-				column: 0,
-				row: 0,
-				modifiers: KeyModifiers::empty(),
-			}),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -822,13 +596,11 @@ fn visual_mode_start_cursor_down_one() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Event::Resize(120, 4),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -839,45 +611,6 @@ fn visual_mode_start_cursor_down_one() {
 				 {Normal(selected)}c1",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c2",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
-			);
-		},
-	);
-}
-
-#[test]
-fn visual_mode_start_move_down_below_view() {
-	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-		],
-		|mut test_context: TestContext<'_>| {
-			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
-				 {Normal(selected)}c2",
-				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
-				 {Normal(selected)}c3",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4"
 			);
 		},
 	);
@@ -897,13 +630,12 @@ fn visual_mode_start_cursor_page_down() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Event::Resize(120, 4),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
+			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -914,45 +646,9 @@ fn visual_mode_start_cursor_page_down() {
 				 {Normal(selected)}c1",
 				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
 				 {Normal(selected)}c2",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c3"
-			);
-		},
-	);
-}
-
-#[test]
-fn visual_mode_start_cursor_page_down_below_view() {
-	process_module_test(
-		&[
-			"pick aaa c1",
-			"pick aaa c2",
-			"pick aaa c3",
-			"pick aaa c4",
-			"pick aaa c5",
-		],
-		ViewState {
-			size: Size::new(120, 4),
-		},
-		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorPageDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
-		],
-		|mut test_context: TestContext<'_>| {
-			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
-				 {Normal(selected)}c3",
-				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
-				 {Normal(selected)}c4",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c5"
+				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
 			);
 		},
 	);
@@ -972,22 +668,23 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorPageDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
 				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
 				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaa      {Normal(selected)}c4",
 				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
@@ -1011,18 +708,18 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 			size: Size::new(120, 4),
 		},
 		&[
-			Event::Resize(120, 4),
-			Event::from(MetaEvent::MoveCursorPageDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorPageUp),
-			Event::from(MetaEvent::MoveCursorPageUp),
-			Event::from(MetaEvent::MoveCursorPageUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1033,7 +730,11 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
 				 {Normal(selected)}c2",
 				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
-				 {Normal(selected)}c3"
+				 {Normal(selected)}c3",
+				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
+				 {Normal(selected)}c4",
+				"{Normal(selected),Dimmed} > {ActionPick(selected)}pick   {Normal(selected)}aaa      \
+				 {Normal(selected)}c5"
 			);
 		},
 	);
@@ -1737,7 +1438,6 @@ fn visual_mode_action_change_top_bottom() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1769,7 +1469,6 @@ fn visual_mode_action_change_bottom_top() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1806,7 +1505,6 @@ fn visual_mode_action_change_drop() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1845,7 +1543,6 @@ fn visual_mode_action_change_edit() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1884,7 +1581,6 @@ fn visual_mode_action_change_fixup() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1923,7 +1619,6 @@ fn visual_mode_action_change_pick() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1962,7 +1657,6 @@ fn visual_mode_action_change_reword() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2001,7 +1695,6 @@ fn visual_mode_action_change_squash() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2120,7 +1813,6 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2161,7 +1853,6 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2200,7 +1891,6 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2241,7 +1931,6 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2283,7 +1972,6 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2323,7 +2011,6 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2363,7 +2050,6 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2405,7 +2091,6 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 		],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2753,7 +2438,6 @@ fn edit_mode_render() {
 		&[Event::from(MetaEvent::Edit)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -2794,28 +2478,13 @@ fn edit_mode_handle_event() {
 #[test]
 fn scroll_right() {
 	process_module_test(
-		&[
-			"pick aaaaaaaaaaaa this comment needs to be longer than the width of the view",
-			"pick bbbbbbbbbbbb this comment needs to be longer than the width of the view",
-			"pick cccccccccccc this comment needs to be longer than the width of the view",
-		],
-		ViewState { size: Size::new(50, 4) },
-		&[Event::from(MetaEvent::MoveCursorRight); 3],
+		&["pick aaa c1"],
+		ViewState::default(),
+		&[Event::from(MetaEvent::MoveCursorRight)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
-			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaaaaaaa {Normal(selected)}s \
-				 comment needs to be longer th",
-				"{Normal}   {ActionPick}pick   {Normal}bbbbbbbb {Normal}s comment needs to be longer th",
-				"{Normal}   {ActionPick}pick   {Normal}cccccccc {Normal}s comment needs to be longer th"
-			);
+			assert_render_action!(&test_context.event_handler_context.view_sender, "ScrollRight");
 		},
 	);
 }
@@ -2823,32 +2492,13 @@ fn scroll_right() {
 #[test]
 fn scroll_left() {
 	process_module_test(
-		&[
-			"pick aaaaaaaaaaaa this comment needs to be longer than the width of the view",
-			"pick bbbbbbbbbbbb this comment needs to be longer than the width of the view",
-			"pick cccccccccccc this comment needs to be longer than the width of the view",
-		],
-		ViewState { size: Size::new(50, 4) },
-		&[
-			Event::from(MetaEvent::MoveCursorRight),
-			Event::from(MetaEvent::MoveCursorRight),
-			Event::from(MetaEvent::MoveCursorRight),
-			Event::from(MetaEvent::MoveCursorLeft),
-		],
+		&["pick aaa c1"],
+		ViewState::default(),
+		&[Event::from(MetaEvent::MoveCursorLeft)],
 		|mut test_context: TestContext<'_>| {
 			let mut module = List::new(test_context.config);
-			test_context.update_view_data_size(&mut module);
 			test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal(selected)} > {ActionPick(selected)}pick   {Normal(selected)}aaaaaaaa {Normal(selected)}is \
-				 comment needs to be longer t",
-				"{Normal}   {ActionPick}pick   {Normal}bbbbbbbb {Normal}is comment needs to be longer t",
-				"{Normal}   {ActionPick}pick   {Normal}cccccccc {Normal}is comment needs to be longer t"
-			);
+			assert_render_action!(&test_context.event_handler_context.view_sender, "ScrollLeft");
 		},
 	);
 }
@@ -3004,6 +2654,20 @@ fn render_noop_list() {
 				"{BODY}",
 				"{Normal(selected)} > {Normal(selected)}noop   "
 			);
+		},
+	);
+}
+
+#[test]
+fn resize() {
+	process_module_test(
+		&["pick aaa c1"],
+		ViewState::default(),
+		&[Event::Resize(100, 200)],
+		|mut test_context: TestContext<'_>| {
+			let mut module = List::new(test_context.config);
+			test_context.handle_all_events(&mut module);
+			assert_eq!(module.height, 200);
 		},
 	);
 }

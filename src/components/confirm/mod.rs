@@ -22,6 +22,7 @@ impl Confirm {
 	pub fn new(prompt: &str, confirm_yes: &[String], confirm_no: &[String]) -> Self {
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
+			updater.set_retain_scroll_position(false);
 			updater.push_line(ViewLine::from(format!(
 				"{} ({}/{})? ",
 				prompt,
@@ -32,8 +33,8 @@ impl Confirm {
 		Self { view_data }
 	}
 
-	pub fn get_view_data(&mut self) -> &mut ViewData {
-		&mut self.view_data
+	pub fn get_view_data(&mut self) -> &ViewData {
+		&self.view_data
 	}
 
 	#[allow(clippy::unused_self)]

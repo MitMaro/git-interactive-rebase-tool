@@ -1,6 +1,11 @@
+use std::{
+	sync::{mpsc, mpsc::Receiver},
+	time::Duration,
+};
+
 use crate::{
-	display::{display_color::DisplayColor, size::Size},
-	view::{view_data::ViewData, view_line::ViewLine},
+	display::display_color::DisplayColor,
+	view::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 
 // TODO change how style is passed to use a Struct
@@ -50,26 +55,10 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 	}
 }
 
-fn render_view_line(view_line: &ViewLine) -> String {
+pub fn render_view_line(view_line: &ViewLine) -> String {
 	let mut line = String::new();
-	let segments = view_line.get_segments();
 
-	let should_add_padding = view_line.get_padding().as_ref().map_or(false, |padding| {
-		!(padding.get_content() == " "
-			&& padding.get_color() == DisplayColor::Normal
-			&& !padding.is_dimmed()
-			&& !padding.is_reversed()
-			&& !padding.is_underlined())
-	});
-	let segments_iter = segments.iter().take(
-		if should_add_padding {
-			segments.len() - 1
-		}
-		else {
-			segments.len()
-		},
-	);
-	for segment in segments_iter {
+	for segment in view_line.get_segments() {
 		line.push_str(
 			render_style(
 				segment.get_color(),
@@ -83,26 +72,22 @@ fn render_view_line(view_line: &ViewLine) -> String {
 		line.push_str(segment.get_content());
 	}
 	if let Some(padding) = view_line.get_padding().as_ref() {
-		// TODO remove once ViewData doesn't add a "fake" padding segment
-		if should_add_padding {
-			line.push_str(
-				render_style(
-					padding.get_color(),
-					view_line.get_selected(),
-					padding.is_dimmed(),
-					padding.is_underlined(),
-					padding.is_reversed(),
-				)
-				.as_str(),
-			);
-			line.push_str(format!("{{Pad({})}}", padding.get_content()).as_str());
-		}
+		line.push_str(
+			render_style(
+				padding.get_color(),
+				view_line.get_selected(),
+				padding.is_dimmed(),
+				padding.is_underlined(),
+				padding.is_reversed(),
+			)
+			.as_str(),
+		);
+		line.push_str(format!("{{Pad({})}}", padding.get_content()).as_str());
 	}
 	line
 }
 
-fn render_view_data(view_data: &mut ViewData, size: &Size) -> Vec<String> {
-	view_data.set_view_size(size.width(), size.height());
+fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	let mut lines = vec![];
 	if view_data.show_title() {
 		if view_data.show_help() {
@@ -143,15 +128,7 @@ fn render_view_data(view_data: &mut ViewData, size: &Size) -> Vec<String> {
 	lines
 }
 
-pub fn _assert_rendered_output(view_data: &mut ViewData, expected: &[String]) {
-	let (width, height) = view_data.get_size();
-	let output = render_view_data(
-		view_data,
-		&Size::new(
-			if width == 0 && height == 0 { 500 } else { width },
-			if width == 0 && height == 0 { 100 } else { height },
-		),
-	);
+pub fn _assert_rendered_output(output: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
 		String::from("\nUnexpected output!"),
@@ -195,14 +172,167 @@ pub fn _assert_rendered_output(view_data: &mut ViewData, expected: &[String]) {
 	}
 }
 
+pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String]) {
+	let output = render_view_data(view_data);
+	_assert_rendered_output(&output, expected);
+}
+
 #[macro_export]
 macro_rules! assert_rendered_output {
 	($view_data:expr) => {
 		let expected: Vec<String> = vec![];
-		crate::view::testutil::_assert_rendered_output($view_data, &expected);
+		crate::view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
 	};
 	($view_data:expr, $($arg:expr),*) => {
 		let expected = vec![$( String::from($arg), )*];
-		crate::view::testutil::_assert_rendered_output($view_data, &expected);
+		crate::view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
 	};
+}
+
+pub fn _assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[String]) {
+	let actions = view_sender
+		.clone_render_slice()
+		.lock()
+		.unwrap()
+		.get_actions()
+		.iter()
+		.map(|a| {
+			match *a {
+				RenderAction::ScrollDown => String::from("ScrollDown"),
+				RenderAction::ScrollUp => String::from("ScrollUp"),
+				RenderAction::ScrollRight => String::from("ScrollRight"),
+				RenderAction::ScrollLeft => String::from("ScrollLeft"),
+				RenderAction::PageUp => String::from("PageUp"),
+				RenderAction::PageDown => String::from("PageDown"),
+				RenderAction::Resize(width, height) => format!("Resize({}, {})", width, height),
+			}
+		})
+		.collect::<Vec<String>>();
+
+	let mut mismatch = false;
+	let mut error_output = vec![
+		String::from("\nUnexpected actions!"),
+		String::from("--- Expected"),
+		String::from("+++ Actual"),
+		String::from("=========="),
+	];
+
+	for (expected_action, actual_action) in expected_actions.iter().zip(actions.iter()) {
+		if expected_action == actual_action {
+			error_output.push(format!(" {}", expected_action));
+		}
+		else {
+			mismatch = true;
+			error_output.push(format!("-{}", expected_action));
+			error_output.push(format!("+{}", actual_action));
+		}
+	}
+
+	match expected_actions.len() {
+		a if a > actions.len() => {
+			mismatch = true;
+			for action in expected_actions.iter().skip(actions.len()) {
+				error_output.push(format!("-{}", action));
+			}
+		},
+		a if a < actions.len() => {
+			mismatch = true;
+			for action in actions.iter().skip(expected_actions.len()) {
+				error_output.push(format!("+{}", action));
+			}
+		},
+		_ => {},
+	}
+
+	if mismatch {
+		error_output.push(String::from("==========\n"));
+		panic!("{}", error_output.join("\n"));
+	}
+}
+
+fn action_to_string(action: &ViewAction) -> String {
+	String::from(match *action {
+		ViewAction::Stop => "Stop",
+		ViewAction::Refresh => "Refresh",
+		ViewAction::Render => "Render",
+		ViewAction::Start => "Start",
+		ViewAction::End => "End",
+	})
+}
+
+#[macro_export]
+macro_rules! assert_render_action {
+	($sender:expr, $($arg:expr),*) => {
+		let expected = vec![$( String::from($arg), )*];
+		crate::view::testutil::_assert_view_sender_actions($sender, &expected);
+	};
+}
+
+pub struct TestContext {
+	pub view_sender: ViewSender,
+	pub receiver: Receiver<ViewAction>,
+}
+
+impl TestContext {
+	pub fn drop_receiver(&mut self) {
+		let (_, receiver) = mpsc::channel();
+		self.receiver = receiver;
+	}
+
+	pub fn assert_render_action(&self, actions: &[&str]) {
+		_assert_view_sender_actions(
+			&self.view_sender,
+			actions
+				.iter()
+				.map(|s| String::from(*s))
+				.collect::<Vec<String>>()
+				.as_slice(),
+		);
+	}
+
+	pub fn assert_sent_messages(&self, messages: Vec<&str>) {
+		let mut mismatch = false;
+		let mut error_output = vec![
+			String::from("\nUnexpected messages!"),
+			String::from("--- Expected"),
+			String::from("+++ Actual"),
+			String::from("=========="),
+		];
+
+		for message in messages {
+			if let Ok(action) = self.receiver.recv_timeout(Duration::new(1, 0)) {
+				let action_name = action_to_string(&action);
+				if message == action_name {
+					error_output.push(format!(" {}", message));
+				}
+				else {
+					mismatch = true;
+					error_output.push(format!("-{}", message));
+					error_output.push(format!("+{}", action_name));
+				}
+			}
+			else {
+				error_output.push(format!("-{}", message));
+			}
+		}
+
+		// wait some time for any other actions that were sent that should have not been
+		while let Ok(action) = self.receiver.recv_timeout(Duration::new(0, 10000)) {
+			mismatch = true;
+			error_output.push(format!("+{}", action_to_string(&action)));
+		}
+
+		if mismatch {
+			error_output.push(String::from("==========\n"));
+			panic!("{}", error_output.join("\n"));
+		}
+	}
+}
+
+pub fn with_view_sender<C>(callback: C)
+where C: FnOnce(TestContext) {
+	let (sender, receiver) = mpsc::channel();
+	let view_sender = ViewSender::new(sender);
+
+	callback(TestContext { view_sender, receiver });
 }

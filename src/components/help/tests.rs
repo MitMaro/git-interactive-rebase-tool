@@ -52,7 +52,7 @@ fn input_continue_active(event: Event) {
 	with_event_handler(&[event], |context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();
-		module.handle_event(&context.event_handler);
+		module.handle_event(&context.event_handler, &context.view_sender);
 		assert!(module.is_active());
 	});
 }
@@ -62,7 +62,7 @@ fn input_other() {
 	with_event_handler(&[Event::from('a')], |context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();
-		module.handle_event(&context.event_handler);
+		module.handle_event(&context.event_handler, &context.view_sender);
 		assert!(!module.is_active());
 	});
 }

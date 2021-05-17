@@ -15,7 +15,7 @@ use crate::{
 	},
 	show_commit::ShowCommit,
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData},
+	view::{render_context::RenderContext, view_data::ViewData, ViewSender},
 };
 
 pub struct Modules<'m> {
@@ -69,7 +69,7 @@ impl<'m> Modules<'m> {
 		state: State,
 		render_context: &RenderContext,
 		rebase_todo: &TodoFile,
-	) -> &mut ViewData {
+	) -> &ViewData {
 		self.get_mut_module(state).build_view_data(render_context, rebase_todo)
 	}
 
@@ -77,9 +77,11 @@ impl<'m> Modules<'m> {
 		&mut self,
 		state: State,
 		event_handler: &EventHandler,
+		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
-		self.get_mut_module(state).handle_events(event_handler, rebase_todo)
+		self.get_mut_module(state)
+			.handle_events(event_handler, view_sender, rebase_todo)
 	}
 
 	pub fn set_error_message(&mut self, error: &anyhow::Error) {
@@ -125,6 +127,7 @@ mod tests {
 				modules.handle_input(
 					state,
 					&test_context.event_handler_context.event_handler,
+					&test_context.event_handler_context.view_sender,
 					&mut test_context.rebase_todo_file,
 				);
 				modules.build_view_data(state, &test_context.render_context, &test_context.rebase_todo_file);

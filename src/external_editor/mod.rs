@@ -14,7 +14,7 @@ use crate::{
 	input::{Event, EventHandler, InputOptions, MetaEvent},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 
 lazy_static! {
@@ -54,14 +54,14 @@ impl ProcessModule for ExternalEditor {
 		self.view_data.update_view_data(|updater| updater.clear());
 	}
 
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
 		match self.state {
 			ExternalEditorState::Active => {
 				self.view_data.update_view_data(|updater| {
 					updater.clear();
 					updater.push_leading_line(ViewLine::from("Editing..."));
 				});
-				&mut self.view_data
+				&self.view_data
 			},
 			ExternalEditorState::Empty => self.empty_choice.get_view_data(),
 			ExternalEditorState::Error(ref error) => {
@@ -72,7 +72,12 @@ impl ProcessModule for ExternalEditor {
 		}
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_events(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		todo_file: &mut TodoFile,
+	) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
@@ -102,7 +107,7 @@ impl ProcessModule for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Empty => {
-				let (choice, event) = self.empty_choice.handle_event(event_handler);
+				let (choice, event) = self.empty_choice.handle_event(event_handler, view_sender);
 				result = result.event(event);
 				if let Some(action) = choice {
 					match *action {
@@ -117,7 +122,7 @@ impl ProcessModule for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let (choice, event) = self.error_choice.handle_event(event_handler);
+				let (choice, event) = self.error_choice.handle_event(event_handler, view_sender);
 				result = result.event(event);
 				if let Some(action) = choice {
 					match *action {
