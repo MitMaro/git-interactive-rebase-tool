@@ -26,7 +26,7 @@ pub struct TestContext<'t> {
 }
 
 impl<'t> TestContext<'t> {
-	fn get_build_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc mut ViewData {
+	fn get_build_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
 		module.build_view_data(&self.render_context, &self.rebase_todo_file)
 	}
 
@@ -39,25 +39,26 @@ impl<'t> TestContext<'t> {
 		module.deactivate();
 	}
 
-	pub fn update_view_data_size(&self, module: &'_ mut dyn ProcessModule) {
-		let view_data = self.get_build_data(module);
-		view_data.set_view_size(self.render_context.width(), self.render_context.height());
-	}
-
-	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc mut ViewData {
-		let view_data = self.get_build_data(module);
-		view_data.set_view_size(self.render_context.width(), self.render_context.height());
-		view_data
+	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
+		self.get_build_data(module)
 	}
 
 	pub fn handle_event(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
-		module.handle_events(&self.event_handler_context.event_handler, &mut self.rebase_todo_file)
+		module.handle_events(
+			&self.event_handler_context.event_handler,
+			&self.event_handler_context.view_sender,
+			&mut self.rebase_todo_file,
+		)
 	}
 
 	pub fn handle_n_events(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_events(&self.event_handler_context.event_handler, &mut self.rebase_todo_file));
+			results.push(module.handle_events(
+				&self.event_handler_context.event_handler,
+				&self.event_handler_context.view_sender,
+				&mut self.rebase_todo_file,
+			));
 		}
 		results
 	}
@@ -65,7 +66,11 @@ impl<'t> TestContext<'t> {
 	pub fn handle_all_events(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.event_handler_context.number_events {
-			results.push(module.handle_events(&self.event_handler_context.event_handler, &mut self.rebase_todo_file));
+			results.push(module.handle_events(
+				&self.event_handler_context.event_handler,
+				&self.event_handler_context.view_sender,
+				&mut self.rebase_todo_file,
+			));
 		}
 		results
 	}

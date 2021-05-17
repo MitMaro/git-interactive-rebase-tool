@@ -10,7 +10,7 @@ use crate::{
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
+	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 
 pub struct Insert {
@@ -27,17 +27,22 @@ impl ProcessModule for Insert {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
 		match self.state {
 			InsertState::Prompt => self.action_choices.get_view_data(),
 			InsertState::Edit => self.edit.get_view_data(),
 		}
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_events(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
 		match self.state {
 			InsertState::Prompt => {
-				let (choice, event) = self.action_choices.handle_event(event_handler);
+				let (choice, event) = self.action_choices.handle_event(event_handler, view_sender);
 				let mut result = ProcessResult::from(event);
 				if let Some(action) = choice {
 					if action == &LineType::Cancel {

@@ -32,7 +32,7 @@ use crate::{
 		view_builder::{ViewBuilder, ViewBuilderOptions},
 	},
 	todo_file::TodoFile,
-	view::{handle_view_data_scroll, render_context::RenderContext, view_data::ViewData},
+	view::{handle_view_data_scroll, render_context::RenderContext, view_data::ViewData, ViewSender},
 };
 
 lazy_static! {
@@ -65,12 +65,12 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			}
 			self.overview_view_data.update_view_data(|updater| {
 				updater.clear();
-				updater.reset();
+				updater.reset_scroll_position();
 			});
 
 			self.diff_view_data.update_view_data(|updater| {
 				updater.clear();
-				updater.reset();
+				updater.reset_scroll_position();
 			});
 
 			let new_commit = Commit::new_from_hash(selected_line.get_hash(), LoadCommitDiffOptions {
@@ -98,7 +98,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 		}
 	}
 
-	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &ViewData {
 		if self.help.is_active() {
 			return self.help.get_view_data();
 		}
@@ -115,7 +115,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 						view_builder.build_view_data_for_overview(updater, commit, is_full_width);
 					});
 				}
-				&mut self.overview_view_data
+				&self.overview_view_data
 			},
 			ShowCommitState::Diff => {
 				if self.diff_view_data.is_empty() {
@@ -123,14 +123,19 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 						view_builder.build_view_data_diff(updater, commit, is_full_width);
 					});
 				}
-				&mut self.diff_view_data
+				&self.diff_view_data
 			},
 		}
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		_: &mut TodoFile,
+	) -> ProcessResult {
 		if self.help.is_active() {
-			return ProcessResult::from(self.help.handle_event(event_handler));
+			return ProcessResult::from(self.help.handle_event(event_handler, view_sender));
 		}
 
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, key_bindings| {
@@ -149,7 +154,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 			ShowCommitState::Diff => &mut self.diff_view_data,
 		};
 
-		if handle_view_data_scroll(event, active_view_data).is_none() {
+		if handle_view_data_scroll(event, view_sender).is_none() {
 			match event {
 				Event::Meta(meta_event) if meta_event == MetaEvent::ShowDiff => {
 					active_view_data.update_view_data(|updater| updater.clear());
