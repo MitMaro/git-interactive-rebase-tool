@@ -17,7 +17,13 @@ use crate::{
 	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
-	view::{line_segment::LineSegment, render_context::RenderContext, view_data::ViewData, view_line::ViewLine},
+	view::{
+		line_segment::LineSegment,
+		render_context::RenderContext,
+		view_data::ViewData,
+		view_line::ViewLine,
+		ViewSender,
+	},
 };
 
 #[derive(Debug, PartialEq)]
@@ -39,7 +45,7 @@ pub struct List<'l> {
 }
 
 impl<'l> ProcessModule for List<'l> {
-	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
 			ListState::Visual => self.get_visual_mode_view_data(todo_file, context),
@@ -47,10 +53,15 @@ impl<'l> ProcessModule for List<'l> {
 		}
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_events(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		todo_file: &mut TodoFile,
+	) -> ProcessResult {
 		match self.state {
-			ListState::Normal => self.handle_normal_mode_input(event_handler, todo_file),
-			ListState::Visual => self.handle_visual_mode_input(event_handler, todo_file),
+			ListState::Normal => self.handle_normal_mode_input(event_handler, view_sender, todo_file),
+			ListState::Visual => self.handle_visual_mode_input(event_handler, view_sender, todo_file),
 			ListState::Edit => self.handle_edit_mode_input(event_handler, todo_file),
 		}
 	}
@@ -102,7 +113,7 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &mut ViewData {
+	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
@@ -139,10 +150,10 @@ impl<'l> List<'l> {
 			}
 			updater.ensure_line_visible(selected_index);
 		});
-		&mut self.view_data
+		&self.view_data
 	}
 
-	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &mut ViewData {
+	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &ViewData {
 		if self.visual_mode_help.is_active() {
 			self.visual_mode_help.get_view_data()
 		}
@@ -151,7 +162,7 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &mut ViewData {
+	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &ViewData {
 		if self.normal_mode_help.is_active() {
 			self.normal_mode_help.get_view_data()
 		}
@@ -160,13 +171,18 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn handle_common_list_input(&mut self, event: Event, rebase_todo: &mut TodoFile) -> Option<ProcessResult> {
+	fn handle_common_list_input(
+		&mut self,
+		event: Event,
+		view_sender: &ViewSender,
+		rebase_todo: &mut TodoFile,
+	) -> Option<ProcessResult> {
 		let mut result = ProcessResult::from(event);
 		match event {
 			Event::Meta(meta_event) => {
 				match meta_event {
-					MetaEvent::MoveCursorLeft => self.view_data.update_view_data(|updater| updater.scroll_left()),
-					MetaEvent::MoveCursorRight => self.view_data.update_view_data(|updater| updater.scroll_right()),
+					MetaEvent::MoveCursorLeft => view_sender.scroll_left(),
+					MetaEvent::MoveCursorRight => view_sender.scroll_right(),
 					MetaEvent::MoveCursorDown => Self::move_cursor_down(rebase_todo, 1),
 					MetaEvent::MoveCursorUp => Self::move_cursor_up(rebase_todo, 1),
 					MetaEvent::MoveCursorPageDown => Self::move_cursor_down(rebase_todo, self.height / 2),
@@ -280,13 +296,18 @@ impl<'l> List<'l> {
 		Some(result)
 	}
 
-	fn handle_normal_mode_input(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_normal_mode_input(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
 		if self.normal_mode_help.is_active() {
-			return ProcessResult::from(self.normal_mode_help.handle_event(event_handler));
+			return ProcessResult::from(self.normal_mode_help.handle_event(event_handler, view_sender));
 		}
 
 		let event = get_event(event_handler);
-		if let Some(result) = self.handle_common_list_input(event, rebase_todo) {
+		if let Some(result) = self.handle_common_list_input(event, view_sender, rebase_todo) {
 			result
 		}
 		else {
@@ -339,13 +360,18 @@ impl<'l> List<'l> {
 		}
 	}
 
-	fn handle_visual_mode_input(&mut self, event_handler: &EventHandler, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_visual_mode_input(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		rebase_todo: &mut TodoFile,
+	) -> ProcessResult {
 		if self.visual_mode_help.is_active() {
-			return ProcessResult::from(self.visual_mode_help.handle_event(event_handler));
+			return ProcessResult::from(self.visual_mode_help.handle_event(event_handler, view_sender));
 		}
 
 		let event = get_event(event_handler);
-		self.handle_common_list_input(event, rebase_todo)
+		self.handle_common_list_input(event, view_sender, rebase_todo)
 			.unwrap_or_else(|| ProcessResult::from(event))
 	}
 

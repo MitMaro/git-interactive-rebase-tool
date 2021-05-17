@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use crate::{
 	display::CrossTerm,
 	input::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent},
+	view::{testutil::with_view_sender, ViewSender},
 };
 
 #[allow(clippy::match_same_arms)]
@@ -143,6 +144,7 @@ pub fn create_event_handler() -> EventHandler {
 pub struct TestContext {
 	pub event_handler: EventHandler,
 	pub number_events: usize,
+	pub view_sender: ViewSender,
 }
 
 impl TestContext {
@@ -158,22 +160,26 @@ impl TestContext {
 
 pub fn with_event_handler<C>(events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
-	let crossterm_events = RefCell::new(
-		events
-			.iter()
-			.map(|input| map_event_to_crossterm(*input))
-			.collect::<Vec<crossterm::event::Event>>(),
-	);
-	crossterm_events.borrow_mut().reverse();
-	let mut event_handler = create_event_handler();
+	with_view_sender(|view_sender_context| {
+		let crossterm_events = RefCell::new(
+			events
+				.iter()
+				.map(|input| map_event_to_crossterm(*input))
+				.collect::<Vec<crossterm::event::Event>>(),
+		);
 
-	event_handler.set_event_provider(move || {
-		let mut ct_events = crossterm_events.borrow_mut();
-		Ok(ct_events.pop())
-	});
+		crossterm_events.borrow_mut().reverse();
+		let mut event_handler = create_event_handler();
 
-	callback(TestContext {
-		event_handler,
-		number_events: events.len(),
+		event_handler.set_event_provider(move || {
+			let mut ct_events = crossterm_events.borrow_mut();
+			Ok(ct_events.pop())
+		});
+
+		callback(TestContext {
+			event_handler,
+			number_events: events.len(),
+			view_sender: view_sender_context.view_sender,
+		});
 	});
 }

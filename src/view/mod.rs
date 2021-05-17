@@ -1,21 +1,31 @@
+mod action;
 pub mod line_segment;
 pub mod render_context;
-pub mod scroll_position;
+mod render_slice;
+mod scroll_position;
+mod sender;
+mod thread;
 mod util;
 pub mod view_data;
 mod view_data_updater;
 pub mod view_line;
 
 #[cfg(test)]
+mod tests;
+#[cfg(test)]
 pub mod testutil;
 
 use anyhow::Result;
 
-pub use self::{util::handle_view_data_scroll, view_data_updater::ViewDataUpdater};
-use crate::{
-	display::{display_color::DisplayColor, size::Size, Display},
-	view::{view_data::ViewData, view_line::ViewLine},
+use self::{render_slice::RenderSlice, view_line::ViewLine};
+pub use self::{
+	sender::Sender as ViewSender,
+	thread::spawn_view_thread,
+	util::handle_view_data_scroll,
+	view_data::ViewData,
+	view_data_updater::ViewDataUpdater,
 };
+use crate::display::{display_color::DisplayColor, size::Size, Display};
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
@@ -25,6 +35,7 @@ pub struct View {
 	character_vertical_spacing: String,
 	display: Display,
 	help_indicator_key: String,
+	last_render_version: u32,
 }
 
 impl View {
@@ -33,6 +44,7 @@ impl View {
 			character_vertical_spacing: String::from(character_vertical_spacing),
 			display,
 			help_indicator_key: String::from(help_indicator_key),
+			last_render_version: u32::MAX,
 		}
 	}
 
@@ -48,36 +60,43 @@ impl View {
 		self.display.get_window_size()
 	}
 
-	pub(crate) fn render(&mut self, view_data: &mut ViewData) -> Result<()> {
+	pub(crate) fn render(&mut self, render_slice: &RenderSlice) -> Result<()> {
+		let current_render_version = render_slice.get_version();
+		if self.last_render_version == current_render_version {
+			return Ok(());
+		}
+		self.last_render_version = current_render_version;
 		let view_size = self.get_view_size();
 		let window_height = view_size.height();
-		view_data.set_view_size(view_size.width(), window_height);
 
 		self.display.clear()?;
 
 		self.display.ensure_at_line_start()?;
-		if view_data.show_title() {
+		if render_slice.show_title() {
 			self.display.ensure_at_line_start()?;
-			self.draw_title(view_data.show_help())?;
+			self.draw_title(render_slice.show_help())?;
 			self.display.next_line()?;
 		}
 
-		let leading_lines = view_data.get_leading_lines();
-		let lines = view_data.get_lines();
-		let trailing_lines = view_data.get_trailing_lines();
+		let lines = render_slice.get_lines();
+		let leading_line_count = render_slice.get_leading_lines_count();
+		let trailing_line_count = render_slice.get_trailing_lines_count();
+		let lines_count = lines.len() - leading_line_count - trailing_line_count;
+		let show_scroll_bar = render_slice.should_show_scroll_bar();
+		let scroll_indicator_index = render_slice.get_scroll_index();
+		let view_height = window_height - leading_line_count - trailing_line_count;
 
-		let view_height = window_height - leading_lines.len() - trailing_lines.len();
+		let leading_lines_iter = lines.iter().take(leading_line_count);
+		let lines_iter = lines.iter().skip(leading_line_count).take(lines_count);
+		let trailing_lines_iter = lines.iter().skip(leading_line_count + lines_count);
 
-		let show_scroll_bar = view_data.should_show_scroll_bar();
-		let scroll_indicator_index = view_data.get_scroll_index();
-
-		for line in leading_lines {
+		for line in leading_lines_iter {
 			self.display.ensure_at_line_start()?;
 			self.draw_view_line(line)?;
 			self.display.next_line()?;
 		}
 
-		for (index, line) in lines.iter().enumerate() {
+		for (index, line) in lines_iter.enumerate() {
 			self.display.ensure_at_line_start()?;
 			self.draw_view_line(line)?;
 			if show_scroll_bar {
@@ -91,10 +110,10 @@ impl View {
 			self.display.next_line()?;
 		}
 
-		if view_height > lines.len() {
+		if view_height > lines_count {
 			self.display.color(DisplayColor::Normal, false)?;
 			self.display.set_style(false, false, false)?;
-			let draw_height = view_height - lines.len() - if view_data.show_title() { 1 } else { 0 };
+			let draw_height = view_height - lines_count - if render_slice.show_title() { 1 } else { 0 };
 			self.display.ensure_at_line_start()?;
 			for _x in 0..draw_height {
 				self.display.draw_str(self.character_vertical_spacing.as_str())?;
@@ -102,7 +121,7 @@ impl View {
 			}
 		}
 
-		for line in trailing_lines {
+		for line in trailing_lines_iter {
 			self.display.ensure_at_line_start()?;
 			self.draw_view_line(line)?;
 			self.display.next_line()?;
@@ -166,208 +185,5 @@ impl View {
 		self.display.color(DisplayColor::Normal, false)?;
 		self.display.set_style(false, false, false)?;
 		Ok(())
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::{
-		config::testutil::create_config,
-		display::{size::Size, CrossTerm},
-	};
-
-	pub struct TestContext {
-		pub view: View,
-	}
-
-	impl<'t> TestContext {
-		fn assert_output(expected: &[&str]) {
-			assert_eq!(CrossTerm::get_output().join(""), format!("{}\n", expected.join("\n")));
-		}
-	}
-
-	pub fn view_module_test<F>(size: Size, callback: F)
-	where F: FnOnce(TestContext) {
-		let config = create_config();
-		let mut crossterm = CrossTerm::new();
-		crossterm.set_size(size);
-		let display = Display::new(crossterm, &config.theme);
-		let view = View::new(display, "~", "?");
-		callback(TestContext { view });
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_empty() {
-		view_module_test(Size::new(20, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			test_context.view.render(&mut view_data).unwrap();
-			TestContext::assert_output(&["~"; 10]);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_title_full_width() {
-		view_module_test(Size::new(35, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.set_show_title(true);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["Git Interactive Rebase Tool        "];
-			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_title_short_title() {
-		view_module_test(Size::new(26, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.set_show_title(true);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["Git Rebase                "];
-			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_title_full_width_with_help() {
-		view_module_test(Size::new(35, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.set_show_title(true);
-			view_data.set_show_help(true);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["Git Interactive Rebase Tool Help: ?"];
-			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_title_full_width_with_help_enabled_but_not_enough_length() {
-		view_module_test(Size::new(34, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.set_show_title(true);
-			view_data.set_show_help(true);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["Git Interactive Rebase Tool       "];
-			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_leading_lines() {
-		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.push_leading_line(ViewLine::from("This is a leading line"));
-			view_data.set_view_size(30, 10);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["This is a leading line"];
-			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_normal_lines() {
-		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.push_line(ViewLine::from("This is a line"));
-			view_data.set_view_size(30, 10);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["This is a line"];
-			expected.extend(vec!["~"; 9]);
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_tailing_lines() {
-		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
-			view_data.set_view_size(30, 10);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["~"; 9];
-			expected.push("This is a trailing line");
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_all_lines() {
-		view_module_test(Size::new(30, 10), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.push_leading_line(ViewLine::from("This is a leading line"));
-			view_data.push_line(ViewLine::from("This is a line"));
-			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
-			view_data.set_view_size(30, 10);
-			test_context.view.render(&mut view_data).unwrap();
-			let mut expected = vec!["This is a leading line", "This is a line"];
-			expected.extend(vec!["~"; 7]);
-			expected.push("This is a trailing line");
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_with_full_screen_data() {
-		view_module_test(Size::new(30, 6), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.push_leading_line(ViewLine::from("This is a leading line"));
-			view_data.push_line(ViewLine::from("This is line 1"));
-			view_data.push_line(ViewLine::from("This is line 2"));
-			view_data.push_line(ViewLine::from("This is line 3"));
-			view_data.push_line(ViewLine::from("This is line 4"));
-			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
-			view_data.set_view_size(30, 6);
-			test_context.view.render(&mut view_data).unwrap();
-			let expected = vec![
-				"This is a leading line",
-				"This is line 1",
-				"This is line 2",
-				"This is line 3",
-				"This is line 4",
-				"This is a trailing line",
-			];
-			TestContext::assert_output(&expected);
-		});
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn render_with_scroll_bar() {
-		view_module_test(Size::new(30, 6), |mut test_context| {
-			let mut view_data = ViewData::new(|_| {});
-			view_data.push_leading_line(ViewLine::from("This is a leading line"));
-			view_data.push_line(ViewLine::from("This is line 1"));
-			view_data.push_line(ViewLine::from("This is line 2"));
-			view_data.push_line(ViewLine::from("This is line 3"));
-			view_data.push_line(ViewLine::from("This is line 4"));
-			view_data.push_line(ViewLine::from("This is line 5"));
-			view_data.push_trailing_line(ViewLine::from("This is a trailing line"));
-			view_data.set_view_size(30, 6);
-			test_context.view.render(&mut view_data).unwrap();
-			let expected = vec![
-				"This is a leading line",
-				"This is line 1█",
-				"This is line 2 ",
-				"This is line 3 ",
-				"This is line 4 ",
-				"This is a trailing line",
-			];
-			TestContext::assert_output(&expected);
-		});
 	}
 }

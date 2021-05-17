@@ -3,7 +3,7 @@ use crate::{
 	input::EventHandler,
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData},
+	view::{render_context::RenderContext, view_data::ViewData, ViewSender},
 };
 
 pub struct ConfirmRebase {
@@ -11,11 +11,11 @@ pub struct ConfirmRebase {
 }
 
 impl ProcessModule for ConfirmRebase {
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
 		self.dialog.get_view_data()
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(&mut self, event_handler: &EventHandler, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
 		let (confirmed, event) = self.dialog.handle_event(event_handler);
 		let mut result = ProcessResult::from(event);
 		match confirmed {

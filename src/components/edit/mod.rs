@@ -38,7 +38,7 @@ impl Edit {
 		}
 	}
 
-	pub fn get_view_data(&mut self) -> &mut ViewData {
+	pub fn get_view_data(&mut self) -> &ViewData {
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
 
@@ -90,7 +90,7 @@ impl Edit {
 			updater.ensure_column_visible(pointer);
 			updater.ensure_line_visible(0);
 		});
-		&mut self.view_data
+		&self.view_data
 	}
 
 	pub fn handle_event(&mut self, event_handler: &EventHandler) -> Event {

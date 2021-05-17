@@ -34,6 +34,10 @@ unicode-segmentation = "1.7.1"
 unicode-width = "0.1.8"
 xi-unicode = "0.3.0"
 
+[dependencies.uuid]
+version = "0.8.1"
+features = ["v4"]
+
 [dependencies.git2]
 version = "0.13.20"
 default-features = false

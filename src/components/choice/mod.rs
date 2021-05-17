@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use crate::{
 	display::display_color::DisplayColor,
 	input::{Event, EventHandler, InputOptions, KeyCode},
-	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
+	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 
 lazy_static! {
@@ -38,6 +38,7 @@ where T: Clone
 			options,
 			view_data: ViewData::new(|updater| {
 				updater.set_show_title(true);
+				updater.set_retain_scroll_position(false);
 			}),
 			invalid_selection: false,
 		}
@@ -53,7 +54,7 @@ where T: Clone
 		});
 	}
 
-	pub fn get_view_data(&mut self) -> &mut ViewData {
+	pub fn get_view_data(&mut self) -> &ViewData {
 		let options = &self.options;
 		let invalid_selection = self.invalid_selection;
 		self.view_data.update_view_data(|updater| {
@@ -75,13 +76,13 @@ where T: Clone
 				)));
 			}
 		});
-		&mut self.view_data
+		&self.view_data
 	}
 
-	pub fn handle_event(&mut self, event_handler: &EventHandler) -> (Option<&T>, Event) {
+	pub fn handle_event(&mut self, event_handler: &EventHandler, view_sender: &ViewSender) -> (Option<&T>, Event) {
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 
-		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(key_event) = event {
 				if let KeyCode::Char(c) = key_event.code {
 					if let Some(v) = self.map.get(&c) {

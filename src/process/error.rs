@@ -11,6 +11,7 @@ use crate::{
 		render_context::RenderContext,
 		view_data::ViewData,
 		view_line::ViewLine,
+		ViewSender,
 	},
 };
 
@@ -29,14 +30,19 @@ impl ProcessModule for Error {
 		ProcessResult::new()
 	}
 
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &mut ViewData {
-		&mut self.view_data
+	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
+		&self.view_data
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &mut TodoFile) -> ProcessResult {
+	fn handle_events(
+		&mut self,
+		event_handler: &EventHandler,
+		view_sender: &ViewSender,
+		_: &mut TodoFile,
+	) -> ProcessResult {
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 		let mut result = ProcessResult::from(event);
-		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(_) = event {
 				result = result.state(self.return_state);
 			}
@@ -49,7 +55,10 @@ impl Error {
 	pub fn new() -> Self {
 		Self {
 			return_state: State::List,
-			view_data: ViewData::new(|updater| updater.set_show_title(true)),
+			view_data: ViewData::new(|updater| {
+				updater.set_show_title(true);
+				updater.set_retain_scroll_position(false);
+			}),
 		}
 	}
 

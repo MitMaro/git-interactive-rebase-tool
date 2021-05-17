@@ -6,7 +6,7 @@ use unicode_segmentation::UnicodeSegmentation;
 use crate::{
 	display::display_color::DisplayColor,
 	input::{Event, EventHandler, InputOptions},
-	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
+	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 
 lazy_static! {
@@ -35,6 +35,7 @@ impl Help {
 		let max_key_length = Self::get_max_help_key_length(keybindings);
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
+			updater.set_retain_scroll_position(false);
 			updater.push_leading_line(
 				ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
 					format!(" {0:width$} Action", "Key", width = max_key_length).as_str(),
@@ -71,14 +72,14 @@ impl Help {
 		}
 	}
 
-	pub fn get_view_data(&mut self) -> &mut ViewData {
-		&mut self.view_data
+	pub fn get_view_data(&mut self) -> &ViewData {
+		&self.view_data
 	}
 
-	pub fn handle_event(&mut self, event_handler: &EventHandler) -> Event {
+	pub fn handle_event(&mut self, event_handler: &EventHandler, view_sender: &ViewSender) -> Event {
 		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 
-		if handle_view_data_scroll(event, &mut self.view_data).is_none() {
+		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(_) = event {
 				self.active = false;
 			}
