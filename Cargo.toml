@@ -34,7 +34,7 @@ xi-unicode = "0.3.0"
 crossterm = "0.19.0"
 
 [dependencies.git2]
-version = "0.13.18"
+version = "0.13.20"
 default-features = false
 features = []
 
