@@ -88,12 +88,12 @@ mod tests {
 		assert_process_result,
 		assert_rendered_output,
 		input::{Event, MetaEvent},
-		process::testutil::{process_module_test, TestContext, ViewState},
+		process::testutil::{process_module_test, TestContext},
 	};
 
 	#[test]
 	fn simple_error() {
-		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+		process_module_test(&[], &[], |test_context: TestContext<'_>| {
 			let mut module = Error::new();
 			module.set_error_message(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -110,7 +110,7 @@ mod tests {
 
 	#[test]
 	fn error_with_contest() {
-		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+		process_module_test(&[], &[], |test_context: TestContext<'_>| {
 			let mut module = Error::new();
 			module.set_error_message(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -128,7 +128,7 @@ mod tests {
 
 	#[test]
 	fn error_with_newlines() {
-		process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+		process_module_test(&[], &[], |test_context: TestContext<'_>| {
 			let mut module = Error::new();
 			module.set_error_message(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -148,43 +148,32 @@ mod tests {
 
 	#[test]
 	fn return_state() {
-		process_module_test(
-			&[],
-			ViewState::default(),
-			&[Event::from('a')],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Error::new();
-				test_context.activate(&mut module, State::ConfirmRebase);
-				module.set_error_message(&anyhow!("Test Error"));
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from('a'),
-					state = State::ConfirmRebase
-				);
-			},
-		);
+		process_module_test(&[], &[Event::from('a')], |mut test_context: TestContext<'_>| {
+			let mut module = Error::new();
+			test_context.activate(&mut module, State::ConfirmRebase);
+			module.set_error_message(&anyhow!("Test Error"));
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from('a'),
+				state = State::ConfirmRebase
+			);
+		});
 	}
 
 	#[test]
 	fn resize() {
-		process_module_test(
-			&[],
-			ViewState::default(),
-			&[Event::Resize(100, 100)],
-			|mut test_context: TestContext<'_>| {
-				let mut module = Error::new();
-				test_context.activate(&mut module, State::ConfirmRebase);
-				module.set_error_message(&anyhow!("Test Error"));
-				assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
-			},
-		);
+		process_module_test(&[], &[Event::Resize(100, 100)], |mut test_context: TestContext<'_>| {
+			let mut module = Error::new();
+			test_context.activate(&mut module, State::ConfirmRebase);
+			module.set_error_message(&anyhow!("Test Error"));
+			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
+		});
 	}
 
 	#[test]
 	fn scroll_events() {
 		process_module_test(
 			&[],
-			ViewState::default(),
 			&[
 				Event::from(MetaEvent::ScrollLeft),
 				Event::from(MetaEvent::ScrollRight),

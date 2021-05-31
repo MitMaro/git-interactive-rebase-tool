@@ -5,7 +5,6 @@ use tempfile::{Builder, NamedTempFile};
 
 use crate::{
 	config::{testutil::create_config, Config},
-	display::size::Size,
 	input::{
 		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 		Event,
@@ -104,19 +103,6 @@ impl<'t> TestContext<'t> {
 		permissions.set_readonly(true);
 		todo_file.set_permissions(permissions).unwrap();
 		self.todo_file.replace(t);
-	}
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct ViewState {
-	pub size: Size,
-}
-
-impl Default for ViewState {
-	fn default() -> Self {
-		Self {
-			size: Size::new(500, 30),
-		}
 	}
 }
 
@@ -267,7 +253,7 @@ macro_rules! assert_process_result {
 	};
 }
 
-pub fn process_module_test<C>(lines: &[&str], view_state: ViewState, events: &[Event], callback: C)
+pub fn process_module_test<C>(lines: &[&str], events: &[Event], callback: C)
 where C: for<'p> FnOnce(TestContext<'p>) {
 	with_event_handler(events, |event_handler_context| {
 		let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -291,7 +277,7 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 			event_handler_context,
 			rebase_todo_file,
 			todo_file: Cell::new(todo_file),
-			render_context: RenderContext::new(view_state.size.width() as u16, view_state.size.height() as u16),
+			render_context: RenderContext::new(300, 120),
 			git_directory: git_repo_dir,
 		});
 	});
