@@ -3,7 +3,7 @@ use crate::{
 	assert_process_result,
 	assert_rendered_output,
 	input::{Event, KeyCode},
-	process::testutil::{process_module_test, TestContext, ViewState},
+	process::testutil::{process_module_test, TestContext},
 };
 
 fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
@@ -48,7 +48,6 @@ macro_rules! assert_external_editor_state_eq {
 fn activate() {
 	process_module_test(
 		&["pick aaa comment1", "drop bbb comment2"],
-		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -76,26 +75,21 @@ fn activate() {
 
 #[test]
 fn activate_write_file_fail() {
-	process_module_test(
-		&["pick aaa comment"],
-		ViewState::default(),
-		&[],
-		|test_context: TestContext<'_>| {
-			let todo_path = test_context.get_todo_file_path();
-			let mut module = ExternalEditor::new("editor");
-			test_context.set_todo_file_readonly();
-			assert_process_result!(
-				test_context.activate(&mut module, State::List),
-				state = State::List,
-				error = anyhow!("Error opening file: {}: Permission denied (os error 13)", todo_path)
-			);
-		},
-	);
+	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+		let todo_path = test_context.get_todo_file_path();
+		let mut module = ExternalEditor::new("editor");
+		test_context.set_todo_file_readonly();
+		assert_process_result!(
+			test_context.activate(&mut module, State::List),
+			state = State::List,
+			error = anyhow!("Error opening file: {}: Permission denied (os error 13)", todo_path)
+		);
+	});
 }
 
 #[test]
 fn activate_file_placement_marker() {
-	process_module_test(&[], ViewState::default(), &[], |test_context: TestContext<'_>| {
+	process_module_test(&[], &[], |test_context: TestContext<'_>| {
 		let mut module = ExternalEditor::new("editor a % b");
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -112,7 +106,6 @@ fn activate_file_placement_marker() {
 fn deactivate() {
 	process_module_test(
 		&["pick aaa comment", "drop bbb comment2"],
-		ViewState::default(),
 		&[],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -124,34 +117,28 @@ fn deactivate() {
 
 #[test]
 fn edit_success() {
-	process_module_test(
-		&["pick aaa comment"],
-		ViewState::default(),
-		&[],
-		|mut test_context: TestContext<'_>| {
-			test_context
-				.event_handler_context
-				.event_handler
-				.push_event(Event::from(MetaEvent::ExternalCommandSuccess));
-			let mut module = ExternalEditor::new("editor");
-			test_context.activate(&mut module, State::List);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
-			assert_process_result!(
-				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ExternalCommandSuccess),
-				state = State::List
-			);
-			assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-		},
-	);
+	process_module_test(&["pick aaa comment"], &[], |mut test_context: TestContext<'_>| {
+		test_context
+			.event_handler_context
+			.event_handler
+			.push_event(Event::from(MetaEvent::ExternalCommandSuccess));
+		let mut module = ExternalEditor::new("editor");
+		test_context.activate(&mut module, State::List);
+		let view_data = test_context.build_view_data(&mut module);
+		assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
+		assert_process_result!(
+			test_context.handle_event(&mut module),
+			event = Event::from(MetaEvent::ExternalCommandSuccess),
+			state = State::List
+		);
+		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
+	});
 }
 
 #[test]
 fn empty_edit_error() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('1')],
 		|mut test_context: TestContext<'_>| {
 			test_context
@@ -189,7 +176,6 @@ fn empty_edit_error() {
 fn empty_edit_abort_rebase() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('1')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -208,7 +194,6 @@ fn empty_edit_abort_rebase() {
 fn empty_edit_re_edit_rebase_file() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('2')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -230,7 +215,6 @@ fn empty_edit_re_edit_rebase_file() {
 fn empty_edit_undo_and_edit() {
 	process_module_test(
 		&["pick aaa comment", "drop bbb comment"],
-		ViewState::default(),
 		&[Event::from('3')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -254,95 +238,79 @@ fn empty_edit_undo_and_edit() {
 
 #[test]
 fn empty_edit_noop() {
-	process_module_test(
-		&["pick aaa comment"],
-		ViewState::default(),
-		&[],
-		|mut test_context: TestContext<'_>| {
-			let mut module = ExternalEditor::new("editor");
-			test_context.activate(&mut module, State::List);
-			module.state = ExternalEditorState::Empty;
-			test_context.rebase_todo_file.set_lines(vec![]);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}",
-				"{LEADING}",
-				"{Normal}The rebase file is empty.",
-				"",
-				"{BODY}",
-				"{Normal}1) Abort rebase",
-				"{Normal}2) Edit rebase file",
-				"{Normal}3) Undo modifications and edit rebase file",
-				"",
-				"{IndicatorColor}Please choose an option."
-			);
-		},
-	);
+	process_module_test(&["pick aaa comment"], &[], |mut test_context: TestContext<'_>| {
+		let mut module = ExternalEditor::new("editor");
+		test_context.activate(&mut module, State::List);
+		module.state = ExternalEditorState::Empty;
+		test_context.rebase_todo_file.set_lines(vec![]);
+		let view_data = test_context.build_view_data(&mut module);
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}The rebase file is empty.",
+			"",
+			"{BODY}",
+			"{Normal}1) Abort rebase",
+			"{Normal}2) Edit rebase file",
+			"{Normal}3) Undo modifications and edit rebase file",
+			"",
+			"{IndicatorColor}Please choose an option."
+		);
+	});
 }
 
 #[test]
 fn no_editor_set() {
-	process_module_test(
-		&["pick aaa comment"],
-		ViewState::default(),
-		&[],
-		|test_context: TestContext<'_>| {
-			let mut module = ExternalEditor::new("");
-			assert_process_result!(
-				test_context.activate(&mut module, State::List),
-				state = State::List,
-				error = anyhow!("No editor configured: Please see the git \"core.editor\" configuration for details")
-			);
-		},
-	);
+	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+		let mut module = ExternalEditor::new("");
+		assert_process_result!(
+			test_context.activate(&mut module, State::List),
+			state = State::List,
+			error = anyhow!("No editor configured: Please see the git \"core.editor\" configuration for details")
+		);
+	});
 }
 
 #[test]
 fn editor_non_zero_exit() {
-	process_module_test(
-		&["pick aaa comment"],
-		ViewState::default(),
-		&[],
-		|mut test_context: TestContext<'_>| {
-			let mut module = ExternalEditor::new("editor");
-			test_context
-				.event_handler_context
-				.event_handler
-				.push_event(Event::from(MetaEvent::ExternalCommandError));
-			test_context.activate(&mut module, State::List);
-			assert_process_result!(
-				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ExternalCommandError)
-			);
-			assert_external_editor_state_eq!(
-				module.state,
-				ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status"))
-			);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}",
-				"{LEADING}",
-				"{Normal}Editor returned a non-zero exit status",
-				"",
-				"{BODY}",
-				"{Normal}1) Abort rebase",
-				"{Normal}2) Edit rebase file",
-				"{Normal}3) Restore rebase file and abort edit",
-				"{Normal}4) Undo modifications and edit rebase file",
-				"",
-				"{IndicatorColor}Please choose an option."
-			);
-		},
-	);
+	process_module_test(&["pick aaa comment"], &[], |mut test_context: TestContext<'_>| {
+		let mut module = ExternalEditor::new("editor");
+		test_context
+			.event_handler_context
+			.event_handler
+			.push_event(Event::from(MetaEvent::ExternalCommandError));
+		test_context.activate(&mut module, State::List);
+		assert_process_result!(
+			test_context.handle_event(&mut module),
+			event = Event::from(MetaEvent::ExternalCommandError)
+		);
+		assert_external_editor_state_eq!(
+			module.state,
+			ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status"))
+		);
+		let view_data = test_context.build_view_data(&mut module);
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal}Editor returned a non-zero exit status",
+			"",
+			"{BODY}",
+			"{Normal}1) Abort rebase",
+			"{Normal}2) Edit rebase file",
+			"{Normal}3) Restore rebase file and abort edit",
+			"{Normal}4) Undo modifications and edit rebase file",
+			"",
+			"{IndicatorColor}Please choose an option."
+		);
+	});
 }
 
 #[test]
 fn editor_reload_error() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from(KeyCode::Up)],
 		|mut test_context: TestContext<'_>| {
 			let todo_path = test_context.get_todo_file_path();
@@ -387,7 +355,6 @@ fn editor_reload_error() {
 fn error_abort_rebase() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('1')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -407,7 +374,6 @@ fn error_abort_rebase() {
 fn error_edit_rebase() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('2')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -429,7 +395,6 @@ fn error_edit_rebase() {
 fn error_restore_and_abort() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('3')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");
@@ -452,7 +417,6 @@ fn error_restore_and_abort() {
 fn error_undo_modifications_and_reedit() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState::default(),
 		&[Event::from('4')],
 		|mut test_context: TestContext<'_>| {
 			let mut module = ExternalEditor::new("editor");

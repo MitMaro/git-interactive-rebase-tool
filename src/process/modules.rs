@@ -99,7 +99,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		input::Event,
-		process::testutil::{process_module_test, TestContext, ViewState},
+		process::testutil::{process_module_test, TestContext},
 	};
 
 	#[rstest(
@@ -117,7 +117,6 @@ mod tests {
 	fn module_lifecycle(state: State) {
 		process_module_test(
 			&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment"],
-			ViewState::default(),
 			&[Event::Resize(100, 100)],
 			|mut test_context: TestContext<'_>| {
 				test_context.set_git_directory_environment();
@@ -138,14 +137,9 @@ mod tests {
 
 	#[test]
 	fn set_error_message() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[],
-			|test_context: TestContext<'_>| {
-				let mut modules = Modules::new(test_context.config);
-				modules.set_error_message(&anyhow!("Test Error"));
-			},
-		);
+		process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+			let mut modules = Modules::new(test_context.config);
+			modules.set_error_message(&anyhow!("Test Error"));
+		});
 	}
 }

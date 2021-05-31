@@ -52,36 +52,30 @@ mod tests {
 		assert_process_result,
 		assert_rendered_output,
 		input::{Event, KeyCode, MetaEvent},
-		process::testutil::{process_module_test, TestContext, ViewState},
+		process::testutil::{process_module_test, TestContext},
 	};
 
 	#[test]
 	fn build_view_data() {
-		process_module_test(
-			&["pick aaa comment"],
-			ViewState::default(),
-			&[],
-			|test_context: TestContext<'_>| {
-				let mut module = ConfirmAbort::new(
-					&test_context.config.key_bindings.confirm_yes,
-					&test_context.config.key_bindings.confirm_no,
-				);
-				let view_data = test_context.build_view_data(&mut module);
-				assert_rendered_output!(
-					view_data,
-					"{TITLE}",
-					"{BODY}",
-					"{Normal}Are you sure you want to abort (y/n)? "
-				);
-			},
-		);
+		process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+			let mut module = ConfirmAbort::new(
+				&test_context.config.key_bindings.confirm_yes,
+				&test_context.config.key_bindings.confirm_no,
+			);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{BODY}",
+				"{Normal}Are you sure you want to abort (y/n)? "
+			);
+		});
 	}
 
 	#[test]
 	fn handle_event_yes() {
 		process_module_test(
 			&["pick aaa comment"],
-			ViewState::default(),
 			&[Event::from(MetaEvent::Yes)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ConfirmAbort::new(
@@ -102,7 +96,6 @@ mod tests {
 	fn handle_event_no() {
 		process_module_test(
 			&["pick aaa comment"],
-			ViewState::default(),
 			&[Event::from(MetaEvent::No)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ConfirmAbort::new(
@@ -122,7 +115,6 @@ mod tests {
 	fn handle_event_confirmed_other() {
 		process_module_test(
 			&["pick aaa comment"],
-			ViewState::default(),
 			&[Event::from(KeyCode::Null)],
 			|mut test_context: TestContext<'_>| {
 				let mut module = ConfirmAbort::new(
