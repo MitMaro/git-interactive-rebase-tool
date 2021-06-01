@@ -11,6 +11,12 @@ use crate::{
 	todo_file::line::Line,
 };
 
+fn create_crossterm() -> CrossTerm {
+	let mut crossterm = CrossTerm::new();
+	crossterm.set_size(Size::new(100, 300));
+	crossterm
+}
+
 #[test]
 fn window_too_small() {
 	process_module_test(
@@ -18,11 +24,7 @@ fn window_too_small() {
 		ViewState { size: Size::new(1, 1) },
 		&[Event::from(MetaEvent::Exit)],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
@@ -43,11 +45,7 @@ fn force_abort() {
 		ViewState::default(),
 		&[Event::from(MetaEvent::ForceAbort)],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut shadow_rebase_file = test_context.new_todo_file();
@@ -71,11 +69,7 @@ fn force_rebase() {
 		ViewState::default(),
 		&[Event::from(MetaEvent::ForceRebase)],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut shadow_rebase_file = test_context.new_todo_file();
@@ -102,11 +96,7 @@ fn error_write_todo() {
 		ViewState::default(),
 		&[Event::from(MetaEvent::ForceRebase)],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let todo_path = test_context.get_todo_file_path();
@@ -132,11 +122,7 @@ fn resize_window_size_okay() {
 		ViewState::default(),
 		&[Event::Resize(100, 100), Event::from(MetaEvent::Exit)],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
@@ -154,14 +140,10 @@ fn resize_window_size_okay() {
 fn resize_window_size_too_small() {
 	process_module_test(
 		&["pick aaa comment"],
-		ViewState { size: Size::new(1, 1) },
+		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
@@ -184,11 +166,7 @@ fn error() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
@@ -210,11 +188,7 @@ fn handle_exit_event() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
@@ -237,11 +211,7 @@ fn handle_kill_event() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
@@ -264,11 +234,7 @@ fn other_event() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut process = Process::new(
@@ -290,11 +256,7 @@ fn handle_external_command_not_executable() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
@@ -339,11 +301,7 @@ fn handle_external_command_executable_not_found() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
@@ -388,11 +346,7 @@ fn handle_external_command_status_success() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
@@ -419,11 +373,7 @@ fn handle_external_command_status_error() {
 		ViewState::default(),
 		&[],
 		|test_context: TestContext<'_>| {
-			let mut crossterm = CrossTerm::new();
-			crossterm.set_size(Size::new(
-				test_context.render_context.width(),
-				test_context.render_context.height(),
-			));
+			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
 			let mut modules = Modules::new(test_context.config);
