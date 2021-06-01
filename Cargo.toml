@@ -35,7 +35,7 @@ unicode-width = "0.1.8"
 xi-unicode = "0.3.0"
 
 [dependencies.git2]
-version = "0.13.18"
+version = "0.13.20"
 default-features = false
 features = []
 
