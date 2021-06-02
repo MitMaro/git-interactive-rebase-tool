@@ -158,9 +158,9 @@ mod tests {
 		let line_segment = LineSegment::new("D'fhuascail Íosa, Úrmhac na hÓighe Beannaithe, pór Éava agus Ádhaimh");
 
 		assert_eq!(line_segment.get_color(), DisplayColor::Normal);
-		assert_eq!(line_segment.is_dimmed(), false);
-		assert_eq!(line_segment.is_underlined(), false);
-		assert_eq!(line_segment.is_reversed(), false);
+		assert!(!line_segment.is_dimmed());
+		assert!(!line_segment.is_underlined());
+		assert!(!line_segment.is_reversed());
 		assert_eq!(line_segment.get_length(), 68);
 	}
 
@@ -169,9 +169,9 @@ mod tests {
 		let line_segment = LineSegment::new_with_color("Árvíztűrő tükörfúrógép", DisplayColor::IndicatorColor);
 
 		assert_eq!(line_segment.get_color(), DisplayColor::IndicatorColor);
-		assert_eq!(line_segment.is_dimmed(), false);
-		assert_eq!(line_segment.is_underlined(), false);
-		assert_eq!(line_segment.is_reversed(), false);
+		assert!(!line_segment.is_dimmed());
+		assert!(!line_segment.is_underlined());
+		assert!(!line_segment.is_reversed());
 		assert_eq!(line_segment.get_length(), 22);
 	}
 
@@ -186,9 +186,9 @@ mod tests {
 		);
 
 		assert_eq!(line_segment.get_color(), DisplayColor::IndicatorColor);
-		assert_eq!(line_segment.is_dimmed(), true);
-		assert_eq!(line_segment.is_underlined(), true);
-		assert_eq!(line_segment.is_reversed(), true);
+		assert!(line_segment.is_dimmed());
+		assert!(line_segment.is_underlined());
+		assert!(line_segment.is_reversed());
 		assert_eq!(line_segment.get_length(), 34);
 	}
 
@@ -203,9 +203,9 @@ mod tests {
 		);
 
 		assert_eq!(line_segment.get_color(), DisplayColor::IndicatorColor);
-		assert_eq!(line_segment.is_dimmed(), false);
-		assert_eq!(line_segment.is_underlined(), false);
-		assert_eq!(line_segment.is_reversed(), false);
+		assert!(!line_segment.is_dimmed());
+		assert!(!line_segment.is_underlined());
+		assert!(!line_segment.is_reversed());
 		assert_eq!(line_segment.get_length(), 52);
 	}
 
@@ -214,9 +214,9 @@ mod tests {
 		let line_segment =
 			LineSegment::new_with_color_and_style("Test String", DisplayColor::IndicatorColor, true, false, false);
 
-		assert_eq!(line_segment.is_dimmed(), true);
-		assert_eq!(line_segment.is_underlined(), false);
-		assert_eq!(line_segment.is_reversed(), false);
+		assert!(line_segment.is_dimmed());
+		assert!(!line_segment.is_underlined());
+		assert!(!line_segment.is_reversed());
 	}
 
 	#[test]
@@ -224,9 +224,9 @@ mod tests {
 		let line_segment =
 			LineSegment::new_with_color_and_style("Test String", DisplayColor::IndicatorColor, false, true, false);
 
-		assert_eq!(line_segment.is_dimmed(), false);
-		assert_eq!(line_segment.is_underlined(), true);
-		assert_eq!(line_segment.is_reversed(), false);
+		assert!(!line_segment.is_dimmed());
+		assert!(line_segment.is_underlined());
+		assert!(!line_segment.is_reversed());
 	}
 
 	#[test]
@@ -234,9 +234,9 @@ mod tests {
 		let line_segment =
 			LineSegment::new_with_color_and_style("Test String", DisplayColor::IndicatorColor, false, false, true);
 
-		assert_eq!(line_segment.is_dimmed(), false);
-		assert_eq!(line_segment.is_underlined(), false);
-		assert_eq!(line_segment.is_reversed(), true);
+		assert!(!line_segment.is_dimmed());
+		assert!(!line_segment.is_underlined());
+		assert!(line_segment.is_reversed());
 	}
 
 	#[test]

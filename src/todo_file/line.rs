@@ -364,7 +364,7 @@ mod tests {
 		let mut line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, to);
-		assert_eq!(line.mutated, true);
+		assert!(line.mutated);
 	}
 
 	#[rstest(
@@ -381,7 +381,7 @@ mod tests {
 		let mut line = Line::new(format!("{} comment", from.as_string()).as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, from);
-		assert_eq!(line.mutated, false);
+		assert!(!line.mutated);
 	}
 
 	#[test]
@@ -389,7 +389,7 @@ mod tests {
 		let mut line = Line::new("pick aaa comment").unwrap();
 		line.set_action(Action::Fixup);
 		assert_eq!(line.action, Action::Fixup);
-		assert_eq!(line.mutated, true);
+		assert!(line.mutated);
 	}
 
 	#[test]
@@ -397,7 +397,7 @@ mod tests {
 		let mut line = Line::new("pick aaa comment").unwrap();
 		line.set_action(Action::Pick);
 		assert_eq!(line.action, Action::Pick);
-		assert_eq!(line.mutated, false);
+		assert!(!line.mutated);
 	}
 
 	#[rstest(
