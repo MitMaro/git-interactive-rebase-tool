@@ -1,23 +1,25 @@
-pub mod diff_ignore_whitespace_setting;
-pub mod diff_show_whitespace_setting;
-pub mod git_config;
-pub mod key_bindings;
-pub mod theme;
+mod diff_ignore_whitespace_setting;
+mod diff_show_whitespace_setting;
+mod git_config;
+mod key_bindings;
+mod theme;
 mod utils;
-use anyhow::Result;
 
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
 pub mod testutil;
 
-pub use key_bindings::KeyBindings;
+use anyhow::Result;
 
-use crate::config::{
+pub use self::{
 	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
-	git_config::GitConfig,
+	key_bindings::KeyBindings,
 	theme::Theme,
+};
+use crate::config::{
+	git_config::GitConfig,
 	utils::{
 		get_bool,
 		get_diff_ignore_whitespace,

@@ -17,7 +17,7 @@ use mockcrossterm as ct;
 #[cfg(not(test))]
 use self::crossterm as ct;
 use crate::{
-	config::theme::Theme,
+	config::Theme,
 	display::{display_color::DisplayColor, size::Size, utils::register_selectable_color_pairs},
 };
 

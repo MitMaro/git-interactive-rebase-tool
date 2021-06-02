@@ -18,11 +18,7 @@ use lazy_static::lazy_static;
 
 use crate::{
 	components::help::Help,
-	config::{
-		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
-		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
-		Config,
-	},
+	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	show_commit::{
