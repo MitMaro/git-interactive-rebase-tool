@@ -107,7 +107,7 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 1);
 		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
-		assert_eq!(view_line.get_selected(), false);
+		assert!(!view_line.get_selected());
 	}
 
 	#[test]
@@ -117,7 +117,7 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 1);
 		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
-		assert_eq!(view_line.get_selected(), false);
+		assert!(!view_line.get_selected());
 	}
 
 	#[test]
@@ -127,7 +127,7 @@ mod tests {
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 1);
 		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
-		assert_eq!(view_line.get_selected(), false);
+		assert!(!view_line.get_selected());
 	}
 
 	#[test]
@@ -138,7 +138,7 @@ mod tests {
 		assert_eq!(view_line.get_segments().len(), 2);
 		assert_eq!(view_line.get_segments().first().unwrap().get_content(), "foo");
 		assert_eq!(view_line.get_segments().last().unwrap().get_content(), "bar");
-		assert_eq!(view_line.get_selected(), false);
+		assert!(!view_line.get_selected());
 	}
 
 	#[test]
@@ -147,7 +147,7 @@ mod tests {
 
 		assert_eq!(view_line.get_number_of_pinned_segment(), 0);
 		assert_eq!(view_line.get_segments().len(), 2);
-		assert_eq!(view_line.get_selected(), true);
+		assert!(view_line.get_selected());
 	}
 
 	#[test]
@@ -161,7 +161,7 @@ mod tests {
 
 		assert_eq!(view_line.get_number_of_pinned_segment(), 4);
 		assert_eq!(view_line.get_segments().len(), 4);
-		assert_eq!(view_line.get_selected(), false);
+		assert!(!view_line.get_selected());
 	}
 
 	#[test]
@@ -178,7 +178,7 @@ mod tests {
 
 		assert_eq!(view_line.get_number_of_pinned_segment(), 2);
 		assert_eq!(view_line.get_segments().len(), 4);
-		assert_eq!(view_line.get_selected(), false);
+		assert!(!view_line.get_selected());
 	}
 
 	#[test]

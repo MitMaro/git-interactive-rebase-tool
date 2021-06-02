@@ -533,8 +533,8 @@ fn config_git_diff_context_invalid_range() {
 #[test]
 fn config_git_diff_renames_default() {
 	let config = load(|_| {});
-	assert_eq!(config.git.diff_renames, true);
-	assert_eq!(config.git.diff_copies, false);
+	assert!(config.git.diff_renames);
+	assert!(!config.git.diff_copies);
 }
 
 #[test]
@@ -542,8 +542,8 @@ fn config_git_diff_renames_true() {
 	let config = load(|git_config| {
 		git_config.set_str("diff.renames", "true").unwrap();
 	});
-	assert_eq!(config.git.diff_renames, true);
-	assert_eq!(config.git.diff_copies, false);
+	assert!(config.git.diff_renames);
+	assert!(!config.git.diff_copies);
 }
 
 #[test]
@@ -551,8 +551,8 @@ fn config_git_diff_renames_false() {
 	let config = load(|git_config| {
 		git_config.set_str("diff.renames", "false").unwrap();
 	});
-	assert_eq!(config.git.diff_renames, false);
-	assert_eq!(config.git.diff_copies, false);
+	assert!(!config.git.diff_renames);
+	assert!(!config.git.diff_copies);
 }
 
 #[test]
@@ -560,8 +560,8 @@ fn config_git_diff_renames_copy() {
 	let config = load(|git_config| {
 		git_config.set_str("diff.renames", "copy").unwrap();
 	});
-	assert_eq!(config.git.diff_renames, true);
-	assert_eq!(config.git.diff_copies, true);
+	assert!(config.git.diff_renames);
+	assert!(config.git.diff_copies);
 }
 
 #[test]
@@ -569,8 +569,8 @@ fn config_git_diff_renames_copies() {
 	let config = load(|git_config| {
 		git_config.set_str("diff.renames", "copies").unwrap();
 	});
-	assert_eq!(config.git.diff_renames, true);
-	assert_eq!(config.git.diff_copies, true);
+	assert!(config.git.diff_renames);
+	assert!(config.git.diff_copies);
 }
 
 #[test]
@@ -578,8 +578,8 @@ fn config_git_diff_renames_mixed_case() {
 	let config = load(|git_config| {
 		git_config.set_str("diff.renames", "cOpIeS").unwrap();
 	});
-	assert_eq!(config.git.diff_renames, true);
-	assert_eq!(config.git.diff_copies, true);
+	assert!(config.git.diff_renames);
+	assert!(config.git.diff_copies);
 }
 
 #[test]
