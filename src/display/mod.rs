@@ -1,4 +1,3 @@
-pub mod color;
 mod color_mode;
 pub mod display_color;
 pub mod size;

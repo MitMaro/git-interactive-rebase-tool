@@ -1,13 +1,11 @@
-use crate::{
-	config::{
-		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
-		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
-		git_config::GitConfig,
-		theme::Theme,
-		Config,
-		KeyBindings,
-	},
-	display::color::Color,
+use super::{
+	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
+	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
+	git_config::GitConfig,
+	theme::Theme,
+	Color,
+	Config,
+	KeyBindings,
 };
 
 pub fn create_config() -> Config {
