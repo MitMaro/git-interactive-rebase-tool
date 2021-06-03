@@ -1,3 +1,4 @@
+mod color;
 mod diff_ignore_whitespace_setting;
 mod diff_show_whitespace_setting;
 mod git_config;
@@ -13,6 +14,7 @@ pub mod testutil;
 use anyhow::Result;
 
 pub use self::{
+	color::Color,
 	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 	key_bindings::KeyBindings,

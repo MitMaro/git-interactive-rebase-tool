@@ -6,12 +6,10 @@ use std::{
 use anyhow::{anyhow, Result};
 use git2::Config;
 
-use crate::{
-	config::{
-		diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
-		diff_show_whitespace_setting::DiffShowWhitespaceSetting,
-	},
-	display::color::Color,
+use super::{
+	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
+	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
+	Color,
 };
 
 pub(super) fn get_input(config: &Config, name: &str, default: &str) -> Result<Vec<String>> {

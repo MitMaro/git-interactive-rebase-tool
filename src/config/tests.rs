@@ -8,7 +8,6 @@ use serial_test::serial;
 use tempfile::NamedTempFile;
 
 use super::*;
-use crate::display::color::Color;
 
 fn load_with_git_config_callback<F>(callback: F) -> Result<Config>
 where F: FnOnce(&mut git2::Config) {

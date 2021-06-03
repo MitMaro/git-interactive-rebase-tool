@@ -1,9 +1,9 @@
 use anyhow::Result;
 use git2::Config;
 
-use crate::{
-	config::utils::{get_color, get_string},
-	display::color::Color,
+use super::{
+	utils::{get_color, get_string},
+	Color,
 };
 
 #[derive(Clone, Debug)]
