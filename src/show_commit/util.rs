@@ -3,7 +3,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	config::KeyBindings,
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	show_commit::{commit::Commit, status::Status},
 	view::{line_segment::LineSegment, view_line::ViewLine},
 };

@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	view::testutil::{_assert_rendered_output, render_view_line},
 };
 

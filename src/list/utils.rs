@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::{
 	config::KeyBindings,
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	todo_file::{action::Action, line::Line},
 	view::line_segment::LineSegment,
 };

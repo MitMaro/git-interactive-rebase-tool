@@ -28,7 +28,7 @@ pub use crossterm::{
 	style::{Color, Colors},
 };
 
-use crate::display::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
+use super::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
 
 pub struct CrossTerm {
 	color_mode: ColorMode,

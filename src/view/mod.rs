@@ -25,7 +25,7 @@ pub use self::{
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 };
-use crate::display::{display_color::DisplayColor, size::Size, Display};
+use crate::display::{Display, DisplayColor, Size};
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
