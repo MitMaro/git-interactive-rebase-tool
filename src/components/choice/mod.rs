@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use crate::{
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions, KeyCode},
 	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, ViewSender},
 };

@@ -9,7 +9,7 @@ use std::cmp::min;
 use crate::{
 	components::{edit::Edit, help::Help},
 	config::Config,
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	input::{Event, EventHandler, MetaEvent},
 	list::{
 		input::get_event,

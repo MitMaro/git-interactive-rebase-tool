@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 
 use crate::{
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,

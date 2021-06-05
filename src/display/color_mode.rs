@@ -1,4 +1,4 @@
-use crate::display::color_mode::ColorMode::{EightBit, FourBit, TrueColor};
+use super::color_mode::ColorMode::{EightBit, FourBit, TrueColor};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ColorMode {

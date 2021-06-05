@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-	display::display_color::DisplayColor,
+	display::DisplayColor,
 	view::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 

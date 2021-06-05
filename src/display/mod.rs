@@ -1,6 +1,6 @@
 mod color_mode;
-pub mod display_color;
-pub mod size;
+mod display_color;
+mod size;
 mod utils;
 
 #[cfg(not(test))]
@@ -15,10 +15,8 @@ use mockcrossterm as ct;
 
 #[cfg(not(test))]
 use self::crossterm as ct;
-use crate::{
-	config::Theme,
-	display::{display_color::DisplayColor, size::Size, utils::register_selectable_color_pairs},
-};
+pub use self::{display_color::DisplayColor, size::Size};
+use crate::{config::Theme, display::utils::register_selectable_color_pairs};
 
 pub struct Display {
 	action_break: (Colors, Colors),
@@ -290,11 +288,8 @@ impl Display {
 mod tests {
 	use rstest::rstest;
 
-	use super::*;
-	use crate::{
-		config::{testutil::create_config, Config},
-		display::mockcrossterm::State,
-	};
+	use super::{mockcrossterm::State, *};
+	use crate::config::{testutil::create_config, Config};
 
 	pub struct TestContext<'t> {
 		pub config: &'t Config,

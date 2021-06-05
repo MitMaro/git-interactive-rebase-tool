@@ -8,7 +8,7 @@ pub use crossterm::{
 };
 use lazy_static::lazy_static;
 
-use crate::display::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
+use super::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
 
 lazy_static! {
 	static ref OUTPUT: Mutex<Vec<String>> = Mutex::new(vec![]);
