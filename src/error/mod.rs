@@ -1,7 +1,7 @@
+use display::DisplayColor;
 use lazy_static::lazy_static;
 
 use crate::{
-	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions},
 	module::{Module, ProcessResult, State},
 	todo_file::TodoFile,

@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests;
+use display::DisplayColor;
 use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
-	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions},
 	view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender},
 };

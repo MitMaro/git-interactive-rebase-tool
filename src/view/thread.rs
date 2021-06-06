@@ -5,8 +5,9 @@ use std::{
 	time::{Duration, Instant},
 };
 
+use display::Tui;
+
 use super::{action::ViewAction, sender::Sender, View};
-use crate::display::Tui;
 
 const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 

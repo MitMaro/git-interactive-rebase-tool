@@ -1,6 +1,7 @@
+use display::DisplayColor;
+
 use super::origin::Origin;
 use crate::{
-	display::DisplayColor,
 	show_commit::{
 		commit::Commit,
 		diff_line::DiffLine,

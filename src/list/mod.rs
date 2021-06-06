@@ -7,10 +7,10 @@ mod tests;
 use std::cmp::min;
 
 use config::Config;
+use display::DisplayColor;
 
 use crate::{
 	components::{edit::Edit, help::Help},
-	display::DisplayColor,
 	input::{Event, EventHandler, MetaEvent},
 	list::{
 		input::get_event,

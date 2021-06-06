@@ -1,12 +1,10 @@
 use std::{cell::RefCell, collections::VecDeque};
 
 use anyhow::Result;
+use display::{CrossTerm, Tui};
 
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
-use crate::{
-	display::{CrossTerm, Tui},
-	input::{key_bindings::KeyBindings, InputOptions, MetaEvent},
-};
+use crate::input::{key_bindings::KeyBindings, InputOptions, MetaEvent};
 
 pub struct EventHandler {
 	event_provider: Box<dyn Fn() -> Result<Option<crossterm::event::Event>>>,

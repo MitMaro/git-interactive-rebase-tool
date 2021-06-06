@@ -7,8 +7,8 @@ use std::{
 use anyhow::{anyhow, Error, Result};
 use crossterm::{
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
-	event::{poll, read, DisableMouseCapture, EnableMouseCapture},
-	style::{available_color_count, Attribute, Print, ResetColor, SetAttribute, SetColors},
+	event::{poll, read, DisableMouseCapture, EnableMouseCapture, Event},
+	style::{available_color_count, Attribute, Colors, Print, ResetColor, SetAttribute, SetColors},
 	terminal::{
 		disable_raw_mode,
 		enable_raw_mode,
@@ -23,14 +23,10 @@ use crossterm::{
 	Command,
 	QueueableCommand,
 };
-pub use crossterm::{
-	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind},
-	style::{Color, Colors},
-};
 
-use super::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
-use crate::display::tui::Tui;
+use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
 
+#[derive(Debug)]
 pub struct CrossTerm {
 	color_mode: ColorMode,
 	window: BufWriter<Stdout>,
@@ -139,8 +135,8 @@ impl Tui for CrossTerm {
 }
 
 impl CrossTerm {
-	#[allow(dead_code)] // false positive
-	pub(crate) fn new() -> Self {
+	#[must_use]
+	pub fn new() -> Self {
 		Self {
 			window: BufWriter::new(stdout()),
 			color_mode: detect_color_mode(available_color_count()),
@@ -153,7 +149,7 @@ impl CrossTerm {
 	}
 
 	fn queue_command(&mut self, command: impl Command) -> Result<()> {
-		self.window.queue(command).map_err(Self::map_err)?;
+		let _result = self.window.queue(command).map_err(Self::map_err)?;
 		Ok(())
 	}
 }

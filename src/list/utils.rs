@@ -1,9 +1,9 @@
 use std::cmp;
 
 use config::KeyBindings;
+use display::DisplayColor;
 
 use crate::{
-	display::DisplayColor,
 	todo_file::{Action, Line},
 	view::LineSegment,
 };
