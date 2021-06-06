@@ -10,7 +10,7 @@ use std::{
 
 pub(super) use render_action::RenderAction;
 
-use super::{line_segment::LineSegment, scroll_position::ScrollPosition, view_data::ViewData, view_line::ViewLine};
+use super::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
 
 pub struct RenderSlice {
 	actions: VecDeque<RenderAction>,

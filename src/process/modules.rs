@@ -15,7 +15,7 @@ use crate::{
 	},
 	show_commit::ShowCommit,
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData, ViewSender},
+	view::{RenderContext, ViewData, ViewSender},
 };
 
 pub struct Modules<'m> {

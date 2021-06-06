@@ -20,7 +20,7 @@ use crate::{
 	input::{Event, EventHandler, MetaEvent},
 	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, spawn_view_thread, View, ViewSender},
+	view::{spawn_view_thread, RenderContext, View, ViewSender},
 };
 
 pub struct Process {

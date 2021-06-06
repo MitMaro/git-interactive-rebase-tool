@@ -4,7 +4,7 @@ use crate::{
 	input::{Event, EventHandler, InputOptions},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, ViewSender},
+	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";

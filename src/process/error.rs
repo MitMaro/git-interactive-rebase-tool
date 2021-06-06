@@ -5,14 +5,7 @@ use crate::{
 	input::{Event, EventHandler, InputOptions},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{
-		handle_view_data_scroll,
-		line_segment::LineSegment,
-		render_context::RenderContext,
-		view_data::ViewData,
-		view_line::ViewLine,
-		ViewSender,
-	},
+	view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 lazy_static! {

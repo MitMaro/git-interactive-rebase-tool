@@ -6,7 +6,7 @@ use crate::{
 		diff_line::DiffLine,
 		util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
 	},
-	view::{line_segment::LineSegment, view_line::ViewLine, ViewDataUpdater},
+	view::{LineSegment, ViewDataUpdater, ViewLine},
 };
 
 pub(super) struct ViewBuilderOptions {

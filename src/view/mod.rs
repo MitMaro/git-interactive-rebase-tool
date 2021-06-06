@@ -1,14 +1,14 @@
 mod action;
-pub mod line_segment;
-pub mod render_context;
+mod line_segment;
+mod render_context;
 mod render_slice;
 mod scroll_position;
 mod sender;
 mod thread;
 mod util;
-pub mod view_data;
+mod view_data;
 mod view_data_updater;
-pub mod view_line;
+mod view_line;
 
 #[cfg(test)]
 mod tests;
@@ -17,13 +17,17 @@ pub mod testutil;
 
 use anyhow::Result;
 
-use self::{render_slice::RenderSlice, view_line::ViewLine};
+use self::render_slice::RenderSlice;
 pub use self::{
+	action::ViewAction,
+	line_segment::LineSegment,
+	render_context::RenderContext,
 	sender::Sender as ViewSender,
 	thread::spawn_view_thread,
 	util::handle_view_data_scroll,
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
+	view_line::ViewLine,
 };
 use crate::display::{Display, DisplayColor, Size, Tui};
 

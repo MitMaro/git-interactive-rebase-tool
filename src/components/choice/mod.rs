@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use crate::{
 	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions, KeyCode},
-	view::{handle_view_data_scroll, line_segment::LineSegment, view_data::ViewData, view_line::ViewLine, ViewSender},
+	view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender},
 };
 
 lazy_static! {
