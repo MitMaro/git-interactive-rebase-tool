@@ -9,6 +9,7 @@ This script will add to all crates a full list of enabled lints.
 files=(
 	'src/main.rs'
 	'src/config/src/lib.rs'
+	'src/display/src/lib.rs'
 )
 
 content="\

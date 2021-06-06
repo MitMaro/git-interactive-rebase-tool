@@ -1,5 +1,5 @@
 use anyhow::Result;
-pub use crossterm::{event::Event, style::Colors};
+use crossterm::{event::Event, style::Colors};
 
 use super::{color_mode::ColorMode, Size};
 

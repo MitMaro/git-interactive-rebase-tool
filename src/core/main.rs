@@ -1,10 +1,10 @@
 use config::Config;
+use display::{CrossTerm, Display};
 
 use crate::{
 	confirm_abort::ConfirmAbort,
 	confirm_rebase::ConfirmRebase,
 	core::{arguments::Args, exit::Exit, help::build_help},
-	display::{CrossTerm, Display},
 	error::Error,
 	external_editor::ExternalEditor,
 	input::{EventHandler, KeyBindings},

@@ -3,8 +3,9 @@ use std::{
 	time::Duration,
 };
 
+use display::DisplayColor;
+
 use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender};
-use crate::display::DisplayColor;
 
 fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bool) -> String {
 	let color_string = match color {

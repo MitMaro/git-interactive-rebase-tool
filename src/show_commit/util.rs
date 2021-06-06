@@ -1,9 +1,9 @@
 use config::KeyBindings;
+use display::DisplayColor;
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
-	display::DisplayColor,
 	show_commit::{commit::Commit, status::Status},
 	view::{LineSegment, ViewLine},
 };

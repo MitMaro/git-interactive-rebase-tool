@@ -1,8 +1,7 @@
 use anyhow::Result;
-use crossterm::style::{Attribute, Attributes};
-pub use crossterm::{
-	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind},
-	style::{Color, Colors},
+use crossterm::{
+	event::Event,
+	style::{Attribute, Attributes, Color, Colors},
 };
 
 use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
@@ -14,6 +13,7 @@ pub enum State {
 	Ended,
 }
 
+#[derive(Debug)]
 pub struct CrossTerm {
 	attributes: Attributes,
 	color_mode: ColorMode,
@@ -115,7 +115,8 @@ impl Tui for CrossTerm {
 }
 
 impl CrossTerm {
-	pub(crate) fn new() -> Self {
+	#[must_use]
+	pub fn new() -> Self {
 		Self {
 			attributes: Attributes::from(Attribute::Reset),
 			color_mode: detect_color_mode(16),
@@ -128,42 +129,47 @@ impl CrossTerm {
 		}
 	}
 
-	// Start mock access functions
-	pub(crate) const fn get_output(&self) -> &Vec<String> {
+	#[must_use]
+	pub const fn get_output(&self) -> &Vec<String> {
 		&self.output
 	}
 
-	pub(crate) const fn get_state(&self) -> State {
+	#[must_use]
+	pub const fn get_state(&self) -> State {
 		self.state
 	}
 
-	pub(crate) fn is_colors_enabled(&self, colors: Colors) -> bool {
+	#[must_use]
+	pub fn is_colors_enabled(&self, colors: Colors) -> bool {
 		self.colors == colors
 	}
 
-	pub(crate) fn is_dimmed(&self) -> bool {
+	#[must_use]
+	pub fn is_dimmed(&self) -> bool {
 		self.attributes.has(Attribute::Dim)
 	}
 
-	pub(crate) fn is_reverse(&self) -> bool {
+	#[must_use]
+	pub fn is_reverse(&self) -> bool {
 		self.attributes.has(Attribute::Reverse)
 	}
 
-	pub(crate) fn is_underline(&self) -> bool {
+	#[must_use]
+	pub fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
 	}
 
-	pub(crate) fn set_size(&mut self, size: Size) {
+	pub fn set_size(&mut self, size: Size) {
 		self.size = size;
 	}
 
-	pub(crate) const fn get_position(&self) -> (u16, u16) {
+	#[must_use]
+	pub const fn get_position(&self) -> (u16, u16) {
 		self.position
 	}
 
-	pub(crate) const fn is_dirty(&self) -> bool {
+	#[must_use]
+	pub const fn is_dirty(&self) -> bool {
 		self.dirty
 	}
-
-	// End mock access functions
 }
