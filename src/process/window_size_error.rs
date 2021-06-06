@@ -81,11 +81,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{
-		assert_process_result,
-		assert_rendered_output,
-		process::testutil::{process_module_test, TestContext},
-	};
+	use crate::{assert_process_result, assert_rendered_output, process::testutil::process_module_test};
 
 	const MINIMUM_WINDOW_HEIGHT: usize = 5;
 	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
@@ -103,7 +99,7 @@ mod tests {
 	)]
 	#[allow(clippy::cast_possible_wrap)]
 	fn build_view_data(width: usize, height: usize, expected: &str) {
-		process_module_test(&[], &[], |mut test_context: TestContext<'_>| {
+		process_module_test(&[], &[], |mut test_context| {
 			test_context.render_context.update(width as u16, height as u16);
 			let mut module = WindowSizeError::new();
 			let view_data = test_context.build_view_data(&mut module);
@@ -113,7 +109,7 @@ mod tests {
 
 	#[test]
 	fn event_resize_window_still_small() {
-		process_module_test(&[], &[Event::Resize(1, 1)], |mut test_context: TestContext<'_>| {
+		process_module_test(&[], &[Event::Resize(1, 1)], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
 			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(1, 1));
@@ -122,7 +118,7 @@ mod tests {
 
 	#[test]
 	fn event_resize_window_no_longer_too_small() {
-		process_module_test(&[], &[Event::Resize(100, 100)], |mut test_context: TestContext<'_>| {
+		process_module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
 			assert_process_result!(
@@ -135,7 +131,7 @@ mod tests {
 
 	#[test]
 	fn event_other_character() {
-		process_module_test(&[], &[Event::from('a')], |mut test_context: TestContext<'_>| {
+		process_module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
 			assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));

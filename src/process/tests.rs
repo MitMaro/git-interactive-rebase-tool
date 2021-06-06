@@ -7,7 +7,7 @@ use crate::{
 	assert_rendered_output,
 	display::{testutil::CrossTerm, Display, Size},
 	input::InputOptions,
-	process::testutil::{process_module_test, TestContext},
+	process::testutil::process_module_test,
 	todo_file::Line,
 };
 
@@ -19,22 +19,18 @@ fn create_crossterm() -> CrossTerm {
 
 #[test]
 fn window_too_small() {
-	process_module_test(
-		&["pick aaa comment"],
-		&[Event::from(MetaEvent::Exit)],
-		|test_context: TestContext<'_>| {
-			let crossterm = create_crossterm();
-			let display = Display::new(crossterm, &test_context.config.theme);
-			let view = View::new(display, "~", "?");
-			let mut process = Process::new(
-				test_context.rebase_todo_file,
-				test_context.event_handler_context.event_handler,
-				view,
-			);
-			let modules = Modules::new(test_context.config);
-			assert_eq!(process.run(modules).unwrap(), ExitStatus::Abort);
-		},
-	);
+	process_module_test(&["pick aaa comment"], &[Event::from(MetaEvent::Exit)], |test_context| {
+		let crossterm = create_crossterm();
+		let display = Display::new(crossterm, &test_context.config.theme);
+		let view = View::new(display, "~", "?");
+		let mut process = Process::new(
+			test_context.rebase_todo_file,
+			test_context.event_handler_context.event_handler,
+			view,
+		);
+		let modules = Modules::new(test_context.config);
+		assert_eq!(process.run(modules).unwrap(), ExitStatus::Abort);
+	});
 }
 
 #[test]
@@ -42,7 +38,7 @@ fn force_abort() {
 	process_module_test(
 		&["pick aaa comment"],
 		&[Event::from(MetaEvent::ForceAbort)],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
@@ -65,7 +61,7 @@ fn force_rebase() {
 	process_module_test(
 		&["pick aaa comment"],
 		&[Event::from(MetaEvent::ForceRebase)],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
@@ -91,7 +87,7 @@ fn error_write_todo() {
 	process_module_test(
 		&["pick aaa comment"],
 		&[Event::from(MetaEvent::ForceRebase)],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
@@ -116,7 +112,7 @@ fn resize_window_size_okay() {
 	process_module_test(
 		&["pick aaa comment"],
 		&[Event::Resize(100, 100), Event::from(MetaEvent::Exit)],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let crossterm = create_crossterm();
 			let display = Display::new(crossterm, &test_context.config.theme);
 			let view = View::new(display, "~", "?");
@@ -133,7 +129,7 @@ fn resize_window_size_okay() {
 
 #[test]
 fn resize_window_size_too_small() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -151,7 +147,7 @@ fn resize_window_size_too_small() {
 
 #[test]
 fn error() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -168,7 +164,7 @@ fn error() {
 
 #[test]
 fn handle_exit_event() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -186,7 +182,7 @@ fn handle_exit_event() {
 
 #[test]
 fn handle_kill_event() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -204,7 +200,7 @@ fn handle_kill_event() {
 
 #[test]
 fn other_event() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -221,7 +217,7 @@ fn other_event() {
 
 #[test]
 fn handle_external_command_not_executable() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -261,7 +257,7 @@ fn handle_external_command_not_executable() {
 
 #[test]
 fn handle_external_command_executable_not_found() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -301,7 +297,7 @@ fn handle_external_command_executable_not_found() {
 
 #[test]
 fn handle_external_command_status_success() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");
@@ -323,7 +319,7 @@ fn handle_external_command_status_success() {
 
 #[test]
 fn handle_external_command_status_error() {
-	process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
 		let display = Display::new(crossterm, &test_context.config.theme);
 		let view = View::new(display, "~", "?");

@@ -47,12 +47,12 @@ mod tests {
 		assert_process_result,
 		assert_rendered_output,
 		input::{Event, KeyCode, MetaEvent},
-		process::testutil::{process_module_test, TestContext},
+		process::testutil::process_module_test,
 	};
 
 	#[test]
 	fn build_view_data() {
-		process_module_test(&["pick aaa comment"], &[], |test_context: TestContext<'_>| {
+		process_module_test(&["pick aaa comment"], &[], |test_context| {
 			let mut module = ConfirmRebase::new(
 				&test_context.config.key_bindings.confirm_yes,
 				&test_context.config.key_bindings.confirm_no,
@@ -72,7 +72,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment"],
 			&[Event::from(MetaEvent::Yes)],
-			|mut test_context: TestContext<'_>| {
+			|mut test_context| {
 				let mut module = ConfirmRebase::new(
 					&test_context.config.key_bindings.confirm_yes,
 					&test_context.config.key_bindings.confirm_no,
@@ -92,7 +92,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment"],
 			&[Event::from(MetaEvent::No)],
-			|mut test_context: TestContext<'_>| {
+			|mut test_context| {
 				let mut module = ConfirmRebase::new(
 					&test_context.config.key_bindings.confirm_yes,
 					&test_context.config.key_bindings.confirm_no,
@@ -111,7 +111,7 @@ mod tests {
 		process_module_test(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
-			|mut test_context: TestContext<'_>| {
+			|mut test_context| {
 				let mut module = ConfirmRebase::new(
 					&test_context.config.key_bindings.confirm_yes,
 					&test_context.config.key_bindings.confirm_no,
