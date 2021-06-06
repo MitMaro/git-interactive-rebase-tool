@@ -16,6 +16,7 @@ use std::{process::Command, thread};
 use anyhow::{anyhow, Result};
 
 use crate::{
+	display::Tui,
 	input::{Event, EventHandler, MetaEvent},
 	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
@@ -33,7 +34,11 @@ pub struct Process {
 }
 
 impl Process {
-	pub(crate) fn new(rebase_todo: TodoFile, event_handler: EventHandler, view: View) -> Self {
+	pub(crate) fn new<C: Tui + Send + 'static>(
+		rebase_todo: TodoFile,
+		event_handler: EventHandler,
+		view: View<C>,
+	) -> Self {
 		let view_size = view.get_view_size();
 		let mut threads = vec![];
 

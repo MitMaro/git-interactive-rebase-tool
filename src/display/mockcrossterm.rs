@@ -8,7 +8,7 @@ pub use crossterm::{
 };
 use lazy_static::lazy_static;
 
-use super::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
+use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
 
 lazy_static! {
 	static ref OUTPUT: Mutex<Vec<String>> = Mutex::new(vec![]);
@@ -29,6 +29,104 @@ pub struct CrossTerm {
 	size: Size,
 	state: State,
 	dirty: bool,
+}
+
+impl Tui for CrossTerm {
+	fn get_color_mode(&self) -> ColorMode {
+		self.color_mode
+	}
+
+	fn reset(&mut self) -> Result<()> {
+		self.attributes = Attributes::from(Attribute::Reset);
+		self.colors = Colors::new(Color::Reset, Color::Reset);
+		OUTPUT
+			.lock()
+			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
+			.clear();
+		self.state = State::Normal;
+		Ok(())
+	}
+
+	fn flush(&mut self) -> Result<()> {
+		self.dirty = false;
+		Ok(())
+	}
+
+	fn print(&mut self, s: &str) -> Result<()> {
+		OUTPUT
+			.lock()
+			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
+			.push(String::from(s));
+		Ok(())
+	}
+
+	fn set_color(&mut self, colors: Colors) -> Result<()> {
+		self.colors = colors;
+		Ok(())
+	}
+
+	fn set_dim(&mut self, dim: bool) -> Result<()> {
+		if dim {
+			self.attributes.set(Attribute::Dim);
+		}
+		else {
+			self.attributes.set(Attribute::NormalIntensity);
+		}
+		Ok(())
+	}
+
+	fn set_underline(&mut self, dim: bool) -> Result<()> {
+		if dim {
+			self.attributes.set(Attribute::Underlined);
+		}
+		else {
+			self.attributes.set(Attribute::NoUnderline);
+		}
+		Ok(())
+	}
+
+	fn set_reverse(&mut self, dim: bool) -> Result<()> {
+		if dim {
+			self.attributes.set(Attribute::Reverse);
+		}
+		else {
+			self.attributes.set(Attribute::NoReverse);
+		}
+		Ok(())
+	}
+
+	fn read_event() -> Result<Option<Event>> {
+		Ok(None)
+	}
+
+	fn get_size(&self) -> Size {
+		self.size
+	}
+
+	fn move_to_column(&mut self, x: u16) -> Result<()> {
+		self.position.0 = x;
+		Ok(())
+	}
+
+	fn move_next_line(&mut self) -> Result<()> {
+		OUTPUT
+			.lock()
+			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
+			.push(String::from("\n"));
+		self.position.0 = 0;
+		self.position.1 += 1;
+		Ok(())
+	}
+
+	fn start(&mut self) -> Result<()> {
+		self.state = State::Normal;
+		Ok(())
+	}
+
+	fn end(&mut self) -> Result<()> {
+		self.state = State::Ended;
+		Ok(())
+	}
 }
 
 impl CrossTerm {
@@ -83,111 +181,4 @@ impl CrossTerm {
 	}
 
 	// End mock access functions
-
-	pub(super) const fn get_color_mode(&self) -> ColorMode {
-		self.color_mode
-	}
-
-	pub(super) fn reset(&mut self) -> Result<()> {
-		self.attributes = Attributes::from(Attribute::Reset);
-		self.colors = Colors::new(Color::Reset, Color::Reset);
-		OUTPUT
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.clear();
-		self.state = State::Normal;
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(super) fn flush(&mut self) -> Result<()> {
-		self.dirty = false;
-		Ok(())
-	}
-
-	#[allow(clippy::unused_self, clippy::unnecessary_wraps)]
-	pub(super) fn print(&mut self, s: &str) -> Result<()> {
-		OUTPUT
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.push(String::from(s));
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(super) fn set_color(&mut self, colors: Colors) -> Result<()> {
-		self.colors = colors;
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(super) fn set_dim(&mut self, dim: bool) -> Result<()> {
-		if dim {
-			self.attributes.set(Attribute::Dim);
-		}
-		else {
-			self.attributes.set(Attribute::NormalIntensity);
-		}
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(super) fn set_underline(&mut self, dim: bool) -> Result<()> {
-		if dim {
-			self.attributes.set(Attribute::Underlined);
-		}
-		else {
-			self.attributes.set(Attribute::NoUnderline);
-		}
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(super) fn set_reverse(&mut self, dim: bool) -> Result<()> {
-		if dim {
-			self.attributes.set(Attribute::Reverse);
-		}
-		else {
-			self.attributes.set(Attribute::NoReverse);
-		}
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(crate) const fn read_event() -> Result<Option<Event>> {
-		Ok(None)
-	}
-
-	#[allow(clippy::missing_const_for_fn)]
-	pub(super) fn get_size(&self) -> Size {
-		self.size
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(crate) fn move_to_column(&mut self, x: u16) -> Result<()> {
-		self.position.0 = x;
-		Ok(())
-	}
-
-	pub(crate) fn move_next_line(&mut self) -> Result<()> {
-		OUTPUT
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.push(String::from("\n"));
-		self.position.0 = 0;
-		self.position.1 += 1;
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(crate) fn start(&mut self) -> Result<()> {
-		self.state = State::Normal;
-		Ok(())
-	}
-
-	#[allow(clippy::unnecessary_wraps)]
-	pub(crate) fn end(&mut self) -> Result<()> {
-		self.state = State::Ended;
-		Ok(())
-	}
 }

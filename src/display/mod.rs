@@ -1,24 +1,26 @@
 mod color_mode;
+mod crossterm;
 mod display_color;
 mod size;
+mod tui;
 mod utils;
 
-#[cfg(not(test))]
-mod crossterm;
 #[cfg(test)]
 mod mockcrossterm;
-use anyhow::Result;
-use ct::Color as CrosstermColor;
-pub use ct::{Colors, CrossTerm};
 #[cfg(test)]
-use mockcrossterm as ct;
+pub mod testutil;
+
+use anyhow::Result;
+#[cfg(test)]
+pub use testutil::CrossTerm;
 
 #[cfg(not(test))]
-use self::crossterm as ct;
-pub use self::{display_color::DisplayColor, size::Size};
-use crate::{config::Theme, display::utils::register_selectable_color_pairs};
+pub use self::crossterm::CrossTerm;
+use self::{crossterm::Color as CrosstermColor, utils::register_selectable_color_pairs};
+pub use self::{crossterm::Colors, display_color::DisplayColor, size::Size, tui::Tui};
+use crate::config::Theme;
 
-pub struct Display {
+pub struct Display<T: Tui> {
 	action_break: (Colors, Colors),
 	action_drop: (Colors, Colors),
 	action_edit: (Colors, Colors),
@@ -30,7 +32,7 @@ pub struct Display {
 	action_reset: (Colors, Colors),
 	action_reword: (Colors, Colors),
 	action_squash: (Colors, Colors),
-	crossterm: CrossTerm,
+	tui: T,
 	diff_add: (Colors, Colors),
 	diff_change: (Colors, Colors),
 	diff_context: (Colors, Colors),
@@ -40,9 +42,9 @@ pub struct Display {
 	normal: (Colors, Colors),
 }
 
-impl Display {
-	pub(crate) fn new(crossterm: CrossTerm, theme: &Theme) -> Self {
-		let color_mode = crossterm.get_color_mode();
+impl<T: Tui> Display<T> {
+	pub(crate) fn new(tui: T, theme: &Theme) -> Self {
+		let color_mode = tui.get_color_mode();
 		let normal = register_selectable_color_pairs(
 			color_mode,
 			theme.color_foreground,
@@ -164,7 +166,7 @@ impl Display {
 			action_reset,
 			action_reword,
 			action_squash,
-			crossterm,
+			tui,
 			diff_add,
 			diff_change,
 			diff_context,
@@ -176,21 +178,21 @@ impl Display {
 	}
 
 	pub(crate) fn draw_str(&mut self, s: &str) -> Result<()> {
-		self.crossterm.print(s)
+		self.tui.print(s)
 	}
 
 	pub(crate) fn clear(&mut self) -> Result<()> {
 		self.color(DisplayColor::Normal, false)?;
 		self.set_style(false, false, false)?;
-		self.crossterm.reset()
+		self.tui.reset()
 	}
 
 	pub(crate) fn refresh(&mut self) -> Result<()> {
-		self.crossterm.flush()
+		self.tui.flush()
 	}
 
 	pub(crate) fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
-		self.crossterm.set_color(
+		self.tui.set_color(
 			if selected {
 				match color {
 					DisplayColor::ActionBreak => self.action_break.1,
@@ -245,42 +247,42 @@ impl Display {
 	}
 
 	fn set_dim(&mut self, on: bool) -> Result<()> {
-		self.crossterm.set_dim(on)
+		self.tui.set_dim(on)
 	}
 
 	fn set_underline(&mut self, on: bool) -> Result<()> {
-		self.crossterm.set_underline(on)
+		self.tui.set_underline(on)
 	}
 
 	fn set_reverse(&mut self, on: bool) -> Result<()> {
-		self.crossterm.set_reverse(on)
+		self.tui.set_reverse(on)
 	}
 
 	pub(crate) fn get_window_size(&self) -> Size {
-		self.crossterm.get_size()
+		self.tui.get_size()
 	}
 
 	pub(crate) fn ensure_at_line_start(&mut self) -> Result<()> {
-		self.crossterm.move_to_column(1)
+		self.tui.move_to_column(1)
 	}
 
 	pub(crate) fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
 		let width = self.get_window_size().width();
-		self.crossterm.move_to_column(width as u16 - right + 1)
+		self.tui.move_to_column(width as u16 - right + 1)
 	}
 
 	pub(crate) fn next_line(&mut self) -> Result<()> {
-		self.crossterm.move_next_line()
+		self.tui.move_next_line()
 	}
 
 	pub(crate) fn start(&mut self) -> Result<()> {
-		self.crossterm.start()?;
-		self.crossterm.flush()
+		self.tui.start()?;
+		self.tui.flush()
 	}
 
 	pub(crate) fn end(&mut self) -> Result<()> {
-		self.crossterm.end()?;
-		self.crossterm.flush()
+		self.tui.end()?;
+		self.tui.flush()
 	}
 }
 
@@ -288,7 +290,7 @@ impl Display {
 mod tests {
 	use rstest::rstest;
 
-	use super::{mockcrossterm::State, *};
+	use super::{mockcrossterm::State, testutil::CrossTerm, *};
 	use crate::config::{testutil::create_config, Config};
 
 	pub struct TestContext<'t> {
@@ -329,9 +331,9 @@ mod tests {
 			display.clear().unwrap();
 			assert!(CrossTerm::get_output().is_empty());
 			assert!(CrossTerm::get_output().is_empty());
-			assert!(!display.crossterm.is_dimmed());
-			assert!(!display.crossterm.is_reverse());
-			assert!(!display.crossterm.is_underline());
+			assert!(!display.tui.is_dimmed());
+			assert!(!display.tui.is_reverse());
+			assert!(!display.tui.is_underline());
 		});
 	}
 
@@ -341,7 +343,7 @@ mod tests {
 		display_module_test(|test_context: TestContext<'_>| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.refresh().unwrap();
-			assert!(!display.crossterm.is_dirty());
+			assert!(!display.tui.is_dirty());
 		});
 	}
 
@@ -488,7 +490,7 @@ mod tests {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.color(display_color, selected).unwrap();
 			assert!(display
-				.crossterm
+				.tui
 				.is_colors_enabled(Colors::new(expected_foreground, expected_background)));
 		});
 	}
@@ -511,9 +513,9 @@ mod tests {
 		display_module_test(|test_context: TestContext<'_>| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.set_style(dim, underline, reverse).unwrap();
-			assert_eq!(display.crossterm.is_dimmed(), dim);
-			assert_eq!(display.crossterm.is_underline(), underline);
-			assert_eq!(display.crossterm.is_reverse(), reverse);
+			assert_eq!(display.tui.is_dimmed(), dim);
+			assert_eq!(display.tui.is_underline(), underline);
+			assert_eq!(display.tui.is_reverse(), reverse);
 		});
 	}
 
@@ -533,7 +535,7 @@ mod tests {
 		display_module_test(|test_context: TestContext<'_>| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.ensure_at_line_start().unwrap();
-			assert_eq!(display.crossterm.get_position(), (1, 0));
+			assert_eq!(display.tui.get_position(), (1, 0));
 		});
 	}
 
@@ -545,7 +547,7 @@ mod tests {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.move_from_end_of_line(5).unwrap();
 			// character after the 15th character (16th)
-			assert_eq!(display.crossterm.get_position(), (16, 0));
+			assert_eq!(display.tui.get_position(), (16, 0));
 		});
 	}
 
@@ -555,7 +557,7 @@ mod tests {
 		display_module_test(|test_context: TestContext<'_>| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.start().unwrap();
-			assert_eq!(display.crossterm.get_state(), State::Normal);
+			assert_eq!(display.tui.get_state(), State::Normal);
 		});
 	}
 
@@ -565,7 +567,7 @@ mod tests {
 		display_module_test(|test_context: TestContext<'_>| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.end().unwrap();
-			assert_eq!(display.crossterm.get_state(), State::Ended);
+			assert_eq!(display.tui.get_state(), State::Ended);
 		});
 	}
 }

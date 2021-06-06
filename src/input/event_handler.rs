@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
 use crate::{
-	display::CrossTerm,
+	display::{CrossTerm, Tui},
 	input::{key_bindings::KeyBindings, InputOptions, MetaEvent},
 };
 

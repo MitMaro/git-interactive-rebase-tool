@@ -25,21 +25,21 @@ pub use self::{
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 };
-use crate::display::{Display, DisplayColor, Size};
+use crate::display::{Display, DisplayColor, Size, Tui};
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
 const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
 
-pub struct View {
+pub struct View<C: Tui> {
 	character_vertical_spacing: String,
-	display: Display,
+	display: Display<C>,
 	help_indicator_key: String,
 	last_render_version: u32,
 }
 
-impl View {
-	pub(crate) fn new(display: Display, character_vertical_spacing: &str, help_indicator_key: &str) -> Self {
+impl<C: Tui> View<C> {
+	pub(crate) fn new(display: Display<C>, character_vertical_spacing: &str, help_indicator_key: &str) -> Self {
 		Self {
 			character_vertical_spacing: String::from(character_vertical_spacing),
 			display,

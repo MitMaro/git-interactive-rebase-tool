@@ -9,9 +9,12 @@ const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 
 use std::sync::atomic::Ordering;
 
-use crate::view::{action::ViewAction, sender::Sender, View};
+use crate::{
+	display::Tui,
+	view::{action::ViewAction, sender::Sender, View},
+};
 
-pub fn spawn_view_thread(view: View) -> (Sender, JoinHandle<()>) {
+pub fn spawn_view_thread<T: Tui + Send + 'static>(view: View<T>) -> (Sender, JoinHandle<()>) {
 	let (sender, receiver) = mpsc::channel();
 	let view_sender = Sender::new(sender.clone());
 	let view_render_slice = view_sender.clone_render_slice();
