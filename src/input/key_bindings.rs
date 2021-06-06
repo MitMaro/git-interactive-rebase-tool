@@ -1,5 +1,4 @@
-use super::{Event, KeyModifiers};
-use crate::input::{KeyCode, KeyEvent};
+use super::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug)]
 pub struct KeyBindings {

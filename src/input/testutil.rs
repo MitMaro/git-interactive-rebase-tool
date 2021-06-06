@@ -1,9 +1,7 @@
 use std::cell::RefCell;
 
-use crate::{
-	input::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent},
-	view::{testutil::with_view_sender, ViewSender},
-};
+use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent};
+use crate::view::{testutil::with_view_sender, ViewSender};
 
 #[allow(clippy::match_same_arms)]
 fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
