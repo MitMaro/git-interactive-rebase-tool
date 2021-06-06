@@ -1,4 +1,5 @@
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[allow(clippy::exhaustive_enums)]
 pub enum DisplayColor {
 	ActionBreak,
 	ActionDrop,

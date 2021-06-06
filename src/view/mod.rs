@@ -16,6 +16,7 @@ mod tests;
 pub mod testutil;
 
 use anyhow::Result;
+use display::{Display, DisplayColor, Size, Tui};
 
 use self::render_slice::RenderSlice;
 pub use self::{
@@ -29,7 +30,6 @@ pub use self::{
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,
 };
-use crate::display::{Display, DisplayColor, Size, Tui};
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";

@@ -2,7 +2,7 @@ use std::env::var;
 
 use config::Color;
 
-use super::{color_mode::ColorMode, Colors, CrosstermColor};
+use super::{color_mode::ColorMode, Color as CrosstermColor, Colors};
 
 pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 	// respect COLORTERM being truecolor or 24bit
@@ -46,7 +46,7 @@ pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 	}
 }
 
-pub fn register_selectable_color_pairs(
+pub(super) fn register_selectable_color_pairs(
 	color_mode: ColorMode,
 	foreground: Color,
 	background: Color,
@@ -69,6 +69,7 @@ pub fn register_selectable_color_pairs(
 
 // Modified version from gyscos/cursive (https://github.com/gyscos/cursive)
 // Copyright (c) 2015 Alexandre Bury - MIT License
+#[allow(clippy::cast_sign_loss)]
 fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 	match color {
 		Color::Default => CrosstermColor::Reset,

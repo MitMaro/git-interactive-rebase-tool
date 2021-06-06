@@ -6,9 +6,9 @@ pub mod testutil;
 use std::{process::Command, thread};
 
 use anyhow::{anyhow, Result};
+use display::Tui;
 
 use crate::{
-	display::Tui,
 	input::{Event, EventHandler, MetaEvent},
 	module::{ExitStatus, Modules, ProcessResult, State},
 	todo_file::TodoFile,
