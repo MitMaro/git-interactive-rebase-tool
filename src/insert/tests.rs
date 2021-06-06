@@ -3,12 +3,12 @@ use crate::{
 	assert_process_result,
 	assert_rendered_output,
 	input::{Event, KeyCode},
-	process::testutil::{process_module_test, TestContext},
+	process::testutil::process_module_test,
 };
 
 #[test]
 fn activate() {
-	process_module_test(&[], &[], |test_context: TestContext<'_>| {
+	process_module_test(&[], &[], |test_context| {
 		let mut module = Insert::new();
 		assert_process_result!(test_context.activate(&mut module, State::List));
 	});
@@ -16,7 +16,7 @@ fn activate() {
 
 #[test]
 fn render_prompt() {
-	process_module_test(&[], &[], |test_context: TestContext<'_>| {
+	process_module_test(&[], &[], |test_context| {
 		let mut module = Insert::new();
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -40,7 +40,7 @@ fn render_prompt() {
 
 #[test]
 fn prompt_cancel() {
-	process_module_test(&[], &[Event::from('q')], |mut test_context: TestContext<'_>| {
+	process_module_test(&[], &[Event::from('q')], |mut test_context| {
 		let mut module = Insert::new();
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -61,7 +61,7 @@ fn edit_render_exec() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
@@ -98,7 +98,7 @@ fn edit_render_pick() {
 			Event::from('c'),
 			Event::from(KeyCode::Enter),
 		],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
@@ -138,7 +138,7 @@ fn edit_render_label() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
@@ -177,7 +177,7 @@ fn edit_render_reset() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
@@ -216,7 +216,7 @@ fn edit_render_merge() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
@@ -255,7 +255,7 @@ fn edit_select_next_index() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_all_events(&mut module);
 			assert_eq!(test_context.rebase_todo_file.get_selected_line_index(), 1);
@@ -268,7 +268,7 @@ fn cancel_edit() {
 	process_module_test(
 		&[],
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = Insert::new();
 			test_context.handle_all_events(&mut module);
 			assert!(test_context.rebase_todo_file.is_empty());

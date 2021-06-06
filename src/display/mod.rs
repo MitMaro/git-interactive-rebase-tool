@@ -311,7 +311,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn draw_str() {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.draw_str("Test String").unwrap();
 			let output = CrossTerm::get_output();
@@ -322,7 +322,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn clear() {
-		display_module_test(|mut test_context: TestContext<'_>| {
+		display_module_test(|mut test_context| {
 			test_context.crossterm.print("Test String").unwrap();
 			test_context.crossterm.set_dim(true).unwrap();
 			test_context.crossterm.set_reverse(true).unwrap();
@@ -340,7 +340,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn refresh() {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.refresh().unwrap();
 			assert!(!display.tui.is_dirty());
@@ -486,7 +486,7 @@ mod tests {
 		expected_foreground: CrosstermColor,
 		expected_background: CrosstermColor,
 	) {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.color(display_color, selected).unwrap();
 			assert!(display
@@ -510,7 +510,7 @@ mod tests {
 	)]
 	#[serial_test::serial()]
 	fn style(dim: bool, underline: bool, reverse: bool) {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.set_style(dim, underline, reverse).unwrap();
 			assert_eq!(display.tui.is_dimmed(), dim);
@@ -522,7 +522,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn get_window_size() {
-		display_module_test(|mut test_context: TestContext<'_>| {
+		display_module_test(|mut test_context| {
 			test_context.crossterm.set_size(Size::new(12, 10));
 			let display = Display::new(test_context.crossterm, &test_context.config.theme);
 			assert_eq!(display.get_window_size(), Size::new(12, 10));
@@ -532,7 +532,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn ensure_at_line_start() {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.ensure_at_line_start().unwrap();
 			assert_eq!(display.tui.get_position(), (1, 0));
@@ -542,7 +542,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn move_from_end_of_line() {
-		display_module_test(|mut test_context: TestContext<'_>| {
+		display_module_test(|mut test_context| {
 			test_context.crossterm.set_size(Size::new(20, 10));
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.move_from_end_of_line(5).unwrap();
@@ -554,7 +554,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn start() {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.start().unwrap();
 			assert_eq!(display.tui.get_state(), State::Normal);
@@ -564,7 +564,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn end() {
-		display_module_test(|test_context: TestContext<'_>| {
+		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
 			display.end().unwrap();
 			assert_eq!(display.tui.get_state(), State::Ended);

@@ -6,7 +6,7 @@ use super::*;
 use crate::{
 	assert_process_result,
 	assert_rendered_output,
-	process::testutil::{process_module_test, TestContext},
+	process::testutil::process_module_test,
 	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
 	view::ViewLine,
 };
@@ -30,7 +30,7 @@ fn load_commit_during_activate() {
 	process_module_test(
 		&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			assert_process_result!(test_context.activate(&mut module, State::List));
 			assert!(module.commit.is_some());
@@ -43,7 +43,7 @@ fn cached_commit_in_activate() {
 	process_module_test(
 		&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			assert_process_result!(test_context.activate(&mut module, State::List));
 			assert_process_result!(test_context.activate(&mut module, State::List));
@@ -53,7 +53,7 @@ fn cached_commit_in_activate() {
 
 #[test]
 fn no_selected_line_in_activate() {
-	process_module_test(&[], &[], |test_context: TestContext<'_>| {
+	process_module_test(&[], &[], |test_context| {
 		let mut module = ShowCommit::new(test_context.config);
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -65,7 +65,7 @@ fn no_selected_line_in_activate() {
 
 #[test]
 fn activate_error() {
-	process_module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context: TestContext<'_>| {
+	process_module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
 		let mut module = ShowCommit::new(test_context.config);
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -83,7 +83,7 @@ fn render_overview_minimal_commit() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -108,7 +108,7 @@ fn render_overview_minimal_commit_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut module = ShowCommit::new(test_context.config);
 			let commit = create_minimal_commit();
@@ -133,7 +133,7 @@ fn render_overview_with_author() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -160,7 +160,7 @@ fn render_overview_with_author_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
@@ -187,7 +187,7 @@ fn render_overview_with_committer() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -214,7 +214,7 @@ fn render_overview_with_committer_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
@@ -241,7 +241,7 @@ fn render_overview_with_commit_body() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -270,7 +270,7 @@ fn render_overview_with_file_stats() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -311,7 +311,7 @@ fn render_overview_with_file_stats_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
@@ -352,7 +352,7 @@ fn render_overview_single_file_changed() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -378,7 +378,7 @@ fn render_overview_more_than_one_file_changed() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -404,7 +404,7 @@ fn render_overview_single_insertion() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -430,7 +430,7 @@ fn render_overview_more_than_one_insertion() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -456,7 +456,7 @@ fn render_overview_single_deletion() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -482,7 +482,7 @@ fn render_overview_more_than_one_deletion() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let commit_date = commit.get_date().format("%c %z").to_string();
@@ -508,7 +508,7 @@ fn render_diff_minimal_commit() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 			let mut module = ShowCommit::new(&config);
@@ -533,7 +533,7 @@ fn render_diff_minimal_commit_compact() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
@@ -558,7 +558,7 @@ fn render_diff_basic_file_stats() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 			let mut module = ShowCommit::new(&config);
@@ -606,7 +606,7 @@ fn render_diff_end_new_line_missing() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			let mut commit = create_minimal_commit();
 			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
@@ -642,7 +642,7 @@ fn render_diff_add_line() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 			let mut module = ShowCommit::new(&config);
@@ -678,7 +678,7 @@ fn render_diff_delete_line() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 			let mut module = ShowCommit::new(&config);
@@ -714,7 +714,7 @@ fn render_diff_context_add_remove_lines() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 			let mut module = ShowCommit::new(&config);
@@ -756,7 +756,7 @@ fn render_diff_add_line_with_show_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 			let mut module = ShowCommit::new(&config);
@@ -792,7 +792,7 @@ fn render_diff_delete_line_with_show_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 			let mut module = ShowCommit::new(&config);
@@ -828,7 +828,7 @@ fn render_diff_context_add_remove_lines_with_show_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 			let mut module = ShowCommit::new(&config);
@@ -893,7 +893,7 @@ fn render_diff_show_both_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 			config.diff_tab_symbol = String::from("#");
@@ -939,7 +939,7 @@ fn render_diff_show_leading_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Leading;
 			config.diff_tab_symbol = String::from("#");
@@ -985,7 +985,7 @@ fn render_diff_show_no_whitespace() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 			config.diff_tab_symbol = String::from("#");
@@ -1028,7 +1028,7 @@ fn render_diff_show_whitespace_all_spaces() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		|test_context: TestContext<'_>| {
+		|test_context| {
 			let mut config = test_context.config.clone();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 			config.diff_tab_symbol = String::from("#");
@@ -1067,7 +1067,7 @@ fn handle_event_toggle_diff_to_overview() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from(MetaEvent::ShowDiff)],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			module
 				.diff_view_data
@@ -1088,7 +1088,7 @@ fn handle_event_toggle_overview_to_diff() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from(MetaEvent::ShowDiff)],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			module
 				.overview_view_data
@@ -1109,7 +1109,7 @@ fn handle_event_resize() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::Resize(100, 100)],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
 		},
@@ -1118,32 +1118,28 @@ fn handle_event_resize() {
 
 #[test]
 fn render_help() {
-	process_module_test(
-		&["pick aaa c1"],
-		&[Event::from(MetaEvent::Help)],
-		|mut test_context: TestContext<'_>| {
-			let mut module = ShowCommit::new(test_context.config);
-			test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				view_data,
-				"{TITLE}",
-				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
-				"{BODY}",
-				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
-				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
-				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
-				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
-				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
-				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
-				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
-				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
-				"{TRAILING}",
-				"{IndicatorColor}Press any key to close"
-			);
-		},
-	);
+	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
+		let mut module = ShowCommit::new(test_context.config);
+		test_context.handle_all_events(&mut module);
+		let view_data = test_context.build_view_data(&mut module);
+		assert_rendered_output!(
+			view_data,
+			"{TITLE}",
+			"{LEADING}",
+			"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
+			"{BODY}",
+			"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
+			"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
+			"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
+			"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
+			"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
+			"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
+			"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
+			"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
+			"{TRAILING}",
+			"{IndicatorColor}Press any key to close"
+		);
+	});
 }
 
 #[test]
@@ -1151,7 +1147,7 @@ fn handle_help_event() {
 	process_module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::ShowDiff)],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			test_context.handle_all_events(&mut module);
 			assert!(!module.help.is_active());
@@ -1164,7 +1160,7 @@ fn handle_event_other_key_from_diff() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('a')],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			module.state = ShowCommitState::Diff;
 			assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));
@@ -1178,7 +1174,7 @@ fn handle_event_other_key_from_overview() {
 	process_module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('a')],
-		|mut test_context: TestContext<'_>| {
+		|mut test_context| {
 			let mut module = ShowCommit::new(test_context.config);
 			module.state = ShowCommitState::Overview;
 			assert_process_result!(
@@ -1200,7 +1196,7 @@ fn handle_event_other_key_from_overview() {
 	case::scroll_jump_up(MetaEvent::ScrollJumpUp)
 )]
 fn scroll_events(event: MetaEvent) {
-	process_module_test(&[], &[Event::from(event)], |mut test_context: TestContext<'_>| {
+	process_module_test(&[], &[Event::from(event)], |mut test_context| {
 		let mut module = ShowCommit::new(test_context.config);
 		assert_process_result!(test_context.handle_event(&mut module), event = Event::from(event));
 	});
