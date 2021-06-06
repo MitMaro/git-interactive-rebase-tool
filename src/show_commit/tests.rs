@@ -8,7 +8,7 @@ use crate::{
 	assert_rendered_output,
 	process::testutil::{process_module_test, TestContext},
 	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
-	view::view_line::ViewLine,
+	view::ViewLine,
 };
 
 fn create_minimal_commit() -> Commit {

@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 
 use crate::{
 	input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, MetaEvent},
-	view::{view_data::ViewData, view_line::ViewLine},
+	view::{ViewData, ViewLine},
 };
 
 lazy_static! {

@@ -5,7 +5,7 @@ use crate::{
 	config::KeyBindings,
 	display::DisplayColor,
 	show_commit::{commit::Commit, status::Status},
-	view::{line_segment::LineSegment, view_line::ViewLine},
+	view::{LineSegment, ViewLine},
 };
 
 pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {

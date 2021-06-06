@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use super::{view_line::ViewLine, ViewDataUpdater};
+use super::{ViewDataUpdater, ViewLine};
 
 pub struct ViewData {
 	lines: Vec<ViewLine>,

@@ -1,18 +1,14 @@
 use std::{
 	borrow::Borrow,
-	sync::mpsc,
+	sync::{atomic::Ordering, mpsc},
 	thread::{sleep, spawn, JoinHandle},
 	time::{Duration, Instant},
 };
 
+use super::{action::ViewAction, sender::Sender, View};
+use crate::display::Tui;
+
 const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
-
-use std::sync::atomic::Ordering;
-
-use crate::{
-	display::Tui,
-	view::{action::ViewAction, sender::Sender, View},
-};
 
 pub fn spawn_view_thread<T: Tui + Send + 'static>(view: View<T>) -> (Sender, JoinHandle<()>) {
 	let (sender, receiver) = mpsc::channel();

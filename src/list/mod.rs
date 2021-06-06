@@ -17,13 +17,7 @@ use crate::{
 	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
-	view::{
-		line_segment::LineSegment,
-		render_context::RenderContext,
-		view_data::ViewData,
-		view_line::ViewLine,
-		ViewSender,
-	},
+	view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 #[derive(Debug, PartialEq)]

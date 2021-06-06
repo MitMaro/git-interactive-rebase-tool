@@ -11,7 +11,7 @@ use crate::{
 	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{render_context::RenderContext, view_data::ViewData},
+	view::{RenderContext, ViewData},
 };
 
 pub struct TestContext<'t> {

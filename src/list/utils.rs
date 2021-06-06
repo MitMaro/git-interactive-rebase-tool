@@ -4,7 +4,7 @@ use crate::{
 	config::KeyBindings,
 	display::DisplayColor,
 	todo_file::{action::Action, line::Line},
-	view::line_segment::LineSegment,
+	view::LineSegment,
 };
 
 pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {

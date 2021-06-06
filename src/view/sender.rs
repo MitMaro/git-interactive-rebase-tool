@@ -127,8 +127,8 @@ mod tests {
 
 	use crate::view::{
 		testutil::{render_view_line, with_view_sender},
-		view_line::ViewLine,
 		ViewData,
+		ViewLine,
 	};
 
 	#[test]

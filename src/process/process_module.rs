@@ -2,7 +2,7 @@ use crate::{
 	input::EventHandler,
 	process::{process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
-	view::{render_context::RenderContext, view_data::ViewData, ViewSender},
+	view::{RenderContext, ViewData, ViewSender},
 };
 
 pub trait ProcessModule {

@@ -1,4 +1,4 @@
-use super::{view_line::ViewLine, ViewData};
+use super::{ViewData, ViewLine};
 
 pub struct ViewDataUpdater<'v> {
 	modified: bool,

@@ -10,7 +10,7 @@ use crate::{
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
 	todo_file::{line::Line, TodoFile},
-	view::{render_context::RenderContext, view_data::ViewData, view_line::ViewLine, ViewSender},
+	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 pub struct Insert {

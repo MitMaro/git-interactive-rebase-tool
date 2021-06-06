@@ -7,7 +7,7 @@ use unicode_segmentation::UnicodeSegmentation;
 use crate::{
 	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, KeyModifiers},
-	view::{line_segment::LineSegment, view_data::ViewData, view_line::ViewLine},
+	view::{LineSegment, ViewData, ViewLine},
 };
 
 lazy_static! {
