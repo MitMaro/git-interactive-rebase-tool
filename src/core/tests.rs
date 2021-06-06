@@ -160,6 +160,6 @@ fn run_process_success() {
 	event_handler.push_event(Event::from(MetaEvent::Exit));
 	assert_eq!(
 		run_process(rebase_todo_file, event_handler, &config),
-		Exit::from(ExitStatus::Abort,)
+		Exit::from(ExitStatus::Abort)
 	);
 }
