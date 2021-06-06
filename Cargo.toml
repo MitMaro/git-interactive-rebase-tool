@@ -26,6 +26,7 @@ path = "src/main.rs"
 [workspace]
 members = [
     "src/config",
+	"src/display"
 ]
 
 [dependencies]
@@ -39,6 +40,7 @@ unicode-segmentation = "1.7.1"
 unicode-width = "0.1.8"
 xi-unicode = "0.3.0"
 girt-config = {version = "1.0.0", path = "src/config"}
+girt-display = {version = "1.0.0", path = "src/display"}
 
 [dependencies.uuid]
 version = "0.8.1"

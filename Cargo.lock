@@ -133,6 +133,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "girt-display"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "crossterm",
+ "girt-config",
+ "rstest",
+ "rustc_version 0.4.0",
+ "serial_test",
+]
+
+[[package]]
 name = "git-interactive-rebase-tool"
 version = "2.1.0"
 dependencies = [
@@ -141,6 +153,7 @@ dependencies = [
  "concat-idents",
  "crossterm",
  "girt-config",
+ "girt-display",
  "git2",
  "lazy_static",
  "num-format",

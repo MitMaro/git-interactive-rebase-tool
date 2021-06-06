@@ -1,7 +1,7 @@
 use config::testutil::create_config;
+use display::testutil::{assert_output, CrossTerm};
 
 use super::*;
-use crate::display::testutil::{assert_output, CrossTerm};
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let config = create_config();

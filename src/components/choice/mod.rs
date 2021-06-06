@@ -2,10 +2,10 @@
 mod tests;
 use std::collections::HashMap;
 
+use display::DisplayColor;
 use lazy_static::lazy_static;
 
 use crate::{
-	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions, KeyCode},
 	view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender},
 };
