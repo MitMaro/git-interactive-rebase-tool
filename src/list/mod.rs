@@ -27,8 +27,8 @@ enum ListState {
 	Edit,
 }
 
-pub struct List<'l> {
-	config: &'l Config,
+pub struct List {
+	auto_select_next: bool,
 	edit: Edit,
 	height: usize,
 	normal_mode_help: Help,
@@ -38,7 +38,7 @@ pub struct List<'l> {
 	visual_mode_help: Help,
 }
 
-impl<'l> ProcessModule for List<'l> {
+impl ProcessModule for List {
 	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
@@ -61,15 +61,15 @@ impl<'l> ProcessModule for List<'l> {
 	}
 }
 
-impl<'l> List<'l> {
-	pub(crate) fn new(config: &'l Config) -> Self {
+impl List {
+	pub(crate) fn new(config: &Config) -> Self {
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
 		});
 
 		Self {
-			config,
+			auto_select_next: config.auto_select_next,
 			edit: Edit::new(),
 			height: 0,
 			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
@@ -102,7 +102,7 @@ impl<'l> List<'l> {
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
 		rebase_todo.update_range(start_index, end_index, &EditContext::new().action(action));
-		if self.state == ListState::Normal && self.config.auto_select_next {
+		if self.state == ListState::Normal && self.auto_select_next {
 			Self::move_cursor_down(rebase_todo, 1);
 		}
 	}

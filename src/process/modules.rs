@@ -12,20 +12,20 @@ use crate::{
 	view::{RenderContext, ViewData, ViewSender},
 };
 
-pub struct Modules<'m> {
+pub struct Modules {
 	pub confirm_abort: ConfirmAbort,
 	pub confirm_rebase: ConfirmRebase,
 	pub error: Error,
 	pub external_editor: ExternalEditor,
 	pub insert: Insert,
-	pub list: List<'m>,
-	pub show_commit: ShowCommit<'m>,
+	pub list: List,
+	pub show_commit: ShowCommit,
 	pub window_size_error: WindowSizeError,
 }
 
-impl<'m> Modules<'m> {
-	pub fn new(config: &'m Config) -> Self {
-		Modules {
+impl Modules {
+	pub fn new(config: &Config) -> Self {
+		Self {
 			confirm_abort: ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
 			confirm_rebase: ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
 			error: Error::new(),

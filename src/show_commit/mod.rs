@@ -39,17 +39,17 @@ lazy_static! {
 		.resize(false);
 }
 
-pub struct ShowCommit<'s> {
+pub struct ShowCommit {
 	commit: Option<Commit>,
-	config: &'s Config,
 	diff_view_data: ViewData,
 	help: Help,
+	load_commit_diff_options: LoadCommitDiffOptions,
 	overview_view_data: ViewData,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
 }
 
-impl<'s> ProcessModule for ShowCommit<'s> {
+impl ProcessModule for ShowCommit {
 	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
 		if let Some(selected_line) = rebase_todo.get_selected_line() {
 			// skip loading commit data if the currently loaded commit has not changed, this retains
@@ -69,15 +69,7 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 				updater.reset_scroll_position();
 			});
 
-			let new_commit = Commit::new_from_hash(selected_line.get_hash(), LoadCommitDiffOptions {
-				context_lines: self.config.git.diff_context,
-				copies: self.config.git.diff_copies,
-				ignore_whitespace: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
-				ignore_whitespace_change: self.config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
-				interhunk_lines: self.config.git.diff_interhunk_lines,
-				rename_limit: self.config.git.diff_rename_limit,
-				renames: self.config.git.diff_renames,
-			});
+			let new_commit = Commit::new_from_hash(selected_line.get_hash(), &self.load_commit_diff_options);
 
 			match new_commit {
 				Ok(c) => {
@@ -177,8 +169,8 @@ impl<'s> ProcessModule for ShowCommit<'s> {
 	}
 }
 
-impl<'s> ShowCommit<'s> {
-	pub(crate) fn new(config: &'s Config) -> Self {
+impl ShowCommit {
+	pub(crate) fn new(config: &Config) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -196,11 +188,20 @@ impl<'s> ShowCommit<'s> {
 			config.diff_show_whitespace == DiffShowWhitespaceSetting::Both
 				|| config.diff_show_whitespace == DiffShowWhitespaceSetting::Trailing,
 		);
+		let load_commit_diff_options = LoadCommitDiffOptions {
+			context_lines: config.git.diff_context,
+			copies: config.git.diff_copies,
+			ignore_whitespace: config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
+			ignore_whitespace_change: config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
+			interhunk_lines: config.git.diff_interhunk_lines,
+			rename_limit: config.git.diff_rename_limit,
+			renames: config.git.diff_renames,
+		};
 		Self {
 			commit: None,
-			config,
 			diff_view_data,
 			help: Help::new_from_keybindings(&get_show_commit_help_lines(&config.key_bindings)),
+			load_commit_diff_options,
 			overview_view_data,
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options),

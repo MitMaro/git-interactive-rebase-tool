@@ -38,7 +38,7 @@ pub struct Commit {
 	pub(super) deletions: usize,
 }
 
-fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit, Error> {
+fn load_commit_state(hash: &str, config: &LoadCommitDiffOptions) -> Result<Commit, Error> {
 	let repo = Repository::open_from_env()?;
 	let commit = repo.find_commit(repo.revparse_single(hash)?.id())?;
 
@@ -182,7 +182,7 @@ fn load_commit_state(hash: &str, config: LoadCommitDiffOptions) -> Result<Commit
 
 impl Commit {
 	/// Load commit information from a commit hash.
-	pub(super) fn new_from_hash(hash: &str, config: LoadCommitDiffOptions) -> Result<Self> {
+	pub(super) fn new_from_hash(hash: &str, config: &LoadCommitDiffOptions) -> Result<Self> {
 		load_commit_state(hash, config).map_err(|err| anyhow!(err).context(anyhow!("Error loading commit: {}", hash)))
 	}
 
@@ -246,7 +246,7 @@ mod tests {
 	}
 
 	fn load_commit_from_hash(hash: &str) -> Result<Commit> {
-		Commit::new_from_hash(hash, LoadCommitDiffOptions {
+		Commit::new_from_hash(hash, &LoadCommitDiffOptions {
 			context_lines: 3,
 			copies: true,
 			ignore_whitespace: false,
