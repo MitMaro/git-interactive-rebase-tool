@@ -1,10 +1,10 @@
 use input::EventHandler;
+use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 use crate::{
 	components::confirm::{Confirm, Confirmed},
 	module::{ExitStatus, Module, ProcessResult, State},
-	todo_file::TodoFile,
 };
 
 pub struct ConfirmRebase {

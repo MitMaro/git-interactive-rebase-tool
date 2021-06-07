@@ -1,11 +1,9 @@
 use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;
+use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
-use crate::{
-	module::{Module, ProcessResult, State},
-	todo_file::TodoFile,
-};
+use crate::module::{Module, ProcessResult, State};
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
 const SHORT_ERROR_MESSAGE: &str = "Window too small";

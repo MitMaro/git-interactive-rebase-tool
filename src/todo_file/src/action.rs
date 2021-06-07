@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use anyhow::{anyhow, Error};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(clippy::exhaustive_enums)]
 pub enum Action {
 	Break,
 	Drop,
@@ -19,7 +20,8 @@ pub enum Action {
 }
 
 impl Action {
-	pub(crate) fn as_string(self) -> String {
+	#[must_use]
+	pub fn as_string(self) -> String {
 		String::from(match self {
 			Self::Break => "break",
 			Self::Drop => "drop",
@@ -36,7 +38,8 @@ impl Action {
 		})
 	}
 
-	pub(crate) fn to_abbreviation(self) -> String {
+	#[must_use]
+	pub fn to_abbreviation(self) -> String {
 		String::from(match self {
 			Self::Break => "b",
 			Self::Drop => "d",
@@ -53,6 +56,7 @@ impl Action {
 		})
 	}
 
+	#[must_use]
 	pub const fn is_static(self) -> bool {
 		match self {
 			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge => true,
