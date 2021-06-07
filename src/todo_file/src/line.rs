@@ -13,6 +13,7 @@ pub struct Line {
 }
 
 impl Line {
+	#[must_use]
 	fn new_noop() -> Self {
 		Self {
 			action: Action::Noop,
@@ -22,7 +23,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new_pick(hash: &str) -> Self {
+	#[must_use]
+	pub fn new_pick(hash: &str) -> Self {
 		Self {
 			action: Action::Pick,
 			content: String::from(""),
@@ -31,7 +33,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new_break() -> Self {
+	#[must_use]
+	pub fn new_break() -> Self {
 		Self {
 			action: Action::Break,
 			content: String::from(""),
@@ -40,7 +43,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new_exec(command: &str) -> Self {
+	#[must_use]
+	pub fn new_exec(command: &str) -> Self {
 		Self {
 			action: Action::Exec,
 			content: String::from(command),
@@ -49,7 +53,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new_merge(command: &str) -> Self {
+	#[must_use]
+	pub fn new_merge(command: &str) -> Self {
 		Self {
 			action: Action::Merge,
 			content: String::from(command),
@@ -58,7 +63,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new_label(label: &str) -> Self {
+	#[must_use]
+	pub fn new_label(label: &str) -> Self {
 		Self {
 			action: Action::Label,
 			content: String::from(label),
@@ -67,7 +73,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new_reset(label: &str) -> Self {
+	#[must_use]
+	pub fn new_reset(label: &str) -> Self {
 		Self {
 			action: Action::Reset,
 			content: String::from(label),
@@ -76,7 +83,7 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn new(input_line: &str) -> Result<Self> {
+	pub fn new(input_line: &str) -> Result<Self> {
 		if input_line.starts_with("noop") {
 			return Ok(Self::new_noop());
 		}
@@ -122,36 +129,41 @@ impl Line {
 		Err(anyhow!("Invalid line: {}", input_line))
 	}
 
-	pub(crate) fn set_action(&mut self, action: Action) {
+	pub fn set_action(&mut self, action: Action) {
 		if !self.action.is_static() && self.action != action {
 			self.mutated = true;
 			self.action = action;
 		}
 	}
 
-	pub(crate) fn edit_content(&mut self, content: &str) {
+	pub fn edit_content(&mut self, content: &str) {
 		if self.is_editable() {
 			self.content = String::from(content);
 		}
 	}
 
-	pub(crate) const fn get_action(&self) -> &Action {
+	#[must_use]
+	pub const fn get_action(&self) -> &Action {
 		&self.action
 	}
 
-	pub(crate) fn get_content(&self) -> &str {
+	#[must_use]
+	pub fn get_content(&self) -> &str {
 		self.content.as_str()
 	}
 
-	pub(crate) fn get_hash(&self) -> &str {
+	#[must_use]
+	pub fn get_hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
-	pub(crate) fn has_reference(&self) -> bool {
+	#[must_use]
+	pub fn has_reference(&self) -> bool {
 		!self.hash.is_empty()
 	}
 
-	pub(crate) const fn is_editable(&self) -> bool {
+	#[must_use]
+	pub const fn is_editable(&self) -> bool {
 		match self.action {
 			Action::Exec | Action::Label | Action::Reset | Action::Merge => true,
 			Action::Break
@@ -165,7 +177,8 @@ impl Line {
 		}
 	}
 
-	pub(crate) fn to_text(&self) -> String {
+	#[must_use]
+	pub fn to_text(&self) -> String {
 		match self.action {
 			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 				format!("{} {} {}", self.action.as_string(), self.hash, self.content)

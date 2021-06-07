@@ -1,3 +1,23 @@
+// Make rustc's built-in lints more strict and set clippy into a whitelist-based configuration
+#![deny(
+	warnings,
+	nonstandard_style,
+	unused,
+	future_incompatible,
+	rust_2018_idioms,
+	unsafe_code
+)]
+#![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
+#![allow(clippy::blanket_clippy_restriction_lints)]
+#![allow(clippy::as_conversions)]
+#![allow(clippy::indexing_slicing)]
+#![allow(clippy::implicit_return)]
+#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::missing_docs_in_private_items)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::missing_inline_in_public_items)]
+#![allow(clippy::module_name_repetitions)]
+
 mod action;
 mod edit_content;
 mod history;
@@ -29,7 +49,8 @@ pub struct TodoFile {
 }
 
 impl TodoFile {
-	pub(crate) fn new(path: &str, undo_limit: u32, comment_char: &str) -> Self {
+	#[must_use]
+	pub fn new(path: &str, undo_limit: u32, comment_char: &str) -> Self {
 		Self {
 			comment_char: String::from(comment_char),
 			filepath: path.to_owned(),
@@ -40,7 +61,7 @@ impl TodoFile {
 		}
 	}
 
-	pub(crate) fn set_lines(&mut self, lines: Vec<Line>) {
+	pub fn set_lines(&mut self, lines: Vec<Line>) {
 		self.is_noop = !lines.is_empty() && lines[0].get_action() == &Action::Noop;
 		self.lines = if self.is_noop {
 			vec![]
@@ -54,7 +75,7 @@ impl TodoFile {
 		self.history.reset();
 	}
 
-	pub(crate) fn load_file(&mut self) -> Result<()> {
+	pub fn load_file(&mut self) -> Result<()> {
 		let lines = read_to_string(Path::new(&self.filepath))
 			.map_err(|err| anyhow!("Error reading file: {}", self.filepath).context(err))?
 			.lines()
@@ -71,7 +92,7 @@ impl TodoFile {
 		Ok(())
 	}
 
-	pub(crate) fn write_file(&self) -> Result<()> {
+	pub fn write_file(&self) -> Result<()> {
 		let mut file = File::create(&self.filepath)
 			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath)))?;
 		let file_contents = if self.is_noop {
@@ -85,7 +106,7 @@ impl TodoFile {
 		Ok(())
 	}
 
-	pub(crate) fn set_selected_line_index(&mut self, selected_line_index: usize) {
+	pub fn set_selected_line_index(&mut self, selected_line_index: usize) {
 		self.selected_line_index = if self.lines.is_empty() {
 			0
 		}
@@ -97,7 +118,7 @@ impl TodoFile {
 		}
 	}
 
-	pub(crate) fn swap_range_up(&mut self, start_index: usize, end_index: usize) -> bool {
+	pub fn swap_range_up(&mut self, start_index: usize, end_index: usize) -> bool {
 		if end_index == 0 || start_index == 0 || self.lines.is_empty() {
 			return false;
 		}
@@ -116,7 +137,7 @@ impl TodoFile {
 		true
 	}
 
-	pub(crate) fn swap_range_down(&mut self, start_index: usize, end_index: usize) -> bool {
+	pub fn swap_range_down(&mut self, start_index: usize, end_index: usize) -> bool {
 		let len = self.lines.len();
 		let max_index = if len == 0 { 0 } else { len - 1 };
 
@@ -129,7 +150,7 @@ impl TodoFile {
 		true
 	}
 
-	pub(crate) fn add_line(&mut self, index: usize, line: Line) {
+	pub fn add_line(&mut self, index: usize, line: Line) {
 		let i = if index > self.lines.len() {
 			self.lines.len()
 		}
@@ -140,7 +161,7 @@ impl TodoFile {
 		self.history.record(HistoryItem::new_add(i, i));
 	}
 
-	pub(crate) fn remove_lines(&mut self, start_index: usize, end_index: usize) {
+	pub fn remove_lines(&mut self, start_index: usize, end_index: usize) {
 		if self.lines.is_empty() {
 			return;
 		}
@@ -158,7 +179,7 @@ impl TodoFile {
 		self.history.record(HistoryItem::new_remove(start, end, removed_lines));
 	}
 
-	pub(crate) fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
+	pub fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
 		if self.lines.is_empty() {
 			return;
 		}
@@ -189,19 +210,21 @@ impl TodoFile {
 		self.history.record(HistoryItem::new_modify(start, end, lines));
 	}
 
-	pub(crate) fn undo(&mut self) -> Option<(usize, usize)> {
+	pub fn undo(&mut self) -> Option<(usize, usize)> {
 		self.history.undo(&mut self.lines)
 	}
 
-	pub(crate) fn redo(&mut self) -> Option<(usize, usize)> {
+	pub fn redo(&mut self) -> Option<(usize, usize)> {
 		self.history.redo(&mut self.lines)
 	}
 
-	pub(crate) fn get_selected_line(&self) -> Option<&Line> {
+	#[must_use]
+	pub fn get_selected_line(&self) -> Option<&Line> {
 		self.lines.get(self.selected_line_index)
 	}
 
-	pub(crate) fn get_max_selected_line_index(&self) -> usize {
+	#[must_use]
+	pub fn get_max_selected_line_index(&self) -> usize {
 		let len = self.lines.len();
 		if len == 0 {
 			0
@@ -211,31 +234,38 @@ impl TodoFile {
 		}
 	}
 
-	pub(crate) const fn get_selected_line_index(&self) -> usize {
+	#[must_use]
+	pub const fn get_selected_line_index(&self) -> usize {
 		self.selected_line_index
 	}
 
-	pub(crate) fn get_filepath(&self) -> &str {
+	#[must_use]
+	pub fn get_filepath(&self) -> &str {
 		self.filepath.as_str()
 	}
 
-	pub(crate) fn get_line(&self, index: usize) -> Option<&Line> {
+	#[must_use]
+	pub fn get_line(&self, index: usize) -> Option<&Line> {
 		self.lines.get(index)
 	}
 
-	pub(crate) fn get_lines_owned(&self) -> Vec<Line> {
+	#[must_use]
+	pub fn get_lines_owned(&self) -> Vec<Line> {
 		self.lines.clone()
 	}
 
-	pub(crate) const fn is_noop(&self) -> bool {
+	#[must_use]
+	pub const fn is_noop(&self) -> bool {
 		self.is_noop
 	}
 
+	#[must_use]
 	pub fn iter(&self) -> Iter<'_, Line> {
 		self.lines.iter()
 	}
 
-	pub(crate) fn is_empty(&self) -> bool {
+	#[must_use]
+	pub fn is_empty(&self) -> bool {
 		self.lines.is_empty()
 	}
 }

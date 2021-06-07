@@ -6,6 +6,7 @@ pub struct EditContext {
 }
 
 impl EditContext {
+	#[must_use]
 	pub const fn new() -> Self {
 		Self {
 			action: None,
@@ -13,20 +14,24 @@ impl EditContext {
 		}
 	}
 
+	#[must_use]
 	pub const fn action(mut self, action: Action) -> Self {
 		self.action = Some(action);
 		self
 	}
 
+	#[must_use]
 	pub fn content(mut self, content: &str) -> Self {
 		self.content = Some(content.to_owned());
 		self
 	}
 
+	#[must_use]
 	pub const fn get_action(&self) -> &Option<Action> {
 		&self.action
 	}
 
+	#[must_use]
 	pub const fn get_content(&self) -> &Option<String> {
 		&self.content
 	}

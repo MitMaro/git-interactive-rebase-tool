@@ -5,6 +5,7 @@ use display::testutil::CrossTerm;
 use display::CrossTerm;
 use display::{Display, Tui};
 use input::{EventHandler, KeyBindings};
+use todo_file::TodoFile;
 use view::View;
 
 use crate::{
@@ -18,7 +19,6 @@ use crate::{
 	module::{ExitStatus, Modules, State},
 	process::Process,
 	show_commit::ShowCommit,
-	todo_file::TodoFile,
 	window_size_error::WindowSizeError,
 };
 

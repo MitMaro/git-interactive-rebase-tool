@@ -3,15 +3,15 @@ mod modules;
 mod process_result;
 mod state;
 
+#[cfg(test)]
+pub mod testutil;
+
 use anyhow::Error;
 use input::EventHandler;
+use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 pub use self::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State};
-use crate::todo_file::TodoFile;
-
-#[cfg(test)]
-pub mod testutil;
 
 pub trait Module {
 	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
