@@ -9,7 +9,7 @@ use crate::{
 	input::EventHandler,
 	insert::{insert_state::InsertState, line_type::LineType},
 	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
-	todo_file::{line::Line, TodoFile},
+	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
 

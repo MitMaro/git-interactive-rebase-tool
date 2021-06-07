@@ -8,7 +8,7 @@ use crate::{
 	display::{testutil::CrossTerm, Display, Size},
 	input::InputOptions,
 	process::testutil::{process_module_test, TestContext},
-	todo_file::line::Line,
+	todo_file::Line,
 };
 
 fn create_crossterm() -> CrossTerm {

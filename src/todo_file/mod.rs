@@ -1,3 +1,9 @@
+mod action;
+mod edit_content;
+mod history;
+mod line;
+mod utils;
+
 use std::{
 	fs::{read_to_string, File},
 	io::Write,
@@ -5,21 +11,13 @@ use std::{
 	slice::Iter,
 };
 
-use action::Action;
 use anyhow::{anyhow, Result};
-use line::Line;
 
-use crate::todo_file::{
-	edit_content::EditContext,
-	history::{history_item::HistoryItem, History},
+pub use self::{action::Action, edit_content::EditContext, line::Line};
+use self::{
+	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},
 };
-
-pub mod action;
-pub mod edit_content;
-mod history;
-pub mod line;
-mod utils;
 
 pub struct TodoFile {
 	comment_char: String,
