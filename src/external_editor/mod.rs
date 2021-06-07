@@ -13,7 +13,7 @@ use crate::{
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
-	todo_file::{line::Line, TodoFile},
+	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
 

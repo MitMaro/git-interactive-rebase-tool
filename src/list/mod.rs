@@ -16,7 +16,7 @@ use crate::{
 		utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	},
 	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
-	todo_file::{action::Action, edit_content::EditContext, line::Line, TodoFile},
+	todo_file::{Action, EditContext, Line, TodoFile},
 	view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
 };
 

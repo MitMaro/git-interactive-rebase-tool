@@ -1,4 +1,4 @@
-use crate::todo_file::line::Line;
+use super::line::Line;
 
 pub fn swap_range_up(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
 	let range = if end_index <= start_index {

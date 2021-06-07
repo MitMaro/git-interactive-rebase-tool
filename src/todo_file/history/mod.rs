@@ -1,4 +1,4 @@
-pub mod history_item;
+mod history_item;
 mod operation;
 
 #[cfg(test)]
@@ -6,8 +6,8 @@ mod tests;
 
 use std::{cmp::min, collections::VecDeque};
 
-use crate::todo_file::{
-	history::{history_item::HistoryItem, operation::Operation},
+pub use super::history::{history_item::HistoryItem, operation::Operation};
+use super::{
 	line::Line,
 	utils::{add_range, remove_range, swap_range_down, swap_range_up},
 };
