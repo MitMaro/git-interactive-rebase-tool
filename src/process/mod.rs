@@ -8,12 +8,10 @@ use std::{process::Command, thread};
 use anyhow::{anyhow, Result};
 use display::Tui;
 use input::{Event, EventHandler, MetaEvent};
+use todo_file::TodoFile;
 use view::{spawn_view_thread, RenderContext, View, ViewSender};
 
-use crate::{
-	module::{ExitStatus, Modules, ProcessResult, State},
-	todo_file::TodoFile,
-};
+use crate::module::{ExitStatus, Modules, ProcessResult, State};
 
 pub struct Process {
 	event_handler: EventHandler,

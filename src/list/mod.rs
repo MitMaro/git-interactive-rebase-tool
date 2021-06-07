@@ -9,6 +9,7 @@ use std::cmp::min;
 use ::input::{Event, EventHandler, MetaEvent};
 use config::Config;
 use display::DisplayColor;
+use todo_file::{Action, EditContext, Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
 use crate::{
@@ -18,7 +19,6 @@ use crate::{
 		utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	},
 	module::{ExitStatus, Module, ProcessResult, State},
-	todo_file::{Action, EditContext, Line, TodoFile},
 };
 
 #[derive(Debug, PartialEq)]

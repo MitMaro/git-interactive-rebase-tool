@@ -1,12 +1,10 @@
 use display::DisplayColor;
 use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;
+use todo_file::TodoFile;
 use view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
-use crate::{
-	module::{Module, ProcessResult, State},
-	todo_file::TodoFile,
-};
+use crate::module::{Module, ProcessResult, State};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
