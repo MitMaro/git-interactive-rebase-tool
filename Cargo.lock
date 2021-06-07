@@ -156,6 +156,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "girt-todo-file"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "concat-idents",
+ "rstest 0.10.0",
+ "rustc_version 0.4.0",
+ "tempfile",
+]
+
+[[package]]
 name = "girt-view"
 version = "1.0.0"
 dependencies = [
@@ -182,6 +193,7 @@ dependencies = [
  "girt-config",
  "girt-display",
  "girt-input",
+ "girt-todo-file",
  "girt-view",
  "git2",
  "lazy_static",

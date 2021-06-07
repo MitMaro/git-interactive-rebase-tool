@@ -6,16 +6,14 @@ use input::{
 	Event,
 };
 use tempfile::{Builder, NamedTempFile};
+use todo_file::{Line, TodoFile};
 use view::{
 	testutil::{with_view_sender, TestContext as ViewSenderContext},
 	RenderContext,
 	ViewData,
 };
 
-use crate::{
-	module::{Module, ProcessResult, State},
-	todo_file::{Line, TodoFile},
-};
+use crate::module::{Module, ProcessResult, State};
 
 pub struct TestContext<'t> {
 	pub config: &'t Config,
