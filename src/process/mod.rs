@@ -1,4 +1,3 @@
-mod error;
 mod exit_status;
 mod modules;
 mod process_module;
@@ -15,7 +14,6 @@ use std::{process::Command, thread};
 use anyhow::{anyhow, Result};
 
 pub use self::{
-	error::Error,
 	exit_status::ExitStatus,
 	modules::Modules,
 	process_module::ProcessModule,

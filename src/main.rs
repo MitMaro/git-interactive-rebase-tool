@@ -40,6 +40,7 @@ mod confirm_abort;
 mod confirm_rebase;
 mod core;
 mod display;
+mod error;
 mod external_editor;
 mod input;
 mod insert;
