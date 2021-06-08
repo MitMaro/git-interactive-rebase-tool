@@ -42,20 +42,8 @@ impl ProcessModule for Error {
 		}
 		result
 	}
-}
 
-impl Error {
-	pub fn new() -> Self {
-		Self {
-			return_state: State::List,
-			view_data: ViewData::new(|updater| {
-				updater.set_show_title(true);
-				updater.set_retain_scroll_position(false);
-			}),
-		}
-	}
-
-	pub fn set_error_message(&mut self, error: &anyhow::Error) {
+	fn handle_error(&mut self, error: &anyhow::Error) {
 		self.view_data.update_view_data(|updater| {
 			updater.clear();
 			for cause in error.chain() {
@@ -69,6 +57,18 @@ impl Error {
 				DisplayColor::IndicatorColor,
 			)));
 		});
+	}
+}
+
+impl Error {
+	pub fn new() -> Self {
+		Self {
+			return_state: State::List,
+			view_data: ViewData::new(|updater| {
+				updater.set_show_title(true);
+				updater.set_retain_scroll_position(false);
+			}),
+		}
 	}
 }
 
@@ -88,7 +88,7 @@ mod tests {
 	fn simple_error() {
 		process_module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			module.set_error_message(&anyhow!("Test Error"));
+			module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -105,7 +105,7 @@ mod tests {
 	fn error_with_contest() {
 		process_module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			module.set_error_message(&anyhow!("Test Error").context("Context"));
+			module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -123,7 +123,7 @@ mod tests {
 	fn error_with_newlines() {
 		process_module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			module.set_error_message(&anyhow!("Test\nError").context("With\nContext"));
+			module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -144,7 +144,7 @@ mod tests {
 		process_module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = Error::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
-			module.set_error_message(&anyhow!("Test Error"));
+			module.handle_error(&anyhow!("Test Error"));
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from('a'),
@@ -158,7 +158,7 @@ mod tests {
 		process_module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = Error::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
-			module.set_error_message(&anyhow!("Test Error"));
+			module.handle_error(&anyhow!("Test Error"));
 			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
 		});
 	}
@@ -178,7 +178,7 @@ mod tests {
 			|mut test_context| {
 				let mut module = Error::new();
 				test_context.activate(&mut module, State::ConfirmRebase);
-				module.set_error_message(&anyhow!("Test Error"));
+				module.handle_error(&anyhow!("Test Error"));
 				assert_process_result!(
 					test_context.handle_event(&mut module),
 					event = Event::from(MetaEvent::ScrollLeft)

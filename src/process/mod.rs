@@ -16,11 +16,13 @@ use std::{process::Command, thread};
 use anyhow::{anyhow, Result};
 
 pub use self::{
+	error::Error,
 	exit_status::ExitStatus,
 	modules::Modules,
 	process_module::ProcessModule,
 	process_result::ProcessResult,
 	state::State,
+	window_size_error::WindowSizeError,
 };
 use crate::{
 	display::Tui,
@@ -106,6 +108,7 @@ impl Process {
 			return Ok(ExitStatus::StateError);
 		}
 		if let Some(status) = self.exit_status {
+			eprintln!("Status: {:?}", status);
 			if status != ExitStatus::Kill {
 				self.rebase_todo.write_file()?;
 			}
@@ -138,8 +141,8 @@ impl Process {
 		}
 
 		if let Some(ref error) = result.error {
-			modules.set_error_message(error);
 			self.state = State::Error;
+			modules.error(self.state, error);
 			self.activate(modules, result.state.unwrap_or(previous_state));
 		}
 		else if let Some(new_state) = result.state {
