@@ -479,7 +479,6 @@ mod tests {
 			CrosstermColor::AnsiValue(237)
 		)
 	)]
-	#[serial_test::serial()]
 	fn color(
 		display_color: DisplayColor,
 		selected: bool,
@@ -508,7 +507,7 @@ mod tests {
 		case::dim_underline(true, true, false),
 		case::all_on(true, true, true)
 	)]
-	#[serial_test::serial()]
+	#[serial_test::serial]
 	fn style(dim: bool, underline: bool, reverse: bool) {
 		display_module_test(|test_context| {
 			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
