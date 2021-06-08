@@ -4,7 +4,6 @@ mod modules;
 mod process_module;
 mod process_result;
 mod state;
-mod window_size_error;
 
 #[cfg(test)]
 mod tests;
@@ -22,7 +21,6 @@ pub use self::{
 	process_module::ProcessModule,
 	process_result::ProcessResult,
 	state::State,
-	window_size_error::WindowSizeError,
 };
 use crate::{
 	display::Tui,
