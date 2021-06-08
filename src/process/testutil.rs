@@ -1,4 +1,4 @@
-use std::{cell::Cell, env::set_var, path::Path};
+use std::{cell::Cell, path::Path};
 
 use anyhow::Error;
 use tempfile::{Builder, NamedTempFile};
@@ -15,7 +15,6 @@ use crate::{
 };
 
 pub struct TestContext<'t> {
-	git_directory: String,
 	pub config: &'t Config,
 	pub event_handler_context: EventHandlerTestContext,
 	pub rebase_todo_file: TodoFile,
@@ -89,10 +88,6 @@ impl<'t> TestContext<'t> {
 			.replace(Builder::new().tempfile().unwrap())
 			.close()
 			.unwrap();
-	}
-
-	pub fn set_git_directory_environment(&self) {
-		set_var("GIT_DIR", self.git_directory.as_str());
 	}
 
 	pub fn set_todo_file_readonly(&self) {
@@ -277,7 +272,6 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 			rebase_todo_file,
 			todo_file: Cell::new(todo_file),
 			render_context: RenderContext::new(300, 120),
-			git_directory: git_repo_dir,
 		});
 	});
 }

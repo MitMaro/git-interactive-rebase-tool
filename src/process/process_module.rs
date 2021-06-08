@@ -1,3 +1,5 @@
+use anyhow::Error;
+
 use crate::{
 	input::EventHandler,
 	process::{ProcessResult, State},
@@ -20,4 +22,6 @@ pub trait ProcessModule {
 		_view_sender: &ViewSender,
 		_rebase_todo: &mut TodoFile,
 	) -> ProcessResult;
+
+	fn handle_error(&mut self, _error: &Error) {}
 }

@@ -1,9 +1,15 @@
 use crate::{
 	config::Config,
+	confirm_abort::ConfirmAbort,
+	confirm_rebase::ConfirmRebase,
 	core::{arguments::Args, exit::Exit, help::build_help},
 	display::{CrossTerm, Display},
+	external_editor::ExternalEditor,
 	input::{EventHandler, KeyBindings},
-	process::{ExitStatus, Modules, Process},
+	insert::Insert,
+	list::List,
+	process::{Error, ExitStatus, Modules, Process, State, WindowSizeError},
+	show_commit::ShowCommit,
 	todo_file::TodoFile,
 	view::View,
 };
@@ -36,6 +42,22 @@ pub(super) fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile
 }
 
 pub(super) fn run_process(todo_file: TodoFile, event_handler: EventHandler, config: &Config) -> Exit {
+	let mut modules = Modules::new();
+	modules.register_module(State::Error, Error::new());
+	modules.register_module(State::List, List::new(config));
+	modules.register_module(State::ShowCommit, ShowCommit::new(config));
+	modules.register_module(State::WindowSizeError, WindowSizeError::new());
+	modules.register_module(
+		State::ConfirmAbort,
+		ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
+	);
+	modules.register_module(
+		State::ConfirmRebase,
+		ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
+	);
+	modules.register_module(State::ExternalEditor, ExternalEditor::new(config.git.editor.as_str()));
+	modules.register_module(State::Insert, Insert::new());
+
 	let display = Display::new(CrossTerm::new(), &config.theme);
 	let mut process = Process::new(
 		todo_file,
@@ -51,7 +73,7 @@ pub(super) fn run_process(todo_file: TodoFile, event_handler: EventHandler, conf
 				.as_str(),
 		),
 	);
-	match process.run(Modules::new(config)) {
+	match process.run(modules) {
 		Ok(status) => Exit::from(status),
 		Err(err) => Exit::new(ExitStatus::FileWriteError, err.to_string().as_str()),
 	}

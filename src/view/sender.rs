@@ -12,6 +12,7 @@ use anyhow::{anyhow, Error, Result};
 
 use super::{action::ViewAction, render_slice::RenderSlice, view_data::ViewData};
 
+#[derive(Clone)]
 pub struct Sender {
 	poisoned: Arc<AtomicBool>,
 	sender: mpsc::Sender<ViewAction>,
@@ -52,6 +53,7 @@ impl Sender {
 	}
 
 	pub(crate) fn end(&self) -> Result<()> {
+		self.stop()?;
 		self.sender.send(ViewAction::End).map_err(map_send_err)
 	}
 
@@ -181,7 +183,7 @@ mod tests {
 	fn end_success() {
 		with_view_sender(|context| {
 			context.view_sender.end().unwrap();
-			context.assert_sent_messages(vec!["End"]);
+			context.assert_sent_messages(vec!["Stop", "End"]);
 		});
 	}
 
