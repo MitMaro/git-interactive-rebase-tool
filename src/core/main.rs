@@ -8,10 +8,11 @@ use crate::{
 	input::{EventHandler, KeyBindings},
 	insert::Insert,
 	list::List,
-	process::{Error, ExitStatus, Modules, Process, State, WindowSizeError},
+	process::{Error, ExitStatus, Modules, Process, State},
 	show_commit::ShowCommit,
 	todo_file::TodoFile,
 	view::View,
+	window_size_error::WindowSizeError,
 };
 
 pub(super) fn load_config() -> Result<Config, Exit> {

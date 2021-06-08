@@ -48,6 +48,7 @@ mod process;
 mod show_commit;
 mod todo_file;
 mod view;
+mod window_size_error;
 
 use std::env::args_os;
 

@@ -7,8 +7,9 @@ use crate::{
 	assert_rendered_output,
 	display::{testutil::CrossTerm, Display, Size},
 	input::InputOptions,
-	process::{error::Error, testutil::process_module_test, window_size_error::WindowSizeError},
+	process::{error::Error, testutil::process_module_test},
 	view::ViewData,
+	window_size_error::WindowSizeError,
 };
 
 struct TestModule {
