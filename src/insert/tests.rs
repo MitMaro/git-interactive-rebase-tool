@@ -87,7 +87,6 @@ fn edit_render_exec() {
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_render_pick() {
 	process_module_test(
 		&[],
@@ -127,7 +126,6 @@ fn edit_render_pick() {
 }
 
 #[test]
-#[serial_test::serial]
 fn edit_render_label() {
 	process_module_test(
 		&[],
