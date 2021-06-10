@@ -116,6 +116,12 @@ impl Process {
 	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) {
 		let previous_state = self.state;
 
+		// render context and view_sender need a size update early
+		if let Some(Event::Resize(width, height)) = result.event {
+			self.view_sender.resize(width, height);
+			self.render_context.update(width, height);
+		}
+
 		if let Some(exit_status) = result.exit_status {
 			self.exit_status = Some(exit_status);
 		}
@@ -140,9 +146,7 @@ impl Process {
 			Some(Event::Meta(MetaEvent::Kill)) => {
 				self.exit_status = Some(ExitStatus::Kill);
 			},
-			Some(Event::Resize(width, height)) => {
-				self.view_sender.resize(width, height);
-				self.render_context.update(width, height);
+			Some(Event::Resize(..)) => {
 				if self.state != State::WindowSizeError && self.render_context.is_window_too_small() {
 					self.state = State::WindowSizeError;
 					self.activate(modules, previous_state);
