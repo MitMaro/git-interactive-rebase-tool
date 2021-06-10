@@ -131,18 +131,17 @@ impl<'l> List<'l> {
 					let selected_line = is_visual_mode
 						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
 							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
-					updater.push_line(
-						ViewLine::new_with_pinned_segments(
-							get_todo_line_segments(
-								line,
-								selected_index == index,
-								selected_line,
-								context.is_full_width(),
-							),
-							if *line.get_action() == Action::Exec { 2 } else { 3 },
-						)
-						.set_selected(selected_index == index || selected_line),
-					);
+					let mut view_line = ViewLine::new_with_pinned_segments(
+						get_todo_line_segments(line, selected_index == index, selected_line, context.is_full_width()),
+						if *line.get_action() == Action::Exec { 2 } else { 3 },
+					)
+					.set_selected(selected_index == index || selected_line);
+
+					if selected_index == index || selected_line {
+						view_line = view_line.set_selected(true).set_padding(' ');
+					}
+
+					updater.push_line(view_line);
 				}
 			}
 			if visual_index != selected_index {

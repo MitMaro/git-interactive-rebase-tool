@@ -8,10 +8,8 @@ use crate::{
 	view::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender},
 };
 
-// TODO change how style is passed to use a Struct
-#[allow(clippy::fn_params_excessive_bools)]
-fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bool, reversed: bool) -> String {
-	let mut color_string = match color {
+fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bool) -> String {
+	let color_string = match color {
 		DisplayColor::ActionBreak => String::from("ActionBreak"),
 		DisplayColor::ActionDrop => String::from("ActionDrop"),
 		DisplayColor::ActionEdit => String::from("ActionEdit"),
@@ -31,10 +29,6 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 		DisplayColor::ActionReset => String::from("ActionReset"),
 		DisplayColor::ActionMerge => String::from("ActionMerge"),
 	};
-
-	if selected {
-		color_string.push_str("(selected)");
-	}
 
 	let mut style = vec![];
 	if dimmed {
@@ -58,11 +52,14 @@ fn render_style(color: DisplayColor, selected: bool, dimmed: bool, underline: bo
 pub fn render_view_line(view_line: &ViewLine) -> String {
 	let mut line = String::new();
 
+	if view_line.get_selected() {
+		line.push_str("{Selected}");
+	}
+
 	for segment in view_line.get_segments() {
 		line.push_str(
 			render_style(
 				segment.get_color(),
-				view_line.get_selected(),
 				segment.is_dimmed(),
 				segment.is_underlined(),
 				segment.is_reversed(),
@@ -75,7 +72,6 @@ pub fn render_view_line(view_line: &ViewLine) -> String {
 		line.push_str(
 			render_style(
 				padding.get_color(),
-				view_line.get_selected(),
 				padding.is_dimmed(),
 				padding.is_underlined(),
 				padding.is_reversed(),
