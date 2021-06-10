@@ -186,7 +186,7 @@ impl Process {
 			})
 			.map_err(|err| anyhow!(err));
 
-		self.view_sender.stop()?;
+		self.view_sender.start()?;
 
 		result
 	}
