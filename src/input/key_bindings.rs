@@ -79,9 +79,6 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 				},
 				k => {
 					let c = k.chars().next().unwrap();
-					if c.is_ascii_uppercase() {
-						modifiers.insert(KeyModifiers::SHIFT);
-					}
 					KeyCode::Char(c)
 				},
 			};
@@ -175,13 +172,5 @@ mod tests {
 	)]
 	fn map_keybindings_key_code(binding: &str, key_code: KeyCode) {
 		assert_eq!(map_keybindings(&[String::from(binding)]), vec![Event::from(key_code)]);
-	}
-
-	#[test]
-	fn map_keybindings_upper_case_char() {
-		assert_eq!(map_keybindings(&[String::from('A')]), vec![Event::Key(KeyEvent {
-			code: KeyCode::Char('A'),
-			modifiers: KeyModifiers::SHIFT
-		})]);
 	}
 }
