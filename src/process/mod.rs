@@ -161,7 +161,7 @@ impl Process {
 				Err(err) => {
 					self.handle_process_result(
 						modules,
-						&ProcessResult::new().error(err.context(format!(
+						&ProcessResult::new().state(State::List).error(err.context(format!(
 							"Unable to run {} {}",
 							external_command.0,
 							external_command.1.join(" ")
