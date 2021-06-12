@@ -1,4 +1,5 @@
 use std::{
+	io,
 	io::{stdout, BufWriter, Stdout, Write},
 	time::Duration,
 };
@@ -20,7 +21,6 @@ use crossterm::{
 		LeaveAlternateScreen,
 	},
 	Command,
-	ErrorKind,
 	QueueableCommand,
 };
 pub use crossterm::{
@@ -43,15 +43,9 @@ impl CrossTerm {
 		}
 	}
 
-	fn map_err(kind: ErrorKind) -> Error {
-		match kind {
-			ErrorKind::IoError(err) => anyhow!("{:#}", err).context("Unexpected Error"),
-			ErrorKind::FmtError(err) => anyhow!("{:#}", err).context("Unexpected Error"),
-			ErrorKind::Utf8Error(err) => anyhow!("{:#}", err).context("Unexpected Error"),
-			ErrorKind::ParseIntError(err) => anyhow!("{:#}", err).context("Unexpected Error"),
-			ErrorKind::ResizingTerminalFailure(err) => anyhow!("{:#}", err).context("Unexpected Error"),
-			_ => anyhow!("Unexpected Error"),
-		}
+	#[allow(clippy::needless_pass_by_value)]
+	fn map_err(err: io::Error) -> Error {
+		anyhow!("{:#}", err).context("Unexpected Error")
 	}
 
 	fn queue_command(&mut self, command: impl Command) -> Result<()> {
