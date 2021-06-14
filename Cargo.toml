@@ -26,10 +26,10 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0"
 chrono = "0.4"
-clap = "2.33.3"
 crossterm = "0.20.0"
 lazy_static = "1.4.0"
 num-format = "0.4.0"
+pico-args = "0.4.2"
 unicode-segmentation = "1.7.1"
 unicode-width = "0.1.8"
 xi-unicode = "0.3.0"
@@ -48,6 +48,9 @@ concat-idents = "1.1.2"
 rstest = "0.6.4"
 serial_test = "0.5.1"
 tempfile = "3.2.0"
+
+[build-dependencies]
+chrono = "0.4"
 
 [features]
 default = []

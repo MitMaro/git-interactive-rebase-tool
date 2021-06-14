@@ -51,10 +51,10 @@ impl Process {
 		}
 	}
 
-	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<Option<ExitStatus>> {
+	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<ExitStatus> {
 		if self.view_sender.start().is_err() {
 			self.exit_status = Some(ExitStatus::StateError);
-			return Ok(self.exit_status);
+			return Ok(ExitStatus::StateError);
 		}
 
 		self.handle_process_result(
@@ -92,7 +92,7 @@ impl Process {
 			}
 		}
 		if self.view_sender.stop().is_err() {
-			return Ok(Some(ExitStatus::StateError));
+			return Ok(ExitStatus::StateError);
 		}
 		if let Some(status) = self.exit_status {
 			if status != ExitStatus::Kill {
@@ -101,16 +101,16 @@ impl Process {
 		}
 
 		if self.view_sender.end().is_err() {
-			return Ok(Some(ExitStatus::StateError));
+			return Ok(ExitStatus::StateError);
 		}
 
 		while let Some(handle) = self.threads.pop() {
 			if handle.join().is_err() {
-				return Ok(Some(ExitStatus::StateError));
+				return Ok(ExitStatus::StateError);
 			}
 		}
 
-		Ok(self.exit_status)
+		Ok(self.exit_status.unwrap_or(ExitStatus::Good))
 	}
 
 	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) {
