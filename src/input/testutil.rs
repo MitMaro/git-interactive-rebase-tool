@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 
 use crate::{
-	display::CrossTerm,
 	input::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent},
 	view::{testutil::with_view_sender, ViewSender},
 };
@@ -84,10 +83,6 @@ fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
 		Event::Resize(width, height) => crossterm::event::Event::Resize(width, height),
 		Event::None => crossterm::event::Event::Key(KeyEvent::from(KeyCode::Null)),
 	}
-}
-
-pub fn setup_mocked_events(inputs: &[Event]) {
-	CrossTerm::set_events(inputs.iter().map(|input| map_event_to_crossterm(*input)).collect());
 }
 
 fn create_test_keybindings() -> KeyBindings {

@@ -32,7 +32,7 @@ fn window_too_small() {
 				view,
 			);
 			let modules = Modules::new(test_context.config);
-			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Abort);
+			assert_eq!(process.run(modules).unwrap(), ExitStatus::Abort);
 		},
 	);
 }
@@ -53,7 +53,7 @@ fn force_abort() {
 				view,
 			);
 			let modules = Modules::new(test_context.config);
-			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
+			assert_eq!(process.run(modules).unwrap(), ExitStatus::Good);
 			shadow_rebase_file.load_file().unwrap();
 			assert!(shadow_rebase_file.is_empty());
 		},
@@ -76,7 +76,7 @@ fn force_rebase() {
 				view,
 			);
 			let modules = Modules::new(test_context.config);
-			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Good);
+			assert_eq!(process.run(modules).unwrap(), ExitStatus::Good);
 			shadow_rebase_file.load_file().unwrap();
 			assert_eq!(shadow_rebase_file.get_lines_owned(), vec![Line::new(
 				"pick aaa comment"
@@ -126,7 +126,7 @@ fn resize_window_size_okay() {
 				view,
 			);
 			let modules = Modules::new(test_context.config);
-			assert_eq!(process.run(modules).unwrap().unwrap(), ExitStatus::Abort);
+			assert_eq!(process.run(modules).unwrap(), ExitStatus::Abort);
 		},
 	);
 }

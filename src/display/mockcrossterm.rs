@@ -11,13 +11,6 @@ use lazy_static::lazy_static;
 use crate::display::{color_mode::ColorMode, size::Size, utils::detect_color_mode};
 
 lazy_static! {
-	static ref EVENTS: Mutex<Vec<Event>> = Mutex::new(vec![crossterm::event::Event::Key(KeyEvent {
-		code: KeyCode::Char('z'),
-		modifiers: KeyModifiers::CONTROL,
-	})]);
-}
-
-lazy_static! {
 	static ref OUTPUT: Mutex<Vec<String>> = Mutex::new(vec![]);
 }
 
@@ -75,12 +68,6 @@ impl CrossTerm {
 
 	pub(crate) fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
-	}
-
-	pub(crate) fn set_events(mut events: Vec<Event>) {
-		events.reverse();
-		EVENTS.lock().unwrap().clear();
-		EVENTS.lock().unwrap().append(&mut events);
 	}
 
 	pub(crate) fn set_size(&mut self, size: Size) {
@@ -166,17 +153,9 @@ impl CrossTerm {
 		Ok(())
 	}
 
-	pub(crate) fn read_event() -> Result<Option<Event>> {
-		if let Some(event) = EVENTS
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.pop()
-		{
-			Ok(Some(event))
-		}
-		else {
-			Err(anyhow!("Error"))
-		}
+	#[allow(clippy::unnecessary_wraps)]
+	pub(crate) const fn read_event() -> Result<Option<Event>> {
+		Ok(None)
 	}
 
 	#[allow(clippy::missing_const_for_fn)]
