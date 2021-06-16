@@ -2,7 +2,7 @@ use std::{convert::TryFrom, ffi::OsString};
 
 use pico_args::Arguments;
 
-use crate::{core::exit::Exit, process::exit_status::ExitStatus};
+use crate::{core::exit::Exit, process::ExitStatus};
 
 #[derive(Debug)]
 pub enum Mode {

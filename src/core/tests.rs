@@ -4,7 +4,7 @@ use super::*;
 use crate::{
 	core::main::{load_config, load_todo_file, run_process},
 	input::{Event, EventHandler, KeyBindings, MetaEvent},
-	process::exit_status::ExitStatus,
+	process::ExitStatus,
 };
 
 fn set_git_directory(repo: &str) -> String {

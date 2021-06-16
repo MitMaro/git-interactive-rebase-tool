@@ -3,7 +3,7 @@ use crate::{
 	core::{arguments::Args, exit::Exit, help::build_help},
 	display::{CrossTerm, Display},
 	input::{EventHandler, KeyBindings},
-	process::{exit_status::ExitStatus, modules::Modules, Process},
+	process::{ExitStatus, Modules, Process},
 	todo_file::TodoFile,
 	view::View,
 };
