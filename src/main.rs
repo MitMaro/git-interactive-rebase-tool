@@ -54,7 +54,7 @@ use std::env::args_os;
 // TODO use the termination trait once rust-lang/rust#43301 is stable
 #[allow(clippy::exit, clippy::print_stderr)]
 fn main() {
-	let exit = core::run(args_os().collect());
+	let exit = core::run(args_os().skip(1).collect());
 	if let Some(message) = exit.get_message().as_ref() {
 		eprintln!("{}", message);
 	}
