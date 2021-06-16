@@ -8,7 +8,7 @@ use crate::{
 	components::{choice::Choice, edit::Edit},
 	input::EventHandler,
 	insert::{insert_state::InsertState, line_type::LineType},
-	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
+	process::{ProcessModule, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };

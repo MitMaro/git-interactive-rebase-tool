@@ -1,7 +1,7 @@
 use crate::{
 	components::confirm::{Confirm, Confirmed},
 	input::EventHandler,
-	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
+	process::{ExitStatus, ProcessModule, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };

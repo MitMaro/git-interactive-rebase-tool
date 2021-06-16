@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 
 use crate::{
 	input::{Event, EventHandler, InputOptions},
-	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
+	process::{ProcessModule, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };

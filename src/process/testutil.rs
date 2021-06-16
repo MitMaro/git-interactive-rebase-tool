@@ -9,7 +9,7 @@ use crate::{
 		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 		Event,
 	},
-	process::{exit_status::ExitStatus, process_module::ProcessModule, process_result::ProcessResult, state::State},
+	process::{ExitStatus, ProcessModule, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData},
 };

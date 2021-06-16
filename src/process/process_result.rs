@@ -2,7 +2,7 @@ use anyhow::Error;
 
 use crate::{
 	input::Event,
-	process::{exit_status::ExitStatus, state::State},
+	process::{ExitStatus, State},
 };
 
 #[derive(Debug)]

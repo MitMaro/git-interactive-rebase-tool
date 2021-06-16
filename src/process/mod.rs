@@ -1,10 +1,10 @@
-pub mod error;
-pub mod exit_status;
-pub mod modules;
-pub mod process_module;
-pub mod process_result;
-pub mod state;
-pub mod window_size_error;
+mod error;
+mod exit_status;
+mod modules;
+mod process_module;
+mod process_result;
+mod state;
+mod window_size_error;
 
 #[cfg(test)]
 mod tests;
@@ -15,10 +15,16 @@ use std::{process::Command, thread};
 
 use anyhow::{anyhow, Result};
 
+pub use self::{
+	exit_status::ExitStatus,
+	modules::Modules,
+	process_module::ProcessModule,
+	process_result::ProcessResult,
+	state::State,
+};
 use crate::{
 	display::Tui,
 	input::{Event, EventHandler, MetaEvent},
-	process::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{spawn_view_thread, RenderContext, View, ViewSender},
 };

@@ -1,6 +1,6 @@
 use crate::{
 	input::EventHandler,
-	process::{process_result::ProcessResult, state::State},
+	process::{ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };
