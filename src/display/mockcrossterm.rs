@@ -1,18 +1,11 @@
-use std::sync::Mutex;
-
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use crossterm::style::{Attribute, Attributes};
 pub use crossterm::{
 	event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEventKind},
 	style::{Color, Colors},
 };
-use lazy_static::lazy_static;
 
 use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
-
-lazy_static! {
-	static ref OUTPUT: Mutex<Vec<String>> = Mutex::new(vec![]);
-}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
@@ -23,12 +16,13 @@ pub enum State {
 
 pub struct CrossTerm {
 	attributes: Attributes,
-	colors: Colors,
 	color_mode: ColorMode,
+	colors: Colors,
+	dirty: bool,
+	output: Vec<String>,
 	position: (u16, u16),
 	size: Size,
 	state: State,
-	dirty: bool,
 }
 
 impl Tui for CrossTerm {
@@ -39,10 +33,7 @@ impl Tui for CrossTerm {
 	fn reset(&mut self) -> Result<()> {
 		self.attributes = Attributes::from(Attribute::Reset);
 		self.colors = Colors::new(Color::Reset, Color::Reset);
-		OUTPUT
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.clear();
+		self.output.clear();
 		self.state = State::Normal;
 		Ok(())
 	}
@@ -53,10 +44,7 @@ impl Tui for CrossTerm {
 	}
 
 	fn print(&mut self, s: &str) -> Result<()> {
-		OUTPUT
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.push(String::from(s));
+		self.output.push(String::from(s));
 		Ok(())
 	}
 
@@ -109,10 +97,7 @@ impl Tui for CrossTerm {
 	}
 
 	fn move_next_line(&mut self) -> Result<()> {
-		OUTPUT
-			.lock()
-			.map_err(|e| anyhow!("{}", e).context("Unable to lock output"))?
-			.push(String::from("\n"));
+		self.output.push(String::from("\n"));
 		self.position.0 = 0;
 		self.position.1 += 1;
 		Ok(())
@@ -131,12 +116,12 @@ impl Tui for CrossTerm {
 
 impl CrossTerm {
 	pub(crate) fn new() -> Self {
-		OUTPUT.lock().unwrap().clear();
 		Self {
 			attributes: Attributes::from(Attribute::Reset),
-			colors: Colors::new(Color::Reset, Color::Reset),
 			color_mode: detect_color_mode(16),
+			colors: Colors::new(Color::Reset, Color::Reset),
 			dirty: true,
+			output: vec![],
 			position: (0, 0),
 			size: Size::new(10, 10),
 			state: State::New,
@@ -144,8 +129,8 @@ impl CrossTerm {
 	}
 
 	// Start mock access functions
-	pub(crate) fn get_output() -> Vec<String> {
-		OUTPUT.lock().unwrap().clone()
+	pub(crate) const fn get_output(&self) -> &Vec<String> {
+		&self.output
 	}
 
 	pub(crate) const fn get_state(&self) -> State {

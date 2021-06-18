@@ -1,5 +1,8 @@
 use super::*;
-use crate::{config::testutil::create_config, display::testutil::CrossTerm};
+use crate::{
+	config::testutil::create_config,
+	display::testutil::{assert_output, CrossTerm},
+};
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let config = create_config();
@@ -13,17 +16,15 @@ fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[
 	render_slice.sync_view_data(view_data);
 	view.render(&render_slice).unwrap();
 
-	assert_eq!(CrossTerm::get_output().join(""), format!("{}\n", expected.join("\n")));
+	assert_output(&view.display, expected);
 }
 
 #[test]
-#[serial_test::serial]
 fn render_empty() {
 	assert_render(20, 10, &ViewData::new(|_| {}), &["~"; 10]);
 }
 
 #[test]
-#[serial_test::serial]
 fn render_title_full_width() {
 	let mut expected = vec!["Git Interactive Rebase Tool        "];
 	expected.extend(vec!["~"; 9]);
@@ -36,7 +37,6 @@ fn render_title_full_width() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_title_short_title() {
 	let mut expected = vec!["Git Rebase                "];
 	expected.extend(vec!["~"; 9]);
@@ -49,7 +49,6 @@ fn render_title_short_title() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_title_full_width_with_help() {
 	let mut expected = vec!["Git Interactive Rebase Tool Help: ?"];
 	expected.extend(vec!["~"; 9]);
@@ -65,7 +64,6 @@ fn render_title_full_width_with_help() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_title_full_width_with_help_enabled_but_not_enough_length() {
 	let mut expected = vec!["Git Interactive Rebase Tool       "];
 	expected.extend(vec!["~"; 9]);
@@ -81,7 +79,6 @@ fn render_title_full_width_with_help_enabled_but_not_enough_length() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_leading_lines() {
 	let mut expected = vec!["This is a leading line"];
 	expected.extend(vec!["~"; 9]);
@@ -96,7 +93,6 @@ fn render_leading_lines() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_normal_lines() {
 	let mut expected = vec!["This is a line"];
 	expected.extend(vec!["~"; 9]);
@@ -111,7 +107,6 @@ fn render_normal_lines() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_tailing_lines() {
 	let mut expected = vec!["~"; 9];
 	expected.push("This is a trailing line");
@@ -126,7 +121,6 @@ fn render_tailing_lines() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_all_lines() {
 	let mut expected = vec!["This is a leading line", "This is a line"];
 	expected.extend(vec!["~"; 7]);
@@ -144,7 +138,6 @@ fn render_all_lines() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_with_full_screen_data() {
 	assert_render(
 		30,
@@ -169,7 +162,6 @@ fn render_with_full_screen_data() {
 }
 
 #[test]
-#[serial_test::serial]
 fn render_with_scroll_bar() {
 	assert_render(
 		30,

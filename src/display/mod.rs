@@ -291,60 +291,34 @@ mod tests {
 	use rstest::rstest;
 
 	use super::{mockcrossterm::State, testutil::CrossTerm, *};
-	use crate::config::{testutil::create_config, Config};
-
-	pub struct TestContext<'t> {
-		pub config: &'t Config,
-		pub crossterm: CrossTerm,
-	}
-
-	pub fn display_module_test<F>(callback: F)
-	where F: FnOnce(TestContext<'_>) {
-		let config = create_config();
-		let crossterm = CrossTerm::new();
-		callback(TestContext {
-			config: &config,
-			crossterm,
-		});
-	}
+	use crate::config::testutil::create_theme;
 
 	#[test]
-	#[serial_test::serial]
 	fn draw_str() {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.draw_str("Test String").unwrap();
-			let output = CrossTerm::get_output();
-			assert_eq!(output, vec!["Test String"]);
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.draw_str("Test String").unwrap();
+		assert_eq!(display.tui.get_output(), &["Test String"]);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn clear() {
-		display_module_test(|mut test_context| {
-			test_context.crossterm.print("Test String").unwrap();
-			test_context.crossterm.set_dim(true).unwrap();
-			test_context.crossterm.set_reverse(true).unwrap();
-			test_context.crossterm.set_underline(true).unwrap();
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.clear().unwrap();
-			assert!(CrossTerm::get_output().is_empty());
-			assert!(CrossTerm::get_output().is_empty());
-			assert!(!display.tui.is_dimmed());
-			assert!(!display.tui.is_reverse());
-			assert!(!display.tui.is_underline());
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.draw_str("Test String").unwrap();
+		display.set_dim(true).unwrap();
+		display.set_reverse(true).unwrap();
+		display.set_underline(true).unwrap();
+		display.clear().unwrap();
+		assert!(display.tui.get_output().is_empty());
+		assert!(!display.tui.is_dimmed());
+		assert!(!display.tui.is_reverse());
+		assert!(!display.tui.is_underline());
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn refresh() {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.refresh().unwrap();
-			assert!(!display.tui.is_dirty());
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.refresh().unwrap();
+		assert!(!display.tui.is_dirty());
 	}
 
 	#[rstest(
@@ -485,13 +459,11 @@ mod tests {
 		expected_foreground: CrosstermColor,
 		expected_background: CrosstermColor,
 	) {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.color(display_color, selected).unwrap();
-			assert!(display
-				.tui
-				.is_colors_enabled(Colors::new(expected_foreground, expected_background)));
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.color(display_color, selected).unwrap();
+		assert!(display
+			.tui
+			.is_colors_enabled(Colors::new(expected_foreground, expected_background)));
 	}
 
 	#[rstest(
@@ -507,66 +479,48 @@ mod tests {
 		case::dim_underline(true, true, false),
 		case::all_on(true, true, true)
 	)]
-	#[serial_test::serial]
 	fn style(dim: bool, underline: bool, reverse: bool) {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.set_style(dim, underline, reverse).unwrap();
-			assert_eq!(display.tui.is_dimmed(), dim);
-			assert_eq!(display.tui.is_underline(), underline);
-			assert_eq!(display.tui.is_reverse(), reverse);
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.set_style(dim, underline, reverse).unwrap();
+		assert_eq!(display.tui.is_dimmed(), dim);
+		assert_eq!(display.tui.is_underline(), underline);
+		assert_eq!(display.tui.is_reverse(), reverse);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn get_window_size() {
-		display_module_test(|mut test_context| {
-			test_context.crossterm.set_size(Size::new(12, 10));
-			let display = Display::new(test_context.crossterm, &test_context.config.theme);
-			assert_eq!(display.get_window_size(), Size::new(12, 10));
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.tui.set_size(Size::new(12, 10));
+		assert_eq!(display.get_window_size(), Size::new(12, 10));
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn ensure_at_line_start() {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.ensure_at_line_start().unwrap();
-			assert_eq!(display.tui.get_position(), (1, 0));
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.ensure_at_line_start().unwrap();
+		assert_eq!(display.tui.get_position(), (1, 0));
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn move_from_end_of_line() {
-		display_module_test(|mut test_context| {
-			test_context.crossterm.set_size(Size::new(20, 10));
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.move_from_end_of_line(5).unwrap();
-			// character after the 15th character (16th)
-			assert_eq!(display.tui.get_position(), (16, 0));
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.tui.set_size(Size::new(20, 10));
+		display.move_from_end_of_line(5).unwrap();
+		// character after the 15th character (16th)
+		assert_eq!(display.tui.get_position(), (16, 0));
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn start() {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.start().unwrap();
-			assert_eq!(display.tui.get_state(), State::Normal);
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.start().unwrap();
+		assert_eq!(display.tui.get_state(), State::Normal);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn end() {
-		display_module_test(|test_context| {
-			let mut display = Display::new(test_context.crossterm, &test_context.config.theme);
-			display.end().unwrap();
-			assert_eq!(display.tui.get_state(), State::Ended);
-		});
+		let mut display = Display::new(CrossTerm::new(), &create_theme());
+		display.end().unwrap();
+		assert_eq!(display.tui.get_state(), State::Ended);
 	}
 }
