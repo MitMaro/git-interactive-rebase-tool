@@ -1,7 +1,6 @@
 use super::*;
 use crate::{
 	assert_process_result,
-	assert_render_action,
 	assert_rendered_output,
 	input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind},
 	process::testutil::process_module_test,
@@ -2282,7 +2281,7 @@ fn scroll_right() {
 		|mut test_context| {
 			let mut module = List::new(test_context.config);
 			test_context.handle_all_events(&mut module);
-			assert_render_action!(&test_context.event_handler_context.view_sender, "ScrollRight");
+			test_context.view_sender_context.assert_render_action(&["ScrollRight"]);
 		},
 	);
 }
@@ -2295,7 +2294,7 @@ fn scroll_left() {
 		|mut test_context| {
 			let mut module = List::new(test_context.config);
 			test_context.handle_all_events(&mut module);
-			assert_render_action!(&test_context.event_handler_context.view_sender, "ScrollLeft");
+			test_context.view_sender_context.assert_render_action(&["ScrollLeft"]);
 		},
 	);
 }

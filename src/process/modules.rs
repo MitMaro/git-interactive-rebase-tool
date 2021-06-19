@@ -124,7 +124,7 @@ mod tests {
 			modules.handle_input(
 				State::List,
 				&context.event_handler_context.event_handler,
-				&context.event_handler_context.view_sender,
+				&context.view_sender_context.sender,
 				&mut context.rebase_todo_file,
 			);
 			modules.build_view_data(State::List, &RenderContext::new(100, 100), &context.rebase_todo_file);

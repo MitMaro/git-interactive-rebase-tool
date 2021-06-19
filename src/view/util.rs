@@ -34,7 +34,7 @@ mod tests {
 	fn handle_view_data_scroll_event(meta_event: MetaEvent, action: &str) {
 		with_view_sender(|context| {
 			let event = Event::from(meta_event);
-			assert_eq!(handle_view_data_scroll(event, &context.view_sender), Some(event));
+			assert_eq!(handle_view_data_scroll(event, &context.sender), Some(event));
 			context.assert_render_action(&[action]);
 		});
 	}
@@ -43,7 +43,7 @@ mod tests {
 	fn handle_view_data_scroll_event_other() {
 		with_view_sender(|context| {
 			let event = Event::from('a');
-			assert!(handle_view_data_scroll(event, &context.view_sender).is_none());
+			assert!(handle_view_data_scroll(event, &context.sender).is_none());
 			context.assert_render_action(&[]);
 		});
 	}
