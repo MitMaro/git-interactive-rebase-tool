@@ -183,7 +183,7 @@ macro_rules! assert_rendered_output {
 	};
 }
 
-pub fn _assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[String]) {
+fn assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[String]) {
 	let actions = view_sender
 		.clone_render_slice()
 		.lock()
@@ -254,16 +254,8 @@ fn action_to_string(action: &ViewAction) -> String {
 	})
 }
 
-#[macro_export]
-macro_rules! assert_render_action {
-	($sender:expr, $($arg:expr),*) => {
-		let expected = vec![$( String::from($arg), )*];
-		crate::view::testutil::_assert_view_sender_actions($sender, &expected);
-	};
-}
-
 pub struct TestContext {
-	pub view_sender: ViewSender,
+	pub sender: ViewSender,
 	pub receiver: Receiver<ViewAction>,
 }
 
@@ -274,8 +266,8 @@ impl TestContext {
 	}
 
 	pub fn assert_render_action(&self, actions: &[&str]) {
-		_assert_view_sender_actions(
-			&self.view_sender,
+		assert_view_sender_actions(
+			&self.sender,
 			actions
 				.iter()
 				.map(|s| String::from(*s))
@@ -328,5 +320,8 @@ where C: FnOnce(TestContext) {
 	let (sender, receiver) = mpsc::channel();
 	let view_sender = ViewSender::new(sender);
 
-	callback(TestContext { view_sender, receiver });
+	callback(TestContext {
+		sender: view_sender,
+		receiver,
+	});
 }

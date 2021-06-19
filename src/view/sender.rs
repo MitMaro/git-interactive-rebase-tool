@@ -136,15 +136,15 @@ mod tests {
 	#[test]
 	fn poisoned() {
 		with_view_sender(|context| {
-			context.view_sender.clone_poisoned().store(true, Ordering::SeqCst);
-			assert!(context.view_sender.is_poisoned());
+			context.sender.clone_poisoned().store(true, Ordering::SeqCst);
+			assert!(context.sender.is_poisoned());
 		});
 	}
 
 	#[test]
 	fn start_success() {
 		with_view_sender(|context| {
-			context.view_sender.start().unwrap();
+			context.sender.start().unwrap();
 			context.assert_sent_messages(vec!["Start"]);
 		});
 	}
@@ -153,17 +153,14 @@ mod tests {
 	fn start_error() {
 		with_view_sender(|mut context| {
 			context.drop_receiver();
-			assert_eq!(
-				context.view_sender.start().unwrap_err().to_string(),
-				"Unable to send data"
-			);
+			assert_eq!(context.sender.start().unwrap_err().to_string(), "Unable to send data");
 		});
 	}
 
 	#[test]
 	fn stop_success() {
 		with_view_sender(|context| {
-			context.view_sender.stop().unwrap();
+			context.sender.stop().unwrap();
 			context.assert_sent_messages(vec!["Stop"]);
 		});
 	}
@@ -172,17 +169,14 @@ mod tests {
 	fn stop_error() {
 		with_view_sender(|mut context| {
 			context.drop_receiver();
-			assert_eq!(
-				context.view_sender.stop().unwrap_err().to_string(),
-				"Unable to send data"
-			);
+			assert_eq!(context.sender.stop().unwrap_err().to_string(), "Unable to send data");
 		});
 	}
 
 	#[test]
 	fn end_success() {
 		with_view_sender(|context| {
-			context.view_sender.end().unwrap();
+			context.sender.end().unwrap();
 			context.assert_sent_messages(vec!["Stop", "End"]);
 		});
 	}
@@ -191,17 +185,14 @@ mod tests {
 	fn end_error() {
 		with_view_sender(|mut context| {
 			context.drop_receiver();
-			assert_eq!(
-				context.view_sender.end().unwrap_err().to_string(),
-				"Unable to send data"
-			);
+			assert_eq!(context.sender.end().unwrap_err().to_string(), "Unable to send data");
 		});
 	}
 
 	#[test]
 	fn scroll_up() {
 		with_view_sender(|context| {
-			context.view_sender.scroll_up();
+			context.sender.scroll_up();
 			context.assert_render_action(&["ScrollUp"]);
 		});
 	}
@@ -209,7 +200,7 @@ mod tests {
 	#[test]
 	fn scroll_down() {
 		with_view_sender(|context| {
-			context.view_sender.scroll_down();
+			context.sender.scroll_down();
 			context.assert_render_action(&["ScrollDown"]);
 		});
 	}
@@ -217,7 +208,7 @@ mod tests {
 	#[test]
 	fn scroll_left() {
 		with_view_sender(|context| {
-			context.view_sender.scroll_left();
+			context.sender.scroll_left();
 			context.assert_render_action(&["ScrollLeft"]);
 		});
 	}
@@ -225,7 +216,7 @@ mod tests {
 	#[test]
 	fn scroll_right() {
 		with_view_sender(|context| {
-			context.view_sender.scroll_right();
+			context.sender.scroll_right();
 			context.assert_render_action(&["ScrollRight"]);
 		});
 	}
@@ -233,7 +224,7 @@ mod tests {
 	#[test]
 	fn scroll_page_up() {
 		with_view_sender(|context| {
-			context.view_sender.scroll_page_up();
+			context.sender.scroll_page_up();
 			context.assert_render_action(&["PageUp"]);
 		});
 	}
@@ -241,7 +232,7 @@ mod tests {
 	#[test]
 	fn scroll_page_down() {
 		with_view_sender(|context| {
-			context.view_sender.scroll_page_down();
+			context.sender.scroll_page_down();
 			context.assert_render_action(&["PageDown"]);
 		});
 	}
@@ -249,7 +240,7 @@ mod tests {
 	#[test]
 	fn resize() {
 		with_view_sender(|context| {
-			context.view_sender.resize(10, 20);
+			context.sender.resize(10, 20);
 			context.assert_render_action(&["Resize(10, 20)"]);
 		});
 	}
@@ -257,15 +248,15 @@ mod tests {
 	#[test]
 	fn render() {
 		with_view_sender(|context| {
-			context.view_sender.resize(300, 100);
+			context.sender.resize(300, 100);
 			context
-				.view_sender
+				.sender
 				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))))
 				.unwrap();
 			assert_eq!(
 				render_view_line(
 					context
-						.view_sender
+						.sender
 						.clone_render_slice()
 						.lock()
 						.unwrap()

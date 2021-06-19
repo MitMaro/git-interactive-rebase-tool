@@ -1,10 +1,7 @@
 use rstest::rstest;
 
 use super::*;
-use crate::{
-	assert_rendered_output,
-	input::{testutil::with_event_handler, MetaEvent},
-};
+use crate::{assert_rendered_output, input::MetaEvent, process::testutil::handle_event_test};
 
 #[test]
 fn empty() {
@@ -49,7 +46,7 @@ fn from_key_bindings() {
 	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
 )]
 fn input_continue_active(event: Event) {
-	with_event_handler(&[event], |context| {
+	handle_event_test(&[event], |context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();
 		module.handle_event(&context.event_handler, &context.view_sender);
@@ -59,7 +56,7 @@ fn input_continue_active(event: Event) {
 
 #[test]
 fn input_other() {
-	with_event_handler(&[Event::from('a')], |context| {
+	handle_event_test(&[Event::from('a')], |context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();
 		module.handle_event(&context.event_handler, &context.view_sender);
