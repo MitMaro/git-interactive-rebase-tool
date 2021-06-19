@@ -20,7 +20,7 @@ use crate::{
 	components::help::Help,
 	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
-	process::{ProcessModule, ProcessResult, State},
+	process::{Module, ProcessResult, State},
 	show_commit::{
 		commit::{Commit, LoadCommitDiffOptions},
 		show_commit_state::ShowCommitState,
@@ -49,7 +49,7 @@ pub struct ShowCommit {
 	view_builder: ViewBuilder,
 }
 
-impl ProcessModule for ShowCommit {
+impl Module for ShowCommit {
 	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
 		if let Some(selected_line) = rebase_todo.get_selected_line() {
 			// skip loading commit data if the currently loaded commit has not changed, this retains

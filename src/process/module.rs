@@ -7,7 +7,7 @@ use crate::{
 	view::{RenderContext, ViewData, ViewSender},
 };
 
-pub trait ProcessModule {
+pub trait Module {
 	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
 		ProcessResult::new()
 	}

@@ -1,7 +1,7 @@
 use crate::{
 	components::confirm::{Confirm, Confirmed},
 	input::EventHandler,
-	process::{ExitStatus, ProcessModule, ProcessResult, State},
+	process::{ExitStatus, Module, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };
@@ -10,7 +10,7 @@ pub struct ConfirmAbort {
 	dialog: Confirm,
 }
 
-impl ProcessModule for ConfirmAbort {
+impl Module for ConfirmAbort {
 	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
 		self.dialog.get_view_data()
 	}

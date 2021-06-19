@@ -8,7 +8,7 @@ use crate::{
 		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 		Event,
 	},
-	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
+	process::{module::Module, process_result::ProcessResult, state::State},
 	todo_file::{Line, TodoFile},
 	view::{
 		testutil::{with_view_sender, TestContext as ViewSenderContext},
@@ -27,24 +27,24 @@ pub struct TestContext<'t> {
 }
 
 impl<'t> TestContext<'t> {
-	fn get_build_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
+	fn get_build_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
 		module.build_view_data(&self.render_context, &self.rebase_todo_file)
 	}
 
-	pub fn activate(&self, module: &'_ mut dyn ProcessModule, state: State) -> ProcessResult {
+	pub fn activate(&self, module: &'_ mut dyn Module, state: State) -> ProcessResult {
 		module.activate(&self.rebase_todo_file, state)
 	}
 
 	#[allow(clippy::unused_self)]
-	pub fn deactivate(&mut self, module: &'_ mut dyn ProcessModule) {
+	pub fn deactivate(&mut self, module: &'_ mut dyn Module) {
 		module.deactivate();
 	}
 
-	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn ProcessModule) -> &'tc ViewData {
+	pub fn build_view_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
 		self.get_build_data(module)
 	}
 
-	pub fn handle_event(&mut self, module: &'_ mut dyn ProcessModule) -> ProcessResult {
+	pub fn handle_event(&mut self, module: &'_ mut dyn Module) -> ProcessResult {
 		module.handle_events(
 			&self.event_handler_context.event_handler,
 			&self.view_sender_context.sender,
@@ -52,7 +52,7 @@ impl<'t> TestContext<'t> {
 		)
 	}
 
-	pub fn handle_n_events(&mut self, module: &'_ mut dyn ProcessModule, n: usize) -> Vec<ProcessResult> {
+	pub fn handle_n_events(&mut self, module: &'_ mut dyn Module, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
 			results.push(module.handle_events(
@@ -64,7 +64,7 @@ impl<'t> TestContext<'t> {
 		results
 	}
 
-	pub fn handle_all_events(&mut self, module: &'_ mut dyn ProcessModule) -> Vec<ProcessResult> {
+	pub fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..self.event_handler_context.number_events {
 			results.push(module.handle_events(
