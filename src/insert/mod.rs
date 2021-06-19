@@ -8,7 +8,7 @@ use crate::{
 	components::{choice::Choice, edit::Edit},
 	input::EventHandler,
 	insert::{insert_state::InsertState, line_type::LineType},
-	process::{ProcessModule, ProcessResult, State},
+	process::{Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
@@ -20,7 +20,7 @@ pub struct Insert {
 	state: InsertState,
 }
 
-impl ProcessModule for Insert {
+impl Module for Insert {
 	fn activate(&mut self, _: &TodoFile, _: State) -> ProcessResult {
 		self.state = InsertState::Prompt;
 		self.edit.clear();

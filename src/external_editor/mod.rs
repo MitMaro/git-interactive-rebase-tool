@@ -12,7 +12,7 @@ use crate::{
 	components::choice::Choice,
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
-	process::{ExitStatus, ProcessModule, ProcessResult, State},
+	process::{ExitStatus, Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
@@ -31,7 +31,7 @@ pub struct ExternalEditor {
 	view_data: ViewData,
 }
 
-impl ProcessModule for ExternalEditor {
+impl Module for ExternalEditor {
 	fn activate(&mut self, todo_file: &TodoFile, _: State) -> ProcessResult {
 		let result = ProcessResult::new();
 		if let Err(err) = todo_file.write_file() {

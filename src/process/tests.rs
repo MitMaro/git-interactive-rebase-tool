@@ -29,7 +29,7 @@ impl TestModule {
 	}
 }
 
-impl ProcessModule for TestModule {
+impl Module for TestModule {
 	fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &ViewData {
 		(self.view_data_callback)(&mut self.view_data);
 		&self.view_data

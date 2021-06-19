@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 
 use crate::{
 	input::{Event, EventHandler, InputOptions},
-	process::{ProcessModule, ProcessResult, State},
+	process::{Module, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
@@ -20,7 +20,7 @@ pub struct WindowSizeError {
 	view_data: ViewData,
 }
 
-impl ProcessModule for WindowSizeError {
+impl Module for WindowSizeError {
 	fn activate(&mut self, _: &TodoFile, previous_state: State) -> ProcessResult {
 		self.return_state = previous_state;
 		ProcessResult::new()

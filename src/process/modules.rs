@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use crate::{
 	input::EventHandler,
-	process::{process_module::ProcessModule, process_result::ProcessResult, state::State},
+	process::{module::Module, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };
 
 pub struct Modules {
-	pub modules: HashMap<State, Box<dyn ProcessModule>>,
+	pub modules: HashMap<State, Box<dyn Module>>,
 }
 
 impl Modules {
@@ -18,11 +18,11 @@ impl Modules {
 		}
 	}
 
-	pub fn register_module<T: ProcessModule + 'static>(&mut self, state: State, module: T) {
+	pub fn register_module<T: Module + 'static>(&mut self, state: State, module: T) {
 		self.modules.insert(state, Box::new(module));
 	}
 
-	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn ProcessModule> {
+	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn Module> {
 		self.modules
 			.get_mut(&state)
 			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}", state))
@@ -87,7 +87,7 @@ mod tests {
 		}
 	}
 
-	impl ProcessModule for TestModule {
+	impl Module for TestModule {
 		fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
 			self.trace.borrow_mut().push(String::from("Activate"));
 			ProcessResult::new()

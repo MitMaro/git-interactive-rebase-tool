@@ -15,7 +15,7 @@ use crate::{
 		input::get_event,
 		utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 	},
-	process::{ExitStatus, ProcessModule, ProcessResult, State},
+	process::{ExitStatus, Module, ProcessResult, State},
 	todo_file::{Action, EditContext, Line, TodoFile},
 	view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
 };
@@ -38,7 +38,7 @@ pub struct List {
 	visual_mode_help: Help,
 }
 
-impl ProcessModule for List {
+impl Module for List {
 	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),

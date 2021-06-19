@@ -1,6 +1,6 @@
 mod exit_status;
+mod module;
 mod modules;
-mod process_module;
 mod process_result;
 mod state;
 
@@ -15,8 +15,8 @@ use anyhow::{anyhow, Result};
 
 pub use self::{
 	exit_status::ExitStatus,
+	module::Module,
 	modules::Modules,
-	process_module::ProcessModule,
 	process_result::ProcessResult,
 	state::State,
 };
