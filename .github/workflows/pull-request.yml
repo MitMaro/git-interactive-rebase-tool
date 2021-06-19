@@ -5,6 +5,7 @@ on: [pull_request]
 jobs:
   linux:
     runs-on: [ubuntu-latest]
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
@@ -20,6 +21,7 @@ jobs:
 
   lint:
     runs-on: [ubuntu-latest]
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
@@ -31,6 +33,7 @@ jobs:
 
   coverage:
     runs-on: [ubuntu-latest]
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
@@ -45,6 +48,7 @@ jobs:
   macos:
     name: MacOS
     runs-on: [macos-latest]
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v2
       - name: Update Rust
@@ -59,6 +63,7 @@ jobs:
   windows:
     name: Windows Test
     runs-on: [windows-latest]
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
       - name: Update Rust

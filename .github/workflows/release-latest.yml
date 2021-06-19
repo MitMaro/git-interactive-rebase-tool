@@ -8,6 +8,7 @@ jobs:
   ubuntu:
     name: Ubuntu
     runs-on: [ubuntu-latest]
+    timeout-minutes: 10
     env:
         TARGET_RELEASE_ID: 18843342
         GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -38,6 +39,7 @@ jobs:
   macos:
     name: MacOS
     runs-on: [macos-latest]
+    timeout-minutes: 5
     env:
         TARGET_RELEASE_ID: 18843342
         GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
