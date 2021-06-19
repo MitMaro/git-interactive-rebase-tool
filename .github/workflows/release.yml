@@ -10,6 +10,7 @@ jobs:
             matrix:
                 version: ['14.04', '16.04']
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         container:
             image: 'docker://ubuntu:${{ matrix.version }}'
         steps:
@@ -48,6 +49,7 @@ jobs:
             matrix:
                 version: ['18.04', '20.04', '20.10']
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         container:
             image: 'docker://ubuntu:${{ matrix.version }}'
         steps:
@@ -87,6 +89,7 @@ jobs:
             matrix:
                 version: ['8']
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         container:
             image: 'docker://debian:${{ matrix.version }}-slim'
         steps:
@@ -125,6 +128,7 @@ jobs:
             matrix:
                 version: ['9', '10', 'bullseye', 'sid']
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         container:
             image: 'docker://debian:${{ matrix.version }}-slim'
         steps:
@@ -160,6 +164,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     build-macos:
         runs-on: [macos-latest]
+        timeout-minutes: 5
         steps:
             - name: "Checkout project"
               uses: actions/checkout@v2
@@ -176,6 +181,7 @@ jobs:
 
     build-windows:
         runs-on: [windows-latest]
+        timeout-minutes: 10
         steps:
             - name: "Checkout project"
               uses: actions/checkout@v2
