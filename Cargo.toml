@@ -23,6 +23,11 @@ edition = "2018"
 name = "interactive-rebase-tool"
 path = "src/main.rs"
 
+[workspace]
+members = [
+    "src/config",
+]
+
 [dependencies]
 anyhow = "1.0"
 chrono = "0.4"
@@ -33,6 +38,7 @@ pico-args = "0.4.2"
 unicode-segmentation = "1.7.1"
 unicode-width = "0.1.8"
 xi-unicode = "0.3.0"
+girt-config = {version = "1.0.0", path = "src/config"}
 
 [dependencies.uuid]
 version = "0.8.1"

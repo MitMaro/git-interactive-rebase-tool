@@ -33,6 +33,7 @@ fn config_new() {
 	set_var(
 		"GIT_DIR",
 		Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("../..")
 			.join("test")
 			.join("fixtures")
 			.join("simple")

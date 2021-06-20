@@ -1,0 +1,30 @@
+[package]
+name = "girt-config"
+version = "1.0.0"
+authors = ["Tim Oram <dev@mitmaro.ca>"]
+license = "GPL-3.0-or-later"
+description = "Configuration for git-interactive-rebase-tool"
+homepage = "https://gitrebasetool.mitmaro.ca/"
+repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
+edition = "2018"
+keywords = [ "git", "config" ]
+categories = ["config"]
+readme = "../../README.md"
+
+
+[lib]
+name = "config"
+
+[dependencies]
+anyhow = "1.0"
+
+[dependencies.git2]
+version = "0.13.20"
+default-features = false
+features = []
+
+[dev-dependencies]
+concat-idents = "1.1.2"
+rstest = "0.6.4"
+serial_test = "0.5.1"
+tempfile = "3.2.0"
