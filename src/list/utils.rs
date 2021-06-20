@@ -1,7 +1,8 @@
 use std::cmp;
 
+use config::KeyBindings;
+
 use crate::{
-	config::KeyBindings,
 	display::DisplayColor,
 	todo_file::{Action, Line},
 	view::LineSegment,

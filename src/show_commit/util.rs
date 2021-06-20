@@ -1,8 +1,8 @@
+use config::KeyBindings;
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
-	config::KeyBindings,
 	display::DisplayColor,
 	show_commit::{commit::Commit, status::Status},
 	view::{LineSegment, ViewLine},

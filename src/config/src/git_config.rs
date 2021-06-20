@@ -1,17 +1,17 @@
 use anyhow::{anyhow, Result};
 use git2::Config;
 
-use crate::config::utils::{editor_from_env, get_string, get_unsigned_integer};
+use super::utils::{editor_from_env, get_string, get_unsigned_integer};
 
 #[derive(Clone, Debug)]
 pub struct GitConfig {
-	pub(crate) comment_char: String,
-	pub(crate) diff_context: u32,
-	pub(crate) diff_interhunk_lines: u32,
-	pub(crate) diff_rename_limit: u32,
-	pub(crate) diff_renames: bool,
-	pub(crate) diff_copies: bool,
-	pub(crate) editor: String,
+	pub comment_char: String,
+	pub diff_context: u32,
+	pub diff_interhunk_lines: u32,
+	pub diff_rename_limit: u32,
+	pub diff_renames: bool,
+	pub diff_copies: bool,
+	pub editor: String,
 }
 
 impl GitConfig {

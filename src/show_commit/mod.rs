@@ -14,11 +14,11 @@ mod view_builder;
 mod tests;
 
 use anyhow::anyhow;
+use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use lazy_static::lazy_static;
 
 use crate::{
 	components::help::Help,
-	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
 	module::{Module, ProcessResult, State},
 	show_commit::{

@@ -35,7 +35,6 @@
 #![allow(clippy::default_numeric_fallback)]
 
 mod components;
-mod config;
 mod confirm_abort;
 mod confirm_rebase;
 mod core;
