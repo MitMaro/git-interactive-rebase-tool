@@ -40,7 +40,7 @@ fn config_new() {
 			.to_str()
 			.unwrap(),
 	);
-	Config::new().unwrap();
+	let _config = Config::new().unwrap();
 }
 
 #[test]
