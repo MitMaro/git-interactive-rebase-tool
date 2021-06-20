@@ -18,7 +18,6 @@
 #![allow(clippy::integer_arithmetic)]
 #![allow(clippy::missing_docs_in_private_items)]
 #![allow(clippy::missing_errors_doc)]
-#![allow(clippy::missing_inline_in_public_items)]
 #![allow(clippy::non_ascii_literal)]
 #![allow(clippy::wildcard_enum_match_arm)]
 
@@ -70,6 +69,7 @@ pub struct Config {
 }
 
 impl Config {
+	#[inline]
 	pub fn new() -> Result<Self> {
 		let config = open_git_config().map_err(|e| e.context("Error loading git config"))?;
 		Self::new_from_config(&config).map_err(|e| e.context("Error reading git config"))
