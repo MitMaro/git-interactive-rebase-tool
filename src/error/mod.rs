@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use crate::{
 	display::DisplayColor,
 	input::{Event, EventHandler, InputOptions},
-	process::{Module, ProcessResult, State},
+	module::{Module, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
 };

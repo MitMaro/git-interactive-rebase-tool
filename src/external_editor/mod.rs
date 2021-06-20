@@ -12,7 +12,7 @@ use crate::{
 	components::choice::Choice,
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
-	process::{ExitStatus, Module, ProcessResult, State},
+	module::{ExitStatus, Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };

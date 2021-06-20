@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
+use super::{Module, ProcessResult, State};
 use crate::{
 	input::EventHandler,
-	process::{module::Module, process_result::ProcessResult, state::State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };

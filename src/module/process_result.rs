@@ -2,16 +2,16 @@ use anyhow::Error;
 
 use crate::{
 	input::Event,
-	process::{ExitStatus, State},
+	module::{ExitStatus, State},
 };
 
 #[derive(Debug)]
 pub struct ProcessResult {
-	pub(super) error: Option<Error>,
-	pub(super) exit_status: Option<ExitStatus>,
-	pub(super) event: Option<Event>,
-	pub(super) state: Option<State>,
-	pub(super) external_command: Option<(String, Vec<String>)>,
+	pub(crate) error: Option<Error>,
+	pub(crate) exit_status: Option<ExitStatus>,
+	pub(crate) event: Option<Event>,
+	pub(crate) state: Option<State>,
+	pub(crate) external_command: Option<(String, Vec<String>)>,
 }
 
 impl ProcessResult {

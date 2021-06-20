@@ -2,7 +2,7 @@ use anyhow::Error;
 
 use crate::{
 	input::Event,
-	process::{exit_status::ExitStatus, process_result::ProcessResult, state::State},
+	module::{ExitStatus, ProcessResult, State},
 };
 
 fn format_process_result(
@@ -106,16 +106,16 @@ pub fn _assert_process_result(
 #[macro_export]
 macro_rules! assert_process_result {
 	($actual:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, None, &None, &None)
+		crate::module::testutil::_assert_process_result(&$actual, None, None, None, &None, &None)
 	};
 	($actual:expr, error = $error:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), &Some($error), &None)
+		crate::module::testutil::_assert_process_result(&$actual, None, None, Some($exit_status), &Some($error), &None)
 	};
 	($actual:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &None, &None)
+		crate::module::testutil::_assert_process_result(&$actual, None, Some($state), None, &None, &None)
 	};
 	($actual:expr, state = $state:expr, external_command = $external_command:expr) => {
-		crate::process::testutil::_assert_process_result(
+		crate::module::testutil::_assert_process_result(
 			&$actual,
 			None,
 			Some($state),
@@ -125,19 +125,19 @@ macro_rules! assert_process_result {
 		)
 	};
 	($actual:expr, state = $state:expr, error = $error:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, Some($state), None, &Some($error), &None)
+		crate::module::testutil::_assert_process_result(&$actual, None, Some($state), None, &Some($error), &None)
 	};
 	($actual:expr, event = $event:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($event), None, None, &None, &None)
+		crate::module::testutil::_assert_process_result(&$actual, Some($event), None, None, &None, &None)
 	};
 	($actual:expr, event = $event:expr, state = $state:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($event), Some($state), None, &None, &None)
+		crate::module::testutil::_assert_process_result(&$actual, Some($event), Some($state), None, &None, &None)
 	};
 	($actual:expr, event = $event:expr, exit_status = $exit_status:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, Some($event), None, Some($exit_status), &None, &None)
+		crate::module::testutil::_assert_process_result(&$actual, Some($event), None, Some($exit_status), &None, &None)
 	};
 	($actual:expr, event = $event:expr, external_command = $external_command:expr) => {
-		crate::process::testutil::_assert_process_result(
+		crate::module::testutil::_assert_process_result(
 			&$actual,
 			Some($event),
 			None,
@@ -148,6 +148,6 @@ macro_rules! assert_process_result {
 	};
 
 	($actual:expr, external_command = $external_command:expr) => {
-		crate::process::testutil::_assert_process_result(&$actual, None, None, None, &None, &Some($external_command))
+		crate::module::testutil::_assert_process_result(&$actual, None, None, None, &None, &Some($external_command))
 	};
 }

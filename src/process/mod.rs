@@ -1,9 +1,3 @@
-mod exit_status;
-mod module;
-mod modules;
-mod process_result;
-mod state;
-
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
@@ -13,16 +7,10 @@ use std::{process::Command, thread};
 
 use anyhow::{anyhow, Result};
 
-pub use self::{
-	exit_status::ExitStatus,
-	module::Module,
-	modules::Modules,
-	process_result::ProcessResult,
-	state::State,
-};
 use crate::{
 	display::Tui,
 	input::{Event, EventHandler, MetaEvent},
+	module::{ExitStatus, Modules, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{spawn_view_thread, RenderContext, View, ViewSender},
 };

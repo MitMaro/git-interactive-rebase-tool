@@ -20,7 +20,7 @@ use crate::{
 	components::help::Help,
 	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
 	input::{Event, EventHandler, InputOptions, MetaEvent},
-	process::{Module, ProcessResult, State},
+	module::{Module, ProcessResult, State},
 	show_commit::{
 		commit::{Commit, LoadCommitDiffOptions},
 		show_commit_state::ShowCommitState,
