@@ -1,5 +1,6 @@
+use config::Config;
+
 use crate::{
-	config::Config,
 	confirm_abort::ConfirmAbort,
 	confirm_rebase::ConfirmRebase,
 	core::{arguments::Args, exit::Exit, help::build_help},
