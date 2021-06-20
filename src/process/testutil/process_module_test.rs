@@ -1,9 +1,9 @@
 use std::{cell::Cell, path::Path};
 
+use config::{testutil::create_config, Config};
 use tempfile::{Builder, NamedTempFile};
 
 use crate::{
-	config::{testutil::create_config, Config},
 	input::{
 		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 		Event,

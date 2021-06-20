@@ -8,6 +8,7 @@ use super::{
 	KeyBindings,
 };
 
+#[must_use]
 pub fn create_config() -> Config {
 	Config {
 		auto_select_next: false,
@@ -65,6 +66,7 @@ pub fn create_config() -> Config {
 	}
 }
 
+#[must_use]
 pub fn create_theme() -> Theme {
 	Theme {
 		character_vertical_spacing: String::from("~"),

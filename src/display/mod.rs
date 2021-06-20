@@ -11,6 +11,7 @@ mod mockcrossterm;
 pub mod testutil;
 
 use anyhow::Result;
+use config::Theme;
 #[cfg(test)]
 pub use testutil::CrossTerm;
 
@@ -18,7 +19,6 @@ pub use testutil::CrossTerm;
 pub use self::crossterm::CrossTerm;
 use self::{crossterm::Color as CrosstermColor, utils::register_selectable_color_pairs};
 pub use self::{crossterm::Colors, display_color::DisplayColor, size::Size, tui::Tui};
-use crate::config::Theme;
 
 pub struct Display<T: Tui> {
 	action_break: (Colors, Colors),
@@ -288,10 +288,10 @@ impl<T: Tui> Display<T> {
 
 #[cfg(test)]
 mod tests {
+	use config::testutil::create_theme;
 	use rstest::rstest;
 
 	use super::{mockcrossterm::State, testutil::CrossTerm, *};
-	use crate::config::testutil::create_theme;
 
 	#[test]
 	fn draw_str() {

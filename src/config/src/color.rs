@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use anyhow::{anyhow, Error};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[allow(clippy::exhaustive_enums)]
 pub enum Color {
 	Default,
 	LightWhite,

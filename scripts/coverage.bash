@@ -6,4 +6,4 @@ set -o pipefail
 
 rustup update nightly
 cargo +nightly install --version 0.16.0 cargo-tarpaulin
-cargo +nightly tarpaulin --exclude-files=src/display/crossterm.rs --all-features --ignore-tests --line --verbose --out Html --out Lcov --output-dir coverage "$@"
+cargo +nightly tarpaulin --exclude-files=src/display/crossterm.rs --workspace --all-features --ignore-tests --line --verbose --out Html --out Lcov --output-dir coverage "$@"

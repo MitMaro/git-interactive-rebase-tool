@@ -87,7 +87,7 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 }
 
 impl KeyBindings {
-	pub fn new(key_bindings: &crate::config::KeyBindings) -> Self {
+	pub fn new(key_bindings: &config::KeyBindings) -> Self {
 		Self {
 			abort: map_keybindings(&key_bindings.abort),
 			action_break: map_keybindings(&key_bindings.action_break),
@@ -127,10 +127,10 @@ impl KeyBindings {
 
 #[cfg(test)]
 mod tests {
+	use config::testutil::create_config;
 	use rstest::rstest;
 
 	use super::*;
-	use crate::config::testutil::create_config;
 
 	#[test]
 	fn new() {
