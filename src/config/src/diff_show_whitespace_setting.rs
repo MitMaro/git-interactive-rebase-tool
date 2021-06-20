@@ -1,4 +1,4 @@
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 #[non_exhaustive]
 pub enum DiffShowWhitespaceSetting {
 	None,
