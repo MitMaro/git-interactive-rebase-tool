@@ -45,6 +45,7 @@ mod external_editor;
 mod input;
 mod insert;
 mod list;
+mod module;
 mod process;
 mod show_commit;
 mod todo_file;

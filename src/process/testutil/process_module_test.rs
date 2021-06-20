@@ -8,7 +8,7 @@ use crate::{
 		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 		Event,
 	},
-	process::{module::Module, process_result::ProcessResult, state::State},
+	module::{Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{
 		testutil::{with_view_sender, TestContext as ViewSenderContext},

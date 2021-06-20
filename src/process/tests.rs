@@ -8,6 +8,7 @@ use crate::{
 	display::{testutil::CrossTerm, Display, Size},
 	error::Error,
 	input::InputOptions,
+	module::Module,
 	process::testutil::process_module_test,
 	view::ViewData,
 	window_size_error::WindowSizeError,
