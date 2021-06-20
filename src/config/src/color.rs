@@ -31,6 +31,7 @@ pub enum Color {
 impl TryFrom<&str> for Color {
 	type Error = Error;
 
+	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
 			"black" | "light black" => Ok(Self::LightBlack),
