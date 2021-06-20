@@ -56,6 +56,12 @@ chrono = "0.4"
 default = []
 dev = []
 
+[profile.release]
+incremental = true
+debug = 0
+lto = true
+codegen-units = 1
+
 [package.metadata.deb]
 license-file = ["LICENSE"]
 extended-description = """\
