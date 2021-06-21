@@ -28,6 +28,8 @@ jobs:
         run: sudo apt-get install build-essential pkg-config liblzma-dev
       - name: Lint
         run: "./scripts/lint.bash"
+      - name: Docs
+        run: "./scripts/docs.bash"
       - name: Format
         run: "./scripts/format.bash"
 
