@@ -1,3 +1,4 @@
+//! Utilities for writing tests that interact with the configuration.
 use super::{
 	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
@@ -8,6 +9,7 @@ use super::{
 	KeyBindings,
 };
 
+/// Create a mocked version of the configuration.
 #[must_use]
 #[inline]
 pub fn create_config() -> Config {
@@ -67,6 +69,7 @@ pub fn create_config() -> Config {
 	}
 }
 
+/// Create a mocked version of the configuration theme.
 #[must_use]
 #[inline]
 pub fn create_theme() -> Theme {
