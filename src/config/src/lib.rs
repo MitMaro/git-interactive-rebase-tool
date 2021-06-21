@@ -3,12 +3,12 @@
 // enable all rustc's built-in lints
 #![cfg_attr(allow_unknown_lints, allow(unknown_lints))]
 #![deny(
-	warnings,
-	nonstandard_style,
-	unused,
 	future_incompatible,
+	nonstandard_style,
+	rust_2018_compatibility,
 	rust_2018_idioms,
-	rust_2018_compatibility
+	unused,
+	warnings
 )]
 // rustc's additional allowed by default lints
 #![deny(
@@ -48,9 +48,17 @@
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
 #![allow(clippy::blanket_clippy_restriction_lints)]
+#![deny(
+	rustdoc::bare_urls,
+	rustdoc::broken_intra_doc_links,
+	rustdoc::invalid_codeblock_attributes,
+	rustdoc::invalid_html_tags,
+	rustdoc::missing_crate_level_docs,
+	rustdoc::private_doc_tests,
+	rustdoc::private_intra_doc_links
+)]
 // LINT-REPLACE-END
 #![allow(
-	missing_docs,
 	clippy::blanket_clippy_restriction_lints,
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
@@ -61,10 +69,23 @@
 	clippy::integer_arithmetic,
 	clippy::missing_docs_in_private_items,
 	clippy::non_ascii_literal,
-	clippy::wildcard_enum_match_arm,
-	clippy::missing_errors_doc
+	clippy::wildcard_enum_match_arm
 )]
 
+//! Git Interactive Rebase Tool - Configuration Module
+//!
+//! # Description
+//! This module is used to handle the loading of configuration from the Git config system.
+//!
+//! ```
+//! use config::Config;
+//! let config = Config::new();
+//! ```
+//!
+//! ## Test Utilities
+//! To facilitate testing the usages of this crate, a set of testing utilities are provided. Since
+//! these utilities are not tested, and often are optimized for developer experience than
+//! performance should only be used in test code.
 mod color;
 mod diff_ignore_whitespace_setting;
 mod diff_show_whitespace_setting;
@@ -79,40 +100,54 @@ mod tests;
 
 use anyhow::Result;
 
+use self::utils::{
+	get_bool,
+	get_diff_ignore_whitespace,
+	get_diff_show_whitespace,
+	get_string,
+	get_unsigned_integer,
+	open_git_config,
+};
 pub use self::{
 	color::Color,
 	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
+	git_config::GitConfig,
 	key_bindings::KeyBindings,
 	theme::Theme,
 };
-use self::{
-	git_config::GitConfig,
-	utils::{
-		get_bool,
-		get_diff_ignore_whitespace,
-		get_diff_show_whitespace,
-		get_string,
-		get_unsigned_integer,
-		open_git_config,
-	},
-};
 
+/// Represents the configuration options.
 #[derive(Clone, Debug)]
 pub struct Config {
+	/// If to select the next line in the list after performing an action.
 	pub auto_select_next: bool,
+	/// How to handle whitespace when calculating diffs.
 	pub diff_ignore_whitespace: DiffIgnoreWhitespaceSetting,
+	/// How to show whitespace in diffs.
 	pub diff_show_whitespace: DiffShowWhitespaceSetting,
+	/// The symbol used to replace space characters.
 	pub diff_space_symbol: String,
+	/// The symbol used to replace tab characters.
 	pub diff_tab_symbol: String,
+	/// The display width of the tab character.
 	pub diff_tab_width: u32,
+	/// The maximum number of undo steps.
 	pub undo_limit: u32,
+	/// Configuration options loaded directly from Git.
 	pub git: GitConfig,
+	/// Key binding configuration.
 	pub key_bindings: KeyBindings,
+	/// Theme configuration.
 	pub theme: Theme,
 }
 
 impl Config {
+	/// Creates a new Config instance loading the Git Config using [`git2::Repository::open_from_env`].
+	///
+	/// # Errors
+	///
+	/// Will return an `Err` if there is a problem loading the configuration.
 	#[inline]
 	pub fn new() -> Result<Self> {
 		let config = open_git_config().map_err(|e| e.context("Error loading git config"))?;

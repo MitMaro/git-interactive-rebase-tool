@@ -3,14 +3,36 @@ use git2::Config;
 
 use super::utils::{editor_from_env, get_string, get_unsigned_integer};
 
+/// Represents the git configuration options.
 #[derive(Clone, Debug)]
 pub struct GitConfig {
+	/// The Git comment character, from [`core.commentChar`](
+	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar
+	/// ).
 	pub comment_char: String,
+	/// Number of context lines, from [`diff.context`](
+	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffcontext
+	/// ).
 	pub diff_context: u32,
+	/// Number of interhunk lines, from [`diff.interhunk_lines`](
+	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffinterHunkContext
+	/// ).
 	pub diff_interhunk_lines: u32,
+	/// The limit for detecting renames, from [`diff.renameLimit`](
+	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenameLimit
+	/// ).
 	pub diff_rename_limit: u32,
+	/// If to detect renames, from [`diff.renames`](
+	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
+	/// ).
 	pub diff_renames: bool,
+	/// If to detect copies, from [`diff.renames`](
+	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
+	/// ).
 	pub diff_copies: bool,
+	/// The Git editor, from [`core.editor`](
+	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreeditor
+	/// ).
 	pub editor: String,
 }
 
