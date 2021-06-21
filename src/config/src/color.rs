@@ -2,30 +2,59 @@ use std::convert::TryFrom;
 
 use anyhow::{anyhow, Error};
 
+/// Represents a color.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Color {
+	/// The default teminal color.
 	Default,
+	/// The standard white color.
 	LightWhite,
+	/// The standard black color.
 	LightBlack,
+	/// The standard blue color.
 	LightBlue,
+	/// The standard cyan color.
 	LightCyan,
+	/// The standard green color.
 	LightGreen,
+	/// The standard magenta color.
 	LightMagenta,
+	/// The standard red color.
 	LightRed,
+	/// The standard yellow color.
 	LightYellow,
+	/// The standard grey color.
 	LightGrey,
+	/// The dimmed white color.
 	DarkWhite,
+	/// The dimmed black color.
 	DarkBlack,
+	/// The dimmed blue color.
 	DarkBlue,
+	/// The dimmed cyan color.
 	DarkCyan,
+	/// The dimmed green color.
 	DarkGreen,
+	/// The dimmed magenta color.
 	DarkMagenta,
+	/// The dimmed red color.
 	DarkRed,
+	/// The dimmed yellow color.
 	DarkYellow,
+	/// The dimmed grey color.
 	DarkGrey,
+	/// An ANSI indexed color.
 	Index(u8),
-	Rgb { red: u8, green: u8, blue: u8 },
+	/// A RGB color triple.
+	Rgb {
+		/// The red amount of the triple.
+		red: u8,
+		/// The green amount of the triple.
+		green: u8,
+		/// The blue amount of the triple.
+		blue: u8,
+	},
 }
 
 impl TryFrom<&str> for Color {
