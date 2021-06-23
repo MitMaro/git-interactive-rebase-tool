@@ -47,7 +47,11 @@
 )]
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
-#![allow(clippy::blanket_clippy_restriction_lints)]
+#![allow(
+	clippy::blanket_clippy_restriction_lints,
+	clippy::implicit_return,
+	clippy::missing_docs_in_private_items,
+)]
 #![deny(
 	rustdoc::bare_urls,
 	rustdoc::broken_intra_doc_links,
@@ -65,12 +69,9 @@
 	clippy::cast_possible_truncation,
 	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
-	clippy::implicit_return,
 	clippy::integer_arithmetic,
 	clippy::integer_division,
-	clippy::missing_docs_in_private_items,
 	clippy::missing_errors_doc,
-	clippy::missing_inline_in_public_items,
 	clippy::missing_panics_doc,
 	clippy::new_without_default,
 	clippy::too_many_lines,
@@ -117,6 +118,7 @@ pub struct Display<T: Tui> {
 }
 
 impl<T: Tui> Display<T> {
+	#[inline]
 	pub fn new(tui: T, theme: &Theme) -> Self {
 		let color_mode = tui.get_color_mode();
 		let normal = register_selectable_color_pairs(
@@ -251,20 +253,24 @@ impl<T: Tui> Display<T> {
 		}
 	}
 
+	#[inline]
 	pub fn draw_str(&mut self, s: &str) -> Result<()> {
 		self.tui.print(s)
 	}
 
+	#[inline]
 	pub fn clear(&mut self) -> Result<()> {
 		self.color(DisplayColor::Normal, false)?;
 		self.set_style(false, false, false)?;
 		self.tui.reset()
 	}
 
+	#[inline]
 	pub fn refresh(&mut self) -> Result<()> {
 		self.tui.flush()
 	}
 
+	#[inline]
 	pub fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
 		self.tui.set_color(
 			if selected {
@@ -314,10 +320,44 @@ impl<T: Tui> Display<T> {
 		)
 	}
 
+	#[inline]
 	pub fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<()> {
 		self.set_dim(dim)?;
 		self.set_underline(underline)?;
 		self.set_reverse(reverse)
+	}
+
+	#[inline]
+	pub fn get_window_size(&self) -> Size {
+		self.tui.get_size()
+	}
+
+	#[inline]
+	pub fn ensure_at_line_start(&mut self) -> Result<()> {
+		self.tui.move_to_column(1)
+	}
+
+	#[inline]
+	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
+		let width = self.get_window_size().width();
+		self.tui.move_to_column(width as u16 - right + 1)
+	}
+
+	#[inline]
+	pub fn next_line(&mut self) -> Result<()> {
+		self.tui.move_next_line()
+	}
+
+	#[inline]
+	pub fn start(&mut self) -> Result<()> {
+		self.tui.start()?;
+		self.tui.flush()
+	}
+
+	#[inline]
+	pub fn end(&mut self) -> Result<()> {
+		self.tui.end()?;
+		self.tui.flush()
 	}
 
 	fn set_dim(&mut self, on: bool) -> Result<()> {
@@ -330,33 +370,6 @@ impl<T: Tui> Display<T> {
 
 	fn set_reverse(&mut self, on: bool) -> Result<()> {
 		self.tui.set_reverse(on)
-	}
-
-	pub fn get_window_size(&self) -> Size {
-		self.tui.get_size()
-	}
-
-	pub fn ensure_at_line_start(&mut self) -> Result<()> {
-		self.tui.move_to_column(1)
-	}
-
-	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
-		let width = self.get_window_size().width();
-		self.tui.move_to_column(width as u16 - right + 1)
-	}
-
-	pub fn next_line(&mut self) -> Result<()> {
-		self.tui.move_next_line()
-	}
-
-	pub fn start(&mut self) -> Result<()> {
-		self.tui.start()?;
-		self.tui.flush()
-	}
-
-	pub fn end(&mut self) -> Result<()> {
-		self.tui.end()?;
-		self.tui.flush()
 	}
 }
 
