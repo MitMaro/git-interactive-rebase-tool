@@ -33,10 +33,12 @@ pub struct CrossTerm {
 }
 
 impl Tui for CrossTerm {
+	#[inline]
 	fn get_color_mode(&self) -> ColorMode {
 		self.color_mode
 	}
 
+	#[inline]
 	fn reset(&mut self) -> Result<()> {
 		self.queue_command(ResetColor)?;
 		self.queue_command(SetAttribute(Attribute::Reset))?;
@@ -44,20 +46,24 @@ impl Tui for CrossTerm {
 		self.queue_command(MoveTo(0, 0))
 	}
 
+	#[inline]
 	fn flush(&mut self) -> Result<()> {
 		self.window
 			.flush()
 			.map_err(|err| anyhow!("{:#}", err).context("Unexpected Error"))
 	}
 
+	#[inline]
 	fn print(&mut self, s: &str) -> Result<()> {
 		self.queue_command(Print(s))
 	}
 
+	#[inline]
 	fn set_color(&mut self, colors: Colors) -> Result<()> {
 		self.queue_command(SetColors(colors))
 	}
 
+	#[inline]
 	fn set_dim(&mut self, dim: bool) -> Result<()> {
 		self.queue_command(SetAttribute(
 			if dim {
@@ -69,6 +75,7 @@ impl Tui for CrossTerm {
 		))
 	}
 
+	#[inline]
 	fn set_underline(&mut self, underline: bool) -> Result<()> {
 		self.queue_command(SetAttribute(
 			if underline {
@@ -80,6 +87,7 @@ impl Tui for CrossTerm {
 		))
 	}
 
+	#[inline]
 	fn set_reverse(&mut self, reverse: bool) -> Result<()> {
 		self.queue_command(SetAttribute(
 			if reverse {
@@ -91,6 +99,7 @@ impl Tui for CrossTerm {
 		))
 	}
 
+	#[inline]
 	fn read_event() -> Result<Option<Event>> {
 		if poll(Duration::from_millis(20)).unwrap_or(false) {
 			read().map(Some).map_err(Self::map_err)
@@ -100,6 +109,7 @@ impl Tui for CrossTerm {
 		}
 	}
 
+	#[inline]
 	fn get_size(&self) -> Size {
 		size().map_or_else(
 			|_| Size::new(0, 0),
@@ -107,14 +117,17 @@ impl Tui for CrossTerm {
 		)
 	}
 
+	#[inline]
 	fn move_to_column(&mut self, x: u16) -> Result<()> {
 		self.queue_command(MoveToColumn(x))
 	}
 
+	#[inline]
 	fn move_next_line(&mut self) -> Result<()> {
 		self.queue_command(MoveToNextLine(1))
 	}
 
+	#[inline]
 	fn start(&mut self) -> Result<()> {
 		self.queue_command(EnterAlternateScreen)?;
 		self.queue_command(DisableLineWrap)?;
@@ -124,6 +137,7 @@ impl Tui for CrossTerm {
 		self.flush()
 	}
 
+	#[inline]
 	fn end(&mut self) -> Result<()> {
 		self.queue_command(DisableMouseCapture)?;
 		self.queue_command(Show)?;
@@ -135,6 +149,7 @@ impl Tui for CrossTerm {
 }
 
 impl CrossTerm {
+	#[inline]
 	#[must_use]
 	pub fn new() -> Self {
 		Self {
