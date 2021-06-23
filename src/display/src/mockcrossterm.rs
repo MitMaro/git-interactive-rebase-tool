@@ -26,10 +26,12 @@ pub struct CrossTerm {
 }
 
 impl Tui for CrossTerm {
+	#[inline]
 	fn get_color_mode(&self) -> ColorMode {
 		self.color_mode
 	}
 
+	#[inline]
 	fn reset(&mut self) -> Result<()> {
 		self.attributes = Attributes::from(Attribute::Reset);
 		self.colors = Colors::new(Color::Reset, Color::Reset);
@@ -38,21 +40,25 @@ impl Tui for CrossTerm {
 		Ok(())
 	}
 
+	#[inline]
 	fn flush(&mut self) -> Result<()> {
 		self.dirty = false;
 		Ok(())
 	}
 
+	#[inline]
 	fn print(&mut self, s: &str) -> Result<()> {
 		self.output.push(String::from(s));
 		Ok(())
 	}
 
+	#[inline]
 	fn set_color(&mut self, colors: Colors) -> Result<()> {
 		self.colors = colors;
 		Ok(())
 	}
 
+	#[inline]
 	fn set_dim(&mut self, dim: bool) -> Result<()> {
 		if dim {
 			self.attributes.set(Attribute::Dim);
@@ -63,6 +69,7 @@ impl Tui for CrossTerm {
 		Ok(())
 	}
 
+	#[inline]
 	fn set_underline(&mut self, dim: bool) -> Result<()> {
 		if dim {
 			self.attributes.set(Attribute::Underlined);
@@ -73,6 +80,7 @@ impl Tui for CrossTerm {
 		Ok(())
 	}
 
+	#[inline]
 	fn set_reverse(&mut self, dim: bool) -> Result<()> {
 		if dim {
 			self.attributes.set(Attribute::Reverse);
@@ -83,19 +91,23 @@ impl Tui for CrossTerm {
 		Ok(())
 	}
 
+	#[inline]
 	fn read_event() -> Result<Option<Event>> {
 		Ok(None)
 	}
 
+	#[inline]
 	fn get_size(&self) -> Size {
 		self.size
 	}
 
+	#[inline]
 	fn move_to_column(&mut self, x: u16) -> Result<()> {
 		self.position.0 = x;
 		Ok(())
 	}
 
+	#[inline]
 	fn move_next_line(&mut self) -> Result<()> {
 		self.output.push(String::from("\n"));
 		self.position.0 = 0;
@@ -103,11 +115,13 @@ impl Tui for CrossTerm {
 		Ok(())
 	}
 
+	#[inline]
 	fn start(&mut self) -> Result<()> {
 		self.state = State::Normal;
 		Ok(())
 	}
 
+	#[inline]
 	fn end(&mut self) -> Result<()> {
 		self.state = State::Ended;
 		Ok(())
@@ -115,6 +129,7 @@ impl Tui for CrossTerm {
 }
 
 impl CrossTerm {
+	#[inline]
 	#[must_use]
 	pub fn new() -> Self {
 		Self {
@@ -129,45 +144,54 @@ impl CrossTerm {
 		}
 	}
 
+	#[inline]
 	#[must_use]
 	pub const fn get_output(&self) -> &Vec<String> {
 		&self.output
 	}
 
+	#[inline]
 	#[must_use]
 	pub const fn get_state(&self) -> State {
 		self.state
 	}
 
+	#[inline]
 	#[must_use]
 	pub fn is_colors_enabled(&self, colors: Colors) -> bool {
 		self.colors == colors
 	}
 
+	#[inline]
 	#[must_use]
 	pub fn is_dimmed(&self) -> bool {
 		self.attributes.has(Attribute::Dim)
 	}
 
+	#[inline]
 	#[must_use]
 	pub fn is_reverse(&self) -> bool {
 		self.attributes.has(Attribute::Reverse)
 	}
 
+	#[inline]
 	#[must_use]
 	pub fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
 	}
 
+	#[inline]
 	pub fn set_size(&mut self, size: Size) {
 		self.size = size;
 	}
 
+	#[inline]
 	#[must_use]
 	pub const fn get_position(&self) -> (u16, u16) {
 		self.position
 	}
 
+	#[inline]
 	#[must_use]
 	pub const fn is_dirty(&self) -> bool {
 		self.dirty
