@@ -103,10 +103,10 @@
 //! To facilitate testing the usages of this crate, a set of testing utilities are provided. Since
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance should only be used in test code.
+
 mod color_mode;
 mod crossterm;
 mod display_color;
-mod mockcrossterm;
 mod size;
 pub mod testutil;
 mod tui;
@@ -425,7 +425,8 @@ mod tests {
 	use config::testutil::create_theme;
 	use rstest::rstest;
 
-	use super::{mockcrossterm::State, testutil::CrossTerm, *};
+	use super::{testutil::CrossTerm, *};
+	use crate::testutil::State;
 
 	#[test]
 	fn draw_str() {

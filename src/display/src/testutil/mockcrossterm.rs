@@ -4,15 +4,7 @@ use crossterm::{
 	style::{Attribute, Attributes, Color, Colors},
 };
 
-use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
-
-/// The state of the `CrossTerm` instance.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum State {
-	New,
-	Normal,
-	Ended,
-}
+use crate::{testutil::State, ColorMode, Size, Tui};
 
 /// A mocked version of `CrossTerm`, useful for testing.
 #[derive(Debug)]
@@ -137,7 +129,7 @@ impl CrossTerm {
 	pub fn new() -> Self {
 		Self {
 			attributes: Attributes::from(Attribute::Reset),
-			color_mode: detect_color_mode(16),
+			color_mode: ColorMode::FourBit,
 			colors: Colors::new(Color::Reset, Color::Reset),
 			dirty: true,
 			output: vec![],
