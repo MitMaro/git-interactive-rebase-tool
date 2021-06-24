@@ -6,6 +6,7 @@ use crossterm::{
 
 use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
 
+/// The state of the `CrossTerm` instance.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
 	New,
@@ -13,6 +14,7 @@ pub enum State {
 	Ended,
 }
 
+/// A mocked version of `CrossTerm`, useful for testing.
 #[derive(Debug)]
 pub struct CrossTerm {
 	attributes: Attributes,
@@ -129,6 +131,7 @@ impl Tui for CrossTerm {
 }
 
 impl CrossTerm {
+	/// Create a new mocked version of `CrossTerm`.
 	#[inline]
 	#[must_use]
 	pub fn new() -> Self {
@@ -144,53 +147,62 @@ impl CrossTerm {
 		}
 	}
 
+	/// Get a representation of the rendered output.
 	#[inline]
 	#[must_use]
 	pub const fn get_output(&self) -> &Vec<String> {
 		&self.output
 	}
 
+	/// Get the current state.
 	#[inline]
 	#[must_use]
 	pub const fn get_state(&self) -> State {
 		self.state
 	}
 
+	/// Are colors enabled.
 	#[inline]
 	#[must_use]
 	pub fn is_colors_enabled(&self, colors: Colors) -> bool {
 		self.colors == colors
 	}
 
+	/// Does the current style attributes contained dimmed.
 	#[inline]
 	#[must_use]
 	pub fn is_dimmed(&self) -> bool {
 		self.attributes.has(Attribute::Dim)
 	}
 
+	/// Does the current style attributes contained reverse.
 	#[inline]
 	#[must_use]
 	pub fn is_reverse(&self) -> bool {
 		self.attributes.has(Attribute::Reverse)
 	}
 
+	/// Does the current style attributes contained underlined.
 	#[inline]
 	#[must_use]
 	pub fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
 	}
 
+	/// Update the size.
 	#[inline]
 	pub fn set_size(&mut self, size: Size) {
 		self.size = size;
 	}
 
+	/// Get the current cursor position.
 	#[inline]
 	#[must_use]
 	pub const fn get_position(&self) -> (u16, u16) {
 		self.position
 	}
 
+	/// Has the output been flushed.
 	#[inline]
 	#[must_use]
 	pub const fn is_dirty(&self) -> bool {

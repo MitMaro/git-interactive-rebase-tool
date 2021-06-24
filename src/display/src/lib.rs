@@ -50,7 +50,7 @@
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
 	clippy::implicit_return,
-	clippy::missing_docs_in_private_items,
+	clippy::missing_docs_in_private_items
 )]
 #![deny(
 	rustdoc::bare_urls,
@@ -63,8 +63,6 @@
 )]
 // LINT-REPLACE-END
 #![allow(
-	missing_docs,
-	rustdoc::missing_crate_level_docs,
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
 	clippy::default_numeric_fallback,
@@ -78,6 +76,33 @@
 	clippy::unwrap_used,
 	clippy::wildcard_enum_match_arm
 )]
+
+//! Git Interactive Rebase Tool - Display Module
+//!
+//! # Description
+//! This module is used to handle working with the terminal display.
+//!
+//! ```
+//! use config::Config;
+//! use display::{CrossTerm, Display, DisplayColor};
+//! let config = Config::new().expect("Could not load config");
+//! let tui = CrossTerm::new();
+//! let mut display = Display::new(tui, &config.theme);
+//!
+//! display.start();
+//! display.clear();
+//! display.draw_str("Hello world!");
+//! display.color(DisplayColor::IndicatorColor, false);
+//! display.set_style(false, true, false);
+//! display.draw_str("Hello colorful, underlined world!");
+//! display.refresh();
+//! display.end();
+//! ```
+//!
+//! ## Test Utilities
+//! To facilitate testing the usages of this crate, a set of testing utilities are provided. Since
+//! these utilities are not tested, and often are optimized for developer experience than
+//! performance should only be used in test code.
 mod color_mode;
 mod crossterm;
 mod display_color;
@@ -92,8 +117,9 @@ use anyhow::Result;
 use config::Theme;
 
 use self::utils::register_selectable_color_pairs;
-pub use self::{crossterm::CrossTerm, display_color::DisplayColor, size::Size, tui::Tui};
+pub use self::{color_mode::ColorMode, crossterm::CrossTerm, display_color::DisplayColor, size::Size, tui::Tui};
 
+/// A high level interface to the terminal display.
 #[derive(Debug)]
 pub struct Display<T: Tui> {
 	action_break: (Colors, Colors),
@@ -118,6 +144,7 @@ pub struct Display<T: Tui> {
 }
 
 impl<T: Tui> Display<T> {
+	/// Create a new display instance.
 	#[inline]
 	pub fn new(tui: T, theme: &Theme) -> Self {
 		let color_mode = tui.get_color_mode();
@@ -253,11 +280,13 @@ impl<T: Tui> Display<T> {
 		}
 	}
 
+	/// Draws a string of text to the terminal interface.
 	#[inline]
 	pub fn draw_str(&mut self, s: &str) -> Result<()> {
 		self.tui.print(s)
 	}
 
+	/// Clear the terminal interface and reset any style and color attributes.
 	#[inline]
 	pub fn clear(&mut self) -> Result<()> {
 		self.color(DisplayColor::Normal, false)?;
@@ -265,11 +294,16 @@ impl<T: Tui> Display<T> {
 		self.tui.reset()
 	}
 
+	/// Force a refresh of the terminal interface. This normally should be called after after all
+	/// text has been drawn to the terminal interface. This is considered a slow operation, so
+	/// should be called only as needed.
 	#[inline]
 	pub fn refresh(&mut self) -> Result<()> {
 		self.tui.flush()
 	}
 
+	/// Set the color of text drawn to the terminal interface. This will only change text drawn to
+	/// the terminal after this function call.
 	#[inline]
 	pub fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
 		self.tui.set_color(
@@ -320,6 +354,8 @@ impl<T: Tui> Display<T> {
 		)
 	}
 
+	/// Set the style attributes of text drawn to the terminal interface. This will only change text
+	/// drawn to the terminal after this function call.
 	#[inline]
 	pub fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<()> {
 		self.set_dim(dim)?;
@@ -327,33 +363,43 @@ impl<T: Tui> Display<T> {
 		self.set_reverse(reverse)
 	}
 
+	/// Get the width and height of the terminal interface. This can be a slow operation, so should
+	/// not be called unless absolutely needed.
 	#[inline]
 	pub fn get_window_size(&self) -> Size {
 		self.tui.get_size()
 	}
 
+	/// Reset the cursor position to the start of the line.
 	#[inline]
 	pub fn ensure_at_line_start(&mut self) -> Result<()> {
 		self.tui.move_to_column(1)
 	}
 
+	/// Move the cursor position `right` characters from the end of the line.
 	#[inline]
 	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
 		let width = self.get_window_size().width();
 		self.tui.move_to_column(width as u16 - right + 1)
 	}
 
+	/// Move the cursor to the next line.
 	#[inline]
 	pub fn next_line(&mut self) -> Result<()> {
 		self.tui.move_next_line()
 	}
 
+	/// Start the terminal interface interactions. This should be called before any terminal
+	/// interactions are performed.
 	#[inline]
 	pub fn start(&mut self) -> Result<()> {
 		self.tui.start()?;
 		self.tui.flush()
 	}
 
+	/// End the terminal interface interactions. This should be called after all terminal
+	/// interactions are complete. This resets the terminal interface to the default state, and
+	/// should be called on program exit.
 	#[inline]
 	pub fn end(&mut self) -> Result<()> {
 		self.tui.end()?;
