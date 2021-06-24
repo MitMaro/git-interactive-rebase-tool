@@ -61,7 +61,11 @@ content="\
 )]
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
-#![allow(clippy::blanket_clippy_restriction_lints)]
+#![allow(
+	clippy::blanket_clippy_restriction_lints,
+	clippy::implicit_return,
+	clippy::missing_docs_in_private_items,
+)]
 #![deny(
 	rustdoc::bare_urls,
 	rustdoc::broken_intra_doc_links,

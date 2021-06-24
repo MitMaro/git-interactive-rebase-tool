@@ -26,6 +26,7 @@ use crossterm::{
 
 use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
 
+/// A thin wrapper over the [Crossterm library](https://github.com/crossterm-rs/crossterm).
 #[derive(Debug)]
 pub struct CrossTerm {
 	color_mode: ColorMode,
@@ -149,6 +150,7 @@ impl Tui for CrossTerm {
 }
 
 impl CrossTerm {
+	/// Create a new instance.
 	#[inline]
 	#[must_use]
 	pub fn new() -> Self {
