@@ -1,6 +1,9 @@
 //! Utilities for writing tests that interact with the display.
-pub use super::mockcrossterm::CrossTerm;
-use super::*;
+mod mockcrossterm;
+mod state;
+
+pub use self::{mockcrossterm::CrossTerm, state::State};
+use crate::Display;
 
 /// Assert the the content of the Display is an expected value.
 #[inline]
