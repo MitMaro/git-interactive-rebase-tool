@@ -1,5 +1,9 @@
 use config::Config;
-use display::{CrossTerm, Display};
+#[cfg(test)]
+use display::testutil::CrossTerm;
+#[cfg(not(test))]
+use display::CrossTerm;
+use display::Display;
 
 use crate::{
 	confirm_abort::ConfirmAbort,
