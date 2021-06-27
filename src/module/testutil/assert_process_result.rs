@@ -1,9 +1,7 @@
 use anyhow::Error;
+use input::Event;
 
-use crate::{
-	input::Event,
-	module::{ExitStatus, ProcessResult, State},
-};
+use crate::module::{ExitStatus, ProcessResult, State};
 
 fn format_process_result(
 	event: Option<Event>,

@@ -1,0 +1,27 @@
+[package]
+name = "girt-input"
+version = "1.0.0"
+authors = ["Tim Oram <dev@mitmaro.ca>"]
+license = "GPL-3.0-or-later"
+description = "Display modules for git-interactive-rebase-tool"
+homepage = "https://gitrebasetool.mitmaro.ca/"
+repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
+edition = "2018"
+keywords = [ "git", "input" ]
+categories = ["input"]
+readme = "../../README.md"
+
+
+[lib]
+name = "input"
+
+[dependencies]
+anyhow = "1.0"
+crossterm = "0.20.0"
+girt-config = {version = "1.0.0", path = "../config"}
+
+[dev-dependencies]
+rstest = "0.6.4"
+
+[build-dependencies]
+rustc_version = "0.4.0"

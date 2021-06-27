@@ -1,10 +1,7 @@
+use ::input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
+
 use super::*;
-use crate::{
-	assert_process_result,
-	assert_rendered_output,
-	input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind},
-	process::testutil::process_module_test,
-};
+use crate::{assert_process_result, assert_rendered_output, process::testutil::process_module_test};
 
 #[test]
 fn render_empty_list() {

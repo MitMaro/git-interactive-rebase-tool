@@ -4,10 +4,10 @@ mod process_result;
 mod state;
 
 use anyhow::Error;
+use input::EventHandler;
 
 pub use self::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State};
 use crate::{
-	input::EventHandler,
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };

@@ -1,9 +1,11 @@
 use std::{env::set_var, fs::File, path::Path};
 
+use display::{testutil::CrossTerm, Tui};
+use input::{Event, EventHandler, KeyBindings, MetaEvent};
+
 use super::*;
 use crate::{
 	core::main::{load_config, load_todo_file, run_process},
-	input::{Event, EventHandler, KeyBindings, MetaEvent},
 	module::ExitStatus,
 };
 
@@ -138,7 +140,7 @@ fn run_process_error() {
 	todo_file.set_permissions(permissions).unwrap();
 	let config = load_config().unwrap();
 	let rebase_todo_file = load_todo_file(todo_file_path.to_str().unwrap(), &config).unwrap();
-	let event_handler = EventHandler::new(KeyBindings::new(&config.key_bindings));
+	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 	event_handler.push_event(Event::from(MetaEvent::Exit));
 	assert_eq!(
 		run_process(rebase_todo_file, event_handler, &config),
@@ -156,7 +158,7 @@ fn run_process_success() {
 	let todo_file = Path::new(path.as_str()).join("rebase-todo");
 	let config = load_config().unwrap();
 	let rebase_todo_file = load_todo_file(todo_file.to_str().unwrap(), &config).unwrap();
-	let event_handler = EventHandler::new(KeyBindings::new(&config.key_bindings));
+	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 	event_handler.push_event(Event::from(MetaEvent::Exit));
 	assert_eq!(
 		run_process(rebase_todo_file, event_handler, &config),

@@ -1,7 +1,8 @@
+use input::MetaEvent;
 use rstest::rstest;
 
 use super::*;
-use crate::{assert_rendered_output, input::MetaEvent, module::testutil::handle_event_test};
+use crate::{assert_rendered_output, module::testutil::handle_event_test};
 
 #[test]
 fn empty() {

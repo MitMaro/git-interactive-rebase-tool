@@ -2,38 +2,38 @@ use super::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug)]
 pub struct KeyBindings {
-	pub(crate) abort: Vec<Event>,
-	pub(crate) action_break: Vec<Event>,
-	pub(crate) action_drop: Vec<Event>,
-	pub(crate) action_edit: Vec<Event>,
-	pub(crate) action_fixup: Vec<Event>,
-	pub(crate) action_pick: Vec<Event>,
-	pub(crate) action_reword: Vec<Event>,
-	pub(crate) action_squash: Vec<Event>,
-	pub(crate) confirm_yes: Vec<Event>,
-	pub(crate) edit: Vec<Event>,
-	pub(crate) force_abort: Vec<Event>,
-	pub(crate) force_rebase: Vec<Event>,
-	pub(crate) help: Vec<Event>,
-	pub(crate) insert_line: Vec<Event>,
-	pub(crate) move_down: Vec<Event>,
-	pub(crate) move_down_step: Vec<Event>,
-	pub(crate) move_end: Vec<Event>,
-	pub(crate) move_home: Vec<Event>,
-	pub(crate) move_left: Vec<Event>,
-	pub(crate) move_right: Vec<Event>,
-	pub(crate) move_selection_down: Vec<Event>,
-	pub(crate) move_selection_up: Vec<Event>,
-	pub(crate) move_up: Vec<Event>,
-	pub(crate) move_up_step: Vec<Event>,
-	pub(crate) open_in_external_editor: Vec<Event>,
-	pub(crate) rebase: Vec<Event>,
-	pub(crate) redo: Vec<Event>,
-	pub(crate) remove_line: Vec<Event>,
-	pub(crate) show_commit: Vec<Event>,
-	pub(crate) show_diff: Vec<Event>,
-	pub(crate) toggle_visual_mode: Vec<Event>,
-	pub(crate) undo: Vec<Event>,
+	pub abort: Vec<Event>,
+	pub action_break: Vec<Event>,
+	pub action_drop: Vec<Event>,
+	pub action_edit: Vec<Event>,
+	pub action_fixup: Vec<Event>,
+	pub action_pick: Vec<Event>,
+	pub action_reword: Vec<Event>,
+	pub action_squash: Vec<Event>,
+	pub confirm_yes: Vec<Event>,
+	pub edit: Vec<Event>,
+	pub force_abort: Vec<Event>,
+	pub force_rebase: Vec<Event>,
+	pub help: Vec<Event>,
+	pub insert_line: Vec<Event>,
+	pub move_down: Vec<Event>,
+	pub move_down_step: Vec<Event>,
+	pub move_end: Vec<Event>,
+	pub move_home: Vec<Event>,
+	pub move_left: Vec<Event>,
+	pub move_right: Vec<Event>,
+	pub move_selection_down: Vec<Event>,
+	pub move_selection_up: Vec<Event>,
+	pub move_up: Vec<Event>,
+	pub move_up_step: Vec<Event>,
+	pub open_in_external_editor: Vec<Event>,
+	pub rebase: Vec<Event>,
+	pub redo: Vec<Event>,
+	pub remove_line: Vec<Event>,
+	pub show_commit: Vec<Event>,
+	pub show_diff: Vec<Event>,
+	pub toggle_visual_mode: Vec<Event>,
+	pub undo: Vec<Event>,
 }
 
 fn map_keybindings(bindings: &[String]) -> Vec<Event> {
@@ -87,6 +87,7 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 }
 
 impl KeyBindings {
+	#[must_use]
 	pub fn new(key_bindings: &config::KeyBindings) -> Self {
 		Self {
 			abort: map_keybindings(&key_bindings.abort),
@@ -134,7 +135,7 @@ mod tests {
 
 	#[test]
 	fn new() {
-		KeyBindings::new(&create_config().key_bindings);
+		let _key_bindings = KeyBindings::new(&create_config().key_bindings);
 	}
 
 	#[test]

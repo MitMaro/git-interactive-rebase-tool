@@ -1,3 +1,4 @@
+#[derive(Copy, Clone, Debug)]
 pub struct InputOptions {
 	pub(super) help: bool,
 	pub(super) movement: bool,
@@ -6,6 +7,7 @@ pub struct InputOptions {
 }
 
 impl InputOptions {
+	#[must_use]
 	pub const fn new() -> Self {
 		Self {
 			help: false,
@@ -15,21 +17,25 @@ impl InputOptions {
 		}
 	}
 
+	#[must_use]
 	pub const fn help(mut self, val: bool) -> Self {
 		self.help = val;
 		self
 	}
 
+	#[must_use]
 	pub const fn movement(mut self, val: bool) -> Self {
 		self.movement = val;
 		self
 	}
 
+	#[must_use]
 	pub const fn resize(mut self, val: bool) -> Self {
 		self.resize = val;
 		self
 	}
 
+	#[must_use]
 	pub const fn undo_redo(mut self, val: bool) -> Self {
 		self.undo_redo = val;
 		self

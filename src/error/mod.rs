@@ -1,8 +1,8 @@
 use display::DisplayColor;
+use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;
 
 use crate::{
-	input::{Event, EventHandler, InputOptions},
 	module::{Module, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
@@ -75,14 +75,10 @@ impl Error {
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
+	use input::{Event, MetaEvent};
 
 	use super::*;
-	use crate::{
-		assert_process_result,
-		assert_rendered_output,
-		input::{Event, MetaEvent},
-		process::testutil::process_module_test,
-	};
+	use crate::{assert_process_result, assert_rendered_output, process::testutil::process_module_test};
 
 	#[test]
 	fn simple_error() {

@@ -3,12 +3,10 @@ mod confirmed;
 mod tests;
 
 pub use confirmed::Confirmed;
+use input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, MetaEvent};
 use lazy_static::lazy_static;
 
-use crate::{
-	input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, MetaEvent},
-	view::{ViewData, ViewLine},
-};
+use crate::view::{ViewData, ViewLine};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);

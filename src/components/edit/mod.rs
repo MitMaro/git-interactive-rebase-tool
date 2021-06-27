@@ -2,13 +2,11 @@
 mod tests;
 
 use display::DisplayColor;
+use input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::{
-	input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, KeyModifiers},
-	view::{LineSegment, ViewData, ViewLine},
-};
+use crate::view::{LineSegment, ViewData, ViewLine};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new();

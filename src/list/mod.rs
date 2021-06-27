@@ -6,12 +6,12 @@ mod tests;
 
 use std::cmp::min;
 
+use ::input::{Event, EventHandler, MetaEvent};
 use config::Config;
 use display::DisplayColor;
 
 use crate::{
 	components::{edit::Edit, help::Help},
-	input::{Event, EventHandler, MetaEvent},
 	list::{
 		input::get_event,
 		utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
