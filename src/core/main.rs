@@ -3,7 +3,8 @@ use config::Config;
 use display::testutil::CrossTerm;
 #[cfg(not(test))]
 use display::CrossTerm;
-use display::Display;
+use display::{Display, Tui};
+use input::{EventHandler, KeyBindings};
 
 use crate::{
 	confirm_abort::ConfirmAbort,
@@ -11,7 +12,6 @@ use crate::{
 	core::{arguments::Args, exit::Exit, help::build_help},
 	error::Error,
 	external_editor::ExternalEditor,
-	input::{EventHandler, KeyBindings},
 	insert::Insert,
 	list::List,
 	module::{ExitStatus, Modules, State},
@@ -97,7 +97,7 @@ pub fn run(args: &Args) -> Exit {
 			Ok(todo_file) => todo_file,
 			Err(exit) => return exit,
 		};
-		let event_handler = EventHandler::new(KeyBindings::new(&config.key_bindings));
+		let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 		run_process(todo_file, event_handler, &config)
 	}
 	else {

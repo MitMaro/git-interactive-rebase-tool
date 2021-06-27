@@ -1,4 +1,5 @@
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
 pub enum MetaEvent {
 	Abort,
 	ActionBreak,

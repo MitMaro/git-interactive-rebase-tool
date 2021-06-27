@@ -1,13 +1,13 @@
 use std::{cell::Cell, path::Path};
 
 use config::{testutil::create_config, Config};
+use input::{
+	testutil::{with_event_handler, TestContext as EventHandlerTestContext},
+	Event,
+};
 use tempfile::{Builder, NamedTempFile};
 
 use crate::{
-	input::{
-		testutil::{with_event_handler, TestContext as EventHandlerTestContext},
-		Event,
-	},
 	module::{Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
 	view::{

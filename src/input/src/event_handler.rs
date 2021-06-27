@@ -1,11 +1,11 @@
 use std::{cell::RefCell, collections::VecDeque};
 
 use anyhow::Result;
-use display::{CrossTerm, Tui};
 
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
-use crate::input::{key_bindings::KeyBindings, InputOptions, MetaEvent};
+use crate::{key_bindings::KeyBindings, InputOptions, MetaEvent};
 
+#[allow(missing_debug_implementations)]
 pub struct EventHandler {
 	event_provider: Box<dyn Fn() -> Result<Option<crossterm::event::Event>>>,
 	event_queue: RefCell<VecDeque<Event>>,
@@ -13,18 +13,13 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
-	pub(crate) fn new(key_bindings: KeyBindings) -> Self {
+	pub fn new<F: 'static>(event_provider: F, key_bindings: KeyBindings) -> Self
+	where F: Fn() -> Result<Option<crossterm::event::Event>> {
 		Self {
-			event_provider: Box::new(CrossTerm::read_event),
+			event_provider: Box::new(event_provider),
 			event_queue: RefCell::new(VecDeque::new()),
 			key_bindings,
 		}
-	}
-
-	#[cfg(test)]
-	pub fn set_event_provider<F: 'static>(&mut self, event_provider: F)
-	where F: Fn() -> Result<Option<crossterm::event::Event>> {
-		self.event_provider = Box::new(event_provider);
 	}
 
 	pub fn poll_event(&self) -> Event {
@@ -39,11 +34,12 @@ impl EventHandler {
 		}
 	}
 
-	pub(crate) fn push_event(&self, event: Event) {
+	pub fn push_event(&self, event: Event) {
 		self.event_queue.borrow_mut().push_back(event);
 	}
 
-	pub(crate) fn read_event<F>(&self, input_options: &InputOptions, callback: F) -> Event
+	#[allow(clippy::trivially_copy_pass_by_ref)]
+	pub fn read_event<F>(&self, input_options: &InputOptions, callback: F) -> Event
 	where F: FnOnce(Event, &KeyBindings) -> Event {
 		let event = self.poll_event();
 		if event == Event::None {
@@ -148,7 +144,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::input::testutil::{create_event_handler, with_event_handler};
+	use crate::testutil::{create_test_keybindings, with_event_handler};
 
 	#[test]
 	fn poll_event_ok() {
@@ -166,8 +162,7 @@ mod tests {
 
 	#[test]
 	fn poll_event_error() {
-		let mut event_handler = create_event_handler();
-		event_handler.set_event_provider(move || Err(anyhow!("Read Event Error")));
+		let event_handler = EventHandler::new(move || Err(anyhow!("Read Event Error")), create_test_keybindings());
 		assert_eq!(event_handler.poll_event(), Event::None);
 	}
 

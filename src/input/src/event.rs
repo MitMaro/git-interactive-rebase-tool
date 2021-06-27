@@ -1,8 +1,9 @@
-pub use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent};
 
 use super::MetaEvent;
 
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
+#[allow(clippy::exhaustive_enums)]
 pub enum Event {
 	Key(KeyEvent),
 	Meta(MetaEvent),
@@ -47,6 +48,8 @@ impl From<char> for Event {
 
 #[cfg(test)]
 mod tests {
+	use crossterm::event::MouseEventKind;
+
 	use super::*;
 
 	#[test]
