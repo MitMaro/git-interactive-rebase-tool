@@ -4,9 +4,10 @@ mod line_type;
 #[cfg(all(unix, test))]
 mod tests;
 
+use input::EventHandler;
+
 use crate::{
 	components::{choice::Choice, edit::Edit},
-	input::EventHandler,
 	insert::{insert_state::InsertState, line_type::LineType},
 	module::{Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},

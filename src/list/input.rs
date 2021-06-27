@@ -1,6 +1,5 @@
+use ::input::{Event, EventHandler, InputOptions, MetaEvent, MouseEventKind};
 use lazy_static::lazy_static;
-
-use crate::input::{Event, EventHandler, InputOptions, MetaEvent, MouseEventKind};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(false).undo_redo(true).help(true);

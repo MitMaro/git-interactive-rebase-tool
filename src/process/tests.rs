@@ -2,12 +2,12 @@ use std::{path::Path, sync::atomic::Ordering};
 
 use anyhow::anyhow;
 use display::{testutil::CrossTerm, Display, Size};
+use input::InputOptions;
 
 use super::*;
 use crate::{
 	assert_rendered_output,
 	error::Error,
-	input::InputOptions,
 	module::Module,
 	process::testutil::process_module_test,
 	view::ViewData,

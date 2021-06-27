@@ -1,5 +1,6 @@
+use input::{Event, MetaEvent};
+
 use super::ViewSender;
-use crate::input::{Event, MetaEvent};
 
 pub fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) -> Option<Event> {
 	match event {

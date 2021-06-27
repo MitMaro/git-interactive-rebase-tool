@@ -3,12 +3,10 @@ mod tests;
 use std::collections::HashMap;
 
 use display::DisplayColor;
+use input::{Event, EventHandler, InputOptions, KeyCode};
 use lazy_static::lazy_static;
 
-use crate::{
-	input::{Event, EventHandler, InputOptions, KeyCode},
-	view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender},
-};
+use crate::view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
