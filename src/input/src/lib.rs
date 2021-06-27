@@ -66,10 +66,7 @@
 	rustdoc::missing_crate_level_docs,
 	clippy::else_if_without_else,
 	clippy::exhaustive_structs,
-	clippy::implicit_return,
 	clippy::indexing_slicing,
-	clippy::missing_docs_in_private_items,
-	clippy::missing_inline_in_public_items,
 	clippy::struct_excessive_bools,
 	clippy::unwrap_used,
 	clippy::wildcard_enum_match_arm

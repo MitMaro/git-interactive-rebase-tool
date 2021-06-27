@@ -87,6 +87,7 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 }
 
 impl KeyBindings {
+	#[inline]
 	#[must_use]
 	pub fn new(key_bindings: &config::KeyBindings) -> Self {
 		Self {
