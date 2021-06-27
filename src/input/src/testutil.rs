@@ -82,6 +82,7 @@ fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
 	}
 }
 
+#[inline]
 #[must_use]
 pub fn create_test_keybindings() -> KeyBindings {
 	KeyBindings {
@@ -137,6 +138,7 @@ pub struct TestContext {
 }
 
 impl TestContext {
+	#[inline]
 	pub fn for_each_event<C, T>(&self, mut callback: C) -> Vec<T>
 	where C: FnMut(&EventHandler) -> T {
 		let mut results = vec![];
@@ -147,6 +149,7 @@ impl TestContext {
 	}
 }
 
+#[inline]
 pub fn with_event_handler<C>(events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
 	let crossterm_events = RefCell::new(

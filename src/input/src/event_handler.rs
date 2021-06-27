@@ -13,6 +13,7 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
+	#[inline]
 	pub fn new<F: 'static>(event_provider: F, key_bindings: KeyBindings) -> Self
 	where F: Fn() -> Result<Option<crossterm::event::Event>> {
 		Self {
@@ -22,6 +23,7 @@ impl EventHandler {
 		}
 	}
 
+	#[inline]
 	pub fn poll_event(&self) -> Event {
 		if let Some(event) = self.event_queue.borrow_mut().pop_front() {
 			event
@@ -34,10 +36,12 @@ impl EventHandler {
 		}
 	}
 
+	#[inline]
 	pub fn push_event(&self, event: Event) {
 		self.event_queue.borrow_mut().push_back(event);
 	}
 
+	#[inline]
 	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn read_event<F>(&self, input_options: &InputOptions, callback: F) -> Event
 	where F: FnOnce(Event, &KeyBindings) -> Event {
