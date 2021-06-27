@@ -210,6 +210,7 @@ A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
 ## Related Projects
 
 * [rebase-editor](https://github.com/sjurba/rebase-editor) is a very similar project written in Node.js.
+* [cj-git-patchtool](https://github.com/pflanze/cj-git-patchtool) is another tool for doing git rebase en masse.
 
 ## License
 
