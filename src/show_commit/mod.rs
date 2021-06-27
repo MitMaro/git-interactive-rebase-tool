@@ -15,11 +15,11 @@ mod tests;
 
 use anyhow::anyhow;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
+use input::{Event, EventHandler, InputOptions, MetaEvent};
 use lazy_static::lazy_static;
 
 use crate::{
 	components::help::Help,
-	input::{Event, EventHandler, InputOptions, MetaEvent},
 	module::{Module, ProcessResult, State},
 	show_commit::{
 		commit::{Commit, LoadCommitDiffOptions},

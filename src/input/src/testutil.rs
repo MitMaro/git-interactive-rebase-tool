@@ -82,7 +82,8 @@ fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
 	}
 }
 
-fn create_test_keybindings() -> KeyBindings {
+#[must_use]
+pub fn create_test_keybindings() -> KeyBindings {
 	KeyBindings {
 		abort: vec![Event::from(KeyCode::Char('q'))],
 		action_break: vec![Event::from(KeyCode::Char('b'))],
@@ -129,10 +130,7 @@ fn create_test_keybindings() -> KeyBindings {
 	}
 }
 
-pub fn create_event_handler() -> EventHandler {
-	EventHandler::new(create_test_keybindings())
-}
-
+#[allow(missing_debug_implementations)]
 pub struct TestContext {
 	pub event_handler: EventHandler,
 	pub number_events: usize,
@@ -159,12 +157,13 @@ where C: FnOnce(TestContext) {
 	);
 
 	crossterm_events.borrow_mut().reverse();
-	let mut event_handler = create_event_handler();
-
-	event_handler.set_event_provider(move || {
-		let mut ct_events = crossterm_events.borrow_mut();
-		Ok(ct_events.pop())
-	});
+	let event_handler = EventHandler::new(
+		move || {
+			let mut ct_events = crossterm_events.borrow_mut();
+			Ok(ct_events.pop())
+		},
+		create_test_keybindings(),
+	);
 
 	callback(TestContext {
 		event_handler,

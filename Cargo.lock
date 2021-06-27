@@ -145,6 +145,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "girt-input"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "crossterm",
+ "girt-config",
+ "rstest",
+ "rustc_version 0.4.0",
+]
+
+[[package]]
 name = "git-interactive-rebase-tool"
 version = "2.1.0"
 dependencies = [
@@ -154,6 +165,7 @@ dependencies = [
  "crossterm",
  "girt-config",
  "girt-display",
+ "girt-input",
  "git2",
  "lazy_static",
  "num-format",

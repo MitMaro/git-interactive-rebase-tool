@@ -1,7 +1,7 @@
+use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;
 
 use crate::{
-	input::{Event, EventHandler, InputOptions},
 	module::{Module, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewLine, ViewSender},

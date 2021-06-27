@@ -1,6 +1,7 @@
+use input::EventHandler;
+
 use crate::{
 	components::confirm::{Confirm, Confirmed},
-	input::EventHandler,
 	module::{ExitStatus, Module, ProcessResult, State},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
@@ -42,13 +43,10 @@ impl ConfirmRebase {
 #[cfg(test)]
 mod tests {
 
+	use input::{Event, KeyCode, MetaEvent};
+
 	use super::*;
-	use crate::{
-		assert_process_result,
-		assert_rendered_output,
-		input::{Event, KeyCode, MetaEvent},
-		process::testutil::process_module_test,
-	};
+	use crate::{assert_process_result, assert_rendered_output, process::testutil::process_module_test};
 
 	#[test]
 	fn build_view_data() {

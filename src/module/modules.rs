@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
+use input::EventHandler;
+
 use super::{Module, ProcessResult, State};
 use crate::{
-	input::EventHandler,
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData, ViewSender},
 };
@@ -66,12 +67,10 @@ mod tests {
 	use std::{cell::RefCell, rc::Rc};
 
 	use anyhow::{anyhow, Error};
+	use input::{Event, MetaEvent};
 
 	use super::*;
-	use crate::{
-		input::{Event, MetaEvent},
-		process::testutil::process_module_test,
-	};
+	use crate::process::testutil::process_module_test;
 
 	struct TestModule {
 		view_data: ViewData,
