@@ -13,6 +13,7 @@ pub enum Event {
 }
 
 impl From<crossterm::event::Event> for Event {
+	#[inline]
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
 			crossterm::event::Event::Key(event) => Self::Key(event),
@@ -23,12 +24,14 @@ impl From<crossterm::event::Event> for Event {
 }
 
 impl From<MetaEvent> for Event {
+	#[inline]
 	fn from(event: MetaEvent) -> Self {
 		Self::Meta(event)
 	}
 }
 
 impl From<KeyCode> for Event {
+	#[inline]
 	fn from(code: KeyCode) -> Self {
 		Self::Key(KeyEvent {
 			code,
@@ -38,6 +41,7 @@ impl From<KeyCode> for Event {
 }
 
 impl From<char> for Event {
+	#[inline]
 	fn from(c: char) -> Self {
 		Self::Key(KeyEvent {
 			code: KeyCode::Char(c),
