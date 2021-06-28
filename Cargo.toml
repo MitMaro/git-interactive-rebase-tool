@@ -28,6 +28,7 @@ members = [
     "src/config",
     "src/display",
     "src/input",
+    "src/view",
 ]
 
 [dependencies]
@@ -43,6 +44,7 @@ xi-unicode = "0.3.0"
 girt-config = {version = "1.0.0", path = "src/config"}
 girt-display = {version = "1.0.0", path = "src/display"}
 girt-input = {version = "1.0.0", path = "src/input"}
+girt-view = {version = "1.0.0", path = "src/view"}
 
 [dependencies.uuid]
 version = "0.8.1"

@@ -2,11 +2,9 @@ use std::cmp;
 
 use config::KeyBindings;
 use display::DisplayColor;
+use view::LineSegment;
 
-use crate::{
-	todo_file::{Action, Line},
-	view::LineSegment,
-};
+use crate::todo_file::{Action, Line};
 
 pub(super) fn get_list_normal_mode_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![

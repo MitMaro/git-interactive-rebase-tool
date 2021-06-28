@@ -8,13 +8,13 @@ mod tests;
 use anyhow::{anyhow, Result};
 use input::{Event, EventHandler, InputOptions, MetaEvent};
 use lazy_static::lazy_static;
+use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
 use crate::{
 	components::choice::Choice,
 	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
 	module::{ExitStatus, Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
-	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 lazy_static! {

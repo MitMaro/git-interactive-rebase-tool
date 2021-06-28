@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub enum RenderAction {
+pub(crate) enum RenderAction {
 	ScrollDown,
 	ScrollUp,
 	ScrollRight,

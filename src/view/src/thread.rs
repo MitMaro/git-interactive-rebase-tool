@@ -52,7 +52,7 @@ pub fn spawn_view_thread<T: Tui + Send + 'static>(view: View<T>) -> (Sender, Joi
 		}
 	});
 
-	spawn(move || {
+	let _refresh_thread = spawn(move || {
 		let sleep_time = MINIMUM_TICK_RATE / 2;
 		let mut time = Instant::now();
 		while sender.send(ViewAction::Refresh).is_ok() {
