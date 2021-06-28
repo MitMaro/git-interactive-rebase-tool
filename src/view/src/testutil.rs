@@ -49,6 +49,7 @@ fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bo
 }
 
 #[must_use]
+#[inline]
 pub fn render_view_line(view_line: &ViewLine) -> String {
 	let mut line = String::new();
 
@@ -124,6 +125,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	lines
 }
 
+#[inline]
 pub fn _assert_rendered_output(output: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
@@ -168,6 +170,7 @@ pub fn _assert_rendered_output(output: &[String], expected: &[String]) {
 	}
 }
 
+#[inline]
 pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String]) {
 	let output = render_view_data(view_data);
 	_assert_rendered_output(&output, expected);
@@ -263,11 +266,13 @@ pub struct TestContext {
 }
 
 impl TestContext {
+	#[inline]
 	pub fn drop_receiver(&mut self) {
 		let (_, receiver) = mpsc::channel();
 		self.receiver = receiver;
 	}
 
+	#[inline]
 	pub fn assert_render_action(&self, actions: &[&str]) {
 		assert_view_sender_actions(
 			&self.sender,
@@ -279,6 +284,7 @@ impl TestContext {
 		);
 	}
 
+	#[inline]
 	pub fn assert_sent_messages(&self, messages: Vec<&str>) {
 		let mut mismatch = false;
 		let mut error_output = vec![
@@ -318,6 +324,7 @@ impl TestContext {
 	}
 }
 
+#[inline]
 pub fn with_view_sender<C>(callback: C)
 where C: FnOnce(TestContext) {
 	let (sender, receiver) = mpsc::channel();

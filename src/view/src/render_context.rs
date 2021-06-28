@@ -10,6 +10,7 @@ pub struct RenderContext {
 
 impl RenderContext {
 	#[must_use]
+	#[inline]
 	pub const fn new(width: u16, height: u16) -> Self {
 		Self {
 			height: height as usize,
@@ -17,37 +18,44 @@ impl RenderContext {
 		}
 	}
 
+	#[inline]
 	pub fn update(&mut self, width: u16, height: u16) {
 		self.width = width as usize;
 		self.height = height as usize;
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn width(&self) -> usize {
 		self.width
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn height(&self) -> usize {
 		self.height
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn is_minimum_view_width(&self) -> bool {
 		self.width > MINIMUM_COMPACT_WINDOW_WIDTH
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn is_minimum_view_height(&self) -> bool {
 		self.height > MINIMUM_WINDOW_HEIGHT
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn is_full_width(&self) -> bool {
 		self.width >= MINIMUM_FULL_WINDOW_WIDTH
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn is_window_too_small(&self) -> bool {
 		!self.is_minimum_view_width() || !self.is_minimum_view_height()
 	}

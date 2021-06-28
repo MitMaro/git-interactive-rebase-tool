@@ -2,6 +2,7 @@ use input::{Event, MetaEvent};
 
 use super::ViewSender;
 
+#[inline]
 pub fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) -> Option<Event> {
 	match event {
 		Event::Meta(meta_event) if meta_event == MetaEvent::ScrollLeft => view_sender.scroll_left(),

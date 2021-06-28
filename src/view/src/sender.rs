@@ -24,6 +24,7 @@ fn map_send_err(_: mpsc::SendError<ViewAction>) -> Error {
 }
 
 impl Sender {
+	#[inline]
 	pub fn new(sender: mpsc::Sender<ViewAction>) -> Self {
 		Self {
 			poisoned: Arc::new(AtomicBool::new(false)),
@@ -32,31 +33,38 @@ impl Sender {
 		}
 	}
 
+	#[inline]
 	pub fn clone_poisoned(&self) -> Arc<AtomicBool> {
 		Arc::clone(&self.poisoned)
 	}
 
+	#[inline]
 	pub fn is_poisoned(&self) -> bool {
 		self.poisoned.load(Ordering::Relaxed)
 	}
 
+	#[inline]
 	pub fn clone_render_slice(&self) -> Arc<Mutex<RenderSlice>> {
 		Arc::clone(&self.render_slice)
 	}
 
+	#[inline]
 	pub fn start(&self) -> Result<()> {
 		self.sender.send(ViewAction::Start).map_err(map_send_err)
 	}
 
+	#[inline]
 	pub fn stop(&self) -> Result<()> {
 		self.sender.send(ViewAction::Stop).map_err(map_send_err)
 	}
 
+	#[inline]
 	pub fn end(&self) -> Result<()> {
 		self.stop()?;
 		self.sender.send(ViewAction::End).map_err(map_send_err)
 	}
 
+	#[inline]
 	pub fn scroll_up(&self) {
 		self.render_slice
 			.lock()
@@ -65,6 +73,7 @@ impl Sender {
 			.record_scroll_up();
 	}
 
+	#[inline]
 	pub fn scroll_down(&self) {
 		self.render_slice
 			.lock()
@@ -73,6 +82,7 @@ impl Sender {
 			.record_scroll_down();
 	}
 
+	#[inline]
 	pub fn scroll_left(&self) {
 		self.render_slice
 			.lock()
@@ -81,6 +91,7 @@ impl Sender {
 			.record_scroll_left();
 	}
 
+	#[inline]
 	pub fn scroll_right(&self) {
 		self.render_slice
 			.lock()
@@ -89,6 +100,7 @@ impl Sender {
 			.record_scroll_right();
 	}
 
+	#[inline]
 	pub fn scroll_page_up(&self) {
 		self.render_slice
 			.lock()
@@ -97,6 +109,7 @@ impl Sender {
 			.record_page_up();
 	}
 
+	#[inline]
 	pub fn scroll_page_down(&self) {
 		self.render_slice
 			.lock()
@@ -105,6 +118,7 @@ impl Sender {
 			.record_page_down();
 	}
 
+	#[inline]
 	pub fn resize(&self, width: u16, height: u16) {
 		self.render_slice
 			.lock()
@@ -113,6 +127,7 @@ impl Sender {
 			.record_resize(width as usize, height as usize);
 	}
 
+	#[inline]
 	pub fn render(&self, view_data: &ViewData) -> Result<()> {
 		self.render_slice
 			.lock()
