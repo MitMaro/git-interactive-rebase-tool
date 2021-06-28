@@ -12,17 +12,20 @@ pub struct ViewLine {
 
 impl ViewLine {
 	#[must_use]
+	#[inline]
 	pub fn new_empty_line() -> Self {
 		Self::new_with_pinned_segments(vec![], 1)
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn new_pinned(segments: Vec<LineSegment>) -> Self {
 		let segments_length = segments.len();
 		Self::new_with_pinned_segments(segments, segments_length)
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
 		Self {
 			selected: false,
@@ -33,18 +36,21 @@ impl ViewLine {
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
 		self
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn set_padding(mut self, c: char) -> Self {
 		self.padding = Some(LineSegment::new(String::from(c).as_str()));
 		self
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn set_padding_with_color_and_style(
 		mut self,
 		c: char,
@@ -64,16 +70,19 @@ impl ViewLine {
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn get_number_of_pinned_segment(&self) -> usize {
 		self.pinned_segments
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn get_segments(&self) -> &Vec<LineSegment> {
 		&self.segments
 	}
 
 	#[must_use]
+	#[inline]
 	pub const fn get_selected(&self) -> bool {
 		self.selected
 	}
@@ -84,24 +93,28 @@ impl ViewLine {
 }
 
 impl From<&str> for ViewLine {
+	#[inline]
 	fn from(line: &str) -> Self {
 		Self::from(LineSegment::new(line))
 	}
 }
 
 impl From<String> for ViewLine {
+	#[inline]
 	fn from(line: String) -> Self {
 		Self::from(LineSegment::new(line.as_str()))
 	}
 }
 
 impl From<LineSegment> for ViewLine {
+	#[inline]
 	fn from(line_segment: LineSegment) -> Self {
 		Self::from(vec![line_segment])
 	}
 }
 
 impl From<Vec<LineSegment>> for ViewLine {
+	#[inline]
 	fn from(line_segment: Vec<LineSegment>) -> Self {
 		Self::new_with_pinned_segments(line_segment, 0)
 	}

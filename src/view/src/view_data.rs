@@ -18,6 +18,7 @@ pub struct ViewData {
 }
 
 impl ViewData {
+	#[inline]
 	pub fn new<C>(callback: C) -> Self
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let mut view_data = Self {
@@ -39,10 +40,12 @@ impl ViewData {
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn is_empty(&self) -> bool {
 		self.lines.is_empty() && self.lines_leading.is_empty() && self.lines_trailing.is_empty()
 	}
 
+	#[inline]
 	pub fn update_view_data<C>(&mut self, callback: C)
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let modified = {
