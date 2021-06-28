@@ -2,13 +2,19 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent};
 
 use super::MetaEvent;
 
+/// An event, either from an input device, system change or action event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Event {
+	/// A keyboard event.
 	Key(KeyEvent),
+	/// An action event.
 	Meta(MetaEvent),
+	/// A mouse event.
 	Mouse(MouseEvent),
+	/// An empty event.
 	None,
+	/// A terminal resize event.
 	Resize(u16, u16),
 }
 

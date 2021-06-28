@@ -1,38 +1,71 @@
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
 
+/// Represents a mapping between an input event and an action.
 #[derive(Debug)]
 pub struct KeyBindings {
+	/// Key bindings for aborting.
 	pub abort: Vec<Event>,
+	/// Key bindings for the break action.
 	pub action_break: Vec<Event>,
+	/// Key bindings for the drop action.
 	pub action_drop: Vec<Event>,
+	/// Key bindings for the edit action.
 	pub action_edit: Vec<Event>,
+	/// Key bindings for the fixup action.
 	pub action_fixup: Vec<Event>,
+	/// Key bindings for the pick action.
 	pub action_pick: Vec<Event>,
+	/// Key bindings for the reword action.
 	pub action_reword: Vec<Event>,
+	/// Key bindings for the squash action.
 	pub action_squash: Vec<Event>,
+	/// Key bindings for positive confirmation.
 	pub confirm_yes: Vec<Event>,
+	/// Key bindings for editing.
 	pub edit: Vec<Event>,
+	/// Key bindings for forcing an abort.
 	pub force_abort: Vec<Event>,
+	/// Key bindings for forcing a rebase.
 	pub force_rebase: Vec<Event>,
+	/// Key bindings for showing help.
 	pub help: Vec<Event>,
+	/// Key bindings for inserting a line.
 	pub insert_line: Vec<Event>,
+	/// Key bindings for moving down.
 	pub move_down: Vec<Event>,
+	/// Key bindings for moving down a step.
 	pub move_down_step: Vec<Event>,
+	/// Key bindings for moving to the end.
 	pub move_end: Vec<Event>,
+	/// Key bindings for moving to the start.
 	pub move_home: Vec<Event>,
+	/// Key bindings for moving to the left.
 	pub move_left: Vec<Event>,
+	/// Key bindings for moving to the right.
 	pub move_right: Vec<Event>,
+	/// Key bindings for moving the selection down.
 	pub move_selection_down: Vec<Event>,
+	/// Key bindings for moving the selection up.
 	pub move_selection_up: Vec<Event>,
+	/// Key bindings for moving up.
 	pub move_up: Vec<Event>,
+	/// Key bindings for moving up a step.
 	pub move_up_step: Vec<Event>,
+	/// Key bindings for opening the external editor.
 	pub open_in_external_editor: Vec<Event>,
+	/// Key bindings for rebasing.
 	pub rebase: Vec<Event>,
+	/// Key bindings for redoing a change.
 	pub redo: Vec<Event>,
+	/// Key bindings for removing a line.
 	pub remove_line: Vec<Event>,
+	/// Key bindings for showing a commit.
 	pub show_commit: Vec<Event>,
+	/// Key bindings for showing a diff.
 	pub show_diff: Vec<Event>,
+	/// Key bindings for toggling visual mode.
 	pub toggle_visual_mode: Vec<Event>,
+	/// Key bindings for undoing a change.
 	pub undo: Vec<Event>,
 }
 
@@ -87,6 +120,7 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 }
 
 impl KeyBindings {
+	/// Create a new instance from the configuration keybindings.
 	#[inline]
 	#[must_use]
 	pub fn new(key_bindings: &config::KeyBindings) -> Self {
