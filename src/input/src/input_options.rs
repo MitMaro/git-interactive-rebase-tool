@@ -1,3 +1,4 @@
+/// Represents options for parsing input events.
 #[derive(Copy, Clone, Debug)]
 pub struct InputOptions {
 	pub(super) help: bool,
@@ -7,6 +8,7 @@ pub struct InputOptions {
 }
 
 impl InputOptions {
+	/// Create an new instance using defaults.
 	#[inline]
 	#[must_use]
 	pub const fn new() -> Self {
@@ -18,6 +20,7 @@ impl InputOptions {
 		}
 	}
 
+	/// Enable or disable the processing of the help key event. Defaults to `false`.
 	#[inline]
 	#[must_use]
 	pub const fn help(mut self, val: bool) -> Self {
@@ -25,6 +28,7 @@ impl InputOptions {
 		self
 	}
 
+	/// Enable or disable the processing of cursor movement key events. Defaults to `false`.
 	#[inline]
 	#[must_use]
 	pub const fn movement(mut self, val: bool) -> Self {
@@ -32,6 +36,7 @@ impl InputOptions {
 		self
 	}
 
+	/// Enable or disable the processing of the resize event. Defaults to `true`.
 	#[inline]
 	#[must_use]
 	pub const fn resize(mut self, val: bool) -> Self {
@@ -39,6 +44,7 @@ impl InputOptions {
 		self
 	}
 
+	/// Enable or disable the processing of undo and redo key events. Defaults to `false`.
 	#[inline]
 	#[must_use]
 	pub const fn undo_redo(mut self, val: bool) -> Self {

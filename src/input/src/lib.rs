@@ -49,7 +49,8 @@
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
 	clippy::implicit_return,
-	clippy::missing_docs_in_private_items
+	clippy::missing_docs_in_private_items,
+	clippy::tabs_in_doc_comments
 )]
 #![deny(
 	rustdoc::bare_urls,
@@ -62,8 +63,6 @@
 )]
 // LINT-REPLACE-END
 #![allow(
-	missing_docs,
-	rustdoc::missing_crate_level_docs,
 	clippy::else_if_without_else,
 	clippy::exhaustive_structs,
 	clippy::indexing_slicing,
@@ -71,6 +70,16 @@
 	clippy::unwrap_used,
 	clippy::wildcard_enum_match_arm
 )]
+
+//! Git Interactive Rebase Tool - Input Module
+//!
+//! # Description
+//! This module is used to handle working with input events.
+//!
+//! ## Test Utilities
+//! To facilitate testing the usages of this crate, a set of testing utilities are provided. Since
+//! these utilities are not tested, and often are optimized for developer experience than
+//! performance should only be used in test code.
 
 mod event;
 mod event_handler;

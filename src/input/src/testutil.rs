@@ -1,3 +1,4 @@
+//! Utilities for writing tests that interact with input events.
 use std::cell::RefCell;
 
 use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent};
@@ -82,6 +83,7 @@ fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
 	}
 }
 
+/// Create a mocked version of `KeyBindings`.
 #[inline]
 #[must_use]
 pub fn create_test_keybindings() -> KeyBindings {
@@ -131,13 +133,17 @@ pub fn create_test_keybindings() -> KeyBindings {
 	}
 }
 
+/// Context for a `EventHandler` based test.
 #[allow(missing_debug_implementations)]
 pub struct TestContext {
+	/// The `EventHandler` instance.
 	pub event_handler: EventHandler,
+	/// The number of known available events.
 	pub number_events: usize,
 }
 
 impl TestContext {
+	/// For each known event, call the callback with the `EventHandler` instance.
 	#[inline]
 	pub fn for_each_event<C, T>(&self, mut callback: C) -> Vec<T>
 	where C: FnMut(&EventHandler) -> T {
@@ -149,6 +155,15 @@ impl TestContext {
 	}
 }
 
+/// Provide an `EventHandler` instance for use within a test.
+///
+/// ```
+/// use input::{testutil::with_event_handler, Event, MetaEvent};
+///
+/// with_event_handler(&[Event::Meta(MetaEvent::Abort)], |context| {
+/// 	context.for_each_event(|_event_handler| {});
+/// });
+/// ```
 #[inline]
 pub fn with_event_handler<C>(events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
