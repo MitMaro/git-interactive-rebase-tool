@@ -5,6 +5,7 @@ use anyhow::Result;
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
 use crate::{key_bindings::KeyBindings, InputOptions, MetaEvent};
 
+/// A handler for reading and processing events.
 #[allow(missing_debug_implementations)]
 pub struct EventHandler {
 	event_provider: Box<dyn Fn() -> Result<Option<crossterm::event::Event>>>,
@@ -13,6 +14,7 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
+	/// Create a new instance of the `EventHandler`.
 	#[inline]
 	pub fn new<F: 'static>(event_provider: F, key_bindings: KeyBindings) -> Self
 	where F: Fn() -> Result<Option<crossterm::event::Event>> {
@@ -23,6 +25,7 @@ impl EventHandler {
 		}
 	}
 
+	/// Poll for the next available event.
 	#[inline]
 	pub fn poll_event(&self) -> Event {
 		if let Some(event) = self.event_queue.borrow_mut().pop_front() {
@@ -36,11 +39,13 @@ impl EventHandler {
 		}
 	}
 
+	/// Push an event to the events stack.
 	#[inline]
 	pub fn push_event(&self, event: Event) {
 		self.event_queue.borrow_mut().push_back(event);
 	}
 
+	/// Read and handle an event.
 	#[inline]
 	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn read_event<F>(&self, input_options: &InputOptions, callback: F) -> Event
