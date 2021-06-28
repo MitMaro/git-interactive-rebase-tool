@@ -11,6 +11,7 @@ use super::{action::ViewAction, sender::Sender, View};
 
 const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 
+#[inline]
 pub fn spawn_view_thread<T: Tui + Send + 'static>(view: View<T>) -> (Sender, JoinHandle<()>) {
 	let (sender, receiver) = mpsc::channel();
 	let view_sender = Sender::new(sender.clone());

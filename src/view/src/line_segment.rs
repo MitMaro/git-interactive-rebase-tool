@@ -52,16 +52,19 @@ pub struct LineSegment {
 
 impl LineSegment {
 	#[must_use]
+	#[inline]
 	pub fn new(text: &str) -> Self {
 		Self::new_with_color_and_style(text, DisplayColor::Normal, false, false, false)
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn new_with_color(text: &str, color: DisplayColor) -> Self {
 		Self::new_with_color_and_style(text, color, false, false, false)
 	}
 
 	#[must_use]
+	#[inline]
 	pub fn new_with_color_and_style(
 		text: &str,
 		color: DisplayColor,
