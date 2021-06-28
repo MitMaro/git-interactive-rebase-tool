@@ -1,7 +1,7 @@
 use input::testutil::with_event_handler;
+use view::assert_rendered_output;
 
 use super::*;
-use crate::assert_rendered_output;
 
 #[test]
 fn with_description() {

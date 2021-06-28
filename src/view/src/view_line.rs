@@ -11,16 +11,19 @@ pub struct ViewLine {
 }
 
 impl ViewLine {
-	pub(crate) fn new_empty_line() -> Self {
+	#[must_use]
+	pub fn new_empty_line() -> Self {
 		Self::new_with_pinned_segments(vec![], 1)
 	}
 
-	pub(crate) fn new_pinned(segments: Vec<LineSegment>) -> Self {
+	#[must_use]
+	pub fn new_pinned(segments: Vec<LineSegment>) -> Self {
 		let segments_length = segments.len();
 		Self::new_with_pinned_segments(segments, segments_length)
 	}
 
-	pub(crate) fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
+	#[must_use]
+	pub fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
 		Self {
 			selected: false,
 			segments,
@@ -29,17 +32,20 @@ impl ViewLine {
 		}
 	}
 
-	pub(crate) const fn set_selected(mut self, selected: bool) -> Self {
+	#[must_use]
+	pub const fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
 		self
 	}
 
-	pub(crate) fn set_padding(mut self, c: char) -> Self {
+	#[must_use]
+	pub fn set_padding(mut self, c: char) -> Self {
 		self.padding = Some(LineSegment::new(String::from(c).as_str()));
 		self
 	}
 
-	pub(crate) fn set_padding_with_color_and_style(
+	#[must_use]
+	pub fn set_padding_with_color_and_style(
 		mut self,
 		c: char,
 		color: DisplayColor,
@@ -57,42 +63,45 @@ impl ViewLine {
 		self
 	}
 
-	pub(crate) const fn get_number_of_pinned_segment(&self) -> usize {
+	#[must_use]
+	pub const fn get_number_of_pinned_segment(&self) -> usize {
 		self.pinned_segments
 	}
 
-	pub(crate) const fn get_segments(&self) -> &Vec<LineSegment> {
+	#[must_use]
+	pub const fn get_segments(&self) -> &Vec<LineSegment> {
 		&self.segments
 	}
 
-	pub(crate) const fn get_selected(&self) -> bool {
+	#[must_use]
+	pub const fn get_selected(&self) -> bool {
 		self.selected
 	}
 
-	pub(super) const fn get_padding(&self) -> &Option<LineSegment> {
+	pub(crate) const fn get_padding(&self) -> &Option<LineSegment> {
 		&self.padding
 	}
 }
 
-impl<'a> From<&'a str> for ViewLine {
-	fn from(line: &'a str) -> Self {
+impl From<&str> for ViewLine {
+	fn from(line: &str) -> Self {
 		Self::from(LineSegment::new(line))
 	}
 }
 
-impl<'a> From<String> for ViewLine {
+impl From<String> for ViewLine {
 	fn from(line: String) -> Self {
 		Self::from(LineSegment::new(line.as_str()))
 	}
 }
 
-impl<'a> From<LineSegment> for ViewLine {
+impl From<LineSegment> for ViewLine {
 	fn from(line_segment: LineSegment) -> Self {
 		Self::from(vec![line_segment])
 	}
 }
 
-impl<'a> From<Vec<LineSegment>> for ViewLine {
+impl From<Vec<LineSegment>> for ViewLine {
 	fn from(line_segment: Vec<LineSegment>) -> Self {
 		Self::new_with_pinned_segments(line_segment, 0)
 	}

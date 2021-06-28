@@ -8,10 +8,11 @@ use std::{
 	mem,
 };
 
-pub(super) use render_action::RenderAction;
+pub(crate) use render_action::RenderAction;
 
 use super::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
 
+#[derive(Debug)]
 pub struct RenderSlice {
 	actions: VecDeque<RenderAction>,
 	height: usize,
@@ -32,7 +33,7 @@ pub struct RenderSlice {
 }
 
 impl RenderSlice {
-	pub(crate) fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			actions: VecDeque::new(),
 			height: 0,
@@ -53,35 +54,35 @@ impl RenderSlice {
 		}
 	}
 
-	pub(crate) fn record_scroll_up(&mut self) {
+	pub fn record_scroll_up(&mut self) {
 		self.actions.push_back(RenderAction::ScrollUp);
 	}
 
-	pub(crate) fn record_scroll_down(&mut self) {
+	pub fn record_scroll_down(&mut self) {
 		self.actions.push_back(RenderAction::ScrollDown);
 	}
 
-	pub(crate) fn record_page_up(&mut self) {
+	pub fn record_page_up(&mut self) {
 		self.actions.push_back(RenderAction::PageUp);
 	}
 
-	pub(crate) fn record_page_down(&mut self) {
+	pub fn record_page_down(&mut self) {
 		self.actions.push_back(RenderAction::PageDown);
 	}
 
-	pub(crate) fn record_scroll_left(&mut self) {
+	pub fn record_scroll_left(&mut self) {
 		self.actions.push_back(RenderAction::ScrollLeft);
 	}
 
-	pub(crate) fn record_scroll_right(&mut self) {
+	pub fn record_scroll_right(&mut self) {
 		self.actions.push_back(RenderAction::ScrollRight);
 	}
 
-	pub(crate) fn record_resize(&mut self, width: usize, height: usize) {
+	pub fn record_resize(&mut self, width: usize, height: usize) {
 		self.actions.push_back(RenderAction::Resize(width, height));
 	}
 
-	pub(crate) fn sync_view_data(&mut self, view_data: &ViewData) {
+	pub fn sync_view_data(&mut self, view_data: &ViewData) {
 		let cache_expired = self.cache_expired(view_data);
 		// scroll position depends on padding, so if the view has changed it needs to be updated early
 		if cache_expired {
@@ -105,7 +106,7 @@ impl RenderSlice {
 		}
 	}
 
-	pub(super) const fn should_show_scroll_bar(&self) -> bool {
+	pub(crate) const fn should_show_scroll_bar(&self) -> bool {
 		self.should_show_scrollbar
 	}
 
@@ -114,7 +115,7 @@ impl RenderSlice {
 		clippy::cast_possible_truncation,
 		clippy::cast_sign_loss
 	)]
-	pub(super) fn get_scroll_index(&self) -> usize {
+	pub(crate) fn get_scroll_index(&self) -> usize {
 		if self.lines_count == 0 || self.scroll_position.get_top_position() == 0 {
 			return 0;
 		}
@@ -160,31 +161,30 @@ impl RenderSlice {
 		slope.mul_add(value - input_start, output_start).round() as usize
 	}
 
-	pub(super) const fn show_title(&self) -> bool {
+	pub(crate) const fn show_title(&self) -> bool {
 		self.show_title
 	}
 
-	pub(super) const fn show_help(&self) -> bool {
+	pub(crate) const fn show_help(&self) -> bool {
 		self.show_help
 	}
 
-	pub(super) const fn get_leading_lines_count(&self) -> usize {
+	pub(crate) const fn get_leading_lines_count(&self) -> usize {
 		self.lines_leading_count
 	}
 
-	pub(super) const fn get_trailing_lines_count(&self) -> usize {
+	pub(crate) const fn get_trailing_lines_count(&self) -> usize {
 		self.lines_trailing_count
 	}
 
-	pub(super) const fn get_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn get_lines(&self) -> &Vec<ViewLine> {
 		&self.lines
 	}
 
-	pub(super) const fn get_version(&self) -> u32 {
+	pub(crate) const fn get_version(&self) -> u32 {
 		self.version
 	}
 
-	#[cfg(test)]
 	pub(super) const fn get_actions(&self) -> &VecDeque<RenderAction> {
 		&self.actions
 	}
@@ -220,7 +220,8 @@ impl RenderSlice {
 					.remove(&String::from(name))
 					.unwrap_or_else(ScrollPosition::new),
 			);
-			self.scroll_position_cache
+			let _ = self
+				.scroll_position_cache
 				.insert(String::from(self.view_data_name.as_str()), previous_scroll_position);
 			let version = view_data.get_scroll_version();
 			if self.scroll_position.get_version() != version || !view_data.retain_scroll_position() {

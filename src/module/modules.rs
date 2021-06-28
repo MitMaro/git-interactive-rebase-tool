@@ -1,12 +1,10 @@
 use std::collections::HashMap;
 
 use input::EventHandler;
+use view::{RenderContext, ViewData, ViewSender};
 
 use super::{Module, ProcessResult, State};
-use crate::{
-	todo_file::TodoFile,
-	view::{RenderContext, ViewData, ViewSender},
-};
+use crate::todo_file::TodoFile;
 
 pub struct Modules {
 	pub modules: HashMap<State, Box<dyn Module>>,

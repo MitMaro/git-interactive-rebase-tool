@@ -20,7 +20,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::view::testutil::with_view_sender;
+	use crate::testutil::with_view_sender;
 
 	#[rstest(
 		meta_event,

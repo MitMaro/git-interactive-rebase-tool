@@ -48,6 +48,7 @@ fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bo
 	}
 }
 
+#[must_use]
 pub fn render_view_line(view_line: &ViewLine) -> String {
 	let mut line = String::new();
 
@@ -176,11 +177,11 @@ pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[
 macro_rules! assert_rendered_output {
 	($view_data:expr) => {
 		let expected: Vec<String> = vec![];
-		crate::view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
+		view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
 	};
 	($view_data:expr, $($arg:expr),*) => {
 		let expected = vec![$( String::from($arg), )*];
-		crate::view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
+		view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
 	};
 }
 
@@ -245,8 +246,8 @@ fn assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[Stri
 	}
 }
 
-fn action_to_string(action: &ViewAction) -> String {
-	String::from(match *action {
+fn action_to_string(action: ViewAction) -> String {
+	String::from(match action {
 		ViewAction::Stop => "Stop",
 		ViewAction::Refresh => "Refresh",
 		ViewAction::Render => "Render",
@@ -255,6 +256,7 @@ fn action_to_string(action: &ViewAction) -> String {
 	})
 }
 
+#[derive(Debug)]
 pub struct TestContext {
 	pub sender: ViewSender,
 	pub receiver: Receiver<ViewAction>,
@@ -288,7 +290,7 @@ impl TestContext {
 
 		for message in messages {
 			if let Ok(action) = self.receiver.recv_timeout(Duration::new(1, 0)) {
-				let action_name = action_to_string(&action);
+				let action_name = action_to_string(action);
 				if message == action_name {
 					error_output.push(format!(" {}", message));
 				}
@@ -306,7 +308,7 @@ impl TestContext {
 		// wait some time for any other actions that were sent that should have not been
 		while let Ok(action) = self.receiver.recv_timeout(Duration::new(0, 10000)) {
 			mismatch = true;
-			error_output.push(format!("+{}", action_to_string(&action)));
+			error_output.push(format!("+{}", action_to_string(action)));
 		}
 
 		if mismatch {
