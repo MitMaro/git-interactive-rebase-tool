@@ -12,7 +12,7 @@ use anyhow::{anyhow, Error, Result};
 
 use super::{action::ViewAction, render_slice::RenderSlice, view_data::ViewData};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Sender {
 	poisoned: Arc<AtomicBool>,
 	sender: mpsc::Sender<ViewAction>,
@@ -24,7 +24,7 @@ fn map_send_err(_: mpsc::SendError<ViewAction>) -> Error {
 }
 
 impl Sender {
-	pub(crate) fn new(sender: mpsc::Sender<ViewAction>) -> Self {
+	pub fn new(sender: mpsc::Sender<ViewAction>) -> Self {
 		Self {
 			poisoned: Arc::new(AtomicBool::new(false)),
 			sender,
@@ -32,32 +32,32 @@ impl Sender {
 		}
 	}
 
-	pub(crate) fn clone_poisoned(&self) -> Arc<AtomicBool> {
+	pub fn clone_poisoned(&self) -> Arc<AtomicBool> {
 		Arc::clone(&self.poisoned)
 	}
 
-	pub(crate) fn is_poisoned(&self) -> bool {
+	pub fn is_poisoned(&self) -> bool {
 		self.poisoned.load(Ordering::Relaxed)
 	}
 
-	pub(crate) fn clone_render_slice(&self) -> Arc<Mutex<RenderSlice>> {
+	pub fn clone_render_slice(&self) -> Arc<Mutex<RenderSlice>> {
 		Arc::clone(&self.render_slice)
 	}
 
-	pub(crate) fn start(&self) -> Result<()> {
+	pub fn start(&self) -> Result<()> {
 		self.sender.send(ViewAction::Start).map_err(map_send_err)
 	}
 
-	pub(crate) fn stop(&self) -> Result<()> {
+	pub fn stop(&self) -> Result<()> {
 		self.sender.send(ViewAction::Stop).map_err(map_send_err)
 	}
 
-	pub(crate) fn end(&self) -> Result<()> {
+	pub fn end(&self) -> Result<()> {
 		self.stop()?;
 		self.sender.send(ViewAction::End).map_err(map_send_err)
 	}
 
-	pub(crate) fn scroll_up(&self) {
+	pub fn scroll_up(&self) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -65,7 +65,7 @@ impl Sender {
 			.record_scroll_up();
 	}
 
-	pub(crate) fn scroll_down(&self) {
+	pub fn scroll_down(&self) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -73,7 +73,7 @@ impl Sender {
 			.record_scroll_down();
 	}
 
-	pub(crate) fn scroll_left(&self) {
+	pub fn scroll_left(&self) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -81,7 +81,7 @@ impl Sender {
 			.record_scroll_left();
 	}
 
-	pub(crate) fn scroll_right(&self) {
+	pub fn scroll_right(&self) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -89,7 +89,7 @@ impl Sender {
 			.record_scroll_right();
 	}
 
-	pub(crate) fn scroll_page_up(&self) {
+	pub fn scroll_page_up(&self) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -97,7 +97,7 @@ impl Sender {
 			.record_page_up();
 	}
 
-	pub(crate) fn scroll_page_down(&self) {
+	pub fn scroll_page_down(&self) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -105,7 +105,7 @@ impl Sender {
 			.record_page_down();
 	}
 
-	pub(crate) fn resize(&self, width: u16, height: u16) {
+	pub fn resize(&self, width: u16, height: u16) {
 		self.render_slice
 			.lock()
 			.expect("Unable to lock render slice")
@@ -113,7 +113,7 @@ impl Sender {
 			.record_resize(width as usize, height as usize);
 	}
 
-	pub(crate) fn render(&self, view_data: &ViewData) -> Result<()> {
+	pub fn render(&self, view_data: &ViewData) -> Result<()> {
 		self.render_slice
 			.lock()
 			.map_err(|_err| anyhow!("Unable to lock render slice"))?
@@ -127,7 +127,7 @@ impl Sender {
 mod tests {
 	use std::sync::atomic::Ordering;
 
-	use crate::view::{
+	use crate::{
 		testutil::{render_view_line, with_view_sender},
 		ViewData,
 		ViewLine,

@@ -5,12 +5,10 @@ mod state;
 
 use anyhow::Error;
 use input::EventHandler;
+use view::{RenderContext, ViewData, ViewSender};
 
 pub use self::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State};
-use crate::{
-	todo_file::TodoFile,
-	view::{RenderContext, ViewData, ViewSender},
-};
+use crate::todo_file::TodoFile;
 
 #[cfg(test)]
 pub mod testutil;

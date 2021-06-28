@@ -5,13 +5,13 @@ mod line_type;
 mod tests;
 
 use input::EventHandler;
+use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
 use crate::{
 	components::{choice::Choice, edit::Edit},
 	insert::{insert_state::InsertState, line_type::LineType},
 	module::{Module, ProcessResult, State},
 	todo_file::{Line, TodoFile},
-	view::{RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 pub struct Insert {

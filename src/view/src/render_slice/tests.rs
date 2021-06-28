@@ -1,7 +1,7 @@
 use display::DisplayColor;
 
 use super::*;
-use crate::view::testutil::{_assert_rendered_output, render_view_line};
+use crate::testutil::{_assert_rendered_output, render_view_line};
 
 fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 	let mut output = vec![];

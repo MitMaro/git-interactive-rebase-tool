@@ -1,10 +1,10 @@
 use input::EventHandler;
+use view::{RenderContext, ViewData, ViewSender};
 
 use crate::{
 	components::confirm::{Confirm, Confirmed},
 	module::{ExitStatus, Module, ProcessResult, State},
 	todo_file::TodoFile,
-	view::{RenderContext, ViewData, ViewSender},
 };
 
 pub struct ConfirmAbort {
@@ -49,9 +49,10 @@ impl ConfirmAbort {
 #[cfg(test)]
 mod tests {
 	use input::{Event, KeyCode, MetaEvent};
+	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, assert_rendered_output, process::testutil::process_module_test};
+	use crate::{assert_process_result, process::testutil::process_module_test};
 
 	#[test]
 	fn build_view_data() {

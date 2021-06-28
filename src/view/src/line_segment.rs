@@ -18,7 +18,7 @@ fn grapheme_column_width(s: &str) -> usize {
 	UnicodeWidthStr::width(s)
 }
 
-pub struct SegmentPartial {
+pub(crate) struct SegmentPartial {
 	content: String,
 	length: usize,
 }
@@ -31,11 +31,11 @@ impl SegmentPartial {
 		}
 	}
 
-	pub(super) fn get_content(&self) -> &str {
+	pub(crate) fn get_content(&self) -> &str {
 		self.content.as_str()
 	}
 
-	pub(super) const fn get_length(&self) -> usize {
+	pub(crate) const fn get_length(&self) -> usize {
 		self.length
 	}
 }
@@ -51,15 +51,18 @@ pub struct LineSegment {
 }
 
 impl LineSegment {
-	pub(crate) fn new(text: &str) -> Self {
+	#[must_use]
+	pub fn new(text: &str) -> Self {
 		Self::new_with_color_and_style(text, DisplayColor::Normal, false, false, false)
 	}
 
-	pub(crate) fn new_with_color(text: &str, color: DisplayColor) -> Self {
+	#[must_use]
+	pub fn new_with_color(text: &str, color: DisplayColor) -> Self {
 		Self::new_with_color_and_style(text, color, false, false, false)
 	}
 
-	pub(crate) fn new_with_color_and_style(
+	#[must_use]
+	pub fn new_with_color_and_style(
 		text: &str,
 		color: DisplayColor,
 		dim: bool,
@@ -76,31 +79,31 @@ impl LineSegment {
 		}
 	}
 
-	pub(super) fn get_content(&self) -> &str {
+	pub(crate) fn get_content(&self) -> &str {
 		self.text.as_str()
 	}
 
-	pub(super) const fn get_color(&self) -> DisplayColor {
+	pub(crate) const fn get_color(&self) -> DisplayColor {
 		self.color
 	}
 
-	pub(super) const fn is_dimmed(&self) -> bool {
+	pub(crate) const fn is_dimmed(&self) -> bool {
 		self.dim
 	}
 
-	pub(super) const fn is_underlined(&self) -> bool {
+	pub(crate) const fn is_underlined(&self) -> bool {
 		self.underline
 	}
 
-	pub(super) const fn is_reversed(&self) -> bool {
+	pub(crate) const fn is_reversed(&self) -> bool {
 		self.reverse
 	}
 
-	pub(super) const fn get_length(&self) -> usize {
+	pub(crate) const fn get_length(&self) -> usize {
 		self.length
 	}
 
-	pub(super) fn get_partial_segment(&self, left: usize, max_width: usize) -> SegmentPartial {
+	pub(crate) fn get_partial_segment(&self, left: usize, max_width: usize) -> SegmentPartial {
 		let segment_length = unicode_column_width(self.text.as_str());
 
 		// segment is hidden to the left of the line/scroll
@@ -118,7 +121,7 @@ impl LineSegment {
 					false
 				}
 				else {
-					skip_length.replace(value + len);
+					let _ = skip_length.replace(value + len);
 					true
 				}
 			});
@@ -133,7 +136,7 @@ impl LineSegment {
 							false
 						}
 						else {
-							take_length.replace(value + len);
+							let _ = take_length.replace(value + len);
 							true
 						}
 					})

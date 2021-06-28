@@ -4,8 +4,7 @@ use display::DisplayColor;
 use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
-
-use crate::view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
+use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);

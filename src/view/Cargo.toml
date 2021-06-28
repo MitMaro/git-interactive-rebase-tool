@@ -1,0 +1,34 @@
+[package]
+name = "girt-view"
+version = "1.0.0"
+authors = ["Tim Oram <dev@mitmaro.ca>"]
+license = "GPL-3.0-or-later"
+description = "View modules for git-interactive-rebase-tool"
+homepage = "https://gitrebasetool.mitmaro.ca/"
+repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
+edition = "2018"
+keywords = [ "git", "view" ]
+categories = ["view"]
+
+
+[lib]
+name = "view"
+
+[dependencies]
+anyhow = "1.0"
+girt-display = {version = "1.0.0", path = "../display"}
+girt-input = {version = "1.0.0", path = "../input"}
+unicode-segmentation = "1.7.1"
+unicode-width = "0.1.8"
+xi-unicode = "0.3.0"
+
+[dependencies.uuid]
+version = "0.8.1"
+features = ["v4"]
+
+[dev-dependencies]
+girt-config = {version = "1.0.0", path = "../config"}
+rstest = "0.10.0"
+
+[build-dependencies]
+rustc_version = "0.4.0"

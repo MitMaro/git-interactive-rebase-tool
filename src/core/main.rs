@@ -5,6 +5,7 @@ use display::testutil::CrossTerm;
 use display::CrossTerm;
 use display::{Display, Tui};
 use input::{EventHandler, KeyBindings};
+use view::View;
 
 use crate::{
 	confirm_abort::ConfirmAbort,
@@ -18,7 +19,6 @@ use crate::{
 	process::Process,
 	show_commit::ShowCommit,
 	todo_file::TodoFile,
-	view::View,
 	window_size_error::WindowSizeError,
 };
 

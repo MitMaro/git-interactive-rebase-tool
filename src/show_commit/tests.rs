@@ -1,14 +1,13 @@
 use anyhow::anyhow;
 use chrono::Local;
 use rstest::rstest;
+use view::{assert_rendered_output, ViewLine};
 
 use super::*;
 use crate::{
 	assert_process_result,
-	assert_rendered_output,
 	process::testutil::process_module_test,
 	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
-	view::ViewLine,
 };
 
 fn create_minimal_commit() -> Commit {
