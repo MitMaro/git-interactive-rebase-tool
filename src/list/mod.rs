@@ -9,6 +9,7 @@ use std::cmp::min;
 use ::input::{Event, EventHandler, MetaEvent};
 use config::Config;
 use display::DisplayColor;
+use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
 use crate::{
 	components::{edit::Edit, help::Help},
@@ -18,7 +19,6 @@ use crate::{
 	},
 	module::{ExitStatus, Module, ProcessResult, State},
 	todo_file::{Action, EditContext, Line, TodoFile},
-	view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender},
 };
 
 #[derive(Debug, PartialEq)]

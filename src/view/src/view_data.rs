@@ -2,6 +2,7 @@ use uuid::Uuid;
 
 use super::{ViewDataUpdater, ViewLine};
 
+#[derive(Debug)]
 pub struct ViewData {
 	lines: Vec<ViewLine>,
 	lines_leading: Vec<ViewLine>,
@@ -17,7 +18,7 @@ pub struct ViewData {
 }
 
 impl ViewData {
-	pub(crate) fn new<C>(callback: C) -> Self
+	pub fn new<C>(callback: C) -> Self
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let mut view_data = Self {
 			lines: vec![],
@@ -37,11 +38,12 @@ impl ViewData {
 		view_data
 	}
 
-	pub(crate) fn is_empty(&self) -> bool {
+	#[must_use]
+	pub fn is_empty(&self) -> bool {
 		self.lines.is_empty() && self.lines_leading.is_empty() && self.lines_trailing.is_empty()
 	}
 
-	pub(crate) fn update_view_data<C>(&mut self, callback: C)
+	pub fn update_view_data<C>(&mut self, callback: C)
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let modified = {
 			let mut view_data_updater = ViewDataUpdater::new(self);
@@ -53,93 +55,93 @@ impl ViewData {
 		}
 	}
 
-	pub(super) fn clear(&mut self) {
+	pub(crate) fn clear(&mut self) {
 		self.lines_leading.clear();
 		self.lines.clear();
 		self.lines_trailing.clear();
 	}
 
-	pub(super) fn clear_body(&mut self) {
+	pub(crate) fn clear_body(&mut self) {
 		self.lines.clear();
 	}
 
-	pub(super) fn ensure_line_visible(&mut self, row_index: usize) {
+	pub(crate) fn ensure_line_visible(&mut self, row_index: usize) {
 		self.visible_row = Some(row_index);
 	}
 
-	pub(super) fn ensure_column_visible(&mut self, column_index: usize) {
+	pub(crate) fn ensure_column_visible(&mut self, column_index: usize) {
 		self.visible_column = Some(column_index);
 	}
 
-	pub(super) fn set_show_title(&mut self, show: bool) {
+	pub(crate) fn set_show_title(&mut self, show: bool) {
 		self.show_title = show;
 	}
 
-	pub(super) fn set_show_help(&mut self, show: bool) {
+	pub(crate) fn set_show_help(&mut self, show: bool) {
 		self.show_help = show;
 	}
 
-	pub(super) fn push_leading_line(&mut self, view_line: ViewLine) {
+	pub(crate) fn push_leading_line(&mut self, view_line: ViewLine) {
 		self.lines_leading.push(view_line);
 	}
 
-	pub(super) fn push_line(&mut self, view_line: ViewLine) {
+	pub(crate) fn push_line(&mut self, view_line: ViewLine) {
 		self.lines.push(view_line);
 	}
 
-	pub(super) fn push_trailing_line(&mut self, view_line: ViewLine) {
+	pub(crate) fn push_trailing_line(&mut self, view_line: ViewLine) {
 		self.lines_trailing.push(view_line);
 	}
 
-	pub(super) fn set_retain_scroll_position(&mut self, value: bool) {
+	pub(crate) fn set_retain_scroll_position(&mut self, value: bool) {
 		self.retain_scroll_position = value;
 	}
 
-	pub(super) fn reset_scroll_position(&mut self) {
+	pub(crate) fn reset_scroll_position(&mut self) {
 		self.scroll_version = self.scroll_version.wrapping_add(1);
 	}
 
-	pub(super) const fn show_title(&self) -> bool {
+	pub(crate) const fn show_title(&self) -> bool {
 		self.show_title
 	}
 
-	pub(super) const fn show_help(&self) -> bool {
+	pub(crate) const fn show_help(&self) -> bool {
 		self.show_help
 	}
 
-	pub(super) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
 		&self.lines_leading
 	}
 
-	pub(super) const fn get_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn get_lines(&self) -> &Vec<ViewLine> {
 		&self.lines
 	}
 
-	pub(super) const fn get_trailing_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn get_trailing_lines(&self) -> &Vec<ViewLine> {
 		&self.lines_trailing
 	}
 
-	pub(super) const fn get_visible_column(&self) -> &Option<usize> {
+	pub(crate) const fn get_visible_column(&self) -> &Option<usize> {
 		&self.visible_column
 	}
 
-	pub(super) const fn get_visible_row(&self) -> &Option<usize> {
+	pub(crate) const fn get_visible_row(&self) -> &Option<usize> {
 		&self.visible_row
 	}
 
-	pub(super) fn get_name(&self) -> &str {
+	pub(crate) fn get_name(&self) -> &str {
 		self.name.as_str()
 	}
 
-	pub(super) const fn get_version(&self) -> u32 {
+	pub(crate) const fn get_version(&self) -> u32 {
 		self.version
 	}
 
-	pub(super) const fn retain_scroll_position(&self) -> bool {
+	pub(crate) const fn retain_scroll_position(&self) -> bool {
 		self.retain_scroll_position
 	}
 
-	pub(super) const fn get_scroll_version(&self) -> u32 {
+	pub(crate) const fn get_scroll_version(&self) -> u32 {
 		self.scroll_version
 	}
 }

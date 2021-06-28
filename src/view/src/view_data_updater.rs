@@ -1,74 +1,75 @@
 use super::{ViewData, ViewLine};
 
+#[derive(Debug)]
 pub struct ViewDataUpdater<'v> {
 	modified: bool,
 	view_data: &'v mut ViewData,
 }
 
 impl<'v> ViewDataUpdater<'v> {
-	pub(super) fn new(view_data: &'v mut ViewData) -> Self {
+	pub(crate) fn new(view_data: &'v mut ViewData) -> Self {
 		Self {
 			view_data,
 			modified: false,
 		}
 	}
 
-	pub(crate) fn clear(&mut self) {
+	pub fn clear(&mut self) {
 		self.modified = true;
 		self.view_data.clear();
 	}
 
-	pub(crate) fn clear_body(&mut self) {
+	pub fn clear_body(&mut self) {
 		self.modified = true;
 		self.view_data.clear_body();
 	}
 
-	pub(crate) fn ensure_line_visible(&mut self, row_index: usize) {
+	pub fn ensure_line_visible(&mut self, row_index: usize) {
 		self.modified = true;
 		self.view_data.ensure_line_visible(row_index);
 	}
 
-	pub(crate) fn ensure_column_visible(&mut self, column_index: usize) {
+	pub fn ensure_column_visible(&mut self, column_index: usize) {
 		self.modified = true;
 		self.view_data.ensure_column_visible(column_index);
 	}
 
-	pub(crate) fn set_show_title(&mut self, show: bool) {
+	pub fn set_show_title(&mut self, show: bool) {
 		self.modified = true;
 		self.view_data.set_show_title(show);
 	}
 
-	pub(crate) fn set_show_help(&mut self, show: bool) {
+	pub fn set_show_help(&mut self, show: bool) {
 		self.modified = true;
 		self.view_data.set_show_help(show);
 	}
 
-	pub(crate) fn push_leading_line(&mut self, view_line: ViewLine) {
+	pub fn push_leading_line(&mut self, view_line: ViewLine) {
 		self.modified = true;
 		self.view_data.push_leading_line(view_line);
 	}
 
-	pub(crate) fn push_line(&mut self, view_line: ViewLine) {
+	pub fn push_line(&mut self, view_line: ViewLine) {
 		self.modified = true;
 		self.view_data.push_line(view_line);
 	}
 
-	pub(crate) fn push_trailing_line(&mut self, view_line: ViewLine) {
+	pub fn push_trailing_line(&mut self, view_line: ViewLine) {
 		self.modified = true;
 		self.view_data.push_trailing_line(view_line);
 	}
 
-	pub(crate) fn set_retain_scroll_position(&mut self, value: bool) {
+	pub fn set_retain_scroll_position(&mut self, value: bool) {
 		self.modified = true;
 		self.view_data.set_retain_scroll_position(value);
 	}
 
-	pub(crate) fn reset_scroll_position(&mut self) {
+	pub fn reset_scroll_position(&mut self) {
 		self.modified = true;
 		self.view_data.reset_scroll_position();
 	}
 
-	pub(super) const fn is_modified(&self) -> bool {
+	pub(crate) const fn is_modified(&self) -> bool {
 		self.modified
 	}
 }

@@ -3,16 +3,10 @@ use std::{path::Path, sync::atomic::Ordering};
 use anyhow::anyhow;
 use display::{testutil::CrossTerm, Display, Size};
 use input::InputOptions;
+use view::{assert_rendered_output, ViewData};
 
 use super::*;
-use crate::{
-	assert_rendered_output,
-	error::Error,
-	module::Module,
-	process::testutil::process_module_test,
-	view::ViewData,
-	window_size_error::WindowSizeError,
-};
+use crate::{error::Error, module::Module, process::testutil::process_module_test, window_size_error::WindowSizeError};
 
 struct TestModule {
 	pub event_callback: Box<dyn Fn(&EventHandler, &ViewSender, &mut TodoFile) -> ProcessResult>,

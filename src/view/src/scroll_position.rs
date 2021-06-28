@@ -6,7 +6,8 @@ enum ScrollDirection {
 	Right,
 }
 
-pub struct ScrollPosition {
+#[derive(Debug)]
+pub(crate) struct ScrollPosition {
 	left_value: usize,
 	lines_length: usize,
 	max_line_width: usize,
@@ -104,25 +105,25 @@ impl ScrollPosition {
 		self.left_value
 	}
 
-	pub(super) fn set_version(&mut self, version: u32) {
+	pub(crate) fn set_version(&mut self, version: u32) {
 		self.version = version;
 	}
 
-	pub(super) const fn get_version(&self) -> u32 {
+	pub(crate) const fn get_version(&self) -> u32 {
 		self.version
 	}
 
-	pub(super) fn set_lines_length(&mut self, lines_length: usize) {
+	pub(crate) fn set_lines_length(&mut self, lines_length: usize) {
 		self.lines_length = lines_length;
 		self.recalculate_top();
 	}
 
-	pub(super) fn set_max_line_length(&mut self, max_line_length: usize) {
+	pub(crate) fn set_max_line_length(&mut self, max_line_length: usize) {
 		self.max_line_width = max_line_length;
 		self.recalculate_left();
 	}
 
-	pub(super) fn resize(&mut self, view_height: usize, view_width: usize) {
+	pub(crate) fn resize(&mut self, view_height: usize, view_width: usize) {
 		if self.view_height != view_height {
 			self.view_height = view_height;
 			self.recalculate_top();

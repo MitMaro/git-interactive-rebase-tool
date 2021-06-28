@@ -1,6 +1,5 @@
 use input::{testutil::with_event_handler, Event, EventHandler};
-
-use crate::view::{testutil::with_view_sender, ViewSender};
+use view::{testutil::with_view_sender, ViewSender};
 
 pub struct TestContext {
 	pub event_handler: EventHandler,

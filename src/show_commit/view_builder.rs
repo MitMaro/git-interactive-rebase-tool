@@ -1,13 +1,11 @@
 use display::DisplayColor;
+use view::{LineSegment, ViewDataUpdater, ViewLine};
 
 use super::origin::Origin;
-use crate::{
-	show_commit::{
-		commit::Commit,
-		diff_line::DiffLine,
-		util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
-	},
-	view::{LineSegment, ViewDataUpdater, ViewLine},
+use crate::show_commit::{
+	commit::Commit,
+	diff_line::DiffLine,
+	util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
 };
 
 pub(super) struct ViewBuilderOptions {

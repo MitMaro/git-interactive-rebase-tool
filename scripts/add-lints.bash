@@ -11,6 +11,7 @@ files=(
 	'src/config/src/lib.rs'
 	'src/display/src/lib.rs'
 	'src/input/src/lib.rs'
+	'src/view/src/lib.rs'
 )
 
 content="\
@@ -65,6 +66,7 @@ content="\
 	clippy::blanket_clippy_restriction_lints,
 	clippy::implicit_return,
 	clippy::missing_docs_in_private_items,
+	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments,
 )]
 #![deny(

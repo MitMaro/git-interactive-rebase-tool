@@ -17,6 +17,7 @@ use anyhow::anyhow;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use input::{Event, EventHandler, InputOptions, MetaEvent};
 use lazy_static::lazy_static;
+use view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender};
 
 use crate::{
 	components::help::Help,
@@ -28,7 +29,6 @@ use crate::{
 		view_builder::{ViewBuilder, ViewBuilderOptions},
 	},
 	todo_file::TodoFile,
-	view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender},
 };
 
 lazy_static! {
