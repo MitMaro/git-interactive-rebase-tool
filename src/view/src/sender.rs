@@ -12,6 +12,11 @@ use anyhow::{anyhow, Error, Result};
 
 use super::{action::ViewAction, render_slice::RenderSlice, view_data::ViewData};
 
+fn map_send_err(_: mpsc::SendError<ViewAction>) -> Error {
+	anyhow!("Unable to send data")
+}
+
+/// Represents a message sender and receiver for passing actions between threads.
 #[derive(Clone, Debug)]
 pub struct Sender {
 	poisoned: Arc<AtomicBool>,
@@ -19,11 +24,8 @@ pub struct Sender {
 	render_slice: Arc<Mutex<RenderSlice>>,
 }
 
-fn map_send_err(_: mpsc::SendError<ViewAction>) -> Error {
-	anyhow!("Unable to send data")
-}
-
 impl Sender {
+	/// Create a new instance.
 	#[inline]
 	pub fn new(sender: mpsc::Sender<ViewAction>) -> Self {
 		Self {
@@ -33,37 +35,53 @@ impl Sender {
 		}
 	}
 
+	/// Clone the poisoned flag.
 	#[inline]
 	pub fn clone_poisoned(&self) -> Arc<AtomicBool> {
 		Arc::clone(&self.poisoned)
 	}
 
+	/// Is the sender poisoned, and not longer accepting actions.
 	#[inline]
 	pub fn is_poisoned(&self) -> bool {
 		self.poisoned.load(Ordering::Relaxed)
 	}
 
+	/// Clone the render slice.
 	#[inline]
 	pub fn clone_render_slice(&self) -> Arc<Mutex<RenderSlice>> {
 		Arc::clone(&self.render_slice)
 	}
 
+	/// Queue a start action.
+	///
+	/// # Errors
+	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn start(&self) -> Result<()> {
 		self.sender.send(ViewAction::Start).map_err(map_send_err)
 	}
 
+	/// Queue a stop action.
+	///
+	/// # Errors
+	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn stop(&self) -> Result<()> {
 		self.sender.send(ViewAction::Stop).map_err(map_send_err)
 	}
 
+	/// Queue an end action.
+	///
+	/// # Errors
+	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn end(&self) -> Result<()> {
 		self.stop()?;
 		self.sender.send(ViewAction::End).map_err(map_send_err)
 	}
 
+	/// Queue a scroll up action.
 	#[inline]
 	pub fn scroll_up(&self) {
 		self.render_slice
@@ -73,6 +91,7 @@ impl Sender {
 			.record_scroll_up();
 	}
 
+	/// Queue a scroll down action.
 	#[inline]
 	pub fn scroll_down(&self) {
 		self.render_slice
@@ -82,6 +101,7 @@ impl Sender {
 			.record_scroll_down();
 	}
 
+	/// Queue a scroll left action.
 	#[inline]
 	pub fn scroll_left(&self) {
 		self.render_slice
@@ -91,6 +111,7 @@ impl Sender {
 			.record_scroll_left();
 	}
 
+	/// Queue a scroll right action.
 	#[inline]
 	pub fn scroll_right(&self) {
 		self.render_slice
@@ -100,6 +121,7 @@ impl Sender {
 			.record_scroll_right();
 	}
 
+	/// Queue a scroll up a page action.
 	#[inline]
 	pub fn scroll_page_up(&self) {
 		self.render_slice
@@ -109,6 +131,7 @@ impl Sender {
 			.record_page_up();
 	}
 
+	/// Queue a scroll down a page action.
 	#[inline]
 	pub fn scroll_page_down(&self) {
 		self.render_slice
@@ -118,6 +141,7 @@ impl Sender {
 			.record_page_down();
 	}
 
+	/// Queue a resize action.
 	#[inline]
 	pub fn resize(&self, width: u16, height: u16) {
 		self.render_slice
@@ -127,6 +151,10 @@ impl Sender {
 			.record_resize(width as usize, height as usize);
 	}
 
+	/// Sync the `ViewData` and queue a render action.
+	///
+	/// # Errors
+	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn render(&self, view_data: &ViewData) -> Result<()> {
 		self.render_slice

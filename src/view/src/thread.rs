@@ -11,6 +11,10 @@ use super::{action::ViewAction, sender::Sender, View};
 
 const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 
+/// Spawn a thread that will handle rendering contents to the `View`.
+///
+/// # Panics
+/// This may panic if there is an unexpected error in the processing of the `View`, i.e. a bug.
 #[inline]
 pub fn spawn_view_thread<T: Tui + Send + 'static>(view: View<T>) -> (Sender, JoinHandle<()>) {
 	let (sender, receiver) = mpsc::channel();

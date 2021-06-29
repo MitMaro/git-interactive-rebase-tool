@@ -31,6 +31,7 @@ impl Process {
 		event_handler: EventHandler,
 		view: View<C>,
 	) -> Self {
+		#[allow(deprecated)]
 		let view_size = view.get_view_size();
 		let mut threads = vec![];
 
