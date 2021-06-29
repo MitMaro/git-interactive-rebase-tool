@@ -40,6 +40,7 @@ impl SegmentPartial {
 	}
 }
 
+/// Represents a segment in a larger line.
 #[derive(Clone, Debug)]
 pub struct LineSegment {
 	color: DisplayColor,
@@ -51,18 +52,21 @@ pub struct LineSegment {
 }
 
 impl LineSegment {
+	/// Create a new instance with just the content.
 	#[must_use]
 	#[inline]
 	pub fn new(text: &str) -> Self {
 		Self::new_with_color_and_style(text, DisplayColor::Normal, false, false, false)
 	}
 
+	/// Create a new instance with added color.
 	#[must_use]
 	#[inline]
 	pub fn new_with_color(text: &str, color: DisplayColor) -> Self {
 		Self::new_with_color_and_style(text, color, false, false, false)
 	}
 
+	/// Create a new instance with added color and style.
 	#[must_use]
 	#[inline]
 	pub fn new_with_color_and_style(

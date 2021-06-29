@@ -64,8 +64,6 @@
 )]
 // LINT-REPLACE-END
 #![allow(
-	missing_docs,
-	rustdoc::missing_crate_level_docs,
 	clippy::as_conversions,
 	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
@@ -74,8 +72,6 @@
 	clippy::float_arithmetic,
 	clippy::integer_arithmetic,
 	clippy::integer_division,
-	clippy::missing_errors_doc,
-	clippy::missing_panics_doc,
 	clippy::module_name_repetitions,
 	clippy::new_without_default,
 	clippy::non_ascii_literal,
@@ -84,6 +80,16 @@
 	clippy::unwrap_used,
 	clippy::wildcard_enum_match_arm
 )]
+
+//! Git Interactive Rebase Tool - View Module
+//!
+//! # Description
+//! This module is used to handle working with the view.
+//!
+//! ## Test Utilities
+//! To facilitate testing the usages of this crate, a set of testing utilities are provided. Since
+//! these utilities are not tested, and often are optimized for developer experience than
+//! performance should only be used in test code.
 
 mod action;
 mod line_segment;
@@ -121,6 +127,7 @@ const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
 const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
 
+/// Represents a view.
 #[derive(Debug)]
 pub struct View<C: Tui> {
 	character_vertical_spacing: String,
@@ -130,6 +137,7 @@ pub struct View<C: Tui> {
 }
 
 impl<C: Tui> View<C> {
+	/// Create a new instance of the view.
 	#[inline]
 	pub fn new(display: Display<C>, character_vertical_spacing: &str, help_indicator_key: &str) -> Self {
 		Self {
@@ -140,21 +148,35 @@ impl<C: Tui> View<C> {
 		}
 	}
 
+	/// End processing of the view.
+	///
+	/// # Errors
+	/// Results in an error if the terminal cannot be started.
 	#[inline]
 	pub fn start(&mut self) -> Result<()> {
 		self.display.start()
 	}
 
+	/// End the view processing.
+	///
+	/// # Errors
+	/// Results in an error if the terminal cannot be ended.
 	#[inline]
 	pub fn end(&mut self) -> Result<()> {
 		self.display.end()
 	}
 
+	/// Get the size of the view.
 	#[inline]
+	#[deprecated = "This leaks internals of the Display and will eventually be removed"]
 	pub fn get_view_size(&self) -> Size {
 		self.display.get_window_size()
 	}
 
+	/// Render a slice.
+	///
+	/// # Errors
+	/// Results in an error if there are errors with interacting with the terminal.
 	#[inline]
 	pub fn render(&mut self, render_slice: &RenderSlice) -> Result<()> {
 		let current_render_version = render_slice.get_version();
@@ -162,7 +184,7 @@ impl<C: Tui> View<C> {
 			return Ok(());
 		}
 		self.last_render_version = current_render_version;
-		let view_size = self.get_view_size();
+		let view_size = self.display.get_window_size();
 		let window_height = view_size.height();
 
 		self.display.clear()?;
