@@ -1,3 +1,4 @@
+//! Utilities for writing tests that interact with input events.
 use std::{
 	sync::{mpsc, mpsc::Receiver},
 	time::Duration,
@@ -48,6 +49,7 @@ fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bo
 	}
 }
 
+/// Render a `ViewLine` to a `String` using similar logic that is used in the `View`.
 #[must_use]
 #[inline]
 pub fn render_view_line(view_line: &ViewLine) -> String {
@@ -125,8 +127,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	lines
 }
 
-#[inline]
-pub fn _assert_rendered_output(output: &[String], expected: &[String]) {
+pub(crate) fn _assert_rendered_output(output: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
 		String::from("\nUnexpected output!"),
@@ -170,12 +171,15 @@ pub fn _assert_rendered_output(output: &[String], expected: &[String]) {
 	}
 }
 
+/// Assert the rendered output from a `ViewData`. Generally this function is not used directly,
+/// instead use the `assert_rendered_output!` macro.
 #[inline]
 pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String]) {
 	let output = render_view_data(view_data);
 	_assert_rendered_output(&output, expected);
 }
 
+/// Assert the rendered output from a `ViewData`.
 #[macro_export]
 macro_rules! assert_rendered_output {
 	($view_data:expr) => {
@@ -259,19 +263,24 @@ fn action_to_string(action: ViewAction) -> String {
 	})
 }
 
+/// Context for a `ViewSender` test.
 #[derive(Debug)]
 pub struct TestContext {
+	/// The sender instance.
 	pub sender: ViewSender,
+	/// The receiver instance.
 	pub receiver: Receiver<ViewAction>,
 }
 
 impl TestContext {
+	/// Drop the receiver, useful for testing disconnect error handling.
 	#[inline]
 	pub fn drop_receiver(&mut self) {
 		let (_, receiver) = mpsc::channel();
 		self.receiver = receiver;
 	}
 
+	/// Assert that render actions were sent.
 	#[inline]
 	pub fn assert_render_action(&self, actions: &[&str]) {
 		assert_view_sender_actions(
@@ -284,7 +293,9 @@ impl TestContext {
 		);
 	}
 
+	/// Assert that certain messages were sent by the `ViewSender`.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn assert_sent_messages(&self, messages: Vec<&str>) {
 		let mut mismatch = false;
 		let mut error_output = vec![
@@ -324,6 +335,7 @@ impl TestContext {
 	}
 }
 
+/// Provide an `ViewSender` instance for use within a test.
 #[inline]
 pub fn with_view_sender<C>(callback: C)
 where C: FnOnce(TestContext) {

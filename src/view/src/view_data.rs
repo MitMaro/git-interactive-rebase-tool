@@ -2,6 +2,7 @@ use uuid::Uuid;
 
 use super::{ViewDataUpdater, ViewLine};
 
+/// Represents the content to be rendered to the `View`.
 #[derive(Debug)]
 pub struct ViewData {
 	lines: Vec<ViewLine>,
@@ -18,6 +19,7 @@ pub struct ViewData {
 }
 
 impl ViewData {
+	/// Create a new instance using a `ViewDataUpdater`.
 	#[inline]
 	pub fn new<C>(callback: C) -> Self
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
@@ -39,12 +41,14 @@ impl ViewData {
 		view_data
 	}
 
+	/// Does the instance contain any content.
 	#[must_use]
 	#[inline]
 	pub fn is_empty(&self) -> bool {
 		self.lines.is_empty() && self.lines_leading.is_empty() && self.lines_trailing.is_empty()
 	}
 
+	/// Update the view data using a `ViewDataUpdater`. This allows for batch updating of the `ViewData`.
 	#[inline]
 	pub fn update_view_data<C>(&mut self, callback: C)
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {

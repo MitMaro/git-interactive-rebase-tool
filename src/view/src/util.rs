@@ -2,6 +2,7 @@ use input::{Event, MetaEvent};
 
 use super::ViewSender;
 
+/// Utility function to handle scroll events.
 #[inline]
 pub fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) -> Option<Event> {
 	match event {
