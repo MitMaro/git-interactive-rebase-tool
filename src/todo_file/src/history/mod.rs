@@ -6,20 +6,21 @@ mod tests;
 
 use std::{cmp::min, collections::VecDeque};
 
-pub use super::history::{history_item::HistoryItem, operation::Operation};
+pub(crate) use super::history::{history_item::HistoryItem, operation::Operation};
 use super::{
 	line::Line,
 	utils::{add_range, remove_range, swap_range_down, swap_range_up},
 };
 
-pub struct History {
+#[derive(Debug)]
+pub(crate) struct History {
 	redo_history: VecDeque<HistoryItem>,
 	undo_history: VecDeque<HistoryItem>,
 	limit: usize,
 }
 
 impl History {
-	pub fn new(limit: u32) -> Self {
+	pub(crate) fn new(limit: u32) -> Self {
 		Self {
 			redo_history: VecDeque::new(),
 			undo_history: VecDeque::new(),
@@ -27,7 +28,7 @@ impl History {
 		}
 	}
 
-	pub fn apply_operation(lines: &mut Vec<Line>, operation: &HistoryItem) -> HistoryItem {
+	pub(crate) fn apply_operation(lines: &mut Vec<Line>, operation: &HistoryItem) -> HistoryItem {
 		match operation.operation {
 			Operation::Modify => {
 				let range = if operation.end_index <= operation.start_index {
@@ -63,13 +64,36 @@ impl History {
 		}
 	}
 
-	pub fn record(&mut self, operations: HistoryItem) {
+	pub(crate) fn record(&mut self, operations: HistoryItem) {
 		self.redo_history.clear();
 		// delete old entries on limit reached
 		self.undo_history.push_back(operations);
 		if self.undo_history.len() > self.limit {
-			self.undo_history.pop_front();
+			let _pop_result = self.undo_history.pop_front();
 		}
+	}
+
+	pub(crate) fn undo(&mut self, current: &mut Vec<Line>) -> Option<(usize, usize)> {
+		self.undo_history.pop_back().map(|operation| {
+			let history = Self::apply_operation(current, &operation);
+			let update_range = Self::get_last_index_range(&history, current.len());
+			self.redo_history.push_back(history);
+			update_range
+		})
+	}
+
+	pub(crate) fn redo(&mut self, current: &mut Vec<Line>) -> Option<(usize, usize)> {
+		self.redo_history.pop_back().map(|operation| {
+			let history = Self::apply_operation(current, &operation);
+			let update_range = Self::get_last_index_range(&history, current.len());
+			self.undo_history.push_back(history);
+			update_range
+		})
+	}
+
+	pub(crate) fn reset(&mut self) {
+		self.undo_history.clear();
+		self.redo_history.clear();
 	}
 
 	fn get_last_index_range(history_item: &HistoryItem, list_length: usize) -> (usize, usize) {
@@ -104,28 +128,5 @@ impl History {
 			},
 			Operation::SwapDown => (history_item.start_index + 1, history_item.end_index + 1),
 		}
-	}
-
-	pub fn undo(&mut self, current: &mut Vec<Line>) -> Option<(usize, usize)> {
-		self.undo_history.pop_back().map(|operation| {
-			let history = Self::apply_operation(current, &operation);
-			let update_range = Self::get_last_index_range(&history, current.len());
-			self.redo_history.push_back(history);
-			update_range
-		})
-	}
-
-	pub fn redo(&mut self, current: &mut Vec<Line>) -> Option<(usize, usize)> {
-		self.redo_history.pop_back().map(|operation| {
-			let history = Self::apply_operation(current, &operation);
-			let update_range = Self::get_last_index_range(&history, current.len());
-			self.undo_history.push_back(history);
-			update_range
-		})
-	}
-
-	pub fn reset(&mut self) {
-		self.undo_history.clear();
-		self.redo_history.clear();
 	}
 }
