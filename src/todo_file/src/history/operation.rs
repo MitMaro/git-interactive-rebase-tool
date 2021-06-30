@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq)]
-pub enum Operation {
+pub(crate) enum Operation {
 	Modify,
 	SwapUp,
 	SwapDown,

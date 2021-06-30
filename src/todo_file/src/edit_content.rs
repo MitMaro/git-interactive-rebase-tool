@@ -1,5 +1,6 @@
 use super::action::Action;
 
+#[derive(Debug)]
 pub struct EditContext {
 	action: Option<Action>,
 	content: Option<String>,

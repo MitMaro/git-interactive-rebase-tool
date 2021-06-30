@@ -1,6 +1,6 @@
 use super::line::Line;
 
-pub fn swap_range_up(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
+pub(crate) fn swap_range_up(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
 	let range = if end_index <= start_index {
 		(end_index - 1)..start_index
 	}
@@ -12,7 +12,7 @@ pub fn swap_range_up(lines: &mut Vec<Line>, start_index: usize, end_index: usize
 	}
 }
 
-pub fn swap_range_down(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
+pub(crate) fn swap_range_down(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
 	let range = if end_index <= start_index {
 		end_index..=start_index
 	}
@@ -25,7 +25,7 @@ pub fn swap_range_down(lines: &mut Vec<Line>, start_index: usize, end_index: usi
 	}
 }
 
-pub fn remove_range(lines: &mut Vec<Line>, start_index: usize, end_index: usize) -> Vec<Line> {
+pub(crate) fn remove_range(lines: &mut Vec<Line>, start_index: usize, end_index: usize) -> Vec<Line> {
 	let mut removed_lines = vec![];
 	if end_index <= start_index {
 		for _ in end_index..=start_index {
@@ -41,7 +41,7 @@ pub fn remove_range(lines: &mut Vec<Line>, start_index: usize, end_index: usize)
 	removed_lines
 }
 
-pub fn add_range(lines: &mut Vec<Line>, new_lines: &[Line], start_index: usize, end_index: usize) {
+pub(crate) fn add_range(lines: &mut Vec<Line>, new_lines: &[Line], start_index: usize, end_index: usize) {
 	let range = if end_index <= start_index {
 		end_index..=start_index
 	}
