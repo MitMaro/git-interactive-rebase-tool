@@ -1,5 +1,6 @@
 use super::action::Action;
 
+/// Describes a edit context for modifying a line.
 #[derive(Debug)]
 pub struct EditContext {
 	action: Option<Action>,
@@ -7,6 +8,7 @@ pub struct EditContext {
 }
 
 impl EditContext {
+	/// Create a new empty instance.
 	#[must_use]
 	pub const fn new() -> Self {
 		Self {
@@ -15,23 +17,27 @@ impl EditContext {
 		}
 	}
 
+	/// Set the action.
 	#[must_use]
 	pub const fn action(mut self, action: Action) -> Self {
 		self.action = Some(action);
 		self
 	}
 
+	/// Set the content.
 	#[must_use]
 	pub fn content(mut self, content: &str) -> Self {
 		self.content = Some(content.to_owned());
 		self
 	}
 
+	/// Get the action.
 	#[must_use]
 	pub const fn get_action(&self) -> &Option<Action> {
 		&self.action
 	}
 
+	/// Get the content.
 	#[must_use]
 	pub const fn get_content(&self) -> &Option<String> {
 		&self.content

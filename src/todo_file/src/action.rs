@@ -2,24 +2,38 @@ use std::convert::TryFrom;
 
 use anyhow::{anyhow, Error};
 
+/// Describes an rebase action.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Action {
+	/// A break action.
 	Break,
+	/// A drop action.
 	Drop,
+	/// An edit action.
 	Edit,
+	/// An exec action.
 	Exec,
+	/// A fixup action.
 	Fixup,
+	/// A noop action.
 	Noop,
+	/// A pick action.
 	Pick,
+	/// A reword action.
 	Reword,
+	/// A squash action.
 	Squash,
+	/// A label for a merge block.
 	Label,
+	/// A reset for a merge block.
 	Reset,
+	/// A merge action.
 	Merge,
 }
 
 impl Action {
+	/// Get the full string version of the action.
 	#[must_use]
 	pub fn as_string(self) -> String {
 		String::from(match self {
@@ -38,6 +52,7 @@ impl Action {
 		})
 	}
 
+	/// Get the abbreviated version of the action.
 	#[must_use]
 	pub fn to_abbreviation(self) -> String {
 		String::from(match self {
@@ -56,6 +71,7 @@ impl Action {
 		})
 	}
 
+	/// Can the action be changed.
 	#[must_use]
 	pub const fn is_static(self) -> bool {
 		match self {
