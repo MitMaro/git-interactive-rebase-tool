@@ -64,8 +64,6 @@
 )]
 // LINT-REPLACE-END
 #![allow(
-	missing_docs,
-	rustdoc::missing_crate_level_docs,
 	clippy::as_conversions,
 	clippy::indexing_slicing,
 	clippy::implicit_return,
@@ -75,6 +73,11 @@
 	clippy::missing_inline_in_public_items,
 	clippy::module_name_repetitions
 )]
+
+//! Git Interactive Rebase Tool - Todo File Module
+//!
+//! # Description
+//! This module is used to handle working with the rebase todo file.
 
 mod action;
 mod edit_content;
@@ -97,6 +100,7 @@ use self::{
 	utils::{remove_range, swap_range_down, swap_range_up},
 };
 
+/// Represents a rebase file.
 #[derive(Debug)]
 pub struct TodoFile {
 	comment_char: String,
@@ -108,6 +112,7 @@ pub struct TodoFile {
 }
 
 impl TodoFile {
+	/// Create a new instance.
 	#[must_use]
 	pub fn new(path: &str, undo_limit: u32, comment_char: &str) -> Self {
 		Self {
@@ -120,6 +125,7 @@ impl TodoFile {
 		}
 	}
 
+	/// Set the rebase lines.
 	pub fn set_lines(&mut self, lines: Vec<Line>) {
 		self.is_noop = !lines.is_empty() && lines[0].get_action() == &Action::Noop;
 		self.lines = if self.is_noop {
@@ -134,6 +140,7 @@ impl TodoFile {
 		self.history.reset();
 	}
 
+	/// Load the rebase file from disk.
 	pub fn load_file(&mut self) -> Result<()> {
 		let lines = read_to_string(Path::new(&self.filepath))
 			.map_err(|err| anyhow!("Error reading file: {}", self.filepath).context(err))?
@@ -151,6 +158,7 @@ impl TodoFile {
 		Ok(())
 	}
 
+	/// Write the rebase file to disk.
 	pub fn write_file(&self) -> Result<()> {
 		let mut file = File::create(&self.filepath)
 			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath)))?;
@@ -165,6 +173,7 @@ impl TodoFile {
 		Ok(())
 	}
 
+	/// Set the selected line index.
 	pub fn set_selected_line_index(&mut self, selected_line_index: usize) {
 		self.selected_line_index = if self.lines.is_empty() {
 			0
@@ -177,6 +186,7 @@ impl TodoFile {
 		}
 	}
 
+	/// Swap a range of lines up.
 	pub fn swap_range_up(&mut self, start_index: usize, end_index: usize) -> bool {
 		if end_index == 0 || start_index == 0 || self.lines.is_empty() {
 			return false;
@@ -196,6 +206,7 @@ impl TodoFile {
 		true
 	}
 
+	/// Swap a range of lines down.
 	pub fn swap_range_down(&mut self, start_index: usize, end_index: usize) -> bool {
 		let len = self.lines.len();
 		let max_index = if len == 0 { 0 } else { len - 1 };
@@ -209,6 +220,7 @@ impl TodoFile {
 		true
 	}
 
+	/// Add a new line.
 	pub fn add_line(&mut self, index: usize, line: Line) {
 		let i = if index > self.lines.len() {
 			self.lines.len()
@@ -220,6 +232,7 @@ impl TodoFile {
 		self.history.record(HistoryItem::new_add(i, i));
 	}
 
+	/// Remove a range of lines.
 	pub fn remove_lines(&mut self, start_index: usize, end_index: usize) {
 		if self.lines.is_empty() {
 			return;
@@ -238,6 +251,7 @@ impl TodoFile {
 		self.history.record(HistoryItem::new_remove(start, end, removed_lines));
 	}
 
+	/// Update a range of lines.
 	pub fn update_range(&mut self, start_index: usize, end_index: usize, edit_context: &EditContext) {
 		if self.lines.is_empty() {
 			return;
@@ -269,19 +283,23 @@ impl TodoFile {
 		self.history.record(HistoryItem::new_modify(start, end, lines));
 	}
 
+	/// Undo the last modification.
 	pub fn undo(&mut self) -> Option<(usize, usize)> {
 		self.history.undo(&mut self.lines)
 	}
 
+	/// Redo the last undone modification.
 	pub fn redo(&mut self) -> Option<(usize, usize)> {
 		self.history.redo(&mut self.lines)
 	}
 
+	/// Get the selected line.
 	#[must_use]
 	pub fn get_selected_line(&self) -> Option<&Line> {
 		self.lines.get(self.selected_line_index)
 	}
 
+	/// Get the index of the last line that can be selected.
 	#[must_use]
 	pub fn get_max_selected_line_index(&self) -> usize {
 		let len = self.lines.len();
@@ -293,36 +311,43 @@ impl TodoFile {
 		}
 	}
 
+	/// Get the selected line index
 	#[must_use]
 	pub const fn get_selected_line_index(&self) -> usize {
 		self.selected_line_index
 	}
 
+	/// Get the file path to the rebase file.
 	#[must_use]
 	pub fn get_filepath(&self) -> &str {
 		self.filepath.as_str()
 	}
 
+	/// Get a line by index.
 	#[must_use]
 	pub fn get_line(&self, index: usize) -> Option<&Line> {
 		self.lines.get(index)
 	}
 
+	/// Get an owned copy of the lines.
 	#[must_use]
 	pub fn get_lines_owned(&self) -> Vec<Line> {
 		self.lines.clone()
 	}
 
+	/// Is the rebase file a noop.
 	#[must_use]
 	pub const fn is_noop(&self) -> bool {
 		self.is_noop
 	}
 
+	/// Get an iterator over the lines.
 	#[must_use]
 	pub fn iter(&self) -> Iter<'_, Line> {
 		self.lines.iter()
 	}
 
+	/// Does the rebase file contain no lines.
 	#[must_use]
 	pub fn is_empty(&self) -> bool {
 		self.lines.is_empty()

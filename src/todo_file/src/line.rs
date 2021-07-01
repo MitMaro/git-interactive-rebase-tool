@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 
 use super::action::Action;
 
+/// Represents a line in the rebase file.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line {
 	action: Action,
@@ -13,6 +14,7 @@ pub struct Line {
 }
 
 impl Line {
+	/// Create a new noop line.
 	#[must_use]
 	fn new_noop() -> Self {
 		Self {
@@ -23,6 +25,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new pick line.
 	#[must_use]
 	pub fn new_pick(hash: &str) -> Self {
 		Self {
@@ -33,6 +36,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new break line.
 	#[must_use]
 	pub fn new_break() -> Self {
 		Self {
@@ -43,6 +47,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new exec line.
 	#[must_use]
 	pub fn new_exec(command: &str) -> Self {
 		Self {
@@ -53,6 +58,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new merge line.
 	#[must_use]
 	pub fn new_merge(command: &str) -> Self {
 		Self {
@@ -63,6 +69,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new label line.
 	#[must_use]
 	pub fn new_label(label: &str) -> Self {
 		Self {
@@ -73,6 +80,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new reset line.
 	#[must_use]
 	pub fn new_reset(label: &str) -> Self {
 		Self {
@@ -83,6 +91,7 @@ impl Line {
 		}
 	}
 
+	/// Create a new line from a rebase file line.
 	pub fn new(input_line: &str) -> Result<Self> {
 		if input_line.starts_with("noop") {
 			return Ok(Self::new_noop());
@@ -129,6 +138,7 @@ impl Line {
 		Err(anyhow!("Invalid line: {}", input_line))
 	}
 
+	/// Set the action of the line.
 	pub fn set_action(&mut self, action: Action) {
 		if !self.action.is_static() && self.action != action {
 			self.mutated = true;
@@ -136,32 +146,38 @@ impl Line {
 		}
 	}
 
+	/// Edit the content of the line, if it is editable.
 	pub fn edit_content(&mut self, content: &str) {
 		if self.is_editable() {
 			self.content = String::from(content);
 		}
 	}
 
+	/// Get the action of the line.
 	#[must_use]
 	pub const fn get_action(&self) -> &Action {
 		&self.action
 	}
 
+	/// Get the content of the line.
 	#[must_use]
 	pub fn get_content(&self) -> &str {
 		self.content.as_str()
 	}
 
+	/// Get the commit hash for the line.
 	#[must_use]
 	pub fn get_hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
+	/// Does this line contain a commit reference.
 	#[must_use]
 	pub fn has_reference(&self) -> bool {
 		!self.hash.is_empty()
 	}
 
+	/// Can this line be edited.
 	#[must_use]
 	pub const fn is_editable(&self) -> bool {
 		match self.action {
@@ -177,6 +193,7 @@ impl Line {
 		}
 	}
 
+	/// Create a string containing a textual version of the line, as would be seen in the rebase file.
 	#[must_use]
 	pub fn to_text(&self) -> String {
 		match self.action {
