@@ -86,6 +86,7 @@ mod event_handler;
 mod input_options;
 mod key_bindings;
 mod meta_event;
+#[cfg(not(tarpaulin_include))]
 pub mod testutil;
 
 pub use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
