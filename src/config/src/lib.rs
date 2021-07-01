@@ -91,6 +91,7 @@ mod diff_ignore_whitespace_setting;
 mod diff_show_whitespace_setting;
 mod git_config;
 mod key_bindings;
+#[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod theme;
 mod utils;
