@@ -97,6 +97,7 @@ mod render_context;
 mod render_slice;
 mod scroll_position;
 mod sender;
+#[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod thread;
 mod util;

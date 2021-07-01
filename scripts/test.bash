@@ -5,4 +5,4 @@ set -u
 set -o pipefail
 
 rustup update stable
-cargo test --workspace
+cargo +stable test --workspace

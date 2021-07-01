@@ -105,9 +105,11 @@
 //! performance should only be used in test code.
 
 mod color_mode;
+#[cfg(not(tarpaulin_include))]
 mod crossterm;
 mod display_color;
 mod size;
+#[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod tui;
 mod utils;
