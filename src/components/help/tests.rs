@@ -3,7 +3,7 @@ use rstest::rstest;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::module::testutil::handle_event_test;
+use crate::components::testutil::handle_event_test;
 
 #[test]
 fn empty() {
