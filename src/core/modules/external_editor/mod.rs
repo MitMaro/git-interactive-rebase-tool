@@ -11,9 +11,9 @@ use lazy_static::lazy_static;
 use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
+use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
 	components::choice::Choice,
-	external_editor::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState},
 	module::{ExitStatus, Module, ProcessResult, State},
 };
 
