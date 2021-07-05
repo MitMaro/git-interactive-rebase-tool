@@ -1,6 +1,5 @@
 use std::{cell::Cell, path::Path};
 
-use config::{testutil::create_config, Config};
 use input::{
 	testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 	Event,
@@ -15,8 +14,7 @@ use view::{
 
 use crate::module::{Module, ProcessResult, State};
 
-pub struct TestContext<'t> {
-	pub config: &'t Config,
+pub struct TestContext {
 	pub event_handler_context: EventHandlerTestContext,
 	pub view_sender_context: ViewSenderContext,
 	pub rebase_todo_file: TodoFile,
@@ -24,7 +22,7 @@ pub struct TestContext<'t> {
 	todo_file: Cell<NamedTempFile>,
 }
 
-impl<'t> TestContext<'t> {
+impl TestContext {
 	fn get_build_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
 		module.build_view_data(&self.render_context, &self.rebase_todo_file)
 	}
@@ -103,7 +101,7 @@ impl<'t> TestContext<'t> {
 }
 
 pub fn process_module_test<C>(lines: &[&str], events: &[Event], callback: C)
-where C: for<'p> FnOnce(TestContext<'p>) {
+where C: FnOnce(TestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_sender(|view_sender_context| {
 			let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -122,7 +120,6 @@ where C: for<'p> FnOnce(TestContext<'p>) {
 			let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), 1, "#");
 			rebase_todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
 			callback(TestContext {
-				config: &create_config(),
 				event_handler_context,
 				rebase_todo_file,
 				view_sender_context,
