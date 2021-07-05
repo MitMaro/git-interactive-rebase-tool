@@ -8,7 +8,7 @@ use view::{assert_rendered_output, ViewData};
 
 use super::*;
 use crate::{
-	error::Error,
+	core::modules::Error,
 	module::{testutil::module_test, Module},
 	window_size_error::WindowSizeError,
 };
