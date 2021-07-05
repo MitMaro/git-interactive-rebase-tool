@@ -5,6 +5,7 @@ mod license;
 mod main;
 mod version;
 
+mod process;
 #[cfg(all(unix, test))]
 mod tests;
 
