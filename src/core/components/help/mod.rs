@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests;
+
 use display::DisplayColor;
 use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;

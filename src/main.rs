@@ -35,7 +35,6 @@
 #![allow(clippy::default_numeric_fallback)]
 #![allow(clippy::redundant_pub_crate)] // broken lint (https://github.com/rust-lang/rust-clippy/issues/5369)
 
-mod components;
 mod core;
 
 use std::env::args_os;

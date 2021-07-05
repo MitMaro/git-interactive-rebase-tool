@@ -16,9 +16,9 @@ use self::{
 	input::get_event,
 	utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
 };
-use crate::{
+use crate::core::{
 	components::{edit::Edit, help::Help},
-	core::module::{ExitStatus, Module, ProcessResult, State},
+	module::{ExitStatus, Module, ProcessResult, State},
 };
 
 #[derive(Debug, PartialEq)]
