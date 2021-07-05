@@ -66,9 +66,7 @@
 #![allow(
 	clippy::as_conversions,
 	clippy::indexing_slicing,
-	clippy::implicit_return,
 	clippy::integer_arithmetic,
-	clippy::missing_docs_in_private_items,
 	clippy::missing_errors_doc,
 	clippy::missing_inline_in_public_items,
 	clippy::module_name_repetitions

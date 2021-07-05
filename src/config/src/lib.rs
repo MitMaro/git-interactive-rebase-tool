@@ -13,7 +13,6 @@
 // rustc's additional allowed by default lints
 #![deny(
 	absolute_paths_not_starting_with_crate,
-	box_pointers,
 	deprecated_in_future,
 	disjoint_capture_drop_reorder,
 	elided_lifetimes_in_paths,
@@ -47,7 +46,13 @@
 )]
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
-#![allow(clippy::blanket_clippy_restriction_lints)]
+#![allow(
+	clippy::blanket_clippy_restriction_lints,
+	clippy::implicit_return,
+	clippy::missing_docs_in_private_items,
+	clippy::redundant_pub_crate,
+	clippy::tabs_in_doc_comments
+)]
 #![deny(
 	rustdoc::bare_urls,
 	rustdoc::broken_intra_doc_links,
@@ -59,15 +64,12 @@
 )]
 // LINT-REPLACE-END
 #![allow(
-	clippy::blanket_clippy_restriction_lints,
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
 	clippy::cast_sign_loss,
 	clippy::exhaustive_structs,
-	clippy::implicit_return,
 	clippy::indexing_slicing,
 	clippy::integer_arithmetic,
-	clippy::missing_docs_in_private_items,
 	clippy::non_ascii_literal,
 	clippy::wildcard_enum_match_arm
 )]

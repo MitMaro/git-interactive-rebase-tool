@@ -50,6 +50,7 @@
 	clippy::blanket_clippy_restriction_lints,
 	clippy::implicit_return,
 	clippy::missing_docs_in_private_items,
+	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments
 )]
 #![deny(
