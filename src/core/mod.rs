@@ -3,6 +3,7 @@ mod exit;
 mod help;
 mod license;
 mod main;
+mod modules;
 mod version;
 
 mod process;
