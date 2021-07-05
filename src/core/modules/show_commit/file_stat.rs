@@ -1,4 +1,4 @@
-use crate::show_commit::{delta::Delta, status::Status};
+use super::{delta::Delta, status::Status};
 
 /// Represents a file change within a Git repository
 #[derive(Debug, Clone)]

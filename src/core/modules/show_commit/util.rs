@@ -4,7 +4,7 @@ use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 use view::{LineSegment, ViewLine};
 
-use crate::show_commit::{commit::Commit, status::Status};
+use super::{commit::Commit, status::Status};
 
 pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![

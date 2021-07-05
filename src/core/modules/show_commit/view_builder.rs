@@ -1,10 +1,10 @@
 use display::DisplayColor;
 use view::{LineSegment, ViewDataUpdater, ViewLine};
 
-use super::origin::Origin;
-use crate::show_commit::{
+use super::{
 	commit::Commit,
 	diff_line::DiffLine,
+	origin::Origin,
 	util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
 };
 
