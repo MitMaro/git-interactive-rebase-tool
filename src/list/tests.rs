@@ -3,11 +3,11 @@ use config::testutil::create_config;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, process::testutil::process_module_test};
+use crate::{assert_process_result, module::testutil::module_test};
 
 #[test]
 fn render_empty_list() {
-	process_module_test(&[], &[], |test_context| {
+	module_test(&[], &[], |test_context| {
 		let mut module = List::new(&create_config());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -21,7 +21,7 @@ fn render_empty_list() {
 
 #[test]
 fn render_full() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaaaaaaa comment 1",
 			"drop bbbbbbbb comment 2",
@@ -63,7 +63,7 @@ fn render_full() {
 
 #[test]
 fn render_compact() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaaaaaaa comment 1",
 			"drop bbbbbbbb comment 2",
@@ -106,7 +106,7 @@ fn render_compact() {
 
 #[test]
 fn move_cursor_down_1() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context| {
@@ -127,7 +127,7 @@ fn move_cursor_down_1() {
 
 #[test]
 fn move_cursor_down_view_end() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown); 2],
 		|mut test_context| {
@@ -148,7 +148,7 @@ fn move_cursor_down_view_end() {
 
 #[test]
 fn move_cursor_down_past_end() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown); 3],
 		|mut test_context| {
@@ -169,7 +169,7 @@ fn move_cursor_down_past_end() {
 
 #[test]
 fn move_cursor_down_scroll_bottom_move_up_one() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -194,7 +194,7 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 
 #[test]
 fn move_cursor_down_scroll_bottom_move_up_top() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -219,7 +219,7 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 
 #[test]
 fn move_cursor_up_attempt_above_top() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorUp),
@@ -244,7 +244,7 @@ fn move_cursor_up_attempt_above_top() {
 
 #[test]
 fn move_cursor_down_attempt_below_bottom() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context| {
@@ -266,7 +266,7 @@ fn move_cursor_down_attempt_below_bottom() {
 
 #[test]
 fn move_cursor_page_up_from_top() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorPageUp)],
 		|mut test_context| {
@@ -289,7 +289,7 @@ fn move_cursor_page_up_from_top() {
 
 #[test]
 fn move_cursor_page_up_from_one_page_down() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -316,7 +316,7 @@ fn move_cursor_page_up_from_one_page_down() {
 
 #[test]
 fn move_cursor_page_up_from_one_page_down_minus_1() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -343,7 +343,7 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 
 #[test]
 fn move_cursor_page_up_from_bottom() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -371,7 +371,7 @@ fn move_cursor_page_up_from_bottom() {
 
 #[test]
 fn move_cursor_home() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -397,7 +397,7 @@ fn move_cursor_home() {
 
 #[test]
 fn move_cursor_end() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorEnd)],
 		|mut test_context| {
@@ -419,7 +419,7 @@ fn move_cursor_end() {
 
 #[test]
 fn move_cursor_page_down_past_bottom() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorPageDown); 3],
 		|mut test_context| {
@@ -442,7 +442,7 @@ fn move_cursor_page_down_past_bottom() {
 
 #[test]
 fn move_cursor_page_down_one_from_bottom() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -469,7 +469,7 @@ fn move_cursor_page_down_one_from_bottom() {
 
 #[test]
 fn move_cursor_page_down_one_page_from_bottom() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -495,7 +495,7 @@ fn move_cursor_page_down_one_page_from_bottom() {
 
 #[test]
 fn mouse_scroll() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::Mouse(MouseEvent {
@@ -535,7 +535,7 @@ fn mouse_scroll() {
 
 #[test]
 fn visual_mode_start() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context| {
@@ -556,7 +556,7 @@ fn visual_mode_start() {
 
 #[test]
 fn visual_mode_start_cursor_down_one() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -580,7 +580,7 @@ fn visual_mode_start_cursor_down_one() {
 
 #[test]
 fn visual_mode_start_cursor_page_down() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -613,7 +613,7 @@ fn visual_mode_start_cursor_page_down() {
 
 #[test]
 fn visual_mode_start_cursor_from_bottom_move_up() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -649,7 +649,7 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 
 #[test]
 fn visual_mode_start_cursor_from_bottom_to_top() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -688,7 +688,7 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 
 #[test]
 fn change_selected_line_to_drop() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context| {
@@ -707,7 +707,7 @@ fn change_selected_line_to_drop() {
 
 #[test]
 fn change_selected_line_to_edit() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionEdit)],
 		|mut test_context| {
@@ -726,7 +726,7 @@ fn change_selected_line_to_edit() {
 
 #[test]
 fn change_selected_line_to_fixup() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionFixup)],
 		|mut test_context| {
@@ -745,7 +745,7 @@ fn change_selected_line_to_fixup() {
 
 #[test]
 fn change_selected_line_to_pick() {
-	process_module_test(
+	module_test(
 		&["drop aaa c1"],
 		&[Event::from(MetaEvent::ActionPick)],
 		|mut test_context| {
@@ -764,7 +764,7 @@ fn change_selected_line_to_pick() {
 
 #[test]
 fn change_selected_line_to_reword() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionReword)],
 		|mut test_context| {
@@ -783,7 +783,7 @@ fn change_selected_line_to_reword() {
 
 #[test]
 fn change_selected_line_to_squash() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context| {
@@ -802,7 +802,7 @@ fn change_selected_line_to_squash() {
 
 #[test]
 fn change_selected_line_toggle_break_add() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionBreak)],
 		|mut test_context| {
@@ -822,7 +822,7 @@ fn change_selected_line_toggle_break_add() {
 
 #[test]
 fn change_selected_line_toggle_break_remove() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "break"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -844,7 +844,7 @@ fn change_selected_line_toggle_break_remove() {
 
 #[test]
 fn change_selected_line_toggle_break_above_existing() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "break"],
 		&[Event::from(MetaEvent::ActionBreak)],
 		|mut test_context| {
@@ -864,7 +864,7 @@ fn change_selected_line_toggle_break_above_existing() {
 
 #[test]
 fn change_selected_line_auto_select_next_with_next_line() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2"],
 		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context| {
@@ -886,7 +886,7 @@ fn change_selected_line_auto_select_next_with_next_line() {
 
 #[test]
 fn change_selected_line_swap_down() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
@@ -907,7 +907,7 @@ fn change_selected_line_swap_down() {
 
 #[test]
 fn change_selected_line_swap_up() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -932,7 +932,7 @@ fn change_selected_line_swap_up() {
 
 #[test]
 fn normal_mode_show_commit_when_hash_available() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context| {
@@ -948,7 +948,7 @@ fn normal_mode_show_commit_when_hash_available() {
 
 #[test]
 fn normal_mode_show_commit_when_no_selected_line() {
-	process_module_test(&[], &[Event::from(MetaEvent::ShowCommit)], |mut test_context| {
+	module_test(&[], &[Event::from(MetaEvent::ShowCommit)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -959,7 +959,7 @@ fn normal_mode_show_commit_when_no_selected_line() {
 
 #[test]
 fn normal_mode_do_not_show_commit_when_hash_not_available() {
-	process_module_test(
+	module_test(
 		&["exec echo foo"],
 		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context| {
@@ -974,7 +974,7 @@ fn normal_mode_do_not_show_commit_when_hash_not_available() {
 
 #[test]
 fn normal_mode_abort() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Abort)],
 		|mut test_context| {
@@ -990,7 +990,7 @@ fn normal_mode_abort() {
 
 #[test]
 fn normal_mode_force_abort() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ForceAbort)],
 		|mut test_context| {
@@ -1007,7 +1007,7 @@ fn normal_mode_force_abort() {
 
 #[test]
 fn normal_mode_rebase() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
@@ -1023,7 +1023,7 @@ fn normal_mode_rebase() {
 
 #[test]
 fn normal_mode_force_rebase() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ForceRebase)],
 		|mut test_context| {
@@ -1040,7 +1040,7 @@ fn normal_mode_force_rebase() {
 
 #[test]
 fn normal_mode_edit_with_edit_content() {
-	process_module_test(
+	module_test(
 		&["exec echo foo"],
 		&[Event::from(MetaEvent::Edit)],
 		|mut test_context| {
@@ -1056,7 +1056,7 @@ fn normal_mode_edit_with_edit_content() {
 
 #[test]
 fn normal_mode_edit_without_edit_content() {
-	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -1068,7 +1068,7 @@ fn normal_mode_edit_without_edit_content() {
 
 #[test]
 fn normal_mode_edit_without_selected_line() {
-	process_module_test(&[], &[Event::from(MetaEvent::Edit)], |mut test_context| {
+	module_test(&[], &[Event::from(MetaEvent::Edit)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -1080,7 +1080,7 @@ fn normal_mode_edit_without_selected_line() {
 
 #[test]
 fn normal_mode_insert_line() {
-	process_module_test(&[], &[Event::from(MetaEvent::InsertLine)], |mut test_context| {
+	module_test(&[], &[Event::from(MetaEvent::InsertLine)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -1092,7 +1092,7 @@ fn normal_mode_insert_line() {
 
 #[test]
 fn normal_mode_open_external_editor() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::OpenInEditor)],
 		|mut test_context| {
@@ -1108,7 +1108,7 @@ fn normal_mode_open_external_editor() {
 
 #[test]
 fn normal_mode_undo() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionDrop), Event::from(MetaEvent::Undo)],
 		|mut test_context| {
@@ -1131,7 +1131,7 @@ fn normal_mode_undo() {
 
 #[test]
 fn normal_mode_undo_visual_mode_change() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1157,7 +1157,7 @@ fn normal_mode_undo_visual_mode_change() {
 
 #[test]
 fn normal_mode_redo() {
-	process_module_test(
+	module_test(
 		&["drop aaa c1"],
 		&[
 			Event::from(MetaEvent::ActionPick),
@@ -1184,7 +1184,7 @@ fn normal_mode_redo() {
 
 #[test]
 fn normal_mode_redo_visual_mode_change() {
-	process_module_test(
+	module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1211,7 +1211,7 @@ fn normal_mode_redo_visual_mode_change() {
 
 #[test]
 fn normal_mode_remove_line_first() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -1238,7 +1238,7 @@ fn normal_mode_remove_line_first() {
 
 #[test]
 fn normal_mode_remove_line_end() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -1271,7 +1271,7 @@ fn normal_mode_remove_line_end() {
 
 #[test]
 fn normal_mode_toggle_visual_mode() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context| {
@@ -1288,7 +1288,7 @@ fn normal_mode_toggle_visual_mode() {
 
 #[test]
 fn normal_mode_other_event() {
-	process_module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -1299,7 +1299,7 @@ fn normal_mode_other_event() {
 
 #[test]
 fn visual_mode_action_change_top_bottom() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1325,7 +1325,7 @@ fn visual_mode_action_change_top_bottom() {
 
 #[test]
 fn visual_mode_action_change_bottom_top() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(MetaEvent::MoveCursorDown),
@@ -1353,7 +1353,7 @@ fn visual_mode_action_change_bottom_top() {
 
 #[test]
 fn visual_mode_action_change_drop() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1388,7 +1388,7 @@ fn visual_mode_action_change_drop() {
 
 #[test]
 fn visual_mode_action_change_edit() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1423,7 +1423,7 @@ fn visual_mode_action_change_edit() {
 
 #[test]
 fn visual_mode_action_change_fixup() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1458,7 +1458,7 @@ fn visual_mode_action_change_fixup() {
 
 #[test]
 fn visual_mode_action_change_pick() {
-	process_module_test(
+	module_test(
 		&[
 			"drop aaa c1",
 			"drop aaa c2",
@@ -1493,7 +1493,7 @@ fn visual_mode_action_change_pick() {
 
 #[test]
 fn visual_mode_action_change_reword() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1528,7 +1528,7 @@ fn visual_mode_action_change_reword() {
 
 #[test]
 fn visual_mode_action_change_squash() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1563,7 +1563,7 @@ fn visual_mode_action_change_squash() {
 
 #[test]
 fn visual_mode_abort() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Abort)],
 		|mut test_context| {
@@ -1580,7 +1580,7 @@ fn visual_mode_abort() {
 
 #[test]
 fn visual_mode_force_abort() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1601,7 +1601,7 @@ fn visual_mode_force_abort() {
 
 #[test]
 fn visual_mode_rebase() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
@@ -1618,7 +1618,7 @@ fn visual_mode_rebase() {
 
 #[test]
 fn visual_mode_force_rebase() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1639,7 +1639,7 @@ fn visual_mode_force_rebase() {
 
 #[test]
 fn visual_mode_swap_down_from_top_to_bottom_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1674,7 +1674,7 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_down_from_bottom_to_top_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1711,7 +1711,7 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_swap_up_from_top_to_bottom_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1746,7 +1746,7 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_up_from_bottom_to_top_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1783,7 +1783,7 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1821,7 +1821,7 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1857,7 +1857,7 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1893,7 +1893,7 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -1931,7 +1931,7 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_toggle_visual_mode() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1952,7 +1952,7 @@ fn visual_mode_toggle_visual_mode() {
 
 #[test]
 fn visual_mode_open_external_editor() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -1972,7 +1972,7 @@ fn visual_mode_open_external_editor() {
 
 #[test]
 fn visual_mode_undo() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -2000,7 +2000,7 @@ fn visual_mode_undo() {
 
 #[test]
 fn visual_mode_undo_normal_mode_change() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
 			Event::from(MetaEvent::ActionDrop),
@@ -2029,7 +2029,7 @@ fn visual_mode_undo_normal_mode_change() {
 
 #[test]
 fn visual_mode_redo() {
-	process_module_test(
+	module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
 			Event::from(MetaEvent::ToggleVisualMode),
@@ -2054,7 +2054,7 @@ fn visual_mode_redo() {
 }
 #[test]
 fn visual_mode_redo_normal_mode_change() {
-	process_module_test(
+	module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
 			Event::from(MetaEvent::ActionPick),
@@ -2080,7 +2080,7 @@ fn visual_mode_redo_normal_mode_change() {
 
 #[test]
 fn visual_mode_remove_lines_start_index_first() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -2114,7 +2114,7 @@ fn visual_mode_remove_lines_start_index_first() {
 
 #[test]
 fn visual_mode_remove_lines_end_index_first() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -2150,7 +2150,7 @@ fn visual_mode_remove_lines_end_index_first() {
 
 #[test]
 fn visual_mode_remove_lines_start_index_last() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -2188,7 +2188,7 @@ fn visual_mode_remove_lines_start_index_last() {
 
 #[test]
 fn visual_mode_remove_lines_end_index_last() {
-	process_module_test(
+	module_test(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -2224,7 +2224,7 @@ fn visual_mode_remove_lines_end_index_last() {
 
 #[test]
 fn visual_mode_other_event() {
-	process_module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -2235,7 +2235,7 @@ fn visual_mode_other_event() {
 
 #[test]
 fn edit_mode_render() {
-	process_module_test(&["exec foo"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
+	module_test(&["exec foo"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
@@ -2255,7 +2255,7 @@ fn edit_mode_render() {
 
 #[test]
 fn edit_mode_handle_event() {
-	process_module_test(
+	module_test(
 		&["exec foo"],
 		&[
 			Event::from(MetaEvent::Edit),
@@ -2274,7 +2274,7 @@ fn edit_mode_handle_event() {
 
 #[test]
 fn scroll_right() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::MoveCursorRight)],
 		|mut test_context| {
@@ -2287,7 +2287,7 @@ fn scroll_right() {
 
 #[test]
 fn scroll_left() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::MoveCursorLeft)],
 		|mut test_context| {
@@ -2300,7 +2300,7 @@ fn scroll_left() {
 
 #[test]
 fn normal_mode_help() {
-	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		module.state = ListState::Normal;
 		test_context.handle_all_events(&mut module);
@@ -2349,7 +2349,7 @@ fn normal_mode_help() {
 
 #[test]
 fn normal_mode_help_event() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
@@ -2363,7 +2363,7 @@ fn normal_mode_help_event() {
 
 #[test]
 fn visual_mode_help() {
-	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		module.state = ListState::Visual;
 		test_context.handle_all_events(&mut module);
@@ -2403,7 +2403,7 @@ fn visual_mode_help() {
 
 #[test]
 fn visual_mode_help_event() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
@@ -2418,7 +2418,7 @@ fn visual_mode_help_event() {
 // this can technically never happen, but it's worth testing, just in case of an invalid state
 #[test]
 fn render_noop_list() {
-	process_module_test(&["break"], &[], |mut test_context| {
+	module_test(&["break"], &[], |mut test_context| {
 		let mut module = List::new(&create_config());
 		test_context.rebase_todo_file.remove_lines(0, 0);
 		test_context.rebase_todo_file.add_line(0, Line::new("noop").unwrap());
@@ -2434,7 +2434,7 @@ fn render_noop_list() {
 
 #[test]
 fn resize() {
-	process_module_test(&["pick aaa c1"], &[Event::Resize(100, 200)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::Resize(100, 200)], |mut test_context| {
 		let mut module = List::new(&create_config());
 		test_context.handle_all_events(&mut module);
 		assert_eq!(module.height, 200);

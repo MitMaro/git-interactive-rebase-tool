@@ -2,7 +2,7 @@ use input::{Event, KeyCode};
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, process::testutil::process_module_test};
+use crate::{assert_process_result, module::testutil::module_test};
 
 fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
 	let actual_state = match *actual {
@@ -44,7 +44,7 @@ macro_rules! assert_external_editor_state_eq {
 
 #[test]
 fn activate() {
-	process_module_test(&["pick aaa comment1", "drop bbb comment2"], &[], |test_context| {
+	module_test(&["pick aaa comment1", "drop bbb comment2"], &[], |test_context| {
 		let mut module = ExternalEditor::new("editor");
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -69,7 +69,7 @@ fn activate() {
 
 #[test]
 fn activate_write_file_fail() {
-	process_module_test(&["pick aaa comment"], &[], |test_context| {
+	module_test(&["pick aaa comment"], &[], |test_context| {
 		let todo_path = test_context.get_todo_file_path();
 		let mut module = ExternalEditor::new("editor");
 		test_context.set_todo_file_readonly();
@@ -83,7 +83,7 @@ fn activate_write_file_fail() {
 
 #[test]
 fn activate_file_placement_marker() {
-	process_module_test(&[], &[], |test_context| {
+	module_test(&[], &[], |test_context| {
 		let mut module = ExternalEditor::new("editor a % b");
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -98,7 +98,7 @@ fn activate_file_placement_marker() {
 
 #[test]
 fn deactivate() {
-	process_module_test(&["pick aaa comment", "drop bbb comment2"], &[], |mut test_context| {
+	module_test(&["pick aaa comment", "drop bbb comment2"], &[], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.deactivate(&mut module);
 		assert_eq!(module.lines, vec![]);
@@ -107,7 +107,7 @@ fn deactivate() {
 
 #[test]
 fn edit_success() {
-	process_module_test(&["pick aaa comment"], &[], |mut test_context| {
+	module_test(&["pick aaa comment"], &[], |mut test_context| {
 		test_context
 			.event_handler_context
 			.event_handler
@@ -127,7 +127,7 @@ fn edit_success() {
 
 #[test]
 fn empty_edit_error() {
-	process_module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
 		test_context
 			.event_handler_context
 			.event_handler
@@ -160,7 +160,7 @@ fn empty_edit_error() {
 
 #[test]
 fn empty_edit_abort_rebase() {
-	process_module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Empty;
@@ -174,7 +174,7 @@ fn empty_edit_abort_rebase() {
 
 #[test]
 fn empty_edit_re_edit_rebase_file() {
-	process_module_test(&["pick aaa comment"], &[Event::from('2')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('2')], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Empty;
@@ -191,7 +191,7 @@ fn empty_edit_re_edit_rebase_file() {
 
 #[test]
 fn empty_edit_undo_and_edit() {
-	process_module_test(
+	module_test(
 		&["pick aaa comment", "drop bbb comment"],
 		&[Event::from('3')],
 		|mut test_context| {
@@ -216,7 +216,7 @@ fn empty_edit_undo_and_edit() {
 
 #[test]
 fn empty_edit_noop() {
-	process_module_test(&["pick aaa comment"], &[], |mut test_context| {
+	module_test(&["pick aaa comment"], &[], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Empty;
@@ -240,7 +240,7 @@ fn empty_edit_noop() {
 
 #[test]
 fn no_editor_set() {
-	process_module_test(&["pick aaa comment"], &[], |test_context| {
+	module_test(&["pick aaa comment"], &[], |test_context| {
 		let mut module = ExternalEditor::new("");
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -252,7 +252,7 @@ fn no_editor_set() {
 
 #[test]
 fn editor_non_zero_exit() {
-	process_module_test(&["pick aaa comment"], &[], |mut test_context| {
+	module_test(&["pick aaa comment"], &[], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context
 			.event_handler_context
@@ -287,7 +287,7 @@ fn editor_non_zero_exit() {
 
 #[test]
 fn editor_reload_error() {
-	process_module_test(
+	module_test(
 		&["pick aaa comment"],
 		&[Event::from(KeyCode::Up)],
 		|mut test_context| {
@@ -331,7 +331,7 @@ fn editor_reload_error() {
 
 #[test]
 fn error_abort_rebase() {
-	process_module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
@@ -346,7 +346,7 @@ fn error_abort_rebase() {
 
 #[test]
 fn error_edit_rebase() {
-	process_module_test(&["pick aaa comment"], &[Event::from('2')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('2')], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
@@ -363,7 +363,7 @@ fn error_edit_rebase() {
 
 #[test]
 fn error_restore_and_abort() {
-	process_module_test(&["pick aaa comment"], &[Event::from('3')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('3')], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
@@ -381,7 +381,7 @@ fn error_restore_and_abort() {
 
 #[test]
 fn error_undo_modifications_and_reedit() {
-	process_module_test(&["pick aaa comment"], &[Event::from('4')], |mut test_context| {
+	module_test(&["pick aaa comment"], &[Event::from('4')], |mut test_context| {
 		let mut module = ExternalEditor::new("editor");
 		test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));

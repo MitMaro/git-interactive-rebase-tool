@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod tests;
-#[cfg(test)]
-pub mod testutil;
 
 use std::{process::Command, thread};
 
