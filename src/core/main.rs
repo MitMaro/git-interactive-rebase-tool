@@ -9,8 +9,13 @@ use todo_file::TodoFile;
 use view::View;
 
 use crate::{
-	confirm_rebase::ConfirmRebase,
-	core::{arguments::Args, exit::Exit, help::build_help, modules::ConfirmAbort, process::Process},
+	core::{
+		arguments::Args,
+		exit::Exit,
+		help::build_help,
+		modules::{ConfirmAbort, ConfirmRebase},
+		process::Process,
+	},
 	error::Error,
 	external_editor::ExternalEditor,
 	insert::Insert,
