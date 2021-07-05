@@ -9,8 +9,10 @@ This script will add to all crates a full list of enabled lints.
 files=(
 	'src/main.rs'
 	'src/config/src/lib.rs'
+	'src/core/src/lib.rs'
 	'src/display/src/lib.rs'
 	'src/input/src/lib.rs'
+	'src/todo_file/src/lib.rs'
 	'src/view/src/lib.rs'
 )
 
@@ -67,7 +69,7 @@ content="\
 	clippy::implicit_return,
 	clippy::missing_docs_in_private_items,
 	clippy::redundant_pub_crate,
-	clippy::tabs_in_doc_comments,
+	clippy::tabs_in_doc_comments
 )]
 #![deny(
 	rustdoc::bare_urls,
