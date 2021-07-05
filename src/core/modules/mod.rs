@@ -5,6 +5,7 @@ mod external_editor;
 mod insert;
 mod list;
 mod show_commit;
+mod window_size_error;
 
 pub use self::{
 	confirm_abort::ConfirmAbort,
@@ -14,4 +15,5 @@ pub use self::{
 	insert::Insert,
 	list::List,
 	show_commit::ShowCommit,
+	window_size_error::WindowSizeError,
 };
