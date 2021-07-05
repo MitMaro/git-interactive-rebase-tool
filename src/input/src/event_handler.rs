@@ -175,23 +175,20 @@ mod tests {
 		assert_eq!(event_handler.poll_event(), Event::None);
 	}
 
-	#[rstest(
-		event,
-		handled,
-		case::standard(Event::Key(KeyEvent {
-			code: KeyCode::Char('c'),
-			modifiers: KeyModifiers::CONTROL,
-		}), true),
-		case::resize(Event::Resize(100, 100), false),
-		case::movement(Event::from(KeyCode::Up), false),
-		case::help(Event::from('?'), false),
-		case::undo_redo(Event::Key(KeyEvent {
-			code: KeyCode::Char('z'),
-			modifiers: KeyModifiers::CONTROL,
-		}), false),
-		case::other(Event::from('a'), false),
-	)]
-	fn read_event_options_disabled(event: Event, handled: bool) {
+	#[rstest]
+	#[case::standard(Event::Key(KeyEvent {
+		code: KeyCode::Char('c'),
+		modifiers: KeyModifiers::CONTROL,
+	}), true)]
+	#[case::resize(Event::Resize(100, 100), false)]
+	#[case::movement(Event::from(KeyCode::Up), false)]
+	#[case::help(Event::from('?'), false)]
+	#[case::undo_redo(Event::Key(KeyEvent {
+		code: KeyCode::Char('z'),
+		modifiers: KeyModifiers::CONTROL,
+	}), false)]
+	#[case::other(Event::from('a'), false)]
+	fn read_event_options_disabled(#[case] event: Event, #[case] handled: bool) {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
@@ -206,23 +203,20 @@ mod tests {
 		});
 	}
 
-	#[rstest(
-		event,
-		handled,
-		case::standard(Event::Key(KeyEvent {
-			code: KeyCode::Char('c'),
-			modifiers: KeyModifiers::CONTROL,
-		}), true),
-		case::resize(Event::Resize(100, 100), true),
-		case::movement(Event::from(KeyCode::Up), true),
-		case::help(Event::from('?'), true),
-		case::undo_redo(Event::Key(KeyEvent {
-			code: KeyCode::Char('z'),
-			modifiers: KeyModifiers::CONTROL,
-		}), true),
-		case::other(Event::from('a'), false),
-	)]
-	fn read_event_enabled(event: Event, handled: bool) {
+	#[rstest]
+	#[case::standard(Event::Key(KeyEvent {
+		code: KeyCode::Char('c'),
+		modifiers: KeyModifiers::CONTROL,
+	}), true)]
+	#[case::resize(Event::Resize(100, 100), true)]
+	#[case::movement(Event::from(KeyCode::Up), true)]
+	#[case::help(Event::from('?'), true)]
+	#[case::undo_redo(Event::Key(KeyEvent {
+		code: KeyCode::Char('z'),
+		modifiers: KeyModifiers::CONTROL,
+	}), true)]
+	#[case::other(Event::from('a'), false)]
+	fn read_event_enabled(#[case] event: Event, #[case] handled: bool) {
 		with_event_handler(&[event], |context| {
 			let result = context.event_handler.read_event(
 				&InputOptions::new().movement(true).help(true).undo_redo(true),
@@ -238,20 +232,17 @@ mod tests {
 		});
 	}
 
-	#[rstest(
-		event,
-		expected,
-		case::standard(Event::Key(KeyEvent {
-			code: KeyCode::Char('c'),
-			modifiers: KeyModifiers::CONTROL,
-		}), Event::from(MetaEvent::Kill)),
-		case::standard(Event::Key(KeyEvent {
-			code: KeyCode::Char('d'),
-			modifiers: KeyModifiers::CONTROL,
-		}), Event::from(MetaEvent::Exit)),
-		case::other(Event::from('a'), Event::from(KeyCode::Null)),
-	)]
-	fn standard_inputs(event: Event, expected: Event) {
+	#[rstest]
+	#[case::standard(Event::Key(KeyEvent {
+		code: KeyCode::Char('c'),
+		modifiers: KeyModifiers::CONTROL,
+	}), Event::from(MetaEvent::Kill))]
+	#[case::standard(Event::Key(KeyEvent {
+		code: KeyCode::Char('d'),
+		modifiers: KeyModifiers::CONTROL,
+	}), Event::from(MetaEvent::Exit))]
+	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
+	fn standard_inputs(#[case] event: Event, #[case] expected: Event) {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
@@ -261,20 +252,17 @@ mod tests {
 		});
 	}
 
-	#[rstest(
-		event,
-		expected,
-		case::standard(Event::from(KeyCode::Up), Event::from(MetaEvent::ScrollUp)),
-		case::standard(Event::from(KeyCode::Down), Event::from(MetaEvent::ScrollDown)),
-		case::standard(Event::from(KeyCode::Left), Event::from(MetaEvent::ScrollLeft)),
-		case::standard(Event::from(KeyCode::Right), Event::from(MetaEvent::ScrollRight)),
-		case::standard(Event::from(KeyCode::PageUp), Event::from(MetaEvent::ScrollJumpUp)),
-		case::standard(Event::from(KeyCode::PageDown), Event::from(MetaEvent::ScrollJumpDown)),
-		case::standard(Event::from(KeyCode::Home), Event::from(MetaEvent::ScrollTop)),
-		case::standard(Event::from(KeyCode::End), Event::from(MetaEvent::ScrollBottom)),
-		case::other(Event::from('a'), Event::from(KeyCode::Null))
-	)]
-	fn movement_inputs(event: Event, expected: Event) {
+	#[rstest]
+	#[case::standard(Event::from(KeyCode::Up), Event::from(MetaEvent::ScrollUp))]
+	#[case::standard(Event::from(KeyCode::Down), Event::from(MetaEvent::ScrollDown))]
+	#[case::standard(Event::from(KeyCode::Left), Event::from(MetaEvent::ScrollLeft))]
+	#[case::standard(Event::from(KeyCode::Right), Event::from(MetaEvent::ScrollRight))]
+	#[case::standard(Event::from(KeyCode::PageUp), Event::from(MetaEvent::ScrollJumpUp))]
+	#[case::standard(Event::from(KeyCode::PageDown), Event::from(MetaEvent::ScrollJumpDown))]
+	#[case::standard(Event::from(KeyCode::Home), Event::from(MetaEvent::ScrollTop))]
+	#[case::standard(Event::from(KeyCode::End), Event::from(MetaEvent::ScrollBottom))]
+	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
+	fn movement_inputs(#[case] event: Event, #[case] expected: Event) {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
@@ -284,20 +272,17 @@ mod tests {
 		});
 	}
 
-	#[rstest(
-		event,
-		expected,
-		case::standard(Event::Key(KeyEvent {
-			code: KeyCode::Char('z'),
-			modifiers: KeyModifiers::CONTROL,
-		}), Event::from(MetaEvent::Undo)),
-		case::standard(Event::Key(KeyEvent {
-			code: KeyCode::Char('y'),
-			modifiers: KeyModifiers::CONTROL,
-		}), Event::from(MetaEvent::Redo)),
-		case::other(Event::from('a'), Event::from(KeyCode::Null))
-	)]
-	fn undo_redo_inputs(event: Event, expected: Event) {
+	#[rstest]
+	#[case::standard(Event::Key(KeyEvent {
+		code: KeyCode::Char('z'),
+		modifiers: KeyModifiers::CONTROL,
+	}), Event::from(MetaEvent::Undo))]
+	#[case::standard(Event::Key(KeyEvent {
+		code: KeyCode::Char('y'),
+		modifiers: KeyModifiers::CONTROL,
+	}), Event::from(MetaEvent::Redo))]
+	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
+	fn undo_redo_inputs(#[case] event: Event, #[case] expected: Event) {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler

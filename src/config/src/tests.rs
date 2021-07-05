@@ -648,39 +648,36 @@ fn config_git_editor_invalid() {
 	);
 }
 
-#[rstest(
-	binding,
-	expected,
-	case::backspace("backspace", "Backspace"),
-	case::backtab("backtab", "BackTab"),
-	case::delete("delete", "Delete"),
-	case::down("down", "Down"),
-	case::end("end", "End"),
-	case::home("home", "Home"),
-	case::insert("insert", "Insert"),
-	case::left("left", "Left"),
-	case::pagedown("pagedown", "PageDown"),
-	case::pageup("pageup", "PageUp"),
-	case::right("right", "Right"),
-	case::tab("tab", "Tab"),
-	case::up("up", "Up"),
-	case::f1("f1", "F1"),
-	case::f255("f255", "F255"),
-	case::modifier_character_lowercase("Control+a", "Controla"),
-	case::modifier_character_uppercase("Control+A", "ControlA"),
-	case::modifier_character_number("Control+1", "Control1"),
-	case::modifier_character_special("Control++", "Control+"),
-	case::modifier_character("Control+a", "Controla"),
-	case::modifier_special("Control+End", "ControlEnd"),
-	case::modifier_function("Control+F32", "ControlF32"),
-	case::modifier_control_alt_shift_out_of_order_1("Alt+Shift+Control+End", "ShiftControlAltEnd"),
-	case::modifier_control_alt_shift_out_of_order_2("Shift+Control+Alt+End", "ShiftControlAltEnd"),
-	case::modifier_only_shift("Shift+End", "ShiftEnd"),
-	case::modifier_only_control("Control+End", "ControlEnd"),
-	case::modifier_only_control("a b c d", "a,b,c,d"),
-	case::modifier_only_control("Control+End Control+A", "ControlEnd,ControlA")
-)]
-fn config_key_bindings(binding: &str, expected: &str) {
+#[rstest]
+#[case::backspace("backspace", "Backspace")]
+#[case::backtab("backtab", "BackTab")]
+#[case::delete("delete", "Delete")]
+#[case::down("down", "Down")]
+#[case::end("end", "End")]
+#[case::home("home", "Home")]
+#[case::insert("insert", "Insert")]
+#[case::left("left", "Left")]
+#[case::pagedown("pagedown", "PageDown")]
+#[case::pageup("pageup", "PageUp")]
+#[case::right("right", "Right")]
+#[case::tab("tab", "Tab")]
+#[case::up("up", "Up")]
+#[case::f1("f1", "F1")]
+#[case::f255("f255", "F255")]
+#[case::modifier_character_lowercase("Control+a", "Controla")]
+#[case::modifier_character_uppercase("Control+A", "ControlA")]
+#[case::modifier_character_number("Control+1", "Control1")]
+#[case::modifier_character_special("Control++", "Control+")]
+#[case::modifier_character("Control+a", "Controla")]
+#[case::modifier_special("Control+End", "ControlEnd")]
+#[case::modifier_function("Control+F32", "ControlF32")]
+#[case::modifier_control_alt_shift_out_of_order_1("Alt+Shift+Control+End", "ShiftControlAltEnd")]
+#[case::modifier_control_alt_shift_out_of_order_2("Shift+Control+Alt+End", "ShiftControlAltEnd")]
+#[case::modifier_only_shift("Shift+End", "ShiftEnd")]
+#[case::modifier_only_control("Control+End", "ControlEnd")]
+#[case::modifier_only_control("a b c d", "a,b,c,d")]
+#[case::modifier_only_control("Control+End Control+A", "ControlEnd,ControlA")]
+fn config_key_bindings(#[case] binding: &str, #[case] expected: &str) {
 	let config = load(|git_config| {
 		git_config
 			.set_str("interactive-rebase-tool.inputAbort", binding)

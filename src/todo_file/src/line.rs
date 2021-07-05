@@ -214,89 +214,86 @@ mod tests {
 
 	use super::*;
 
-	#[rstest(
-		line,
-		expected,
-		case::pick_action("pick aaa comment", &Line {
-			action: Action::Pick,
-			hash: String::from("aaa"),
-			content: String::from("comment"),
-			mutated: false,
-		}),
-		case::reword_action("reword aaa comment", &Line {
-			action: Action::Reword,
-			hash: String::from("aaa"),
-			content: String::from("comment"),
-			mutated: false,
-		}),
-		case::edit_action("edit aaa comment", &Line {
-			action: Action::Edit,
-			hash: String::from("aaa"),
-			content: String::from("comment"),
-			mutated: false,
-		}),
-		case::squash_action("squash aaa comment", &Line {
-			action: Action::Squash,
-			hash: String::from("aaa"),
-			content: String::from("comment"),
-			mutated: false,
-		}),
-		case::fixup_action("fixup aaa comment", &Line {
-			action: Action::Fixup,
-			hash: String::from("aaa"),
-			content: String::from("comment"),
-			mutated: false,
-		}),
-		case::drop_action("drop aaa comment", &Line {
-			action: Action::Drop,
-			hash: String::from("aaa"),
-			content: String::from("comment"),
-			mutated: false,
-		}),
-		case::action_without_comment("pick aaa", &Line {
-			action: Action::Pick,
-			hash: String::from("aaa"),
-			content: String::from(""),
-			mutated: false,
-		}),
-		case::exec_action("exec command", &Line {
-			action: Action::Exec,
-			hash: String::from(""),
-			content: String::from("command"),
-			mutated: false,
-		}),
-		case::label_action("label ref", &Line {
-			action: Action::Label,
-			hash: String::from(""),
-			content: String::from("ref"),
-			mutated: false,
-		}),
-		case::reset_action("reset ref", &Line {
-			action: Action::Reset,
-			hash: String::from(""),
-			content: String::from("ref"),
-			mutated: false,
-		}),
-		case::reset_action("merge command", &Line {
-			action: Action::Merge,
-			hash: String::from(""),
-			content: String::from("command"),
-			mutated: false,
-		}),
-		case::break_action("break", &Line {
-			action: Action::Break,
-			hash: String::from(""),
-			content: String::from(""),
-			mutated: false,
-		}),
-		case::nnop( "noop", &Line {
-			action: Action::Noop,
-			hash: String::from(""),
-			content: String::from(""),
-			mutated: false,
-		}),
-	)]
-	fn new(line: &str, expected: &Line) {
+	#[rstest]
+	#[case::pick_action("pick aaa comment", &Line {
+		action: Action::Pick,
+		hash: String::from("aaa"),
+		content: String::from("comment"),
+		mutated: false,
+	})]
+	#[case::reword_action("reword aaa comment", &Line {
+		action: Action::Reword,
+		hash: String::from("aaa"),
+		content: String::from("comment"),
+		mutated: false,
+	})]
+	#[case::edit_action("edit aaa comment", &Line {
+		action: Action::Edit,
+		hash: String::from("aaa"),
+		content: String::from("comment"),
+		mutated: false,
+	})]
+	#[case::squash_action("squash aaa comment", &Line {
+		action: Action::Squash,
+		hash: String::from("aaa"),
+		content: String::from("comment"),
+		mutated: false,
+	})]
+	#[case::fixup_action("fixup aaa comment", &Line {
+		action: Action::Fixup,
+		hash: String::from("aaa"),
+		content: String::from("comment"),
+		mutated: false,
+	})]
+	#[case::drop_action("drop aaa comment", &Line {
+		action: Action::Drop,
+		hash: String::from("aaa"),
+		content: String::from("comment"),
+		mutated: false,
+	})]
+	#[case::action_without_comment("pick aaa", &Line {
+		action: Action::Pick,
+		hash: String::from("aaa"),
+		content: String::from(""),
+		mutated: false,
+	})]
+	#[case::exec_action("exec command", &Line {
+		action: Action::Exec,
+		hash: String::from(""),
+		content: String::from("command"),
+		mutated: false,
+	})]
+	#[case::label_action("label ref", &Line {
+		action: Action::Label,
+		hash: String::from(""),
+		content: String::from("ref"),
+		mutated: false,
+	})]
+	#[case::reset_action("reset ref", &Line {
+		action: Action::Reset,
+		hash: String::from(""),
+		content: String::from("ref"),
+		mutated: false,
+	})]
+	#[case::reset_action("merge command", &Line {
+		action: Action::Merge,
+		hash: String::from(""),
+		content: String::from("command"),
+		mutated: false,
+	})]
+	#[case::break_action("break", &Line {
+		action: Action::Break,
+		hash: String::from(""),
+		content: String::from(""),
+		mutated: false,
+	})]
+	#[case::nnop( "noop", &Line {
+		action: Action::Noop,
+		hash: String::from(""),
+		content: String::from(""),
+		mutated: false,
+	})]
+	fn new(#[case] line: &str, #[case] expected: &Line) {
 		assert_eq!(&Line::new(line).unwrap(), expected);
 	}
 
@@ -360,54 +357,45 @@ mod tests {
 		});
 	}
 
-	#[rstest(
-		line,
-		expected_err,
-		case::invalid_action("invalid aaa comment", "Invalid action: invalid"),
-		case::invalid_line_only("invalid", "Invalid line: invalid"),
-		case::pick_line_only("pick", "Invalid line: pick"),
-		case::reword_line_only("reword", "Invalid line: reword"),
-		case::edit_line_only("edit", "Invalid line: edit"),
-		case::squash_line_only("squash", "Invalid line: squash"),
-		case::fixup_line_only("fixup", "Invalid line: fixup"),
-		case::exec_line_only("exec", "Invalid line: exec"),
-		case::drop_line_only("drop", "Invalid line: drop"),
-		case::label_line_only("label", "Invalid line: label"),
-		case::reset_line_only("reset", "Invalid line: reset"),
-		case::merge_line_only("merge", "Invalid line: merge")
-	)]
-	fn new_err(line: &str, expected_err: &str) {
+	#[rstest]
+	#[case::invalid_action("invalid aaa comment", "Invalid action: invalid")]
+	#[case::invalid_line_only("invalid", "Invalid line: invalid")]
+	#[case::pick_line_only("pick", "Invalid line: pick")]
+	#[case::reword_line_only("reword", "Invalid line: reword")]
+	#[case::edit_line_only("edit", "Invalid line: edit")]
+	#[case::squash_line_only("squash", "Invalid line: squash")]
+	#[case::fixup_line_only("fixup", "Invalid line: fixup")]
+	#[case::exec_line_only("exec", "Invalid line: exec")]
+	#[case::drop_line_only("drop", "Invalid line: drop")]
+	#[case::label_line_only("label", "Invalid line: label")]
+	#[case::reset_line_only("reset", "Invalid line: reset")]
+	#[case::merge_line_only("merge", "Invalid line: merge")]
+	fn new_err(#[case] line: &str, #[case] expected_err: &str) {
 		assert_eq!(Line::new(line).unwrap_err().to_string(), expected_err);
 	}
 
-	#[rstest(
-		from,
-		to,
-		case::drop(Action::Drop, Action::Fixup),
-		case::edit(Action::Edit, Action::Fixup),
-		case::fixup(Action::Fixup, Action::Pick),
-		case::pick(Action::Pick, Action::Fixup),
-		case::reword(Action::Reword, Action::Fixup),
-		case::squash(Action::Squash, Action::Fixup)
-	)]
-	fn set_action_non_static(from: Action, to: Action) {
+	#[rstest]
+	#[case::drop(Action::Drop, Action::Fixup)]
+	#[case::edit(Action::Edit, Action::Fixup)]
+	#[case::fixup(Action::Fixup, Action::Pick)]
+	#[case::pick(Action::Pick, Action::Fixup)]
+	#[case::reword(Action::Reword, Action::Fixup)]
+	#[case::squash(Action::Squash, Action::Fixup)]
+	fn set_action_non_static(#[case] from: Action, #[case] to: Action) {
 		let mut line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, to);
 		assert!(line.mutated);
 	}
 
-	#[rstest(
-		from,
-		to,
-		case::break_action(Action::Break, Action::Fixup),
-		case::label_action(Action::Label, Action::Fixup),
-		case::reset_action(Action::Reset, Action::Fixup),
-		case::merge_action(Action::Merge, Action::Fixup),
-		case::exec(Action::Exec, Action::Fixup),
-		case::noop(Action::Noop, Action::Fixup)
-	)]
-	fn set_action_static(from: Action, to: Action) {
+	#[rstest]
+	#[case::break_action(Action::Break, Action::Fixup)]
+	#[case::label_action(Action::Label, Action::Fixup)]
+	#[case::reset_action(Action::Reset, Action::Fixup)]
+	#[case::merge_action(Action::Merge, Action::Fixup)]
+	#[case::exec(Action::Exec, Action::Fixup)]
+	#[case::noop(Action::Noop, Action::Fixup)]
+	fn set_action_static(#[case] from: Action, #[case] to: Action) {
 		let mut line = Line::new(format!("{} comment", from.as_string()).as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, from);
@@ -430,127 +418,107 @@ mod tests {
 		assert!(!line.mutated);
 	}
 
-	#[rstest(
-		line,
-		expected,
-		case::break_action("break", ""),
-		case::drop("drop aaa comment", "comment"),
-		case::edit("edit aaa comment", "comment"),
-		case::exec("exec git commit --amend 'foo'", "new"),
-		case::fixup("fixup aaa comment", "comment"),
-		case::pick("pick aaa comment", "comment"),
-		case::reword("reword aaa comment", "comment"),
-		case::squash("squash aaa comment", "comment"),
-		case::label("label ref", "new"),
-		case::reset("reset ref", "new"),
-		case::merge("merge command", "new")
-	)]
-	fn edit_content(line: &str, expected: &str) {
+	#[rstest]
+	#[case::break_action("break", "")]
+	#[case::drop("drop aaa comment", "comment")]
+	#[case::edit("edit aaa comment", "comment")]
+	#[case::exec("exec git commit --amend 'foo'", "new")]
+	#[case::fixup("fixup aaa comment", "comment")]
+	#[case::pick("pick aaa comment", "comment")]
+	#[case::reword("reword aaa comment", "comment")]
+	#[case::squash("squash aaa comment", "comment")]
+	#[case::label("label ref", "new")]
+	#[case::reset("reset ref", "new")]
+	#[case::merge("merge command", "new")]
+	fn edit_content(#[case] line: &str, #[case] expected: &str) {
 		let mut line = Line::new(line).unwrap();
 		line.edit_content("new");
 		assert_eq!(line.get_content(), expected);
 	}
 
-	#[rstest(
-		line,
-		expected,
-		case::break_action("break", ""),
-		case::drop("drop aaa comment", "comment"),
-		case::edit("edit aaa comment", "comment"),
-		case::exec("exec git commit --amend 'foo'", "git commit --amend 'foo'"),
-		case::fixup("fixup aaa comment", "comment"),
-		case::pick("pick aaa comment", "comment"),
-		case::reword("reword aaa comment", "comment"),
-		case::squash("squash aaa comment", "comment")
-	)]
-	fn get_content(line: &str, expected: &str) {
+	#[rstest]
+	#[case::break_action("break", "")]
+	#[case::drop("drop aaa comment", "comment")]
+	#[case::edit("edit aaa comment", "comment")]
+	#[case::exec("exec git commit --amend 'foo'", "git commit --amend 'foo'")]
+	#[case::fixup("fixup aaa comment", "comment")]
+	#[case::pick("pick aaa comment", "comment")]
+	#[case::reword("reword aaa comment", "comment")]
+	#[case::squash("squash aaa comment", "comment")]
+	fn get_content(#[case] line: &str, #[case] expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_content(), expected);
 	}
 
-	#[rstest(
-		line,
-		expected,
-		case::break_action("break", Action::Break),
-		case::drop("drop aaa comment", Action::Drop),
-		case::edit("edit aaa comment", Action::Edit),
-		case::exec("exec git commit --amend 'foo'", Action::Exec),
-		case::fixup("fixup aaa comment", Action::Fixup),
-		case::pick("pick aaa comment", Action::Pick),
-		case::reword("reword aaa comment", Action::Reword),
-		case::squash("squash aaa comment", Action::Squash)
-	)]
-	fn get_action(line: &str, expected: Action) {
+	#[rstest]
+	#[case::break_action("break", Action::Break)]
+	#[case::drop("drop aaa comment", Action::Drop)]
+	#[case::edit("edit aaa comment", Action::Edit)]
+	#[case::exec("exec git commit --amend 'foo'", Action::Exec)]
+	#[case::fixup("fixup aaa comment", Action::Fixup)]
+	#[case::pick("pick aaa comment", Action::Pick)]
+	#[case::reword("reword aaa comment", Action::Reword)]
+	#[case::squash("squash aaa comment", Action::Squash)]
+	fn get_action(#[case] line: &str, #[case] expected: Action) {
 		assert_eq!(Line::new(line).unwrap().get_action(), &expected);
 	}
 
-	#[rstest(
-		line,
-		expected,
-		case::break_action("break", ""),
-		case::drop("drop aaa comment", "aaa"),
-		case::edit("edit aaa comment", "aaa"),
-		case::exec("exec git commit --amend 'foo'", ""),
-		case::fixup("fixup aaa comment", "aaa"),
-		case::pick("pick aaa comment", "aaa"),
-		case::reword("reword aaa comment", "aaa"),
-		case::squash("squash aaa comment", "aaa")
-	)]
-	fn get_hash(line: &str, expected: &str) {
+	#[rstest]
+	#[case::break_action("break", "")]
+	#[case::drop("drop aaa comment", "aaa")]
+	#[case::edit("edit aaa comment", "aaa")]
+	#[case::exec("exec git commit --amend 'foo'", "")]
+	#[case::fixup("fixup aaa comment", "aaa")]
+	#[case::pick("pick aaa comment", "aaa")]
+	#[case::reword("reword aaa comment", "aaa")]
+	#[case::squash("squash aaa comment", "aaa")]
+	fn get_hash(#[case] line: &str, #[case] expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_hash(), expected);
 	}
 
-	#[rstest(
-		line,
-		expected,
-		case::break_action("break", false),
-		case::drop("drop aaa comment", true),
-		case::edit("edit aaa comment", true),
-		case::exec("exec git commit --amend 'foo'", false),
-		case::fixup("fixup aaa comment", true),
-		case::pick("pick aaa comment", true),
-		case::reword("reword aaa comment", true),
-		case::squash("squash aaa comment", true),
-		case::label("label ref", false),
-		case::reset("reset ref", false),
-		case::merge("merge command", false)
-	)]
-	fn has_reference(line: &str, expected: bool) {
+	#[rstest]
+	#[case::break_action("break", false)]
+	#[case::drop("drop aaa comment", true)]
+	#[case::edit("edit aaa comment", true)]
+	#[case::exec("exec git commit --amend 'foo'", false)]
+	#[case::fixup("fixup aaa comment", true)]
+	#[case::pick("pick aaa comment", true)]
+	#[case::reword("reword aaa comment", true)]
+	#[case::squash("squash aaa comment", true)]
+	#[case::label("label ref", false)]
+	#[case::reset("reset ref", false)]
+	#[case::merge("merge command", false)]
+	fn has_reference(#[case] line: &str, #[case] expected: bool) {
 		assert_eq!(Line::new(line).unwrap().has_reference(), expected);
 	}
 
-	#[rstest(
-		from,
-		editable,
-		case::drop(Action::Break, false),
-		case::drop(Action::Drop, false),
-		case::edit(Action::Edit, false),
-		case::fixup(Action::Fixup, false),
-		case::pick(Action::Noop, false),
-		case::pick(Action::Pick, false),
-		case::reword(Action::Reword, false),
-		case::squash(Action::Squash, false),
-		case::squash(Action::Exec, true),
-		case::squash(Action::Label, true),
-		case::squash(Action::Reset, true),
-		case::squash(Action::Merge, true)
-	)]
-	fn is_editable(from: Action, editable: bool) {
+	#[rstest]
+	#[case::drop(Action::Break, false)]
+	#[case::drop(Action::Drop, false)]
+	#[case::edit(Action::Edit, false)]
+	#[case::fixup(Action::Fixup, false)]
+	#[case::pick(Action::Noop, false)]
+	#[case::pick(Action::Pick, false)]
+	#[case::reword(Action::Reword, false)]
+	#[case::squash(Action::Squash, false)]
+	#[case::squash(Action::Exec, true)]
+	#[case::squash(Action::Label, true)]
+	#[case::squash(Action::Reset, true)]
+	#[case::squash(Action::Merge, true)]
+	fn is_editable(#[case] from: Action, #[case] editable: bool) {
 		let line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
 		assert_eq!(line.is_editable(), editable);
 	}
 
-	#[rstest(
-		line,
-		case::break_action("break"),
-		case::drop("drop aaa comment"),
-		case::edit("edit aaa comment"),
-		case::exec("exec git commit --amend 'foo'"),
-		case::fixup("fixup aaa comment"),
-		case::pick("pick aaa comment"),
-		case::reword("reword aaa comment"),
-		case::squash("squash aaa comment")
-	)]
-	fn to_text(line: &str) {
+	#[rstest]
+	#[case::break_action("break")]
+	#[case::drop("drop aaa comment")]
+	#[case::edit("edit aaa comment")]
+	#[case::exec("exec git commit --amend 'foo'")]
+	#[case::fixup("fixup aaa comment")]
+	#[case::pick("pick aaa comment")]
+	#[case::reword("reword aaa comment")]
+	#[case::squash("squash aaa comment")]
+	fn to_text(#[case] line: &str) {
 		assert_eq!(Line::new(line).unwrap().to_text(), line);
 	}
 }

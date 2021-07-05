@@ -48,17 +48,15 @@ fn handle_event_no() {
 	});
 }
 
-#[rstest(
-	event,
-	case::resize(Event::Resize(100, 100)),
-	case::scroll_left(Event::from(MetaEvent::ScrollLeft)),
-	case::scroll_right(Event::from(MetaEvent::ScrollRight)),
-	case::scroll_down(Event::from(MetaEvent::ScrollDown)),
-	case::scroll_up(Event::from(MetaEvent::ScrollUp)),
-	case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown)),
-	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
-)]
-fn input_standard(event: Event) {
+#[rstest]
+#[case::resize(Event::Resize(100, 100))]
+#[case::scroll_left(Event::from(MetaEvent::ScrollLeft))]
+#[case::scroll_right(Event::from(MetaEvent::ScrollRight))]
+#[case::scroll_down(Event::from(MetaEvent::ScrollDown))]
+#[case::scroll_up(Event::from(MetaEvent::ScrollUp))]
+#[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
+#[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
+fn input_standard(#[case] event: Event) {
 	with_event_handler(&[event], |context| {
 		let module = Confirm::new("Prompt message", &[], &[]);
 		let (confirmed, evt) = module.handle_event(&context.event_handler);

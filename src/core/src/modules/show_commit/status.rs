@@ -40,22 +40,19 @@ mod tests {
 
 	use super::*;
 
-	#[rstest(
-		input,
-		expected,
-		case::added(Delta::Added, &Status::Added),
-		case::copied(Delta::Copied, &Status::Copied),
-		case::deleted(Delta::Deleted, &Status::Deleted),
-		case::modified(Delta::Modified, &Status::Modified),
-		case::renamed(Delta::Renamed, &Status::Renamed),
-		case::typechange(Delta::Typechange, &Status::Typechange),
-		case::ignored(Delta::Ignored, &Status::Other),
-		case::conflicted(Delta::Conflicted, &Status::Other),
-		case::unmodified(Delta::Unmodified, &Status::Other),
-		case::unreadable(Delta::Unreadable, &Status::Other),
-		case::untracked(Delta::Untracked, &Status::Other)
-	)]
-	fn from_delta(input: Delta, expected: &Status) {
+	#[rstest]
+	#[case::added(Delta::Added, &Status::Added)]
+	#[case::copied(Delta::Copied, &Status::Copied)]
+	#[case::deleted(Delta::Deleted, &Status::Deleted)]
+	#[case::modified(Delta::Modified, &Status::Modified)]
+	#[case::renamed(Delta::Renamed, &Status::Renamed)]
+	#[case::typechange(Delta::Typechange, &Status::Typechange)]
+	#[case::ignored(Delta::Ignored, &Status::Other)]
+	#[case::conflicted(Delta::Conflicted, &Status::Other)]
+	#[case::unmodified(Delta::Unmodified, &Status::Other)]
+	#[case::unreadable(Delta::Unreadable, &Status::Other)]
+	#[case::untracked(Delta::Untracked, &Status::Other)]
+	fn from_delta(#[case] input: Delta, #[case] expected: &Status) {
 		assert_eq!(&Status::from(input), expected);
 	}
 }

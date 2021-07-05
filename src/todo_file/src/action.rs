@@ -201,23 +201,20 @@ mod tests {
 	test_action_to_abbreviation!(t, Action::Reset, "t");
 	test_action_to_abbreviation!(m, Action::Merge, "m");
 
-	#[rstest(
-		action,
-		expected,
-		case::break_action(Action::Break, true),
-		case::drop(Action::Drop, false),
-		case::edit(Action::Edit, false),
-		case::exec(Action::Exec, true),
-		case::fixup(Action::Fixup, false),
-		case::noop(Action::Noop, true),
-		case::pick(Action::Pick, false),
-		case::reword(Action::Reword, false),
-		case::squash(Action::Squash, false),
-		case::squash(Action::Label, true),
-		case::squash(Action::Reset, true),
-		case::squash(Action::Merge, true)
-	)]
-	fn module_lifecycle(action: Action, expected: bool) {
+	#[rstest]
+	#[case::break_action(Action::Break, true)]
+	#[case::drop(Action::Drop, false)]
+	#[case::edit(Action::Edit, false)]
+	#[case::exec(Action::Exec, true)]
+	#[case::fixup(Action::Fixup, false)]
+	#[case::noop(Action::Noop, true)]
+	#[case::pick(Action::Pick, false)]
+	#[case::reword(Action::Reword, false)]
+	#[case::squash(Action::Squash, false)]
+	#[case::squash(Action::Label, true)]
+	#[case::squash(Action::Reset, true)]
+	#[case::squash(Action::Merge, true)]
+	fn module_lifecycle(#[case] action: Action, #[case] expected: bool) {
 		assert_eq!(action.is_static(), expected);
 	}
 }

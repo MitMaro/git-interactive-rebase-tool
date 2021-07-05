@@ -335,43 +335,38 @@ mod tests {
 		set_var("WT_SESSION", "32a25081-6745-4b65-909d-e8257bdbe852");
 		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
 	}
-	#[rstest(
-		red,
-		green,
-		blue,
-		expected_index,
-		case::black(0, 0, 0, 0),
-		case::black(0, 0, 127, 0),
-		case::black(0, 127, 0, 0),
-		case::black(127, 0, 0, 0),
-		case::black(127, 0, 127, 0),
-		case::black(127, 127, 0, 0),
-		case::black(127, 127, 127, 0),
-		case::red(128, 0, 0, 1),
-		case::red(255, 0, 0, 1),
-		case::green(0, 128, 0, 2),
-		case::green(0, 255, 0, 2),
-		case::blue(0, 0, 128, 4),
-		case::blue(0, 0, 255, 4),
-		case::yellow(128, 128, 0, 3),
-		case::yellow(128, 255, 0, 3),
-		case::yellow(255, 255, 0, 3),
-		case::cyan(0, 128, 128, 6),
-		case::cyan(0, 128, 255, 6),
-		case::cyan(0, 255, 255, 6),
-		case::magenta(128, 0, 128, 5),
-		case::magenta(128, 0, 255, 5),
-		case::magenta(255, 0, 255, 5),
-		case::white(128, 128, 128, 7),
-		case::white(128, 128, 255, 7),
-		case::white(128, 255, 128, 7),
-		case::white(128, 255, 255, 7),
-		case::white(155, 128, 128, 7),
-		case::white(155, 128, 255, 7),
-		case::white(155, 255, 128, 7),
-		case::white(155, 255, 255, 7)
-	)]
-	fn find_color_three_bit_rgb(red: u8, green: u8, blue: u8, expected_index: u8) {
+	#[rstest]
+	#[case::black(0, 0, 0, 0)]
+	#[case::black(0, 0, 127, 0)]
+	#[case::black(0, 127, 0, 0)]
+	#[case::black(127, 0, 0, 0)]
+	#[case::black(127, 0, 127, 0)]
+	#[case::black(127, 127, 0, 0)]
+	#[case::black(127, 127, 127, 0)]
+	#[case::red(128, 0, 0, 1)]
+	#[case::red(255, 0, 0, 1)]
+	#[case::green(0, 128, 0, 2)]
+	#[case::green(0, 255, 0, 2)]
+	#[case::blue(0, 0, 128, 4)]
+	#[case::blue(0, 0, 255, 4)]
+	#[case::yellow(128, 128, 0, 3)]
+	#[case::yellow(128, 255, 0, 3)]
+	#[case::yellow(255, 255, 0, 3)]
+	#[case::cyan(0, 128, 128, 6)]
+	#[case::cyan(0, 128, 255, 6)]
+	#[case::cyan(0, 255, 255, 6)]
+	#[case::magenta(128, 0, 128, 5)]
+	#[case::magenta(128, 0, 255, 5)]
+	#[case::magenta(255, 0, 255, 5)]
+	#[case::white(128, 128, 128, 7)]
+	#[case::white(128, 128, 255, 7)]
+	#[case::white(128, 255, 128, 7)]
+	#[case::white(128, 255, 255, 7)]
+	#[case::white(155, 128, 128, 7)]
+	#[case::white(155, 128, 255, 7)]
+	#[case::white(155, 255, 128, 7)]
+	#[case::white(155, 255, 255, 7)]
+	fn find_color_three_bit_rgb(#[case] red: u8, #[case] green: u8, #[case] blue: u8, #[case] expected_index: u8) {
 		let color = Color::Rgb { red, green, blue };
 		assert_eq!(
 			find_color(ColorMode::ThreeBit, color),
@@ -379,65 +374,57 @@ mod tests {
 		);
 	}
 
-	#[rstest(
-		color,
-		expected,
-		case::dark_black(Color::DarkBlack, CrosstermColor::Black),
-		case::dark_blue(Color::DarkBlue, CrosstermColor::Blue),
-		case::dark_cyan(Color::DarkCyan, CrosstermColor::Cyan),
-		case::dark_green(Color::DarkGreen, CrosstermColor::Green),
-		case::dark_magenta(Color::DarkMagenta, CrosstermColor::Magenta),
-		case::dark_red(Color::DarkRed, CrosstermColor::Red),
-		case::dark_white(Color::DarkWhite, CrosstermColor::White),
-		case::dark_white(Color::DarkGrey, CrosstermColor::Grey),
-		case::dark_yellow(Color::DarkYellow, CrosstermColor::Yellow),
-		case::light_black(Color::LightBlack, CrosstermColor::DarkGrey),
-		case::light_grey(Color::LightGrey, CrosstermColor::White),
-		case::light_blue(Color::LightBlue, CrosstermColor::Blue),
-		case::light_cyan(Color::LightCyan, CrosstermColor::Cyan),
-		case::light_green(Color::LightGreen, CrosstermColor::Green),
-		case::light_magenta(Color::LightMagenta, CrosstermColor::Magenta),
-		case::light_red(Color::LightRed, CrosstermColor::Red),
-		case::light_white(Color::LightWhite, CrosstermColor::White),
-		case::light_yellow(Color::LightYellow, CrosstermColor::Yellow),
-		case::default(Color::Default, CrosstermColor::Reset)
-	)]
-	fn find_color_three_bit_color(color: Color, expected: CrosstermColor) {
+	#[rstest]
+	#[case::dark_black(Color::DarkBlack, CrosstermColor::Black)]
+	#[case::dark_blue(Color::DarkBlue, CrosstermColor::Blue)]
+	#[case::dark_cyan(Color::DarkCyan, CrosstermColor::Cyan)]
+	#[case::dark_green(Color::DarkGreen, CrosstermColor::Green)]
+	#[case::dark_magenta(Color::DarkMagenta, CrosstermColor::Magenta)]
+	#[case::dark_red(Color::DarkRed, CrosstermColor::Red)]
+	#[case::dark_white(Color::DarkWhite, CrosstermColor::White)]
+	#[case::dark_white(Color::DarkGrey, CrosstermColor::Grey)]
+	#[case::dark_yellow(Color::DarkYellow, CrosstermColor::Yellow)]
+	#[case::light_black(Color::LightBlack, CrosstermColor::DarkGrey)]
+	#[case::light_grey(Color::LightGrey, CrosstermColor::White)]
+	#[case::light_blue(Color::LightBlue, CrosstermColor::Blue)]
+	#[case::light_cyan(Color::LightCyan, CrosstermColor::Cyan)]
+	#[case::light_green(Color::LightGreen, CrosstermColor::Green)]
+	#[case::light_magenta(Color::LightMagenta, CrosstermColor::Magenta)]
+	#[case::light_red(Color::LightRed, CrosstermColor::Red)]
+	#[case::light_white(Color::LightWhite, CrosstermColor::White)]
+	#[case::light_yellow(Color::LightYellow, CrosstermColor::Yellow)]
+	#[case::default(Color::Default, CrosstermColor::Reset)]
+	fn find_color_three_bit_color(#[case] color: Color, #[case] expected: CrosstermColor) {
 		assert_eq!(find_color(ColorMode::ThreeBit, color), expected);
 	}
 
-	#[rstest(
-		red,
-		green,
-		blue,
-		expected_index,
-		case::black(0, 0, 0, 16),
-		case::black(1, 1, 1, 16),
-		case::black(4, 4, 4, 16),
-		case::black(7, 7, 7, 16),
-		case::grey(8, 8, 8, 232),
-		case::grey(16, 16, 16, 232),
-		case::grey(32, 32, 32, 234),
-		case::grey(64, 64, 64, 237),
-		case::grey(128, 128, 128, 244),
-		case::grey(246, 246, 246, 255),
-		case::white(247, 247, 247, 231),
-		case::white(248, 248, 248, 231),
-		case::white(253, 253, 253, 231),
-		case::white(255, 255, 255, 231),
-		case::base(255, 0, 0, 196),
-		case::base(0, 255, 0, 46),
-		case::base(0, 0, 255, 21),
-		case::base(0, 255, 255, 51),
-		case::base(255, 0, 255, 201),
-		case::base(255, 255, 0, 226),
-		case::sample(127, 0, 0, 88),
-		case::sample(0, 127, 0, 28),
-		case::sample(0, 0, 127, 18),
-		case::sample(127, 0, 127, 90),
-		case::sample(255, 95, 0, 208)
-	)]
-	fn find_color_four_bit_rgb(red: u8, green: u8, blue: u8, expected_index: u8) {
+	#[rstest]
+	#[case::black(0, 0, 0, 16)]
+	#[case::black(1, 1, 1, 16)]
+	#[case::black(4, 4, 4, 16)]
+	#[case::black(7, 7, 7, 16)]
+	#[case::grey(8, 8, 8, 232)]
+	#[case::grey(16, 16, 16, 232)]
+	#[case::grey(32, 32, 32, 234)]
+	#[case::grey(64, 64, 64, 237)]
+	#[case::grey(128, 128, 128, 244)]
+	#[case::grey(246, 246, 246, 255)]
+	#[case::white(247, 247, 247, 231)]
+	#[case::white(248, 248, 248, 231)]
+	#[case::white(253, 253, 253, 231)]
+	#[case::white(255, 255, 255, 231)]
+	#[case::base(255, 0, 0, 196)]
+	#[case::base(0, 255, 0, 46)]
+	#[case::base(0, 0, 255, 21)]
+	#[case::base(0, 255, 255, 51)]
+	#[case::base(255, 0, 255, 201)]
+	#[case::base(255, 255, 0, 226)]
+	#[case::sample(127, 0, 0, 88)]
+	#[case::sample(0, 127, 0, 28)]
+	#[case::sample(0, 0, 127, 18)]
+	#[case::sample(127, 0, 127, 90)]
+	#[case::sample(255, 95, 0, 208)]
+	fn find_color_four_bit_rgb(#[case] red: u8, #[case] green: u8, #[case] blue: u8, #[case] expected_index: u8) {
 		let color = Color::Rgb { red, green, blue };
 		assert_eq!(
 			find_color(ColorMode::FourBit, color),
@@ -445,53 +432,46 @@ mod tests {
 		);
 	}
 
-	#[rstest(
-		color,
-		expected,
-		case::dark_black(Color::DarkBlack, CrosstermColor::Black),
-		case::dark_blue(Color::DarkBlue, CrosstermColor::DarkBlue),
-		case::dark_cyan(Color::DarkCyan, CrosstermColor::DarkCyan),
-		case::dark_green(Color::DarkGreen, CrosstermColor::DarkGreen),
-		case::dark_magenta(Color::DarkMagenta, CrosstermColor::DarkMagenta),
-		case::dark_red(Color::DarkRed, CrosstermColor::DarkRed),
-		case::dark_white(Color::DarkWhite, CrosstermColor::Grey),
-		case::dark_white(Color::DarkGrey, CrosstermColor::DarkGrey),
-		case::dark_yellow(Color::DarkYellow, CrosstermColor::DarkYellow),
-		case::light_black(Color::LightBlack, CrosstermColor::DarkGrey),
-		case::light_grey(Color::LightGrey, CrosstermColor::White),
-		case::light_blue(Color::LightBlue, CrosstermColor::Blue),
-		case::light_cyan(Color::LightCyan, CrosstermColor::Cyan),
-		case::light_green(Color::LightGreen, CrosstermColor::Green),
-		case::light_magenta(Color::LightMagenta, CrosstermColor::Magenta),
-		case::light_red(Color::LightRed, CrosstermColor::Red),
-		case::light_white(Color::LightWhite, CrosstermColor::White),
-		case::light_yellow(Color::LightYellow, CrosstermColor::Yellow),
-		case::default(Color::Default, CrosstermColor::Reset)
-	)]
-	fn find_color_four_bit_color(color: Color, expected: CrosstermColor) {
+	#[rstest]
+	#[case::dark_black(Color::DarkBlack, CrosstermColor::Black)]
+	#[case::dark_blue(Color::DarkBlue, CrosstermColor::DarkBlue)]
+	#[case::dark_cyan(Color::DarkCyan, CrosstermColor::DarkCyan)]
+	#[case::dark_green(Color::DarkGreen, CrosstermColor::DarkGreen)]
+	#[case::dark_magenta(Color::DarkMagenta, CrosstermColor::DarkMagenta)]
+	#[case::dark_red(Color::DarkRed, CrosstermColor::DarkRed)]
+	#[case::dark_white(Color::DarkWhite, CrosstermColor::Grey)]
+	#[case::dark_white(Color::DarkGrey, CrosstermColor::DarkGrey)]
+	#[case::dark_yellow(Color::DarkYellow, CrosstermColor::DarkYellow)]
+	#[case::light_black(Color::LightBlack, CrosstermColor::DarkGrey)]
+	#[case::light_grey(Color::LightGrey, CrosstermColor::White)]
+	#[case::light_blue(Color::LightBlue, CrosstermColor::Blue)]
+	#[case::light_cyan(Color::LightCyan, CrosstermColor::Cyan)]
+	#[case::light_green(Color::LightGreen, CrosstermColor::Green)]
+	#[case::light_magenta(Color::LightMagenta, CrosstermColor::Magenta)]
+	#[case::light_red(Color::LightRed, CrosstermColor::Red)]
+	#[case::light_white(Color::LightWhite, CrosstermColor::White)]
+	#[case::light_yellow(Color::LightYellow, CrosstermColor::Yellow)]
+	#[case::default(Color::Default, CrosstermColor::Reset)]
+	fn find_color_four_bit_color(#[case] color: Color, #[case] expected: CrosstermColor) {
 		assert_eq!(find_color(ColorMode::FourBit, color), expected);
 	}
 
-	#[rstest(
-		red,
-		green,
-		blue,
-		case::black(0, 0, 0),
-		case::grey(128, 128, 128),
-		case::white(255, 255, 255),
-		case::base(255, 0, 0),
-		case::base(0, 255, 0),
-		case::base(0, 0, 255),
-		case::base(0, 255, 255),
-		case::base(255, 0, 255),
-		case::base(255, 255, 0),
-		case::sample(127, 0, 0),
-		case::sample(0, 127, 0),
-		case::sample(0, 0, 127),
-		case::sample(127, 0, 127),
-		case::sample(255, 95, 0)
-	)]
-	fn find_color_true_rgb(red: u8, green: u8, blue: u8) {
+	#[rstest]
+	#[case::black(0, 0, 0)]
+	#[case::grey(128, 128, 128)]
+	#[case::white(255, 255, 255)]
+	#[case::base(255, 0, 0)]
+	#[case::base(0, 255, 0)]
+	#[case::base(0, 0, 255)]
+	#[case::base(0, 255, 255)]
+	#[case::base(255, 0, 255)]
+	#[case::base(255, 255, 0)]
+	#[case::sample(127, 0, 0)]
+	#[case::sample(0, 127, 0)]
+	#[case::sample(0, 0, 127)]
+	#[case::sample(127, 0, 127)]
+	#[case::sample(255, 95, 0)]
+	fn find_color_true_rgb(#[case] red: u8, #[case] green: u8, #[case] blue: u8) {
 		let color = Color::Rgb { red, green, blue };
 		assert_eq!(find_color(ColorMode::TrueColor, color), CrosstermColor::Rgb {
 			r: red,
