@@ -43,7 +43,6 @@ mod external_editor;
 mod insert;
 mod list;
 mod module;
-mod process;
 mod show_commit;
 mod window_size_error;
 

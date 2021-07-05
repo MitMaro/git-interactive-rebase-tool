@@ -11,13 +11,12 @@ use view::View;
 use crate::{
 	confirm_abort::ConfirmAbort,
 	confirm_rebase::ConfirmRebase,
-	core::{arguments::Args, exit::Exit, help::build_help},
+	core::{arguments::Args, exit::Exit, help::build_help, process::Process},
 	error::Error,
 	external_editor::ExternalEditor,
 	insert::Insert,
 	list::List,
 	module::{ExitStatus, Modules, State},
-	process::Process,
 	show_commit::ShowCommit,
 	window_size_error::WindowSizeError,
 };
