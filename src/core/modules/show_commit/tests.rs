@@ -4,12 +4,8 @@ use config::testutil::create_config;
 use rstest::rstest;
 use view::{assert_rendered_output, ViewLine};
 
-use super::*;
-use crate::{
-	assert_process_result,
-	module::testutil::module_test,
-	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
-};
+use super::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User, *};
+use crate::{assert_process_result, module::testutil::module_test};
 
 fn create_minimal_commit() -> Commit {
 	Commit {
