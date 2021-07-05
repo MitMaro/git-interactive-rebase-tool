@@ -94,17 +94,15 @@ fn invalid_selection_character() {
 	});
 }
 
-#[rstest(
-	event,
-	case::resize(Event::Resize(100, 100)),
-	case::scroll_left(Event::from(MetaEvent::ScrollLeft)),
-	case::scroll_right(Event::from(MetaEvent::ScrollRight)),
-	case::scroll_down(Event::from(MetaEvent::ScrollDown)),
-	case::scroll_up(Event::from(MetaEvent::ScrollUp)),
-	case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown)),
-	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
-)]
-fn event_standard(event: Event) {
+#[rstest]
+#[case::resize(Event::Resize(100, 100))]
+#[case::scroll_left(Event::from(MetaEvent::ScrollLeft))]
+#[case::scroll_right(Event::from(MetaEvent::ScrollRight))]
+#[case::scroll_down(Event::from(MetaEvent::ScrollDown))]
+#[case::scroll_up(Event::from(MetaEvent::ScrollUp))]
+#[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
+#[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
+fn event_standard(#[case] event: Event) {
 	handle_event_test(&[event], |context| {
 		let mut module = Choice::new(create_choices());
 		let _ = module.handle_event(&context.event_handler, &context.view_sender);

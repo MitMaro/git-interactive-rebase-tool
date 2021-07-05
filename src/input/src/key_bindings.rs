@@ -183,29 +183,26 @@ mod tests {
 		)]);
 	}
 
-	#[rstest(
-		binding,
-		key_code,
-		case::backspace("Backspace", KeyCode::Backspace),
-		case::back_tab("BackTab", KeyCode::BackTab),
-		case::delete("Delete", KeyCode::Delete),
-		case::down("Down", KeyCode::Down),
-		case::end("End", KeyCode::End),
-		case::enter("Enter", KeyCode::Enter),
-		case::esc("Esc", KeyCode::Esc),
-		case::home("Home", KeyCode::Home),
-		case::insert("Insert", KeyCode::Insert),
-		case::left("Left", KeyCode::Left),
-		case::page_down("PageDown", KeyCode::PageDown),
-		case::page_up("PageUp", KeyCode::PageUp),
-		case::right("Right", KeyCode::Right),
-		case::tab("Tab", KeyCode::Tab),
-		case::up("Up", KeyCode::Up),
-		case::function_in_range("F10", KeyCode::F(10)),
-		case::function_out_of_range("F10000", KeyCode::F(1)),
-		case::char("a", KeyCode::Char('a'))
-	)]
-	fn map_keybindings_key_code(binding: &str, key_code: KeyCode) {
+	#[rstest]
+	#[case::backspace("Backspace", KeyCode::Backspace)]
+	#[case::back_tab("BackTab", KeyCode::BackTab)]
+	#[case::delete("Delete", KeyCode::Delete)]
+	#[case::down("Down", KeyCode::Down)]
+	#[case::end("End", KeyCode::End)]
+	#[case::enter("Enter", KeyCode::Enter)]
+	#[case::esc("Esc", KeyCode::Esc)]
+	#[case::home("Home", KeyCode::Home)]
+	#[case::insert("Insert", KeyCode::Insert)]
+	#[case::left("Left", KeyCode::Left)]
+	#[case::page_down("PageDown", KeyCode::PageDown)]
+	#[case::page_up("PageUp", KeyCode::PageUp)]
+	#[case::right("Right", KeyCode::Right)]
+	#[case::tab("Tab", KeyCode::Tab)]
+	#[case::up("Up", KeyCode::Up)]
+	#[case::function_in_range("F10", KeyCode::F(10))]
+	#[case::function_out_of_range("F10000", KeyCode::F(1))]
+	#[case::char("a", KeyCode::Char('a'))]
+	fn map_keybindings_key_code(#[case] binding: &str, #[case] key_code: KeyCode) {
 		assert_eq!(map_keybindings(&[String::from(binding)]), vec![Event::from(key_code)]);
 	}
 }

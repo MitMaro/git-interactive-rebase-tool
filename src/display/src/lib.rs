@@ -459,143 +459,128 @@ mod tests {
 		assert!(!display.tui.is_dirty());
 	}
 
-	#[rstest(
-		display_color,
-		selected,
-		expected_foreground,
-		expected_background,
-		case::action_break(DisplayColor::ActionBreak, false, CrosstermColor::White, CrosstermColor::Reset),
-		case::action_break_selected(
-			DisplayColor::ActionBreak,
-			true,
-			CrosstermColor::White,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_drop(DisplayColor::ActionDrop, false, CrosstermColor::Red, CrosstermColor::Reset),
-		case::action_drop_selected(
-			DisplayColor::ActionDrop,
-			true,
-			CrosstermColor::Red,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_edit(DisplayColor::ActionEdit, false, CrosstermColor::Blue, CrosstermColor::Reset),
-		case::action_edit_selected(
-			DisplayColor::ActionEdit,
-			true,
-			CrosstermColor::Blue,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_exec(DisplayColor::ActionExec, false, CrosstermColor::White, CrosstermColor::Reset),
-		case::action_exec_selected(
-			DisplayColor::ActionExec,
-			true,
-			CrosstermColor::White,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_fixup(DisplayColor::ActionFixup, false, CrosstermColor::Magenta, CrosstermColor::Reset),
-		case::action_fixup_selected(
-			DisplayColor::ActionFixup,
-			true,
-			CrosstermColor::Magenta,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_pick(DisplayColor::ActionPick, false, CrosstermColor::Green, CrosstermColor::Reset),
-		case::action_pick_selected(
-			DisplayColor::ActionPick,
-			true,
-			CrosstermColor::Green,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_reword(DisplayColor::ActionReword, false, CrosstermColor::Yellow, CrosstermColor::Reset),
-		case::action_reword_selected(
-			DisplayColor::ActionReword,
-			true,
-			CrosstermColor::Yellow,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_squash(DisplayColor::ActionSquash, false, CrosstermColor::Cyan, CrosstermColor::Reset),
-		case::action_squash_selected(
-			DisplayColor::ActionSquash,
-			true,
-			CrosstermColor::Cyan,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_label(DisplayColor::ActionLabel, false, CrosstermColor::DarkYellow, CrosstermColor::Reset),
-		case::action_label_selected(
-			DisplayColor::ActionLabel,
-			true,
-			CrosstermColor::DarkYellow,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_reset(DisplayColor::ActionReset, false, CrosstermColor::DarkYellow, CrosstermColor::Reset),
-		case::action_reset_selected(
-			DisplayColor::ActionReset,
-			true,
-			CrosstermColor::DarkYellow,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::action_merge(DisplayColor::ActionMerge, false, CrosstermColor::DarkYellow, CrosstermColor::Reset),
-		case::action_merge_selected(
-			DisplayColor::ActionMerge,
-			true,
-			CrosstermColor::DarkYellow,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::normal(DisplayColor::Normal, false, CrosstermColor::Reset, CrosstermColor::Reset),
-		case::normal_selected(DisplayColor::Normal, true, CrosstermColor::Reset, CrosstermColor::AnsiValue(237)),
-		case::indicator(DisplayColor::IndicatorColor, false, CrosstermColor::Cyan, CrosstermColor::Reset),
-		case::indicator_selected(
-			DisplayColor::IndicatorColor,
-			true,
-			CrosstermColor::Cyan,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::diff_add(DisplayColor::DiffAddColor, false, CrosstermColor::Green, CrosstermColor::Reset),
-		case::diff_add_selected(
-			DisplayColor::DiffAddColor,
-			true,
-			CrosstermColor::Green,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::diff_remove(DisplayColor::DiffRemoveColor, false, CrosstermColor::Red, CrosstermColor::Reset),
-		case::diff_remove_selected(
-			DisplayColor::DiffRemoveColor,
-			true,
-			CrosstermColor::Red,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::diff_change(DisplayColor::DiffChangeColor, false, CrosstermColor::Yellow, CrosstermColor::Reset),
-		case::diff_change_selected(
-			DisplayColor::DiffChangeColor,
-			true,
-			CrosstermColor::Yellow,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::diff_context(DisplayColor::DiffContextColor, false, CrosstermColor::White, CrosstermColor::Reset),
-		case::diff_context_selected(
-			DisplayColor::DiffContextColor,
-			true,
-			CrosstermColor::White,
-			CrosstermColor::AnsiValue(237)
-		),
-		case::diff_whitespace(
-			DisplayColor::DiffWhitespaceColor,
-			false,
-			CrosstermColor::DarkGrey,
-			CrosstermColor::Reset
-		),
-		case::diff_whitespace_selected(
-			DisplayColor::DiffWhitespaceColor,
-			true,
-			CrosstermColor::DarkGrey,
-			CrosstermColor::AnsiValue(237)
-		)
+	#[rstest]
+	#[case::action_break(DisplayColor::ActionBreak, false, CrosstermColor::White, CrosstermColor::Reset)]
+	#[case::action_break_selected(
+		DisplayColor::ActionBreak,
+		true,
+		CrosstermColor::White,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_drop(DisplayColor::ActionDrop, false, CrosstermColor::Red, CrosstermColor::Reset)]
+	#[case::action_drop_selected(DisplayColor::ActionDrop, true, CrosstermColor::Red, CrosstermColor::AnsiValue(237))]
+	#[case::action_edit(DisplayColor::ActionEdit, false, CrosstermColor::Blue, CrosstermColor::Reset)]
+	#[case::action_edit_selected(DisplayColor::ActionEdit, true, CrosstermColor::Blue, CrosstermColor::AnsiValue(237))]
+	#[case::action_exec(DisplayColor::ActionExec, false, CrosstermColor::White, CrosstermColor::Reset)]
+	#[case::action_exec_selected(
+		DisplayColor::ActionExec,
+		true,
+		CrosstermColor::White,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_fixup(DisplayColor::ActionFixup, false, CrosstermColor::Magenta, CrosstermColor::Reset)]
+	#[case::action_fixup_selected(
+		DisplayColor::ActionFixup,
+		true,
+		CrosstermColor::Magenta,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_pick(DisplayColor::ActionPick, false, CrosstermColor::Green, CrosstermColor::Reset)]
+	#[case::action_pick_selected(
+		DisplayColor::ActionPick,
+		true,
+		CrosstermColor::Green,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_reword(DisplayColor::ActionReword, false, CrosstermColor::Yellow, CrosstermColor::Reset)]
+	#[case::action_reword_selected(
+		DisplayColor::ActionReword,
+		true,
+		CrosstermColor::Yellow,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_squash(DisplayColor::ActionSquash, false, CrosstermColor::Cyan, CrosstermColor::Reset)]
+	#[case::action_squash_selected(
+		DisplayColor::ActionSquash,
+		true,
+		CrosstermColor::Cyan,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_label(DisplayColor::ActionLabel, false, CrosstermColor::DarkYellow, CrosstermColor::Reset)]
+	#[case::action_label_selected(
+		DisplayColor::ActionLabel,
+		true,
+		CrosstermColor::DarkYellow,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_reset(DisplayColor::ActionReset, false, CrosstermColor::DarkYellow, CrosstermColor::Reset)]
+	#[case::action_reset_selected(
+		DisplayColor::ActionReset,
+		true,
+		CrosstermColor::DarkYellow,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_merge(DisplayColor::ActionMerge, false, CrosstermColor::DarkYellow, CrosstermColor::Reset)]
+	#[case::action_merge_selected(
+		DisplayColor::ActionMerge,
+		true,
+		CrosstermColor::DarkYellow,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::normal(DisplayColor::Normal, false, CrosstermColor::Reset, CrosstermColor::Reset)]
+	#[case::normal_selected(DisplayColor::Normal, true, CrosstermColor::Reset, CrosstermColor::AnsiValue(237))]
+	#[case::indicator(DisplayColor::IndicatorColor, false, CrosstermColor::Cyan, CrosstermColor::Reset)]
+	#[case::indicator_selected(
+		DisplayColor::IndicatorColor,
+		true,
+		CrosstermColor::Cyan,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::diff_add(DisplayColor::DiffAddColor, false, CrosstermColor::Green, CrosstermColor::Reset)]
+	#[case::diff_add_selected(
+		DisplayColor::DiffAddColor,
+		true,
+		CrosstermColor::Green,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::diff_remove(DisplayColor::DiffRemoveColor, false, CrosstermColor::Red, CrosstermColor::Reset)]
+	#[case::diff_remove_selected(
+		DisplayColor::DiffRemoveColor,
+		true,
+		CrosstermColor::Red,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::diff_change(DisplayColor::DiffChangeColor, false, CrosstermColor::Yellow, CrosstermColor::Reset)]
+	#[case::diff_change_selected(
+		DisplayColor::DiffChangeColor,
+		true,
+		CrosstermColor::Yellow,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::diff_context(DisplayColor::DiffContextColor, false, CrosstermColor::White, CrosstermColor::Reset)]
+	#[case::diff_context_selected(
+		DisplayColor::DiffContextColor,
+		true,
+		CrosstermColor::White,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::diff_whitespace(
+		DisplayColor::DiffWhitespaceColor,
+		false,
+		CrosstermColor::DarkGrey,
+		CrosstermColor::Reset
+	)]
+	#[case::diff_whitespace_selected(
+		DisplayColor::DiffWhitespaceColor,
+		true,
+		CrosstermColor::DarkGrey,
+		CrosstermColor::AnsiValue(237)
 	)]
 	fn color(
-		display_color: DisplayColor,
-		selected: bool,
-		expected_foreground: CrosstermColor,
-		expected_background: CrosstermColor,
+		#[case] display_color: DisplayColor,
+		#[case] selected: bool,
+		#[case] expected_foreground: CrosstermColor,
+		#[case] expected_background: CrosstermColor,
 	) {
 		let mut display = Display::new(CrossTerm::new(), &create_theme());
 		display.color(display_color, selected).unwrap();
@@ -604,20 +589,16 @@ mod tests {
 			.is_colors_enabled(Colors::new(expected_foreground, expected_background)));
 	}
 
-	#[rstest(
-		dim,
-		underline,
-		reverse,
-		case::all_off(false, false, false),
-		case::reverse(false, false, true),
-		case::underline(false, true, false),
-		case::underline_reverse(false, true, true),
-		case::dim(true, false, false),
-		case::dim_reverse(true, false, true),
-		case::dim_underline(true, true, false),
-		case::all_on(true, true, true)
-	)]
-	fn style(dim: bool, underline: bool, reverse: bool) {
+	#[rstest]
+	#[case::all_off(false, false, false)]
+	#[case::reverse(false, false, true)]
+	#[case::underline(false, true, false)]
+	#[case::underline_reverse(false, true, true)]
+	#[case::dim(true, false, false)]
+	#[case::dim_reverse(true, false, true)]
+	#[case::dim_underline(true, true, false)]
+	#[case::all_on(true, true, true)]
+	fn style(#[case] dim: bool, #[case] underline: bool, #[case] reverse: bool) {
 		let mut display = Display::new(CrossTerm::new(), &create_theme());
 		display.set_style(dim, underline, reverse).unwrap();
 		assert_eq!(display.tui.is_dimmed(), dim);

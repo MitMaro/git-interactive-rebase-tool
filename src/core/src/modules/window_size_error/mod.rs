@@ -85,19 +85,25 @@ mod tests {
 	const MINIMUM_WINDOW_HEIGHT: usize = 5;
 	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
 
-	#[rstest(
-		width, height, expected,
-		case::width_too_small_long_message(SHORT_ERROR_MESSAGE.len(), MINIMUM_WINDOW_HEIGHT + 1, "Window too small"),
-		case::width_too_small_short_message(SHORT_ERROR_MESSAGE.len() - 1, MINIMUM_WINDOW_HEIGHT + 1, "Size!"),
-		case::height_too_small_long_message(
-			MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH, MINIMUM_WINDOW_HEIGHT, "Window too small, increase height to continue"
-		),
-		case::height_too_small_short_message(
-			MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH - 1, MINIMUM_WINDOW_HEIGHT, "Window too small"
-		)
+	#[rstest]
+	#[case::width_too_small_long_message(
+		SHORT_ERROR_MESSAGE.len(),
+		MINIMUM_WINDOW_HEIGHT + 1,
+		"Window too small"
+	)]
+	#[case::width_too_small_short_message(SHORT_ERROR_MESSAGE.len() - 1, MINIMUM_WINDOW_HEIGHT + 1, "Size!")]
+	#[case::height_too_small_long_message(
+		MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH,
+		MINIMUM_WINDOW_HEIGHT,
+		"Window too small, increase height to continue"
+	)]
+	#[case::height_too_small_short_message(
+		MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH - 1,
+		MINIMUM_WINDOW_HEIGHT,
+		"Window too small"
 	)]
 	#[allow(clippy::cast_possible_wrap)]
-	fn build_view_data(width: usize, height: usize, expected: &str) {
+	fn build_view_data(#[case] width: usize, #[case] height: usize, #[case] expected: &str) {
 		module_test(&[], &[], |mut test_context| {
 			test_context.render_context.update(width as u16, height as u16);
 			let mut module = WindowSizeError::new();

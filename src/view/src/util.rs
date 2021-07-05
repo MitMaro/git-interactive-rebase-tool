@@ -24,17 +24,14 @@ mod tests {
 	use super::*;
 	use crate::testutil::with_view_sender;
 
-	#[rstest(
-		meta_event,
-		action,
-		case::scroll_left(MetaEvent::ScrollLeft, "ScrollLeft"),
-		case::scroll_right(MetaEvent::ScrollRight, "ScrollRight"),
-		case::scroll_down(MetaEvent::ScrollDown, "ScrollDown"),
-		case::scroll_up(MetaEvent::ScrollUp, "ScrollUp"),
-		case::jump_down(MetaEvent::ScrollJumpDown, "PageDown"),
-		case::jump_up(MetaEvent::ScrollJumpUp, "PageUp")
-	)]
-	fn handle_view_data_scroll_event(meta_event: MetaEvent, action: &str) {
+	#[rstest]
+	#[case::scroll_left(MetaEvent::ScrollLeft, "ScrollLeft")]
+	#[case::scroll_right(MetaEvent::ScrollRight, "ScrollRight")]
+	#[case::scroll_down(MetaEvent::ScrollDown, "ScrollDown")]
+	#[case::scroll_up(MetaEvent::ScrollUp, "ScrollUp")]
+	#[case::jump_down(MetaEvent::ScrollJumpDown, "PageDown")]
+	#[case::jump_up(MetaEvent::ScrollJumpUp, "PageUp")]
+	fn handle_view_data_scroll_event(#[case] meta_event: MetaEvent, #[case] action: &str) {
 		with_view_sender(|context| {
 			let event = Event::from(meta_event);
 			assert_eq!(handle_view_data_scroll(event, &context.sender), Some(event));

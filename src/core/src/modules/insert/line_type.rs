@@ -27,17 +27,14 @@ mod tests {
 
 	use super::*;
 
-	#[rstest(
-		line_type,
-		expected,
-		case::cancel(&LineType::Cancel, "<cancel>"),
-		case::pick(&LineType::Pick, "pick"),
-		case::exec(&LineType::Exec, "exec"),
-		case::label(&LineType::Label, "label"),
-		case::merge(&LineType::Merge, "merge"),
-		case::reset(&LineType::Reset, "reset"),
-	)]
-	fn to_string(line_type: &LineType, expected: &str) {
+	#[rstest]
+	#[case::cancel(&LineType::Cancel, "<cancel>")]
+	#[case::pick(&LineType::Pick, "pick")]
+	#[case::exec(&LineType::Exec, "exec")]
+	#[case::label(&LineType::Label, "label")]
+	#[case::merge(&LineType::Merge, "merge")]
+	#[case::reset(&LineType::Reset, "reset")]
+	fn to_string(#[case] line_type: &LineType, #[case] expected: &str) {
 		assert_eq!(line_type.to_string(), String::from(expected));
 	}
 }

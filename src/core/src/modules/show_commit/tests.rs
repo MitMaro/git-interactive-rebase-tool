@@ -1182,16 +1182,14 @@ fn handle_event_other_key_from_overview() {
 	);
 }
 
-#[rstest(
-	event,
-	case::scroll_left(MetaEvent::ScrollLeft),
-	case::scroll_right(MetaEvent::ScrollRight),
-	case::scroll_down(MetaEvent::ScrollDown),
-	case::scroll_up(MetaEvent::ScrollUp),
-	case::scroll_jump_down(MetaEvent::ScrollJumpDown),
-	case::scroll_jump_up(MetaEvent::ScrollJumpUp)
-)]
-fn scroll_events(event: MetaEvent) {
+#[rstest]
+#[case::scroll_left(MetaEvent::ScrollLeft)]
+#[case::scroll_right(MetaEvent::ScrollRight)]
+#[case::scroll_down(MetaEvent::ScrollDown)]
+#[case::scroll_up(MetaEvent::ScrollUp)]
+#[case::scroll_jump_down(MetaEvent::ScrollJumpDown)]
+#[case::scroll_jump_up(MetaEvent::ScrollJumpUp)]
+fn scroll_events(#[case] event: MetaEvent) {
 	module_test(&[], &[Event::from(event)], |mut test_context| {
 		let mut module = ShowCommit::new(&create_config());
 		assert_process_result!(test_context.handle_event(&mut module), event = Event::from(event));

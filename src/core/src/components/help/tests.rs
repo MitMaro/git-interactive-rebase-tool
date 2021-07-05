@@ -37,17 +37,15 @@ fn from_key_bindings() {
 	);
 }
 
-#[rstest(
-	event,
-	case::resize(Event::Resize(100, 100)),
-	case::scroll_left(Event::from(MetaEvent::ScrollLeft)),
-	case::scroll_right(Event::from(MetaEvent::ScrollRight)),
-	case::scroll_down(Event::from(MetaEvent::ScrollDown)),
-	case::scroll_up(Event::from(MetaEvent::ScrollUp)),
-	case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown)),
-	case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))
-)]
-fn input_continue_active(event: Event) {
+#[rstest]
+#[case::resize(Event::Resize(100, 100))]
+#[case::scroll_left(Event::from(MetaEvent::ScrollLeft))]
+#[case::scroll_right(Event::from(MetaEvent::ScrollRight))]
+#[case::scroll_down(Event::from(MetaEvent::ScrollDown))]
+#[case::scroll_up(Event::from(MetaEvent::ScrollUp))]
+#[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
+#[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
+fn input_continue_active(#[case] event: Event) {
 	handle_event_test(&[event], |context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();

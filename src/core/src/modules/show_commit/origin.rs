@@ -23,18 +23,15 @@ mod tests {
 
 	use super::*;
 
-	#[rstest(
-		input,
-		expected,
-		case::space(' ', &Origin::Context),
-		case::equals('=', &Origin::Context),
-		case::plus('+', &Origin::Addition),
-		case::greater_than('>', &Origin::Addition),
-		case::minus('-', &Origin::Deletion),
-		case::less_than('-', &Origin::Deletion),
-		case::other('a', &Origin::Context)
-	)]
-	fn from_char(input: char, expected: &Origin) {
+	#[rstest]
+	#[case::space(' ', &Origin::Context)]
+	#[case::equals('=', &Origin::Context)]
+	#[case::plus('+', &Origin::Addition)]
+	#[case::greater_than('>', &Origin::Addition)]
+	#[case::minus('-', &Origin::Deletion)]
+	#[case::less_than('-', &Origin::Deletion)]
+	#[case::other('a', &Origin::Context)]
+	fn from_char(#[case] input: char, #[case] expected: &Origin) {
 		assert_eq!(&Origin::from(input), expected);
 	}
 }
