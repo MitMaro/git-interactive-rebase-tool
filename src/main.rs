@@ -36,7 +36,6 @@
 
 mod components;
 mod core;
-mod insert;
 mod list;
 mod module;
 mod show_commit;
