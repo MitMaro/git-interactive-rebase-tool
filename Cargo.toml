@@ -26,6 +26,7 @@ path = "src/main.rs"
 [workspace]
 members = [
     "src/config",
+    "src/core",
     "src/display",
     "src/input",
     "src/todo_file",
@@ -33,38 +34,10 @@ members = [
 ]
 
 [dependencies]
-anyhow = "1.0"
-chrono = "0.4"
-crossterm = "0.20.0"
-lazy_static = "1.4.0"
-num-format = "0.4.0"
-pico-args = "0.4.2"
-unicode-segmentation = "1.7.1"
-unicode-width = "0.1.8"
-xi-unicode = "0.3.0"
-girt-config = {version = "1.0.0", path = "src/config"}
-girt-display = {version = "1.0.0", path = "src/display"}
-girt-input = {version = "1.0.0", path = "src/input"}
-girt-todo-file = {version = "1.0.0", path = "src/todo_file"}
-girt-view = {version = "1.0.0", path = "src/view"}
-
-[dependencies.uuid]
-version = "0.8.1"
-features = ["v4"]
-
-[dependencies.git2]
-version = "0.13.20"
-default-features = false
-features = []
-
-[dev-dependencies]
-concat-idents = "1.1.2"
-rstest = "0.6.4"
-serial_test = "0.5.1"
-tempfile = "3.2.0"
+girt-core = {version = "1.0.0", path = "src/core"}
 
 [build-dependencies]
-chrono = "0.4"
+rustc_version = "0.4.0"
 
 [features]
 default = []
