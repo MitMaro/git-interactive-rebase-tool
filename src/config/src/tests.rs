@@ -47,6 +47,8 @@ fn config_new() {
 #[serial]
 fn config_new_invalid_repo() {
 	let git_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("..")
+		.join("..")
 		.join("test")
 		.join("fixtures")
 		.join("does-not-exist")
