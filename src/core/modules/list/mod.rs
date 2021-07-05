@@ -18,7 +18,7 @@ use self::{
 };
 use crate::{
 	components::{edit::Edit, help::Help},
-	module::{ExitStatus, Module, ProcessResult, State},
+	core::module::{ExitStatus, Module, ProcessResult, State},
 };
 
 #[derive(Debug, PartialEq)]

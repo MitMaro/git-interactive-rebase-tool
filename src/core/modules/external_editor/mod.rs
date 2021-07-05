@@ -14,7 +14,7 @@ use view::{RenderContext, ViewData, ViewLine, ViewSender};
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
 	components::choice::Choice,
-	module::{ExitStatus, Module, ProcessResult, State},
+	core::module::{ExitStatus, Module, ProcessResult, State},
 };
 
 lazy_static! {

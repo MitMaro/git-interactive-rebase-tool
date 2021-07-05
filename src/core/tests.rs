@@ -4,8 +4,8 @@ use display::{testutil::CrossTerm, Tui};
 use input::{Event, EventHandler, KeyBindings, MetaEvent};
 
 use super::*;
-use crate::{
-	core::main::{load_config, load_todo_file, run_process},
+use crate::core::{
+	main::{load_config, load_todo_file, run_process},
 	module::ExitStatus,
 };
 

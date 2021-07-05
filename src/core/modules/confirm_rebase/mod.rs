@@ -4,7 +4,7 @@ use view::{RenderContext, ViewData, ViewSender};
 
 use crate::{
 	components::confirm::{Confirm, Confirmed},
-	module::{ExitStatus, Module, ProcessResult, State},
+	core::module::{ExitStatus, Module, ProcessResult, State},
 };
 
 pub struct ConfirmRebase {
@@ -46,7 +46,7 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, module::testutil::module_test};
+	use crate::{assert_process_result, core::testutil::module_test};
 
 	fn create_confirm_rebase() -> ConfirmRebase {
 		ConfirmRebase::new(&[String::from("y")], &[String::from("n")])

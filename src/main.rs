@@ -37,7 +37,6 @@
 
 mod components;
 mod core;
-mod module;
 
 use std::env::args_os;
 
