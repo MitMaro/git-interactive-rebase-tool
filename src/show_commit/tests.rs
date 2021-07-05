@@ -7,7 +7,7 @@ use view::{assert_rendered_output, ViewLine};
 use super::*;
 use crate::{
 	assert_process_result,
-	process::testutil::process_module_test,
+	module::testutil::module_test,
 	show_commit::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User},
 };
 
@@ -27,7 +27,7 @@ fn create_minimal_commit() -> Commit {
 
 #[test]
 fn load_commit_during_activate() {
-	process_module_test(
+	module_test(
 		&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment1"],
 		&[],
 		|test_context| {
@@ -40,7 +40,7 @@ fn load_commit_during_activate() {
 
 #[test]
 fn cached_commit_in_activate() {
-	process_module_test(
+	module_test(
 		&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment1"],
 		&[],
 		|test_context| {
@@ -53,7 +53,7 @@ fn cached_commit_in_activate() {
 
 #[test]
 fn no_selected_line_in_activate() {
-	process_module_test(&[], &[], |test_context| {
+	module_test(&[], &[], |test_context| {
 		let mut module = ShowCommit::new(&create_config());
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -65,7 +65,7 @@ fn no_selected_line_in_activate() {
 
 #[test]
 fn activate_error() {
-	process_module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
+	module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
 		let mut module = ShowCommit::new(&create_config());
 		assert_process_result!(
 			test_context.activate(&mut module, State::List),
@@ -80,7 +80,7 @@ fn activate_error() {
 
 #[test]
 fn render_overview_minimal_commit() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -105,7 +105,7 @@ fn render_overview_minimal_commit() {
 
 #[test]
 fn render_overview_minimal_commit_compact() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|mut test_context| {
@@ -130,7 +130,7 @@ fn render_overview_minimal_commit_compact() {
 
 #[test]
 fn render_overview_with_author() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -157,7 +157,7 @@ fn render_overview_with_author() {
 
 #[test]
 fn render_overview_with_author_compact() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|mut test_context| {
@@ -184,7 +184,7 @@ fn render_overview_with_author_compact() {
 
 #[test]
 fn render_overview_with_committer() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -211,7 +211,7 @@ fn render_overview_with_committer() {
 
 #[test]
 fn render_overview_with_committer_compact() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|mut test_context| {
@@ -238,7 +238,7 @@ fn render_overview_with_committer_compact() {
 
 #[test]
 fn render_overview_with_commit_body() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -267,7 +267,7 @@ fn render_overview_with_commit_body() {
 
 #[test]
 fn render_overview_with_file_stats() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -308,7 +308,7 @@ fn render_overview_with_file_stats() {
 
 #[test]
 fn render_overview_with_file_stats_compact() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|mut test_context| {
@@ -349,7 +349,7 @@ fn render_overview_with_file_stats_compact() {
 
 #[test]
 fn render_overview_single_file_changed() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -375,7 +375,7 @@ fn render_overview_single_file_changed() {
 
 #[test]
 fn render_overview_more_than_one_file_changed() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -401,7 +401,7 @@ fn render_overview_more_than_one_file_changed() {
 
 #[test]
 fn render_overview_single_insertion() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -427,7 +427,7 @@ fn render_overview_single_insertion() {
 
 #[test]
 fn render_overview_more_than_one_insertion() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -453,7 +453,7 @@ fn render_overview_more_than_one_insertion() {
 
 #[test]
 fn render_overview_single_deletion() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -479,7 +479,7 @@ fn render_overview_single_deletion() {
 
 #[test]
 fn render_overview_more_than_one_deletion() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -505,7 +505,7 @@ fn render_overview_more_than_one_deletion() {
 
 #[test]
 fn render_diff_minimal_commit() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -530,7 +530,7 @@ fn render_diff_minimal_commit() {
 
 #[test]
 fn render_diff_minimal_commit_compact() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|mut test_context| {
@@ -555,7 +555,7 @@ fn render_diff_minimal_commit_compact() {
 
 #[test]
 fn render_diff_basic_file_stats() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -603,7 +603,7 @@ fn render_diff_basic_file_stats() {
 
 #[test]
 fn render_diff_end_new_line_missing() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -639,7 +639,7 @@ fn render_diff_end_new_line_missing() {
 
 #[test]
 fn render_diff_add_line() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -675,7 +675,7 @@ fn render_diff_add_line() {
 
 #[test]
 fn render_diff_delete_line() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -711,7 +711,7 @@ fn render_diff_delete_line() {
 
 #[test]
 fn render_diff_context_add_remove_lines() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -753,7 +753,7 @@ fn render_diff_context_add_remove_lines() {
 
 #[test]
 fn render_diff_add_line_with_show_whitespace() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -789,7 +789,7 @@ fn render_diff_add_line_with_show_whitespace() {
 
 #[test]
 fn render_diff_delete_line_with_show_whitespace() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -825,7 +825,7 @@ fn render_diff_delete_line_with_show_whitespace() {
 
 #[test]
 fn render_diff_context_add_remove_lines_with_show_whitespace() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -890,7 +890,7 @@ fn generate_diff_line_context(content: &str, line_num: u32) -> DiffLine {
 
 #[test]
 fn render_diff_show_both_whitespace() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -936,7 +936,7 @@ fn render_diff_show_both_whitespace() {
 
 #[test]
 fn render_diff_show_leading_whitespace() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -982,7 +982,7 @@ fn render_diff_show_leading_whitespace() {
 
 #[test]
 fn render_diff_show_no_whitespace() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -1025,7 +1025,7 @@ fn render_diff_show_no_whitespace() {
 
 #[test]
 fn render_diff_show_whitespace_all_spaces() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
 		|test_context| {
@@ -1064,7 +1064,7 @@ fn render_diff_show_whitespace_all_spaces() {
 
 #[test]
 fn handle_event_toggle_diff_to_overview() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from(MetaEvent::ShowDiff)],
 		|mut test_context| {
@@ -1085,7 +1085,7 @@ fn handle_event_toggle_diff_to_overview() {
 
 #[test]
 fn handle_event_toggle_overview_to_diff() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from(MetaEvent::ShowDiff)],
 		|mut test_context| {
@@ -1106,7 +1106,7 @@ fn handle_event_toggle_overview_to_diff() {
 
 #[test]
 fn handle_event_resize() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::Resize(100, 100)],
 		|mut test_context| {
@@ -1118,7 +1118,7 @@ fn handle_event_resize() {
 
 #[test]
 fn render_help() {
-	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
+	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
 		let mut module = ShowCommit::new(&create_config());
 		test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
@@ -1144,7 +1144,7 @@ fn render_help() {
 
 #[test]
 fn handle_help_event() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::ShowDiff)],
 		|mut test_context| {
@@ -1157,7 +1157,7 @@ fn handle_help_event() {
 
 #[test]
 fn handle_event_other_key_from_diff() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('a')],
 		|mut test_context| {
@@ -1171,7 +1171,7 @@ fn handle_event_other_key_from_diff() {
 
 #[test]
 fn handle_event_other_key_from_overview() {
-	process_module_test(
+	module_test(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('a')],
 		|mut test_context| {
@@ -1196,7 +1196,7 @@ fn handle_event_other_key_from_overview() {
 	case::scroll_jump_up(MetaEvent::ScrollJumpUp)
 )]
 fn scroll_events(event: MetaEvent) {
-	process_module_test(&[], &[Event::from(event)], |mut test_context| {
+	module_test(&[], &[Event::from(event)], |mut test_context| {
 		let mut module = ShowCommit::new(&create_config());
 		assert_process_result!(test_context.handle_event(&mut module), event = Event::from(event));
 	});

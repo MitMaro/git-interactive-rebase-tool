@@ -68,7 +68,7 @@ mod tests {
 	use input::{Event, MetaEvent};
 
 	use super::*;
-	use crate::process::testutil::process_module_test;
+	use crate::module::testutil::module_test;
 
 	struct TestModule {
 		view_data: ViewData,
@@ -111,7 +111,7 @@ mod tests {
 
 	#[test]
 	fn module_lifecycle() {
-		process_module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |mut context| {
+		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |mut context| {
 			let mut modules = Modules::new();
 			let trace = Rc::new(RefCell::new(Vec::new()));
 			let test_module = TestModule::new(Rc::clone(&trace));

@@ -2,11 +2,11 @@ use input::{Event, KeyCode};
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, process::testutil::process_module_test};
+use crate::{assert_process_result, module::testutil::module_test};
 
 #[test]
 fn activate() {
-	process_module_test(&[], &[], |test_context| {
+	module_test(&[], &[], |test_context| {
 		let mut module = Insert::new();
 		assert_process_result!(test_context.activate(&mut module, State::List));
 	});
@@ -14,7 +14,7 @@ fn activate() {
 
 #[test]
 fn render_prompt() {
-	process_module_test(&[], &[], |test_context| {
+	module_test(&[], &[], |test_context| {
 		let mut module = Insert::new();
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -38,7 +38,7 @@ fn render_prompt() {
 
 #[test]
 fn prompt_cancel() {
-	process_module_test(&[], &[Event::from('q')], |mut test_context| {
+	module_test(&[], &[Event::from('q')], |mut test_context| {
 		let mut module = Insert::new();
 		assert_process_result!(
 			test_context.handle_event(&mut module),
@@ -50,7 +50,7 @@ fn prompt_cancel() {
 
 #[test]
 fn edit_render_exec() {
-	process_module_test(
+	module_test(
 		&[],
 		&[
 			Event::from('e'),
@@ -86,7 +86,7 @@ fn edit_render_exec() {
 
 #[test]
 fn edit_render_pick() {
-	process_module_test(
+	module_test(
 		&[],
 		&[
 			Event::from('p'),
@@ -125,7 +125,7 @@ fn edit_render_pick() {
 
 #[test]
 fn edit_render_label() {
-	process_module_test(
+	module_test(
 		&[],
 		&[
 			Event::from('l'),
@@ -164,7 +164,7 @@ fn edit_render_label() {
 
 #[test]
 fn edit_render_reset() {
-	process_module_test(
+	module_test(
 		&[],
 		&[
 			Event::from('r'),
@@ -203,7 +203,7 @@ fn edit_render_reset() {
 
 #[test]
 fn edit_render_merge() {
-	process_module_test(
+	module_test(
 		&[],
 		&[
 			Event::from('m'),
@@ -242,7 +242,7 @@ fn edit_render_merge() {
 
 #[test]
 fn edit_select_next_index() {
-	process_module_test(
+	module_test(
 		&["pick aaa c1"],
 		&[
 			Event::from('e'),
@@ -261,7 +261,7 @@ fn edit_select_next_index() {
 
 #[test]
 fn cancel_edit() {
-	process_module_test(
+	module_test(
 		&[],
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
 		|mut test_context| {
