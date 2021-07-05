@@ -8,9 +8,9 @@ use input::EventHandler;
 use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
+use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
 	components::{choice::Choice, edit::Edit},
-	insert::{insert_state::InsertState, line_type::LineType},
 	module::{Module, ProcessResult, State},
 };
 
