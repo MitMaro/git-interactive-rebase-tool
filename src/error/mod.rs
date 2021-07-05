@@ -77,11 +77,11 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, process::testutil::process_module_test};
+	use crate::{assert_process_result, module::testutil::module_test};
 
 	#[test]
 	fn simple_error() {
-		process_module_test(&[], &[], |test_context| {
+		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
 			module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -98,7 +98,7 @@ mod tests {
 
 	#[test]
 	fn error_with_contest() {
-		process_module_test(&[], &[], |test_context| {
+		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
 			module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -116,7 +116,7 @@ mod tests {
 
 	#[test]
 	fn error_with_newlines() {
-		process_module_test(&[], &[], |test_context| {
+		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
 			module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -136,7 +136,7 @@ mod tests {
 
 	#[test]
 	fn return_state() {
-		process_module_test(&[], &[Event::from('a')], |mut test_context| {
+		module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = Error::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
 			module.handle_error(&anyhow!("Test Error"));
@@ -150,7 +150,7 @@ mod tests {
 
 	#[test]
 	fn resize() {
-		process_module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
+		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = Error::new();
 			test_context.activate(&mut module, State::ConfirmRebase);
 			module.handle_error(&anyhow!("Test Error"));
@@ -160,7 +160,7 @@ mod tests {
 
 	#[test]
 	fn scroll_events() {
-		process_module_test(
+		module_test(
 			&[],
 			&[
 				Event::from(MetaEvent::ScrollLeft),
