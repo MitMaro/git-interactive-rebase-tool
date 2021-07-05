@@ -13,11 +13,10 @@ use crate::{
 		arguments::Args,
 		exit::Exit,
 		help::build_help,
-		modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit},
+		modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
 		process::Process,
 	},
 	module::{ExitStatus, Modules, State},
-	window_size_error::WindowSizeError,
 };
 
 pub(super) fn load_config() -> Result<Config, Exit> {

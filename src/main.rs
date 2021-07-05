@@ -38,7 +38,6 @@
 mod components;
 mod core;
 mod module;
-mod window_size_error;
 
 use std::env::args_os;
 

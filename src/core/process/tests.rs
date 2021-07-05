@@ -8,9 +8,8 @@ use view::{assert_rendered_output, ViewData};
 
 use super::*;
 use crate::{
-	core::modules::Error,
+	core::modules::{Error, WindowSizeError},
 	module::{testutil::module_test, Module},
-	window_size_error::WindowSizeError,
 };
 
 struct TestModule {
