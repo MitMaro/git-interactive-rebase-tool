@@ -7,10 +7,9 @@ description = "Configuration for git-interactive-rebase-tool"
 homepage = "https://gitrebasetool.mitmaro.ca/"
 repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
 edition = "2018"
-keywords = [ "git", "config" ]
-categories = ["config"]
+keywords = ["git", "config"]
+categories = ["girt"]
 readme = "../../README.md"
-
 
 [lib]
 name = "config"
