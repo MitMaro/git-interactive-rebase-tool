@@ -12,9 +12,9 @@ use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
-use crate::{
+use crate::core::{
 	components::choice::Choice,
-	core::module::{ExitStatus, Module, ProcessResult, State},
+	module::{ExitStatus, Module, ProcessResult, State},
 };
 
 lazy_static! {

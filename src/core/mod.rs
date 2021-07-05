@@ -1,4 +1,5 @@
 mod arguments;
+mod components;
 mod exit;
 mod help;
 mod license;
