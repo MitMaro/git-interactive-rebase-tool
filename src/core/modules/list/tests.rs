@@ -3,7 +3,7 @@ use config::testutil::create_config;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, module::testutil::module_test};
+use crate::{assert_process_result, core::testutil::module_test};
 
 #[test]
 fn render_empty_list() {

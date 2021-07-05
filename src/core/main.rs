@@ -8,15 +8,13 @@ use input::{EventHandler, KeyBindings};
 use todo_file::TodoFile;
 use view::View;
 
-use crate::{
-	core::{
-		arguments::Args,
-		exit::Exit,
-		help::build_help,
-		modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
-		process::Process,
-	},
+use crate::core::{
+	arguments::Args,
+	exit::Exit,
+	help::build_help,
 	module::{ExitStatus, Modules, State},
+	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
+	process::Process,
 };
 
 pub(super) fn load_config() -> Result<Config, Exit> {

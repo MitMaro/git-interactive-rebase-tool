@@ -9,7 +9,7 @@ use input::{Event, EventHandler, MetaEvent};
 use todo_file::TodoFile;
 use view::{spawn_view_thread, RenderContext, View, ViewSender};
 
-use crate::module::{ExitStatus, Modules, ProcessResult, State};
+use crate::core::module::{ExitStatus, Modules, ProcessResult, State};
 
 pub struct Process {
 	event_handler: EventHandler,

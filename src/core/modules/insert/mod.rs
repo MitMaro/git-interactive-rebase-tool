@@ -11,7 +11,7 @@ use view::{RenderContext, ViewData, ViewLine, ViewSender};
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
 	components::{choice::Choice, edit::Edit},
-	module::{Module, ProcessResult, State},
+	core::module::{Module, ProcessResult, State},
 };
 
 pub struct Insert {

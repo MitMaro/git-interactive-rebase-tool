@@ -5,7 +5,7 @@ use rstest::rstest;
 use view::{assert_rendered_output, ViewLine};
 
 use super::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User, *};
-use crate::{assert_process_result, module::testutil::module_test};
+use crate::{assert_process_result, core::testutil::module_test};
 
 fn create_minimal_commit() -> Commit {
 	Commit {

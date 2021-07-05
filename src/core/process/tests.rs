@@ -7,9 +7,10 @@ use input::InputOptions;
 use view::{assert_rendered_output, ViewData};
 
 use super::*;
-use crate::{
-	core::modules::{Error, WindowSizeError},
-	module::{testutil::module_test, Module},
+use crate::core::{
+	module::Module,
+	modules::{Error, WindowSizeError},
+	testutil::module_test,
 };
 
 struct TestModule {
