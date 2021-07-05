@@ -3,9 +3,6 @@ mod modules;
 mod process_result;
 mod state;
 
-#[cfg(test)]
-pub mod testutil;
-
 use anyhow::Error;
 use input::EventHandler;
 use todo_file::TodoFile;

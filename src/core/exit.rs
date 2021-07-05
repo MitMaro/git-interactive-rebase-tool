@@ -1,4 +1,4 @@
-use crate::module::ExitStatus;
+use crate::core::module::ExitStatus;
 
 #[derive(Debug, PartialEq)]
 pub struct Exit {

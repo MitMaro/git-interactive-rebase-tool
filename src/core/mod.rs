@@ -3,12 +3,14 @@ mod exit;
 mod help;
 mod license;
 mod main;
+mod module;
 mod modules;
-mod version;
-
 mod process;
 #[cfg(all(unix, test))]
 mod tests;
+#[cfg(test)]
+pub mod testutil;
+mod version;
 
 use std::{convert::TryFrom, ffi::OsString};
 

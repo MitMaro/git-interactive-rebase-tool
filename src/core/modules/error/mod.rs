@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
-use crate::module::{Module, ProcessResult, State};
+use crate::core::module::{Module, ProcessResult, State};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
@@ -77,7 +77,7 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, module::testutil::module_test};
+	use crate::{assert_process_result, core::testutil::module_test};
 
 	#[test]
 	fn simple_error() {

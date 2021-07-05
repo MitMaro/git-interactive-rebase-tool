@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
-use crate::module::{Module, ProcessResult, State};
+use crate::core::module::{Module, ProcessResult, State};
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
 const SHORT_ERROR_MESSAGE: &str = "Window too small";
@@ -80,7 +80,7 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, module::testutil::module_test};
+	use crate::{assert_process_result, core::testutil::module_test};
 
 	const MINIMUM_WINDOW_HEIGHT: usize = 5;
 	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;

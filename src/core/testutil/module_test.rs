@@ -12,7 +12,7 @@ use view::{
 	ViewData,
 };
 
-use crate::module::{Module, ProcessResult, State};
+use crate::core::module::{Module, ProcessResult, State};
 
 pub struct TestContext {
 	pub event_handler_context: EventHandlerTestContext,
