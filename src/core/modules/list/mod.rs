@@ -12,12 +12,12 @@ use display::DisplayColor;
 use todo_file::{Action, EditContext, Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
+use self::{
+	input::get_event,
+	utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
+};
 use crate::{
 	components::{edit::Edit, help::Help},
-	list::{
-		input::get_event,
-		utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments},
-	},
 	module::{ExitStatus, Module, ProcessResult, State},
 };
 
