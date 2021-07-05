@@ -33,11 +33,11 @@
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::redundant_closure_for_method_calls)] // too many false positives
 #![allow(clippy::default_numeric_fallback)]
+#![allow(clippy::redundant_pub_crate)] // broken lint (https://github.com/rust-lang/rust-clippy/issues/5369)
 
 mod components;
 mod core;
 mod module;
-mod show_commit;
 mod window_size_error;
 
 use std::env::args_os;

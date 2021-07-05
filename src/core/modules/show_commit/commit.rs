@@ -4,12 +4,12 @@ use anyhow::{anyhow, Result};
 use chrono::{DateTime, Local, TimeZone};
 use git2::{DiffFindOptions, DiffOptions, Error, Repository};
 
-use super::origin::Origin;
-use crate::show_commit::{
+use super::{
 	delta::Delta,
 	diff_line::DiffLine,
 	file_stat::FileStat,
 	file_stats_builder::FileStatsBuilder,
+	origin::Origin,
 	status::Status,
 	user::User,
 };

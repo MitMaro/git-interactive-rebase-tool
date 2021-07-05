@@ -13,11 +13,10 @@ use crate::{
 		arguments::Args,
 		exit::Exit,
 		help::build_help,
-		modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List},
+		modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit},
 		process::Process,
 	},
 	module::{ExitStatus, Modules, State},
-	show_commit::ShowCommit,
 	window_size_error::WindowSizeError,
 };
 
