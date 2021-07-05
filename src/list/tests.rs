@@ -1,4 +1,5 @@
 use ::input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
+use config::testutil::create_config;
 use view::assert_rendered_output;
 
 use super::*;
@@ -7,7 +8,7 @@ use crate::{assert_process_result, process::testutil::process_module_test};
 #[test]
 fn render_empty_list() {
 	process_module_test(&[], &[], |test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,
@@ -37,7 +38,7 @@ fn render_full() {
 		],
 		&[],
 		|test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -80,7 +81,7 @@ fn render_compact() {
 		&[],
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -109,7 +110,7 @@ fn move_cursor_down_1() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -130,7 +131,7 @@ fn move_cursor_down_view_end() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown); 2],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -151,7 +152,7 @@ fn move_cursor_down_past_end() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown); 3],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -176,7 +177,7 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -201,7 +202,7 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -225,7 +226,7 @@ fn move_cursor_up_attempt_above_top() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -247,7 +248,7 @@ fn move_cursor_down_attempt_below_bottom() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -269,7 +270,7 @@ fn move_cursor_page_up_from_top() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorPageUp)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -296,7 +297,7 @@ fn move_cursor_page_up_from_one_page_down() {
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -323,7 +324,7 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -351,7 +352,7 @@ fn move_cursor_page_up_from_bottom() {
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -378,7 +379,7 @@ fn move_cursor_home() {
 			Event::from(MetaEvent::MoveCursorHome),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -400,7 +401,7 @@ fn move_cursor_end() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorEnd)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -422,7 +423,7 @@ fn move_cursor_page_down_past_bottom() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorPageDown); 3],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -450,7 +451,7 @@ fn move_cursor_page_down_one_from_bottom() {
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -475,7 +476,7 @@ fn move_cursor_page_down_one_page_from_bottom() {
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -517,7 +518,7 @@ fn mouse_scroll() {
 			}),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -538,7 +539,7 @@ fn visual_mode_start() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -562,7 +563,7 @@ fn visual_mode_start_cursor_down_one() {
 			Event::from(MetaEvent::MoveCursorDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -592,7 +593,7 @@ fn visual_mode_start_cursor_page_down() {
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.height = 4;
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -629,7 +630,7 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -668,7 +669,7 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -691,7 +692,7 @@ fn change_selected_line_to_drop() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -710,7 +711,7 @@ fn change_selected_line_to_edit() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionEdit)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -729,7 +730,7 @@ fn change_selected_line_to_fixup() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionFixup)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -748,7 +749,7 @@ fn change_selected_line_to_pick() {
 		&["drop aaa c1"],
 		&[Event::from(MetaEvent::ActionPick)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -767,7 +768,7 @@ fn change_selected_line_to_reword() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionReword)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -786,7 +787,7 @@ fn change_selected_line_to_squash() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -805,7 +806,7 @@ fn change_selected_line_toggle_break_add() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionBreak)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -828,7 +829,7 @@ fn change_selected_line_toggle_break_remove() {
 			Event::from(MetaEvent::ActionBreak),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -847,7 +848,7 @@ fn change_selected_line_toggle_break_above_existing() {
 		&["pick aaa c1", "break"],
 		&[Event::from(MetaEvent::ActionBreak)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -867,7 +868,7 @@ fn change_selected_line_auto_select_next_with_next_line() {
 		&["pick aaa c1", "pick aaa c2"],
 		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context| {
-			let mut config = test_context.config.clone();
+			let mut config = create_config();
 			config.auto_select_next = true;
 			let mut module = List::new(&config);
 			test_context.handle_all_events(&mut module);
@@ -889,7 +890,7 @@ fn change_selected_line_swap_down() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -914,7 +915,7 @@ fn change_selected_line_swap_up() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -935,7 +936,7 @@ fn normal_mode_show_commit_when_hash_available() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ShowCommit),
@@ -948,7 +949,7 @@ fn normal_mode_show_commit_when_hash_available() {
 #[test]
 fn normal_mode_show_commit_when_no_selected_line() {
 	process_module_test(&[], &[Event::from(MetaEvent::ShowCommit)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
 			event = Event::from(MetaEvent::ShowCommit)
@@ -962,7 +963,7 @@ fn normal_mode_do_not_show_commit_when_hash_not_available() {
 		&["exec echo foo"],
 		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ShowCommit)
@@ -977,7 +978,7 @@ fn normal_mode_abort() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Abort)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::Abort),
@@ -993,7 +994,7 @@ fn normal_mode_force_abort() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ForceAbort)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ForceAbort),
@@ -1010,7 +1011,7 @@ fn normal_mode_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::Rebase),
@@ -1026,7 +1027,7 @@ fn normal_mode_force_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ForceRebase)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ForceRebase),
@@ -1043,7 +1044,7 @@ fn normal_mode_edit_with_edit_content() {
 		&["exec echo foo"],
 		&[Event::from(MetaEvent::Edit)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::Edit)
@@ -1056,7 +1057,7 @@ fn normal_mode_edit_with_edit_content() {
 #[test]
 fn normal_mode_edit_without_edit_content() {
 	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
 			event = Event::from(MetaEvent::Edit)
@@ -1068,7 +1069,7 @@ fn normal_mode_edit_without_edit_content() {
 #[test]
 fn normal_mode_edit_without_selected_line() {
 	process_module_test(&[], &[Event::from(MetaEvent::Edit)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
 			event = Event::from(MetaEvent::Edit)
@@ -1080,7 +1081,7 @@ fn normal_mode_edit_without_selected_line() {
 #[test]
 fn normal_mode_insert_line() {
 	process_module_test(&[], &[Event::from(MetaEvent::InsertLine)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
 			event = Event::from(MetaEvent::InsertLine),
@@ -1095,7 +1096,7 @@ fn normal_mode_open_external_editor() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::OpenInEditor)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::OpenInEditor),
@@ -1111,7 +1112,7 @@ fn normal_mode_undo() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionDrop), Event::from(MetaEvent::Undo)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1140,7 +1141,7 @@ fn normal_mode_undo_visual_mode_change() {
 			Event::from(MetaEvent::Undo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1164,7 +1165,7 @@ fn normal_mode_redo() {
 			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			test_context.handle_event(&mut module);
 			assert_process_result!(
@@ -1194,7 +1195,7 @@ fn normal_mode_redo_visual_mode_change() {
 			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1220,7 +1221,7 @@ fn normal_mode_remove_line_first() {
 		],
 		&[Event::from(MetaEvent::Delete)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1253,7 +1254,7 @@ fn normal_mode_remove_line_end() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1274,7 +1275,7 @@ fn normal_mode_toggle_visual_mode() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ToggleVisualMode)
@@ -1288,7 +1289,7 @@ fn normal_mode_toggle_visual_mode() {
 #[test]
 fn normal_mode_other_event() {
 	process_module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
 			event = Event::from(KeyCode::Null)
@@ -1307,7 +1308,7 @@ fn visual_mode_action_change_top_bottom() {
 			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1335,7 +1336,7 @@ fn visual_mode_action_change_bottom_top() {
 			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1368,7 +1369,7 @@ fn visual_mode_action_change_drop() {
 			Event::from(MetaEvent::ActionDrop),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1403,7 +1404,7 @@ fn visual_mode_action_change_edit() {
 			Event::from(MetaEvent::ActionEdit),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1438,7 +1439,7 @@ fn visual_mode_action_change_fixup() {
 			Event::from(MetaEvent::ActionFixup),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1473,7 +1474,7 @@ fn visual_mode_action_change_pick() {
 			Event::from(MetaEvent::ActionPick),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1508,7 +1509,7 @@ fn visual_mode_action_change_reword() {
 			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1543,7 +1544,7 @@ fn visual_mode_action_change_squash() {
 			Event::from(MetaEvent::ActionSquash),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1566,7 +1567,7 @@ fn visual_mode_abort() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Abort)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1586,7 +1587,7 @@ fn visual_mode_force_abort() {
 			Event::from(MetaEvent::ForceAbort),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1604,7 +1605,7 @@ fn visual_mode_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1624,7 +1625,7 @@ fn visual_mode_force_rebase() {
 			Event::from(MetaEvent::ForceRebase),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1654,7 +1655,7 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1691,7 +1692,7 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1726,7 +1727,7 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1763,7 +1764,7 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1801,7 +1802,7 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1837,7 +1838,7 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1873,7 +1874,7 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1911,7 +1912,7 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -1937,7 +1938,7 @@ fn visual_mode_toggle_visual_mode() {
 			Event::from(MetaEvent::ToggleVisualMode),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1958,7 +1959,7 @@ fn visual_mode_open_external_editor() {
 			Event::from(MetaEvent::OpenInEditor),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -1980,7 +1981,7 @@ fn visual_mode_undo() {
 			Event::from(MetaEvent::Undo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_n_events(&mut module, 3);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -2008,7 +2009,7 @@ fn visual_mode_undo_normal_mode_change() {
 			Event::from(MetaEvent::Undo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_n_events(&mut module, 3);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
@@ -2038,7 +2039,7 @@ fn visual_mode_redo() {
 			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2063,7 +2064,7 @@ fn visual_mode_redo_normal_mode_change() {
 			Event::from(MetaEvent::Redo),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2094,7 +2095,7 @@ fn visual_mode_remove_lines_start_index_first() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2130,7 +2131,7 @@ fn visual_mode_remove_lines_end_index_first() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2168,7 +2169,7 @@ fn visual_mode_remove_lines_start_index_last() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2204,7 +2205,7 @@ fn visual_mode_remove_lines_end_index_last() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2224,7 +2225,7 @@ fn visual_mode_remove_lines_end_index_last() {
 #[test]
 fn visual_mode_other_event() {
 	process_module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		assert_process_result!(
 			test_context.handle_event(&mut module),
 			event = Event::from(KeyCode::Null)
@@ -2235,7 +2236,7 @@ fn visual_mode_other_event() {
 #[test]
 fn edit_mode_render() {
 	process_module_test(&["exec foo"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -2262,7 +2263,7 @@ fn edit_mode_handle_event() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.build_view_data(&mut module);
 			test_context.handle_all_events(&mut module);
 			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().get_content(), "fo");
@@ -2277,7 +2278,7 @@ fn scroll_right() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::MoveCursorRight)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			test_context.view_sender_context.assert_render_action(&["ScrollRight"]);
 		},
@@ -2290,7 +2291,7 @@ fn scroll_left() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::MoveCursorLeft)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			test_context.handle_all_events(&mut module);
 			test_context.view_sender_context.assert_render_action(&["ScrollLeft"]);
 		},
@@ -2300,7 +2301,7 @@ fn scroll_left() {
 #[test]
 fn normal_mode_help() {
 	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		module.state = ListState::Normal;
 		test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
@@ -2352,7 +2353,7 @@ fn normal_mode_help_event() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.state = ListState::Normal;
 			test_context.handle_all_events(&mut module);
 			assert!(!module.normal_mode_help.is_active());
@@ -2363,7 +2364,7 @@ fn normal_mode_help_event() {
 #[test]
 fn visual_mode_help() {
 	process_module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		module.state = ListState::Visual;
 		test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
@@ -2406,7 +2407,7 @@ fn visual_mode_help_event() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
-			let mut module = List::new(test_context.config);
+			let mut module = List::new(&create_config());
 			module.state = ListState::Visual;
 			test_context.handle_all_events(&mut module);
 			assert!(!module.visual_mode_help.is_active());
@@ -2418,7 +2419,7 @@ fn visual_mode_help_event() {
 #[test]
 fn render_noop_list() {
 	process_module_test(&["break"], &[], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		test_context.rebase_todo_file.remove_lines(0, 0);
 		test_context.rebase_todo_file.add_line(0, Line::new("noop").unwrap());
 		let view_data = test_context.build_view_data(&mut module);
@@ -2434,7 +2435,7 @@ fn render_noop_list() {
 #[test]
 fn resize() {
 	process_module_test(&["pick aaa c1"], &[Event::Resize(100, 200)], |mut test_context| {
-		let mut module = List::new(test_context.config);
+		let mut module = List::new(&create_config());
 		test_context.handle_all_events(&mut module);
 		assert_eq!(module.height, 200);
 	});
