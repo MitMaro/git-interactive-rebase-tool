@@ -36,7 +36,6 @@
 
 mod components;
 mod core;
-mod error;
 mod external_editor;
 mod insert;
 mod list;
