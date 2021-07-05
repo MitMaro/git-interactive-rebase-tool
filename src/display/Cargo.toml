@@ -7,10 +7,9 @@ description = "Display modules for git-interactive-rebase-tool"
 homepage = "https://gitrebasetool.mitmaro.ca/"
 repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
 edition = "2018"
-keywords = [ "git", "cli" ]
-categories = ["render"]
+keywords = ["git", "cli"]
+categories = ["girt"]
 readme = "../../README.md"
-
 
 [lib]
 name = "display"
