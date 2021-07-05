@@ -20,15 +20,15 @@ use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender};
 
+use self::{
+	commit::{Commit, LoadCommitDiffOptions},
+	show_commit_state::ShowCommitState,
+	util::get_show_commit_help_lines,
+	view_builder::{ViewBuilder, ViewBuilderOptions},
+};
 use crate::{
 	components::help::Help,
 	module::{Module, ProcessResult, State},
-	show_commit::{
-		commit::{Commit, LoadCommitDiffOptions},
-		show_commit_state::ShowCommitState,
-		util::get_show_commit_help_lines,
-		view_builder::{ViewBuilder, ViewBuilderOptions},
-	},
 };
 
 lazy_static! {
