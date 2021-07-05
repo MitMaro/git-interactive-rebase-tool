@@ -7,14 +7,15 @@ fi
 
 set -euo pipefail
 
+# order is based on dependency graph
 crates=(
-	'src/'
 	"src/config"
-	"src/core"
 	"src/display"
-	"src/input"
 	"src/todo_file"
+	"src/input"
 	"src/view"
+	"src/core"
+	"src"
 )
 
 for crate in "${crates[@]}"; do
@@ -24,5 +25,6 @@ for crate in "${crates[@]}"; do
 		cargo publish "$@"
 		1>&2 echo "$crate published"
 		1>&2 echo
-	)
+		sleep 10
+	) || true
 done

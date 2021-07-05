@@ -8,7 +8,7 @@ homepage = "https://gitrebasetool.mitmaro.ca/"
 repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
 edition = "2018"
 keywords = ["git", "view"]
-categories = ["girt"]
+categories = ["command-line-interface", "command-line-utilities", "text-editors"]
 readme = "../../README.md"
 
 [lib]
