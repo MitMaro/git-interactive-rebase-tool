@@ -13,7 +13,7 @@ jobs:
       - name: Update Rust
         run: rustup update stable
       - name: Test
-        run: cargo test
+        run: "./scripts/test.bash"
       - name: Build
         run: cargo build --release
       - name: Test Run
@@ -56,7 +56,7 @@ jobs:
       - name: Update Rust
         run: rustup update stable
       - name: Test
-        run: cargo test --
+        run: "./scripts/test.bash"
       - name: Build
         run: cargo build --release
       - name: Test Run
@@ -71,7 +71,7 @@ jobs:
       - name: Update Rust
         run: rustup update stable
       - name: Test
-        run: cargo test --target x86_64-pc-windows-msvc --release
+        run: cargo test --target x86_64-pc-windows-msvc --release --workspace
         env:
             RUSTFLAGS: '--cap-lints warn'
       - name: Build
