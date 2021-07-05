@@ -63,17 +63,59 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
-#![allow(missing_docs, rustdoc::missing_crate_level_docs)]
+#![allow(
+	missing_docs,
+	rustdoc::missing_crate_level_docs,
+	clippy::as_conversions,
+	clippy::cast_possible_truncation,
+	clippy::default_numeric_fallback,
+	clippy::else_if_without_else,
+	clippy::indexing_slicing,
+	clippy::integer_arithmetic,
+	clippy::integer_division,
+	clippy::non_ascii_literal,
+	clippy::panic,
+	clippy::redundant_closure_for_method_calls,
+	clippy::too_many_lines,
+	clippy::unreachable,
+	clippy::unwrap_used,
+	clippy::wildcard_enum_match_arm
+)]
 
-use std::env::args_os;
+mod arguments;
+mod components;
+mod exit;
+mod help;
+mod license;
+mod module;
+mod modules;
+mod process;
+mod run;
+#[cfg(all(unix, test))]
+mod tests;
+#[cfg(test)]
+pub mod testutil;
+mod version;
 
-// TODO use the termination trait once rust-lang/rust#43301 is stable
-#[allow(clippy::exit, clippy::print_stderr)]
-#[cfg(not(tarpaulin_include))]
-fn main() {
-	let exit = core::run(args_os().skip(1).collect());
-	if let Some(message) = exit.get_message().as_ref() {
-		eprintln!("{}", message);
+use std::{convert::TryFrom, ffi::OsString};
+
+use crate::{
+	arguments::{Args, Mode},
+	exit::Exit,
+};
+
+#[inline]
+#[must_use]
+pub fn run(args: Vec<OsString>) -> Exit {
+	match Args::try_from(args) {
+		Err(err) => err,
+		Ok(args) => {
+			match *args.mode() {
+				Mode::Help => help::run(),
+				Mode::Version => version::run(),
+				Mode::License => license::run(),
+				Mode::Normal => run::run(&args),
+			}
+		},
 	}
-	std::process::exit(exit.get_status().to_code());
 }

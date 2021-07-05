@@ -1,0 +1,43 @@
+[package]
+name = "girt-core"
+version = "1.0.0"
+authors = ["Tim Oram <dev@mitmaro.ca>"]
+license = "GPL-3.0-or-later"
+description = "Core modules for git-interactive-rebase-tool"
+homepage = "https://gitrebasetool.mitmaro.ca/"
+repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
+edition = "2018"
+keywords = ["git", "cli"]
+categories = ["girt"]
+readme = "../../README.md"
+
+[lib]
+name = "core"
+
+[dependencies]
+anyhow = "1.0.41"
+chrono = "0.4.19"
+lazy_static = "1.4.0"
+num-format = "0.4.0"
+pico-args = "0.4.2"
+unicode-segmentation = "1.7.1"
+girt-config = {version = "1.0.0", path = "../../src/config"}
+girt-display = {version = "1.0.0", path = "../../src/display"}
+girt-input = {version = "1.0.0", path = "../../src/input"}
+girt-todo-file = {version = "1.0.0", path = "../../src/todo_file"}
+girt-view = {version = "1.0.0", path = "../../src/view"}
+
+[dependencies.git2]
+version = "0.13.20"
+default-features = false
+features = []
+
+[dev-dependencies]
+captur = "0.1.0"
+rstest = "0.6.4"
+serial_test = "0.5.1"
+tempfile = "3.2.0"
+
+[build-dependencies]
+chrono = "0.4.19"
+rustc_version = "0.4.0"

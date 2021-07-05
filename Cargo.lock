@@ -30,6 +30,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
+name = "captur"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70fab32548d14602e13307a86c41b2dc2fc2ef19c2881bf63598275a7e45b182"
+
+[[package]]
 name = "cc"
 version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -133,6 +139,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "girt-core"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "captur",
+ "chrono",
+ "girt-config",
+ "girt-display",
+ "girt-input",
+ "girt-todo-file",
+ "girt-view",
+ "git2",
+ "lazy_static",
+ "num-format",
+ "pico-args",
+ "rstest 0.6.4",
+ "rustc_version 0.4.0",
+ "serial_test",
+ "tempfile",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "girt-display"
 version = "1.0.0"
 dependencies = [
@@ -186,26 +215,8 @@ dependencies = [
 name = "git-interactive-rebase-tool"
 version = "2.1.0"
 dependencies = [
- "anyhow",
- "chrono",
- "concat-idents",
- "crossterm",
- "girt-config",
- "girt-display",
- "girt-input",
- "girt-todo-file",
- "girt-view",
- "git2",
- "lazy_static",
- "num-format",
- "pico-args",
- "rstest 0.6.4",
- "serial_test",
- "tempfile",
- "unicode-segmentation",
- "unicode-width",
- "uuid",
- "xi-unicode",
+ "girt-core",
+ "rustc_version 0.4.0",
 ]
 
 [[package]]
