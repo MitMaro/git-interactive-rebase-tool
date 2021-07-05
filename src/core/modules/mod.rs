@@ -3,6 +3,7 @@ mod confirm_rebase;
 mod error;
 mod external_editor;
 mod insert;
+mod list;
 
 pub use self::{
 	confirm_abort::ConfirmAbort,
@@ -10,4 +11,5 @@ pub use self::{
 	error::Error,
 	external_editor::ExternalEditor,
 	insert::Insert,
+	list::List,
 };

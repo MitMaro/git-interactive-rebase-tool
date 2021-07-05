@@ -36,7 +36,6 @@
 
 mod components;
 mod core;
-mod list;
 mod module;
 mod show_commit;
 mod window_size_error;
