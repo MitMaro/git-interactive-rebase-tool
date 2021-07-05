@@ -26,9 +26,9 @@ use self::{
 	util::get_show_commit_help_lines,
 	view_builder::{ViewBuilder, ViewBuilderOptions},
 };
-use crate::{
+use crate::core::{
 	components::help::Help,
-	core::module::{Module, ProcessResult, State},
+	module::{Module, ProcessResult, State},
 };
 
 lazy_static! {

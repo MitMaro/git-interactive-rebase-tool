@@ -2,9 +2,9 @@ use input::EventHandler;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
-use crate::{
+use crate::core::{
 	components::confirm::{Confirm, Confirmed},
-	core::module::{ExitStatus, Module, ProcessResult, State},
+	module::{ExitStatus, Module, ProcessResult, State},
 };
 
 pub struct ConfirmAbort {

@@ -9,9 +9,9 @@ use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
 use self::{insert_state::InsertState, line_type::LineType};
-use crate::{
+use crate::core::{
 	components::{choice::Choice, edit::Edit},
-	core::module::{Module, ProcessResult, State},
+	module::{Module, ProcessResult, State},
 };
 
 pub struct Insert {
