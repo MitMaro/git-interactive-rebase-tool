@@ -52,7 +52,7 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, process::testutil::process_module_test};
+	use crate::{assert_process_result, module::testutil::module_test};
 
 	fn create_confirm_abort() -> ConfirmAbort {
 		ConfirmAbort::new(&[String::from("y")], &[String::from("n")])
@@ -60,7 +60,7 @@ mod tests {
 
 	#[test]
 	fn build_view_data() {
-		process_module_test(&["pick aaa comment"], &[], |test_context| {
+		module_test(&["pick aaa comment"], &[], |test_context| {
 			let mut module = create_confirm_abort();
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -74,7 +74,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_yes() {
-		process_module_test(
+		module_test(
 			&["pick aaa comment"],
 			&[Event::from(MetaEvent::Yes)],
 			|mut test_context| {
@@ -91,7 +91,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_no() {
-		process_module_test(
+		module_test(
 			&["pick aaa comment"],
 			&[Event::from(MetaEvent::No)],
 			|mut test_context| {
@@ -107,7 +107,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_confirmed_other() {
-		process_module_test(
+		module_test(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
 			|mut test_context| {

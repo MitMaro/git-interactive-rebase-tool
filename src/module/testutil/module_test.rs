@@ -100,7 +100,7 @@ impl TestContext {
 	}
 }
 
-pub fn process_module_test<C>(lines: &[&str], events: &[Event], callback: C)
+pub fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_sender(|view_sender_context| {
