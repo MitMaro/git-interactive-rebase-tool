@@ -68,7 +68,7 @@ mod tests {
 	use input::{Event, MetaEvent};
 
 	use super::*;
-	use crate::module::testutil::module_test;
+	use crate::core::testutil::module_test;
 
 	struct TestModule {
 		view_data: ViewData,

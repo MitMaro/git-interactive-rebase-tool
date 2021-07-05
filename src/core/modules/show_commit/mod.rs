@@ -28,7 +28,7 @@ use self::{
 };
 use crate::{
 	components::help::Help,
-	module::{Module, ProcessResult, State},
+	core::module::{Module, ProcessResult, State},
 };
 
 lazy_static! {
