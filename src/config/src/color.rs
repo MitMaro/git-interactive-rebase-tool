@@ -124,124 +124,83 @@ impl TryFrom<&str> for Color {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 
-	macro_rules! test_color_try_from {
-		($name:ident, $color_string:expr, $expected:expr) => {
-			concat_idents::concat_idents!(test_name = color_try_from_, $name {
-				#[test]
-				fn test_name() {
-					assert_eq!(Color::try_from($color_string).unwrap(), $expected);
-				}
-			});
-		}
-	}
-
-	macro_rules! test_color_try_from_invalid {
-		($name:ident, $color_string:expr, $expected:expr) => {
-			concat_idents::concat_idents!(test_name = color_try_from_invalid_, $name {
-				#[test]
-				fn test_name() {
-					assert_eq!(Color::try_from($color_string).unwrap_err().to_string(), $expected);
-				}
-			});
-		}
-	}
-
-	test_color_try_from!(named_black, "black", Color::LightBlack);
-	test_color_try_from!(named_light_black, "light black", Color::LightBlack);
-	test_color_try_from!(named_dark_black, "dark black", Color::DarkBlack);
-	test_color_try_from!(named_blue, "blue", Color::LightBlue);
-	test_color_try_from!(named_light_blue, "light blue", Color::LightBlue);
-	test_color_try_from!(named_dark_blue, "dark blue", Color::DarkBlue);
-	test_color_try_from!(named_cyan, "cyan", Color::LightCyan);
-	test_color_try_from!(named_light_cyan, "light cyan", Color::LightCyan);
-	test_color_try_from!(named_dark_cyan, "dark cyan", Color::DarkCyan);
-	test_color_try_from!(named_green, "green", Color::LightGreen);
-	test_color_try_from!(named_light_green, "light green", Color::LightGreen);
-	test_color_try_from!(named_dark_green, "dark green", Color::DarkGreen);
-	test_color_try_from!(named_magenta, "magenta", Color::LightMagenta);
-	test_color_try_from!(named_light_magenta, "light magenta", Color::LightMagenta);
-	test_color_try_from!(named_dark_magenta, "dark magenta", Color::DarkMagenta);
-	test_color_try_from!(named_red, "red", Color::LightRed);
-	test_color_try_from!(named_light_red, "light red", Color::LightRed);
-	test_color_try_from!(named_dark_red, "dark red", Color::DarkRed);
-	test_color_try_from!(named_white, "white", Color::LightWhite);
-	test_color_try_from!(named_yellow, "yellow", Color::LightYellow);
-	test_color_try_from!(named_light_yellow, "light yellow", Color::LightYellow);
-	test_color_try_from!(named_dark_yellow, "dark yellow", Color::DarkYellow);
-	test_color_try_from!(index_0, "0", Color::Index(0));
-	test_color_try_from!(index_255, "255", Color::Index(255));
-	test_color_try_from!(rgb, "100,101,102", Color::Rgb {
+	#[rstest]
+	#[case::named_black("black", Color::LightBlack)]
+	#[case::named_light_black("light black", Color::LightBlack)]
+	#[case::named_dark_black("dark black", Color::DarkBlack)]
+	#[case::named_blue("blue", Color::LightBlue)]
+	#[case::named_light_blue("light blue", Color::LightBlue)]
+	#[case::named_dark_blue("dark blue", Color::DarkBlue)]
+	#[case::named_cyan("cyan", Color::LightCyan)]
+	#[case::named_light_cyan("light cyan", Color::LightCyan)]
+	#[case::named_dark_cyan("dark cyan", Color::DarkCyan)]
+	#[case::named_green("green", Color::LightGreen)]
+	#[case::named_light_green("light green", Color::LightGreen)]
+	#[case::named_dark_green("dark green", Color::DarkGreen)]
+	#[case::named_magenta("magenta", Color::LightMagenta)]
+	#[case::named_light_magenta("light magenta", Color::LightMagenta)]
+	#[case::named_dark_magenta("dark magenta", Color::DarkMagenta)]
+	#[case::named_red("red", Color::LightRed)]
+	#[case::named_light_red("light red", Color::LightRed)]
+	#[case::named_dark_red("dark red", Color::DarkRed)]
+	#[case::named_white("white", Color::LightWhite)]
+	#[case::named_yellow("yellow", Color::LightYellow)]
+	#[case::named_light_yellow("light yellow", Color::LightYellow)]
+	#[case::named_dark_yellow("dark yellow", Color::DarkYellow)]
+	#[case::index_0("0", Color::Index(0))]
+	#[case::index_255("255", Color::Index(255))]
+	#[case::rgb("100,101,102", Color::Rgb {
 		red: 100,
 		green: 101,
 		blue: 102
-	});
+	})]
+	fn try_from(#[case] color_string: &str, #[case] expected: Color) {
+		assert_eq!(Color::try_from(color_string).unwrap(), expected);
+	}
 
-	test_color_try_from_invalid!(
-		non_number_red,
-		"red,0,0",
-		"\"red,0,0\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_green,
+	#[rstest]
+	#[case::non_number_red("red,0,0", "\"red,0,0\" is not a valid color triple. Values must be between 0-255.")]
+	#[case::rgb_non_number_green(
 		"0,green,0",
 		"\"0,green,0\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_blue,
+	)]
+	#[case::rgb_non_number_blue(
 		"0,0,blue",
 		"\"0,0,blue\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_red_lower_limit,
+	)]
+	#[case::rgb_non_number_red_lower_limit(
 		"-1,0,0",
 		"\"-1,0,0\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_green_lower_limit,
+	)]
+	#[case::rgb_non_number_green_lower_limit(
 		"0,-1,0",
 		"\"0,-1,0\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_blue_lower_limit,
+	)]
+	#[case::rgb_non_number_blue_lower_limit(
 		"0,0,-1",
 		"\"0,0,-1\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_red_upper_limit,
+	)]
+	#[case::rgb_non_number_red_upper_limit(
 		"256,0,0",
 		"\"256,0,0\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_green_upper_limit,
+	)]
+	#[case::rgb_non_number_green_upper_limit(
 		"0,256,0",
 		"\"0,256,0\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		rgb_non_number_blue_upper_limit,
+	)]
+	#[case::rgb_non_number_blue_upper_limit(
 		"0,0,256",
 		"\"0,0,256\" is not a valid color triple. Values must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		index_upper_limit,
-		"256",
-		"\"256\" is not a valid color index. Index must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		index_lower_limit,
-		// -1 is transparent/default and a valid value
-		"-2",
-		"\"-2\" is not a valid color index. Index must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		str_single_value,
-		"invalid",
-		"\"invalid\" is not a valid color index. Index must be between 0-255."
-	);
-	test_color_try_from_invalid!(
-		str_multiple_value,
-		"invalid,invalid",
-		"\"invalid,invalid\" is not a valid color value."
-	);
+	)]
+	#[case::index_upper_limit("256", "\"256\" is not a valid color index. Index must be between 0-255.")]
+	#[case::index_lower_limit("-2", "\"-2\" is not a valid color index. Index must be between 0-255.")]
+	#[case::str_single_value("invalid", "\"invalid\" is not a valid color index. Index must be between 0-255.")]
+	#[case::str_multiple_value("invalid,invalid", "\"invalid,invalid\" is not a valid color value.")]
+	fn color_try_from_fail(#[case] color_string: &str, #[case] expected: &str) {
+		assert_eq!(Color::try_from(color_string).unwrap_err().to_string(), expected);
+	}
 }
