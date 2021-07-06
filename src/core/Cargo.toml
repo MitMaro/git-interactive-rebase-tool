@@ -20,7 +20,7 @@ chrono = "0.4.19"
 lazy_static = "1.4.0"
 num-format = "0.4.0"
 pico-args = "0.4.2"
-unicode-segmentation = "1.7.1"
+unicode-segmentation = "1.8.0"
 girt-config = {version = "1.0.0", path = "../../src/config"}
 girt-display = {version = "1.0.0", path = "../../src/display"}
 girt-input = {version = "1.0.0", path = "../../src/input"}
