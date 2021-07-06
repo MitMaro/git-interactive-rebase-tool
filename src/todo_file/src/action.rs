@@ -109,76 +109,51 @@ mod tests {
 
 	use super::*;
 
-	macro_rules! test_action_to_string {
-		($name:ident, $action:expr, $expected:expr) => {
-			concat_idents::concat_idents!(test_name = action_as_string_, $name {
-				#[test]
-				fn test_name() {
-					assert_eq!($action.as_string(), $expected);
-				}
-			});
-		}
+	#[rstest]
+	#[case::break_str(Action::Break, "break")]
+	#[case::drop(Action::Drop, "drop")]
+	#[case::edit(Action::Edit, "edit")]
+	#[case::exec(Action::Exec, "exec")]
+	#[case::fixup(Action::Fixup, "fixup")]
+	#[case::noop(Action::Noop, "noop")]
+	#[case::pick(Action::Pick, "pick")]
+	#[case::reword(Action::Reword, "reword")]
+	#[case::squash(Action::Squash, "squash")]
+	#[case::label(Action::Label, "label")]
+	#[case::reset(Action::Reset, "reset")]
+	#[case::merge(Action::Merge, "merge")]
+	fn to_string(#[case] action: Action, #[case] expected: &str) {
+		assert_eq!(action.as_string(), expected);
 	}
 
-	macro_rules! test_action_try_from {
-		($name:ident, $action_string:expr, $expected:expr) => {
-			concat_idents::concat_idents!(test_name = action_try_from_, $name {
-				#[test]
-				fn test_name() {
-					assert_eq!(Action::try_from($action_string).unwrap(), $expected);
-				}
-			});
-		}
+	#[rstest]
+	#[case::b("b", Action::Break)]
+	#[case::break_str("break", Action::Break)]
+	#[case::d("d", Action::Drop)]
+	#[case::drop("drop", Action::Drop)]
+	#[case::e("e", Action::Edit)]
+	#[case::edit("edit", Action::Edit)]
+	#[case::x("x", Action::Exec)]
+	#[case::exec("exec", Action::Exec)]
+	#[case::f("f", Action::Fixup)]
+	#[case::fixup("fixup", Action::Fixup)]
+	#[case::n("n", Action::Noop)]
+	#[case::noop("noop", Action::Noop)]
+	#[case::p("p", Action::Pick)]
+	#[case::pick("pick", Action::Pick)]
+	#[case::r("r", Action::Reword)]
+	#[case::reword("reword", Action::Reword)]
+	#[case::s("s", Action::Squash)]
+	#[case::squash("squash", Action::Squash)]
+	#[case::l("l", Action::Label)]
+	#[case::label("label", Action::Label)]
+	#[case::t("t", Action::Reset)]
+	#[case::reset("reset", Action::Reset)]
+	#[case::m("m", Action::Merge)]
+	#[case::merge("merge", Action::Merge)]
+	fn try_from(#[case] action_str: &str, #[case] expected: Action) {
+		assert_eq!(Action::try_from(action_str).unwrap(), expected);
 	}
-
-	macro_rules! test_action_to_abbreviation {
-		($name:ident, $action:expr, $expected:expr) => {
-			concat_idents::concat_idents!(test_name = action_to_abbreviation_, $name {
-				#[test]
-				fn test_name() {
-					assert_eq!($action.to_abbreviation(), $expected);
-				}
-			});
-		}
-	}
-
-	test_action_to_string!(break_str, Action::Break, "break");
-	test_action_to_string!(drop, Action::Drop, "drop");
-	test_action_to_string!(edit, Action::Edit, "edit");
-	test_action_to_string!(exec, Action::Exec, "exec");
-	test_action_to_string!(fixup, Action::Fixup, "fixup");
-	test_action_to_string!(noop, Action::Noop, "noop");
-	test_action_to_string!(pick, Action::Pick, "pick");
-	test_action_to_string!(reword, Action::Reword, "reword");
-	test_action_to_string!(squash, Action::Squash, "squash");
-	test_action_to_string!(label, Action::Label, "label");
-	test_action_to_string!(reset, Action::Reset, "reset");
-	test_action_to_string!(merge, Action::Merge, "merge");
-
-	test_action_try_from!(b, "b", Action::Break);
-	test_action_try_from!(break_str, "break", Action::Break);
-	test_action_try_from!(d, "d", Action::Drop);
-	test_action_try_from!(drop, "drop", Action::Drop);
-	test_action_try_from!(e, "e", Action::Edit);
-	test_action_try_from!(edit, "edit", Action::Edit);
-	test_action_try_from!(x, "x", Action::Exec);
-	test_action_try_from!(exec, "exec", Action::Exec);
-	test_action_try_from!(f, "f", Action::Fixup);
-	test_action_try_from!(fixup, "fixup", Action::Fixup);
-	test_action_try_from!(n, "n", Action::Noop);
-	test_action_try_from!(noop, "noop", Action::Noop);
-	test_action_try_from!(p, "p", Action::Pick);
-	test_action_try_from!(pick, "pick", Action::Pick);
-	test_action_try_from!(r, "r", Action::Reword);
-	test_action_try_from!(reword, "reword", Action::Reword);
-	test_action_try_from!(s, "s", Action::Squash);
-	test_action_try_from!(squash, "squash", Action::Squash);
-	test_action_try_from!(l, "l", Action::Label);
-	test_action_try_from!(label, "label", Action::Label);
-	test_action_try_from!(t, "t", Action::Reset);
-	test_action_try_from!(reset, "reset", Action::Reset);
-	test_action_try_from!(m, "m", Action::Merge);
-	test_action_try_from!(merge, "merge", Action::Merge);
 
 	#[test]
 	fn action_try_from_invalid() {
@@ -188,18 +163,22 @@ mod tests {
 		);
 	}
 
-	test_action_to_abbreviation!(b, Action::Break, "b");
-	test_action_to_abbreviation!(d, Action::Drop, "d");
-	test_action_to_abbreviation!(e, Action::Edit, "e");
-	test_action_to_abbreviation!(x, Action::Exec, "x");
-	test_action_to_abbreviation!(f, Action::Fixup, "f");
-	test_action_to_abbreviation!(n, Action::Noop, "n");
-	test_action_to_abbreviation!(p, Action::Pick, "p");
-	test_action_to_abbreviation!(r, Action::Reword, "r");
-	test_action_to_abbreviation!(s, Action::Squash, "s");
-	test_action_to_abbreviation!(l, Action::Label, "l");
-	test_action_to_abbreviation!(t, Action::Reset, "t");
-	test_action_to_abbreviation!(m, Action::Merge, "m");
+	#[rstest]
+	#[case::b(Action::Break, "b")]
+	#[case::d(Action::Drop, "d")]
+	#[case::e(Action::Edit, "e")]
+	#[case::x(Action::Exec, "x")]
+	#[case::f(Action::Fixup, "f")]
+	#[case::n(Action::Noop, "n")]
+	#[case::p(Action::Pick, "p")]
+	#[case::r(Action::Reword, "r")]
+	#[case::s(Action::Squash, "s")]
+	#[case::l(Action::Label, "l")]
+	#[case::t(Action::Reset, "t")]
+	#[case::m(Action::Merge, "m")]
+	fn to_abbreviation(#[case] action: Action, #[case] expected: &str) {
+		assert_eq!(action.to_abbreviation(), expected);
+	}
 
 	#[rstest]
 	#[case::break_action(Action::Break, true)]
