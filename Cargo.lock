@@ -64,16 +64,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "concat-idents"
-version = "1.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f29bafee6d91a80db18bcd41dbdbb8d1d117ea31676b22e7370061ccea5f76c"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "crossterm"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -182,7 +172,6 @@ name = "girt-todo-file"
 version = "1.0.0"
 dependencies = [
  "anyhow",
- "concat-idents",
  "rstest",
  "rustc_version 0.4.0",
  "tempfile",
