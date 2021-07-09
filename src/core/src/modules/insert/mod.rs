@@ -4,9 +4,10 @@ mod line_type;
 #[cfg(all(unix, test))]
 mod tests;
 
+use display::DisplayColor;
 use input::EventHandler;
 use todo_file::{Line, TodoFile};
-use view::{RenderContext, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewSender};
 
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
@@ -31,7 +32,18 @@ impl Module for Insert {
 	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
 		match self.state {
 			InsertState::Prompt => self.action_choices.get_view_data(),
-			InsertState::Edit => self.edit.get_view_data(),
+			InsertState::Edit => {
+				self.edit.build_view_data(
+					|updater: &mut ViewDataUpdater<'_>| {
+						updater.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
+							"Enter contents of the new line. Empty content cancels creation of a new line.",
+							DisplayColor::IndicatorColor,
+						)]));
+						updater.push_leading_line(ViewLine::new_empty_line());
+					},
+					|_| {},
+				)
+			},
 		}
 	}
 
@@ -85,9 +97,6 @@ impl Module for Insert {
 
 impl Insert {
 	pub(crate) fn new() -> Self {
-		let mut edit = Edit::new();
-		edit.set_description("Enter contents of the new line. Empty content cancels creation of a new line.");
-
 		let mut action_choices = Choice::new(vec![
 			(LineType::Exec, 'e', String::from("exec <command>")),
 			(LineType::Pick, 'p', String::from("pick <hash>")),
@@ -104,7 +113,7 @@ impl Insert {
 
 		Self {
 			state: InsertState::Prompt,
-			edit,
+			edit: Edit::new(),
 			action_choices,
 			line_type: LineType::Exec,
 		}
