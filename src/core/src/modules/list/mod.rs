@@ -45,7 +45,23 @@ impl Module for List {
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
 			ListState::Visual => self.get_visual_mode_view_data(todo_file, context),
-			ListState::Edit => self.edit.get_view_data(),
+			ListState::Edit => {
+				if let Some(selected_line) = todo_file.get_selected_line() {
+					if selected_line.is_editable() {
+						return self.edit.build_view_data(
+							|updater| {
+								updater.push_leading_line(ViewLine::from(LineSegment::new_with_color(
+									format!("Modifying line: {}", selected_line.to_text()).as_str(),
+									DisplayColor::IndicatorColor,
+								)));
+								updater.push_leading_line(ViewLine::new_empty_line());
+							},
+							|_| {},
+						);
+					}
+				}
+				self.edit.get_view_data()
+			},
 		}
 	}
 
@@ -343,8 +359,6 @@ impl List {
 								self.edit.set_content(selected_line.get_content());
 								self.edit
 									.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
-								self.edit
-									.set_description(format!("Modifying line: {}", selected_line.to_text()).as_str());
 							}
 						}
 					},

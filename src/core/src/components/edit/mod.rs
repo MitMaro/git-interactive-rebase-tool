@@ -5,7 +5,7 @@ use display::DisplayColor;
 use input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
-use view::{LineSegment, ViewData, ViewLine};
+use view::{LineSegment, ViewData, ViewDataUpdater, ViewLine};
 
 lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
@@ -14,7 +14,6 @@ lazy_static! {
 pub(crate) struct Edit {
 	content: String,
 	cursor_position: usize,
-	description: Option<String>,
 	finished: bool,
 	label: Option<String>,
 	view_data: ViewData,
@@ -28,14 +27,17 @@ impl Edit {
 		Self {
 			content: String::from(""),
 			cursor_position: 0,
-			description: None,
 			finished: false,
 			label: None,
 			view_data,
 		}
 	}
 
-	pub(crate) fn get_view_data(&mut self) -> &ViewData {
+	pub(crate) fn build_view_data<F, G>(&mut self, before_build: F, after_build: G) -> &ViewData
+	where
+		F: FnOnce(&mut ViewDataUpdater<'_>),
+		G: FnOnce(&mut ViewDataUpdater<'_>),
+	{
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
 
@@ -69,16 +71,9 @@ impl Edit {
 		if !end.is_empty() {
 			segments.push(LineSegment::new(end.as_str()));
 		}
-		let description = self.description.as_ref();
 		self.view_data.update_view_data(|updater| {
 			updater.clear();
-			if let Some(desc) = description {
-				updater.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
-					desc.as_str(),
-					DisplayColor::IndicatorColor,
-				)]));
-				updater.push_leading_line(ViewLine::new_empty_line());
-			}
+			before_build(updater);
 			updater.push_line(ViewLine::from(segments));
 			updater.push_trailing_line(ViewLine::new_pinned(vec![LineSegment::new_with_color(
 				"Enter to finish",
@@ -86,8 +81,13 @@ impl Edit {
 			)]));
 			updater.ensure_column_visible(pointer);
 			updater.ensure_line_visible(0);
+			after_build(updater);
 		});
 		&self.view_data
+	}
+
+	pub(crate) fn get_view_data(&mut self) -> &ViewData {
+		self.build_view_data(|_| {}, |_| {})
 	}
 
 	pub(crate) fn handle_event(&mut self, event_handler: &EventHandler) -> Event {
@@ -170,10 +170,6 @@ impl Edit {
 		}
 
 		event
-	}
-
-	pub(crate) fn set_description(&mut self, description: &str) {
-		self.description = Some(String::from(description));
 	}
 
 	pub(crate) fn set_label(&mut self, label: &str) {

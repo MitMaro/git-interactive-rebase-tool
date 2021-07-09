@@ -4,28 +4,6 @@ use view::assert_rendered_output;
 use super::*;
 
 #[test]
-fn with_description() {
-	let mut module = Edit::new();
-	module.set_content("foobar");
-	module.set_description("Description");
-	let view_data = module.get_view_data();
-	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
-		view_data,
-		"{TITLE}",
-		"{LEADING}",
-		"{IndicatorColor}Description",
-		"",
-		"{BODY}",
-		"{Normal}foobar{Normal,Underline} ",
-		"{TRAILING}",
-		"{IndicatorColor}Enter to finish"
-	);
-}
-
-#[test]
 fn with_label() {
 	let mut module = Edit::new();
 	module.set_content("foobar");
@@ -45,23 +23,27 @@ fn with_label() {
 }
 
 #[test]
-fn with_label_and_description() {
+fn with_before_and_after_build() {
 	let mut module = Edit::new();
 	module.set_content("foobar");
-	module.set_description("Description");
-	module.set_label("Label: ");
-	let view_data = module.get_view_data();
+	let view_data = module.build_view_data(
+		|updater| {
+			updater.push_line(ViewLine::from("Before"));
+		},
+		|updater| {
+			updater.push_line(ViewLine::from("After"));
+		},
+	);
 	assert_rendered_output!(
 		Options AssertRenderOptions {
 			ignore_trailing_whitespace: false
 		},
 		view_data,
 		"{TITLE}",
-		"{LEADING}",
-		"{IndicatorColor}Description",
-		"",
 		"{BODY}",
-		"{Normal,Dimmed}Label: {Normal}foobar{Normal,Underline} ",
+		"{Normal}Before",
+		"{Normal}foobar{Normal,Underline} ",
+		"{Normal}After",
 		"{TRAILING}",
 		"{IndicatorColor}Enter to finish"
 	);
