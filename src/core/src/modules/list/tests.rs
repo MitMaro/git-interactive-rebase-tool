@@ -2350,7 +2350,7 @@ fn normal_mode_help() {
 fn normal_mode_help_event() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
+		&[Event::from(MetaEvent::Help), Event::from(KeyCode::Enter)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			module.state = ListState::Normal;
@@ -2404,7 +2404,7 @@ fn visual_mode_help() {
 fn visual_mode_help_event() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::SwapSelectedDown)],
+		&[Event::from(MetaEvent::Help), Event::from(KeyCode::Enter)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			module.state = ListState::Visual;

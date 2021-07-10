@@ -1,9 +1,8 @@
 use input::MetaEvent;
 use rstest::rstest;
-use view::assert_rendered_output;
+use view::{assert_rendered_output, testutil::with_view_sender};
 
 use super::*;
-use crate::components::testutil::handle_event_test;
 
 #[test]
 fn empty() {
@@ -46,20 +45,20 @@ fn from_key_bindings() {
 #[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
 #[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
 fn input_continue_active(#[case] event: Event) {
-	handle_event_test(&[event], |context| {
+	with_view_sender(|context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();
-		let _ = module.handle_event(&context.event_handler, &context.view_sender);
+		let _ = module.handle_event(event, &context.sender);
 		assert!(module.is_active());
 	});
 }
 
 #[test]
 fn input_other() {
-	handle_event_test(&[Event::from('a')], |context| {
+	with_view_sender(|context| {
 		let mut module = Help::new_from_keybindings(&[]);
 		module.set_active();
-		let _ = module.handle_event(&context.event_handler, &context.view_sender);
+		let _ = module.handle_event(Event::from('a'), &context.sender);
 		assert!(!module.is_active());
 	});
 }

@@ -2,13 +2,13 @@
 mod tests;
 
 use display::DisplayColor;
-use input::{Event, EventHandler, InputOptions};
+use input::{Event, InputOptions};
 use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
 }
 
 pub(crate) struct Help {
@@ -74,16 +74,12 @@ impl Help {
 		&self.view_data
 	}
 
-	pub(crate) fn handle_event(&mut self, event_handler: &EventHandler, view_sender: &ViewSender) -> Event {
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
-
+	pub(crate) fn handle_event(&mut self, event: Event, view_sender: &ViewSender) {
 		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(_) = event {
 				self.active = false;
 			}
 		}
-
-		event
 	}
 
 	pub(crate) fn set_active(&mut self) {

@@ -5,13 +5,16 @@ mod line_type;
 mod tests;
 
 use display::DisplayColor;
-use input::EventHandler;
+use input::{Event, InputOptions};
 use todo_file::{Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewSender};
 
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
-	components::{choice::Choice, edit::Edit},
+	components::{
+		choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
+		edit::{Edit, INPUT_OPTIONS as EDIT_INPUT_OPTIONS},
+	},
 	module::{Module, ProcessResult, State},
 };
 
@@ -47,15 +50,17 @@ impl Module for Insert {
 		}
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		view_sender: &ViewSender,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	fn input_options(&self) -> &InputOptions {
+		match self.state {
+			InsertState::Prompt => &CHOICE_INPUT_OPTIONS,
+			InsertState::Edit => &EDIT_INPUT_OPTIONS,
+		}
+	}
+
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, rebase_todo: &mut TodoFile) -> ProcessResult {
 		match self.state {
 			InsertState::Prompt => {
-				let (choice, event) = self.action_choices.handle_event(event_handler, view_sender);
+				let choice = self.action_choices.handle_event(event, view_sender);
 				let mut result = ProcessResult::from(event);
 				if let Some(action) = choice {
 					if action == &LineType::Cancel {
@@ -70,7 +75,8 @@ impl Module for Insert {
 				result
 			},
 			InsertState::Edit => {
-				let mut result = ProcessResult::from(self.edit.handle_event(event_handler));
+				let mut result = ProcessResult::from(event);
+				self.edit.handle_event(event);
 				if self.edit.is_finished() {
 					let content = self.edit.get_content();
 					result = result.state(State::List);

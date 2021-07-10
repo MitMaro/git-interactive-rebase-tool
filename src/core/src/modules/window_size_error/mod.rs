@@ -1,4 +1,4 @@
-use input::{Event, EventHandler, InputOptions};
+use input::{Event, InputOptions};
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
@@ -50,8 +50,11 @@ impl Module for WindowSizeError {
 		&mut self.view_data
 	}
 
-	fn handle_events(&mut self, event_handler: &EventHandler, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+	fn input_options(&self) -> &InputOptions {
+		&INPUT_OPTIONS
+	}
+
+	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
 		let mut result = ProcessResult::from(event);
 
 		if let Event::Resize(width, height) = event {

@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use git::{
 	testutil::{head_id, with_temp_repository, CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
 	Delta,
@@ -1195,11 +1196,22 @@ fn render_help() {
 }
 
 #[test]
-fn handle_help_event() {
+fn handle_help_event_show() {
+	with_temp_repository(|repo| {
+		module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
+			let _ = test_context.handle_all_events(&mut module);
+			assert!(module.help.is_active());
+		});
+		Ok(())
+	});
+}
+#[test]
+fn handle_help_event_hide() {
 	with_temp_repository(|repo| {
 		module_test(
 			&["pick aaa c1"],
-			&[Event::from(MetaEvent::Help), Event::from(MetaEvent::ShowDiff)],
+			&[Event::from(MetaEvent::Help), Event::from(MetaEvent::Help)],
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), &repo);
 				let _ = test_context.handle_all_events(&mut module);
