@@ -1,9 +1,8 @@
 use input::MetaEvent;
 use rstest::rstest;
-use view::assert_rendered_output;
+use view::{assert_rendered_output, testutil::with_view_sender};
 
 use super::*;
-use crate::components::testutil::handle_event_test;
 
 #[derive(Clone, Debug, PartialEq)]
 enum TestAction {
@@ -56,11 +55,10 @@ fn render_options_prompt() {
 
 #[test]
 fn valid_selection() {
-	handle_event_test(&[Event::from('b')], |context| {
+	with_view_sender(|context| {
 		let mut module = Choice::new(create_choices());
-		let (choice, event) = module.handle_event(&context.event_handler, &context.view_sender);
+		let choice = module.handle_event(Event::from('b'), &context.sender);
 		assert_eq!(choice.unwrap(), &TestAction::B);
-		assert_eq!(event, Event::from('b'));
 		assert_rendered_output!(
 			module.get_view_data(),
 			"{TITLE}",
@@ -76,11 +74,10 @@ fn valid_selection() {
 
 #[test]
 fn invalid_selection_character() {
-	handle_event_test(&[Event::from('z')], |context| {
+	with_view_sender(|context| {
 		let mut module = Choice::new(create_choices());
-		let (choice, event) = module.handle_event(&context.event_handler, &context.view_sender);
+		let choice = module.handle_event(Event::from('z'), &context.sender);
 		assert!(choice.is_none());
-		assert_eq!(event, Event::from('z'));
 		assert_rendered_output!(
 			module.get_view_data(),
 			"{TITLE}",
@@ -103,9 +100,9 @@ fn invalid_selection_character() {
 #[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
 #[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
 fn event_standard(#[case] event: Event) {
-	handle_event_test(&[event], |context| {
+	with_view_sender(|context| {
 		let mut module = Choice::new(create_choices());
-		let _ = module.handle_event(&context.event_handler, &context.view_sender);
+		let _ = module.handle_event(event, &context.sender);
 		assert!(!module.invalid_selection);
 	});
 }

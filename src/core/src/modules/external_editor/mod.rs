@@ -6,14 +6,14 @@ mod external_editor_state;
 mod tests;
 
 use anyhow::{anyhow, Result};
-use input::{Event, EventHandler, InputOptions, MetaEvent};
+use input::{Event, InputOptions, MetaEvent};
 use lazy_static::lazy_static;
 use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
-	components::choice::Choice,
+	components::choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
 	module::{ExitStatus, Module, ProcessResult, State},
 };
 
@@ -72,16 +72,17 @@ impl Module for ExternalEditor {
 		}
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		view_sender: &ViewSender,
-		todo_file: &mut TodoFile,
-	) -> ProcessResult {
+	fn input_options(&self) -> &InputOptions {
+		match self.state {
+			ExternalEditorState::Active => &INPUT_OPTIONS,
+			ExternalEditorState::Empty | ExternalEditorState::Error(_) => &CHOICE_INPUT_OPTIONS,
+		}
+	}
+
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> ProcessResult {
 		let mut result = ProcessResult::new();
 		match self.state {
 			ExternalEditorState::Active => {
-				let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
 				result = result.event(event);
 				match event {
 					Event::Meta(MetaEvent::ExternalCommandSuccess) => {
@@ -107,7 +108,7 @@ impl Module for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Empty => {
-				let (choice, event) = self.empty_choice.handle_event(event_handler, view_sender);
+				let choice = self.empty_choice.handle_event(event, view_sender);
 				result = result.event(event);
 				if let Some(action) = choice {
 					match *action {
@@ -122,7 +123,7 @@ impl Module for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let (choice, event) = self.error_choice.handle_event(event_handler, view_sender);
+				let choice = self.error_choice.handle_event(event, view_sender);
 				result = result.event(event);
 				if let Some(action) = choice {
 					match *action {

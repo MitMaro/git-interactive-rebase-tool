@@ -1,9 +1,9 @@
-use input::EventHandler;
+use input::{Event, InputOptions, KeyBindings};
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 use crate::{
-	components::confirm::{Confirm, Confirmed},
+	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	module::{ExitStatus, Module, ProcessResult, State},
 };
 
@@ -16,13 +16,16 @@ impl Module for ConfirmAbort {
 		self.dialog.get_view_data()
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		_: &ViewSender,
-		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
-		let (confirmed, event) = self.dialog.handle_event(event_handler);
+	fn input_options(&self) -> &InputOptions {
+		&INPUT_OPTIONS
+	}
+
+	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
+		Confirm::read_event(event, key_bindings)
+	}
+
+	fn handle_event(&mut self, event: Event, _: &ViewSender, rebase_todo: &mut TodoFile) -> ProcessResult {
+		let confirmed = self.dialog.handle_event(event);
 		let mut result = ProcessResult::from(event);
 		match confirmed {
 			Confirmed::Yes => {

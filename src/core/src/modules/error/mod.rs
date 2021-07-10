@@ -1,6 +1,6 @@
 use captur::capture;
 use display::DisplayColor;
-use input::{Event, EventHandler, InputOptions};
+use input::{Event, InputOptions};
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
@@ -26,13 +26,11 @@ impl Module for Error {
 		&self.view_data
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		view_sender: &ViewSender,
-		_: &mut TodoFile,
-	) -> ProcessResult {
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
+	fn input_options(&self) -> &InputOptions {
+		&INPUT_OPTIONS
+	}
+
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> ProcessResult {
 		let mut result = ProcessResult::from(event);
 		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(_) = event {

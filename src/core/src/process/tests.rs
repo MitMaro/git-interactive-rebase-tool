@@ -14,7 +14,7 @@ use crate::{
 };
 
 struct TestModule {
-	event_callback: Box<dyn Fn(&EventHandler, &ViewSender, &mut TodoFile) -> ProcessResult>,
+	event_callback: Box<dyn Fn(Event, &ViewSender, &mut TodoFile) -> ProcessResult>,
 	view_data: ViewData,
 	view_data_callback: Box<dyn Fn(&mut ViewData)>,
 }
@@ -35,13 +35,8 @@ impl Module for TestModule {
 		&self.view_data
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		view_sender: &ViewSender,
-		todo_file: &mut TodoFile,
-	) -> ProcessResult {
-		(self.event_callback)(event_handler, view_sender, todo_file)
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> ProcessResult {
+		(self.event_callback)(event, view_sender, todo_file)
 	}
 }
 

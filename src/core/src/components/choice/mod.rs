@@ -4,12 +4,12 @@ mod tests;
 use std::collections::HashMap;
 
 use display::DisplayColor;
-use input::{Event, EventHandler, InputOptions, KeyCode};
+use input::{Event, InputOptions, KeyCode};
 use lazy_static::lazy_static;
 use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
 }
 
 pub(crate) struct Choice<T> {
@@ -77,24 +77,18 @@ where T: Clone
 		&self.view_data
 	}
 
-	pub(crate) fn handle_event(
-		&mut self,
-		event_handler: &EventHandler,
-		view_sender: &ViewSender,
-	) -> (Option<&T>, Event) {
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
-
+	pub(crate) fn handle_event(&mut self, event: Event, view_sender: &ViewSender) -> Option<&T> {
 		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(key_event) = event {
 				if let KeyCode::Char(c) = key_event.code {
 					if let Some(v) = self.map.get(&c) {
 						self.invalid_selection = false;
-						return (Some(v), event);
+						return Some(v);
 					}
 				}
 				self.invalid_selection = true;
 			}
 		}
-		(None, event)
+		None
 	}
 }

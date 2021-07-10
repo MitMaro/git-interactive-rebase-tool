@@ -4,12 +4,12 @@ mod tests;
 
 use captur::capture;
 pub(crate) use confirmed::Confirmed;
-use input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, MetaEvent};
+use input::{Event, InputOptions, KeyBindings, KeyCode, KeyEvent, MetaEvent};
 use lazy_static::lazy_static;
 use view::{ViewData, ViewLine};
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
 }
 
 pub(crate) struct Confirm {
@@ -36,27 +36,28 @@ impl Confirm {
 		&self.view_data
 	}
 
-	#[allow(clippy::unused_self)]
-	pub(crate) fn handle_event(&self, event_handler: &EventHandler) -> (Confirmed, Event) {
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, key_bindings| {
-			if let Event::Key(key) = event {
-				if let KeyCode::Char(c) = key.code {
-					let event_lower = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_lowercase()), key.modifiers));
-					let event_upper = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_uppercase()), key.modifiers));
+	pub(crate) fn read_event(event: Event, key_bindings: &KeyBindings) -> Event {
+		if let Event::Key(key) = event {
+			if let KeyCode::Char(c) = key.code {
+				let event_lower = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_lowercase()), key.modifiers));
+				let event_upper = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_uppercase()), key.modifiers));
 
-					return if key_bindings.confirm_yes.contains(&event_lower)
-						|| key_bindings.confirm_yes.contains(&event_upper)
-					{
-						Event::from(MetaEvent::Yes)
-					}
-					else {
-						Event::from(MetaEvent::No)
-					};
+				return if key_bindings.confirm_yes.contains(&event_lower)
+					|| key_bindings.confirm_yes.contains(&event_upper)
+				{
+					Event::from(MetaEvent::Yes)
 				}
+				else {
+					Event::from(MetaEvent::No)
+				};
 			}
-			event
-		});
-		let confirmed = if let Event::Meta(meta_event) = event {
+		}
+		event
+	}
+
+	#[allow(clippy::unused_self)]
+	pub(crate) const fn handle_event(&self, event: Event) -> Confirmed {
+		if let Event::Meta(meta_event) = event {
 			match meta_event {
 				MetaEvent::Yes => Confirmed::Yes,
 				MetaEvent::No => Confirmed::No,
@@ -65,7 +66,6 @@ impl Confirm {
 		}
 		else {
 			Confirmed::Other
-		};
-		(confirmed, event)
+		}
 	}
 }

@@ -2,13 +2,13 @@
 mod tests;
 
 use display::DisplayColor;
-use input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, KeyModifiers};
+use input::{Event, InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 use view::{LineSegment, ViewData, ViewDataUpdater, ViewLine};
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
 }
 
 pub(crate) struct Edit {
@@ -90,9 +90,7 @@ impl Edit {
 		self.build_view_data(|_| {}, |_| {})
 	}
 
-	pub(crate) fn handle_event(&mut self, event_handler: &EventHandler) -> Event {
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, _| event);
-
+	pub(crate) fn handle_event(&mut self, event: Event) {
 		match event {
 			Event::Key(KeyEvent {
 				code: KeyCode::Backspace,
@@ -168,8 +166,6 @@ impl Edit {
 			},
 			_ => {},
 		}
-
-		event
 	}
 
 	pub(crate) fn set_label(&mut self, label: &str) {

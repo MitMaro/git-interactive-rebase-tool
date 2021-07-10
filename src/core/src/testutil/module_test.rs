@@ -42,35 +42,24 @@ impl TestContext {
 	}
 
 	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> ProcessResult {
-		module.handle_events(
-			&self.event_handler_context.event_handler,
-			&self.view_sender_context.sender,
-			&mut self.rebase_todo_file,
-		)
+		let options = module.input_options();
+		let event = self
+			.event_handler_context
+			.event_handler
+			.read_event(options, |event, key_bindings| module.read_event(event, key_bindings));
+		module.handle_event(event, &self.view_sender_context.sender, &mut self.rebase_todo_file)
 	}
 
 	pub(crate) fn handle_n_events(&mut self, module: &'_ mut dyn Module, n: usize) -> Vec<ProcessResult> {
 		let mut results = vec![];
 		for _ in 0..n {
-			results.push(module.handle_events(
-				&self.event_handler_context.event_handler,
-				&self.view_sender_context.sender,
-				&mut self.rebase_todo_file,
-			));
+			results.push(self.handle_event(module));
 		}
 		results
 	}
 
 	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<ProcessResult> {
-		let mut results = vec![];
-		for _ in 0..self.event_handler_context.number_events {
-			results.push(module.handle_events(
-				&self.event_handler_context.event_handler,
-				&self.view_sender_context.sender,
-				&mut self.rebase_todo_file,
-			));
-		}
-		results
+		self.handle_n_events(module, self.event_handler_context.number_events)
 	}
 
 	pub(crate) fn new_todo_file(&self) -> TodoFile {

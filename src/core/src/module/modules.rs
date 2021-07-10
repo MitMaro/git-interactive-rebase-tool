@@ -44,15 +44,19 @@ impl<'m> Modules<'m> {
 		self.get_mut_module(state).build_view_data(render_context, rebase_todo)
 	}
 
-	pub(crate) fn handle_input(
+	pub(crate) fn handle_event(
 		&mut self,
 		state: State,
 		event_handler: &EventHandler,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
-		self.get_mut_module(state)
-			.handle_events(event_handler, view_sender, rebase_todo)
+		let module = self.get_mut_module(state);
+		let input_options = module.input_options();
+		let event = event_handler.read_event(input_options, |event, key_bindings| {
+			module.read_event(event, key_bindings)
+		});
+		module.handle_event(event, view_sender, rebase_todo)
 	}
 
 	pub(crate) fn error(&mut self, state: State, error: &anyhow::Error) {
@@ -99,7 +103,7 @@ mod tests {
 			&self.view_data
 		}
 
-		fn handle_events(&mut self, _: &EventHandler, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
+		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
 			self.trace.borrow_mut().push(String::from("Handle Events"));
 			ProcessResult::new()
 		}
@@ -118,7 +122,7 @@ mod tests {
 			modules.register_module(State::List, test_module);
 
 			let _ = modules.activate(State::List, &context.rebase_todo_file, State::Insert);
-			let _ = modules.handle_input(
+			let _ = modules.handle_event(
 				State::List,
 				&context.event_handler_context.event_handler,
 				&context.view_sender_context.sender,

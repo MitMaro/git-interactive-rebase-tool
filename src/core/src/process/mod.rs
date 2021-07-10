@@ -70,7 +70,7 @@ impl Process {
 					self.exit_status = Some(ExitStatus::StateError);
 					break;
 				}
-				let result = modules.handle_input(
+				let result = modules.handle_event(
 					self.state,
 					&self.event_handler,
 					&self.view_sender,

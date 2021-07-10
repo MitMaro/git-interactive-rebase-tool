@@ -9,7 +9,7 @@ use anyhow::anyhow;
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
-use input::{Event, EventHandler, InputOptions, MetaEvent};
+use input::{Event, InputOptions, KeyBindings, MetaEvent};
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender};
@@ -20,7 +20,7 @@ use self::{
 	view_builder::{ViewBuilder, ViewBuilderOptions},
 };
 use crate::{
-	components::help::Help,
+	components::help::{Help, INPUT_OPTIONS as HELP_INPUT_OPTIONS},
 	module::{Module, ProcessResult, State},
 };
 
@@ -118,24 +118,29 @@ impl Module for ShowCommit<'_> {
 		}
 	}
 
-	fn handle_events(
-		&mut self,
-		event_handler: &EventHandler,
-		view_sender: &ViewSender,
-		_: &mut TodoFile,
-	) -> ProcessResult {
+	fn input_options(&self) -> &InputOptions {
 		if self.help.is_active() {
-			return ProcessResult::from(self.help.handle_event(event_handler, view_sender));
+			&HELP_INPUT_OPTIONS
 		}
+		else {
+			&INPUT_OPTIONS
+		}
+	}
 
-		let event = event_handler.read_event(&INPUT_OPTIONS, |event, key_bindings| {
-			if key_bindings.show_diff.contains(&event) {
-				Event::from(MetaEvent::ShowDiff)
-			}
-			else {
-				event
-			}
-		});
+	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
+		if key_bindings.show_diff.contains(&event) {
+			Event::from(MetaEvent::ShowDiff)
+		}
+		else {
+			event
+		}
+	}
+
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> ProcessResult {
+		if self.help.is_active() {
+			self.help.handle_event(event, view_sender);
+			return ProcessResult::from(event);
+		}
 
 		let mut result = ProcessResult::from(event);
 
