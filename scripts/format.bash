@@ -4,7 +4,7 @@ set -e
 set -u
 set -o pipefail
 
-RUST_VERSION="nightly-2021-01-31"
+RUST_VERSION="nightly"
 
 rustup update "$RUST_VERSION"
 rustup component add rustfmt --toolchain "$RUST_VERSION"

@@ -17,7 +17,7 @@ include = [
     "/readme",
     "/README.md"
 ]
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 name = "interactive-rebase-tool"
