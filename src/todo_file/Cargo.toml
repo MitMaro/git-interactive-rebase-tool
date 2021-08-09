@@ -18,7 +18,7 @@ name = "todo_file"
 anyhow = "1.0"
 
 [dev-dependencies]
-rstest = "0.10.0"
+rstest = "0.11.0"
 tempfile = "3.2.0"
 
 [build-dependencies]
