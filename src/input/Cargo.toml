@@ -20,7 +20,7 @@ crossterm = "0.20.0"
 girt-config = {version = "1.0.0", path = "../config"}
 
 [dev-dependencies]
-rstest = "0.10.0"
+rstest = "0.11.0"
 
 [build-dependencies]
 rustc_version = "0.4.0"
