@@ -27,6 +27,7 @@ version = "0.8.1"
 features = ["v4"]
 
 [dev-dependencies]
+captur = "0.1.0"
 girt-config = {version = "1.0.0", path = "../config"}
 rstest = "0.10.0"
 

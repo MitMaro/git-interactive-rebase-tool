@@ -32,7 +32,7 @@ content="\
 #![deny(
 	absolute_paths_not_starting_with_crate,
 	deprecated_in_future,
-	disjoint_capture_drop_reorder,
+	disjoint_capture_migration,
 	elided_lifetimes_in_paths,
 	explicit_outlives_requirements,
 	keyword_idents,

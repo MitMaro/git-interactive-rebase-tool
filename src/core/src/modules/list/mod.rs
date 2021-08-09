@@ -7,6 +7,7 @@ mod tests;
 use std::cmp::min;
 
 use ::input::{Event, EventHandler, MetaEvent};
+use captur::capture;
 use config::Config;
 use display::DisplayColor;
 use todo_file::{Action, EditContext, Line, TodoFile};
@@ -114,6 +115,7 @@ impl List {
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
 
 		self.view_data.update_view_data(|updater| {
+			capture!(todo_file);
 			updater.clear();
 			if todo_file.is_empty() {
 				updater.push_leading_line(ViewLine::from(LineSegment::new_with_color(

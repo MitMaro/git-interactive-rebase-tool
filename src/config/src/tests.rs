@@ -3,6 +3,7 @@ use std::{
 	path::Path,
 };
 
+use captur::capture;
 use rstest::rstest;
 use serial_test::serial;
 use tempfile::NamedTempFile;
@@ -679,6 +680,7 @@ fn config_git_editor_invalid() {
 #[case::modifier_only_control("Control+End Control+A", "ControlEnd,ControlA")]
 fn config_key_bindings(#[case] binding: &str, #[case] expected: &str) {
 	let config = load(|git_config| {
+		capture!(binding);
 		git_config
 			.set_str("interactive-rebase-tool.inputAbort", binding)
 			.unwrap();

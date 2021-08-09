@@ -2,6 +2,7 @@ mod confirmed;
 #[cfg(test)]
 mod tests;
 
+use captur::capture;
 pub(crate) use confirmed::Confirmed;
 use input::{Event, EventHandler, InputOptions, KeyCode, KeyEvent, MetaEvent};
 use lazy_static::lazy_static;
@@ -18,6 +19,7 @@ pub(crate) struct Confirm {
 impl Confirm {
 	pub(crate) fn new(prompt: &str, confirm_yes: &[String], confirm_no: &[String]) -> Self {
 		let view_data = ViewData::new(|updater| {
+			capture!(confirm_yes, confirm_no);
 			updater.set_show_title(true);
 			updater.set_retain_scroll_position(false);
 			updater.push_line(ViewLine::from(format!(

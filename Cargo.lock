@@ -114,6 +114,7 @@ name = "girt-config"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "captur",
  "git2",
  "rstest",
  "rustc_version 0.4.0",
@@ -182,6 +183,7 @@ name = "girt-view"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "captur",
  "girt-config",
  "girt-display",
  "girt-input",

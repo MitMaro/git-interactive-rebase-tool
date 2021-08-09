@@ -10,6 +10,7 @@ pub(crate) struct TestContext {
 pub(crate) fn handle_event_test<C>(events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
 	with_view_sender(|view_sender_context| {
+		capture!(events);
 		with_event_handler(events, |event_handler_context| {
 			capture!(view_sender_context);
 			callback(TestContext {
