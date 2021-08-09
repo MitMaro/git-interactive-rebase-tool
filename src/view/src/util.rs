@@ -19,6 +19,7 @@ pub fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) -> Option
 
 #[cfg(test)]
 mod tests {
+	use captur::capture;
 	use rstest::rstest;
 
 	use super::*;
@@ -33,6 +34,7 @@ mod tests {
 	#[case::jump_up(MetaEvent::ScrollJumpUp, "PageUp")]
 	fn handle_view_data_scroll_event(#[case] meta_event: MetaEvent, #[case] action: &str) {
 		with_view_sender(|context| {
+			capture!(action);
 			let event = Event::from(meta_event);
 			assert_eq!(handle_view_data_scroll(event, &context.sender), Some(event));
 			context.assert_render_action(&[action]);

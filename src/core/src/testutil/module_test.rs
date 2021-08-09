@@ -1,5 +1,6 @@
 use std::{cell::Cell, path::Path};
 
+use captur::capture;
 use input::{
 	testutil::{with_event_handler, TestContext as EventHandlerTestContext},
 	Event,
@@ -104,6 +105,7 @@ pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_sender(|view_sender_context| {
+			capture!(lines);
 			let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
 				.join("..")
 				.join("..")

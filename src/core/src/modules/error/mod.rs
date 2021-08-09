@@ -1,3 +1,4 @@
+use captur::capture;
 use display::DisplayColor;
 use input::{Event, EventHandler, InputOptions};
 use lazy_static::lazy_static;
@@ -43,6 +44,7 @@ impl Module for Error {
 
 	fn handle_error(&mut self, error: &anyhow::Error) {
 		self.view_data.update_view_data(|updater| {
+			capture!(error);
 			updater.clear();
 			for cause in error.chain() {
 				let error_text = format!("{:#}", cause);

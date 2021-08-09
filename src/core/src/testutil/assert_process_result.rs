@@ -1,4 +1,5 @@
 use anyhow::Error;
+use captur::capture;
 use input::Event;
 
 use crate::module::{ExitStatus, ProcessResult, State};
@@ -54,6 +55,7 @@ pub(crate) fn _assert_process_result(
 	external_command: &Option<(String, Vec<String>)>,
 ) {
 	let error_compare_fn = |expected| {
+		capture!(actual);
 		actual
 			.error
 			.as_ref()

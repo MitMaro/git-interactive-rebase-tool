@@ -14,6 +14,7 @@ mod view_builder;
 mod tests;
 
 use anyhow::anyhow;
+use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use input::{Event, EventHandler, InputOptions, MetaEvent};
 use lazy_static::lazy_static;
@@ -100,6 +101,7 @@ impl Module for ShowCommit {
 			ShowCommitState::Overview => {
 				if self.overview_view_data.is_empty() {
 					self.overview_view_data.update_view_data(|updater| {
+						capture!(view_builder, commit);
 						view_builder.build_view_data_for_overview(updater, commit, is_full_width);
 					});
 				}
@@ -108,6 +110,7 @@ impl Module for ShowCommit {
 			ShowCommitState::Diff => {
 				if self.diff_view_data.is_empty() {
 					self.diff_view_data.update_view_data(|updater| {
+						capture!(view_builder, commit);
 						view_builder.build_view_data_diff(updater, commit, is_full_width);
 					});
 				}
