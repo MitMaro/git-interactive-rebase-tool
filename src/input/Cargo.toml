@@ -16,7 +16,7 @@ name = "input"
 
 [dependencies]
 anyhow = "1.0"
-crossterm = "0.20.0"
+crossterm = "0.21.0"
 girt-config = {version = "1.0.0", path = "../config"}
 
 [dev-dependencies]
