@@ -1,12 +1,9 @@
-use std::{
-	env::{remove_var, set_var},
-	path::Path,
-};
+use std::env::{remove_var, set_var};
 
 use captur::capture;
 use rstest::rstest;
 use serial_test::serial;
-use tempfile::NamedTempFile;
+use tempfile::{tempdir, NamedTempFile};
 
 use super::*;
 
@@ -31,44 +28,31 @@ where F: FnOnce(&mut git2::Config) {
 #[test]
 #[serial]
 fn config_new() {
-	set_var(
-		"GIT_DIR",
-		Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("../..")
-			.join("test")
-			.join("fixtures")
-			.join("simple")
-			.to_str()
-			.unwrap(),
-	);
+	let temp_repository_directory = tempdir().unwrap();
+	let path = temp_repository_directory.into_path();
+	set_var("GIT_DIR", path.to_str().unwrap());
+	let _ = git2::Repository::init_bare(path).unwrap();
 	let _config = Config::new().unwrap();
 }
 
 #[test]
 #[serial]
 fn config_new_invalid_repo() {
-	let git_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-		.join("..")
-		.join("..")
-		.join("test")
-		.join("fixtures")
-		.join("does-not-exist")
-		.into_os_string()
-		.into_string()
-		.unwrap();
-	set_var("GIT_DIR", git_dir.as_str());
+	let temp_repository_directory = tempdir().unwrap();
+	let path = temp_repository_directory.into_path().join("does-not-exist");
+	set_var("GIT_DIR", path.to_str().unwrap());
 	assert_eq!(
 		format!("{:#}", Config::new().err().unwrap()).trim(),
 		if cfg!(windows) {
 			format!(
 				"Error loading git config: failed to resolve path '{}': The system cannot find the file specified.",
-				git_dir.as_str()
+				path.to_str().unwrap()
 			)
 		}
 		else {
 			format!(
 				"Error loading git config: failed to resolve path '{}': No such file or directory",
-				git_dir.as_str()
+				path.to_str().unwrap()
 			)
 		}
 	);
