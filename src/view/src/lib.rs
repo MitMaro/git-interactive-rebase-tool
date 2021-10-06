@@ -50,6 +50,7 @@
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
+	clippy::expect_used,
 	clippy::implicit_return,
 	clippy::missing_docs_in_private_items,
 	clippy::redundant_pub_crate,
@@ -70,7 +71,6 @@
 	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
 	clippy::exhaustive_structs,
-	clippy::expect_used,
 	clippy::float_arithmetic,
 	clippy::integer_arithmetic,
 	clippy::integer_division,
