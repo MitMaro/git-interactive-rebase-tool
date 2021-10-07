@@ -158,6 +158,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "girt-git"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "git2",
+ "rustc_version",
+ "serial_test",
+ "tempfile",
+]
+
+[[package]]
 name = "girt-input"
 version = "1.0.0"
 dependencies = [
