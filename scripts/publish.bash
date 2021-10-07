@@ -9,6 +9,7 @@ set -euo pipefail
 
 # order is based on dependency graph
 crates=(
+	"src/git"
 	"src/config"
 	"src/display"
 	"src/todo_file"

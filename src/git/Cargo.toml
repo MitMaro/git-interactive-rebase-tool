@@ -1,0 +1,30 @@
+[package]
+name = "girt-git"
+version = "0.1.0"
+authors = ["Tim Oram <dev@mitmaro.ca>"]
+license = "GPL-3.0-or-later"
+description = "Git module for git-interactive-rebase-tool"
+homepage = "https://gitrebasetool.mitmaro.ca/"
+repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
+edition = "2018"
+keywords = ["git"]
+categories = ["command-line-interface", "command-line-utilities"]
+readme = "../../README.md"
+
+[lib]
+name = "git"
+
+[dependencies]
+anyhow = "1.0.41"
+tempfile = "3.2.0"
+
+[dependencies.git2]
+version = "0.13.20"
+default-features = false
+features = []
+
+[dev-dependencies]
+serial_test = "0.5.1"
+
+[build-dependencies]
+rustc_version = "0.4.0"
