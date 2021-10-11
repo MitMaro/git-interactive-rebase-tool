@@ -19,7 +19,7 @@ anyhow = "1.0.44"
 girt-display = {version = "1.0.0", path = "../display"}
 girt-input = {version = "1.0.0", path = "../input"}
 unicode-segmentation = "1.8.0"
-unicode-width = "0.1.8"
+unicode-width = "0.1.9"
 xi-unicode = "0.3.0"
 
 [dependencies.uuid]
