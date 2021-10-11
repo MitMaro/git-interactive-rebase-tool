@@ -19,7 +19,7 @@ anyhow = "1.0.41"
 tempfile = "3.2.0"
 
 [dependencies.git2]
-version = "0.13.20"
+version = "0.13.23"
 default-features = false
 features = []
 
