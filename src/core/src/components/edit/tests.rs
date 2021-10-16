@@ -380,20 +380,26 @@ fn add_character_at_start() {
 
 #[test]
 fn add_character_uppercase() {
-	with_event_handler(&[Event::Key(KeyEvent { code: input::KeyCode::Char('X'), modifiers: input::KeyModifiers::SHIFT}) ], |context| {
-		let mut module = Edit::new();
-		module.set_content("abcd");
-		let _ = module.handle_event(&context.event_handler);
-		let view_data = module.get_view_data();
-		assert_rendered_output!(
-			view_data,
-			"{TITLE}",
-			"{BODY}",
-			"{Normal}abcdX{Normal,Underline} ",
-			"{TRAILING}",
-			"{IndicatorColor}Enter to finish"
-		);
-	});
+	with_event_handler(
+		&[Event::Key(KeyEvent {
+			code: input::KeyCode::Char('X'),
+			modifiers: input::KeyModifiers::SHIFT,
+		})],
+		|context| {
+			let mut module = Edit::new();
+			module.set_content("abcd");
+			let _ = module.handle_event(&context.event_handler);
+			let view_data = module.get_view_data();
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{BODY}",
+				"{Normal}abcdX{Normal,Underline} ",
+				"{TRAILING}",
+				"{IndicatorColor}Enter to finish"
+			);
+		},
+	);
 }
 
 #[test]
