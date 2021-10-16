@@ -49,7 +49,7 @@ Change action and reorder multiple lines at once with visual mode.
 
 ![Toggle breaks](/docs/assets/images/girt-break.gif?raw=true)
 
-### View commit details and diff 
+### View commit details and diff
 
 View the commit overview, and a full commit diff with a press of a key.
 
@@ -174,12 +174,13 @@ Use cargo to build and run the project. From the project root run:
     # build and run
     cargo run -- <path-to-git-rebase-todo-file>
 
+Sample rebase todo files can be found in ./test/fixtures.
 
 ### Tests
 
-Automated tests are available for all features and ran be run with:
+Automated tests are available for all features and can be run with:
 
-    cargo test
+    ./scripts/test.bash
 
 ### Linting
 
