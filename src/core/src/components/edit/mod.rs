@@ -155,7 +155,7 @@ impl Edit {
 			}) => self.finished = true,
 			Event::Key(KeyEvent {
 				code: KeyCode::Char(c),
-				modifiers: KeyModifiers::NONE,
+				modifiers: KeyModifiers::NONE | KeyModifiers::SHIFT,
 			}) => {
 				let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 					.take(self.cursor_position)
