@@ -1,5 +1,7 @@
-use anyhow::Result;
-use git2::Config;
+use std::convert::TryFrom;
+
+use anyhow::{Error, Result};
+use git::Config;
 
 use super::{
 	utils::{get_color, get_string},
@@ -54,8 +56,15 @@ pub struct Theme {
 }
 
 impl Theme {
+	/// Create a new configuration with default values.
+	#[must_use]
+	#[inline]
+	pub fn new() -> Self {
+		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
+	}
+
 	/// Create a new theme from a Git Config reference.
-	pub(super) fn new(git_config: &Config) -> Result<Self> {
+	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self> {
 		Ok(Self {
 			character_vertical_spacing: get_string(
 				git_config,
@@ -95,5 +104,128 @@ impl Theme {
 				Color::Index(237),
 			)?,
 		})
+	}
+}
+
+impl Default for Theme {
+	#[inline]
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
+impl TryFrom<&Config> for Theme {
+	type Error = Error;
+
+	#[inline]
+	fn try_from(config: &Config) -> core::result::Result<Self, Error> {
+		Self::new_with_config(Some(config))
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use rstest::rstest;
+
+	use super::*;
+	use crate::testutils::{assert_error, invalid_utf, with_git_config};
+
+	#[test]
+	fn new() {
+		let _config = Theme::new();
+	}
+
+	#[test]
+	fn default() {
+		let _config = Theme::default();
+	}
+
+	#[test]
+	fn try_from_git_config() {
+		with_git_config(&[], |git_config| {
+			assert!(Theme::try_from(&git_config).is_ok());
+		});
+	}
+
+	#[test]
+	fn try_from_git_config_error() {
+		with_git_config(&["[interactive-rebase-tool]", "breakColor = invalid"], |git_config| {
+			assert!(Theme::try_from(&git_config).is_err());
+		});
+	}
+
+	#[test]
+	fn character_vertical_spacing() {
+		assert_eq!(Theme::new().character_vertical_spacing, "~");
+		with_git_config(
+			&["[interactive-rebase-tool]", "verticalSpacingCharacter = \"X\""],
+			|config| {
+				let theme = Theme::new_with_config(Some(&config)).unwrap();
+				assert_eq!(theme.character_vertical_spacing, "X");
+			},
+		);
+	}
+
+	#[rstest]
+	#[case::color_action_break("breakColor", Color::LightWhite, |theme: Theme| theme.color_action_break)]
+	#[case::color_action_drop("dropColor", Color::LightRed, |theme: Theme| theme.color_action_drop)]
+	#[case::color_action_edit("editColor", Color::LightBlue, |theme: Theme| theme.color_action_edit)]
+	#[case::color_action_exec("execColor", Color::LightWhite, |theme: Theme| theme.color_action_exec)]
+	#[case::color_action_fixup("fixupColor", Color::LightMagenta, |theme: Theme| theme.color_action_fixup)]
+	#[case::color_action_pick("pickColor", Color::LightGreen, |theme: Theme| theme.color_action_pick)]
+	#[case::color_action_reword("rewordColor", Color::LightYellow, |theme: Theme| theme.color_action_reword)]
+	#[case::color_action_squash("squashColor", Color::LightCyan, |theme: Theme| theme.color_action_squash)]
+	#[case::color_action_label("labelColor", Color::DarkYellow, |theme: Theme| theme.color_action_label)]
+	#[case::color_action_reset("resetColor", Color::DarkYellow, |theme: Theme| theme.color_action_reset)]
+	#[case::color_action_merge("mergeColor", Color::DarkYellow, |theme: Theme| theme.color_action_merge)]
+	#[case::color_background("backgroundColor", Color::Default, |theme: Theme| theme.color_background)]
+	#[case::color_diff_add("diffAddColor", Color::LightGreen, |theme: Theme| theme.color_diff_add)]
+	#[case::color_diff_change("diffChangeColor", Color::LightYellow, |theme: Theme| theme.color_diff_change)]
+	#[case::color_diff_context("diffContextColor", Color::LightWhite, |theme: Theme| theme.color_diff_context)]
+	#[case::color_diff_remove("diffRemoveColor", Color::LightRed, |theme: Theme| theme.color_diff_remove)]
+	#[case::color_diff_whitespace("diffWhitespace", Color::LightBlack, |theme: Theme| theme.color_diff_whitespace)]
+	#[case::color_foreground("foregroundColor", Color::Default, |theme: Theme| theme.color_foreground)]
+	#[case::color_indicator("indicatorColor", Color::LightCyan, |theme: Theme| theme.color_indicator)]
+	#[case::color_selected_background(
+		"selectedBackgroundColor",
+		Color::Index(237),
+		|theme: Theme| theme.color_selected_background)
+	]
+	pub(crate) fn theme_color<F: 'static>(#[case] config_name: &str, #[case] default: Color, #[case] access: F)
+	where F: Fn(Theme) -> Color {
+		let default_theme = Theme::new();
+		let color = access(default_theme);
+		assert_eq!(color, default);
+
+		let config_value = format!("{} = \"42\"", config_name);
+		with_git_config(&["[interactive-rebase-tool]", config_value.as_str()], |config| {
+			let theme = Theme::new_with_config(Some(&config)).unwrap();
+			let color = access(theme);
+			assert_eq!(color, Color::Index(42));
+		});
+	}
+
+	#[rstest]
+	#[case::color_invalid_utf(
+		invalid_utf(),
+		"\"interactive-rebase-tool.breakColor\" is not valid: configuration value is not valid utf8"
+	)]
+	#[case::color_invalid_range_under(
+		"-2",
+		"\"interactive-rebase-tool.breakColor\" is not valid: \"-2\" is not a valid color index. Index must be \
+		 between 0-255."
+	)]
+	#[case::color_invalid_range_above(
+		"256",
+		"\"interactive-rebase-tool.breakColor\" is not valid: \"256\" is not a valid color index. Index must be \
+		 between 0-255."
+	)]
+	fn value_parsing_invalid(#[case] value: &str, #[case] expected_error: &str) {
+		with_git_config(
+			&["[interactive-rebase-tool]", format!("breakColor = {}", value).as_str()],
+			|git_config| {
+				assert_error(Theme::new_with_config(Some(&git_config)), expected_error);
+			},
+		);
 	}
 }
