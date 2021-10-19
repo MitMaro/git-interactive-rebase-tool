@@ -16,16 +16,10 @@ name = "config"
 
 [dependencies]
 anyhow = "1.0"
-
-[dependencies.git2]
-# git2:0.13.22 pulls libgit2-sys:0.12.23+1.2.0, which causes errors on some systems
-# track: rust-lang/git2-rs#746
-version = "=0.13.21"
-default-features = false
-features = []
+girt-git = {version = "0.1.0", path = "../../src/git"}
 
 [dev-dependencies]
-captur = "0.1.0"
+lazy_static = "1.4.0"
 rstest = "0.11.0"
 serial_test = "0.5.1"
 tempfile = "3.2.0"
