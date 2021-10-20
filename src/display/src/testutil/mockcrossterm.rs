@@ -163,21 +163,21 @@ impl CrossTerm {
 	/// Does the current style attributes contained dimmed.
 	#[inline]
 	#[must_use]
-	pub fn is_dimmed(&self) -> bool {
+	pub const fn is_dimmed(&self) -> bool {
 		self.attributes.has(Attribute::Dim)
 	}
 
 	/// Does the current style attributes contained reverse.
 	#[inline]
 	#[must_use]
-	pub fn is_reverse(&self) -> bool {
+	pub const fn is_reverse(&self) -> bool {
 		self.attributes.has(Attribute::Reverse)
 	}
 
 	/// Does the current style attributes contained underlined.
 	#[inline]
 	#[must_use]
-	pub fn is_underline(&self) -> bool {
+	pub const fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
 	}
 
