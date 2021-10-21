@@ -22,8 +22,8 @@ impl From<crossterm::event::Event> for Event {
 	#[inline]
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
-			crossterm::event::Event::Key(event) => Self::Key(event),
-			crossterm::event::Event::Mouse(event) => Self::Mouse(event),
+			crossterm::event::Event::Key(evt) => Self::Key(evt),
+			crossterm::event::Event::Mouse(evt) => Self::Mouse(evt),
 			crossterm::event::Event::Resize(width, height) => Self::Resize(width, height),
 		}
 	}

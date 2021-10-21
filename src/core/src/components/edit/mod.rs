@@ -72,9 +72,9 @@ impl Edit {
 		let description = self.description.as_ref();
 		self.view_data.update_view_data(|updater| {
 			updater.clear();
-			if let Some(description) = description {
+			if let Some(desc) = description {
 				updater.push_leading_line(ViewLine::from(vec![LineSegment::new_with_color(
-					description.as_str(),
+					desc.as_str(),
 					DisplayColor::IndicatorColor,
 				)]));
 				updater.push_leading_line(ViewLine::new_empty_line());

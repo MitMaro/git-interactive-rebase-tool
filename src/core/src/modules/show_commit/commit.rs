@@ -47,21 +47,18 @@ fn load_commit_state(hash: &str, config: &LoadCommitDiffOptions) -> Result<Commi
 	let date = Local.timestamp(commit.time().seconds(), 0);
 	let body = commit.message().map(String::from);
 	let author = User::new(commit.author().name(), commit.author().email());
-	let committer = User::new(commit.committer().name(), commit.committer().email());
-	let committer = if committer == author {
-		User::new(None, None)
+	let mut committer = User::new(commit.committer().name(), commit.committer().email());
+	if committer == author {
+		committer = User::new(None, None);
 	}
-	else {
-		committer
-	};
 	let mut number_files_changed = 0;
 	let mut insertions = 0;
 	let mut deletions = 0;
 
-	let mut diff_options = DiffOptions::new();
+	let mut empty_diff_options = DiffOptions::new();
 
 	// include_unmodified added to find copies from unmodified files
-	let diff_options = diff_options
+	let diff_options = empty_diff_options
 		.context_lines(config.context_lines)
 		.ignore_filemode(false)
 		.ignore_whitespace(config.ignore_whitespace)
@@ -73,8 +70,8 @@ fn load_commit_state(hash: &str, config: &LoadCommitDiffOptions) -> Result<Commi
 		.interhunk_lines(config.interhunk_lines)
 		.minimal(true);
 
-	let mut diff_find_options = DiffFindOptions::new();
-	let diff_find_options = diff_find_options
+	let mut empty_diff_find_options = DiffFindOptions::new();
+	let diff_find_options = empty_diff_find_options
 		.renames(config.renames)
 		.renames_from_rewrites(config.renames)
 		.rewrites(config.renames)

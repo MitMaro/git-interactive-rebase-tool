@@ -16,14 +16,13 @@ const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 /// # Panics
 /// This may panic if there is an unexpected error in the processing of the `View`, i.e. a bug.
 #[inline]
-pub fn spawn_view_thread<T: Tui + Send + 'static>(view: View<T>) -> (Sender, JoinHandle<()>) {
+pub fn spawn_view_thread<T: Tui + Send + 'static>(mut view: View<T>) -> (Sender, JoinHandle<()>) {
 	let (sender, receiver) = mpsc::channel();
 	let view_sender = Sender::new(sender.clone());
 	let view_render_slice = view_sender.clone_render_slice();
 	let crashed = view_sender.clone_poisoned();
 
 	let thread = spawn(move || {
-		let mut view = view;
 		let mut last_render_time = Instant::now() + MINIMUM_TICK_RATE;
 		let mut should_render = true;
 		for msg in receiver {

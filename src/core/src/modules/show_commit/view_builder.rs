@@ -53,15 +53,16 @@ impl ViewBuilder {
 		}
 	}
 
-	fn replace_whitespace(&self, s: &str, visible: bool) -> String {
-		let s = if visible {
-			s.replace(" ", self.visible_space_string.as_str())
+	fn replace_whitespace(&self, value: &str, visible: bool) -> String {
+		if visible {
+			value
+				.replace(" ", self.visible_space_string.as_str())
 				.replace("\t", self.visible_tab_string.as_str())
 		}
 		else {
-			s.replace("\t", self.invisible_tab_string.as_str())
-		};
-		s.replace("\n", "")
+			value.replace("\t", self.invisible_tab_string.as_str())
+		}
+		.replace("\n", "")
 	}
 
 	fn build_leading_summary(commit: &Commit, is_full_width: bool) -> ViewLine {

@@ -38,13 +38,10 @@ pub struct GitConfig {
 
 impl GitConfig {
 	pub(super) fn new(git_config: &Config) -> Result<Self> {
-		let comment_char = get_string(git_config, "core.commentChar", "#")?;
-		let comment_char = if comment_char.as_str().eq("auto") {
-			String::from("#")
+		let mut comment_char = get_string(git_config, "core.commentChar", "#")?;
+		if comment_char.as_str().eq("auto") {
+			comment_char = String::from("#");
 		}
-		else {
-			comment_char
-		};
 
 		let git_diff_renames = get_string(git_config, "diff.renames", "true")?.to_lowercase();
 		let (diff_renames, diff_copies) = match git_diff_renames.to_lowercase().as_str() {

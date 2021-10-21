@@ -14,13 +14,13 @@ pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 
 	// VTE based terms should all be setting COLORTERM, but just in case
 	if let Ok(vte_version) = var("VTE_VERSION") {
-		let vte_version = vte_version.parse::<i32>().unwrap_or(0);
+		let parsed_version = vte_version.parse::<i32>().unwrap_or(0);
 
-		if vte_version >= 3600 {
+		if parsed_version >= 3600 {
 			// version 0.36.00
 			return ColorMode::TrueColor;
 		}
-		else if vte_version > 0 {
+		else if parsed_version > 0 {
 			return ColorMode::EightBit;
 		}
 	}

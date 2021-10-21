@@ -121,7 +121,7 @@ impl LineSegment {
 			let graphemes = UnicodeSegmentation::graphemes(self.text.as_str(), true);
 
 			let skip_length = RefCell::new(0);
-			let graphemes = graphemes.skip_while(|v| {
+			let graphemes_itr = graphemes.skip_while(|v| {
 				let len = grapheme_column_width(*v);
 				let value = *skip_length.borrow();
 				if value + len > left {
@@ -135,7 +135,7 @@ impl LineSegment {
 
 			if segment_length - *skip_length.borrow() >= max_width {
 				let take_length = RefCell::new(0);
-				let partial_line = graphemes
+				let partial_line = graphemes_itr
 					.take_while(|v| {
 						let len = grapheme_column_width(v);
 						let value = *take_length.borrow();
@@ -151,7 +151,7 @@ impl LineSegment {
 				SegmentPartial::new(partial_line.as_str(), take_length.into_inner())
 			}
 			else {
-				let partial_line = graphemes.collect::<String>();
+				let partial_line = graphemes_itr.collect::<String>();
 				SegmentPartial::new(partial_line.as_str(), segment_length - skip_length.into_inner())
 			}
 		}

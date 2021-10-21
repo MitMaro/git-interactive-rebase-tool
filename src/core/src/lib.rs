@@ -109,8 +109,8 @@ use crate::{
 
 #[inline]
 #[must_use]
-pub fn run(args: Vec<OsString>) -> Exit {
-	match Args::try_from(args) {
+pub fn run(os_args: Vec<OsString>) -> Exit {
+	match Args::try_from(os_args) {
 		Err(err) => err,
 		Ok(args) => {
 			match *args.mode() {
