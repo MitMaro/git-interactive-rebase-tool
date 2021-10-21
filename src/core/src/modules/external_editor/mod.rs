@@ -194,14 +194,13 @@ impl ExternalEditor {
 	}
 
 	fn set_state(&mut self, result: ProcessResult, new_state: ExternalEditorState) -> ProcessResult {
-		let result = match new_state {
+		self.state = new_state;
+		match self.state {
 			ExternalEditorState::Active => {
 				result.external_command(self.external_command.0.clone(), self.external_command.1.clone())
 			},
 			ExternalEditorState::Empty | ExternalEditorState::Error(_) => result,
-		};
-		self.state = new_state;
-		result
+		}
 	}
 
 	fn undo_and_edit(&mut self, result: ProcessResult, todo_file: &mut TodoFile) -> ProcessResult {

@@ -403,7 +403,7 @@ impl RenderSlice {
 		let left = self.scroll_position.get_left_position();
 
 		view_lines.iter().skip(start).take(end).for_each(|line| {
-			let mut start = 0;
+			let mut cursor = 0;
 			let mut left_start = 0;
 			let mut segments = vec![];
 			// window width can be zero when there is a scrollbar and a view width of 1
@@ -414,7 +414,7 @@ impl RenderSlice {
 						left_start = left;
 					}
 
-					let partial = segment.get_partial_segment(left_start, window_width - start);
+					let partial = segment.get_partial_segment(left_start, window_width - cursor);
 
 					if partial.get_length() > 0 {
 						segments.push(LineSegment::new_with_color_and_style(
@@ -425,8 +425,8 @@ impl RenderSlice {
 							segment.is_reversed(),
 						));
 
-						start += partial.get_length();
-						if start >= window_width {
+						cursor += partial.get_length();
+						if cursor >= window_width {
 							break;
 						}
 						left_start = 0;
@@ -436,10 +436,10 @@ impl RenderSlice {
 					}
 				}
 
-				if start < window_width {
+				if cursor < window_width {
 					if let Some(padding) = line.get_padding().as_ref() {
 						segments.push(LineSegment::new_with_color_and_style(
-							padding.get_content().repeat(window_width - start).as_str(),
+							padding.get_content().repeat(window_width - cursor).as_str(),
 							padding.get_color(),
 							padding.is_dimmed(),
 							padding.is_underlined(),

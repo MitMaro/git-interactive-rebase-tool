@@ -99,6 +99,3 @@ for f in "${files[@]}"; do
 		p
 	' "$f"
 done
-
-
-
