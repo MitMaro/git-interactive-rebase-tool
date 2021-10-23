@@ -14,10 +14,11 @@ pub fn create_bare_repository(path: &Path) -> Repository {
 }
 
 /// Provide a bare repository for testing in a temporary directory.
+#[inline]
 pub fn with_temp_bare_repository<F>(callback: F)
 where F: FnOnce(Repository) {
-	let temp_repository_directory = tempdir().unwrap();
+	let temp_repository_directory = tempdir().expect("Unable to init a bare repository");
 	let path = temp_repository_directory.into_path();
-	let repo = git2::Repository::init_bare(path).expect("Unable to init a bare repository");
-	callback(Repository::from(repo))
+	let repo = create_bare_repository(&path);
+	callback(repo);
 }

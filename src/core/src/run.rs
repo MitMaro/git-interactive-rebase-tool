@@ -4,6 +4,7 @@ use display::testutil::CrossTerm;
 #[cfg(not(test))]
 use display::CrossTerm;
 use display::{Display, Tui};
+use git::Repository;
 use input::{EventHandler, KeyBindings};
 use todo_file::TodoFile;
 use view::View;
@@ -17,8 +18,8 @@ use crate::{
 	process::Process,
 };
 
-pub(super) fn load_config() -> Result<Config, Exit> {
-	Config::new().map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{:#}", err).as_str()))
+pub(super) fn load_config(repo: &Repository) -> Result<Config, Exit> {
+	Config::try_from(repo).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{:#}", err).as_str()))
 }
 
 pub(super) fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile, Exit> {
@@ -84,7 +85,16 @@ pub(super) fn run_process(todo_file: TodoFile, event_handler: EventHandler, conf
 
 pub(crate) fn run(args: &Args) -> Exit {
 	if let Some(filepath) = args.todo_file_path().as_ref() {
-		let config = match load_config() {
+		let repo = match Repository::open_from_env() {
+			Ok(repo) => repo,
+			Err(err) => {
+				return Exit::new(
+					ExitStatus::StateError,
+					format!("Unable to load Git repository: {}", err).as_str(),
+				);
+			},
+		};
+		let config = match load_config(&repo) {
 			Ok(config) => config,
 			Err(exit) => return exit,
 		};

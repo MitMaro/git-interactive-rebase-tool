@@ -24,6 +24,7 @@ pico-args = "0.4.2"
 unicode-segmentation = "1.8.0"
 girt-config = {version = "1.0.0", path = "../../src/config"}
 girt-display = {version = "1.0.0", path = "../../src/display"}
+girt-git = {version = "0.1.0", path = "../../src/git"}
 girt-input = {version = "1.0.0", path = "../../src/input"}
 girt-todo-file = {version = "1.0.0", path = "../../src/todo_file"}
 girt-view = {version = "1.0.0", path = "../../src/view"}

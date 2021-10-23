@@ -1,7 +1,7 @@
 use std::{path::Path, sync::atomic::Ordering};
 
 use anyhow::anyhow;
-use config::testutil::create_theme;
+use config::Theme;
 use display::{testutil::CrossTerm, Display, Size};
 use input::InputOptions;
 use view::{assert_rendered_output, ViewData};
@@ -62,7 +62,7 @@ fn create_modules() -> Modules {
 fn view_start_error() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -81,7 +81,7 @@ fn window_too_small_on_start() {
 	module_test(&["pick aaa comment"], &[Event::from(MetaEvent::Exit)], |test_context| {
 		let mut crossterm = create_crossterm();
 		crossterm.set_size(Size::new(1, 1));
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -98,7 +98,7 @@ fn window_too_small_on_start() {
 fn render_error() {
 	module_test(&["pick aaa comment"], &[Event::from(MetaEvent::Exit)], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -118,7 +118,7 @@ fn render_error() {
 fn view_sender_is_poisoned() {
 	module_test(&["pick aaa comment"], &[Event::from(MetaEvent::Exit)], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -137,7 +137,7 @@ fn view_sender_is_poisoned() {
 fn stop_error() {
 	module_test(&["pick aaa comment"], &[Event::from(MetaEvent::Exit)], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -163,7 +163,7 @@ fn handle_exit_event_that_is_not_kill() {
 		test_context.rebase_todo_file.set_lines(vec![]);
 		let mut shadow_rebase_file = test_context.new_todo_file();
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -191,7 +191,7 @@ fn handle_exit_event_that_is_kill() {
 		test_context.rebase_todo_file.set_lines(vec![]);
 		let mut shadow_rebase_file = test_context.new_todo_file();
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -216,7 +216,7 @@ fn handle_exit_event_that_is_kill() {
 fn handle_process_result_error() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -234,7 +234,7 @@ fn handle_process_result_error() {
 fn handle_process_result_new_state() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -253,7 +253,7 @@ fn handle_process_result_new_state() {
 fn handle_process_result_state_same() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -272,7 +272,7 @@ fn handle_process_result_state_same() {
 fn handle_process_result_exit_event() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -290,7 +290,7 @@ fn handle_process_result_exit_event() {
 fn handle_process_result_kill_event() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -308,7 +308,7 @@ fn handle_process_result_kill_event() {
 fn handle_process_result_resize_event_not_too_small() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -327,7 +327,7 @@ fn handle_process_result_resize_event_not_too_small() {
 fn handle_process_result_resize_event_too_small() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -347,7 +347,7 @@ fn handle_process_result_resize_event_too_small() {
 fn handle_process_result_other_event() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut process = Process::new(
 			test_context.rebase_todo_file,
@@ -366,7 +366,7 @@ fn handle_process_result_other_event() {
 fn handle_process_result_external_command_not_executable() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -408,7 +408,7 @@ fn handle_process_result_external_command_not_executable() {
 fn handle_process_result_external_command_executable_not_found() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -448,7 +448,7 @@ fn handle_process_result_external_command_executable_not_found() {
 fn handle_process_result_external_command_status_success() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(
@@ -470,7 +470,7 @@ fn handle_process_result_external_command_status_success() {
 fn handle_process_result_external_command_status_error() {
 	module_test(&["pick aaa comment"], &[], |test_context| {
 		let crossterm = create_crossterm();
-		let display = Display::new(crossterm, &create_theme());
+		let display = Display::new(crossterm, &Theme::new());
 		let view = View::new(display, "~", "?");
 		let mut modules = create_modules();
 		let mut process = Process::new(

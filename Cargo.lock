@@ -131,6 +131,7 @@ dependencies = [
  "chrono",
  "girt-config",
  "girt-display",
+ "girt-git",
  "girt-input",
  "girt-todo-file",
  "girt-view",
