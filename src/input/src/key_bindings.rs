@@ -163,14 +163,13 @@ impl KeyBindings {
 
 #[cfg(test)]
 mod tests {
-	use config::testutil::create_config;
 	use rstest::rstest;
 
 	use super::*;
 
 	#[test]
 	fn new() {
-		let _key_bindings = KeyBindings::new(&create_config().key_bindings);
+		let _key_bindings = KeyBindings::new(&config::KeyBindings::new());
 	}
 
 	#[test]

@@ -1,13 +1,13 @@
-use config::testutil::create_config;
+use config::Theme;
 use display::testutil::{assert_output, CrossTerm};
 
 use super::*;
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
-	let config = create_config();
+	let theme = Theme::new();
 	let mut crossterm = CrossTerm::new();
 	crossterm.set_size(Size::new(width, height));
-	let display = Display::new(crossterm, &config.theme);
+	let display = Display::new(crossterm, &theme);
 	let mut view = View::new(display, "~", "?");
 
 	let mut render_slice = RenderSlice::new();

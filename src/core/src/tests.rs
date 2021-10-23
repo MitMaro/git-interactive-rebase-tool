@@ -1,6 +1,7 @@
 use std::{env::set_var, fs::File, path::Path};
 
 use display::{testutil::CrossTerm, Tui};
+use git::Repository;
 use input::{Event, EventHandler, KeyBindings, MetaEvent};
 
 use super::*;
@@ -14,26 +15,15 @@ fn set_git_directory(repo: &str) -> String {
 		.join("..")
 		.join("..")
 		.join("test")
-		.join(repo);
+		.join(repo)
+		.canonicalize()
+		.unwrap();
 	set_var("GIT_DIR", path.to_str().unwrap());
 	String::from(path.to_str().unwrap())
 }
 
 fn args(args: &[&str]) -> Vec<OsString> {
 	args.iter().map(OsString::from).collect()
-}
-
-#[test]
-#[serial_test::serial]
-fn load_config_error_loading() {
-	let path = set_git_directory("fixtures/invalid-config");
-	assert_eq!(
-		run(args(&["rebase-todo"])),
-		Exit::new(
-			ExitStatus::ConfigError,
-			format!("Error loading git config: could not find repository from '{}'", path).as_str(),
-		)
-	);
 }
 
 #[test]
@@ -142,7 +132,8 @@ fn run_process_error() {
 	let mut permissions = todo_file.metadata().unwrap().permissions();
 	permissions.set_readonly(true);
 	todo_file.set_permissions(permissions).unwrap();
-	let config = load_config().unwrap();
+	let repo = Repository::open_from_env().unwrap();
+	let config = load_config(&repo).unwrap();
 	let rebase_todo_file = load_todo_file(todo_file_path.to_str().unwrap(), &config).unwrap();
 	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 	event_handler.push_event(Event::from(MetaEvent::Exit));
@@ -160,7 +151,8 @@ fn run_process_error() {
 fn run_process_success() {
 	let path = set_git_directory("fixtures/simple");
 	let todo_file = Path::new(path.as_str()).join("rebase-todo");
-	let config = load_config().unwrap();
+	let repo = Repository::open_from_env().unwrap();
+	let config = load_config(&repo).unwrap();
 	let rebase_todo_file = load_todo_file(todo_file.to_str().unwrap(), &config).unwrap();
 	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 	event_handler.push_event(Event::from(MetaEvent::Exit));
