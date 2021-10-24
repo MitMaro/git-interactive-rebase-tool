@@ -87,10 +87,11 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance, they should only be used in test code.
 
+mod origin;
 mod repository;
 mod status;
 pub mod testutil;
 
 pub use git2::{Config, ErrorCode};
 
-pub use crate::{repository::Repository, status::Status};
+pub use crate::{origin::Origin, repository::Repository, status::Status};
