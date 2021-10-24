@@ -100,7 +100,7 @@ mod tests;
 pub mod testutil;
 mod version;
 
-use std::{convert::TryFrom, ffi::OsString};
+use std::ffi::OsString;
 
 use crate::{
 	arguments::{Args, Mode},

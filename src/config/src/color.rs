@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use anyhow::{anyhow, Error};
 
 /// Represents a color.
