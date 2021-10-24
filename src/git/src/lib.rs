@@ -88,8 +88,9 @@
 //! performance, they should only be used in test code.
 
 mod repository;
+mod status;
 pub mod testutil;
 
 pub use git2::{Config, ErrorCode};
 
-pub use crate::repository::Repository;
+pub use crate::{repository::Repository, status::Status};

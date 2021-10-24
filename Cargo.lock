@@ -125,7 +125,7 @@ dependencies = [
  "anyhow",
  "girt-git",
  "lazy_static",
- "rstest",
+ "rstest 0.12.0",
  "rustc_version",
  "serial_test",
  "tempfile",
@@ -148,7 +148,7 @@ dependencies = [
  "lazy_static",
  "num-format",
  "pico-args",
- "rstest",
+ "rstest 0.12.0",
  "rustc_version",
  "serial_test",
  "tempfile",
@@ -162,7 +162,7 @@ dependencies = [
  "anyhow",
  "crossterm",
  "girt-config",
- "rstest",
+ "rstest 0.12.0",
  "rustc_version",
  "serial_test",
 ]
@@ -173,6 +173,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "git2",
+ "rstest 0.11.0",
  "rustc_version",
  "serial_test",
  "tempfile",
@@ -185,7 +186,7 @@ dependencies = [
  "anyhow",
  "crossterm",
  "girt-config",
- "rstest",
+ "rstest 0.12.0",
  "rustc_version",
 ]
 
@@ -194,7 +195,7 @@ name = "girt-todo-file"
 version = "1.0.0"
 dependencies = [
  "anyhow",
- "rstest",
+ "rstest 0.12.0",
  "rustc_version",
  "tempfile",
 ]
@@ -208,7 +209,7 @@ dependencies = [
  "girt-config",
  "girt-display",
  "girt-input",
- "rstest",
+ "rstest 0.12.0",
  "rustc_version",
  "unicode-segmentation",
  "unicode-width",
@@ -475,6 +476,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
 dependencies = [
  "winapi",
+]
+
+[[package]]
+name = "rstest"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2288c66aeafe3b2ed227c981f364f9968fa952ef0b30e84ada4486e7ee24d00a"
+dependencies = [
+ "cfg-if",
+ "proc-macro2",
+ "quote",
+ "rustc_version",
+ "syn",
 ]
 
 [[package]]
