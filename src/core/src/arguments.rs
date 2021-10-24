@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, ffi::OsString};
+use std::ffi::OsString;
 
 use pico_args::Arguments;
 

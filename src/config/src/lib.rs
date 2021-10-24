@@ -83,8 +83,6 @@
 //! This module is used to handle the loading of configuration from the Git config system.
 //!
 //! ```
-//! use std::convert::TryFrom;
-//!
 //! use config::Config;
 //! use git::Repository;
 //! let config = Config::try_from(&Repository::open_from_env().unwrap());
@@ -104,8 +102,6 @@ mod utils;
 
 #[cfg(test)]
 mod testutils;
-
-use std::convert::TryFrom;
 
 use anyhow::{Error, Result};
 use git::Repository;

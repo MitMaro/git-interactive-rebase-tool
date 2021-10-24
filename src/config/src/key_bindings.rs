@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use anyhow::{Error, Result};
 use git::Config;
 

@@ -1,7 +1,4 @@
-use std::{
-	convert::{TryFrom, TryInto},
-	env,
-};
+use std::env;
 
 use anyhow::{anyhow, Result};
 use git::{Config, ErrorCode};
