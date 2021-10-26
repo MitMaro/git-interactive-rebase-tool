@@ -91,7 +91,8 @@ mod origin;
 mod repository;
 mod status;
 pub mod testutil;
+mod user;
 
 pub use git2::{Config, ErrorCode};
 
-pub use crate::{origin::Origin, repository::Repository, status::Status};
+pub use crate::{origin::Origin, repository::Repository, status::Status, user::User};
