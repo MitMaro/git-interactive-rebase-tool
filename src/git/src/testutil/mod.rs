@@ -1,12 +1,14 @@
 #![cfg(not(tarpaulin_include))]
 
 //! Utilities for writing tests that interact with Git.
+mod build_file_status;
 mod build_reference;
 mod with_temp_repository;
 
 use git2::Oid;
 
 pub use self::{
+	build_file_status::FileStatusBuilder,
 	build_reference::ReferenceBuilder,
 	with_temp_repository::{with_temp_bare_repository, with_temp_repository},
 };
