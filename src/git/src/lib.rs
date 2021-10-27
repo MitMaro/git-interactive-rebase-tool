@@ -87,6 +87,7 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance, they should only be used in test code.
 
+mod diff_line;
 mod origin;
 mod reference;
 mod reference_kind;
@@ -98,6 +99,7 @@ mod user;
 pub use git2::{Config, ErrorCode};
 
 pub use crate::{
+	diff_line::DiffLine,
 	origin::Origin,
 	reference::Reference,
 	reference_kind::ReferenceKind,
