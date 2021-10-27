@@ -68,6 +68,7 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
+#![allow(clippy::integer_arithmetic)]
 
 //! Git Interactive Rebase Tool - Git Module
 //!
@@ -90,6 +91,8 @@
 mod delta;
 mod diff_line;
 mod file_mode;
+mod file_status;
+mod file_status_builder;
 mod origin;
 mod reference;
 mod reference_kind;
@@ -104,6 +107,7 @@ pub use crate::{
 	delta::Delta,
 	diff_line::DiffLine,
 	file_mode::FileMode,
+	file_status::FileStatus,
 	origin::Origin,
 	reference::Reference,
 	reference_kind::ReferenceKind,
