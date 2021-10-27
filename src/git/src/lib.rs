@@ -89,6 +89,7 @@
 
 mod delta;
 mod diff_line;
+mod file_mode;
 mod origin;
 mod reference;
 mod reference_kind;
@@ -102,6 +103,7 @@ pub use git2::{Config, ErrorCode};
 pub use crate::{
 	delta::Delta,
 	diff_line::DiffLine,
+	file_mode::FileMode,
 	origin::Origin,
 	reference::Reference,
 	reference_kind::ReferenceKind,
