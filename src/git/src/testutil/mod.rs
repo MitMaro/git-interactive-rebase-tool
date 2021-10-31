@@ -1,11 +1,15 @@
 #![cfg(not(tarpaulin_include))]
 
 //! Utilities for writing tests that interact with Git.
+mod build_reference;
 mod with_temp_repository;
 
 use git2::Oid;
 
-pub use self::with_temp_repository::{with_temp_bare_repository, with_temp_repository};
+pub use self::{
+	build_reference::ReferenceBuilder,
+	with_temp_repository::{with_temp_bare_repository, with_temp_repository},
+};
 use crate::Repository;
 
 /// Get the Oid of provided head reference name.
