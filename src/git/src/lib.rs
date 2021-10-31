@@ -88,6 +88,8 @@
 //! performance, they should only be used in test code.
 
 mod origin;
+mod reference;
+mod reference_kind;
 mod repository;
 mod status;
 pub mod testutil;
@@ -95,4 +97,11 @@ mod user;
 
 pub use git2::{Config, ErrorCode};
 
-pub use crate::{origin::Origin, repository::Repository, status::Status, user::User};
+pub use crate::{
+	origin::Origin,
+	reference::Reference,
+	reference_kind::ReferenceKind,
+	repository::Repository,
+	status::Status,
+	user::User,
+};
