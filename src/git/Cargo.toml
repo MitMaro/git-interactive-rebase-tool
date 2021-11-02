@@ -16,6 +16,8 @@ name = "git"
 
 [dependencies]
 anyhow = "1.0.52"
+chrono = "0.4.19"
+lazy_static = "1.4.0"
 tempfile = "3.3.0"
 
 [dependencies.git2]

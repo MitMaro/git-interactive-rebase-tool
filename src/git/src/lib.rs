@@ -88,6 +88,7 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance, they should only be used in test code.
 
+mod commit;
 mod delta;
 mod diff_line;
 mod file_mode;
@@ -104,6 +105,7 @@ mod user;
 pub use git2::{Config, ErrorCode};
 
 pub use crate::{
+	commit::Commit,
 	delta::Delta,
 	diff_line::DiffLine,
 	file_mode::FileMode,
