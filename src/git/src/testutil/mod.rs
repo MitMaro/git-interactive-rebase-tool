@@ -1,18 +1,24 @@
 #![cfg(not(tarpaulin_include))]
 
 //! Utilities for writing tests that interact with Git.
+mod build_commit;
 mod build_file_status;
 mod build_reference;
+mod create_commit;
 mod with_temp_repository;
 
 use git2::Oid;
 
 pub use self::{
+	build_commit::CommitBuilder,
 	build_file_status::FileStatusBuilder,
 	build_reference::ReferenceBuilder,
+	create_commit::{create_commit, CreateCommitOptions},
 	with_temp_repository::{with_temp_bare_repository, with_temp_repository},
 };
 use crate::Repository;
+
+pub(crate) static JAN_2021_EPOCH: i64 = 1_609_459_200;
 
 /// Get the Oid of provided head reference name.
 #[inline]
