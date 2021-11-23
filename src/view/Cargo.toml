@@ -15,7 +15,7 @@ readme = "../../README.md"
 name = "view"
 
 [dependencies]
-anyhow = "1.0.45"
+anyhow = "1.0.48"
 girt-display = {version = "1.0.0", path = "../display"}
 girt-input = {version = "1.0.0", path = "../input"}
 unicode-segmentation = "1.8.0"

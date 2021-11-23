@@ -15,7 +15,7 @@ readme = "../../README.md"
 name = "git"
 
 [dependencies]
-anyhow = "1.0.45"
+anyhow = "1.0.48"
 tempfile = "3.2.0"
 
 [dependencies.git2]
