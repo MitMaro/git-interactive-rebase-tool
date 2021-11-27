@@ -159,6 +159,12 @@ To start developing the project, you will need to [install Rust][install-rust], 
 
 ### Setup
 
+#### Cargo Make
+
+This project uses [cargo-make](https://github.com/sagiegurari/cargo-make) as a task runner. To install:
+
+    cargo install --force cargo-make
+
 #### Debian and derivatives
 
 If you plan to build a release package you will need `pkg-config` and `liblzma-dev`. They can be installed using `apt`:
@@ -167,10 +173,10 @@ If you plan to build a release package you will need `pkg-config` and `liblzma-d
 
 ### Build and run
 
-Use cargo to build and run the project. From the project root run:
+To build or run the project, from the project root run:
 
     # only build
-    cargo build --release
+    cargo make build --release
     # build and run
     cargo run -- <path-to-git-rebase-todo-file>
 
@@ -180,33 +186,43 @@ Sample rebase todo files can be found in ./test/fixtures.
 
 Automated tests are available for all features and can be run with:
 
-    ./scripts/test.bash
+    cargo make test
+
+### Docs
+
+API docs for the project are generated using Rust Doc:
+
+    cargo make docs
 
 ### Linting
 
-The project uses Clippy to provide additional linting, run with:
+An addition to the lints provided by rustc, this project uses Clippy to provide additional linting, run with:
 
-    ./scripts/lint.bash
+    cargo make lint
+
+This will run lints using stable and nightly. The nightly lints may show errors, but will not result in a failure.
 
 ### Format
 
 This project uses rust-fmt to provide a consistent format. A helpful script will ensure that all files are formatted correctly:
 
-    ./scripts/format.bash
+    cargo make format
+
+### Coverage
+
+The project use [Tarpaulin](https://github.com/xd009642/tarpaulin) to generate coverage reports. Coverage reports are used to find gaps in tests. To generate the coverage report:
+
+    cargo make coverage
+
+An addition to the report printed to the CLI, an HTML report can be found in the `coverage` directory.
 
 ### Release
 
-##### Install Cargo Deb
-
-    cargo install cargo-deb
-
 ##### Building
 
-    cargo build --release
-    cargo deb
+    cargo make deb
 
 A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
-
 
 ## Related Projects
 

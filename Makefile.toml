@@ -1,0 +1,129 @@
+[config]
+skip_core_tasks = true
+default_to_workspace = false
+
+[tasks.build]
+toolchain = "stable"
+install_crate = false
+command = "cargo"
+args = ["build", "${@}"]
+
+[tasks.build-release]
+toolchain = "stable"
+install_crate = false
+command = "cargo"
+args = ["build", "--release", "${@}"]
+
+[tasks.build-deb]
+toolchain = "stable"
+command = "cargo"
+dependencies = ["build-release"]
+args = ["deb"]
+
+[tasks.clean]
+toolchain = "stable"
+install_crate = false
+command = "cargo"
+args = ["clean"]
+
+[tasks.coverage]
+toolchain = "nightly-2021-11-07"
+command = "cargo"
+condition = { platforms = ["linux"] }
+env = { "RUSTFLAGS" = "-C link-dead-code" }
+args = [
+	"tarpaulin",
+	"--workspace",
+	"--all-features",
+	"--ignore-tests",
+	"--line",
+	"--verbose",
+	"--out", "Html",
+	"--out", "Lcov",
+	"--output-dir",
+	"coverage",
+	"${@}"
+]
+
+[tasks.docs]
+dependencies = [
+	"docs-nightly",
+	"docs-stable"
+]
+
+[tasks.docs-stable]
+toolchain = "stable"
+command = "cargo"
+args = [
+	"doc",
+	"--all-features",
+	"--workspace",
+	"${@}"
+]
+
+[tasks.docs-nightly]
+toolchain = "nightly"
+ignore_errors = true
+command = "cargo"
+args = [
+	"doc",
+	"--all-features",
+	"--workspace",
+	"${@}"
+]
+
+[tasks.lint]
+dependencies = [
+	"lint-nightly",
+	"lint-stable"
+]
+
+[tasks.lint-stable]
+toolchain = "stable"
+command = "cargo"
+args = [
+	"clippy",
+	"--all-targets",
+	"--all-features",
+	"${@}"
+]
+
+[tasks.lint-nightly]
+toolchain = "nightly"
+ignore_errors = true
+command = "cargo"
+args = [
+	"clippy",
+	"--all-targets",
+	"--all-features",
+	"${@}"
+]
+
+[tasks.format]
+toolchain = "nightly"
+command = "cargo"
+args = [
+	"fmt",
+	"--all",
+	"--",
+	"--check",
+	"${@}"
+]
+
+[tasks.licenses]
+toolchain = "nightly"
+script = ['''
+cargo +nightly about generate "docs/licenses.hbs" > "docs/licenses.html"
+''']
+
+[tasks.add-lints]
+command = "scripts/add-lints.bash"
+
+[tasks.publish]
+command = "scripts/publish.bash"
+
+[tasks.test]
+toolchain = "stable"
+install_crate = false
+command = "cargo"
+args = ["test", "--workspace"]
