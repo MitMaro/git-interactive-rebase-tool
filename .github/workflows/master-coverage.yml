@@ -1,21 +1,35 @@
 name: Master Coverage
 
 on:
-    push:
-        branches:
-            - master
+  push:
+    branches:
+      - master
 
 jobs:
   coverage:
-    runs-on: [ubuntu-latest]
+    runs-on: [ ubuntu-latest ]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: sudo apt-get install build-essential pkg-config liblzma-dev
-      - name: Build Coverage
-        run: "./scripts/coverage.bash"
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "nightly-2021-11-07"
+          profile: minimal
+          override: true
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          timeout: 10
+          version: '0.15.0'
+          out-type: Lcov
+          args: '--workspace --all-features --ignore-tests --line --output-dir coverage'
       - name: Post to Coveralls
         uses: coverallsapp/github-action@master
         with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "coverage/lcov.info"
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v1
+        with:
+          name: code-coverage-report
+          path: coverage/lcov.info

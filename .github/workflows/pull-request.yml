@@ -4,79 +4,165 @@ on: [pull_request]
 
 jobs:
   linux:
-    runs-on: [ubuntu-latest]
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: sudo apt-get install build-essential pkg-config liblzma-dev
-      - name: Update Rust
-        run: rustup update stable
-      - name: Test
-        run: "./scripts/test.bash"
-      - name: Build
-        run: cargo build --release
-      - name: Test Run
-        run: cargo run --release -- --version
-
-  lint:
-    runs-on: [ubuntu-latest]
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: sudo apt-get install build-essential pkg-config liblzma-dev
-      - name: Lint
-        run: "./scripts/lint.bash"
-      - name: Docs
-        run: "./scripts/docs.bash"
-      - name: Format
-        run: "./scripts/format.bash"
-
-  coverage:
-    runs-on: [ubuntu-latest]
+    runs-on: [ ubuntu-latest ]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: sudo apt-get install build-essential pkg-config liblzma-dev
-      - name: Build Coverage
-        run: "./scripts/coverage.bash"
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-make
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: make
+          args: test
+      - name: Build Release
+        uses: actions-rs/cargo@v1
+        with:
+          command: make
+          args: "build --release"
+      - name: Run
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: "--release -- --version"
+  lint:
+    runs-on: [ ubuntu-latest ]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-targets --all-features
+  docs:
+    runs-on: [ ubuntu-latest ]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: default
+          override: true
+      - name: Run
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: "--all-features --workspace"
+  format:
+    runs-on: [ ubuntu-latest ]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: default
+          override: true
+      - name: Run
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: " --all -- --check"
+  coverage:
+    runs-on: [ ubuntu-latest ]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "nightly-2021-11-07"
+          profile: minimal
+          override: true
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          timeout: 10
+          out-type: Lcov
+          args: '--workspace --all-features --ignore-tests --line --output-dir coverage'
       - name: Post to Coveralls
         uses: coverallsapp/github-action@master
         with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "coverage/lcov.info"
   macos:
-    name: MacOS
-    runs-on: [macos-latest]
+    name: macos
+    runs-on: [ macos-latest ]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
-      - name: Update Rust
-        run: rustup update stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-make
       - name: Test
-        run: "./scripts/test.bash"
-      - name: Build
-        run: cargo build --release
-      - name: Test Run
-        run: cargo run --release -- --version
-
+        uses: actions-rs/cargo@v1
+        with:
+          command: make
+          args: test
+      - name: Build Release
+        uses: actions-rs/cargo@v1
+        with:
+          command: make
+          args: "build --release"
+      - name: Run
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: "--release -- --version"
   windows:
-    name: Windows Test
-    runs-on: [windows-latest]
-    timeout-minutes: 10
+    name: windows
+    runs-on: [ windows-latest ]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Update Rust
-        run: rustup update stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - name: Run
+        uses: actions-rs/cargo@v1
+        env:
+          RUSTFLAGS: '--cap-lints warn'
+        with:
+          command: run
+          args: "--target x86_64-pc-windows-msvc --release -- --version"
       - name: Test
-        run: cargo test --target x86_64-pc-windows-msvc --release --workspace
+        uses: actions-rs/cargo@v1
         env:
-            RUSTFLAGS: '--cap-lints warn'
+          RUSTFLAGS: '--cap-lints warn'
+        with:
+          command: test
+          args: "--target x86_64-pc-windows-msvc --release --workspace"
       - name: Build
-        run: cargo build --target x86_64-pc-windows-msvc --release
+        uses: actions-rs/cargo@v1
         env:
-            RUSTFLAGS: '--cap-lints warn'
-      - name: Test Run
-        run: cargo run --target x86_64-pc-windows-msvc --release -- --version
+          RUSTFLAGS: '--cap-lints warn'
+        with:
+          command: build
+          args: "--target x86_64-pc-windows-msvc --release"
+      - name: Run
+        uses: actions-rs/cargo@v1
+        env:
+          RUSTFLAGS: '--cap-lints warn'
+        with:
+          command: run
+          args: "--target x86_64-pc-windows-msvc --release -- --version"
