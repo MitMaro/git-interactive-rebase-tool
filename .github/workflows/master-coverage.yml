@@ -20,7 +20,6 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           timeout: 10
-          version: '0.15.0'
           out-type: Lcov
           args: '--workspace --all-features --ignore-tests --line --output-dir coverage'
       - name: Post to Coveralls
