@@ -3,12 +3,14 @@ skip_core_tasks = true
 default_to_workspace = false
 
 [tasks.build]
+dependencies = ["update-rust-stable"]
 toolchain = "stable"
 install_crate = false
 command = "cargo"
 args = ["build", "${@}"]
 
 [tasks.build-release]
+dependencies = ["update-rust-stable"]
 toolchain = "stable"
 install_crate = false
 command = "cargo"
@@ -17,10 +19,11 @@ args = ["build", "--release", "${@}"]
 [tasks.build-deb]
 toolchain = "stable"
 command = "cargo"
-dependencies = ["build-release"]
+dependencies = ["update-rust-stable", "build-release"]
 args = ["deb"]
 
 [tasks.clean]
+dependencies = ["update-rust-stable"]
 toolchain = "stable"
 install_crate = false
 command = "cargo"
@@ -52,6 +55,7 @@ dependencies = [
 ]
 
 [tasks.docs-stable]
+dependencies = ["update-rust-stable"]
 toolchain = "stable"
 command = "cargo"
 args = [
@@ -62,6 +66,7 @@ args = [
 ]
 
 [tasks.docs-nightly]
+dependencies = ["update-rust-nightly"]
 toolchain = "nightly"
 ignore_errors = true
 command = "cargo"
@@ -79,6 +84,7 @@ dependencies = [
 ]
 
 [tasks.lint-stable]
+dependencies = ["update-rust-stable"]
 toolchain = "stable"
 command = "cargo"
 args = [
@@ -89,6 +95,7 @@ args = [
 ]
 
 [tasks.lint-nightly]
+dependencies = ["update-rust-nightly"]
 toolchain = "nightly"
 ignore_errors = true
 command = "cargo"
@@ -100,6 +107,7 @@ args = [
 ]
 
 [tasks.format]
+dependencies = ["update-rust-nightly"]
 toolchain = "nightly"
 command = "cargo"
 args = [
@@ -111,6 +119,7 @@ args = [
 ]
 
 [tasks.licenses]
+dependencies = ["update-rust-nightly"]
 toolchain = "nightly"
 script = ['''
 cargo +nightly about generate "docs/licenses.hbs" > "docs/licenses.html"
@@ -123,7 +132,16 @@ command = "scripts/add-lints.bash"
 command = "scripts/publish.bash"
 
 [tasks.test]
+dependencies = ["update-rust-stable"]
 toolchain = "stable"
 install_crate = false
 command = "cargo"
 args = ["test", "--workspace"]
+
+[tasks.update-rust-stable]
+command = "rustup"
+args = ["update", "stable"]
+
+[tasks.update-rust-nightly]
+command = "rustup"
+args = ["update", "nightly"]

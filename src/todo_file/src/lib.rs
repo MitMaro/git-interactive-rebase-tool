@@ -53,6 +53,7 @@
 	clippy::expect_used,
 	clippy::implicit_return,
 	clippy::missing_docs_in_private_items,
+	clippy::mod_module_files,
 	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments
 )]
