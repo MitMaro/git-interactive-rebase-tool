@@ -391,7 +391,7 @@ fn handle_process_result_external_command_not_executable() {
 			view_data,
 			"{TITLE}",
 			"{BODY}",
-			format!("{{Normal}}Unable to run {} ", command),
+			format!("{{Normal}}Unable to run {}", command),
 			if cfg!(windows) {
 				"{Normal}%1 is not a valid Win32 application. (os error 193)"
 			}
@@ -431,7 +431,7 @@ fn handle_process_result_external_command_executable_not_found() {
 			view_data,
 			"{TITLE}",
 			"{BODY}",
-			format!("{{Normal}}Unable to run {} ", command),
+			format!("{{Normal}}Unable to run {}", command),
 			if cfg!(windows) {
 				"{Normal}The system cannot find the file specified. (os error 2)"
 			}
