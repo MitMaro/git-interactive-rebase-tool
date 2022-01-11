@@ -49,7 +49,7 @@ fn render_full() {
 				"{Normal}   {ActionExec}exec   {Normal}echo 'foo'",
 				"{Normal}   {ActionPick}pick   {Normal}dddddddd {Normal}comment 4",
 				"{Normal}   {ActionReword}reword {Normal}eeeeeeee {Normal}comment 5",
-				"{Normal}   {ActionBreak}break  ",
+				"{Normal}   {ActionBreak}break",
 				"{Normal}   {ActionSquash}squash {Normal}ffffffff {Normal}comment 6",
 				"{Normal}   {ActionEdit}edit   {Normal}11111111 {Normal}comment 7",
 				"{Normal}   {ActionLabel}label  {Normal}ref",
@@ -92,7 +92,7 @@ fn render_compact() {
 				"{Normal} {ActionExec}x {Normal}echo 'foo'",
 				"{Normal} {ActionPick}p {Normal}ddd {Normal}comment 4",
 				"{Normal} {ActionReword}r {Normal}eee {Normal}comment 5",
-				"{Normal} {ActionBreak}b ",
+				"{Normal} {ActionBreak}b",
 				"{Normal} {ActionSquash}s {Normal}fff {Normal}comment 6",
 				"{Normal} {ActionEdit}e {Normal}111 {Normal}comment 7",
 				"{Normal} {ActionLabel}l {Normal}ref",
@@ -855,7 +855,7 @@ fn change_selected_line_toggle_break_above_existing() {
 				"{TITLE}{HELP}",
 				"{BODY}",
 				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionBreak}break  "
+				"{Normal}   {ActionBreak}break"
 			);
 		},
 	);
@@ -2245,7 +2245,7 @@ fn edit_mode_render() {
 			"{IndicatorColor}Modifying line: exec foo",
 			"",
 			"{BODY}",
-			"{Normal,Dimmed}exec {Normal}foo{Normal,Underline} ",
+			"{Normal,Dimmed}exec {Normal}foo{Normal,Underline}",
 			"{TRAILING}",
 			"{IndicatorColor}Enter to finish"
 		);

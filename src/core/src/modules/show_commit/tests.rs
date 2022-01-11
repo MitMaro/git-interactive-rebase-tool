@@ -891,7 +891,7 @@ fn render_diff_show_both_whitespace() {
 		|test_context| {
 			let mut config = Config::new();
 			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
-			config.diff_tab_symbol = String::from("#");
+			config.diff_tab_symbol = String::from("#>");
 			config.diff_space_symbol = String::from("%");
 			config.diff_tab_width = 2;
 			let mut module = ShowCommit::new(&config);
@@ -914,16 +914,16 @@ fn render_diff_show_both_whitespace() {
 				"",
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
 				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    content",
-				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}# # ",
-				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}# # ",
+				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}#>#>{DiffContextColor}sp tabs    content",
+				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}#>#>",
+				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}#>#>{DiffContextColor}sp tabs    \
+				 content{DiffWhitespaceColor}#>#>",
 				"{Normal}4{Normal} {Normal}4{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    content",
 				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}%%%%",
 				"{Normal}6{Normal} {Normal}6{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    \
 				 content{DiffWhitespaceColor}%%%%",
-				"{Normal}7{Normal} {Normal}7{Normal}| {DiffWhitespaceColor}%# # %{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}# %%# "
+				"{Normal}7{Normal} {Normal}7{Normal}| {DiffWhitespaceColor}%#>#>%{DiffContextColor}sp tabs    \
+				 content{DiffWhitespaceColor}#>%%#>"
 			);
 		},
 	);
@@ -961,15 +961,15 @@ fn render_diff_show_leading_whitespace() {
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
 				"{Normal,Dimmed}{Pad(┈)}",
 				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    content",
-				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}    ",
+				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}",
 				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}    ",
+				 content{DiffWhitespaceColor}",
 				"{Normal}4{Normal} {Normal}4{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    content",
-				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}    ",
+				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}",
 				"{Normal}6{Normal} {Normal}6{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}    ",
+				 content{DiffWhitespaceColor}",
 				"{Normal}7{Normal} {Normal}7{Normal}| {DiffWhitespaceColor}%# # %{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}      "
+				 content{DiffWhitespaceColor}"
 			);
 		},
 	);
@@ -1007,12 +1007,12 @@ fn render_diff_show_no_whitespace() {
 				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
 				"{Normal,Dimmed}{Pad(┈)}",
 				"{Normal}1{Normal} {Normal}1{Normal}| {DiffContextColor}    sp tabs    content",
-				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content    ",
-				"{Normal}3{Normal} {Normal}3{Normal}| {DiffContextColor}    sp tabs    content    ",
+				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content",
+				"{Normal}3{Normal} {Normal}3{Normal}| {DiffContextColor}    sp tabs    content",
 				"{Normal}4{Normal} {Normal}4{Normal}| {DiffContextColor}    sp tabs    content",
-				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content    ",
-				"{Normal}6{Normal} {Normal}6{Normal}| {DiffContextColor}    sp tabs    content    ",
-				"{Normal}7{Normal} {Normal}7{Normal}| {DiffContextColor}      sp tabs    content      "
+				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content",
+				"{Normal}6{Normal} {Normal}6{Normal}| {DiffContextColor}    sp tabs    content",
+				"{Normal}7{Normal} {Normal}7{Normal}| {DiffContextColor}      sp tabs    content"
 			);
 		},
 	);

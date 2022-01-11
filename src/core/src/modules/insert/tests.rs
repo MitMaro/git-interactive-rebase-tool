@@ -70,7 +70,7 @@ fn edit_render_exec() {
 				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}exec {Normal}foo{Normal,Underline} ",
+				"{Normal,Dimmed}exec {Normal}foo{Normal,Underline}",
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
@@ -106,7 +106,7 @@ fn edit_render_pick() {
 				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}pick {Normal}abc{Normal,Underline} ",
+				"{Normal,Dimmed}pick {Normal}abc{Normal,Underline}",
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
@@ -145,7 +145,7 @@ fn edit_render_label() {
 				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}label {Normal}foo{Normal,Underline} ",
+				"{Normal,Dimmed}label {Normal}foo{Normal,Underline}",
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
@@ -184,7 +184,7 @@ fn edit_render_reset() {
 				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}reset {Normal}foo{Normal,Underline} ",
+				"{Normal,Dimmed}reset {Normal}foo{Normal,Underline}",
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
@@ -223,7 +223,7 @@ fn edit_render_merge() {
 				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}merge {Normal}foo{Normal,Underline} ",
+				"{Normal,Dimmed}merge {Normal}foo{Normal,Underline}",
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);

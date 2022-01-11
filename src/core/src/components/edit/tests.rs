@@ -10,6 +10,9 @@ fn with_description() {
 	module.set_description("Description");
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
+		Options AssertRenderOptions {
+			ignore_trailing_whitespace: false
+		},
 		view_data,
 		"{TITLE}",
 		"{LEADING}",
@@ -29,6 +32,9 @@ fn with_label() {
 	module.set_label("Label: ");
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
+		Options AssertRenderOptions {
+			ignore_trailing_whitespace: false
+		},
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -46,6 +52,9 @@ fn with_label_and_description() {
 	module.set_label("Label: ");
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
+		Options AssertRenderOptions {
+			ignore_trailing_whitespace: false
+		},
 		view_data,
 		"{TITLE}",
 		"{LEADING}",
@@ -66,6 +75,9 @@ fn move_cursor_end() {
 		let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 		let view_data = module.get_view_data();
 		assert_rendered_output!(
+			Options AssertRenderOptions {
+				ignore_trailing_whitespace: false
+			},
 			view_data,
 			"{TITLE}",
 			"{BODY}",
@@ -181,6 +193,9 @@ fn move_cursor_to_end() {
 			let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 			let view_data = module.get_view_data();
 			assert_rendered_output!(
+				Options AssertRenderOptions {
+					ignore_trailing_whitespace: false
+				},
 				view_data,
 				"{TITLE}",
 				"{BODY}",
@@ -206,6 +221,9 @@ fn move_cursor_on_empty_content() {
 			let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 			let view_data = module.get_view_data();
 			assert_rendered_output!(
+				Options AssertRenderOptions {
+					ignore_trailing_whitespace: false
+				},
 				view_data,
 				"{TITLE}",
 				"{BODY}",
@@ -243,6 +261,9 @@ fn move_cursor_attempt_past_end() {
 		let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 		let view_data = module.get_view_data();
 		assert_rendered_output!(
+			Options AssertRenderOptions {
+				ignore_trailing_whitespace: false
+			},
 			view_data,
 			"{TITLE}",
 			"{BODY}",
@@ -297,6 +318,9 @@ fn add_character_end() {
 		let _ = module.handle_event(&context.event_handler);
 		let view_data = module.get_view_data();
 		assert_rendered_output!(
+			Options AssertRenderOptions {
+				ignore_trailing_whitespace: false
+			},
 			view_data,
 			"{TITLE}",
 			"{BODY}",
@@ -391,6 +415,9 @@ fn add_character_uppercase() {
 			let _ = module.handle_event(&context.event_handler);
 			let view_data = module.get_view_data();
 			assert_rendered_output!(
+				Options AssertRenderOptions {
+					ignore_trailing_whitespace: false
+				},
 				view_data,
 				"{TITLE}",
 				"{BODY}",
@@ -410,6 +437,9 @@ fn backspace_at_end() {
 		let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 		let view_data = module.get_view_data();
 		assert_rendered_output!(
+			Options AssertRenderOptions {
+				ignore_trailing_whitespace: false
+			},
 			view_data,
 			"{TITLE}",
 			"{BODY}",
@@ -502,6 +532,9 @@ fn delete_at_end() {
 		let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 		let view_data = module.get_view_data();
 		assert_rendered_output!(
+			Options AssertRenderOptions {
+				ignore_trailing_whitespace: false
+			},
 			view_data,
 			"{TITLE}",
 			"{BODY}",
@@ -520,6 +553,9 @@ fn delete_last_character() {
 		let _ = context.for_each_event(|event_handler| module.handle_event(event_handler));
 		let view_data = module.get_view_data();
 		assert_rendered_output!(
+			Options AssertRenderOptions {
+				ignore_trailing_whitespace: false
+			},
 			view_data,
 			"{TITLE}",
 			"{BODY}",

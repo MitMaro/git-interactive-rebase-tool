@@ -8,6 +8,22 @@ use display::DisplayColor;
 
 use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender};
 
+/// Options for the `assert_rendered_output!` macro
+#[derive(Debug, Copy, Clone)]
+pub struct AssertRenderOptions {
+	/// Ignore trailing whitespace
+	pub ignore_trailing_whitespace: bool,
+}
+
+impl Default for AssertRenderOptions {
+	#[inline]
+	fn default() -> Self {
+		Self {
+			ignore_trailing_whitespace: true,
+		}
+	}
+}
+
 fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bool) -> String {
 	let color_string = match color {
 		DisplayColor::ActionBreak => String::from("ActionBreak"),
@@ -127,7 +143,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	lines
 }
 
-pub(crate) fn _assert_rendered_output(output: &[String], expected: &[String]) {
+pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
 		String::from("\nUnexpected output!"),
@@ -136,29 +152,35 @@ pub(crate) fn _assert_rendered_output(output: &[String], expected: &[String]) {
 		String::from("=========="),
 	];
 
-	for (expected_line, output_line) in expected.iter().zip(output.iter()) {
+	for (expected_line, output_line) in expected.iter().zip(actual.iter()) {
+		let output = if options.ignore_trailing_whitespace {
+			output_line.trim_end()
+		}
+		else {
+			output_line.as_str()
+		};
 		let e = expected_line.replace(" ", "·").replace("\t", "   →");
-		if expected_line == output_line {
+		if expected_line == output {
 			error_output.push(format!(" {}", e));
 		}
 		else {
 			mismatch = true;
-			let o = output_line.replace(" ", "·").replace("\t", "   →");
+			let o = output.replace(" ", "·").replace("\t", "   →");
 			error_output.push(format!("-{}", e));
 			error_output.push(format!("+{}", o));
 		}
 	}
 
 	match expected.len() {
-		a if a > output.len() => {
+		a if a > actual.len() => {
 			mismatch = true;
-			for line in expected.iter().skip(output.len()) {
+			for line in expected.iter().skip(actual.len()) {
 				error_output.push(format!("-{}", line.replace(" ", "·").replace("\t", "   →")));
 			}
 		},
-		a if a < output.len() => {
+		a if a < actual.len() => {
 			mismatch = true;
-			for line in output.iter().skip(expected.len()) {
+			for line in actual.iter().skip(expected.len()) {
 				error_output.push(format!("+{}", line.replace(" ", "·").replace("\t", "   →")));
 			}
 		},
@@ -174,21 +196,28 @@ pub(crate) fn _assert_rendered_output(output: &[String], expected: &[String]) {
 /// Assert the rendered output from a `ViewData`. Generally this function is not used directly,
 /// instead use the `assert_rendered_output!` macro.
 #[inline]
-pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String]) {
+pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String], options: AssertRenderOptions) {
 	let output = render_view_data(view_data);
-	_assert_rendered_output(&output, expected);
+	_assert_rendered_output(options, &output, expected);
 }
 
 /// Assert the rendered output from a `ViewData`.
 #[macro_export]
 macro_rules! assert_rendered_output {
 	($view_data:expr) => {
+		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected: Vec<String> = vec![];
-		view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
+		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::default());
 	};
 	($view_data:expr, $($arg:expr),*) => {
+		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected = vec![$( String::from($arg), )*];
-		view::testutil::_assert_rendered_output_from_view_data($view_data, &expected);
+		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::default());
+	};
+	(Options $options:expr, $view_data:expr, $($arg:expr),*) => {
+		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
+		let expected = vec![$( String::from($arg), )*];
+		_assert_rendered_output_from_view_data($view_data, &expected, $options);
 	};
 }
 
