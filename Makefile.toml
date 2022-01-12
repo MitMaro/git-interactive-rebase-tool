@@ -2,6 +2,15 @@
 skip_core_tasks = true
 default_to_workspace = false
 
+[tasks.dev]
+dependencies = [
+	"build",
+	"test",
+	"docs",
+	"lint",
+	"format",
+]
+
 [tasks.build]
 dependencies = ["update-rust-stable"]
 toolchain = "stable"
