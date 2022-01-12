@@ -2,6 +2,7 @@
 
 //! Utilities for writing tests that interact with Git.
 mod build_commit;
+mod build_commit_diff;
 mod build_file_status;
 mod build_reference;
 mod create_commit;
@@ -11,6 +12,7 @@ use git2::Oid;
 
 pub use self::{
 	build_commit::CommitBuilder,
+	build_commit_diff::CommitDiffBuilder,
 	build_file_status::FileStatusBuilder,
 	build_reference::ReferenceBuilder,
 	create_commit::{create_commit, CreateCommitOptions},

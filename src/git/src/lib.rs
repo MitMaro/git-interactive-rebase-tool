@@ -89,6 +89,9 @@
 //! performance, they should only be used in test code.
 
 mod commit;
+mod commit_diff;
+mod commit_diff_loader;
+mod commit_diff_loader_options;
 mod delta;
 mod diff_line;
 mod file_mode;
@@ -106,6 +109,8 @@ pub use git2::{Config, ErrorCode};
 
 pub use crate::{
 	commit::Commit,
+	commit_diff::CommitDiff,
+	commit_diff_loader_options::CommitDiffLoaderOptions,
 	delta::Delta,
 	diff_line::DiffLine,
 	file_mode::FileMode,
