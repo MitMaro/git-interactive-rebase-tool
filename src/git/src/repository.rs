@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::{anyhow, Result};
 
-use crate::Config;
+use crate::{commit_diff_loader::CommitDiffLoader, CommitDiff, CommitDiffLoaderOptions, Config};
 
 /// A light simple wrapper around the `git2::Repository` struct
 pub struct Repository {
@@ -41,6 +41,18 @@ impl Repository {
 	#[inline]
 	pub fn load_config(&self) -> Result<Config> {
 		self.repository.config().map_err(|e| anyhow!(String::from(e.message())))
+	}
+
+	/// Load a diff for a commit hash
+	///
+	/// # Errors
+	/// Will result in an error if the commit cannot be loaded.
+	#[inline]
+	pub fn load_commit_diff(&self, hash: &str, config: &CommitDiffLoaderOptions) -> Result<CommitDiff> {
+		let oid = self.repository.revparse_single(hash)?.id();
+		let loader = CommitDiffLoader::new(&self.repository, config);
+		// TODO this is ugly because it assumes one parent
+		Ok(loader.load_from_hash(oid).map_err(|e| anyhow!("{}", e))?.remove(0))
 	}
 
 	pub(crate) const fn git2_repository(&self) -> &git2::Repository {
@@ -128,6 +140,25 @@ mod tests {
 	fn load_config() {
 		with_temp_bare_repository(|repo| {
 			let _repo = repo.load_config()?;
+			Ok(())
+		});
+	}
+
+	#[test]
+	fn load_commit_diff() {
+		with_temp_repository(|repository| {
+			let repo: git2::Repository = repository.repository;
+			let id = {
+				let tree = repo.find_tree(repo.index()?.write_tree()?)?;
+				let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0))?;
+				let head = repo.find_reference("refs/heads/main")?.peel_to_commit()?;
+				repo.commit(Some("HEAD"), &sig, &sig, "title", &tree, &[&head])?
+			};
+			let repository = Repository::from(repo);
+
+			let _diff = repository
+				.load_commit_diff(id.to_string().as_str(), &CommitDiffLoaderOptions::new())
+				.unwrap();
 			Ok(())
 		});
 	}
