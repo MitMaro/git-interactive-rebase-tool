@@ -65,10 +65,8 @@ impl ::std::fmt::Debug for Repository {
 mod tests {
 	use std::env::set_var;
 
-	use tempfile::tempdir;
-
 	use super::*;
-	use crate::testutil::{create_bare_repository, with_temp_bare_repository};
+	use crate::testutil::{with_temp_bare_repository, with_temp_repository};
 
 	#[test]
 	#[serial_test::serial]
@@ -125,25 +123,31 @@ mod tests {
 	#[test]
 	fn load_config() {
 		with_temp_bare_repository(|repo| {
-			let _repo = repo.load_config().unwrap();
+			let _repo = repo.load_config()?;
+			Ok(())
 		});
 	}
 
 	#[test]
 	fn from_git2_repository() {
-		let temp_repository_directory = tempdir().unwrap();
-		let path = temp_repository_directory.into_path();
-		let _repo = Repository::from(git2::Repository::init_bare(path).unwrap());
+		with_temp_bare_repository(|repository| {
+			let repo: git2::Repository = repository.repository;
+			let _repo = Repository::from(repo);
+			Ok(())
+		});
 	}
 
 	#[test]
 	fn fmt() {
-		let temp_repository_directory = tempdir().unwrap();
-		let path = temp_repository_directory.into_path().canonicalize().unwrap();
-		let repo = create_bare_repository(&path);
-		assert_eq!(
-			format!("{:?}", repo),
-			format!("Repository {{ [path]: \"{}/\" }}", path.to_str().unwrap())
-		);
+		with_temp_bare_repository(|repository| {
+			let formatted = format!("{:?}", repository);
+			let repo: git2::Repository = repository.repository;
+			let path = repo.path().canonicalize().unwrap();
+			assert_eq!(
+				formatted,
+				format!("Repository {{ [path]: \"{}/\" }}", path.to_str().unwrap())
+			);
+			Ok(())
+		});
 	}
 }
