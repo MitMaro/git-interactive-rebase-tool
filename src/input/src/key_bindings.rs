@@ -69,6 +69,7 @@ pub struct KeyBindings {
 	pub undo: Vec<Event>,
 }
 
+#[allow(clippy::string_slice)]
 fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 	bindings
 		.iter()
