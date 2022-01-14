@@ -201,6 +201,8 @@ const fn get_action_color(action: Action) -> DisplayColor {
 	}
 }
 
+// safe slice, as it is only on the hash, which is hexadecimal
+#[allow(clippy::string_slice)]
 pub(super) fn get_todo_line_segments(
 	line: &Line,
 	is_cursor_line: bool,
@@ -253,7 +255,7 @@ pub(super) fn get_todo_line_segments(
 			segments.push(LineSegment::new(
 				format!(
 					"{:width$} ",
-					line.get_hash()[0..max_index].to_string(),
+					line.get_hash()[0..max_index].to_string(), // safe slice, ascii only
 					width = action_width
 				)
 				.as_str(),

@@ -65,6 +65,8 @@ impl ViewBuilder {
 		.replace("\n", "")
 	}
 
+	// safe slice, as it is only on the hash, which is hexadecimal
+	#[allow(clippy::string_slice)]
 	fn build_leading_summary(commit: &Commit, is_full_width: bool) -> ViewLine {
 		let mut segments = vec![];
 		if is_full_width {
@@ -139,6 +141,8 @@ impl ViewBuilder {
 		}
 	}
 
+	// safe slice, only slices across graphemes whitespace
+	#[allow(clippy::string_slice)]
 	fn get_diff_line_segments(
 		&self,
 		diff_line: &DiffLine,
