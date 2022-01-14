@@ -42,6 +42,10 @@ impl Repository {
 	pub fn load_config(&self) -> Result<Config> {
 		self.repository.config().map_err(|e| anyhow!(String::from(e.message())))
 	}
+
+	pub(crate) const fn git2_repository(&self) -> &git2::Repository {
+		&self.repository
+	}
 }
 
 impl From<git2::Repository> for Repository {
