@@ -8,6 +8,19 @@ use display::DisplayColor;
 
 use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender};
 
+const STARTS_WITH: &str = "{{StartsWith}}";
+
+/// Allow any line for a rendered line
+pub const ANY_LINE: &str = "{{ANY}}";
+
+/// Assert the rendered output from a `ViewData`.
+#[macro_export]
+macro_rules! render_line {
+	(StartsWith $line:expr) => {{
+		concat!("{{StartsWith}}", $line)
+	}};
+}
+
 /// Options for the `assert_rendered_output!` macro
 #[derive(Debug, Copy, Clone)]
 pub struct AssertRenderOptions {
@@ -153,19 +166,38 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 	];
 
 	for (expected_line, output_line) in expected.iter().zip(actual.iter()) {
+		if expected_line == ANY_LINE {
+			error_output.push(String::from("Matching *"));
+			continue;
+		}
 		let output = if options.ignore_trailing_whitespace {
 			output_line.trim_end()
 		}
 		else {
 			output_line.as_str()
 		};
-		let e = expected_line.replace(" ", "·").replace("\t", "   →");
+
+		let mut e = expected_line.replace(" ", "·").replace("\t", "   →");
+		let o = output.replace(" ", "·").replace("\t", "   →");
+
+		if expected_line.starts_with(STARTS_WITH) {
+			e = expected_line.replace(STARTS_WITH, "");
+			if output.starts_with(&e) {
+				error_output.push(format!(" {}", o));
+			}
+			else {
+				mismatch = true;
+				error_output.push(format!("-StartsWith {}", e));
+				error_output.push(format!("+           {}", o));
+			}
+			continue;
+		}
+
 		if expected_line == output {
 			error_output.push(format!(" {}", e));
 		}
 		else {
 			mismatch = true;
-			let o = output.replace(" ", "·").replace("\t", "   →");
 			error_output.push(format!("-{}", e));
 			error_output.push(format!("+{}", o));
 		}

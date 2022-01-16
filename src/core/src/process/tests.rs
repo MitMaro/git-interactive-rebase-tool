@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use config::Theme;
 use display::{testutil::CrossTerm, Display, Size};
 use input::InputOptions;
-use view::{assert_rendered_output, ViewData};
+use view::{assert_rendered_output, render_line, ViewData};
 
 use super::*;
 use crate::{
@@ -393,10 +393,10 @@ fn handle_process_result_external_command_not_executable() {
 			"{BODY}",
 			format!("{{Normal}}Unable to run {}", command),
 			if cfg!(windows) {
-				"{Normal}%1 is not a valid Win32 application. (os error 193)"
+				render_line!(StartsWith "{Normal}%1 is not a valid Win32 application.")
 			}
 			else {
-				"{Normal}Permission denied (os error 13)"
+				render_line!(StartsWith "{Normal}Permission denied")
 			},
 			"{TRAILING}",
 			"{IndicatorColor}Press any key to continue"
@@ -433,10 +433,10 @@ fn handle_process_result_external_command_executable_not_found() {
 			"{BODY}",
 			format!("{{Normal}}Unable to run {}", command),
 			if cfg!(windows) {
-				"{Normal}The system cannot find the path specified. (os error 3)"
+				render_line!(StartsWith "{Normal}The system cannot find the path specified.")
 			}
 			else {
-				"{Normal}No such file or directory (os error 2)"
+				render_line!(StartsWith "{Normal}No such file or directory")
 			},
 			"{TRAILING}",
 			"{IndicatorColor}Press any key to continue"
