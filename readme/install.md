@@ -5,6 +5,7 @@
 * [Arch Linux](./install.md#arch-linux)
 * [Cargo Package Manager](./install.md#cargo-package-manager)
 * [Debian and derivatives](./install.md#debian-and-derivatives)
+* [GNU Guix](./install.md#gnu-guix-package-manager)
 * [FreeBSD](./install.md#freebsd)
 * [macOS](./install.md#macos)
 * [Windows](./install.md#windows)
@@ -49,6 +50,22 @@ The executable will be installed to `/usr/bin`.
 ### Remove
 
     sudo dpkg -r git-interactive-rebase-tool
+    
+## Gnu Guix Package Manager
+
+    guix install git-interactive-rebase-tool
+
+### Remove
+
+    guix remove git-interactive-rebase-tool
+    
+### In a temporary environment 
+
+    guix shell git-interactive-rebase-tool
+    
+### In a temporary container (linux namespace)
+
+    guix shell --container git-interactive-rebase-tool
 
 ## FreeBSD
 
