@@ -124,7 +124,7 @@ impl List {
 				)));
 			}
 			else {
-				for (index, line) in todo_file.iter().enumerate() {
+				for (index, line) in todo_file.lines_iter().enumerate() {
 					let selected_line = is_visual_mode
 						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
 							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
