@@ -346,7 +346,7 @@ impl TodoFile {
 
 	/// Get an iterator over the lines.
 	#[must_use]
-	pub fn iter(&self) -> Iter<'_, Line> {
+	pub fn lines_iter(&self) -> Iter<'_, Line> {
 		self.lines.iter()
 	}
 
@@ -803,7 +803,7 @@ mod tests {
 	fn iter() {
 		let (todo_file, _) = create_and_load_todo_file(&["pick aaa comment"]);
 		assert_eq!(
-			todo_file.iter().next().unwrap(),
+			todo_file.lines_iter().next().unwrap(),
 			&Line::new("pick aaa comment").unwrap()
 		);
 	}
