@@ -37,6 +37,10 @@ impl Default for AssertRenderOptions {
 	}
 }
 
+fn replace_invisibles(line: &str) -> String {
+	line.replace(' ', "·").replace('\t', "   →")
+}
+
 fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bool) -> String {
 	let color_string = match color {
 		DisplayColor::ActionBreak => String::from("ActionBreak"),
@@ -177,8 +181,8 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 			output_line.as_str()
 		};
 
-		let mut e = expected_line.replace(" ", "·").replace("\t", "   →");
-		let o = output.replace(" ", "·").replace("\t", "   →");
+		let mut e = replace_invisibles(expected_line);
+		let o = replace_invisibles(output);
 
 		if expected_line.starts_with(STARTS_WITH) {
 			e = expected_line.replace(STARTS_WITH, "");
@@ -207,13 +211,13 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 		a if a > actual.len() => {
 			mismatch = true;
 			for line in expected.iter().skip(actual.len()) {
-				error_output.push(format!("-{}", line.replace(" ", "·").replace("\t", "   →")));
+				error_output.push(format!("-{}", replace_invisibles(line)));
 			}
 		},
 		a if a < actual.len() => {
 			mismatch = true;
 			for line in actual.iter().skip(expected.len()) {
-				error_output.push(format!("+{}", line.replace(" ", "·").replace("\t", "   →")));
+				error_output.push(format!("+{}", replace_invisibles(line)));
 			}
 		},
 		_ => {},
