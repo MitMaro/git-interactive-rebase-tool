@@ -1,12 +1,8 @@
 use display::DisplayColor;
+use git::{Commit, CommitDiff, DiffLine, Origin};
 use view::{LineSegment, ViewDataUpdater, ViewLine};
 
-use super::{
-	commit::Commit,
-	diff_line::DiffLine,
-	origin::Origin,
-	util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments},
-};
+use super::util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments};
 
 pub(super) struct ViewBuilderOptions {
 	space_character: String,
@@ -72,12 +68,12 @@ impl ViewBuilder {
 		if is_full_width {
 			segments.push(LineSegment::new_with_color("Commit: ", DisplayColor::IndicatorColor));
 		}
+		let hash = String::from(commit.hash());
 		segments.push(LineSegment::new(
 			if is_full_width {
-				commit.get_hash().to_owned()
+				hash
 			}
 			else {
-				let hash = commit.get_hash();
 				let max_index = hash.len().min(8);
 				format!("{:8}", hash[0..max_index].to_owned())
 			}
@@ -90,55 +86,71 @@ impl ViewBuilder {
 	pub(super) fn build_view_data_for_overview(
 		&self,
 		updater: &mut ViewDataUpdater<'_>,
-		commit: &Commit,
+		diff: &CommitDiff,
 		is_full_width: bool,
 	) {
+		let commit = diff.commit();
 		updater.push_leading_line(Self::build_leading_summary(commit, is_full_width));
+		// TODO handle authored date
 		updater.push_line(ViewLine::from(vec![
 			LineSegment::new_with_color(
 				if is_full_width { "Date: " } else { "D: " },
 				DisplayColor::IndicatorColor,
 			),
-			LineSegment::new(commit.get_date().format("%c %z").to_string().as_str()),
+			LineSegment::new(commit.committed_date().format("%c %z").to_string().as_str()),
 		]));
 
-		if let Some(author) = commit.get_author().to_string() {
+		if commit.author().is_some() {
 			updater.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Author: " } else { "A: " },
 					DisplayColor::IndicatorColor,
 				),
-				LineSegment::new(author.as_str()),
+				LineSegment::new(commit.author().to_string().as_str()),
 			]));
 		}
 
-		if let Some(committer) = commit.get_committer().to_string() {
+		if let Some(committer) = commit.committer().as_ref() {
 			updater.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Committer: " } else { "C: " },
 					DisplayColor::IndicatorColor,
 				),
-				LineSegment::new(committer.as_str()),
+				LineSegment::new(committer.to_string().as_str()),
 			]));
 		}
 
-		if let Some(ref body) = *commit.get_body() {
-			for line in body.lines() {
-				updater.push_line(ViewLine::from(line));
-			}
+		if let Some(ref summary) = *commit.summary() {
+			updater.push_lines(summary.as_str());
+			updater.push_line(ViewLine::from(""));
 		}
 
-		updater.push_line(ViewLine::from(""));
+		if let Some(ref message) = *commit.message() {
+			updater.push_lines(message.as_str());
+			updater.push_line(ViewLine::from(""));
+		}
 
-		updater.push_line(get_files_changed_summary(commit, is_full_width));
-		for stat in commit.get_file_stats() {
+		if commit.summary().is_none() && commit.message().is_none() {
+			updater.push_line(ViewLine::from(""));
+		}
+
+		updater.push_line(get_files_changed_summary(diff, is_full_width));
+		for status in diff.file_statuses() {
 			updater.push_line(ViewLine::from(get_stat_item_segments(
-				stat.get_status(),
-				stat.get_to_name(),
-				stat.get_from_name(),
+				status.status(),
+				status.destination_path(),
+				status.source_path(),
 				is_full_width,
 			)));
 		}
+	}
+
+	fn build_diff_line_line_segment(content: &str, origin: Origin) -> LineSegment {
+		LineSegment::new_with_color(content, match origin {
+			Origin::Addition => DisplayColor::DiffAddColor,
+			Origin::Deletion => DisplayColor::DiffRemoveColor,
+			Origin::Context | Origin::Binary | Origin::Header => DisplayColor::DiffContextColor,
+		})
 	}
 
 	// safe slice, only slices across graphemes whitespace
@@ -195,14 +207,7 @@ impl ViewBuilder {
 				));
 			}
 			if !content.is_empty() {
-				line_segments.push(LineSegment::new_with_color(
-					content.as_str(),
-					match *diff_line.origin() {
-						Origin::Addition => DisplayColor::DiffAddColor,
-						Origin::Deletion => DisplayColor::DiffRemoveColor,
-						Origin::Context => DisplayColor::DiffContextColor,
-					},
-				));
+				line_segments.push(Self::build_diff_line_line_segment(content.as_str(), diff_line.origin()));
 			}
 			if !trailing.is_empty() {
 				line_segments.push(LineSegment::new_with_color(
@@ -212,46 +217,47 @@ impl ViewBuilder {
 			}
 		}
 		else {
-			line_segments.push(LineSegment::new_with_color(
+			line_segments.push(Self::build_diff_line_line_segment(
 				self.replace_whitespace(diff_line.line(), false).as_str(),
-				match *diff_line.origin() {
-					Origin::Addition => DisplayColor::DiffAddColor,
-					Origin::Deletion => DisplayColor::DiffRemoveColor,
-					Origin::Context => DisplayColor::DiffContextColor,
-				},
+				diff_line.origin(),
 			));
 		}
 
 		line_segments
 	}
 
-	pub(super) fn build_view_data_diff(&self, updater: &mut ViewDataUpdater<'_>, commit: &Commit, is_full_width: bool) {
-		updater.push_leading_line(Self::build_leading_summary(commit, is_full_width));
-		updater.push_leading_line(get_files_changed_summary(commit, is_full_width));
+	pub(super) fn build_view_data_diff(
+		&self,
+		updater: &mut ViewDataUpdater<'_>,
+		diff: &CommitDiff,
+		is_full_width: bool,
+	) {
+		updater.push_leading_line(Self::build_leading_summary(diff.commit(), is_full_width));
+		updater.push_leading_line(get_files_changed_summary(diff, is_full_width));
 		updater.push_line(ViewLine::new_empty_line().set_padding('―'));
 
-		let file_stats = commit.get_file_stats();
-		for (s_i, stat) in file_stats.iter().enumerate() {
+		let file_statuses = diff.file_statuses();
+		for (s_i, status) in file_statuses.iter().enumerate() {
 			updater.push_line(ViewLine::from(get_stat_item_segments(
-				stat.get_status(),
-				stat.get_to_name(),
-				stat.get_from_name(),
+				status.status(),
+				status.destination_path(),
+				status.source_path(),
 				true,
 			)));
 
-			let old_largest_line_number_length = stat.largest_old_line_number().to_string().len();
-			let new_largest_line_number_length = stat.largest_new_line_number().to_string().len();
-			for delta in stat.deltas() {
+			let old_largest_line_number_length = status.last_old_line_number().to_string().len();
+			let new_largest_line_number_length = status.last_new_line_number().to_string().len();
+			for delta in status.deltas() {
 				updater.push_line(ViewLine::new_empty_line());
 				updater.push_line(ViewLine::from(vec![
 					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, true, false, false),
 					LineSegment::new_with_color(
 						format!(
 							" -{},{} +{},{} ",
-							delta.old_start(),
-							delta.old_lines(),
-							delta.new_start(),
-							delta.new_lines(),
+							delta.old_lines_start(),
+							delta.old_number_lines(),
+							delta.new_lines_start(),
+							delta.new_number_lines(),
 						)
 						.as_str(),
 						DisplayColor::DiffContextColor,
@@ -289,7 +295,7 @@ impl ViewBuilder {
 					)));
 				}
 			}
-			if s_i + 1 != file_stats.len() {
+			if s_i + 1 != file_statuses.len() {
 				updater.push_line(ViewLine::new_empty_line().set_padding('―'));
 			}
 		}

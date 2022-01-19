@@ -1,863 +1,931 @@
-use anyhow::anyhow;
-use chrono::Local;
+use git::{
+	testutil::{head_id, with_temp_repository, CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
+	Delta,
+	DiffLine,
+	FileMode,
+	Origin,
+	Status,
+	User,
+};
 use rstest::rstest;
-use view::{assert_rendered_output, ViewLine};
+use view::{assert_rendered_output, render_line, ViewLine};
 
-use super::{delta::Delta, diff_line::DiffLine, file_stat::FileStat, origin::Origin, status::Status, user::User, *};
+use super::*;
 use crate::{assert_process_result, testutil::module_test};
-
-fn create_minimal_commit() -> Commit {
-	Commit {
-		author: User::new(None, None),
-		body: None,
-		committer: User::new(None, None),
-		date: Local::now(),
-		file_stats: vec![],
-		hash: String::from("0123456789abcdef0123456789abcdef"),
-		number_files_changed: 0,
-		insertions: 0,
-		deletions: 0,
-	}
-}
 
 #[test]
 fn load_commit_during_activate() {
-	module_test(
-		&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
+	with_temp_repository(|repo| {
+		let oid = head_id(&repo, "main");
+		let line = format!("pick {} comment1", oid.to_string());
+		module_test(&[line.as_str()], &[], |test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
 			assert_process_result!(test_context.activate(&mut module, State::List));
-			assert!(module.commit.is_some());
-		},
-	);
+			assert!(module.diff.is_some());
+		});
+		Ok(())
+	});
 }
 
 #[test]
 fn cached_commit_in_activate() {
-	module_test(
-		&["pick 18d82dcc4c36cade807d7cf79700b6bbad8080b9 comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
+	with_temp_repository(|repo| {
+		let oid = head_id(&repo, "main");
+		let line = format!("pick {} comment1", oid.to_string());
+		module_test(&[line.as_str()], &[], |test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
+			// would be nice to be able to test that a second call to load_commit_diff did not happen here
 			assert_process_result!(test_context.activate(&mut module, State::List));
 			assert_process_result!(test_context.activate(&mut module, State::List));
-		},
-	);
+		});
+		Ok(())
+	});
 }
 
 #[test]
 fn no_selected_line_in_activate() {
-	module_test(&[], &[], |test_context| {
-		let mut module = ShowCommit::new(&Config::new());
-		assert_process_result!(
-			test_context.activate(&mut module, State::List),
-			state = State::List,
-			error = anyhow!("No valid commit to show")
-		);
+	with_temp_repository(|repo| {
+		module_test(&[], &[], |test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
+			assert_process_result!(
+				test_context.activate(&mut module, State::List),
+				state = State::List,
+				error = anyhow!("No valid commit to show")
+			);
+		});
+		Ok(())
 	});
 }
 
 #[test]
 fn activate_error() {
-	module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
-		let mut module = ShowCommit::new(&Config::new());
-		assert_process_result!(
-			test_context.activate(&mut module, State::List),
-			state = State::List,
-			error = anyhow!(
-				"Error loading commit: aaaaaaaaaa: revspec 'aaaaaaaaaa' not found; class=Reference (4); code=NotFound \
-				 (-3)"
-			)
-		);
+	with_temp_repository(|repo| {
+		module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
+			assert_process_result!(
+				test_context.activate(&mut module, State::List),
+				state = State::List,
+				error = anyhow!(
+					"Error loading commit: revspec 'aaaaaaaaaa' not found; class=Reference (4); code=NotFound (-3)"
+				)
+			);
+		});
+		Ok(())
 	});
 }
 
 #[test]
 fn render_overview_minimal_commit() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let commit = CommitBuilder::new("0123456789abcdef0123456789abcdef").build();
+				let commit_date = commit.committed_date().format("%c %z").to_string();
+				let diff = CommitDiffBuilder::new(commit).build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{LEADING}",
+					"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
+					"{BODY}",
+					format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
+					"{Normal}",
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_minimal_commit_compact() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|mut test_context| {
-			test_context.render_context.update(30, 300);
-			let mut module = ShowCommit::new(&Config::new());
-			let commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{Normal}01234567",
-				"{BODY}",
-				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|mut test_context| {
+				test_context.render_context.update(30, 300);
+				let commit = CommitBuilder::new("0123456789abcdef0123456789abcdef").build();
+				let commit_date = commit.committed_date().format("%c %z").to_string();
+				let diff = CommitDiffBuilder::new(commit).build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{LEADING}",
+					"{Normal}01234567",
+					"{BODY}",
+					format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
+					"{Normal}",
+					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_author() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.author = User::new(Some("John Doe"), Some("john.doe@example.com"));
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{IndicatorColor}Author: {Normal}John Doe <john.doe@example.com>",
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.author(User::new(Some("John Doe"), Some("john.doe@example.com")))
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{IndicatorColor}Author: {Normal}John Doe <john.doe@example.com>",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_author_compact() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|mut test_context| {
-			test_context.render_context.update(30, 300);
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.author = User::new(Some("John Doe"), Some("john.doe@example.com"));
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{Normal}01234567",
-				"{BODY}",
-				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"{IndicatorColor}A: {Normal}John Doe <john.doe@example.com>",
-				"{Normal}",
-				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|mut test_context| {
+				test_context.render_context.update(30, 300);
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.author(User::new(Some("John Doe"), Some("john.doe@example.com")))
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{IndicatorColor}A: {Normal}John Doe <john.doe@example.com>",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_committer() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.committer = User::new(Some("John Doe"), Some("john.doe@example.com"));
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{IndicatorColor}Committer: {Normal}John Doe <john.doe@example.com>",
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.committer(User::new(Some("John Doe"), Some("john.doe@example.com")))
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{IndicatorColor}Committer: {Normal}John Doe <john.doe@example.com>",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_committer_compact() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|mut test_context| {
-			test_context.render_context.update(30, 300);
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.committer = User::new(Some("John Doe"), Some("john.doe@example.com"));
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{Normal}01234567",
-				"{BODY}",
-				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"{IndicatorColor}C: {Normal}John Doe <john.doe@example.com>",
-				"{Normal}",
-				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|mut test_context| {
+				test_context.render_context.update(30, 300);
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.committer(User::new(Some("John Doe"), Some("john.doe@example.com")))
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{IndicatorColor}C: {Normal}John Doe <john.doe@example.com>",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
+}
+
+#[test]
+fn render_overview_with_commit_summary() {
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.summary("Commit title")
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}Commit title",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_commit_body() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.body = Some(String::from("Commit title\n\nCommit body"));
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}Commit title",
-				"{Normal}",
-				"{Normal}Commit body",
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.message("Commit body")
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}Commit body",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
+}
+
+#[test]
+fn render_overview_with_commit_summary_and_body() {
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(
+					CommitBuilder::new("0123456789abcdef0123456789abcdef")
+						.summary("Commit title")
+						.message("Commit body")
+						.build(),
+				)
+				.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}Commit title",
+					"{Normal}",
+					"{Normal}Commit body",
+					render_line!(AnyLine 2)
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_file_stats() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.file_stats = vec![
-				FileStat::new("file.1a", "file.1b", Status::Renamed),
-				FileStat::new("file.2a", "file.2a", Status::Added),
-				FileStat::new("file.3a", "file.3a", Status::Deleted),
-				FileStat::new("file.4a", "file.4b", Status::Copied),
-				FileStat::new("file.5a", "file.5a", Status::Modified),
-				FileStat::new("file.6a", "file.6a", Status::Typechange),
-				FileStat::new("file.7a", "file.7b", Status::Other),
-			];
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
-				"{DiffAddColor}   added: {DiffAddColor}file.2a",
-				"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
-				"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
-				"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
-				"{Normal} unknown: {Normal}file.7a"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.1a")
+							.destination_path("file.1b")
+							.status(Status::Renamed)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.2a")
+							.destination_path("file.2a")
+							.status(Status::Added)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.3a")
+							.destination_path("file.3a")
+							.status(Status::Deleted)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.4a")
+							.destination_path("file.4b")
+							.status(Status::Copied)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.5a")
+							.destination_path("file.5a")
+							.status(Status::Modified)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.6a")
+							.destination_path("file.6a")
+							.destination_mode(FileMode::Executable)
+							.status(Status::Typechange)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.7a")
+							.destination_path("file.7a")
+							.status(Status::Other)
+							.build(),
+					])
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 6),
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
+					"{DiffAddColor}   added: {DiffAddColor}file.2a",
+					"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
+					"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
+					"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
+					"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
+					"{Normal} unknown: {Normal}file.7a"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_with_file_stats_compact() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|mut test_context| {
-			test_context.render_context.update(30, 300);
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.file_stats = vec![
-				FileStat::new("file.1a", "file.1b", Status::Renamed),
-				FileStat::new("file.2a", "file.2a", Status::Added),
-				FileStat::new("file.3a", "file.3a", Status::Deleted),
-				FileStat::new("file.4a", "file.4b", Status::Copied),
-				FileStat::new("file.5a", "file.5a", Status::Modified),
-				FileStat::new("file.6a", "file.6a", Status::Typechange),
-				FileStat::new("file.7a", "file.7b", Status::Other),
-			];
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{Normal}01234567",
-				"{BODY}",
-				format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
-				"{DiffChangeColor}R {DiffRemoveColor}file.1b{Normal}→{DiffAddColor}file.1a",
-				"{DiffAddColor}A {DiffAddColor}file.2a",
-				"{DiffRemoveColor}D {DiffRemoveColor}file.3a",
-				"{DiffAddColor}C {Normal}file.4b{Normal}→{DiffAddColor}file.4a",
-				"{DiffChangeColor}M {DiffChangeColor}file.5a",
-				"{DiffChangeColor}T {DiffChangeColor}file.6a",
-				"{Normal}X {Normal}file.7a"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|mut test_context| {
+				test_context.render_context.update(30, 300);
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.1a")
+							.destination_path("file.1b")
+							.status(Status::Renamed)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.2a")
+							.destination_path("file.2a")
+							.status(Status::Added)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.3a")
+							.destination_path("file.3a")
+							.status(Status::Deleted)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.4a")
+							.destination_path("file.4b")
+							.status(Status::Copied)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.5a")
+							.destination_path("file.5a")
+							.status(Status::Modified)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.6a")
+							.destination_path("file.6a")
+							.destination_mode(FileMode::Executable)
+							.status(Status::Typechange)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.7a")
+							.destination_path("file.7a")
+							.status(Status::Other)
+							.build(),
+					])
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 6),
+					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
+					"{DiffChangeColor}R {DiffRemoveColor}file.1b{Normal}→{DiffAddColor}file.1a",
+					"{DiffAddColor}A {DiffAddColor}file.2a",
+					"{DiffRemoveColor}D {DiffRemoveColor}file.3a",
+					"{DiffAddColor}C {Normal}file.4b{Normal}→{DiffAddColor}file.4a",
+					"{DiffChangeColor}M {DiffChangeColor}file.5a",
+					"{DiffChangeColor}T {DiffChangeColor}file.6a",
+					"{Normal}X {Normal}file.7a"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_single_file_changed() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.number_files_changed = 1;
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}1{Normal} file{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.number_files_changed(1)
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 6),
+					"{IndicatorColor}1{Normal} file{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_more_than_one_file_changed() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.number_files_changed = 2;
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}2{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.number_files_changed(2)
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}",
+					"{IndicatorColor}2{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_single_insertion() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.insertions = 1;
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}1{Normal} insertion{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.number_insertions(1)
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}",
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}1{Normal} insertion{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_more_than_one_insertion() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.insertions = 2;
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}2{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.number_insertions(2)
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}",
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}2{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_single_deletion() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.deletions = 1;
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}1{Normal} deletion"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.number_deletions(1)
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}",
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}1{Normal} deletion"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_overview_more_than_one_deletion() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let commit_date = commit.get_date().format("%c %z").to_string();
-			commit.deletions = 2;
-			module.commit = Some(commit);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{BODY}",
-				format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
-				"{Normal}",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}2{Normal} deletions"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.number_deletions(2)
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 5),
+					"{Normal}",
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}2{Normal} deletions"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_minimal_commit() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			let mut module = ShowCommit::new(&config);
-			module.commit = Some(create_minimal_commit());
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				let diff =
+					CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build()).build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{LEADING}",
+					"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{BODY}",
+					"{Normal}{Pad(―)}"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_minimal_commit_compact() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|mut test_context| {
-			test_context.render_context.update(30, 300);
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			let mut module = ShowCommit::new(&config);
-			module.commit = Some(create_minimal_commit());
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{Normal}01234567",
-				"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
-				"{BODY}",
-				"{Normal}{Pad(―)}"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|mut test_context| {
+				test_context.render_context.update(30, 300);
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				let diff =
+					CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build()).build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}{HELP}",
+					"{LEADING}",
+					"{Normal}01234567",
+					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
+					"{BODY}",
+					"{Normal}{Pad(―)}"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_basic_file_stats() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			commit.file_stats = vec![
-				FileStat::new("file.1a", "file.1b", Status::Renamed),
-				FileStat::new("file.2a", "file.2a", Status::Added),
-				FileStat::new("file.3a", "file.3a", Status::Deleted),
-				FileStat::new("file.4a", "file.4b", Status::Copied),
-				FileStat::new("file.5a", "file.5a", Status::Modified),
-				FileStat::new("file.6a", "file.6a", Status::Typechange),
-				FileStat::new("file.7a", "file.7b", Status::Other),
-			];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
-				"{Normal}{Pad(―)}",
-				"{DiffAddColor}   added: {DiffAddColor}file.2a",
-				"{Normal}{Pad(―)}",
-				"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
-				"{Normal}{Pad(―)}",
-				"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
-				"{Normal}{Pad(―)}",
-				"{Normal} unknown: {Normal}file.7a"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.1a")
+							.destination_path("file.1b")
+							.status(Status::Renamed)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.2a")
+							.destination_path("file.2a")
+							.status(Status::Added)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.3a")
+							.destination_path("file.3a")
+							.status(Status::Deleted)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.4a")
+							.destination_path("file.4b")
+							.status(Status::Copied)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.5a")
+							.destination_path("file.5a")
+							.status(Status::Modified)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.6a")
+							.destination_path("file.6a")
+							.destination_mode(FileMode::Executable)
+							.status(Status::Typechange)
+							.build(),
+						FileStatusBuilder::new()
+							.source_path("file.7a")
+							.destination_path("file.7a")
+							.status(Status::Other)
+							.build(),
+					])
+					.build();
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 3),
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{BODY}",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
+					"{Normal}{Pad(―)}",
+					"{DiffAddColor}   added: {DiffAddColor}file.2a",
+					"{Normal}{Pad(―)}",
+					"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
+					"{Normal}{Pad(―)}",
+					"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
+					"{Normal}{Pad(―)}",
+					"{Normal} unknown: {Normal}file.7a"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_end_new_line_missing() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
-			delta.add_line(DiffLine::new(Origin::Addition, "", None, Some(15), true));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
-				"{Normal}       {DiffContextColor}\\ No newline at end of file"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
+				delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
+				delta.add_line(DiffLine::new(Origin::Addition, "", None, Some(15), true));
+
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(delta)
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 3),
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{BODY}",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"",
+					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
+					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
+					"{Normal}       {DiffContextColor}\\ No newline at end of file"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_add_line() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
+				delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
+
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(delta)
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 3),
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{BODY}",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"",
+					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
+					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_delete_line() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
+				delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
+
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(delta)
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 3),
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{BODY}",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"",
+					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
+					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_context_add_remove_lines() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Context, "context 1", Some(13), Some(13), false));
-			delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
-			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
-			delta.add_line(DiffLine::new(Origin::Context, "context 2", Some(15), Some(15), false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
-				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
-				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
-				"{Normal}15{Normal} {Normal}15{Normal}| {DiffContextColor}context 2"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
+				delta.add_line(DiffLine::new(Origin::Context, "context 1", Some(13), Some(13), false));
+				delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
+				delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
+				delta.add_line(DiffLine::new(Origin::Context, "context 2", Some(15), Some(15), false));
+
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(delta)
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 3),
+					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					 {DiffRemoveColor}0{Normal} deletions",
+					"{BODY}",
+					"{Normal}{Pad(―)}",
+					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"",
+					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
+					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
+					"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
+					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
+					"{Normal}15{Normal} {Normal}15{Normal}| {DiffContextColor}context 2"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
-#[test]
-fn render_diff_add_line_with_show_whitespace() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
-			);
-		},
-	);
-}
-
-#[test]
-fn render_diff_delete_line_with_show_whitespace() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
-			);
-		},
-	);
-}
-
-#[test]
-fn render_diff_context_add_remove_lines_with_show_whitespace() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
-			delta.add_line(DiffLine::new(Origin::Context, "context 1", Some(13), Some(13), false));
-			delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
-			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
-			delta.add_line(DiffLine::new(Origin::Context, "context 2", Some(15), Some(15), false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
-				"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
-				"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
-				"{Normal}15{Normal} {Normal}15{Normal}| {DiffContextColor}context 2"
-			);
-		},
-	);
+fn generate_diff_line_context(content: &str, line_num: u32) -> DiffLine {
+	DiffLine::new(Origin::Context, content, Some(line_num), Some(line_num), false)
 }
 
 fn generate_white_space_delta() -> Delta {
@@ -879,306 +947,304 @@ fn generate_white_space_delta() -> Delta {
 	delta
 }
 
-fn generate_diff_line_context(content: &str, line_num: u32) -> DiffLine {
-	DiffLine::new(Origin::Context, content, Some(line_num), Some(line_num), false)
-}
-
 #[test]
 fn render_diff_show_both_whitespace() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
-			config.diff_tab_symbol = String::from("#>");
-			config.diff_space_symbol = String::from("%");
-			config.diff_tab_width = 2;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			file_stat.add_delta(generate_white_space_delta());
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}#>#>{DiffContextColor}sp tabs    content",
-				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}#>#>",
-				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}#>#>{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}#>#>",
-				"{Normal}4{Normal} {Normal}4{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    content",
-				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}%%%%",
-				"{Normal}6{Normal} {Normal}6{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}%%%%",
-				"{Normal}7{Normal} {Normal}7{Normal}| {DiffWhitespaceColor}%#>#>%{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}#>%%#>"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
+				config.diff_tab_symbol = String::from("#>");
+				config.diff_space_symbol = String::from("%");
+				config.diff_tab_width = 2;
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(generate_white_space_delta())
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 10),
+					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content"),
+					render_line!(EndsWith "sp tabs    content{DiffWhitespaceColor}#>#>"),
+					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content{DiffWhitespaceColor}#>#>"),
+					render_line!(EndsWith "%%%%{DiffContextColor}sp tabs    content"),
+					render_line!(EndsWith "sp tabs    content{DiffWhitespaceColor}%%%%"),
+					render_line!(EndsWith "%%%%{DiffContextColor}sp tabs    content{DiffWhitespaceColor}%%%%"),
+					render_line!(EndsWith "%#>#>%{DiffContextColor}sp tabs    content{DiffWhitespaceColor}#>%%#>")
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_show_leading_whitespace() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::Leading;
-			config.diff_tab_symbol = String::from("#");
-			config.diff_space_symbol = String::from("%");
-			config.diff_tab_width = 2;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			file_stat.add_delta(generate_white_space_delta());
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}1{Normal} {Normal}1{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    content",
-				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}",
-				"{Normal}3{Normal} {Normal}3{Normal}| {DiffWhitespaceColor}# # {DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}",
-				"{Normal}4{Normal} {Normal}4{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    content",
-				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content{DiffWhitespaceColor}",
-				"{Normal}6{Normal} {Normal}6{Normal}| {DiffWhitespaceColor}%%%%{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}",
-				"{Normal}7{Normal} {Normal}7{Normal}| {DiffWhitespaceColor}%# # %{DiffContextColor}sp tabs    \
-				 content{DiffWhitespaceColor}"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::Leading;
+				config.diff_tab_symbol = String::from("#>");
+				config.diff_space_symbol = String::from("%");
+				config.diff_tab_width = 2;
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(generate_white_space_delta())
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 10),
+					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content"),
+					render_line!(EndsWith "sp tabs    content{DiffWhitespaceColor}"),
+					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content{DiffWhitespaceColor}"),
+					render_line!(EndsWith "%%%%{DiffContextColor}sp tabs    content"),
+					render_line!(EndsWith "sp tabs    content{DiffWhitespaceColor}"),
+					render_line!(EndsWith "%%%%{DiffContextColor}sp tabs    content{DiffWhitespaceColor}"),
+					render_line!(EndsWith "%#>#>%{DiffContextColor}sp tabs    content{DiffWhitespaceColor}")
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_show_no_whitespace() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-			config.diff_tab_symbol = String::from("#");
-			config.diff_space_symbol = String::from("%");
-			config.diff_tab_width = 2;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			file_stat.add_delta(generate_white_space_delta());
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal}1{Normal} {Normal}1{Normal}| {DiffContextColor}    sp tabs    content",
-				"{Normal}2{Normal} {Normal}2{Normal}| {DiffContextColor}sp tabs    content",
-				"{Normal}3{Normal} {Normal}3{Normal}| {DiffContextColor}    sp tabs    content",
-				"{Normal}4{Normal} {Normal}4{Normal}| {DiffContextColor}    sp tabs    content",
-				"{Normal}5{Normal} {Normal}5{Normal}| {DiffContextColor}sp tabs    content",
-				"{Normal}6{Normal} {Normal}6{Normal}| {DiffContextColor}    sp tabs    content",
-				"{Normal}7{Normal} {Normal}7{Normal}| {DiffContextColor}      sp tabs    content"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
+				config.diff_tab_symbol = String::from("#>");
+				config.diff_space_symbol = String::from("%");
+				config.diff_tab_width = 2;
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(generate_white_space_delta())
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 10),
+					render_line!(EndsWith "    sp tabs    content"),
+					render_line!(EndsWith "sp tabs    content"),
+					render_line!(EndsWith "    sp tabs    content"),
+					render_line!(EndsWith "    sp tabs    content"),
+					render_line!(EndsWith "sp tabs    content"),
+					render_line!(EndsWith "    sp tabs    content"),
+					render_line!(EndsWith "      sp tabs    content")
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_diff_show_whitespace_all_spaces() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef comment1"],
-		&[],
-		|test_context| {
-			let mut config = Config::new();
-			config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
-			config.diff_tab_symbol = String::from("#");
-			config.diff_space_symbol = String::from("%");
-			config.diff_tab_width = 2;
-			let mut module = ShowCommit::new(&config);
-			let mut commit = create_minimal_commit();
-			let mut file_stat = FileStat::new("file.txt", "file.txt", Status::Modified);
-			let mut delta = Delta::new("@@ -1,7 +1,7 @@ context", 1, 1, 7, 7);
-			delta.add_line(DiffLine::new(Origin::Addition, "    ", None, Some(1), false));
-			file_stat.add_delta(delta);
-			commit.file_stats = vec![file_stat];
-			module.commit = Some(commit);
-			module.state = ShowCommitState::Diff;
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}{HELP}",
-				"{LEADING}",
-				"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-				"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
-				 {DiffRemoveColor}0{Normal} deletions",
-				"{BODY}",
-				"{Normal}{Pad(―)}",
-				"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
-				"",
-				"{Normal,Dimmed}@@{DiffContextColor} -1,7 +1,7 {Normal,Dimmed}@@{DiffContextColor} context",
-				"{Normal,Dimmed}{Pad(┈)}",
-				"{Normal} {Normal} {Normal}1{Normal}| {DiffWhitespaceColor}%%%%"
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef comment1"],
+			&[],
+			|test_context| {
+				let mut config = Config::new();
+				config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
+				config.diff_tab_symbol = String::from("#>");
+				config.diff_space_symbol = String::from("%");
+				config.diff_tab_width = 2;
+				let mut delta = Delta::new("@@ -1,7 +1,7 @@ context", 1, 1, 7, 7);
+				delta.add_line(DiffLine::new(Origin::Addition, "    ", None, Some(1), false));
+				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
+					.file_statuses(vec![FileStatusBuilder::new()
+						.source_path("file.txt")
+						.destination_path("file.txt")
+						.status(Status::Modified)
+						.push_delta(delta)
+						.build()])
+					.build();
+				let mut module = ShowCommit::new(&config, &repo);
+				module.diff = Some(diff);
+				module.state = ShowCommitState::Diff;
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					render_line!(AnyLine 10),
+					"{Normal} {Normal} {Normal}1{Normal}| {DiffWhitespaceColor}%%%%"
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn handle_event_toggle_diff_to_overview() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef c1"],
-		&[Event::from(MetaEvent::ShowDiff)],
-		|mut test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			module
-				.diff_view_data
-				.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
-			module.state = ShowCommitState::Diff;
-			assert_process_result!(
-				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ShowDiff)
-			);
-			assert!(module.diff_view_data.is_empty());
-			assert_eq!(module.state, ShowCommitState::Overview);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef c1"],
+			&[Event::from(MetaEvent::ShowDiff)],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module
+					.diff_view_data
+					.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
+				module.state = ShowCommitState::Diff;
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ShowDiff)
+				);
+				assert!(module.diff_view_data.is_empty());
+				assert_eq!(module.state, ShowCommitState::Overview);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn handle_event_toggle_overview_to_diff() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef c1"],
-		&[Event::from(MetaEvent::ShowDiff)],
-		|mut test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			module
-				.overview_view_data
-				.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
-			module.state = ShowCommitState::Overview;
-			assert_process_result!(
-				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ShowDiff)
-			);
-			assert!(module.diff_view_data.is_empty());
-			assert_eq!(module.state, ShowCommitState::Diff);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef c1"],
+			&[Event::from(MetaEvent::ShowDiff)],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module
+					.overview_view_data
+					.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
+				module.state = ShowCommitState::Overview;
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from(MetaEvent::ShowDiff)
+				);
+				assert!(module.diff_view_data.is_empty());
+				assert_eq!(module.state, ShowCommitState::Diff);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn handle_event_resize() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef c1"],
-		&[Event::Resize(100, 100)],
-		|mut test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef c1"],
+			&[Event::Resize(100, 100)],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn render_help() {
-	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
-		let mut module = ShowCommit::new(&Config::new());
-		let _ = test_context.handle_all_events(&mut module);
-		let view_data = test_context.build_view_data(&mut module);
-		assert_rendered_output!(
-			view_data,
-			"{TITLE}",
-			"{LEADING}",
-			"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
-			"{BODY}",
-			"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
-			"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
-			"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
-			"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
-			"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
-			"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
-			"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
-			"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
-			"{TRAILING}",
-			"{IndicatorColor}Press any key to close"
-		);
+	with_temp_repository(|repo| {
+		module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
+			let _ = test_context.handle_all_events(&mut module);
+			assert_rendered_output!(
+				test_context.build_view_data(&mut module),
+				"{TITLE}",
+				"{LEADING}",
+				"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
+				"{BODY}",
+				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
+				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
+				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
+				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
+				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
+				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
+				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
+				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
+				"{TRAILING}",
+				"{IndicatorColor}Press any key to close"
+			);
+		});
+		Ok(())
 	});
 }
 
 #[test]
 fn handle_help_event() {
-	module_test(
-		&["pick aaa c1"],
-		&[Event::from(MetaEvent::Help), Event::from(MetaEvent::ShowDiff)],
-		|mut test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			let _ = test_context.handle_all_events(&mut module);
-			assert!(!module.help.is_active());
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick aaa c1"],
+			&[Event::from(MetaEvent::Help), Event::from(MetaEvent::ShowDiff)],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				let _ = test_context.handle_all_events(&mut module);
+				assert!(!module.help.is_active());
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn handle_event_other_key_from_diff() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef c1"],
-		&[Event::from('a')],
-		|mut test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			module.state = ShowCommitState::Diff;
-			assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));
-			assert_eq!(module.state, ShowCommitState::Overview);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef c1"],
+			&[Event::from('a')],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.state = ShowCommitState::Diff;
+				assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));
+				assert_eq!(module.state, ShowCommitState::Overview);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[test]
 fn handle_event_other_key_from_overview() {
-	module_test(
-		&["pick 0123456789abcdef0123456789abcdef c1"],
-		&[Event::from('a')],
-		|mut test_context| {
-			let mut module = ShowCommit::new(&Config::new());
-			module.state = ShowCommitState::Overview;
-			assert_process_result!(
-				test_context.handle_event(&mut module),
-				event = Event::from('a'),
-				state = State::List
-			);
-		},
-	);
+	with_temp_repository(|repo| {
+		module_test(
+			&["pick 0123456789abcdef0123456789abcdef c1"],
+			&[Event::from('a')],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), &repo);
+				module.state = ShowCommitState::Overview;
+				assert_process_result!(
+					test_context.handle_event(&mut module),
+					event = Event::from('a'),
+					state = State::List
+				);
+			},
+		);
+		Ok(())
+	});
 }
 
 #[rstest]
@@ -1189,8 +1255,11 @@ fn handle_event_other_key_from_overview() {
 #[case::scroll_jump_down(MetaEvent::ScrollJumpDown)]
 #[case::scroll_jump_up(MetaEvent::ScrollJumpUp)]
 fn scroll_events(#[case] event: MetaEvent) {
-	module_test(&[], &[Event::from(event)], |mut test_context| {
-		let mut module = ShowCommit::new(&Config::new());
-		assert_process_result!(test_context.handle_event(&mut module), event = Event::from(event));
+	with_temp_repository(|repo| {
+		module_test(&[], &[Event::from(event)], |mut test_context| {
+			let mut module = ShowCommit::new(&Config::new(), &repo);
+			assert_process_result!(test_context.handle_event(&mut module), event = Event::from(event));
+		});
+		Ok(())
 	});
 }

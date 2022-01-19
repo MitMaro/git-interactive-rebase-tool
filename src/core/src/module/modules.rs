@@ -6,22 +6,22 @@ use view::{RenderContext, ViewData, ViewSender};
 
 use super::{Module, ProcessResult, State};
 
-pub(crate) struct Modules {
-	modules: HashMap<State, Box<dyn Module>>,
+pub(crate) struct Modules<'m> {
+	modules: HashMap<State, Box<dyn Module + 'm>>,
 }
 
-impl Modules {
+impl<'m> Modules<'m> {
 	pub(crate) fn new() -> Self {
 		Self {
 			modules: HashMap::new(),
 		}
 	}
 
-	pub(crate) fn register_module<T: Module + 'static>(&mut self, state: State, module: T) {
+	pub(crate) fn register_module<T: Module + 'm>(&mut self, state: State, module: T) {
 		let _previous = self.modules.insert(state, Box::new(module));
 	}
 
-	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn Module> {
+	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn Module + 'm> {
 		self.modules
 			.get_mut(&state)
 			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}", state))

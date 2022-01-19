@@ -1,12 +1,4 @@
-mod commit;
-mod delta;
-mod diff_line;
-mod file_stat;
-mod file_stats_builder;
-mod origin;
 mod show_commit_state;
-mod status;
-mod user;
 mod util;
 mod view_builder;
 
@@ -16,13 +8,13 @@ mod tests;
 use anyhow::anyhow;
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
+use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use input::{Event, EventHandler, InputOptions, MetaEvent};
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender};
 
 use self::{
-	commit::{Commit, LoadCommitDiffOptions},
 	show_commit_state::ShowCommitState,
 	util::get_show_commit_help_lines,
 	view_builder::{ViewBuilder, ViewBuilderOptions},
@@ -40,23 +32,24 @@ lazy_static! {
 		.resize(false);
 }
 
-pub(crate) struct ShowCommit {
-	commit: Option<Commit>,
+pub(crate) struct ShowCommit<'s> {
+	commit_diff_loader_options: CommitDiffLoaderOptions,
+	diff: Option<CommitDiff>,
 	diff_view_data: ViewData,
 	help: Help,
-	load_commit_diff_options: LoadCommitDiffOptions,
 	overview_view_data: ViewData,
+	repository: &'s Repository,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
 }
 
-impl Module for ShowCommit {
+impl Module for ShowCommit<'_> {
 	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
 		if let Some(selected_line) = rebase_todo.get_selected_line() {
 			// skip loading commit data if the currently loaded commit has not changed, this retains
 			// position after returning to the list view or help
-			if let Some(ref commit) = self.commit {
-				if commit.get_hash() == selected_line.get_hash() {
+			if let Some(diff) = self.diff.as_ref() {
+				if diff.commit().hash() == selected_line.get_hash() {
 					return ProcessResult::new();
 				}
 			}
@@ -70,14 +63,20 @@ impl Module for ShowCommit {
 				updater.reset_scroll_position();
 			});
 
-			let new_commit = Commit::new_from_hash(selected_line.get_hash(), &self.load_commit_diff_options);
+			let new_diff = self
+				.repository
+				.load_commit_diff(selected_line.get_hash(), &self.commit_diff_loader_options);
 
-			match new_commit {
-				Ok(c) => {
-					self.commit = Some(c);
+			match new_diff {
+				Ok(diff) => {
+					self.diff = Some(diff);
 					ProcessResult::new()
 				},
-				Err(e) => ProcessResult::new().error(e).state(State::List),
+				Err(e) => {
+					ProcessResult::new()
+						.error(e.context(anyhow!("Error loading commit")))
+						.state(State::List)
+				},
 			}
 		}
 		else {
@@ -92,7 +91,7 @@ impl Module for ShowCommit {
 			return self.help.get_view_data();
 		}
 
-		let commit = self.commit.as_ref().unwrap(); // will only fail on programmer error
+		let diff = self.diff.as_ref().unwrap(); // will only fail on programmer error
 		let state = &self.state;
 		let view_builder = &self.view_builder;
 		let is_full_width = context.is_full_width();
@@ -101,8 +100,8 @@ impl Module for ShowCommit {
 			ShowCommitState::Overview => {
 				if self.overview_view_data.is_empty() {
 					self.overview_view_data.update_view_data(|updater| {
-						capture!(view_builder, commit);
-						view_builder.build_view_data_for_overview(updater, commit, is_full_width);
+						capture!(view_builder, diff);
+						view_builder.build_view_data_for_overview(updater, diff, is_full_width);
 					});
 				}
 				&self.overview_view_data
@@ -110,8 +109,8 @@ impl Module for ShowCommit {
 			ShowCommitState::Diff => {
 				if self.diff_view_data.is_empty() {
 					self.diff_view_data.update_view_data(|updater| {
-						capture!(view_builder, commit);
-						view_builder.build_view_data_diff(updater, commit, is_full_width);
+						capture!(view_builder, diff);
+						view_builder.build_view_data_diff(updater, diff, is_full_width);
 					});
 				}
 				&self.diff_view_data
@@ -172,8 +171,8 @@ impl Module for ShowCommit {
 	}
 }
 
-impl ShowCommit {
-	pub(crate) fn new(config: &Config) -> Self {
+impl<'s> ShowCommit<'s> {
+	pub(crate) fn new(config: &Config, repository: &'s Repository) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -191,23 +190,24 @@ impl ShowCommit {
 			config.diff_show_whitespace == DiffShowWhitespaceSetting::Both
 				|| config.diff_show_whitespace == DiffShowWhitespaceSetting::Trailing,
 		);
-		let load_commit_diff_options = LoadCommitDiffOptions {
-			context_lines: config.git.diff_context,
-			copies: config.git.diff_copies,
-			ignore_whitespace: config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All,
-			ignore_whitespace_change: config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change,
-			interhunk_lines: config.git.diff_interhunk_lines,
-			rename_limit: config.git.diff_rename_limit,
-			renames: config.git.diff_renames,
-		};
+
+		let commit_diff_loader_options = CommitDiffLoaderOptions::new()
+			.context_lines(config.git.diff_context)
+			.copies(config.git.diff_copies)
+			.ignore_whitespace(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All)
+			.ignore_whitespace_change(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change)
+			.interhunk_context(config.git.diff_interhunk_lines)
+			.renames(config.git.diff_renames, config.git.diff_rename_limit);
+
 		Self {
-			commit: None,
+			diff: None,
 			diff_view_data,
 			help: Help::new_from_keybindings(&get_show_commit_help_lines(&config.key_bindings)),
-			load_commit_diff_options,
+			commit_diff_loader_options,
 			overview_view_data,
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options),
+			repository,
 		}
 	}
 }

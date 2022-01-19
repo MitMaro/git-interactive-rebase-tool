@@ -51,7 +51,7 @@ fn create_crossterm() -> CrossTerm {
 	crossterm
 }
 
-fn create_modules() -> Modules {
+fn create_modules() -> Modules<'static> {
 	let mut modules = Modules::new();
 	modules.register_module(State::Error, Error::new());
 	modules.register_module(State::WindowSizeError, WindowSizeError::new());

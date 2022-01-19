@@ -138,7 +138,7 @@ fn run_process_error() {
 	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 	event_handler.push_event(Event::from(MetaEvent::Exit));
 	assert_eq!(
-		run_process(rebase_todo_file, event_handler, &config),
+		run_process(rebase_todo_file, event_handler, &config, &repo),
 		Exit::new(
 			ExitStatus::FileWriteError,
 			format!("Error opening file: {}", todo_file_path.to_str().unwrap()).as_str()
@@ -157,7 +157,7 @@ fn run_process_success() {
 	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
 	event_handler.push_event(Event::from(MetaEvent::Exit));
 	assert_eq!(
-		run_process(rebase_todo_file, event_handler, &config),
+		run_process(rebase_todo_file, event_handler, &config, &repo),
 		Exit::from(ExitStatus::Abort)
 	);
 }
