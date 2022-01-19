@@ -1,6 +1,6 @@
 [package]
 name = "girt-view"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "View modules for git-interactive-rebase-tool"
