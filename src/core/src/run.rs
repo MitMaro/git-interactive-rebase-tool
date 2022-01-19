@@ -45,11 +45,16 @@ pub(super) fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile
 	Ok(todo_file)
 }
 
-pub(super) fn run_process(todo_file: TodoFile, event_handler: EventHandler, config: &Config) -> Exit {
+pub(super) fn run_process(
+	todo_file: TodoFile,
+	event_handler: EventHandler,
+	config: &Config,
+	repo: &Repository,
+) -> Exit {
 	let mut modules = Modules::new();
 	modules.register_module(State::Error, Error::new());
 	modules.register_module(State::List, List::new(config));
-	modules.register_module(State::ShowCommit, ShowCommit::new(config));
+	modules.register_module(State::ShowCommit, ShowCommit::new(config, repo));
 	modules.register_module(State::WindowSizeError, WindowSizeError::new());
 	modules.register_module(
 		State::ConfirmAbort,
@@ -103,7 +108,7 @@ pub(crate) fn run(args: &Args) -> Exit {
 			Err(exit) => return exit,
 		};
 		let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
-		run_process(todo_file, event_handler, &config)
+		run_process(todo_file, event_handler, &config, &repo)
 	}
 	else {
 		Exit::new(

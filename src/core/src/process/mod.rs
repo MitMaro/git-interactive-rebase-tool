@@ -45,7 +45,7 @@ impl Process {
 		}
 	}
 
-	pub(crate) fn run(&mut self, mut modules: Modules) -> Result<ExitStatus> {
+	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<ExitStatus> {
 		if self.view_sender.start().is_err() {
 			self.exit_status = Some(ExitStatus::StateError);
 			return Ok(ExitStatus::StateError);
@@ -108,7 +108,7 @@ impl Process {
 		Ok(self.exit_status.unwrap_or(ExitStatus::Good))
 	}
 
-	fn handle_process_result(&mut self, modules: &mut Modules, result: &ProcessResult) {
+	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) {
 		let previous_state = self.state;
 
 		// render context and view_sender need a size update early
@@ -190,7 +190,7 @@ impl Process {
 		result
 	}
 
-	fn activate(&mut self, modules: &mut Modules, previous_state: State) {
+	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
 		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
 		// always trigger a resize on activate, for modules that track size
 		self.event_handler.push_event(Event::Resize(

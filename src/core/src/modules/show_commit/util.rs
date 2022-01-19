@@ -1,10 +1,11 @@
+use std::path::Path;
+
 use config::KeyBindings;
 use display::DisplayColor;
+use git::{CommitDiff, Status};
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 use view::{LineSegment, ViewLine};
-
-use super::{commit::Commit, status::Status};
 
 pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![
@@ -23,13 +24,13 @@ pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec
 }
 
 pub(super) fn get_stat_item_segments(
-	status: &Status,
-	to_name: &str,
-	from_name: &str,
+	status: Status,
+	to_name: &Path,
+	from_name: &Path,
 	is_full_width: bool,
 ) -> Vec<LineSegment> {
 	let status_name = if is_full_width {
-		match *status {
+		match status {
 			Status::Added => format!("{:>8}: ", "added"),
 			Status::Copied => format!("{:>8}: ", "copied"),
 			Status::Deleted => format!("{:>8}: ", "deleted"),
@@ -41,7 +42,7 @@ pub(super) fn get_stat_item_segments(
 		}
 	}
 	else {
-		match *status {
+		match status {
 			Status::Added => String::from("A "),
 			Status::Copied => String::from("C "),
 			Status::Deleted => String::from("D "),
@@ -53,7 +54,7 @@ pub(super) fn get_stat_item_segments(
 		}
 	};
 
-	let color = match *status {
+	let color = match status {
 		Status::Added | Status::Copied => DisplayColor::DiffAddColor,
 		Status::Deleted => DisplayColor::DiffRemoveColor,
 		Status::Modified | Status::Renamed | Status::Typechange => DisplayColor::DiffChangeColor,
@@ -63,36 +64,36 @@ pub(super) fn get_stat_item_segments(
 
 	let to_file_indicator = if is_full_width { " → " } else { "→" };
 
-	match *status {
+	match status {
 		Status::Copied => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
-				LineSegment::new_with_color(to_name, DisplayColor::Normal),
+				LineSegment::new_with_color(to_name.to_str().unwrap_or("invalid"), DisplayColor::Normal),
 				LineSegment::new(to_file_indicator),
-				LineSegment::new_with_color(from_name, DisplayColor::DiffAddColor),
+				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), DisplayColor::DiffAddColor),
 			]
 		},
 		Status::Renamed => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
-				LineSegment::new_with_color(to_name, DisplayColor::DiffRemoveColor),
+				LineSegment::new_with_color(to_name.to_str().unwrap_or("invalid"), DisplayColor::DiffRemoveColor),
 				LineSegment::new(to_file_indicator),
-				LineSegment::new_with_color(from_name, DisplayColor::DiffAddColor),
+				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), DisplayColor::DiffAddColor),
 			]
 		},
 		_ => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
-				LineSegment::new_with_color(from_name, color),
+				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), color),
 			]
 		},
 	}
 }
 
-pub(super) fn get_files_changed_summary(commit: &Commit, is_full_width: bool) -> ViewLine {
-	let files_changed = commit.get_number_files_changed();
-	let insertions = commit.get_number_insertions();
-	let deletions = commit.get_number_deletions();
+pub(super) fn get_files_changed_summary(diff: &CommitDiff, is_full_width: bool) -> ViewLine {
+	let files_changed = diff.number_files_changed();
+	let insertions = diff.number_insertions();
+	let deletions = diff.number_deletions();
 
 	if is_full_width {
 		ViewLine::from(vec![
