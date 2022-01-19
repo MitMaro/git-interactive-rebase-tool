@@ -201,9 +201,8 @@ impl TryFrom<&git::Config> for Config {
 mod tests {
 	use std::fmt::Debug;
 
-	use git::testutil::create_bare_repository;
+	use git::testutil::with_temp_bare_repository;
 	use rstest::rstest;
-	use tempfile::tempdir;
 
 	use super::*;
 	use crate::testutils::{assert_error, invalid_utf, with_git_config};
@@ -220,10 +219,10 @@ mod tests {
 
 	#[test]
 	fn try_from_repository() {
-		let temp_repository_directory = tempdir().unwrap();
-		let path = temp_repository_directory.into_path();
-		let repository = create_bare_repository(&path);
-		assert!(Config::try_from(&repository).is_ok());
+		with_temp_bare_repository(|repository| {
+			assert!(Config::try_from(&repository).is_ok());
+			Ok(())
+		});
 	}
 
 	#[test]
