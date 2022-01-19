@@ -71,6 +71,16 @@ impl<'v> ViewDataUpdater<'v> {
 		self.view_data.push_line(view_line);
 	}
 
+	/// Push a set of new body lines to the view data automatically split on newlines.
+	#[inline]
+	pub fn push_lines(&mut self, lines: &str) {
+		self.modified = true;
+
+		for line in lines.lines() {
+			self.view_data.push_line(ViewLine::from(line));
+		}
+	}
+
 	/// Push a new trailing line to the view data.
 	#[inline]
 	pub fn push_trailing_line(&mut self, view_line: ViewLine) {
