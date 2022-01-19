@@ -9,15 +9,23 @@ use display::DisplayColor;
 use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender};
 
 const STARTS_WITH: &str = "{{StartsWith}}";
-
-/// Allow any line for a rendered line
-pub const ANY_LINE: &str = "{{ANY}}";
+const ENDS_WITH: &str = "{{EndsWith}}";
+const ANY_LINE: &str = "{{Any}}";
 
 /// Assert the rendered output from a `ViewData`.
 #[macro_export]
 macro_rules! render_line {
+	(AnyLine) => {{
+		concat!("{{Any}}")
+	}};
+	(AnyLine  $count:expr) => {{
+		concat!("{{Any(", $count, ")}}")
+	}};
 	(StartsWith $line:expr) => {{
 		concat!("{{StartsWith}}", $line)
+	}};
+	(EndsWith $line:expr) => {{
+		concat!("{{EndsWith}}", $line)
 	}};
 }
 
@@ -160,6 +168,27 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	lines
 }
 
+fn expand_expected(expected: &[String]) -> Vec<String> {
+	expected
+		.iter()
+		.flat_map(|f| {
+			if f.starts_with("{{Any(") && f.ends_with(")}}") {
+				let lines = f
+					.replace("{{Any(", "")
+					.replace(")}}", "")
+					.as_str()
+					.parse::<u32>()
+					.unwrap_or_else(|_| panic!("Expected {} to have integer line count", f));
+				vec![String::from(ANY_LINE); lines as usize]
+			}
+			else {
+				vec![f.clone()]
+			}
+		})
+		.collect::<Vec<String>>()
+}
+
+#[allow(clippy::indexing_slicing, clippy::string_slice)]
 pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
@@ -170,10 +199,6 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 	];
 
 	for (expected_line, output_line) in expected.iter().zip(actual.iter()) {
-		if expected_line == ANY_LINE {
-			error_output.push(String::from("Matching *"));
-			continue;
-		}
 		let output = if options.ignore_trailing_whitespace {
 			output_line.trim_end()
 		}
@@ -184,15 +209,33 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 		let mut e = replace_invisibles(expected_line);
 		let o = replace_invisibles(output);
 
+		if expected_line == ANY_LINE {
+			error_output.push(format!(" {}", o));
+			continue;
+		}
+
+		if expected_line.starts_with(ENDS_WITH) {
+			e = e.replace(ENDS_WITH, "");
+			if output.ends_with(&expected_line.replace(ENDS_WITH, "")) {
+				error_output.push(format!(" {}", o));
+			}
+			else {
+				mismatch = true;
+				error_output.push(format!("-EndsWith {}", e));
+				error_output.push(format!("+         {}", &o[o.len() - e.len() + 2..]));
+			}
+			continue;
+		}
+
 		if expected_line.starts_with(STARTS_WITH) {
-			e = expected_line.replace(STARTS_WITH, "");
-			if output.starts_with(&e) {
+			e = e.replace(STARTS_WITH, "");
+			if output.starts_with(&expected_line.replace(STARTS_WITH, "")) {
 				error_output.push(format!(" {}", o));
 			}
 			else {
 				mismatch = true;
 				error_output.push(format!("-StartsWith {}", e));
-				error_output.push(format!("+           {}", o));
+				error_output.push(format!("+           {}", &o[0..=e.len()]));
 			}
 			continue;
 		}
@@ -234,7 +277,8 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 #[inline]
 pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String], options: AssertRenderOptions) {
 	let output = render_view_data(view_data);
-	_assert_rendered_output(options, &output, expected);
+
+	_assert_rendered_output(options, &output, &expand_expected(expected));
 }
 
 /// Assert the rendered output from a `ViewData`.
