@@ -89,7 +89,6 @@ impl Process {
 			return Ok(ExitStatus::StateError);
 		}
 		if let Some(status) = self.exit_status {
-			eprintln!("Status: {:?}", status);
 			if status != ExitStatus::Kill {
 				self.rebase_todo.write_file()?;
 			}
