@@ -87,11 +87,11 @@ The executable will be installed to `/usr/bin`.
 
 ### With [Homebrew](https://brew.sh/)
 
-    brew install interactive-rebase-tool
+    brew install git-interactive-rebase-tool
 
 #### Remove
 
-    brew rm interactive-rebase-tool
+    brew rm git-interactive-rebase-tool
 
 ### Manual install
 
