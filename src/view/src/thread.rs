@@ -45,7 +45,7 @@ pub fn spawn_view_thread<T: Tui + Send + 'static>(mut view: View<T>) -> (Sender,
 			if should_render && Instant::now() >= last_render_time {
 				last_render_time += MINIMUM_TICK_RATE;
 				should_render = false;
-				let render_slice = view_render_slice.lock().unwrap();
+				let render_slice = view_render_slice.lock();
 				if view.render(render_slice.borrow()).is_err() {
 					err = true;
 				}

@@ -305,7 +305,6 @@ fn assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[Stri
 	let actions = view_sender
 		.clone_render_slice()
 		.lock()
-		.unwrap()
 		.get_actions()
 		.iter()
 		.map(|a| {
