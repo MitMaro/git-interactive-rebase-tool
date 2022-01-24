@@ -86,7 +86,7 @@ impl DiffLine {
 
 #[cfg(test)]
 mod tests {
-	use std::sync::Mutex;
+	use parking_lot::Mutex;
 
 	use super::*;
 
@@ -166,7 +166,7 @@ mod tests {
 
 		let lines = Mutex::new(vec![]);
 		diff.print(git2::DiffFormat::Patch, |_, _, diff_line| {
-			lines.lock().unwrap().push(DiffLine::from(&diff_line));
+			lines.lock().push(DiffLine::from(&diff_line));
 			true
 		})
 		.unwrap();
@@ -186,6 +186,6 @@ mod tests {
 			DiffLine::new(Origin::Deletion, "deleted\n", Some(2), None, false),
 			DiffLine::new(Origin::Addition, "added\n", None, Some(2), false),
 		];
-		assert_eq!(lines.into_inner().unwrap(), expected);
+		assert_eq!(lines.into_inner(), expected);
 	}
 }
