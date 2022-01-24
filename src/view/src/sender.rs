@@ -4,11 +4,11 @@ use std::{
 		atomic::{AtomicBool, Ordering},
 		mpsc,
 		Arc,
-		Mutex,
 	},
 };
 
 use anyhow::{anyhow, Error, Result};
+use parking_lot::Mutex;
 
 use super::{action::ViewAction, render_slice::RenderSlice, view_data::ViewData};
 
@@ -84,61 +84,37 @@ impl Sender {
 	/// Queue a scroll up action.
 	#[inline]
 	pub fn scroll_up(&self) {
-		self.render_slice
-			.lock()
-			.expect("Unable to lock render slice")
-			.borrow_mut()
-			.record_scroll_up();
+		self.render_slice.lock().borrow_mut().record_scroll_up();
 	}
 
 	/// Queue a scroll down action.
 	#[inline]
 	pub fn scroll_down(&self) {
-		self.render_slice
-			.lock()
-			.expect("Unable to lock render slice")
-			.borrow_mut()
-			.record_scroll_down();
+		self.render_slice.lock().borrow_mut().record_scroll_down();
 	}
 
 	/// Queue a scroll left action.
 	#[inline]
 	pub fn scroll_left(&self) {
-		self.render_slice
-			.lock()
-			.expect("Unable to lock render slice")
-			.borrow_mut()
-			.record_scroll_left();
+		self.render_slice.lock().borrow_mut().record_scroll_left();
 	}
 
 	/// Queue a scroll right action.
 	#[inline]
 	pub fn scroll_right(&self) {
-		self.render_slice
-			.lock()
-			.expect("Unable to lock render slice")
-			.borrow_mut()
-			.record_scroll_right();
+		self.render_slice.lock().borrow_mut().record_scroll_right();
 	}
 
 	/// Queue a scroll up a page action.
 	#[inline]
 	pub fn scroll_page_up(&self) {
-		self.render_slice
-			.lock()
-			.expect("Unable to lock render slice")
-			.borrow_mut()
-			.record_page_up();
+		self.render_slice.lock().borrow_mut().record_page_up();
 	}
 
 	/// Queue a scroll down a page action.
 	#[inline]
 	pub fn scroll_page_down(&self) {
-		self.render_slice
-			.lock()
-			.expect("Unable to lock render slice")
-			.borrow_mut()
-			.record_page_down();
+		self.render_slice.lock().borrow_mut().record_page_down();
 	}
 
 	/// Queue a resize action.
@@ -146,7 +122,6 @@ impl Sender {
 	pub fn resize(&self, width: u16, height: u16) {
 		self.render_slice
 			.lock()
-			.expect("Unable to lock render slice")
 			.borrow_mut()
 			.record_resize(width as usize, height as usize);
 	}
@@ -157,11 +132,7 @@ impl Sender {
 	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn render(&self, view_data: &ViewData) -> Result<()> {
-		self.render_slice
-			.lock()
-			.map_err(|_err| anyhow!("Unable to lock render slice"))?
-			.borrow_mut()
-			.sync_view_data(view_data);
+		self.render_slice.lock().borrow_mut().sync_view_data(view_data);
 		self.sender.send(ViewAction::Render).map_err(map_send_err)
 	}
 }
@@ -297,16 +268,7 @@ mod tests {
 				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))))
 				.unwrap();
 			assert_eq!(
-				render_view_line(
-					context
-						.sender
-						.clone_render_slice()
-						.lock()
-						.unwrap()
-						.get_lines()
-						.first()
-						.unwrap()
-				),
+				render_view_line(context.sender.clone_render_slice().lock().get_lines().first().unwrap()),
 				"{Normal}Foo"
 			);
 		});
