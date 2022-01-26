@@ -1,10 +1,11 @@
 use std::{
 	borrow::Borrow,
-	sync::{atomic::Ordering, mpsc},
+	sync::atomic::Ordering,
 	thread::{sleep, spawn, JoinHandle},
 	time::{Duration, Instant},
 };
 
+use crossbeam_channel::unbounded;
 use display::Tui;
 
 use super::{action::ViewAction, sender::Sender, View};
@@ -17,7 +18,7 @@ const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 /// This may panic if there is an unexpected error in the processing of the `View`, i.e. a bug.
 #[inline]
 pub fn spawn_view_thread<T: Tui + Send + 'static>(mut view: View<T>) -> (Sender, JoinHandle<()>) {
-	let (sender, receiver) = mpsc::channel();
+	let (sender, receiver) = unbounded();
 	let view_sender = Sender::new(sender.clone());
 	let view_render_slice = view_sender.clone_render_slice();
 	let crashed = view_sender.clone_poisoned();
