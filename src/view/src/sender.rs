@@ -2,17 +2,17 @@ use std::{
 	borrow::BorrowMut,
 	sync::{
 		atomic::{AtomicBool, Ordering},
-		mpsc,
 		Arc,
 	},
 };
 
 use anyhow::{anyhow, Error, Result};
+use crossbeam_channel as channel;
 use parking_lot::Mutex;
 
 use super::{action::ViewAction, render_slice::RenderSlice, view_data::ViewData};
 
-fn map_send_err(_: mpsc::SendError<ViewAction>) -> Error {
+fn map_send_err(_: channel::SendError<ViewAction>) -> Error {
 	anyhow!("Unable to send data")
 }
 
@@ -20,14 +20,15 @@ fn map_send_err(_: mpsc::SendError<ViewAction>) -> Error {
 #[derive(Clone, Debug)]
 pub struct Sender {
 	poisoned: Arc<AtomicBool>,
-	sender: mpsc::Sender<ViewAction>,
+	sender: channel::Sender<ViewAction>,
 	render_slice: Arc<Mutex<RenderSlice>>,
 }
 
 impl Sender {
 	/// Create a new instance.
 	#[inline]
-	pub fn new(sender: mpsc::Sender<ViewAction>) -> Self {
+	#[must_use]
+	pub fn new(sender: channel::Sender<ViewAction>) -> Self {
 		Self {
 			poisoned: Arc::new(AtomicBool::new(false)),
 			sender,
@@ -37,18 +38,21 @@ impl Sender {
 
 	/// Clone the poisoned flag.
 	#[inline]
+	#[must_use]
 	pub fn clone_poisoned(&self) -> Arc<AtomicBool> {
 		Arc::clone(&self.poisoned)
 	}
 
 	/// Is the sender poisoned, and not longer accepting actions.
 	#[inline]
+	#[must_use]
 	pub fn is_poisoned(&self) -> bool {
 		self.poisoned.load(Ordering::Relaxed)
 	}
 
 	/// Clone the render slice.
 	#[inline]
+	#[must_use]
 	pub fn clone_render_slice(&self) -> Arc<Mutex<RenderSlice>> {
 		Arc::clone(&self.render_slice)
 	}

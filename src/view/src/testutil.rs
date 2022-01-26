@@ -1,9 +1,7 @@
 //! Utilities for writing tests that interact with input events.
-use std::{
-	sync::{mpsc, mpsc::Receiver},
-	time::Duration,
-};
+use std::time::Duration;
 
+use crossbeam_channel::{unbounded, Receiver};
 use display::DisplayColor;
 
 use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender};
@@ -384,7 +382,7 @@ impl TestContext {
 	/// Drop the receiver, useful for testing disconnect error handling.
 	#[inline]
 	pub fn drop_receiver(&mut self) {
-		let (_, receiver) = mpsc::channel();
+		let (_, receiver) = unbounded();
 		self.receiver = receiver;
 	}
 
@@ -447,7 +445,7 @@ impl TestContext {
 #[inline]
 pub fn with_view_sender<C>(callback: C)
 where C: FnOnce(TestContext) {
-	let (sender, receiver) = mpsc::channel();
+	let (sender, receiver) = unbounded();
 	let view_sender = ViewSender::new(sender);
 
 	callback(TestContext {
