@@ -52,7 +52,7 @@ pub fn spawn_view_thread<T: Tui + Send + 'static>(mut view: View<T>) -> (Sender,
 				}
 			}
 			if err {
-				crashed.store(true, Ordering::Relaxed);
+				crashed.store(true, Ordering::Release);
 			}
 		}
 	});
