@@ -122,7 +122,7 @@ fn view_sender_is_poisoned() {
 		);
 		let mut modules = create_modules();
 		let test_module = TestModule::new();
-		process.view_sender.clone_poisoned().store(true, Ordering::Relaxed);
+		process.view_sender.clone_poisoned().store(true, Ordering::Release);
 		modules.register_module(State::List, test_module);
 		assert_eq!(process.run(modules).unwrap(), ExitStatus::StateError);
 	});

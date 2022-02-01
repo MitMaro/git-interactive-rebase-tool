@@ -47,7 +47,7 @@ impl Sender {
 	#[inline]
 	#[must_use]
 	pub fn is_poisoned(&self) -> bool {
-		self.poisoned.load(Ordering::Relaxed)
+		self.poisoned.load(Ordering::Acquire)
 	}
 
 	/// Clone the render slice.
@@ -154,7 +154,7 @@ mod tests {
 	#[test]
 	fn poisoned() {
 		with_view_sender(|context| {
-			context.sender.clone_poisoned().store(true, Ordering::SeqCst);
+			context.sender.clone_poisoned().store(true, Ordering::Release);
 			assert!(context.sender.is_poisoned());
 		});
 	}
