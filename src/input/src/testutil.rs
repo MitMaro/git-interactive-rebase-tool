@@ -135,6 +135,7 @@ pub fn create_test_keybindings() -> KeyBindings {
 
 /// Context for a `EventHandler` based test.
 #[allow(missing_debug_implementations)]
+#[non_exhaustive]
 pub struct TestContext {
 	/// The `EventHandler` instance.
 	pub event_handler: EventHandler,
