@@ -68,14 +68,6 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
-#![allow(
-	clippy::else_if_without_else,
-	clippy::exhaustive_structs,
-	clippy::indexing_slicing,
-	clippy::struct_excessive_bools,
-	clippy::unwrap_used,
-	clippy::wildcard_enum_match_arm
-)]
 
 //! Git Interactive Rebase Tool - Input Module
 //!

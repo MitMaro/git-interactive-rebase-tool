@@ -84,6 +84,7 @@ impl EventHandler {
 		callback(event, &self.key_bindings)
 	}
 
+	#[allow(clippy::wildcard_enum_match_arm)]
 	fn handle_standard_inputs(event: Event) -> Option<Event> {
 		match event {
 			Event::Key(KeyEvent {
@@ -98,6 +99,7 @@ impl EventHandler {
 		}
 	}
 
+	#[allow(clippy::wildcard_enum_match_arm)]
 	fn handle_movement_inputs(event: Event) -> Option<Event> {
 		match event {
 			Event::Key(KeyEvent {
@@ -138,12 +140,14 @@ impl EventHandler {
 
 	fn handle_undo_redo(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
 		if key_bindings.undo.contains(&event) {
-			return Some(Event::from(MetaEvent::Undo));
+			Some(Event::from(MetaEvent::Undo))
 		}
 		else if key_bindings.redo.contains(&event) {
-			return Some(Event::from(MetaEvent::Redo));
+			Some(Event::from(MetaEvent::Redo))
 		}
-		None
+		else {
+			None
+		}
 	}
 }
 

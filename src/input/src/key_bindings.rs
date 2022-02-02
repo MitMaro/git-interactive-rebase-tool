@@ -2,6 +2,7 @@ use super::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 /// Represents a mapping between an input event and an action.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct KeyBindings {
 	/// Key bindings for aborting.
 	pub abort: Vec<Event>,
@@ -69,7 +70,7 @@ pub struct KeyBindings {
 	pub undo: Vec<Event>,
 }
 
-#[allow(clippy::string_slice)]
+#[allow(clippy::string_slice, clippy::indexing_slicing)]
 fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 	bindings
 		.iter()
@@ -110,10 +111,7 @@ fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 					let key_number = k[1..].parse::<u8>().unwrap_or(1);
 					KeyCode::F(key_number)
 				},
-				k => {
-					let c = k.chars().next().unwrap();
-					KeyCode::Char(c)
-				},
+				k => KeyCode::Char(k.chars().next().expect("Expected only one character from Char KeyCode")),
 			};
 			Event::Key(KeyEvent::new(code, modifiers))
 		})

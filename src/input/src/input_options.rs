@@ -1,4 +1,5 @@
 /// Represents options for parsing input events.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Copy, Clone, Debug)]
 pub struct InputOptions {
 	pub(super) help: bool,
