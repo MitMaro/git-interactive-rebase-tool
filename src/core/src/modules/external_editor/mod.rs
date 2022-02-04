@@ -18,7 +18,7 @@ use crate::{
 };
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 }
 
 pub(crate) struct ExternalEditor {

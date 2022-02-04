@@ -455,7 +455,7 @@ fn handle_process_result_external_command_status_success() {
 		let result = ProcessResult::new().external_command(command, vec![]);
 		process.handle_process_result(&mut modules, &result);
 		assert_eq!(
-			process.event_handler.read_event(&InputOptions::new(), |e, _| e),
+			process.event_handler.read_event(&InputOptions::RESIZE, |e, _| e),
 			Event::from(MetaEvent::ExternalCommandSuccess)
 		);
 	});
@@ -477,7 +477,7 @@ fn handle_process_result_external_command_status_error() {
 		let result = ProcessResult::new().external_command(command, vec![]);
 		process.handle_process_result(&mut modules, &result);
 		assert_eq!(
-			process.event_handler.read_event(&InputOptions::new(), |e, _| e),
+			process.event_handler.read_event(&InputOptions::RESIZE, |e, _| e),
 			Event::from(MetaEvent::ExternalCommandError)
 		);
 	});

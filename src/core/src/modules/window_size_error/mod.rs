@@ -10,7 +10,7 @@ const SHORT_ERROR_MESSAGE: &str = "Window too small";
 const SIZE_ERROR_MESSAGE: &str = "Size!";
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true).resize(false);
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::MOVEMENT;
 }
 
 pub(crate) struct WindowSizeError {

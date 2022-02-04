@@ -9,7 +9,7 @@ use lazy_static::lazy_static;
 use view::{ViewData, ViewLine};
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
 }
 
 pub(crate) struct Confirm {

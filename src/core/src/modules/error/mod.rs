@@ -8,7 +8,7 @@ use view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLi
 use crate::module::{Module, ProcessResult, State};
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
 }
 
 pub(crate) struct Error {

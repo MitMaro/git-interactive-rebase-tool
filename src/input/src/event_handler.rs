@@ -59,23 +59,23 @@ impl EventHandler {
 			return e;
 		}
 
-		if input_options.resize {
+		if input_options.contains(InputOptions::RESIZE) {
 			if let Event::Resize(..) = event {
 				return event;
 			}
 		}
 
-		if input_options.movement {
+		if input_options.contains(InputOptions::MOVEMENT) {
 			if let Some(evt) = Self::handle_movement_inputs(event) {
 				return evt;
 			}
 		}
 
-		if input_options.help && self.key_bindings.help.contains(&event) {
+		if input_options.contains(InputOptions::HELP) && self.key_bindings.help.contains(&event) {
 			return Event::from(MetaEvent::Help);
 		}
 
-		if input_options.undo_redo {
+		if input_options.contains(InputOptions::UNDO_REDO) {
 			if let Some(evt) = Self::handle_undo_redo(&self.key_bindings, event) {
 				return evt;
 			}
@@ -196,7 +196,7 @@ mod tests {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
-				.read_event(&InputOptions::new().resize(false), |_, _| Event::from(KeyCode::Null));
+				.read_event(&InputOptions::empty(), |_, _| Event::from(KeyCode::Null));
 
 			if handled {
 				assert_ne!(result, Event::from(KeyCode::Null));
@@ -222,10 +222,9 @@ mod tests {
 	#[case::other(Event::from('a'), false)]
 	fn read_event_enabled(#[case] event: Event, #[case] handled: bool) {
 		with_event_handler(&[event], |context| {
-			let result = context.event_handler.read_event(
-				&InputOptions::new().movement(true).help(true).undo_redo(true),
-				|_, _| Event::from(KeyCode::Null),
-			);
+			let result = context
+				.event_handler
+				.read_event(&InputOptions::all(), |_, _| Event::from(KeyCode::Null));
 
 			if handled {
 				assert_ne!(result, Event::from(KeyCode::Null));
@@ -250,7 +249,7 @@ mod tests {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
-				.read_event(&InputOptions::new(), |_, _| Event::from(KeyCode::Null));
+				.read_event(&InputOptions::empty(), |_, _| Event::from(KeyCode::Null));
 
 			assert_eq!(result, expected);
 		});
@@ -270,7 +269,7 @@ mod tests {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
-				.read_event(&InputOptions::new().movement(true), |_, _| Event::from(KeyCode::Null));
+				.read_event(&InputOptions::MOVEMENT, |_, _| Event::from(KeyCode::Null));
 
 			assert_eq!(result, expected);
 		});
@@ -290,7 +289,7 @@ mod tests {
 		with_event_handler(&[event], |context| {
 			let result = context
 				.event_handler
-				.read_event(&InputOptions::new().undo_redo(true), |_, _| Event::from(KeyCode::Null));
+				.read_event(&InputOptions::UNDO_REDO, |_, _| Event::from(KeyCode::Null));
 
 			assert_eq!(result, expected);
 		});

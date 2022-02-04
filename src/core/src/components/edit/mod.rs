@@ -8,7 +8,7 @@ use unicode_segmentation::UnicodeSegmentation;
 use view::{LineSegment, ViewData, ViewDataUpdater, ViewLine};
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new();
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 }
 
 pub(crate) struct Edit {
