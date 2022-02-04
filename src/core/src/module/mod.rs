@@ -12,7 +12,7 @@ use view::{RenderContext, ViewData, ViewSender};
 pub(crate) use self::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State};
 
 lazy_static! {
-	static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::new();
+	static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 }
 
 pub(crate) trait Module {

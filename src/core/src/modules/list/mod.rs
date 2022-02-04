@@ -23,7 +23,7 @@ use crate::{
 };
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new().undo_redo(true).help(true);
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO | InputOptions::RESIZE | InputOptions::HELP;
 }
 
 #[derive(Debug, PartialEq)]

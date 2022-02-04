@@ -9,7 +9,7 @@ use lazy_static::lazy_static;
 use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::new().movement(true);
+	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
 }
 
 pub(crate) struct Choice<T> {

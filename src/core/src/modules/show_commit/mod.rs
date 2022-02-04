@@ -25,11 +25,7 @@ use crate::{
 };
 
 lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::new()
-		.movement(true)
-		.undo_redo(true)
-		.help(true)
-		.resize(false);
+	static ref INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO | InputOptions::MOVEMENT | InputOptions::HELP;
 }
 
 pub(crate) struct ShowCommit<'s> {

@@ -232,6 +232,7 @@ name = "girt-input"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "bitflags",
  "crossterm",
  "girt-config",
  "rstest 0.12.0",
