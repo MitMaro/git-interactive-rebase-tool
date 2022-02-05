@@ -1,6 +1,6 @@
 use super::line::Line;
 
-pub(crate) fn swap_range_up(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
+pub(crate) fn swap_range_up(lines: &mut [Line], start_index: usize, end_index: usize) {
 	let range = if end_index <= start_index {
 		(end_index - 1)..start_index
 	}
@@ -12,7 +12,7 @@ pub(crate) fn swap_range_up(lines: &mut Vec<Line>, start_index: usize, end_index
 	}
 }
 
-pub(crate) fn swap_range_down(lines: &mut Vec<Line>, start_index: usize, end_index: usize) {
+pub(crate) fn swap_range_down(lines: &mut [Line], start_index: usize, end_index: usize) {
 	let range = if end_index <= start_index {
 		end_index..=start_index
 	}
