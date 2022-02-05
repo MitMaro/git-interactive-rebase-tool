@@ -33,6 +33,7 @@ pub enum Action {
 impl Action {
 	/// Get the full string version of the action.
 	#[must_use]
+	#[inline]
 	pub fn as_string(self) -> String {
 		String::from(match self {
 			Self::Break => "break",
@@ -52,6 +53,7 @@ impl Action {
 
 	/// Get the abbreviated version of the action.
 	#[must_use]
+	#[inline]
 	pub fn to_abbreviation(self) -> String {
 		String::from(match self {
 			Self::Break => "b",
@@ -71,6 +73,7 @@ impl Action {
 
 	/// Can the action be changed.
 	#[must_use]
+	#[inline]
 	pub const fn is_static(self) -> bool {
 		match self {
 			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge => true,
@@ -82,6 +85,7 @@ impl Action {
 impl TryFrom<&str> for Action {
 	type Error = Error;
 
+	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
 			"break" | "b" => Ok(Self::Break),

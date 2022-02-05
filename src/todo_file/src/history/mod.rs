@@ -24,7 +24,7 @@ impl History {
 		Self {
 			redo_history: VecDeque::new(),
 			undo_history: VecDeque::new(),
-			limit: limit as usize,
+			limit: limit.try_into().expect("History limit is too large"),
 		}
 	}
 
