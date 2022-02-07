@@ -8,6 +8,7 @@ use super::{
 
 /// Represents the theme configuration options.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub struct Theme {
 	/// The character for filling vertical spacing.
 	pub character_vertical_spacing: String,

@@ -58,6 +58,7 @@ pub enum Color {
 impl TryFrom<&str> for Color {
 	type Error = Error;
 
+	#[allow(clippy::indexing_slicing)]
 	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
@@ -103,9 +104,15 @@ impl TryFrom<&str> for Color {
 
 						if red >= 0 && green >= 0 && blue >= 0 && red < 256 && green < 256 && blue < 256 {
 							return Ok(Self::Rgb {
-								red: red as u8,
-								green: green as u8,
-								blue: blue as u8,
+								red: red
+									.try_into()
+									.map_err(|e| anyhow!("Invalid red color value").context(e))?,
+								green: green
+									.try_into()
+									.map_err(|e| anyhow!("Invalid green color value").context(e))?,
+								blue: blue
+									.try_into()
+									.map_err(|e| anyhow!("Invalid blue color value").context(e))?,
 							});
 						}
 						Err(anyhow!(

@@ -5,6 +5,7 @@ use super::utils::{editor_from_env, get_string, get_unsigned_integer};
 
 /// Represents the git configuration options.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub struct GitConfig {
 	/// The Git comment character, from [`core.commentChar`](
 	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar

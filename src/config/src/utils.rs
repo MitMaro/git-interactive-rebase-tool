@@ -9,7 +9,7 @@ use super::{
 	Color,
 };
 
-#[allow(clippy::string_slice)]
+#[allow(clippy::string_slice, clippy::indexing_slicing)]
 pub(super) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>> {
 	let mut values = vec![];
 	for mut value in get_string(config, name, default)?.split_whitespace().map(String::from) {
