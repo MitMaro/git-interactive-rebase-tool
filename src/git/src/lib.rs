@@ -52,6 +52,7 @@
 	clippy::blanket_clippy_restriction_lints,
 	clippy::expect_used,
 	clippy::implicit_return,
+	clippy::integer_arithmetic,
 	clippy::missing_docs_in_private_items,
 	clippy::mod_module_files,
 	clippy::option_if_let_else,
@@ -68,7 +69,6 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
-#![allow(clippy::integer_arithmetic)]
 
 //! Git Interactive Rebase Tool - Git Module
 //!
