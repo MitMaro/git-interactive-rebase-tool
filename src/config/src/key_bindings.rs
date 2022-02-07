@@ -6,6 +6,7 @@ use crate::utils::map_single_ascii_to_lower;
 
 /// Represents the key binding configuration options.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub struct KeyBindings {
 	/// Key bindings for aborting.
 	pub abort: Vec<String>,

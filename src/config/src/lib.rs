@@ -69,16 +69,6 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
-#![allow(
-	clippy::as_conversions,
-	clippy::cast_possible_truncation,
-	clippy::cast_sign_loss,
-	clippy::exhaustive_structs,
-	clippy::indexing_slicing,
-	clippy::integer_arithmetic,
-	clippy::non_ascii_literal,
-	clippy::wildcard_enum_match_arm
-)]
 
 //! Git Interactive Rebase Tool - Configuration Module
 //!
@@ -119,8 +109,12 @@ pub use self::{
 	theme::Theme,
 };
 
+const DEFAULT_SPACE_SYMBOL: &str = "\u{b7}"; // ·
+const DEFAULT_TAB_SYMBOL: &str = "\u{2192}"; // →
+
 /// Represents the configuration options.
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub struct Config {
 	/// If to select the next line in the list after performing an action.
 	pub auto_select_next: bool,
@@ -157,8 +151,12 @@ impl Config {
 			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
 			diff_ignore_whitespace: get_diff_ignore_whitespace(git_config)?,
 			diff_show_whitespace: get_diff_show_whitespace(git_config)?,
-			diff_space_symbol: get_string(git_config, "interactive-rebase-tool.diffSpaceSymbol", "·")?,
-			diff_tab_symbol: get_string(git_config, "interactive-rebase-tool.diffTabSymbol", "→")?,
+			diff_space_symbol: get_string(
+				git_config,
+				"interactive-rebase-tool.diffSpaceSymbol",
+				DEFAULT_SPACE_SYMBOL,
+			)?,
+			diff_tab_symbol: get_string(git_config, "interactive-rebase-tool.diffTabSymbol", DEFAULT_TAB_SYMBOL)?,
 			diff_tab_width: get_unsigned_integer(git_config, "interactive-rebase-tool.diffTabWidth", 4)?,
 			undo_limit: get_unsigned_integer(git_config, "interactive-rebase-tool.undoLimit", 5000)?,
 			git: GitConfig::new_with_config(git_config)?,
