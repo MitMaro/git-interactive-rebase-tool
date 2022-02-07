@@ -20,7 +20,7 @@ crossbeam-channel = "0.5.2"
 girt-display = {version = "1.0.0", path = "../display"}
 girt-input = {version = "1.0.0", path = "../input"}
 parking_lot = "0.12.0"
-unicode-segmentation = "1.8.0"
+unicode-segmentation = "1.9.0"
 unicode-width = "0.1.9"
 xi-unicode = "0.3.0"
 
