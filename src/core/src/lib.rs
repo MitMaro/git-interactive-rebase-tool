@@ -50,6 +50,7 @@
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
+	clippy::default_numeric_fallback,
 	clippy::expect_used,
 	clippy::implicit_return,
 	clippy::integer_arithmetic,
@@ -74,7 +75,6 @@
 	rustdoc::missing_crate_level_docs,
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
-	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
 	clippy::indexing_slicing,
 	clippy::integer_division,

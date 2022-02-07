@@ -50,6 +50,7 @@
 #![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
+	clippy::default_numeric_fallback,
 	clippy::expect_used,
 	clippy::implicit_return,
 	clippy::integer_arithmetic,
@@ -71,7 +72,6 @@
 // LINT-REPLACE-END
 #![allow(
 	clippy::as_conversions,
-	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
 	clippy::exhaustive_structs,
 	clippy::float_arithmetic,
