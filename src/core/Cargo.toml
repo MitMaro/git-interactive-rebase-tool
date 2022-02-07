@@ -20,7 +20,7 @@ captur = "0.1.0"
 lazy_static = "1.4.0"
 num-format = "0.4.0"
 pico-args = "0.4.2"
-unicode-segmentation = "1.8.0"
+unicode-segmentation = "1.9.0"
 girt-config = {version = "1.0.0", path = "../../src/config"}
 girt-display = {version = "1.0.0", path = "../../src/display"}
 girt-git = {version = "0.2.0", path = "../../src/git"}
