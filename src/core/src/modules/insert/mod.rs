@@ -57,6 +57,7 @@ impl Module for Insert {
 		}
 	}
 
+	#[allow(clippy::unreachable)]
 	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, rebase_todo: &mut TodoFile) -> ProcessResult {
 		match self.state {
 			InsertState::Prompt => {

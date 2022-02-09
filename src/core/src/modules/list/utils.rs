@@ -202,7 +202,7 @@ const fn get_action_color(action: Action) -> DisplayColor {
 }
 
 // safe slice, as it is only on the hash, which is hexadecimal
-#[allow(clippy::string_slice)]
+#[allow(clippy::string_slice, clippy::indexing_slicing)]
 pub(super) fn get_todo_line_segments(
 	line: &Line,
 	is_cursor_line: bool,

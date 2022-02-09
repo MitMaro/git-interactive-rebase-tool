@@ -10,7 +10,7 @@ enum State {
 }
 
 // as far as I know, this is safe because the slices are always on specific boundaries
-#[allow(clippy::string_slice)]
+#[allow(clippy::string_slice, clippy::indexing_slicing)]
 pub(super) fn tokenize(input: &str) -> Option<Vec<String>> {
 	let mut previous_state = State::Normal;
 	let mut state = State::Normal;

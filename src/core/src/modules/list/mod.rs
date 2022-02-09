@@ -235,6 +235,7 @@ impl List {
 		}
 	}
 
+	#[allow(clippy::integer_division)]
 	fn handle_common_list_input(
 		&mut self,
 		event: Event,
