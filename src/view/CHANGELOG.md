@@ -11,6 +11,7 @@ See the [migration guide](migration-guide.md) for migrating between major versio
 
 - New `push_lines` method to `ViewDataUpdater` to push a multiline `&str`
 - Support for `AnyLine`, `StartsWith` and `EndsWith` on `assert_rendered_output` macro
+- Support for options for the `assert_rendered_output` macro
 
 ## 1.0.0 - 2021-07-05
 

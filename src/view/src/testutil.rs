@@ -1,6 +1,7 @@
 //! Utilities for writing tests that interact with input events.
 use std::time::Duration;
 
+use bitflags::bitflags;
 use crossbeam_channel::{unbounded, Receiver};
 use display::DisplayColor;
 
@@ -29,20 +30,13 @@ macro_rules! render_line {
 	}};
 }
 
-/// Options for the `assert_rendered_output!` macro
-#[derive(Debug, Copy, Clone)]
-#[non_exhaustive]
-pub struct AssertRenderOptions {
-	/// Ignore trailing whitespace
-	pub ignore_trailing_whitespace: bool,
-}
-
-impl Default for AssertRenderOptions {
-	#[inline]
-	fn default() -> Self {
-		Self {
-			ignore_trailing_whitespace: true,
-		}
+bitflags! {
+	/// Options for the `assert_rendered_output!` macro
+	pub struct AssertRenderOptions: u8 {
+		/// The default assertion options
+		const DEFAULT = 0b0000_0000;
+		/// Ignore trailing whitespace
+		const INCLUDE_TRAILING_WHITESPACE = 0b0000_0001;
 	}
 }
 
@@ -202,11 +196,11 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 	];
 
 	for (expected_line, output_line) in expected.iter().zip(actual.iter()) {
-		let output = if options.ignore_trailing_whitespace {
-			output_line.trim_end()
+		let output = if options.contains(AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE) {
+			output_line.as_str()
 		}
 		else {
-			output_line.as_str()
+			output_line.trim_end()
 		};
 
 		let mut e = replace_invisibles(expected_line);
@@ -290,12 +284,12 @@ macro_rules! assert_rendered_output {
 	($view_data:expr) => {
 		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected: Vec<String> = vec![];
-		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::default());
+		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::DEFAULT);
 	};
 	($view_data:expr, $($arg:expr),*) => {
 		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected = vec![$( String::from($arg), )*];
-		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::default());
+		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::DEFAULT);
 	};
 	(Options $options:expr, $view_data:expr, $($arg:expr),*) => {
 		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};

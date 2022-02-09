@@ -11,9 +11,7 @@ fn render() {
 		String::from("X"),
 	]);
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",

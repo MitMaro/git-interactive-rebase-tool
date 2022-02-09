@@ -254,6 +254,7 @@ name = "girt-view"
 version = "1.1.0"
 dependencies = [
  "anyhow",
+ "bitflags",
  "captur",
  "crossbeam-channel",
  "girt-config",
