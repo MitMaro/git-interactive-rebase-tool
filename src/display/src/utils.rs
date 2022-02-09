@@ -69,7 +69,7 @@ pub(super) fn register_selectable_color_pairs(
 
 // Modified version from gyscos/cursive (https://github.com/gyscos/cursive)
 // Copyright (c) 2015 Alexandre Bury - MIT License
-#[allow(clippy::cast_sign_loss, clippy::too_many_lines, clippy::integer_division)]
+#[allow(clippy::cast_sign_loss, clippy::integer_division)]
 fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 	match color {
 		Color::Default => CrosstermColor::Reset,
