@@ -51,6 +51,7 @@
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
 	clippy::default_numeric_fallback,
+	clippy::else_if_without_else,
 	clippy::expect_used,
 	clippy::implicit_return,
 	clippy::integer_arithmetic,
@@ -71,12 +72,7 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
-#![allow(
-	clippy::as_conversions,
-	clippy::else_if_without_else,
-	clippy::integer_division,
-	clippy::module_name_repetitions
-)]
+#![allow(clippy::as_conversions, clippy::integer_division, clippy::module_name_repetitions)]
 
 //! Git Interactive Rebase Tool - View Module
 //!
