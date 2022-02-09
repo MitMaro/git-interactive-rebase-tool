@@ -5,6 +5,7 @@ use super::ViewSender;
 /// Utility function to handle scroll events.
 #[inline]
 #[must_use]
+#[allow(clippy::wildcard_enum_match_arm)]
 pub fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) -> Option<Event> {
 	match event {
 		Event::Meta(meta_event) if meta_event == MetaEvent::ScrollLeft => view_sender.scroll_left(),
