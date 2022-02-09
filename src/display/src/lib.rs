@@ -70,19 +70,6 @@
 	rustdoc::private_intra_doc_links
 )]
 // LINT-REPLACE-END
-#![allow(
-	clippy::as_conversions,
-	clippy::cast_possible_truncation,
-	clippy::default_numeric_fallback,
-	clippy::else_if_without_else,
-	clippy::integer_division,
-	clippy::missing_errors_doc,
-	clippy::missing_panics_doc,
-	clippy::new_without_default,
-	clippy::too_many_lines,
-	clippy::unwrap_used,
-	clippy::wildcard_enum_match_arm
-)]
 
 //! Git Interactive Rebase Tool - Display Module
 //!
@@ -155,6 +142,7 @@ pub struct Display<T: Tui> {
 impl<T: Tui> Display<T> {
 	/// Create a new display instance.
 	#[inline]
+	#[allow(clippy::too_many_lines)]
 	pub fn new(tui: T, theme: &Theme) -> Self {
 		let color_mode = tui.get_color_mode();
 		let normal = register_selectable_color_pairs(
@@ -290,12 +278,18 @@ impl<T: Tui> Display<T> {
 	}
 
 	/// Draws a string of text to the terminal interface.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn draw_str(&mut self, s: &str) -> Result<()> {
 		self.tui.print(s)
 	}
 
 	/// Clear the terminal interface and reset any style and color attributes.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn clear(&mut self) -> Result<()> {
 		self.color(DisplayColor::Normal, false)?;
@@ -306,6 +300,9 @@ impl<T: Tui> Display<T> {
 	/// Force a refresh of the terminal interface. This normally should be called after after all
 	/// text has been drawn to the terminal interface. This is considered a slow operation, so
 	/// should be called only as needed.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn refresh(&mut self) -> Result<()> {
 		self.tui.flush()
@@ -313,7 +310,11 @@ impl<T: Tui> Display<T> {
 
 	/// Set the color of text drawn to the terminal interface. This will only change text drawn to
 	/// the terminal after this function call.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
+	#[allow(clippy::too_many_lines)]
 	pub fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
 		self.tui.set_color(
 			if selected {
@@ -365,6 +366,9 @@ impl<T: Tui> Display<T> {
 
 	/// Set the style attributes of text drawn to the terminal interface. This will only change text
 	/// drawn to the terminal after this function call.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<()> {
 		self.set_dim(dim)?;
@@ -374,25 +378,37 @@ impl<T: Tui> Display<T> {
 
 	/// Get the width and height of the terminal interface. This can be a slow operation, so should
 	/// not be called unless absolutely needed.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn get_window_size(&self) -> Size {
 		self.tui.get_size()
 	}
 
 	/// Reset the cursor position to the start of the line.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn ensure_at_line_start(&mut self) -> Result<()> {
 		self.tui.move_to_column(1)
 	}
 
 	/// Move the cursor position `right` characters from the end of the line.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
-		let width = self.get_window_size().width();
-		self.tui.move_to_column(width as u16 - right + 1)
+		let width = self.get_window_size().width().try_into().unwrap_or(u16::MAX);
+		self.tui.move_to_column(width - right + 1)
 	}
 
 	/// Move the cursor to the next line.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn next_line(&mut self) -> Result<()> {
 		self.tui.move_next_line()
@@ -400,6 +416,9 @@ impl<T: Tui> Display<T> {
 
 	/// Start the terminal interface interactions. This should be called before any terminal
 	/// interactions are performed.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn start(&mut self) -> Result<()> {
 		self.tui.start()?;
@@ -409,6 +428,9 @@ impl<T: Tui> Display<T> {
 	/// End the terminal interface interactions. This should be called after all terminal
 	/// interactions are complete. This resets the terminal interface to the default state, and
 	/// should be called on program exit.
+	///
+	/// # Errors
+	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn end(&mut self) -> Result<()> {
 		self.tui.end()?;

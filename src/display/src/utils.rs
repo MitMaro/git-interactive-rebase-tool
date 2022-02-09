@@ -20,7 +20,7 @@ pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 			// version 0.36.00
 			return ColorMode::TrueColor;
 		}
-		else if parsed_version > 0 {
+		if parsed_version > 0 {
 			return ColorMode::EightBit;
 		}
 	}
@@ -69,7 +69,7 @@ pub(super) fn register_selectable_color_pairs(
 
 // Modified version from gyscos/cursive (https://github.com/gyscos/cursive)
 // Copyright (c) 2015 Alexandre Bury - MIT License
-#[allow(clippy::cast_sign_loss)]
+#[allow(clippy::cast_sign_loss, clippy::too_many_lines, clippy::integer_division)]
 fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 	match color {
 		Color::Default => CrosstermColor::Reset,
@@ -163,7 +163,11 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 				let r = 6 * u16::from(red) / 256;
 				let g = 6 * u16::from(green) / 256;
 				let b = 6 * u16::from(blue) / 256;
-				CrosstermColor::AnsiValue((16 + 36 * r + 6 * g + b) as u8)
+				CrosstermColor::AnsiValue(
+					(16 + 36 * r + 6 * g + b)
+						.try_into()
+						.expect("Invalid 4-bit ANSI value mapping"),
+				)
 			}
 		},
 		Color::Rgb { red, green, blue } => {
@@ -171,7 +175,11 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 			let r = if red > 127 { 1 } else { 0 };
 			let g = if green > 127 { 1 } else { 0 };
 			let b = if blue > 127 { 1 } else { 0 };
-			CrosstermColor::AnsiValue((r + 2 * g + 4 * b) as u8)
+			CrosstermColor::AnsiValue(
+				(r + 2 * g + 4 * b)
+					.try_into()
+					.expect("Invalid 8 color ANSI value mapping"),
+			)
 		},
 	}
 }
