@@ -33,6 +33,7 @@ pub struct RenderSlice {
 }
 
 impl RenderSlice {
+	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self {
 			actions: VecDeque::new(),
@@ -113,7 +114,8 @@ impl RenderSlice {
 	#[allow(
 		clippy::cast_precision_loss,
 		clippy::cast_possible_truncation,
-		clippy::cast_sign_loss
+		clippy::cast_sign_loss,
+		clippy::float_arithmetic
 	)]
 	pub(crate) fn get_scroll_index(&self) -> usize {
 		if self.lines_count == 0 || self.scroll_position.get_top_position() == 0 {
@@ -249,7 +251,7 @@ impl RenderSlice {
 		);
 	}
 
-	#[allow(clippy::cognitive_complexity)]
+	#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 	fn rebuild(&mut self, view_data: &ViewData) {
 		let leading_lines_length = view_data.get_leading_lines().len();
 		let trailing_lines_length = view_data.get_trailing_lines().len();

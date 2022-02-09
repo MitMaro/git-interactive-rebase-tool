@@ -73,16 +73,8 @@
 #![allow(
 	clippy::as_conversions,
 	clippy::else_if_without_else,
-	clippy::exhaustive_structs,
-	clippy::float_arithmetic,
 	clippy::integer_division,
-	clippy::module_name_repetitions,
-	clippy::new_without_default,
-	clippy::non_ascii_literal,
-	clippy::panic,
-	clippy::too_many_lines,
-	clippy::unwrap_used,
-	clippy::wildcard_enum_match_arm
+	clippy::module_name_repetitions
 )]
 
 //! Git Interactive Rebase Tool - View Module
@@ -131,6 +123,7 @@ pub use self::{
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
 const TITLE_HELP_INDICATOR_LABEL: &str = "Help: ";
+const SCROLLBAR_INDICATOR_CHARACTER: &str = "\u{2588}"; // "█"
 
 /// Represents a view.
 #[derive(Debug)]
@@ -225,8 +218,14 @@ impl<C: Tui> View<C> {
 			if show_scroll_bar {
 				self.display.move_from_end_of_line(1)?;
 				self.display.color(DisplayColor::Normal, true)?;
-				self.display
-					.draw_str(if scroll_indicator_index == index { "█" } else { " " })?;
+				self.display.draw_str(
+					if scroll_indicator_index == index {
+						SCROLLBAR_INDICATOR_CHARACTER
+					}
+					else {
+						" "
+					},
+				)?;
 			}
 			self.display.color(DisplayColor::Normal, false)?;
 			self.display.set_style(false, false, false)?;

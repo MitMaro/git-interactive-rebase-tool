@@ -9,6 +9,8 @@ use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData,
 const STARTS_WITH: &str = "{{StartsWith}}";
 const ENDS_WITH: &str = "{{EndsWith}}";
 const ANY_LINE: &str = "{{Any}}";
+const VISIBLE_SPACE_REPLACEMENT: &str = "\u{b7}"; // "·"
+const VISIBLE_TAB_REPLACEMENT: &str = "   \u{2192}"; // "   →"
 
 /// Assert the rendered output from a `ViewData`.
 #[macro_export]
@@ -29,6 +31,7 @@ macro_rules! render_line {
 
 /// Options for the `assert_rendered_output!` macro
 #[derive(Debug, Copy, Clone)]
+#[non_exhaustive]
 pub struct AssertRenderOptions {
 	/// Ignore trailing whitespace
 	pub ignore_trailing_whitespace: bool,
@@ -44,7 +47,8 @@ impl Default for AssertRenderOptions {
 }
 
 fn replace_invisibles(line: &str) -> String {
-	line.replace(' ', "·").replace('\t', "   →")
+	line.replace(' ', VISIBLE_SPACE_REPLACEMENT)
+		.replace('\t', VISIBLE_TAB_REPLACEMENT)
 }
 
 fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bool) -> String {
@@ -166,6 +170,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	lines
 }
 
+#[allow(clippy::panic)]
 fn expand_expected(expected: &[String]) -> Vec<String> {
 	expected
 		.iter()
@@ -371,6 +376,7 @@ fn action_to_string(action: ViewAction) -> String {
 
 /// Context for a `ViewSender` test.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct TestContext {
 	/// The sender instance.
 	pub sender: ViewSender,
