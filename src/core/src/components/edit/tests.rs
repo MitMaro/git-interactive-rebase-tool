@@ -15,9 +15,7 @@ fn with_label() {
 	module.set_label("Label: ");
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -40,9 +38,7 @@ fn with_before_and_after_build() {
 		},
 	);
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -61,9 +57,7 @@ fn move_cursor_end() {
 	module.handle_event(Event::from(KeyCode::Right));
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -165,9 +159,7 @@ fn move_cursor_to_end() {
 	]);
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -188,9 +180,7 @@ fn move_cursor_on_empty_content() {
 	]);
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -223,9 +213,7 @@ fn move_cursor_attempt_past_end() {
 	handle_events(&mut module, &[Event::from(KeyCode::Right); 10]);
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -274,9 +262,7 @@ fn add_character_end() {
 	module.handle_event(Event::from('x'));
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -355,9 +341,7 @@ fn add_character_uppercase() {
 	}));
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -374,9 +358,7 @@ fn backspace_at_end() {
 	module.handle_event(Event::from(KeyCode::Backspace));
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -455,9 +437,7 @@ fn delete_at_end() {
 	module.handle_event(Event::from(KeyCode::Delete));
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -474,9 +454,7 @@ fn delete_last_character() {
 	handle_events(&mut module, &[Event::from(KeyCode::Left), Event::from(KeyCode::Delete)]);
 	let view_data = module.get_view_data();
 	assert_rendered_output!(
-		Options AssertRenderOptions {
-			ignore_trailing_whitespace: false
-		},
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",

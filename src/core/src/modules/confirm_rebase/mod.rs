@@ -66,9 +66,7 @@ mod tests {
 			let mut module = create_confirm_rebase();
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions {
-					ignore_trailing_whitespace: false
-				},
+				Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 				view_data,
 				"{TITLE}",
 				"{BODY}",

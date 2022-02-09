@@ -49,7 +49,7 @@ fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 		}
 	}
 	_assert_rendered_output(
-		AssertRenderOptions::default(),
+		AssertRenderOptions::DEFAULT,
 		&output,
 		&expected.iter().map(|s| String::from(*s)).collect::<Vec<String>>(),
 	);
