@@ -87,7 +87,7 @@ impl Module for ShowCommit<'_> {
 			return self.help.get_view_data();
 		}
 
-		let diff = self.diff.as_ref().unwrap(); // will only fail on programmer error
+		let diff = self.diff.as_ref().expect("Diff ref unwrap failed"); // will only fail on programmer error
 		let state = &self.state;
 		let view_builder = &self.view_builder;
 		let is_full_width = context.is_full_width();

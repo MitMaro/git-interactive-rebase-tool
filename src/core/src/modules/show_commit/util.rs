@@ -7,6 +7,9 @@ use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 use view::{LineSegment, ViewLine};
 
+const TO_FILE_INDICATOR_LONG: &str = " \u{2192} "; // " → "
+const TO_FILE_INDICATOR_SHORT: &str = "\u{2192}"; // "→"
+
 pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![
 		(key_bindings.move_up.clone(), String::from("Scroll up")),
@@ -62,7 +65,12 @@ pub(super) fn get_stat_item_segments(
 		Status::Other => DisplayColor::Normal,
 	};
 
-	let to_file_indicator = if is_full_width { " → " } else { "→" };
+	let to_file_indicator = if is_full_width {
+		TO_FILE_INDICATOR_LONG
+	}
+	else {
+		TO_FILE_INDICATOR_SHORT
+	};
 
 	match status {
 		Status::Copied => {

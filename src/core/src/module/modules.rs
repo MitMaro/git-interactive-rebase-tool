@@ -21,10 +21,11 @@ impl<'m> Modules<'m> {
 		let _previous = self.modules.insert(state, Box::new(module));
 	}
 
+	#[allow(clippy::panic)]
 	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn Module + 'm> {
 		self.modules
 			.get_mut(&state)
-			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}", state))
+			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}. Please report.", state))
 	}
 
 	pub(crate) fn activate(&mut self, state: State, rebase_todo: &TodoFile, previous_state: State) -> ProcessResult {

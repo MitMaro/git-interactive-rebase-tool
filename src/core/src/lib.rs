@@ -73,20 +73,12 @@
 )]
 // LINT-REPLACE-END
 #![allow(
-	missing_docs,
-	rustdoc::missing_crate_level_docs,
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
-	clippy::else_if_without_else,
-	clippy::indexing_slicing,
-	clippy::integer_division,
-	clippy::non_ascii_literal,
-	clippy::panic,
 	clippy::redundant_closure_for_method_calls,
-	clippy::too_many_lines,
-	clippy::unreachable,
-	clippy::unwrap_used,
-	clippy::wildcard_enum_match_arm
+	clippy::wildcard_enum_match_arm,
+	missing_docs,
+	rustdoc::missing_crate_level_docs
 )]
 
 mod arguments;
