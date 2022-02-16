@@ -1133,7 +1133,7 @@ fn handle_event_toggle_overview_to_diff() {
 	with_temp_repository(|repo| {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
-			&[Event::from(MetaEvent::ShowDiff)],
+			&[Event::from('d')],
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), &repo);
 				module
@@ -1211,7 +1211,7 @@ fn handle_help_event_hide() {
 	with_temp_repository(|repo| {
 		module_test(
 			&["pick aaa c1"],
-			&[Event::from(MetaEvent::Help), Event::from(MetaEvent::Help)],
+			&[Event::from(MetaEvent::Help), Event::from('?')],
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), &repo);
 				let _ = test_context.handle_all_events(&mut module);

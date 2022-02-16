@@ -107,55 +107,56 @@ fn deactivate() {
 
 #[test]
 fn edit_success() {
-	module_test(&["pick aaa comment"], &[], |mut test_context| {
-		test_context
-			.event_handler_context
-			.event_handler
-			.push_event(Event::from(MetaEvent::ExternalCommandSuccess));
-		let mut module = ExternalEditor::new("editor");
-		let _ = test_context.activate(&mut module, State::List);
-		let view_data = test_context.build_view_data(&mut module);
-		assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
-		assert_process_result!(
-			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::ExternalCommandSuccess),
-			state = State::List
-		);
-		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-	});
+	module_test(
+		&["pick aaa comment"],
+		&[Event::from(MetaEvent::ExternalCommandSuccess)],
+		|mut test_context| {
+			let mut module = ExternalEditor::new("editor");
+			let _ = test_context.activate(&mut module, State::List);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ExternalCommandSuccess),
+				state = State::List
+			);
+			assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
+		},
+	);
 }
 
 #[test]
 fn empty_edit_error() {
-	module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
-		test_context
-			.event_handler_context
-			.event_handler
-			.push_event(Event::from(MetaEvent::ExternalCommandSuccess));
-		let mut module = ExternalEditor::new("editor");
-		let _ = test_context.activate(&mut module, State::List);
-		test_context.rebase_todo_file.set_lines(vec![]);
-		test_context.rebase_todo_file.write_file().unwrap();
-		assert_process_result!(
-			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::ExternalCommandSuccess)
-		);
-		assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
-		let view_data = test_context.build_view_data(&mut module);
-		assert_rendered_output!(
-			view_data,
-			"{TITLE}",
-			"{LEADING}",
-			"{Normal}The rebase file is empty.",
-			"",
-			"{BODY}",
-			"{Normal}1) Abort rebase",
-			"{Normal}2) Edit rebase file",
-			"{Normal}3) Undo modifications and edit rebase file",
-			"",
-			"{IndicatorColor}Please choose an option."
-		);
-	});
+	module_test(
+		&["pick aaa comment"],
+		&[Event::from('1'), Event::from(MetaEvent::ExternalCommandSuccess)],
+		|mut test_context| {
+			let mut module = ExternalEditor::new("editor");
+			let _ = test_context.activate(&mut module, State::List);
+			test_context.rebase_todo_file.set_lines(vec![]);
+			test_context.rebase_todo_file.write_file().unwrap();
+			let _ = test_context.handle_event(&mut module);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ExternalCommandSuccess)
+			);
+			assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{Normal}The rebase file is empty.",
+				"",
+				"{BODY}",
+				"{Normal}1) Abort rebase",
+				"{Normal}2) Edit rebase file",
+				"{Normal}3) Undo modifications and edit rebase file",
+				"",
+				"{IndicatorColor}Please choose an option."
+			);
+		},
+	);
 }
 
 #[test]
@@ -252,53 +253,50 @@ fn no_editor_set() {
 
 #[test]
 fn editor_non_zero_exit() {
-	module_test(&["pick aaa comment"], &[], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
-		test_context
-			.event_handler_context
-			.event_handler
-			.push_event(Event::from(MetaEvent::ExternalCommandError));
-		let _ = test_context.activate(&mut module, State::List);
-		assert_process_result!(
-			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::ExternalCommandError)
-		);
-		assert_external_editor_state_eq!(
-			module.state,
-			ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status"))
-		);
-		let view_data = test_context.build_view_data(&mut module);
-		assert_rendered_output!(
-			view_data,
-			"{TITLE}",
-			"{LEADING}",
-			"{Normal}Editor returned a non-zero exit status",
-			"",
-			"{BODY}",
-			"{Normal}1) Abort rebase",
-			"{Normal}2) Edit rebase file",
-			"{Normal}3) Restore rebase file and abort edit",
-			"{Normal}4) Undo modifications and edit rebase file",
-			"",
-			"{IndicatorColor}Please choose an option."
-		);
-	});
+	module_test(
+		&["pick aaa comment"],
+		&[Event::from(MetaEvent::ExternalCommandError)],
+		|mut test_context| {
+			let mut module = ExternalEditor::new("editor");
+			let _ = test_context.activate(&mut module, State::List);
+			assert_process_result!(
+				test_context.handle_event(&mut module),
+				event = Event::from(MetaEvent::ExternalCommandError)
+			);
+			assert_external_editor_state_eq!(
+				module.state,
+				ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status"))
+			);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{Normal}Editor returned a non-zero exit status",
+				"",
+				"{BODY}",
+				"{Normal}1) Abort rebase",
+				"{Normal}2) Edit rebase file",
+				"{Normal}3) Restore rebase file and abort edit",
+				"{Normal}4) Undo modifications and edit rebase file",
+				"",
+				"{IndicatorColor}Please choose an option."
+			);
+		},
+	);
 }
 
 #[test]
 fn editor_reload_error() {
 	module_test(
 		&["pick aaa comment"],
-		&[Event::from(KeyCode::Up)],
+		&[Event::from(KeyCode::Up), Event::from(MetaEvent::ExternalCommandSuccess)],
 		|mut test_context| {
 			let todo_path = test_context.get_todo_file_path();
 			let mut module = ExternalEditor::new("editor");
-			test_context
-				.event_handler_context
-				.event_handler
-				.push_event(Event::from(MetaEvent::ExternalCommandSuccess));
 			let _ = test_context.activate(&mut module, State::List);
 			test_context.delete_todo_file();
+			let _ = test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
 				event = Event::from(MetaEvent::ExternalCommandSuccess)

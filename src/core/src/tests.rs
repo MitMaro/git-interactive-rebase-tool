@@ -1,13 +1,13 @@
 use std::{env::set_var, fs::File, path::Path};
 
-use display::{testutil::CrossTerm, Tui};
 use git::Repository;
-use input::{Event, EventHandler, KeyBindings, MetaEvent};
+use input::{Event, MetaEvent};
 
 use super::*;
 use crate::{
-	module::ExitStatus,
-	run::{load_config, load_todo_file, run_process},
+	module::{ExitStatus, ProcessResult, State},
+	run::{create_modules, create_process, load_config, load_todo_file, run_process},
+	testutil::TestModule,
 };
 
 fn set_git_directory(repo: &str) -> String {
@@ -135,10 +135,13 @@ fn run_process_error() {
 	let repo = Repository::open_from_env().unwrap();
 	let config = load_config(&repo).unwrap();
 	let rebase_todo_file = load_todo_file(todo_file_path.to_str().unwrap(), &config).unwrap();
-	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
-	event_handler.push_event(Event::from(MetaEvent::Exit));
+	let process = create_process(rebase_todo_file, &config);
+	let mut module = TestModule::new();
+	module.event_callback = Box::new(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
+	let mut modules = create_modules(&config, &repo);
+	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(
-		run_process(rebase_todo_file, event_handler, &config, &repo),
+		run_process(process, modules),
 		Exit::new(
 			ExitStatus::FileWriteError,
 			format!("Error opening file: {}", todo_file_path.to_str().unwrap()).as_str()
@@ -154,10 +157,10 @@ fn run_process_success() {
 	let repo = Repository::open_from_env().unwrap();
 	let config = load_config(&repo).unwrap();
 	let rebase_todo_file = load_todo_file(todo_file.to_str().unwrap(), &config).unwrap();
-	let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
-	event_handler.push_event(Event::from(MetaEvent::Exit));
-	assert_eq!(
-		run_process(rebase_todo_file, event_handler, &config, &repo),
-		Exit::from(ExitStatus::Abort)
-	);
+	let process = create_process(rebase_todo_file, &config);
+	let mut module = TestModule::new();
+	module.event_callback = Box::new(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
+	let mut modules = create_modules(&config, &repo);
+	modules.register_module(State::WindowSizeError, module);
+	assert_eq!(run_process(process, modules), Exit::from(ExitStatus::Abort));
 }

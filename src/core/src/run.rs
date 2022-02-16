@@ -3,7 +3,7 @@ use config::Config;
 use display::testutil::CrossTerm;
 #[cfg(not(test))]
 use display::CrossTerm;
-use display::{Display, Tui};
+use display::Display;
 use git::Repository;
 use input::{EventHandler, KeyBindings};
 use todo_file::TodoFile;
@@ -45,13 +45,8 @@ pub(super) fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile
 	Ok(todo_file)
 }
 
-pub(super) fn run_process(
-	todo_file: TodoFile,
-	event_handler: EventHandler,
-	config: &Config,
-	repo: &Repository,
-) -> Exit {
-	let mut modules = Modules::new();
+pub(super) fn create_modules<'modules>(config: &'modules Config, repo: &'modules Repository) -> Modules<'modules> {
+	let mut modules = Modules::new(EventHandler::new(KeyBindings::new(&config.key_bindings)));
 	modules.register_module(State::Error, Error::new());
 	modules.register_module(State::List, List::new(config));
 	modules.register_module(State::ShowCommit, ShowCommit::new(config, repo));
@@ -66,11 +61,13 @@ pub(super) fn run_process(
 	);
 	modules.register_module(State::ExternalEditor, ExternalEditor::new(config.git.editor.as_str()));
 	modules.register_module(State::Insert, Insert::new());
+	modules
+}
 
+pub(super) fn create_process(todo_file: TodoFile, config: &Config) -> Process {
 	let display = Display::new(CrossTerm::new(), &config.theme);
-	let mut process = Process::new(
+	Process::new(
 		todo_file,
-		event_handler,
 		View::new(
 			display,
 			config.theme.character_vertical_spacing.as_str(),
@@ -81,13 +78,17 @@ pub(super) fn run_process(
 				.map_or(String::from("?"), String::from)
 				.as_str(),
 		),
-	);
+	)
+}
+
+pub(crate) fn run_process(mut process: Process, modules: Modules<'_>) -> Exit {
 	match process.run(modules) {
 		Ok(status) => Exit::from(status),
 		Err(err) => Exit::new(ExitStatus::FileWriteError, err.to_string().as_str()),
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 pub(crate) fn run(args: &Args) -> Exit {
 	if let Some(filepath) = args.todo_file_path().as_ref() {
 		let repo = match Repository::open_from_env() {
@@ -107,8 +108,8 @@ pub(crate) fn run(args: &Args) -> Exit {
 			Ok(todo_file) => todo_file,
 			Err(exit) => return exit,
 		};
-		let event_handler = EventHandler::new(CrossTerm::read_event, KeyBindings::new(&config.key_bindings));
-		run_process(todo_file, event_handler, &config, &repo)
+		let process = create_process(todo_file, &config);
+		run_process(process, create_modules(&config, &repo))
 	}
 	else {
 		Exit::new(

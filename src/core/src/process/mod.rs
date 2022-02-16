@@ -4,44 +4,42 @@ mod tests;
 use std::{process::Command, thread};
 
 use anyhow::{anyhow, Result};
-use display::Tui;
-use input::{Event, EventHandler, MetaEvent};
+use display::{CrossTerm, Tui};
+use input::{spawn_event_thread, Event, MetaEvent, Sender as EventSender};
 use todo_file::TodoFile;
 use view::{spawn_view_thread, RenderContext, View, ViewSender};
 
 use crate::module::{ExitStatus, Modules, ProcessResult, State};
 
 pub(crate) struct Process {
-	event_handler: EventHandler,
 	exit_status: Option<ExitStatus>,
 	rebase_todo: TodoFile,
 	render_context: RenderContext,
 	state: State,
 	threads: Vec<thread::JoinHandle<()>>,
 	view_sender: ViewSender,
+	event_sender: EventSender,
 }
 
 impl Process {
-	pub(crate) fn new<C: Tui + Send + 'static>(
-		rebase_todo: TodoFile,
-		event_handler: EventHandler,
-		view: View<C>,
-	) -> Self {
+	pub(crate) fn new<C: Tui + Send + 'static>(rebase_todo: TodoFile, view: View<C>) -> Self {
 		#[allow(deprecated)]
 		let view_size = view.get_view_size();
 		let mut threads = vec![];
 
 		let (view_sender, view_thread) = spawn_view_thread(view);
 		threads.push(view_thread);
+		let (event_sender, event_thread) = spawn_event_thread(CrossTerm::read_event);
+		threads.push(event_thread);
 
 		Self {
-			event_handler,
 			exit_status: None,
 			rebase_todo,
 			render_context: RenderContext::new(view_size.width() as u16, view_size.height() as u16),
 			state: State::List,
 			threads,
 			view_sender,
+			event_sender,
 		}
 	}
 
@@ -58,6 +56,7 @@ impl Process {
 				self.render_context.height() as u16,
 			)),
 		);
+
 		self.activate(&mut modules, State::List);
 		while self.exit_status.is_none() {
 			let view_data = modules.build_view_data(self.state, &self.render_context, &self.rebase_todo);
@@ -72,10 +71,14 @@ impl Process {
 				}
 				let result = modules.handle_event(
 					self.state,
-					&self.event_handler,
+					&mut self.event_sender,
 					&self.view_sender,
 					&mut self.rebase_todo,
 				);
+
+				if self.exit_status.is_some() {
+					break;
+				}
 
 				if let Some(event) = result.event {
 					if event != Event::None {
@@ -94,7 +97,9 @@ impl Process {
 			}
 		}
 
-		if self.view_sender.end().is_err() {
+		let (view_end_result, event_end_result) = (self.view_sender.end(), self.event_sender.end());
+
+		if view_end_result.is_err() || event_end_result.is_err() {
 			return Ok(ExitStatus::StateError);
 		}
 
@@ -151,7 +156,11 @@ impl Process {
 
 		if let Some(ref external_command) = result.external_command {
 			match self.run_command(external_command) {
-				Ok(meta_event) => self.event_handler.push_event(Event::from(meta_event)),
+				Ok(meta_event) => {
+					self.event_sender
+						.enqueue_event(Event::from(meta_event))
+						.expect("Enqueue event failed");
+				},
 				Err(err) => {
 					self.handle_process_result(
 						modules,
@@ -192,10 +201,12 @@ impl Process {
 	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
 		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
 		// always trigger a resize on activate, for modules that track size
-		self.event_handler.push_event(Event::Resize(
-			self.render_context.width() as u16,
-			self.render_context.height() as u16,
-		));
+		self.event_sender
+			.enqueue_event(Event::Resize(
+				self.render_context.width() as u16,
+				self.render_context.height() as u16,
+			))
+			.expect("Enqueue Resize event failed");
 		self.handle_process_result(modules, &result);
 	}
 }
