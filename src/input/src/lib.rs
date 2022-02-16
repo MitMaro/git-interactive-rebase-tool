@@ -84,12 +84,15 @@
 //! performance should only be used in test code.
 
 mod event;
+mod event_action;
 mod event_handler;
 mod input_options;
 mod key_bindings;
 mod meta_event;
+mod sender;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
+mod thread;
 
 pub use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 
@@ -99,4 +102,6 @@ pub use self::{
 	input_options::InputOptions,
 	key_bindings::KeyBindings,
 	meta_event::MetaEvent,
+	sender::Sender,
+	thread::spawn_event_thread,
 };

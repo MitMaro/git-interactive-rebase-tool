@@ -1,18 +1,20 @@
 use std::collections::HashMap;
 
-use input::EventHandler;
+use input::{EventHandler, Sender as EventSender};
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 use super::{Module, ProcessResult, State};
 
 pub(crate) struct Modules<'m> {
+	event_handler: EventHandler,
 	modules: HashMap<State, Box<dyn Module + 'm>>,
 }
 
 impl<'m> Modules<'m> {
-	pub(crate) fn new() -> Self {
+	pub(crate) fn new(event_handler: EventHandler) -> Self {
 		Self {
+			event_handler,
 			modules: HashMap::new(),
 		}
 	}
@@ -26,6 +28,13 @@ impl<'m> Modules<'m> {
 		self.modules
 			.get_mut(&state)
 			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}. Please report.", state))
+	}
+
+	#[allow(clippy::borrowed_box, clippy::panic)]
+	fn get_module(&self, state: State) -> &Box<dyn Module + 'm> {
+		self.modules
+			.get(&state)
+			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}", state))
 	}
 
 	pub(crate) fn activate(&mut self, state: State, rebase_todo: &TodoFile, previous_state: State) -> ProcessResult {
@@ -48,16 +57,18 @@ impl<'m> Modules<'m> {
 	pub(crate) fn handle_event(
 		&mut self,
 		state: State,
-		event_handler: &EventHandler,
+		event_sender: &mut EventSender,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
-		let module = self.get_mut_module(state);
+		let module = self.get_module(state);
 		let input_options = module.input_options();
-		let event = event_handler.read_event(input_options, |event, key_bindings| {
-			module.read_event(event, key_bindings)
-		});
-		module.handle_event(event, view_sender, rebase_todo)
+		let event = self
+			.event_handler
+			.read_event(event_sender.read_event(), input_options, |event, key_bindings| {
+				module.read_event(event, key_bindings)
+			});
+		self.get_mut_module(state).handle_event(event, view_sender, rebase_todo)
 	}
 
 	pub(crate) fn error(&mut self, state: State, error: &anyhow::Error) {
@@ -117,7 +128,7 @@ mod tests {
 	#[test]
 	fn module_lifecycle() {
 		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |mut context| {
-			let mut modules = Modules::new();
+			let mut modules = Modules::new(context.event_handler_context.event_handler);
 			let trace = Rc::new(RefCell::new(Vec::new()));
 			let test_module = TestModule::new(Rc::clone(&trace));
 			modules.register_module(State::List, test_module);
@@ -125,7 +136,7 @@ mod tests {
 			let _ = modules.activate(State::List, &context.rebase_todo_file, State::Insert);
 			let _ = modules.handle_event(
 				State::List,
-				&context.event_handler_context.event_handler,
+				&mut context.event_handler_context.sender,
 				&context.view_sender_context.sender,
 				&mut context.rebase_todo_file,
 			);
@@ -140,11 +151,13 @@ mod tests {
 
 	#[test]
 	fn error() {
-		let mut modules = Modules::new();
-		let trace = Rc::new(RefCell::new(Vec::new()));
-		let test_module = TestModule::new(Rc::clone(&trace));
-		modules.register_module(State::Error, test_module);
-		modules.error(State::Error, &anyhow!("Test Error"));
-		assert_eq!((*trace).borrow().join(","), "Test Error");
+		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |context| {
+			let mut modules = Modules::new(context.event_handler_context.event_handler);
+			let trace = Rc::new(RefCell::new(Vec::new()));
+			let test_module = TestModule::new(Rc::clone(&trace));
+			modules.register_module(State::Error, test_module);
+			modules.error(State::Error, &anyhow!("Test Error"));
+			assert_eq!((*trace).borrow().join(","), "Test Error");
+		});
 	}
 }

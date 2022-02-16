@@ -232,7 +232,7 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 			else {
 				mismatch = true;
 				error_output.push(format!("-StartsWith {}", e));
-				error_output.push(format!("+           {}", &o[0..=e.len()]));
+				error_output.push(format!("+           {}", &o.chars().take(e.len()).collect::<String>()));
 			}
 			continue;
 		}

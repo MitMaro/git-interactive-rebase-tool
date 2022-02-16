@@ -1,87 +1,7 @@
 //! Utilities for writing tests that interact with input events.
-use std::cell::RefCell;
 
-use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers, MetaEvent};
-
-#[allow(clippy::match_same_arms)]
-fn map_event_to_crossterm(event: Event) -> crossterm::event::Event {
-	match event {
-		Event::Meta(meta_event) => {
-			let key_event = match meta_event {
-				MetaEvent::Abort => KeyEvent::from(KeyCode::Char('q')),
-				MetaEvent::ActionBreak => KeyEvent::from(KeyCode::Char('b')),
-				MetaEvent::ActionDrop => KeyEvent::from(KeyCode::Char('d')),
-				MetaEvent::ActionEdit => KeyEvent::from(KeyCode::Char('e')),
-				MetaEvent::ActionFixup => KeyEvent::from(KeyCode::Char('f')),
-				MetaEvent::ActionPick => KeyEvent::from(KeyCode::Char('p')),
-				MetaEvent::ActionReword => KeyEvent::from(KeyCode::Char('r')),
-				MetaEvent::ActionSquash => KeyEvent::from(KeyCode::Char('s')),
-				MetaEvent::Delete => KeyEvent::from(KeyCode::Delete),
-				MetaEvent::Edit => KeyEvent::from(KeyCode::Char('E')),
-				MetaEvent::Exit => {
-					KeyEvent {
-						code: KeyCode::Char('d'),
-						modifiers: KeyModifiers::CONTROL,
-					}
-				},
-				MetaEvent::ForceAbort => KeyEvent::from(KeyCode::Char('Q')),
-				MetaEvent::ForceRebase => KeyEvent::from(KeyCode::Char('W')),
-				MetaEvent::Help => KeyEvent::from(KeyCode::Char('?')),
-				MetaEvent::InsertLine => KeyEvent::from(KeyCode::Char('I')),
-				MetaEvent::Kill => {
-					KeyEvent {
-						code: KeyCode::Char('c'),
-						modifiers: KeyModifiers::CONTROL,
-					}
-				},
-				MetaEvent::MoveCursorDown => KeyEvent::from(KeyCode::Down),
-				MetaEvent::MoveCursorEnd => KeyEvent::from(KeyCode::End),
-				MetaEvent::MoveCursorHome => KeyEvent::from(KeyCode::Home),
-				MetaEvent::MoveCursorLeft => KeyEvent::from(KeyCode::Left),
-				MetaEvent::MoveCursorPageDown => KeyEvent::from(KeyCode::PageDown),
-				MetaEvent::MoveCursorPageUp => KeyEvent::from(KeyCode::PageUp),
-				MetaEvent::MoveCursorRight => KeyEvent::from(KeyCode::Right),
-				MetaEvent::MoveCursorUp => KeyEvent::from(KeyCode::Up),
-				MetaEvent::No => KeyEvent::from(KeyCode::Char('n')),
-				MetaEvent::OpenInEditor => KeyEvent::from(KeyCode::Char('!')),
-				MetaEvent::Rebase => KeyEvent::from(KeyCode::Char('w')),
-				MetaEvent::Redo => {
-					KeyEvent {
-						code: KeyCode::Char('y'),
-						modifiers: KeyModifiers::CONTROL,
-					}
-				},
-				MetaEvent::ScrollBottom => KeyEvent::from(KeyCode::End),
-				MetaEvent::ScrollDown => KeyEvent::from(KeyCode::Down),
-				MetaEvent::ScrollJumpDown => KeyEvent::from(KeyCode::PageDown),
-				MetaEvent::ScrollJumpUp => KeyEvent::from(KeyCode::PageUp),
-				MetaEvent::ScrollLeft => KeyEvent::from(KeyCode::Left),
-				MetaEvent::ScrollRight => KeyEvent::from(KeyCode::Right),
-				MetaEvent::ScrollTop => KeyEvent::from(KeyCode::Home),
-				MetaEvent::ScrollUp => KeyEvent::from(KeyCode::Up),
-				MetaEvent::ShowCommit => KeyEvent::from(KeyCode::Char('c')),
-				MetaEvent::ShowDiff => KeyEvent::from(KeyCode::Char('d')),
-				MetaEvent::SwapSelectedDown => KeyEvent::from(KeyCode::Char('j')),
-				MetaEvent::SwapSelectedUp => KeyEvent::from(KeyCode::Char('k')),
-				MetaEvent::ToggleVisualMode => KeyEvent::from(KeyCode::Char('v')),
-				MetaEvent::Undo => {
-					KeyEvent {
-						code: KeyCode::Char('z'),
-						modifiers: KeyModifiers::CONTROL,
-					}
-				},
-				MetaEvent::Yes => KeyEvent::from(KeyCode::Char('y')),
-				MetaEvent::ExternalCommandSuccess => KeyEvent::from(KeyCode::Null),
-				MetaEvent::ExternalCommandError => KeyEvent::from(KeyCode::Null),
-			};
-			crossterm::event::Event::Key(key_event)
-		},
-		Event::Key(key_event) => crossterm::event::Event::Key(key_event),
-		Event::Mouse(mouse_event) => crossterm::event::Event::Mouse(mouse_event),
-		Event::Resize(width, height) => crossterm::event::Event::Resize(width, height),
-		Event::None => crossterm::event::Event::Key(KeyEvent::from(KeyCode::Null)),
-	}
-}
+use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers};
+use crate::{event_action::EventAction, Sender};
 
 /// Create a mocked version of `KeyBindings`.
 #[inline]
@@ -139,53 +59,32 @@ pub fn create_test_keybindings() -> KeyBindings {
 pub struct TestContext {
 	/// The `EventHandler` instance.
 	pub event_handler: EventHandler,
+	/// The sender instance.
+	pub sender: Sender,
+	/// The receiver instance.
+	pub receiver: crossbeam_channel::Receiver<EventAction>,
 	/// The number of known available events.
 	pub number_events: usize,
 }
 
-impl TestContext {
-	/// For each known event, call the callback with the `EventHandler` instance.
-	#[inline]
-	pub fn for_each_event<C, T>(&self, mut callback: C) -> Vec<T>
-	where C: FnMut(&EventHandler) -> T {
-		let mut results = vec![];
-		for _ in 0..self.number_events {
-			results.push(callback(&self.event_handler));
-		}
-		results
-	}
-}
-
 /// Provide an `EventHandler` instance for use within a test.
-///
-/// ```
-/// use input::{testutil::with_event_handler, Event, MetaEvent};
-///
-/// with_event_handler(&[Event::Meta(MetaEvent::Abort)], |context| {
-/// 	context.for_each_event(|_event_handler| {});
-/// });
-/// ```
 #[inline]
+#[allow(clippy::missing_panics_doc)]
 pub fn with_event_handler<C>(events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
-	let crossterm_events = RefCell::new(
-		events
-			.iter()
-			.map(|input| map_event_to_crossterm(*input))
-			.collect::<Vec<crossterm::event::Event>>(),
-	);
+	let event_handler = EventHandler::new(create_test_keybindings());
+	let (sender, receiver) = crossbeam_channel::bounded(10);
+	let event_sender = Sender::new(sender);
+	let event_queue = event_sender.clone_event_queue();
 
-	crossterm_events.borrow_mut().reverse();
-	let event_handler = EventHandler::new(
-		move || {
-			let mut ct_events = crossterm_events.borrow_mut();
-			Ok(ct_events.pop())
-		},
-		create_test_keybindings(),
-	);
+	for event in events {
+		event_queue.lock().push_back(*event);
+	}
 
 	callback(TestContext {
 		event_handler,
+		sender: event_sender,
+		receiver,
 		number_events: events.len(),
 	});
 }

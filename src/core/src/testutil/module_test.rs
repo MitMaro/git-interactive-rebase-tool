@@ -42,11 +42,12 @@ impl TestContext {
 	}
 
 	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> ProcessResult {
-		let options = module.input_options();
-		let event = self
-			.event_handler_context
-			.event_handler
-			.read_event(options, |event, key_bindings| module.read_event(event, key_bindings));
+		let input_options = module.input_options();
+		let event = self.event_handler_context.event_handler.read_event(
+			self.event_handler_context.sender.read_event(),
+			input_options,
+			|event, key_bindings| module.read_event(event, key_bindings),
+		);
 		module.handle_event(event, &self.view_sender_context.sender, &mut self.rebase_todo_file)
 	}
 
@@ -60,10 +61,6 @@ impl TestContext {
 
 	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<ProcessResult> {
 		self.handle_n_events(module, self.event_handler_context.number_events)
-	}
-
-	pub(crate) fn new_todo_file(&self) -> TodoFile {
-		TodoFile::new(self.get_todo_file_path().as_str(), 1, "#")
 	}
 
 	pub(crate) fn get_todo_file_path(&self) -> String {
