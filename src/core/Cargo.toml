@@ -15,7 +15,7 @@ readme = "../../README.md"
 name = "core"
 
 [dependencies]
-anyhow = "1.0.53"
+anyhow = "1.0.54"
 captur = "0.1.0"
 lazy_static = "1.4.0"
 num-format = "0.4.0"
