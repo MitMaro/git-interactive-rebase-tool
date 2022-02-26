@@ -4,6 +4,8 @@ use view::{LineSegment, ViewDataUpdater, ViewLine};
 
 use super::util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments};
 
+const PADDING_CHARACTER: char = '\u{2015}'; // '―'
+
 pub(super) struct ViewBuilderOptions {
 	space_character: String,
 	tab_character: String,
@@ -52,13 +54,13 @@ impl ViewBuilder {
 	fn replace_whitespace(&self, value: &str, visible: bool) -> String {
 		if visible {
 			value
-				.replace(" ", self.visible_space_string.as_str())
-				.replace("\t", self.visible_tab_string.as_str())
+				.replace(' ', self.visible_space_string.as_str())
+				.replace('\t', self.visible_tab_string.as_str())
 		}
 		else {
-			value.replace("\t", self.invisible_tab_string.as_str())
+			value.replace('\t', self.invisible_tab_string.as_str())
 		}
-		.replace("\n", "")
+		.replace('\n', "")
 	}
 
 	// safe slice, as it is only on the hash, which is hexadecimal
@@ -234,7 +236,7 @@ impl ViewBuilder {
 	) {
 		updater.push_leading_line(Self::build_leading_summary(diff.commit(), is_full_width));
 		updater.push_leading_line(get_files_changed_summary(diff, is_full_width));
-		updater.push_line(ViewLine::new_empty_line().set_padding('―'));
+		updater.push_line(ViewLine::new_empty_line().set_padding(PADDING_CHARACTER));
 
 		let file_statuses = diff.file_statuses();
 		for (s_i, status) in file_statuses.iter().enumerate() {
@@ -269,7 +271,7 @@ impl ViewBuilder {
 					),
 				]));
 				updater.push_line(ViewLine::new_pinned(vec![]).set_padding_with_color_and_style(
-					'┈',
+					PADDING_CHARACTER,
 					DisplayColor::Normal,
 					true,
 					false,
@@ -296,7 +298,7 @@ impl ViewBuilder {
 				}
 			}
 			if s_i + 1 != file_statuses.len() {
-				updater.push_line(ViewLine::new_empty_line().set_padding('―'));
+				updater.push_line(ViewLine::new_empty_line().set_padding(PADDING_CHARACTER));
 			}
 		}
 	}
