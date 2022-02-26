@@ -783,7 +783,7 @@ fn render_diff_end_new_line_missing() {
 					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal,Dimmed}{Pad(―)}",
 					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
 					"{Normal}       {DiffContextColor}\\ No newline at end of file"
 				);
@@ -826,7 +826,7 @@ fn render_diff_add_line() {
 					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal,Dimmed}{Pad(―)}",
 					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
 				);
 			},
@@ -868,7 +868,7 @@ fn render_diff_delete_line() {
 					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal,Dimmed}{Pad(―)}",
 					"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
 				);
 			},
@@ -913,7 +913,7 @@ fn render_diff_context_add_remove_lines() {
 					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
-					"{Normal,Dimmed}{Pad(┈)}",
+					"{Normal,Dimmed}{Pad(―)}",
 					"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
 					"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
 					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",

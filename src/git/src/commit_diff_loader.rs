@@ -104,11 +104,11 @@ impl<'d> CommitDiffLoader<'d> {
 
 				let source_file = diff_delta.old_file();
 				let source_file_mode = FileMode::from(source_file.mode());
-				let source_file_path = source_file.path().unwrap_or_else(|| UNKNOWN_PATH.as_path());
+				let source_file_path = source_file.path().unwrap_or(UNKNOWN_PATH.as_path());
 
 				let destination_file = diff_delta.new_file();
 				let destination_file_mode = FileMode::from(destination_file.mode());
-				let destination_file_path = destination_file.path().unwrap_or_else(|| UNKNOWN_PATH.as_path());
+				let destination_file_path = destination_file.path().unwrap_or(UNKNOWN_PATH.as_path());
 
 				fsb.add_file_stat(FileStatus::new(
 					source_file_path,
