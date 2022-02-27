@@ -78,50 +78,56 @@ impl<'m> Modules<'m> {
 
 #[cfg(test)]
 mod tests {
-	use std::{cell::RefCell, rc::Rc};
+	use std::sync::Arc;
 
 	use anyhow::{anyhow, Error};
 	use input::{Event, MetaEvent};
+	use parking_lot::Mutex;
 
 	use super::*;
 	use crate::testutil::module_test;
 
+	#[derive(Debug, Clone)]
 	struct TestModule {
-		view_data: ViewData,
-		trace: Rc<RefCell<Vec<String>>>,
+		view_data: Arc<ViewData>,
+		trace: Arc<Mutex<Vec<String>>>,
 	}
 
 	impl TestModule {
-		fn new(trace: Rc<RefCell<Vec<String>>>) -> Self {
+		fn new() -> Self {
 			Self {
-				view_data: ViewData::new(|_| {}),
-				trace,
+				view_data: Arc::new(ViewData::new(|_| {})),
+				trace: Arc::new(Mutex::new(vec![])),
 			}
+		}
+
+		fn trace(&self) -> String {
+			self.trace.lock().join(",")
 		}
 	}
 
 	impl Module for TestModule {
 		fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
-			self.trace.borrow_mut().push(String::from("Activate"));
+			self.trace.lock().push(String::from("Activate"));
 			ProcessResult::new()
 		}
 
 		fn deactivate(&mut self) {
-			self.trace.borrow_mut().push(String::from("Deactivate"));
+			self.trace.lock().push(String::from("Deactivate"));
 		}
 
 		fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &ViewData {
-			self.trace.borrow_mut().push(String::from("Build View Data"));
+			self.trace.lock().push(String::from("Build View Data"));
 			&self.view_data
 		}
 
 		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
-			self.trace.borrow_mut().push(String::from("Handle Events"));
+			self.trace.lock().push(String::from("Handle Events"));
 			ProcessResult::new()
 		}
 
 		fn handle_error(&mut self, error: &Error) {
-			self.trace.borrow_mut().push(error.to_string());
+			self.trace.lock().push(error.to_string());
 		}
 	}
 
@@ -129,9 +135,8 @@ mod tests {
 	fn module_lifecycle() {
 		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |mut context| {
 			let mut modules = Modules::new(context.event_handler_context.event_handler);
-			let trace = Rc::new(RefCell::new(Vec::new()));
-			let test_module = TestModule::new(Rc::clone(&trace));
-			modules.register_module(State::List, test_module);
+			let test_module = TestModule::new();
+			modules.register_module(State::List, test_module.clone());
 
 			let _ = modules.activate(State::List, &context.rebase_todo_file, State::Insert);
 			let _ = modules.handle_event(
@@ -142,10 +147,7 @@ mod tests {
 			);
 			let _ = modules.build_view_data(State::List, &RenderContext::new(100, 100), &context.rebase_todo_file);
 			modules.deactivate(State::List);
-			assert_eq!(
-				(*trace).borrow().join(","),
-				"Activate,Handle Events,Build View Data,Deactivate"
-			);
+			assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
 		});
 	}
 
@@ -153,11 +155,10 @@ mod tests {
 	fn error() {
 		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |context| {
 			let mut modules = Modules::new(context.event_handler_context.event_handler);
-			let trace = Rc::new(RefCell::new(Vec::new()));
-			let test_module = TestModule::new(Rc::clone(&trace));
-			modules.register_module(State::Error, test_module);
+			let test_module = TestModule::new();
+			modules.register_module(State::Error, test_module.clone());
 			modules.error(State::Error, &anyhow!("Test Error"));
-			assert_eq!((*trace).borrow().join(","), "Test Error");
+			assert_eq!(test_module.trace(), "Test Error");
 		});
 	}
 }

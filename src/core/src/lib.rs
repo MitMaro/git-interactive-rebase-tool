@@ -84,6 +84,7 @@
 mod arguments;
 mod components;
 mod exit;
+mod git;
 mod help;
 mod license;
 mod module;

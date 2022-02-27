@@ -15,7 +15,7 @@ lazy_static! {
 	static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 }
 
-pub(crate) trait Module {
+pub(crate) trait Module: Send {
 	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
 		ProcessResult::new()
 	}
