@@ -8,7 +8,7 @@ mod tests;
 use anyhow::anyhow;
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
-use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
+use git::{CommitDiff, CommitDiffLoaderOptions};
 use input::{Event, InputOptions, KeyBindings, MetaEvent};
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
@@ -21,6 +21,7 @@ use self::{
 };
 use crate::{
 	components::help::{Help, INPUT_OPTIONS as HELP_INPUT_OPTIONS},
+	git::Git,
 	module::{Module, ProcessResult, State},
 };
 
@@ -28,18 +29,18 @@ lazy_static! {
 	static ref INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO | InputOptions::MOVEMENT | InputOptions::HELP;
 }
 
-pub(crate) struct ShowCommit<'s> {
+pub(crate) struct ShowCommit {
 	commit_diff_loader_options: CommitDiffLoaderOptions,
 	diff: Option<CommitDiff>,
 	diff_view_data: ViewData,
 	help: Help,
 	overview_view_data: ViewData,
-	repository: &'s Repository,
+	git: Git,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
 }
 
-impl Module for ShowCommit<'_> {
+impl Module for ShowCommit {
 	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
 		if let Some(selected_line) = rebase_todo.get_selected_line() {
 			// skip loading commit data if the currently loaded commit has not changed, this retains
@@ -60,7 +61,7 @@ impl Module for ShowCommit<'_> {
 			});
 
 			let new_diff = self
-				.repository
+				.git
 				.load_commit_diff(selected_line.get_hash(), &self.commit_diff_loader_options);
 
 			match new_diff {
@@ -172,8 +173,8 @@ impl Module for ShowCommit<'_> {
 	}
 }
 
-impl<'s> ShowCommit<'s> {
-	pub(crate) fn new(config: &Config, repository: &'s Repository) -> Self {
+impl ShowCommit {
+	pub(crate) fn new(config: &Config, git: Git) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -208,7 +209,7 @@ impl<'s> ShowCommit<'s> {
 			overview_view_data,
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options),
-			repository,
+			git,
 		}
 	}
 }

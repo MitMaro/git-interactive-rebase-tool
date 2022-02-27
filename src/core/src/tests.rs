@@ -1,10 +1,11 @@
 use std::{env::set_var, fs::File, path::Path};
 
-use git::Repository;
+use ::git::Repository;
 use input::{Event, MetaEvent};
 
 use super::*;
 use crate::{
+	git::Git,
 	module::{ExitStatus, ProcessResult, State},
 	run::{create_modules, create_process, load_config, load_todo_file, run_process},
 	testutil::TestModule,
@@ -137,8 +138,8 @@ fn run_process_error() {
 	let rebase_todo_file = load_todo_file(todo_file_path.to_str().unwrap(), &config).unwrap();
 	let process = create_process(rebase_todo_file, &config);
 	let mut module = TestModule::new();
-	module.event_callback = Box::new(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
-	let mut modules = create_modules(&config, &repo);
+	module.event_callback(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
+	let mut modules = create_modules(&config, Git::new(repo));
 	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(
 		run_process(process, modules),
@@ -159,8 +160,8 @@ fn run_process_success() {
 	let rebase_todo_file = load_todo_file(todo_file.to_str().unwrap(), &config).unwrap();
 	let process = create_process(rebase_todo_file, &config);
 	let mut module = TestModule::new();
-	module.event_callback = Box::new(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
-	let mut modules = create_modules(&config, &repo);
+	module.event_callback(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
+	let mut modules = create_modules(&config, Git::new(repo));
 	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(run_process(process, modules), Exit::from(ExitStatus::Abort));
 }

@@ -83,7 +83,7 @@ fn render_error() {
 	let mut modules = create_modules();
 	let sender = process.view_sender.clone();
 	let mut test_module = TestModule::new();
-	test_module.view_data_callback = Box::new(move |_| while sender.end().is_ok() {});
+	test_module.view_data_callback(move |_| while sender.end().is_ok() {});
 	modules.register_module(State::List, test_module);
 	assert_eq!(process.run(modules).unwrap(), ExitStatus::StateError);
 }
@@ -104,7 +104,7 @@ fn stop_error() {
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
 	let sender = process.view_sender.clone();
-	test_module.event_callback = Box::new(move |event, _, _| {
+	test_module.event_callback(move |event, _, _| {
 		while sender.end().is_ok() {}
 		ProcessResult::from(event)
 	});
@@ -120,7 +120,7 @@ fn handle_exit_event_that_is_not_kill() {
 	let mut process = create_process(rebase_todo_file, &[Event::from(MetaEvent::Exit)]);
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
-	test_module.event_callback = Box::new(|_, _, _| {
+	test_module.event_callback(|_, _, _| {
 		ProcessResult::new()
 			.event(Event::from(MetaEvent::Rebase))
 			.exit_status(ExitStatus::Good)
@@ -139,7 +139,7 @@ fn handle_exit_event_that_is_kill() {
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
-	test_module.event_callback = Box::new(|_, _, _| {
+	test_module.event_callback(|_, _, _| {
 		ProcessResult::new()
 			.event(Event::from(MetaEvent::Kill))
 			.exit_status(ExitStatus::Kill)

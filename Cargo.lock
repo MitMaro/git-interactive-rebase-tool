@@ -191,6 +191,7 @@ dependencies = [
  "girt-view",
  "lazy_static",
  "num-format",
+ "parking_lot 0.12.0",
  "pico-args",
  "rstest 0.12.0",
  "rustc_version",
