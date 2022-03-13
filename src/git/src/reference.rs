@@ -62,15 +62,24 @@ impl Reference {
 
 #[cfg(test)]
 mod tests {
+	use anyhow::Error;
+
 	use super::*;
-	use crate::testutil::{get_main_reference, head_id, with_temp_repository};
+	use crate::testutil::{head_id, with_temp_repository};
+
+	// macro_rules! e {
+	// 	($e:expr) => {
+	// 		$e.map_err(|e| anyhow!("{}", e.message())) {
+	// 	};
+	// }
 
 	#[test]
 	fn test() {
 		with_temp_repository(|repository| {
-			let git2_reference = get_main_reference(&repository);
 			let oid = head_id(&repository, "main");
-			let reference = Reference::from(&git2_reference);
+			let reference = repository
+				.find_reference("refs/heads/main")
+				.map_err(|e| Error::from(e))?;
 			assert_eq!(reference.hash(), format!("{}", oid));
 			assert_eq!(reference.name(), "refs/heads/main");
 			assert_eq!(reference.shortname(), "main");

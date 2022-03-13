@@ -100,11 +100,13 @@ impl Commit {
 	}
 }
 
-impl From<&git2::Reference<'_>> for Commit {
+impl TryFrom<&git2::Reference<'_>> for Commit {
+	type Error = anyhow::Error;
+
 	#[inline]
-	fn from(reference: &git2::Reference<'_>) -> Self {
-		let commit = reference.peel_to_commit().expect("Reference that is not a commit");
-		Self::new(&commit, Some(reference))
+	fn try_from(reference: &git2::Reference<'_>) -> Result<Self, Self::Error> {
+		let commit = reference.peel_to_commit()?;
+		Ok(Self::new(&commit, Some(reference)))
 	}
 }
 
@@ -120,7 +122,6 @@ mod tests {
 	use super::*;
 	use crate::testutil::{
 		create_commit,
-		get_main_reference,
 		with_temp_repository,
 		CommitBuilder,
 		CreateCommitOptions,
@@ -178,35 +179,13 @@ mod tests {
 	}
 
 	#[test]
-	fn from_reference() {
-		with_temp_repository(|repository| {
-			let git2_reference = get_main_reference(&repository);
-			let reference = Reference::from(&git2_reference);
-			let commit = Commit::from(&git2_reference);
-			assert_eq!(commit.reference().as_ref().unwrap(), &reference);
-			Ok(())
-		});
-	}
-
-	#[test]
-	fn from_commit() {
-		with_temp_repository(|repository| {
-			let reference = get_main_reference(&repository);
-			let commit = Commit::from(&reference.peel_to_commit()?);
-			assert!(commit.reference().is_none());
-			Ok(())
-		});
-	}
-
-	#[test]
 	fn new_authored_date_same_committed_date() {
 		with_temp_repository(|repository| {
 			create_commit(
 				&repository,
 				Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)),
-			)?;
-			let reference = get_main_reference(&repository);
-			let commit = Commit::from(&reference);
+			);
+			let commit = repository.find_commit("refs/heads/main")?;
 			assert!(commit.authored_date().is_none());
 			Ok(())
 		});
@@ -222,9 +201,8 @@ mod tests {
 						.commit_time(JAN_2021_EPOCH)
 						.author_time(JAN_2021_EPOCH + 1),
 				),
-			)?;
-			let reference = get_main_reference(&repository);
-			let commit = Commit::from(&reference);
+			);
+			let commit = repository.find_commit("refs/heads/main")?;
 			assert_eq!(
 				commit.authored_date().as_ref().unwrap(),
 				&DateTime::parse_from_rfc3339("2021-01-01T00:00:01Z").unwrap()
@@ -236,9 +214,8 @@ mod tests {
 	#[test]
 	fn new_committer_different_than_author() {
 		with_temp_repository(|repository| {
-			create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")))?;
-			let reference = get_main_reference(&repository);
-			let commit = Commit::from(&reference);
+			create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
+			let commit = repository.find_commit("refs/heads/main")?;
 			assert_eq!(
 				commit.committer().as_ref().unwrap(),
 				&User::new(Some("Committer"), Some("committer@example.com"))
@@ -250,8 +227,7 @@ mod tests {
 	#[test]
 	fn new_committer_same_as_author() {
 		with_temp_repository(|repository| {
-			let reference = get_main_reference(&repository);
-			let commit = Commit::from(&reference);
+			let commit = repository.find_commit("refs/heads/main")?;
 			assert!(commit.committer().is_none());
 			Ok(())
 		});
