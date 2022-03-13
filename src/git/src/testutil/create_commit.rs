@@ -1,5 +1,7 @@
 #![cfg(not(tarpaulin_include))]
 
+use std::path::Path;
+
 use lazy_static::lazy_static;
 
 use crate::{testutil::JAN_2021_EPOCH, Repository};
@@ -119,38 +121,40 @@ impl Default for CreateCommitOptions {
 	}
 }
 
+/// Add a path to the working index.
+#[inline]
+pub fn add_path_to_index(repo: &Repository, path: &Path) {
+	repo.add_path_to_index(path).expect("Unable to add path to index");
+}
+
+/// Remove a path to the working index.
+#[inline]
+pub fn remove_path_from_index(repo: &Repository, path: &Path) {
+	repo.remove_path_from_index(path)
+		.expect("Unable to remove path from index");
+}
+
 /// Create a commit based on the provided options. If `options` is not provided, will create a
 /// commit using the default options. This function does not add modified or new files to the stage
 /// before creating a commit.
-///
-/// # Errors
-///
-/// If the commit cannot be created for any reason, this function will error.
 #[inline]
-pub fn create_commit(repository: &Repository, options: Option<&CreateCommitOptions>) -> Result<(), git2::Error> {
-	let repo = repository.git2_repository();
+pub fn create_commit(repository: &Repository, options: Option<&CreateCommitOptions>) {
 	let opts = options.unwrap_or(&DEFAULT_COMMIT_OPTIONS);
-	let id = repo.index()?.write_tree()?;
-	let tree = repo.find_tree(id)?;
 	let author_sig = git2::Signature::new(
 		opts.author_name.as_str(),
 		opts.author_email.as_str(),
 		&git2::Time::new(opts.author_time.unwrap_or(opts.committer_time), 0),
-	)?;
+	)
+	.expect("Unable to create author signature");
 	let committer_sig = git2::Signature::new(
 		opts.committer_name.as_ref().unwrap_or(&opts.author_name).as_str(),
 		opts.committer_email.as_ref().unwrap_or(&opts.author_email).as_str(),
 		&git2::Time::new(opts.committer_time, 0),
-	)?;
-	let main = repo.find_reference(format!("refs/heads/{}", opts.head_name).as_str())?;
-	let head = main.peel_to_commit()?;
-	let _ = repo.commit(
-		Some("HEAD"),
-		&author_sig,
-		&committer_sig,
-		opts.message.as_str(),
-		&tree,
-		&[&head],
-	)?;
-	Ok(())
+	)
+	.expect("Unable to create comitter signature");
+	let ref_name = format!("refs/heads/{}", opts.head_name);
+
+	repository
+		.create_commit_on_index(ref_name.as_str(), &author_sig, &committer_sig, opts.message.as_str())
+		.expect("Unable to create commit");
 }

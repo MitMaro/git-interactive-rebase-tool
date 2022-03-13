@@ -1,8 +1,9 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
+use anyhow::Result;
 use git2::{DiffFindOptions, DiffOptions, Oid, Repository};
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, MutexGuard};
 
 use crate::{
 	commit::Commit,
@@ -22,26 +23,28 @@ lazy_static! {
 
 pub(crate) struct CommitDiffLoader<'d> {
 	config: &'d CommitDiffLoaderOptions,
-	repo: &'d Repository,
+	repo: Arc<Mutex<Repository>>,
 }
 
 impl<'d> CommitDiffLoader<'d> {
-	pub(crate) const fn new(repo: &'d Repository, config: &'d CommitDiffLoaderOptions) -> Self {
+	pub(crate) const fn new(repo: Arc<Mutex<Repository>>, config: &'d CommitDiffLoaderOptions) -> Self {
 		Self { config, repo }
 	}
 
 	pub(crate) fn load_from_hash(&self, oid: Oid) -> Result<Vec<CommitDiff>, git2::Error> {
-		let commit = self.repo.find_commit(oid)?;
+		let repo = self.repo.lock();
+		let commit = repo.find_commit(oid)?;
+		let no_parents = commit.parent_ids().count() == 0;
 
 		// some commits do not have parents, and can't have file stats
-		let diffs = if commit.parent_ids().count() == 0 {
-			vec![self.load_diff(None, &commit)?]
+		let diffs = if no_parents {
+			vec![self.load_diff(&repo, None, &commit)?]
 		}
 		else {
 			//
 			let mut diffs = vec![];
 			for parent in commit.parents() {
-				diffs.push(self.load_diff(Some(&parent), &commit)?);
+				diffs.push(self.load_diff(&repo, Some(&parent), &commit)?);
 			}
 			diffs
 		};
@@ -51,6 +54,7 @@ impl<'d> CommitDiffLoader<'d> {
 	#[allow(clippy::as_conversions, clippy::unwrap_in_result)]
 	fn load_diff(
 		&self,
+		repo: &MutexGuard<'_, Repository>,
 		parent: Option<&git2::Commit<'_>>,
 		commit: &git2::Commit<'_>,
 	) -> Result<CommitDiff, git2::Error> {
@@ -78,12 +82,10 @@ impl<'d> CommitDiffLoader<'d> {
 			.copies_from_unmodified(self.config.copies);
 
 		let mut diff = if let Some(p) = parent {
-			self.repo
-				.diff_tree_to_tree(Some(&p.tree()?), Some(&commit.tree()?), Some(&mut diff_options))?
+			repo.diff_tree_to_tree(Some(&p.tree()?), Some(&commit.tree()?), Some(&mut diff_options))?
 		}
 		else {
-			self.repo
-				.diff_tree_to_tree(None, Some(&commit.tree()?), Some(&mut diff_options))?
+			repo.diff_tree_to_tree(None, Some(&commit.tree()?), Some(&mut diff_options))?
 		};
 
 		diff.find_similar(Some(&mut diff_find_options))?;
@@ -163,7 +165,10 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::{testutil::with_temp_repository, Origin};
+	use crate::{
+		testutil::{add_path_to_index, with_temp_repository},
+		Origin,
+	};
 
 	fn _format_status(status: &FileStatus) -> String {
 		let s = match status.status() {
@@ -277,50 +282,34 @@ mod tests {
 		};
 	}
 
-	fn write_normal_file(repository: &crate::Repository, name: &str, contents: &[&str]) -> Result<(), git2::Error> {
-		let repo = repository.git2_repository();
-		let mut index = repo.index()?;
-		let root = repo.path().parent().unwrap();
+	fn write_normal_file(repository: &crate::Repository, name: &str, contents: &[&str]) -> Result<()> {
+		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
 		let file_path = root.join(name);
-		let mut file = File::create(file_path.as_path()).unwrap();
+		let mut file = File::create(file_path.as_path()).expect("Unable to write file");
 		if !contents.is_empty() {
 			writeln!(file, "{}", contents.join("\n")).unwrap();
 		}
-		index.add_path(PathBuf::from(name).as_path())?;
-		Ok(())
+		repository.add_path_to_index(PathBuf::from(name).as_path())
 	}
 
-	fn remove_path(repository: &crate::Repository, name: &str) -> Result<(), git2::Error> {
-		let repo = repository.git2_repository();
-		let mut index = repo.index()?;
-		let root = repo.path().parent().unwrap();
+	fn remove_path(repository: &crate::Repository, name: &str) -> Result<()> {
+		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
 		let file_path = root.join(name);
-		let _ = remove_file(file_path).unwrap();
+		let _ = remove_file(file_path)?;
 
-		index.remove_path(PathBuf::from(name).as_path())?;
-		Ok(())
+		repository.remove_path_from_index(PathBuf::from(name).as_path())
 	}
 
-	fn create_commit(repository: &crate::Repository) -> Result<(), git2::Error> {
-		let repo = repository.git2_repository();
-		let tree = repo.find_tree(repo.index()?.write_tree()?)?;
+	fn create_commit(repository: &crate::Repository) -> Result<()> {
 		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0))?;
-		let head = repo.find_reference("refs/heads/main")?.peel_to_commit()?;
-		let _ = repo.commit(Some("HEAD"), &sig, &sig, "title", &tree, &[&head])?;
-		Ok(())
+		repository.create_commit_on_index("refs/heads/main", &sig, &sig, "title")
 	}
 
 	fn diff_from_head(repository: &crate::Repository, options: &CommitDiffLoaderOptions) -> CommitDiff {
-		let repo = repository.git2_repository();
-		let id = repo
-			.find_reference("refs/heads/main")
-			.unwrap()
-			.peel_to_commit()
-			.unwrap()
-			.id();
-		let loader = CommitDiffLoader::new(&repo, options);
+		let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
+		let loader = CommitDiffLoader::new(repository.repository(), options);
 		loader.load_from_hash(id).unwrap().remove(0)
 	}
 
@@ -575,10 +564,8 @@ mod tests {
 	#[test]
 	fn load_from_hash_file_mode_executable() {
 		with_temp_repository(|repo| {
-			let git2_repository = repo.git2_repository();
 			use std::os::unix::fs::PermissionsExt;
-			let mut index = git2_repository.index()?;
-			let root = git2_repository.path().parent().unwrap();
+			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
 			write_normal_file(&repo, "a", &["line0"])?;
 			create_commit(&repo)?;
@@ -586,7 +573,7 @@ mod tests {
 			let mut permissions = file.metadata().unwrap().permissions();
 			permissions.set_mode(0o755);
 			file.set_permissions(permissions).unwrap();
-			index.add_path(PathBuf::from("a").as_path())?;
+			add_path_to_index(&repo, PathBuf::from("a").as_path());
 			create_commit(&repo)?;
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
 			assert_eq!(diff.number_files_changed(), 1);
@@ -601,17 +588,15 @@ mod tests {
 	#[test]
 	fn load_from_hash_type_changed() {
 		with_temp_repository(|repo| {
-			let git2_repository = repo.git2_repository();
-			let mut index = git2_repository.index()?;
-			let root = git2_repository.path().parent().unwrap();
+			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
 			write_normal_file(&repo, "a", &["line0"])?;
 			write_normal_file(&repo, "b", &["line0"])?;
 			create_commit(&repo)?;
 			remove_path(&repo, "a")?;
 			symlink(root.join("b"), root.join("a")).unwrap();
-			index.add_path(PathBuf::from("a").as_path())?;
-			index.add_path(PathBuf::from("b").as_path())?;
+			add_path_to_index(&repo, PathBuf::from("a").as_path());
+			add_path_to_index(&repo, PathBuf::from("b").as_path());
 			create_commit(&repo)?;
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);

@@ -2,11 +2,12 @@
 
 use std::path::Path;
 
+use anyhow::Result;
 use tempfile::Builder;
 
 use crate::{testutil::JAN_2021_EPOCH, Repository};
 
-fn with_temporary_path<F>(callback: F)
+pub(crate) fn with_temporary_path<F>(callback: F)
 where F: FnOnce(&Path) {
 	let temp_repository_directory = Builder::new()
 		.prefix("interactive-rebase-tool")
@@ -28,7 +29,7 @@ where F: FnOnce(&Path) {
 #[allow(clippy::panic, clippy::unwrap_used)]
 #[inline]
 pub fn with_temp_repository<F>(callback: F)
-where F: FnOnce(Repository) -> Result<(), git2::Error> {
+where F: FnOnce(Repository) -> Result<()> {
 	with_temporary_path(|path| {
 		let mut opts = git2::RepositoryInitOptions::new();
 		let _ = opts.initial_head("main");
@@ -43,6 +44,7 @@ where F: FnOnce(Repository) -> Result<(), git2::Error> {
 				.unwrap();
 		}
 		if let Err(e) = callback(Repository::from(repo)) {
+			eprintln!("{:?}", e);
 			panic!("{} failed with {}", stringify!(e), e)
 		}
 	});
@@ -56,7 +58,7 @@ where F: FnOnce(Repository) -> Result<(), git2::Error> {
 #[inline]
 #[allow(clippy::panic)]
 pub fn with_temp_bare_repository<F>(callback: F)
-where F: FnOnce(Repository) -> anyhow::Result<()> {
+where F: FnOnce(Repository) -> Result<()> {
 	with_temporary_path(|path| {
 		let git2_repository = git2::Repository::init_bare(path).expect("Unable to init a bare repository");
 		let repository = Repository::from(git2_repository);
