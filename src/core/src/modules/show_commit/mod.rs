@@ -8,7 +8,7 @@ mod tests;
 use anyhow::anyhow;
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
-use git::{CommitDiff, CommitDiffLoaderOptions};
+use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use input::{Event, InputOptions, KeyBindings, MetaEvent};
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
@@ -21,7 +21,6 @@ use self::{
 };
 use crate::{
 	components::help::{Help, INPUT_OPTIONS as HELP_INPUT_OPTIONS},
-	git::Git,
 	module::{Module, ProcessResult, State},
 };
 
@@ -35,7 +34,7 @@ pub(crate) struct ShowCommit {
 	diff_view_data: ViewData,
 	help: Help,
 	overview_view_data: ViewData,
-	git: Git,
+	repository: Repository,
 	state: ShowCommitState,
 	view_builder: ViewBuilder,
 }
@@ -61,7 +60,7 @@ impl Module for ShowCommit {
 			});
 
 			let new_diff = self
-				.git
+				.repository
 				.load_commit_diff(selected_line.get_hash(), &self.commit_diff_loader_options);
 
 			match new_diff {
@@ -174,7 +173,7 @@ impl Module for ShowCommit {
 }
 
 impl ShowCommit {
-	pub(crate) fn new(config: &Config, git: Git) -> Self {
+	pub(crate) fn new(config: &Config, repository: Repository) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -209,7 +208,7 @@ impl ShowCommit {
 			overview_view_data,
 			state: ShowCommitState::Overview,
 			view_builder: ViewBuilder::new(view_builder_options),
-			git,
+			repository,
 		}
 	}
 }

@@ -12,7 +12,6 @@ use view::View;
 use crate::{
 	arguments::Args,
 	exit::Exit,
-	git::Git,
 	help::build_help,
 	module::{ExitStatus, Modules, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
@@ -46,11 +45,11 @@ pub(super) fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile
 	Ok(todo_file)
 }
 
-pub(super) fn create_modules(config: &Config, git: Git) -> Modules<'_> {
+pub(super) fn create_modules(config: &Config, repository: Repository) -> Modules<'_> {
 	let mut modules = Modules::new(EventHandler::new(KeyBindings::new(&config.key_bindings)));
 	modules.register_module(State::Error, Error::new());
 	modules.register_module(State::List, List::new(config));
-	modules.register_module(State::ShowCommit, ShowCommit::new(config, git));
+	modules.register_module(State::ShowCommit, ShowCommit::new(config, repository));
 	modules.register_module(State::WindowSizeError, WindowSizeError::new());
 	modules.register_module(
 		State::ConfirmAbort,
@@ -111,7 +110,7 @@ pub(crate) fn run(args: &Args) -> Exit {
 		};
 
 		let process = create_process(todo_file, &config);
-		run_process(process, create_modules(&config, Git::new(repo)))
+		run_process(process, create_modules(&config, repo))
 	}
 	else {
 		Exit::new(
