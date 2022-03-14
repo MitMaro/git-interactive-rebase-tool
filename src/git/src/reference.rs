@@ -67,19 +67,11 @@ mod tests {
 	use super::*;
 	use crate::testutil::{head_id, with_temp_repository};
 
-	// macro_rules! e {
-	// 	($e:expr) => {
-	// 		$e.map_err(|e| anyhow!("{}", e.message())) {
-	// 	};
-	// }
-
 	#[test]
 	fn test() {
 		with_temp_repository(|repository| {
 			let oid = head_id(&repository, "main");
-			let reference = repository
-				.find_reference("refs/heads/main")
-				.map_err(|e| Error::from(e))?;
+			let reference = repository.find_reference("refs/heads/main").map_err(Error::from)?;
 			assert_eq!(reference.hash(), format!("{}", oid));
 			assert_eq!(reference.name(), "refs/heads/main");
 			assert_eq!(reference.shortname(), "main");

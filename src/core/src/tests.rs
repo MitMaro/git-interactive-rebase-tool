@@ -5,7 +5,6 @@ use input::{Event, MetaEvent};
 
 use super::*;
 use crate::{
-	git::Git,
 	module::{ExitStatus, ProcessResult, State},
 	run::{create_modules, create_process, load_config, load_todo_file, run_process},
 	testutil::TestModule,
@@ -139,7 +138,7 @@ fn run_process_error() {
 	let process = create_process(rebase_todo_file, &config);
 	let mut module = TestModule::new();
 	module.event_callback(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
-	let mut modules = create_modules(&config, Git::new(repo));
+	let mut modules = create_modules(&config, repo);
 	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(
 		run_process(process, modules),
@@ -161,7 +160,7 @@ fn run_process_success() {
 	let process = create_process(rebase_todo_file, &config);
 	let mut module = TestModule::new();
 	module.event_callback(move |_, _, _| ProcessResult::from(Event::from(MetaEvent::Exit)));
-	let mut modules = create_modules(&config, Git::new(repo));
+	let mut modules = create_modules(&config, repo);
 	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(run_process(process, modules), Exit::from(ExitStatus::Abort));
 }
