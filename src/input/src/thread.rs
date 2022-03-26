@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::Result;
-use crossbeam_channel::bounded;
+use crossbeam_channel::{bounded, unbounded};
 
 use crate::{event::Event, event_action::EventAction, sender::Sender};
 
@@ -19,7 +19,8 @@ const MAXIMUM_EVENTS: usize = 100;
 pub fn spawn_event_thread<F: Send + 'static>(event_provider: F) -> (Sender, JoinHandle<()>)
 where F: Fn() -> Result<Option<crossterm::event::Event>> {
 	let (sender, receiver) = bounded(0);
-	let event_sender = Sender::new(sender);
+	let (new_event_sender, new_event_receiver) = unbounded();
+	let event_sender = Sender::new(sender, new_event_receiver);
 	let event_queue = event_sender.clone_event_queue();
 	let push_thread_event_sender = event_sender.clone();
 	let poisoned = event_sender.clone_poisoned();
@@ -35,6 +36,7 @@ where F: Fn() -> Result<Option<crossterm::event::Event>> {
 					if events.len() < MAXIMUM_EVENTS {
 						events.push_back(event);
 					}
+					let _send_result = new_event_sender.send(());
 				},
 				EventAction::PushEvent(event) => {
 					let mut events = event_queue.lock();
@@ -42,6 +44,7 @@ where F: Fn() -> Result<Option<crossterm::event::Event>> {
 						let _ = events.pop_back();
 					}
 					events.push_front(event);
+					let _send_result = new_event_sender.send(());
 				},
 			}
 		}
