@@ -1,6 +1,6 @@
 use crate::Event;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum EventAction {
 	End,

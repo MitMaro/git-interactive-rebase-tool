@@ -74,7 +74,8 @@ pub fn with_event_handler<C>(events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
 	let event_handler = EventHandler::new(create_test_keybindings());
 	let (sender, receiver) = crossbeam_channel::bounded(10);
-	let event_sender = Sender::new(sender);
+	let (_, new_event_receiver) = crossbeam_channel::unbounded();
+	let event_sender = Sender::new(sender, new_event_receiver);
 	let event_queue = event_sender.clone_event_queue();
 
 	for event in events {
