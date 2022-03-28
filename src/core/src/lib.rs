@@ -94,6 +94,7 @@ mod run;
 mod tests;
 #[cfg(test)]
 pub mod testutil;
+mod util;
 mod version;
 
 use std::ffi::OsString;

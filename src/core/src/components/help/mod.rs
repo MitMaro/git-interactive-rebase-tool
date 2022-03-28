@@ -3,13 +3,11 @@ mod tests;
 
 use display::DisplayColor;
 use input::{Event, InputOptions};
-use lazy_static::lazy_static;
 use unicode_segmentation::UnicodeSegmentation;
 use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
 
-lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
-}
+// TODO Remove `union` call when bitflags/bitflags#180 is resolved
+const INPUT_OPTIONS: InputOptions = InputOptions::RESIZE.union(InputOptions::MOVEMENT);
 
 pub(crate) struct Help {
 	active: bool,
@@ -72,6 +70,10 @@ impl Help {
 
 	pub(crate) fn get_view_data(&mut self) -> &ViewData {
 		&self.view_data
+	}
+
+	pub(crate) fn input_options(&self) -> Option<&InputOptions> {
+		self.active.then(|| &INPUT_OPTIONS)
 	}
 
 	pub(crate) fn handle_event(&mut self, event: Event, view_sender: &ViewSender) {

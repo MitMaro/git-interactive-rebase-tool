@@ -9,22 +9,20 @@ use captur::capture;
 use config::Config;
 use display::DisplayColor;
 use input::{Event, InputOptions, KeyBindings, MetaEvent, MouseEventKind};
-use lazy_static::lazy_static;
 use todo_file::{Action, EditContext, Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
 use self::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::{
-	components::{
-		edit::{Edit, INPUT_OPTIONS as EDIT_INPUT_OPTIONS},
-		help::{Help, INPUT_OPTIONS as HELP_INPUT_OPTIONS},
-	},
+	components::{edit::Edit, help::Help},
 	module::{ExitStatus, Module, ProcessResult, State},
+	select,
 };
 
-lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO | InputOptions::RESIZE | InputOptions::HELP;
-}
+// TODO Remove `union` call when bitflags/bitflags#180 is resolved
+const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
+	.union(InputOptions::RESIZE)
+	.union(InputOptions::HELP);
 
 #[derive(Debug, PartialEq)]
 enum ListState {
@@ -78,61 +76,20 @@ impl Module for List {
 	}
 
 	fn input_options(&self) -> &InputOptions {
-		if self.normal_mode_help.is_active() || self.visual_mode_help.is_active() {
-			&HELP_INPUT_OPTIONS
-		}
-		else if self.state == ListState::Edit {
-			&EDIT_INPUT_OPTIONS
-		}
-		else {
-			&INPUT_OPTIONS
-		}
+		select!(
+			default & INPUT_OPTIONS,
+			|| self.normal_mode_help.input_options(),
+			|| self.visual_mode_help.input_options(),
+			|| (self.state == ListState::Edit).then(|| self.edit.input_options())
+		)
 	}
 
-	#[allow(clippy::cognitive_complexity)]
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
-		match self.state {
-			ListState::Normal | ListState::Visual => {
-				match event {
-					e if key_bindings.abort.contains(&e) => Event::from(MetaEvent::Abort),
-					e if key_bindings.action_break.contains(&e) => Event::from(MetaEvent::ActionBreak),
-					e if key_bindings.action_drop.contains(&e) => Event::from(MetaEvent::ActionDrop),
-					e if key_bindings.action_edit.contains(&e) => Event::from(MetaEvent::ActionEdit),
-					e if key_bindings.action_fixup.contains(&e) => Event::from(MetaEvent::ActionFixup),
-					e if key_bindings.action_pick.contains(&e) => Event::from(MetaEvent::ActionPick),
-					e if key_bindings.action_reword.contains(&e) => Event::from(MetaEvent::ActionReword),
-					e if key_bindings.action_squash.contains(&e) => Event::from(MetaEvent::ActionSquash),
-					e if key_bindings.edit.contains(&e) => Event::from(MetaEvent::Edit),
-					e if key_bindings.force_abort.contains(&e) => Event::from(MetaEvent::ForceAbort),
-					e if key_bindings.force_rebase.contains(&e) => Event::from(MetaEvent::ForceRebase),
-					e if key_bindings.insert_line.contains(&e) => Event::from(MetaEvent::InsertLine),
-					e if key_bindings.move_down.contains(&e) => Event::from(MetaEvent::MoveCursorDown),
-					e if key_bindings.move_down_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageDown),
-					e if key_bindings.move_end.contains(&e) => Event::from(MetaEvent::MoveCursorEnd),
-					e if key_bindings.move_home.contains(&e) => Event::from(MetaEvent::MoveCursorHome),
-					e if key_bindings.move_left.contains(&e) => Event::from(MetaEvent::MoveCursorLeft),
-					e if key_bindings.move_right.contains(&e) => Event::from(MetaEvent::MoveCursorRight),
-					e if key_bindings.move_selection_down.contains(&e) => Event::from(MetaEvent::SwapSelectedDown),
-					e if key_bindings.move_selection_up.contains(&e) => Event::from(MetaEvent::SwapSelectedUp),
-					e if key_bindings.move_up.contains(&e) => Event::from(MetaEvent::MoveCursorUp),
-					e if key_bindings.move_up_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageUp),
-					e if key_bindings.open_in_external_editor.contains(&e) => Event::from(MetaEvent::OpenInEditor),
-					e if key_bindings.rebase.contains(&e) => Event::from(MetaEvent::Rebase),
-					e if key_bindings.remove_line.contains(&e) => Event::from(MetaEvent::Delete),
-					e if key_bindings.show_commit.contains(&e) => Event::from(MetaEvent::ShowCommit),
-					e if key_bindings.toggle_visual_mode.contains(&e) => Event::from(MetaEvent::ToggleVisualMode),
-					Event::Mouse(mouse_event) => {
-						match mouse_event.kind {
-							MouseEventKind::ScrollDown => Event::from(MetaEvent::MoveCursorDown),
-							MouseEventKind::ScrollUp => Event::from(MetaEvent::MoveCursorUp),
-							_ => event,
-						}
-					},
-					_ => event,
-				}
-			},
-			ListState::Edit => event,
-		}
+		select!(
+			default event,
+			|| self.read_event_help(event),
+			|| Some(self.read_event_default(event, key_bindings))
+		)
 	}
 }
 
@@ -237,6 +194,56 @@ impl List {
 		}
 		else {
 			self.update_list_view_data(context, todo_file)
+		}
+	}
+
+	fn read_event_help(&self, event: Event) -> Option<Event> {
+		(self.visual_mode_help.is_active() || self.normal_mode_help.is_active()).then(|| event)
+	}
+
+	#[allow(clippy::cognitive_complexity)]
+	fn read_event_default(&self, event: Event, key_bindings: &KeyBindings) -> Event {
+		match self.state {
+			ListState::Normal | ListState::Visual => {
+				match event {
+					e if key_bindings.abort.contains(&e) => Event::from(MetaEvent::Abort),
+					e if key_bindings.action_break.contains(&e) => Event::from(MetaEvent::ActionBreak),
+					e if key_bindings.action_drop.contains(&e) => Event::from(MetaEvent::ActionDrop),
+					e if key_bindings.action_edit.contains(&e) => Event::from(MetaEvent::ActionEdit),
+					e if key_bindings.action_fixup.contains(&e) => Event::from(MetaEvent::ActionFixup),
+					e if key_bindings.action_pick.contains(&e) => Event::from(MetaEvent::ActionPick),
+					e if key_bindings.action_reword.contains(&e) => Event::from(MetaEvent::ActionReword),
+					e if key_bindings.action_squash.contains(&e) => Event::from(MetaEvent::ActionSquash),
+					e if key_bindings.edit.contains(&e) => Event::from(MetaEvent::Edit),
+					e if key_bindings.force_abort.contains(&e) => Event::from(MetaEvent::ForceAbort),
+					e if key_bindings.force_rebase.contains(&e) => Event::from(MetaEvent::ForceRebase),
+					e if key_bindings.insert_line.contains(&e) => Event::from(MetaEvent::InsertLine),
+					e if key_bindings.move_down.contains(&e) => Event::from(MetaEvent::MoveCursorDown),
+					e if key_bindings.move_down_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageDown),
+					e if key_bindings.move_end.contains(&e) => Event::from(MetaEvent::MoveCursorEnd),
+					e if key_bindings.move_home.contains(&e) => Event::from(MetaEvent::MoveCursorHome),
+					e if key_bindings.move_left.contains(&e) => Event::from(MetaEvent::MoveCursorLeft),
+					e if key_bindings.move_right.contains(&e) => Event::from(MetaEvent::MoveCursorRight),
+					e if key_bindings.move_selection_down.contains(&e) => Event::from(MetaEvent::SwapSelectedDown),
+					e if key_bindings.move_selection_up.contains(&e) => Event::from(MetaEvent::SwapSelectedUp),
+					e if key_bindings.move_up.contains(&e) => Event::from(MetaEvent::MoveCursorUp),
+					e if key_bindings.move_up_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageUp),
+					e if key_bindings.open_in_external_editor.contains(&e) => Event::from(MetaEvent::OpenInEditor),
+					e if key_bindings.rebase.contains(&e) => Event::from(MetaEvent::Rebase),
+					e if key_bindings.remove_line.contains(&e) => Event::from(MetaEvent::Delete),
+					e if key_bindings.show_commit.contains(&e) => Event::from(MetaEvent::ShowCommit),
+					e if key_bindings.toggle_visual_mode.contains(&e) => Event::from(MetaEvent::ToggleVisualMode),
+					Event::Mouse(mouse_event) => {
+						match mouse_event.kind {
+							MouseEventKind::ScrollDown => Event::from(MetaEvent::MoveCursorDown),
+							MouseEventKind::ScrollUp => Event::from(MetaEvent::MoveCursorUp),
+							_ => event,
+						}
+					},
+					_ => event,
+				}
+			},
+			ListState::Edit => event,
 		}
 	}
 
