@@ -10,7 +10,6 @@ use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use input::{Event, InputOptions, KeyBindings, MetaEvent};
-use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender};
 
@@ -20,13 +19,15 @@ use self::{
 	view_builder::{ViewBuilder, ViewBuilderOptions},
 };
 use crate::{
-	components::help::{Help, INPUT_OPTIONS as HELP_INPUT_OPTIONS},
+	components::help::Help,
 	module::{Module, ProcessResult, State},
+	select,
 };
 
-lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO | InputOptions::MOVEMENT | InputOptions::HELP;
-}
+// TODO Remove `union` call when bitflags/bitflags#180 is resolved
+const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
+	.union(InputOptions::MOVEMENT)
+	.union(InputOptions::HELP);
 
 pub(crate) struct ShowCommit {
 	commit_diff_loader_options: CommitDiffLoaderOptions,
@@ -115,12 +116,7 @@ impl Module for ShowCommit {
 	}
 
 	fn input_options(&self) -> &InputOptions {
-		if self.help.is_active() {
-			&HELP_INPUT_OPTIONS
-		}
-		else {
-			&INPUT_OPTIONS
-		}
+		select!(default & INPUT_OPTIONS, || self.help.input_options(),)
 	}
 
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
