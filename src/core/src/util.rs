@@ -8,7 +8,7 @@ macro_rules! select {
 			value
 		})*
 		else {
-			$default
+			$default()
 		}
 	};
 }
