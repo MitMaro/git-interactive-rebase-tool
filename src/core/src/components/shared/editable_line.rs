@@ -32,8 +32,8 @@ impl EditableLine {
 		self.cursor_position = 0;
 	}
 
-	pub(crate) fn get_content(&self) -> String {
-		self.content.clone()
+	pub(crate) fn get_content(&self) -> &str {
+		self.content.as_str()
 	}
 
 	pub(crate) const fn cursor_position(&self) -> usize {

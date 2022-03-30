@@ -96,7 +96,7 @@ impl Edit {
 		self.finished
 	}
 
-	pub(crate) fn get_content(&self) -> String {
+	pub(crate) fn get_content(&self) -> &str {
 		self.editable_line.get_content()
 	}
 }

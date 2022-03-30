@@ -534,7 +534,7 @@ impl List {
 			rebase_todo.update_range(
 				selected_index,
 				selected_index,
-				&EditContext::new().content(self.edit.get_content().as_str()),
+				&EditContext::new().content(self.edit.get_content()),
 			);
 			self.visual_index_start = None;
 			self.state = ListState::Normal;

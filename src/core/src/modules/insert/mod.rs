@@ -83,11 +83,11 @@ impl Module for Insert {
 					result = result.state(State::List);
 					if !content.is_empty() {
 						let line = match self.line_type {
-							LineType::Exec => Line::new_exec(content.as_str()),
-							LineType::Pick => Line::new_pick(content.as_str()),
-							LineType::Label => Line::new_label(content.as_str()),
-							LineType::Reset => Line::new_reset(content.as_str()),
-							LineType::Merge => Line::new_merge(content.as_str()),
+							LineType::Exec => Line::new_exec(content),
+							LineType::Pick => Line::new_pick(content),
+							LineType::Label => Line::new_label(content),
+							LineType::Reset => Line::new_reset(content),
+							LineType::Merge => Line::new_merge(content),
 							// this should exit in the prompt state and never get here
 							LineType::Cancel => unreachable!(),
 						};
