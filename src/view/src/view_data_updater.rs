@@ -2,13 +2,13 @@ use super::{ViewData, ViewLine};
 
 /// An updater utility for a `ViewData`.
 #[derive(Debug)]
-pub struct ViewDataUpdater<'v> {
+pub struct ViewDataUpdater<'view_data> {
 	modified: bool,
-	view_data: &'v mut ViewData,
+	view_data: &'view_data mut ViewData,
 }
 
-impl<'v> ViewDataUpdater<'v> {
-	pub(crate) fn new(view_data: &'v mut ViewData) -> Self {
+impl<'view_data> ViewDataUpdater<'view_data> {
+	pub(crate) fn new(view_data: &'view_data mut ViewData) -> Self {
 		Self {
 			view_data,
 			modified: false,

@@ -21,13 +21,13 @@ lazy_static! {
 	static ref UNKNOWN_PATH: PathBuf = PathBuf::from("unknown");
 }
 
-pub(crate) struct CommitDiffLoader<'d> {
-	config: &'d CommitDiffLoaderOptions,
+pub(crate) struct CommitDiffLoader<'options> {
+	config: &'options CommitDiffLoaderOptions,
 	repo: Arc<Mutex<Repository>>,
 }
 
-impl<'d> CommitDiffLoader<'d> {
-	pub(crate) const fn new(repo: Arc<Mutex<Repository>>, config: &'d CommitDiffLoaderOptions) -> Self {
+impl<'options> CommitDiffLoader<'options> {
+	pub(crate) const fn new(repo: Arc<Mutex<Repository>>, config: &'options CommitDiffLoaderOptions) -> Self {
 		Self { config, repo }
 	}
 
