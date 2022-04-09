@@ -185,7 +185,7 @@ fn expand_expected(expected: &[String]) -> Vec<String> {
 		.collect::<Vec<String>>()
 }
 
-#[allow(clippy::indexing_slicing, clippy::string_slice)]
+#[allow(clippy::indexing_slicing, clippy::string_slice, clippy::panic)]
 pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
@@ -298,6 +298,7 @@ macro_rules! assert_rendered_output {
 	};
 }
 
+#[allow(clippy::panic)]
 fn assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[String]) {
 	let actions = view_sender
 		.clone_render_slice()
@@ -401,7 +402,7 @@ impl TestContext {
 
 	/// Assert that certain messages were sent by the `ViewSender`.
 	#[inline]
-	#[allow(clippy::missing_panics_doc)]
+	#[allow(clippy::missing_panics_doc, clippy::panic)]
 	pub fn assert_sent_messages(&self, messages: Vec<&str>) {
 		let mut mismatch = false;
 		let mut error_output = vec![

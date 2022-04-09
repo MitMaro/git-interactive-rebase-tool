@@ -6,12 +6,12 @@ use view::{RenderContext, ViewData, ViewSender};
 
 use super::{Module, ProcessResult, State};
 
-pub(crate) struct Modules<'m> {
+pub(crate) struct Modules<'modules> {
 	event_handler: EventHandler,
-	modules: HashMap<State, Box<dyn Module + 'm>>,
+	modules: HashMap<State, Box<dyn Module + 'modules>>,
 }
 
-impl<'m> Modules<'m> {
+impl<'modules> Modules<'modules> {
 	pub(crate) fn new(event_handler: EventHandler) -> Self {
 		Self {
 			event_handler,
@@ -19,19 +19,19 @@ impl<'m> Modules<'m> {
 		}
 	}
 
-	pub(crate) fn register_module<T: Module + 'm>(&mut self, state: State, module: T) {
+	pub(crate) fn register_module<T: Module + 'modules>(&mut self, state: State, module: T) {
 		let _previous = self.modules.insert(state, Box::new(module));
 	}
 
 	#[allow(clippy::panic)]
-	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn Module + 'm> {
+	fn get_mut_module(&mut self, state: State) -> &mut Box<dyn Module + 'modules> {
 		self.modules
 			.get_mut(&state)
 			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}. Please report.", state))
 	}
 
 	#[allow(clippy::borrowed_box, clippy::panic)]
-	fn get_module(&self, state: State) -> &Box<dyn Module + 'm> {
+	fn get_module(&self, state: State) -> &Box<dyn Module + 'modules> {
 		self.modules
 			.get(&state)
 			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}", state))
