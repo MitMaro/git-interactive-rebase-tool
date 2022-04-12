@@ -2,9 +2,11 @@
 mod tests;
 
 use display::DisplayColor;
-use input::{Event, InputOptions};
+use input::{Event, InputOptions, KeyBindings, MetaEvent};
 use unicode_segmentation::UnicodeSegmentation;
 use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
+
+use crate::first;
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
 const INPUT_OPTIONS: InputOptions = InputOptions::RESIZE.union(InputOptions::MOVEMENT);
@@ -76,12 +78,26 @@ impl Help {
 		self.active.then(|| &INPUT_OPTIONS)
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event, view_sender: &ViewSender) {
-		if handle_view_data_scroll(event, view_sender).is_none() {
-			if let Event::Key(_) = event {
-				self.active = false;
+	pub(crate) fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Option<Event> {
+		if self.is_active() {
+			match event {
+				Event::Key(_) => Some(Event::from(MetaEvent::Help)),
+				_ => None,
 			}
 		}
+		else {
+			(key_bindings.help.contains(&event)).then(|| Event::from(MetaEvent::Help))
+		}
+	}
+
+	pub(crate) fn handle_event(&mut self, event: Event, view_sender: &ViewSender) {
+		let mut event_handler = || {
+			if event == Event::from(MetaEvent::Help) {
+				self.active = false;
+			}
+			Some(())
+		};
+		first!(|| handle_view_data_scroll(event, view_sender), event_handler);
 	}
 
 	pub(crate) fn set_active(&mut self) {

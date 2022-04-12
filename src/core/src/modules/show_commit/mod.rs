@@ -25,9 +25,7 @@ use crate::{
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
-const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
-	.union(InputOptions::MOVEMENT)
-	.union(InputOptions::HELP);
+const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO.union(InputOptions::MOVEMENT);
 
 pub(crate) struct ShowCommit {
 	commit_diff_loader_options: CommitDiffLoaderOptions,
@@ -116,16 +114,20 @@ impl Module for ShowCommit {
 	}
 
 	fn input_options(&self) -> &InputOptions {
-		select!(default || &INPUT_OPTIONS, || self.help.input_options(),)
+		select!(default || &INPUT_OPTIONS, || self.help.input_options())
 	}
 
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
-		if key_bindings.show_diff.contains(&event) {
-			Event::from(MetaEvent::ShowDiff)
-		}
-		else {
-			event
-		}
+		select!(
+			default || {
+				key_bindings
+					.show_diff
+					.contains(&event)
+					.then(|| Event::from(MetaEvent::ShowDiff))
+					.unwrap_or(event)
+			},
+			|| { self.help.read_event(event, key_bindings) }
+		)
 	}
 
 	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> ProcessResult {

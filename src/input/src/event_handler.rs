@@ -40,10 +40,6 @@ impl EventHandler {
 			}
 		}
 
-		if input_options.contains(InputOptions::HELP) && self.key_bindings.help.contains(&event) {
-			return Event::from(MetaEvent::Help);
-		}
-
 		if input_options.contains(InputOptions::UNDO_REDO) {
 			if let Some(evt) = Self::handle_undo_redo(&self.key_bindings, event) {
 				return evt;
@@ -133,7 +129,6 @@ mod tests {
 	}), true)]
 	#[case::resize(Event::Resize(100, 100), false)]
 	#[case::movement(Event::from(KeyCode::Up), false)]
-	#[case::help(Event::from('?'), false)]
 	#[case::undo_redo(Event::Key(KeyEvent {
 		code: KeyCode::Char('z'),
 		modifiers: KeyModifiers::CONTROL,
@@ -158,7 +153,6 @@ mod tests {
 	}), true)]
 	#[case::resize(Event::Resize(100, 100), true)]
 	#[case::movement(Event::from(KeyCode::Up), true)]
-	#[case::help(Event::from('?'), true)]
 	#[case::undo_redo(Event::Key(KeyEvent {
 		code: KeyCode::Char('z'),
 		modifiers: KeyModifiers::CONTROL,
