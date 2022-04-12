@@ -20,9 +20,7 @@ use crate::{
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
-const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
-	.union(InputOptions::RESIZE)
-	.union(InputOptions::HELP);
+const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO.union(InputOptions::RESIZE);
 
 #[derive(Debug, PartialEq)]
 enum ListState {
@@ -91,9 +89,11 @@ impl Module for List {
 	}
 
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
-		select!(default || event, || self.read_event_help(event), || {
-			Some(self.read_event_default(event, key_bindings))
-		})
+		select!(
+			default || self.read_event_default(event, key_bindings),
+			|| self.normal_mode_help.read_event(event, key_bindings),
+			|| self.visual_mode_help.read_event(event, key_bindings)
+		)
 	}
 }
 
@@ -380,10 +380,6 @@ impl List {
 		else {
 			self.update_list_view_data(context, todo_file)
 		}
-	}
-
-	fn read_event_help(&self, event: Event) -> Option<Event> {
-		(self.visual_mode_help.is_active() || self.normal_mode_help.is_active()).then(|| event)
 	}
 
 	#[allow(clippy::cognitive_complexity)]

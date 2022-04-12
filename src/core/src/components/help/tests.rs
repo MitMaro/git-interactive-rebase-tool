@@ -1,8 +1,15 @@
-use input::MetaEvent;
+use input::{testutil::create_test_keybindings, KeyModifiers, MetaEvent, MouseEvent, MouseEventKind};
 use rstest::rstest;
 use view::{assert_rendered_output, testutil::with_view_sender};
 
 use super::*;
+
+fn handle_event(help: &mut Help, event: Event) {
+	let key_bindings = &create_test_keybindings();
+	if let Some(evt) = help.read_event(event, key_bindings) {
+		with_view_sender(|context| help.handle_event(evt, &context.sender));
+	}
+}
 
 #[test]
 fn empty() {
@@ -44,21 +51,23 @@ fn from_key_bindings() {
 #[case::scroll_up(Event::from(MetaEvent::ScrollUp))]
 #[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
 #[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
-fn input_continue_active(#[case] event: Event) {
-	with_view_sender(|context| {
-		let mut module = Help::new_from_keybindings(&[]);
-		module.set_active();
-		let _ = module.handle_event(event, &context.sender);
-		assert!(module.is_active());
-	});
+#[case::mouse_event(Event::Mouse(MouseEvent {
+	kind: MouseEventKind::ScrollUp,
+	column: 0,
+	row: 0,
+	modifiers: KeyModifiers::empty(),
+}))]
+fn handle_standard_events(#[case] event: Event) {
+	let mut module = Help::new_from_keybindings(&[]);
+	module.set_active();
+	handle_event(&mut module, event);
+	assert!(module.is_active());
 }
 
 #[test]
-fn input_other() {
-	with_view_sender(|context| {
-		let mut module = Help::new_from_keybindings(&[]);
-		module.set_active();
-		let _ = module.handle_event(Event::from('a'), &context.sender);
-		assert!(!module.is_active());
-	});
+fn handle_other_key_event() {
+	let mut module = Help::new_from_keybindings(&[]);
+	module.set_active();
+	handle_event(&mut module, Event::from('a'));
+	assert!(!module.is_active());
 }
