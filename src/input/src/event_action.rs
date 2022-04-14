@@ -2,8 +2,8 @@ use crate::Event;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(clippy::exhaustive_enums)]
-pub enum EventAction {
+pub enum EventAction<CustomEvent: crate::CustomEvent> {
 	End,
-	EnqueueEvent(Event),
-	PushEvent(Event),
+	EnqueueEvent(Event<CustomEvent>),
+	PushEvent(Event<CustomEvent>),
 }

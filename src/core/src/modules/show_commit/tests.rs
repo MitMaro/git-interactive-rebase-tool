@@ -8,6 +8,7 @@ use git::{
 	Status,
 	User,
 };
+use input::StandardEvent;
 use rstest::rstest;
 use view::{assert_rendered_output, render_line, ViewLine};
 
@@ -1260,13 +1261,13 @@ fn handle_event_other_key_from_overview() {
 }
 
 #[rstest]
-#[case::scroll_left(MetaEvent::ScrollLeft)]
-#[case::scroll_right(MetaEvent::ScrollRight)]
-#[case::scroll_down(MetaEvent::ScrollDown)]
-#[case::scroll_up(MetaEvent::ScrollUp)]
-#[case::scroll_jump_down(MetaEvent::ScrollJumpDown)]
-#[case::scroll_jump_up(MetaEvent::ScrollJumpUp)]
-fn scroll_events(#[case] event: MetaEvent) {
+#[case::scroll_left(StandardEvent::ScrollLeft)]
+#[case::scroll_right(StandardEvent::ScrollRight)]
+#[case::scroll_down(StandardEvent::ScrollDown)]
+#[case::scroll_up(StandardEvent::ScrollUp)]
+#[case::scroll_jump_down(StandardEvent::ScrollJumpDown)]
+#[case::scroll_jump_up(StandardEvent::ScrollJumpUp)]
+fn scroll_events(#[case] event: StandardEvent) {
 	with_temp_repository(|repo| {
 		module_test(&[], &[Event::from(event)], |mut test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);

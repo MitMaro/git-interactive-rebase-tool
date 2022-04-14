@@ -1,9 +1,10 @@
-use input::{Event, InputOptions, KeyBindings};
+use input::InputOptions;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
+	events::{Event, KeyBindings},
 	module::{ExitStatus, Module, ProcessResult, State},
 };
 
@@ -50,11 +51,11 @@ impl ConfirmRebase {
 
 #[cfg(test)]
 mod tests {
-	use input::{Event, KeyCode, MetaEvent};
+	use input::KeyCode;
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, testutil::module_test};
+	use crate::{assert_process_result, events::MetaEvent, testutil::module_test};
 
 	fn create_confirm_rebase() -> ConfirmRebase {
 		ConfirmRebase::new(&[String::from("y")], &[String::from("n")])

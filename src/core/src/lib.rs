@@ -83,6 +83,7 @@
 
 mod arguments;
 mod components;
+mod events;
 mod exit;
 mod help;
 mod license;

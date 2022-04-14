@@ -1,8 +1,9 @@
-use input::{testutil::create_test_keybindings, KeyModifiers, MetaEvent, MouseEvent, MouseEventKind};
+use input::{KeyModifiers, MouseEvent, MouseEventKind, StandardEvent};
 use rstest::rstest;
 use view::{assert_rendered_output, testutil::with_view_sender};
 
 use super::*;
+use crate::testutil::create_test_keybindings;
 
 fn handle_event(help: &mut Help, event: Event) {
 	let key_bindings = &create_test_keybindings();
@@ -45,12 +46,12 @@ fn from_key_bindings() {
 
 #[rstest]
 #[case::resize(Event::Resize(100, 100))]
-#[case::scroll_left(Event::from(MetaEvent::ScrollLeft))]
-#[case::scroll_right(Event::from(MetaEvent::ScrollRight))]
-#[case::scroll_down(Event::from(MetaEvent::ScrollDown))]
-#[case::scroll_up(Event::from(MetaEvent::ScrollUp))]
-#[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
-#[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
+#[case::scroll_left(Event::from(StandardEvent::ScrollLeft))]
+#[case::scroll_right(Event::from(StandardEvent::ScrollRight))]
+#[case::scroll_down(Event::from(StandardEvent::ScrollDown))]
+#[case::scroll_up(Event::from(StandardEvent::ScrollUp))]
+#[case::scroll_jump_down(Event::from(StandardEvent::ScrollJumpDown))]
+#[case::scroll_jump_up(Event::from(StandardEvent::ScrollJumpUp))]
 #[case::mouse_event(Event::Mouse(MouseEvent {
 	kind: MouseEventKind::ScrollUp,
 	column: 0,

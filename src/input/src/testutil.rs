@@ -3,66 +3,63 @@
 use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers};
 use crate::{event_action::EventAction, Sender};
 
+#[cfg(test)]
+pub(crate) mod local {
+	use crate::{CustomEvent, CustomKeybinding};
+
+	#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
+	pub(crate) enum TestEvent {}
+	impl CustomEvent for TestEvent {}
+
+	pub(crate) struct TestKeybinding {}
+	impl CustomKeybinding for TestKeybinding {
+		fn new(_: &config::KeyBindings) -> Self {
+			Self {}
+		}
+	}
+
+	pub(crate) type Event = super::Event<TestEvent>;
+	pub(crate) type EventHandler = super::EventHandler<TestKeybinding, TestEvent>;
+	pub(crate) type KeyBindings = super::KeyBindings<TestKeybinding, TestEvent>;
+
+	pub(crate) fn create_test_keybindings() -> KeyBindings {
+		super::create_test_keybindings::<TestKeybinding, TestEvent>(TestKeybinding {})
+	}
+}
+
 /// Create a mocked version of `KeyBindings`.
 #[inline]
 #[must_use]
-pub fn create_test_keybindings() -> KeyBindings {
+pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>(
+	custom_key_bindings: TestKeybinding,
+) -> KeyBindings<TestKeybinding, CustomEvent> {
 	KeyBindings {
-		abort: vec![Event::from(KeyCode::Char('q'))],
-		action_break: vec![Event::from(KeyCode::Char('b'))],
-		action_drop: vec![Event::from(KeyCode::Char('d'))],
-		action_edit: vec![Event::from(KeyCode::Char('e'))],
-		action_fixup: vec![Event::from(KeyCode::Char('f'))],
-		action_pick: vec![Event::from(KeyCode::Char('p'))],
-		action_reword: vec![Event::from(KeyCode::Char('r'))],
-		action_squash: vec![Event::from(KeyCode::Char('s'))],
-		confirm_yes: vec![Event::from(KeyCode::Char('y'))],
-		edit: vec![Event::from(KeyCode::Char('E'))],
-		force_abort: vec![Event::from(KeyCode::Char('Q'))],
-		force_rebase: vec![Event::from(KeyCode::Char('W'))],
-		help: vec![Event::from(KeyCode::Char('?'))],
-		insert_line: vec![Event::from(KeyCode::Char('I'))],
-		move_down: vec![Event::from(KeyCode::Down)],
-		move_down_step: vec![Event::from(KeyCode::PageDown)],
-		move_end: vec![Event::from(KeyCode::End)],
-		move_home: vec![Event::from(KeyCode::Home)],
-		move_left: vec![Event::from(KeyCode::Left)],
-		move_right: vec![Event::from(KeyCode::Right)],
-		move_selection_down: vec![Event::from(KeyCode::Char('j'))],
-		move_selection_up: vec![Event::from(KeyCode::Char('k'))],
-		move_up: vec![Event::from(KeyCode::Up)],
-		move_up_step: vec![Event::from(KeyCode::PageUp)],
-		open_in_external_editor: vec![Event::from(KeyCode::Char('!'))],
-		rebase: vec![Event::from(KeyCode::Char('w'))],
 		redo: vec![Event::Key({
 			KeyEvent {
 				code: KeyCode::Char('y'),
 				modifiers: KeyModifiers::CONTROL,
 			}
 		})],
-		remove_line: vec![Event::from(KeyCode::Delete)],
-		show_commit: vec![Event::from(KeyCode::Char('c'))],
-		show_diff: vec![Event::from(KeyCode::Char('d'))],
-		toggle_visual_mode: vec![Event::from(KeyCode::Char('v'))],
 		undo: vec![Event::Key({
 			KeyEvent {
 				code: KeyCode::Char('z'),
 				modifiers: KeyModifiers::CONTROL,
 			}
 		})],
+		custom: custom_key_bindings,
 	}
 }
 
 /// Context for a `EventHandler` based test.
 #[allow(missing_debug_implementations)]
 #[non_exhaustive]
-pub struct TestContext {
+pub struct TestContext<TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
 	/// The `EventHandler` instance.
-	pub event_handler: EventHandler,
+	pub event_handler: EventHandler<TestKeybinding, CustomEvent>,
 	/// The sender instance.
-	pub sender: Sender,
+	pub sender: Sender<CustomEvent>,
 	/// The receiver instance.
-	pub receiver: crossbeam_channel::Receiver<EventAction>,
+	pub receiver: crossbeam_channel::Receiver<EventAction<CustomEvent>>,
 	/// The number of known available events.
 	pub number_events: usize,
 }
@@ -70,9 +67,14 @@ pub struct TestContext {
 /// Provide an `EventHandler` instance for use within a test.
 #[inline]
 #[allow(clippy::missing_panics_doc)]
-pub fn with_event_handler<C>(events: &[Event], callback: C)
-where C: FnOnce(TestContext) {
-	let event_handler = EventHandler::new(create_test_keybindings());
+pub fn with_event_handler<C, TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>(
+	custom_key_bindings: TestKeybinding,
+	events: &[Event<CustomEvent>],
+	callback: C,
+) where
+	C: FnOnce(TestContext<TestKeybinding, CustomEvent>),
+{
+	let event_handler = EventHandler::new(create_test_keybindings(custom_key_bindings));
 	let (sender, receiver) = crossbeam_channel::bounded(10);
 	let (_, new_event_receiver) = crossbeam_channel::unbounded();
 	let event_sender = Sender::new(sender, new_event_receiver);

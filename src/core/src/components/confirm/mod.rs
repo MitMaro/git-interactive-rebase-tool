@@ -4,9 +4,11 @@ mod tests;
 
 use captur::capture;
 pub(crate) use confirmed::Confirmed;
-use input::{Event, InputOptions, KeyBindings, KeyCode, KeyEvent, MetaEvent};
+use input::{InputOptions, KeyCode, KeyEvent};
 use lazy_static::lazy_static;
 use view::{ViewData, ViewLine};
+
+use crate::events::{Event, KeyBindings, MetaEvent};
 
 lazy_static! {
 	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
@@ -42,8 +44,8 @@ impl Confirm {
 				let event_lower = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_lowercase()), key.modifiers));
 				let event_upper = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_uppercase()), key.modifiers));
 
-				return if key_bindings.confirm_yes.contains(&event_lower)
-					|| key_bindings.confirm_yes.contains(&event_upper)
+				return if key_bindings.custom.confirm_yes.contains(&event_lower)
+					|| key_bindings.custom.confirm_yes.contains(&event_upper)
 				{
 					Event::from(MetaEvent::Yes)
 				}
@@ -57,7 +59,7 @@ impl Confirm {
 
 	#[allow(clippy::unused_self)]
 	pub(crate) const fn handle_event(&self, event: Event) -> Confirmed {
-		if let Event::Meta(meta_event) = event {
+		if let Event::MetaEvent(meta_event) = event {
 			match meta_event {
 				MetaEvent::Yes => Confirmed::Yes,
 				MetaEvent::No => Confirmed::No,

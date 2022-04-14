@@ -6,7 +6,7 @@ mod external_editor_state;
 mod tests;
 
 use anyhow::{anyhow, Result};
-use input::{Event, InputOptions, MetaEvent};
+use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine, ViewSender};
@@ -14,6 +14,7 @@ use view::{RenderContext, ViewData, ViewLine, ViewSender};
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
 	components::choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
+	events::{Event, MetaEvent},
 	module::{ExitStatus, Module, ProcessResult, State},
 };
 
@@ -85,7 +86,7 @@ impl Module for ExternalEditor {
 			ExternalEditorState::Active => {
 				result = result.event(event);
 				match event {
-					Event::Meta(MetaEvent::ExternalCommandSuccess) => {
+					Event::MetaEvent(MetaEvent::ExternalCommandSuccess) => {
 						match todo_file.load_file() {
 							Ok(_) => {
 								if todo_file.is_empty() || todo_file.is_noop() {
@@ -98,7 +99,7 @@ impl Module for ExternalEditor {
 							Err(e) => result = self.set_state(result, ExternalEditorState::Error(e)),
 						}
 					},
-					Event::Meta(MetaEvent::ExternalCommandError) => {
+					Event::MetaEvent(MetaEvent::ExternalCommandError) => {
 						result = self.set_state(
 							result,
 							ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status")),

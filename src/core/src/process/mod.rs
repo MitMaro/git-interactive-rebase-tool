@@ -5,11 +5,14 @@ use std::{process::Command, thread};
 
 use anyhow::{anyhow, Result};
 use display::{CrossTerm, Tui};
-use input::{spawn_event_thread, Event, MetaEvent, Sender as EventSender};
+use input::{spawn_event_thread, Sender as EventSender, StandardEvent};
 use todo_file::TodoFile;
 use view::{spawn_view_thread, RenderContext, View, ViewSender};
 
-use crate::module::{ExitStatus, Modules, ProcessResult, State};
+use crate::{
+	events::{Event, MetaEvent},
+	module::{ExitStatus, Modules, ProcessResult, State},
+};
 
 pub(crate) struct Process {
 	exit_status: Option<ExitStatus>,
@@ -18,7 +21,7 @@ pub(crate) struct Process {
 	state: State,
 	threads: Vec<thread::JoinHandle<()>>,
 	view_sender: ViewSender,
-	event_sender: EventSender,
+	event_sender: EventSender<MetaEvent>,
 }
 
 impl Process {
@@ -139,10 +142,10 @@ impl Process {
 		}
 
 		match result.event {
-			Some(Event::Meta(MetaEvent::Exit)) => {
+			Some(Event::Standard(StandardEvent::Exit)) => {
 				self.exit_status = Some(ExitStatus::Abort);
 			},
-			Some(Event::Meta(MetaEvent::Kill)) => {
+			Some(Event::Standard(StandardEvent::Kill)) => {
 				self.exit_status = Some(ExitStatus::Kill);
 			},
 			Some(Event::Resize(..)) => {

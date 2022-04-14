@@ -4,9 +4,11 @@ mod tests;
 use std::collections::HashMap;
 
 use display::DisplayColor;
-use input::{Event, InputOptions, KeyCode};
+use input::{InputOptions, KeyCode};
 use lazy_static::lazy_static;
-use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, ViewData, ViewLine, ViewSender};
+
+use crate::{events::Event, util::handle_view_data_scroll};
 
 lazy_static! {
 	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;

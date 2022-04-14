@@ -1,25 +1,34 @@
 use super::{Event, KeyCode, KeyEvent, KeyModifiers};
-use crate::{key_bindings::KeyBindings, InputOptions, MetaEvent};
+use crate::{key_bindings::KeyBindings, InputOptions, StandardEvent};
 
 /// A handler for reading and processing events.
 #[allow(missing_debug_implementations)]
-pub struct EventHandler {
-	key_bindings: KeyBindings,
+pub struct EventHandler<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
+	key_bindings: KeyBindings<CustomKeybinding, CustomEvent>,
 }
 
-impl EventHandler {
+impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
+	EventHandler<CustomKeybinding, CustomEvent>
+{
 	/// Create a new instance of the `EventHandler`.
 	#[inline]
 	#[must_use]
-	pub const fn new(key_bindings: KeyBindings) -> Self {
+	pub fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
 		Self { key_bindings }
 	}
 
 	/// Read and handle an event.
 	#[inline]
 	#[allow(clippy::trivially_copy_pass_by_ref)]
-	pub fn read_event<F>(&self, event: Event, input_options: &InputOptions, callback: F) -> Event
-	where F: FnOnce(Event, &KeyBindings) -> Event {
+	pub fn read_event<F>(
+		&self,
+		event: Event<CustomEvent>,
+		input_options: &InputOptions,
+		callback: F,
+	) -> Event<CustomEvent>
+	where
+		F: FnOnce(Event<CustomEvent>, &KeyBindings<CustomKeybinding, CustomEvent>) -> Event<CustomEvent>,
+	{
 		if event == Event::None {
 			return event;
 		}
@@ -50,65 +59,68 @@ impl EventHandler {
 	}
 
 	#[allow(clippy::wildcard_enum_match_arm)]
-	fn handle_standard_inputs(event: Event) -> Option<Event> {
+	fn handle_standard_inputs(event: Event<CustomEvent>) -> Option<Event<CustomEvent>> {
 		match event {
 			Event::Key(KeyEvent {
 				code: KeyCode::Char('c'),
 				modifiers: KeyModifiers::CONTROL,
-			}) => Some(Event::from(MetaEvent::Kill)),
+			}) => Some(Event::from(StandardEvent::Kill)),
 			Event::Key(KeyEvent {
 				code: KeyCode::Char('d'),
 				modifiers: KeyModifiers::CONTROL,
-			}) => Some(Event::from(MetaEvent::Exit)),
+			}) => Some(Event::from(StandardEvent::Exit)),
 			_ => None,
 		}
 	}
 
 	#[allow(clippy::wildcard_enum_match_arm)]
-	fn handle_movement_inputs(event: Event) -> Option<Event> {
+	fn handle_movement_inputs(event: Event<CustomEvent>) -> Option<Event<CustomEvent>> {
 		match event {
 			Event::Key(KeyEvent {
 				code: KeyCode::Up,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollUp)),
+			}) => Some(Event::from(StandardEvent::ScrollUp)),
 			Event::Key(KeyEvent {
 				code: KeyCode::Down,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollDown)),
+			}) => Some(Event::from(StandardEvent::ScrollDown)),
 			Event::Key(KeyEvent {
 				code: KeyCode::Left,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollLeft)),
+			}) => Some(Event::from(StandardEvent::ScrollLeft)),
 			Event::Key(KeyEvent {
 				code: KeyCode::Right,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollRight)),
+			}) => Some(Event::from(StandardEvent::ScrollRight)),
 			Event::Key(KeyEvent {
 				code: KeyCode::PageUp,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollJumpUp)),
+			}) => Some(Event::from(StandardEvent::ScrollJumpUp)),
 			Event::Key(KeyEvent {
 				code: KeyCode::PageDown,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollJumpDown)),
+			}) => Some(Event::from(StandardEvent::ScrollJumpDown)),
 			Event::Key(KeyEvent {
 				code: KeyCode::Home,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollTop)),
+			}) => Some(Event::from(StandardEvent::ScrollTop)),
 			Event::Key(KeyEvent {
 				code: KeyCode::End,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(MetaEvent::ScrollBottom)),
+			}) => Some(Event::from(StandardEvent::ScrollBottom)),
 			_ => None,
 		}
 	}
 
-	fn handle_undo_redo(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
+	fn handle_undo_redo(
+		key_bindings: &KeyBindings<CustomKeybinding, CustomEvent>,
+		event: Event<CustomEvent>,
+	) -> Option<Event<CustomEvent>> {
 		if key_bindings.undo.contains(&event) {
-			Some(Event::from(MetaEvent::Undo))
+			Some(Event::from(StandardEvent::Undo))
 		}
 		else if key_bindings.redo.contains(&event) {
-			Some(Event::from(MetaEvent::Redo))
+			Some(Event::from(StandardEvent::Redo))
 		}
 		else {
 			None
@@ -121,7 +133,8 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::testutil::create_test_keybindings;
+	use crate::testutil::local::{create_test_keybindings, Event, EventHandler};
+
 	#[rstest]
 	#[case::standard(Event::Key(KeyEvent {
 		code: KeyCode::Char('c'),
@@ -181,11 +194,11 @@ mod tests {
 	#[case::standard(Event::Key(KeyEvent {
 		code: KeyCode::Char('c'),
 		modifiers: KeyModifiers::CONTROL,
-	}), Event::from(MetaEvent::Kill))]
+	}), Event::from(StandardEvent::Kill))]
 	#[case::standard(Event::Key(KeyEvent {
 		code: KeyCode::Char('d'),
 		modifiers: KeyModifiers::CONTROL,
-	}), Event::from(MetaEvent::Exit))]
+	}), Event::from(StandardEvent::Exit))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn standard_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());
@@ -194,14 +207,14 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case::standard(Event::from(KeyCode::Up), Event::from(MetaEvent::ScrollUp))]
-	#[case::standard(Event::from(KeyCode::Down), Event::from(MetaEvent::ScrollDown))]
-	#[case::standard(Event::from(KeyCode::Left), Event::from(MetaEvent::ScrollLeft))]
-	#[case::standard(Event::from(KeyCode::Right), Event::from(MetaEvent::ScrollRight))]
-	#[case::standard(Event::from(KeyCode::PageUp), Event::from(MetaEvent::ScrollJumpUp))]
-	#[case::standard(Event::from(KeyCode::PageDown), Event::from(MetaEvent::ScrollJumpDown))]
-	#[case::standard(Event::from(KeyCode::Home), Event::from(MetaEvent::ScrollTop))]
-	#[case::standard(Event::from(KeyCode::End), Event::from(MetaEvent::ScrollBottom))]
+	#[case::standard(Event::from(KeyCode::Up), Event::from(StandardEvent::ScrollUp))]
+	#[case::standard(Event::from(KeyCode::Down), Event::from(StandardEvent::ScrollDown))]
+	#[case::standard(Event::from(KeyCode::Left), Event::from(StandardEvent::ScrollLeft))]
+	#[case::standard(Event::from(KeyCode::Right), Event::from(StandardEvent::ScrollRight))]
+	#[case::standard(Event::from(KeyCode::PageUp), Event::from(StandardEvent::ScrollJumpUp))]
+	#[case::standard(Event::from(KeyCode::PageDown), Event::from(StandardEvent::ScrollJumpDown))]
+	#[case::standard(Event::from(KeyCode::Home), Event::from(StandardEvent::ScrollTop))]
+	#[case::standard(Event::from(KeyCode::End), Event::from(StandardEvent::ScrollBottom))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn movement_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());
@@ -213,11 +226,11 @@ mod tests {
 	#[case::standard(Event::Key(KeyEvent {
 		code: KeyCode::Char('z'),
 		modifiers: KeyModifiers::CONTROL,
-	}), Event::from(MetaEvent::Undo))]
+	}), Event::from(StandardEvent::Undo))]
 	#[case::standard(Event::Key(KeyEvent {
 		code: KeyCode::Char('y'),
 		modifiers: KeyModifiers::CONTROL,
-	}), Event::from(MetaEvent::Redo))]
+	}), Event::from(StandardEvent::Redo))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn undo_redo_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());

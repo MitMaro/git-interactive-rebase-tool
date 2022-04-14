@@ -2,11 +2,15 @@
 mod tests;
 
 use display::DisplayColor;
-use input::{Event, InputOptions, KeyBindings, MetaEvent};
+use input::InputOptions;
 use unicode_segmentation::UnicodeSegmentation;
-use view::{handle_view_data_scroll, LineSegment, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, ViewData, ViewLine, ViewSender};
 
-use crate::first;
+use crate::{
+	events::{Event, KeyBindings, MetaEvent},
+	first,
+	util::handle_view_data_scroll,
+};
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
 const INPUT_OPTIONS: InputOptions = InputOptions::RESIZE.union(InputOptions::MOVEMENT);
@@ -86,7 +90,7 @@ impl Help {
 			}
 		}
 		else {
-			(key_bindings.help.contains(&event)).then(|| Event::from(MetaEvent::Help))
+			(key_bindings.custom.help.contains(&event)).then(|| Event::from(MetaEvent::Help))
 		}
 	}
 

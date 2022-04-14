@@ -83,13 +83,15 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance should only be used in test code.
 
+mod custom_event;
+mod custom_key_binding;
 mod event;
 mod event_action;
 mod event_handler;
 mod input_options;
 mod key_bindings;
-mod meta_event;
 mod sender;
+mod standard_event;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod thread;
@@ -97,11 +99,13 @@ mod thread;
 pub use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 
 pub use self::{
+	custom_event::CustomEvent,
+	custom_key_binding::CustomKeybinding,
 	event::Event,
 	event_handler::EventHandler,
 	input_options::InputOptions,
-	key_bindings::KeyBindings,
-	meta_event::MetaEvent,
+	key_bindings::{map_keybindings, KeyBindings},
 	sender::Sender,
+	standard_event::StandardEvent,
 	thread::spawn_event_thread,
 };

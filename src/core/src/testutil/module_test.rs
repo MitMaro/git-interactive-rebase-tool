@@ -1,10 +1,7 @@
 use std::{cell::Cell, path::Path};
 
 use captur::capture;
-use input::{
-	testutil::{with_event_handler, TestContext as EventHandlerTestContext},
-	Event,
-};
+use input::testutil::{with_event_handler, TestContext as EventHandlerTestContext};
 use tempfile::{Builder, NamedTempFile};
 use todo_file::{Line, TodoFile};
 use view::{
@@ -13,10 +10,14 @@ use view::{
 	ViewData,
 };
 
-use crate::module::{Module, ProcessResult, State};
+use crate::{
+	events::{AppKeyBindings, Event, MetaEvent},
+	module::{Module, ProcessResult, State},
+	testutil::create_test_custom_keybindings,
+};
 
 pub(crate) struct TestContext {
-	pub(crate) event_handler_context: EventHandlerTestContext,
+	pub(crate) event_handler_context: EventHandlerTestContext<AppKeyBindings, MetaEvent>,
 	pub(crate) view_sender_context: ViewSenderContext,
 	pub(crate) rebase_todo_file: TodoFile,
 	pub(crate) render_context: RenderContext,
@@ -89,7 +90,7 @@ impl TestContext {
 
 pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
-	with_event_handler(events, |event_handler_context| {
+	with_event_handler(create_test_custom_keybindings(), events, |event_handler_context| {
 		with_view_sender(|view_sender_context| {
 			capture!(lines);
 			let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))

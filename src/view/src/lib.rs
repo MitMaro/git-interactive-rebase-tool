@@ -93,7 +93,6 @@ mod sender;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod thread;
-mod util;
 mod view_data;
 mod view_data_updater;
 mod view_line;
@@ -111,7 +110,6 @@ pub use self::{
 	render_context::RenderContext,
 	sender::Sender as ViewSender,
 	thread::spawn_view_thread,
-	util::handle_view_data_scroll,
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,

@@ -1,11 +1,15 @@
 use captur::capture;
 use display::DisplayColor;
-use input::{Event, InputOptions};
+use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
-use view::{handle_view_data_scroll, LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
-use crate::module::{Module, ProcessResult, State};
+use crate::{
+	events::Event,
+	module::{Module, ProcessResult, State},
+	util::handle_view_data_scroll,
+};
 
 lazy_static! {
 	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
@@ -73,7 +77,7 @@ impl Error {
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
-	use input::{Event, MetaEvent};
+	use input::StandardEvent;
 	use view::assert_rendered_output;
 
 	use super::*;
@@ -163,12 +167,12 @@ mod tests {
 		module_test(
 			&[],
 			&[
-				Event::from(MetaEvent::ScrollLeft),
-				Event::from(MetaEvent::ScrollRight),
-				Event::from(MetaEvent::ScrollDown),
-				Event::from(MetaEvent::ScrollUp),
-				Event::from(MetaEvent::ScrollJumpDown),
-				Event::from(MetaEvent::ScrollJumpUp),
+				Event::from(StandardEvent::ScrollLeft),
+				Event::from(StandardEvent::ScrollRight),
+				Event::from(StandardEvent::ScrollDown),
+				Event::from(StandardEvent::ScrollUp),
+				Event::from(StandardEvent::ScrollJumpDown),
+				Event::from(StandardEvent::ScrollJumpUp),
 			],
 			|mut test_context| {
 				let mut module = Error::new();
@@ -176,27 +180,27 @@ mod tests {
 				module.handle_error(&anyhow!("Test Error"));
 				assert_process_result!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ScrollLeft)
+					event = Event::from(StandardEvent::ScrollLeft)
 				);
 				assert_process_result!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ScrollRight)
+					event = Event::from(StandardEvent::ScrollRight)
 				);
 				assert_process_result!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ScrollDown)
+					event = Event::from(StandardEvent::ScrollDown)
 				);
 				assert_process_result!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ScrollUp)
+					event = Event::from(StandardEvent::ScrollUp)
 				);
 				assert_process_result!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ScrollJumpDown)
+					event = Event::from(StandardEvent::ScrollJumpDown)
 				);
 				assert_process_result!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ScrollJumpUp)
+					event = Event::from(StandardEvent::ScrollJumpUp)
 				);
 			},
 		);

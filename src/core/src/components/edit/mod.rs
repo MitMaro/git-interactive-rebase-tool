@@ -2,11 +2,11 @@
 mod tests;
 
 use display::DisplayColor;
-use input::{Event, InputOptions, KeyCode, KeyEvent, KeyModifiers};
+use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 use view::{LineSegment, ViewData, ViewDataUpdater, ViewLine};
 
-use crate::components::shared::EditableLine;
+use crate::{components::shared::EditableLine, events::Event};
 
 lazy_static! {
 	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;

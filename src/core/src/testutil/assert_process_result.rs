@@ -1,8 +1,10 @@
 use anyhow::Error;
 use captur::capture;
-use input::Event;
 
-use crate::module::{ExitStatus, ProcessResult, State};
+use crate::{
+	events::Event,
+	module::{ExitStatus, ProcessResult, State},
+};
 
 fn format_process_result(
 	event: Option<Event>,
