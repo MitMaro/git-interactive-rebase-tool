@@ -1,4 +1,4 @@
-use input::MetaEvent;
+use input::StandardEvent;
 use rstest::rstest;
 use view::{assert_rendered_output, testutil::with_view_sender};
 
@@ -93,12 +93,12 @@ fn invalid_selection_character() {
 
 #[rstest]
 #[case::resize(Event::Resize(100, 100))]
-#[case::scroll_left(Event::from(MetaEvent::ScrollLeft))]
-#[case::scroll_right(Event::from(MetaEvent::ScrollRight))]
-#[case::scroll_down(Event::from(MetaEvent::ScrollDown))]
-#[case::scroll_up(Event::from(MetaEvent::ScrollUp))]
-#[case::scroll_jump_down(Event::from(MetaEvent::ScrollJumpDown))]
-#[case::scroll_jump_up(Event::from(MetaEvent::ScrollJumpUp))]
+#[case::scroll_left(Event::from(StandardEvent::ScrollLeft))]
+#[case::scroll_right(Event::from(StandardEvent::ScrollRight))]
+#[case::scroll_down(Event::from(StandardEvent::ScrollDown))]
+#[case::scroll_up(Event::from(StandardEvent::ScrollUp))]
+#[case::scroll_jump_down(Event::from(StandardEvent::ScrollJumpDown))]
+#[case::scroll_jump_up(Event::from(StandardEvent::ScrollJumpUp))]
 fn event_standard(#[case] event: Event) {
 	with_view_sender(|context| {
 		let mut module = Choice::new(create_choices());

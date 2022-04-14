@@ -16,7 +16,9 @@ const MAXIMUM_EVENTS: usize = 100;
 /// This may panic if there is an unexpected error in the processing of an event, i.e. a bug.
 #[inline]
 #[allow(clippy::module_name_repetitions)]
-pub fn spawn_event_thread<F: Send + 'static>(event_provider: F) -> (Sender, JoinHandle<()>)
+pub fn spawn_event_thread<F: Send + 'static, CustomEvent: crate::CustomEvent + Send + 'static>(
+	event_provider: F,
+) -> (Sender<CustomEvent>, JoinHandle<()>)
 where F: Fn() -> Result<Option<crossterm::event::Event>> {
 	let (sender, receiver) = bounded(0);
 	let (new_event_sender, new_event_receiver) = unbounded();
@@ -64,6 +66,12 @@ where F: Fn() -> Result<Option<crossterm::event::Event>> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::testutil::local::TestEvent;
+
+	fn spawn_event_thread<F: Send + 'static>(event_provider: F) -> (Sender<TestEvent>, JoinHandle<()>)
+	where F: Fn() -> Result<Option<crossterm::event::Event>> {
+		super::spawn_event_thread(event_provider)
+	}
 
 	#[test]
 	fn thread_enqueue_event_from_provider() {
@@ -165,7 +173,8 @@ mod tests {
 
 	#[test]
 	fn thread_push_event_overflow() {
-		let (mut sender, _thread) = spawn_event_thread(|| Ok(None));
+		let event_provider = || Ok(None);
+		let (mut sender, _thread) = spawn_event_thread(event_provider);
 
 		for _ in 0..100 {
 			sender.push_event(Event::from('a')).unwrap();

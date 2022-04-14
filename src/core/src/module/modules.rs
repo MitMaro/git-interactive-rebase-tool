@@ -5,14 +5,15 @@ use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 use super::{Module, ProcessResult, State};
+use crate::events::{AppKeyBindings, MetaEvent};
 
 pub(crate) struct Modules<'modules> {
-	event_handler: EventHandler,
+	event_handler: EventHandler<AppKeyBindings, MetaEvent>,
 	modules: HashMap<State, Box<dyn Module + 'modules>>,
 }
 
 impl<'modules> Modules<'modules> {
-	pub(crate) fn new(event_handler: EventHandler) -> Self {
+	pub(crate) fn new(event_handler: EventHandler<AppKeyBindings, MetaEvent>) -> Self {
 		Self {
 			event_handler,
 			modules: HashMap::new(),
@@ -57,7 +58,7 @@ impl<'modules> Modules<'modules> {
 	pub(crate) fn handle_event(
 		&mut self,
 		state: State,
-		event_sender: &mut EventSender,
+		event_sender: &mut EventSender<MetaEvent>,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
 	) -> ProcessResult {
@@ -81,11 +82,11 @@ mod tests {
 	use std::sync::Arc;
 
 	use anyhow::{anyhow, Error};
-	use input::{Event, MetaEvent};
+	use input::StandardEvent;
 	use parking_lot::Mutex;
 
 	use super::*;
-	use crate::testutil::module_test;
+	use crate::{events::Event, testutil::module_test};
 
 	#[derive(Debug, Clone)]
 	struct TestModule {
@@ -133,32 +134,40 @@ mod tests {
 
 	#[test]
 	fn module_lifecycle() {
-		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |mut context| {
-			let mut modules = Modules::new(context.event_handler_context.event_handler);
-			let test_module = TestModule::new();
-			modules.register_module(State::List, test_module.clone());
+		module_test(
+			&["pick aaa comment"],
+			&[Event::Standard(StandardEvent::Exit)],
+			|mut context| {
+				let mut modules = Modules::new(context.event_handler_context.event_handler);
+				let test_module = TestModule::new();
+				modules.register_module(State::List, test_module.clone());
 
-			let _ = modules.activate(State::List, &context.rebase_todo_file, State::Insert);
-			let _ = modules.handle_event(
-				State::List,
-				&mut context.event_handler_context.sender,
-				&context.view_sender_context.sender,
-				&mut context.rebase_todo_file,
-			);
-			let _ = modules.build_view_data(State::List, &RenderContext::new(100, 100), &context.rebase_todo_file);
-			modules.deactivate(State::List);
-			assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
-		});
+				let _ = modules.activate(State::List, &context.rebase_todo_file, State::Insert);
+				let _ = modules.handle_event(
+					State::List,
+					&mut context.event_handler_context.sender,
+					&context.view_sender_context.sender,
+					&mut context.rebase_todo_file,
+				);
+				let _ = modules.build_view_data(State::List, &RenderContext::new(100, 100), &context.rebase_todo_file);
+				modules.deactivate(State::List);
+				assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
+			},
+		);
 	}
 
 	#[test]
 	fn error() {
-		module_test(&["pick aaa comment"], &[Event::Meta(MetaEvent::Exit)], |context| {
-			let mut modules = Modules::new(context.event_handler_context.event_handler);
-			let test_module = TestModule::new();
-			modules.register_module(State::Error, test_module.clone());
-			modules.error(State::Error, &anyhow!("Test Error"));
-			assert_eq!(test_module.trace(), "Test Error");
-		});
+		module_test(
+			&["pick aaa comment"],
+			&[Event::Standard(StandardEvent::Exit)],
+			|context| {
+				let mut modules = Modules::new(context.event_handler_context.event_handler);
+				let test_module = TestModule::new();
+				modules.register_module(State::Error, test_module.clone());
+				modules.error(State::Error, &anyhow!("Test Error"));
+				assert_eq!(test_module.trace(), "Test Error");
+			},
+		);
 	}
 }

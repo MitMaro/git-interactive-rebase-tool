@@ -1109,13 +1109,13 @@ fn normal_mode_open_external_editor() {
 fn normal_mode_undo() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionDrop), Event::from(MetaEvent::Undo)],
+		&[Event::from(MetaEvent::ActionDrop), Event::from(StandardEvent::Undo)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Undo)
+				event = Event::from(StandardEvent::Undo)
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1137,7 +1137,7 @@ fn normal_mode_undo_visual_mode_change() {
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::ActionDrop),
 			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::Undo),
+			Event::from(StandardEvent::Undo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
@@ -1160,8 +1160,8 @@ fn normal_mode_redo() {
 		&["drop aaa c1"],
 		&[
 			Event::from(MetaEvent::ActionPick),
-			Event::from(MetaEvent::Undo),
-			Event::from(MetaEvent::Redo),
+			Event::from(StandardEvent::Undo),
+			Event::from(StandardEvent::Redo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
@@ -1169,7 +1169,7 @@ fn normal_mode_redo() {
 			let _ = test_context.handle_event(&mut module);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Redo)
+				event = Event::from(StandardEvent::Redo)
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1189,9 +1189,9 @@ fn normal_mode_redo_visual_mode_change() {
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::ActionPick),
-			Event::from(MetaEvent::Undo),
+			Event::from(StandardEvent::Undo),
 			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::Redo),
+			Event::from(StandardEvent::Redo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
@@ -1977,14 +1977,14 @@ fn visual_mode_undo() {
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::ActionDrop),
-			Event::from(MetaEvent::Undo),
+			Event::from(StandardEvent::Undo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_n_events(&mut module, 3);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Undo)
+				event = Event::from(StandardEvent::Undo)
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2005,14 +2005,14 @@ fn visual_mode_undo_normal_mode_change() {
 			Event::from(MetaEvent::ActionDrop),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::Undo),
+			Event::from(StandardEvent::Undo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_n_events(&mut module, 3);
 			assert_process_result!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Undo)
+				event = Event::from(StandardEvent::Undo)
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2034,8 +2034,8 @@ fn visual_mode_redo() {
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
 			Event::from(MetaEvent::ActionPick),
-			Event::from(MetaEvent::Undo),
-			Event::from(MetaEvent::Redo),
+			Event::from(StandardEvent::Undo),
+			Event::from(StandardEvent::Redo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
@@ -2059,8 +2059,8 @@ fn visual_mode_redo_normal_mode_change() {
 			Event::from(MetaEvent::ActionPick),
 			Event::from(MetaEvent::ToggleVisualMode),
 			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::Undo),
-			Event::from(MetaEvent::Redo),
+			Event::from(StandardEvent::Undo),
+			Event::from(StandardEvent::Redo),
 		],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());

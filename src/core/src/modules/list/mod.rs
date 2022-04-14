@@ -8,13 +8,14 @@ use std::cmp::min;
 use captur::capture;
 use config::Config;
 use display::DisplayColor;
-use input::{Event, InputOptions, KeyBindings, MetaEvent, MouseEventKind};
+use input::{InputOptions, MouseEventKind, StandardEvent};
 use todo_file::{Action, EditContext, Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
 use self::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::{
 	components::{edit::Edit, help::Help},
+	events::{Event, KeyBindings, MetaEvent},
 	module::{ExitStatus, Module, ProcessResult, State},
 	select,
 };
@@ -387,33 +388,39 @@ impl List {
 		match self.state {
 			ListState::Normal | ListState::Visual => {
 				match event {
-					e if key_bindings.abort.contains(&e) => Event::from(MetaEvent::Abort),
-					e if key_bindings.action_break.contains(&e) => Event::from(MetaEvent::ActionBreak),
-					e if key_bindings.action_drop.contains(&e) => Event::from(MetaEvent::ActionDrop),
-					e if key_bindings.action_edit.contains(&e) => Event::from(MetaEvent::ActionEdit),
-					e if key_bindings.action_fixup.contains(&e) => Event::from(MetaEvent::ActionFixup),
-					e if key_bindings.action_pick.contains(&e) => Event::from(MetaEvent::ActionPick),
-					e if key_bindings.action_reword.contains(&e) => Event::from(MetaEvent::ActionReword),
-					e if key_bindings.action_squash.contains(&e) => Event::from(MetaEvent::ActionSquash),
-					e if key_bindings.edit.contains(&e) => Event::from(MetaEvent::Edit),
-					e if key_bindings.force_abort.contains(&e) => Event::from(MetaEvent::ForceAbort),
-					e if key_bindings.force_rebase.contains(&e) => Event::from(MetaEvent::ForceRebase),
-					e if key_bindings.insert_line.contains(&e) => Event::from(MetaEvent::InsertLine),
-					e if key_bindings.move_down.contains(&e) => Event::from(MetaEvent::MoveCursorDown),
-					e if key_bindings.move_down_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageDown),
-					e if key_bindings.move_end.contains(&e) => Event::from(MetaEvent::MoveCursorEnd),
-					e if key_bindings.move_home.contains(&e) => Event::from(MetaEvent::MoveCursorHome),
-					e if key_bindings.move_left.contains(&e) => Event::from(MetaEvent::MoveCursorLeft),
-					e if key_bindings.move_right.contains(&e) => Event::from(MetaEvent::MoveCursorRight),
-					e if key_bindings.move_selection_down.contains(&e) => Event::from(MetaEvent::SwapSelectedDown),
-					e if key_bindings.move_selection_up.contains(&e) => Event::from(MetaEvent::SwapSelectedUp),
-					e if key_bindings.move_up.contains(&e) => Event::from(MetaEvent::MoveCursorUp),
-					e if key_bindings.move_up_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageUp),
-					e if key_bindings.open_in_external_editor.contains(&e) => Event::from(MetaEvent::OpenInEditor),
-					e if key_bindings.rebase.contains(&e) => Event::from(MetaEvent::Rebase),
-					e if key_bindings.remove_line.contains(&e) => Event::from(MetaEvent::Delete),
-					e if key_bindings.show_commit.contains(&e) => Event::from(MetaEvent::ShowCommit),
-					e if key_bindings.toggle_visual_mode.contains(&e) => Event::from(MetaEvent::ToggleVisualMode),
+					e if key_bindings.custom.abort.contains(&e) => Event::from(MetaEvent::Abort),
+					e if key_bindings.custom.action_break.contains(&e) => Event::from(MetaEvent::ActionBreak),
+					e if key_bindings.custom.action_drop.contains(&e) => Event::from(MetaEvent::ActionDrop),
+					e if key_bindings.custom.action_edit.contains(&e) => Event::from(MetaEvent::ActionEdit),
+					e if key_bindings.custom.action_fixup.contains(&e) => Event::from(MetaEvent::ActionFixup),
+					e if key_bindings.custom.action_pick.contains(&e) => Event::from(MetaEvent::ActionPick),
+					e if key_bindings.custom.action_reword.contains(&e) => Event::from(MetaEvent::ActionReword),
+					e if key_bindings.custom.action_squash.contains(&e) => Event::from(MetaEvent::ActionSquash),
+					e if key_bindings.custom.edit.contains(&e) => Event::from(MetaEvent::Edit),
+					e if key_bindings.custom.force_abort.contains(&e) => Event::from(MetaEvent::ForceAbort),
+					e if key_bindings.custom.force_rebase.contains(&e) => Event::from(MetaEvent::ForceRebase),
+					e if key_bindings.custom.insert_line.contains(&e) => Event::from(MetaEvent::InsertLine),
+					e if key_bindings.custom.move_down.contains(&e) => Event::from(MetaEvent::MoveCursorDown),
+					e if key_bindings.custom.move_down_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageDown),
+					e if key_bindings.custom.move_end.contains(&e) => Event::from(MetaEvent::MoveCursorEnd),
+					e if key_bindings.custom.move_home.contains(&e) => Event::from(MetaEvent::MoveCursorHome),
+					e if key_bindings.custom.move_left.contains(&e) => Event::from(MetaEvent::MoveCursorLeft),
+					e if key_bindings.custom.move_right.contains(&e) => Event::from(MetaEvent::MoveCursorRight),
+					e if key_bindings.custom.move_selection_down.contains(&e) => {
+						Event::from(MetaEvent::SwapSelectedDown)
+					},
+					e if key_bindings.custom.move_selection_up.contains(&e) => Event::from(MetaEvent::SwapSelectedUp),
+					e if key_bindings.custom.move_up.contains(&e) => Event::from(MetaEvent::MoveCursorUp),
+					e if key_bindings.custom.move_up_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageUp),
+					e if key_bindings.custom.open_in_external_editor.contains(&e) => {
+						Event::from(MetaEvent::OpenInEditor)
+					},
+					e if key_bindings.custom.rebase.contains(&e) => Event::from(MetaEvent::Rebase),
+					e if key_bindings.custom.remove_line.contains(&e) => Event::from(MetaEvent::Delete),
+					e if key_bindings.custom.show_commit.contains(&e) => Event::from(MetaEvent::ShowCommit),
+					e if key_bindings.custom.toggle_visual_mode.contains(&e) => {
+						Event::from(MetaEvent::ToggleVisualMode)
+					},
 					Event::Mouse(mouse_event) => {
 						match mouse_event.kind {
 							MouseEventKind::ScrollDown => Event::from(MetaEvent::MoveCursorDown),
@@ -451,34 +458,39 @@ impl List {
 	) -> Option<ProcessResult> {
 		let mut result = ProcessResult::from(event);
 		match event {
-			Event::Meta(meta_event) => {
+			Event::MetaEvent(meta_event) => {
 				match meta_event {
-					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_sender),
-					MetaEvent::MoveCursorRight => self.move_cursor_right(view_sender),
-					MetaEvent::MoveCursorUp => self.move_cursor_up(rebase_todo, 1),
-					MetaEvent::MoveCursorDown => self.move_cursor_down(rebase_todo, 1),
-					MetaEvent::MoveCursorPageUp => self.move_cursor_up(rebase_todo, self.height / 2),
-					MetaEvent::MoveCursorPageDown => self.move_cursor_down(rebase_todo, self.height / 2),
-					MetaEvent::MoveCursorHome => self.move_cursor_home(rebase_todo),
-					MetaEvent::MoveCursorEnd => self.move_cursor_end(rebase_todo),
 					MetaEvent::Abort => result = self.abort(result),
-					MetaEvent::ForceAbort => result = self.force_abort(rebase_todo, result),
-					MetaEvent::Rebase => result = self.rebase(result),
-					MetaEvent::ForceRebase => result = self.force_rebase(result),
-					MetaEvent::SwapSelectedDown => self.swap_selected_down(rebase_todo),
-					MetaEvent::SwapSelectedUp => self.swap_selected_up(rebase_todo),
 					MetaEvent::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
 					MetaEvent::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
 					MetaEvent::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
 					MetaEvent::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick),
 					MetaEvent::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
 					MetaEvent::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
-					MetaEvent::Undo => self.undo(rebase_todo),
-					MetaEvent::Redo => self.redo(rebase_todo),
 					MetaEvent::Delete => self.delete(rebase_todo),
-					MetaEvent::OpenInEditor => result = self.open_in_editor(result),
-					MetaEvent::ToggleVisualMode => self.toggle_visual_mode(rebase_todo),
+					MetaEvent::ForceAbort => result = self.force_abort(rebase_todo, result),
+					MetaEvent::ForceRebase => result = self.force_rebase(result),
 					MetaEvent::Help => self.help(),
+					MetaEvent::MoveCursorDown => self.move_cursor_down(rebase_todo, 1),
+					MetaEvent::MoveCursorEnd => self.move_cursor_end(rebase_todo),
+					MetaEvent::MoveCursorHome => self.move_cursor_home(rebase_todo),
+					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_sender),
+					MetaEvent::MoveCursorPageDown => self.move_cursor_down(rebase_todo, self.height / 2),
+					MetaEvent::MoveCursorPageUp => self.move_cursor_up(rebase_todo, self.height / 2),
+					MetaEvent::MoveCursorRight => self.move_cursor_right(view_sender),
+					MetaEvent::MoveCursorUp => self.move_cursor_up(rebase_todo, 1),
+					MetaEvent::OpenInEditor => result = self.open_in_editor(result),
+					MetaEvent::Rebase => result = self.rebase(result),
+					MetaEvent::SwapSelectedDown => self.swap_selected_down(rebase_todo),
+					MetaEvent::SwapSelectedUp => self.swap_selected_up(rebase_todo),
+					MetaEvent::ToggleVisualMode => self.toggle_visual_mode(rebase_todo),
+					_ => return None,
+				}
+			},
+			Event::Standard(standard_event) => {
+				match standard_event {
+					StandardEvent::Redo => self.redo(rebase_todo),
+					StandardEvent::Undo => self.undo(rebase_todo),
 					_ => return None,
 				}
 			},
@@ -500,12 +512,12 @@ impl List {
 		}
 		else {
 			let mut result = ProcessResult::from(event);
-			if let Event::Meta(meta_event) = event {
+			if let Event::MetaEvent(meta_event) = event {
 				match meta_event {
-					MetaEvent::ShowCommit => result = self.show_commit(rebase_todo, result),
 					MetaEvent::ActionBreak => self.action_break(rebase_todo),
 					MetaEvent::Edit => self.edit(rebase_todo),
 					MetaEvent::InsertLine => result = self.insert_line(result),
+					MetaEvent::ShowCommit => result = self.show_commit(rebase_todo, result),
 					_ => {},
 				}
 			}

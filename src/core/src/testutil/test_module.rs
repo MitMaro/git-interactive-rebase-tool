@@ -1,8 +1,10 @@
-use input::Event;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
-use crate::module::{Module, ProcessResult};
+use crate::{
+	events::Event,
+	module::{Module, ProcessResult},
+};
 
 pub(crate) struct TestModule<'module> {
 	event_callback: Box<dyn Fn(Event, &ViewSender, &mut TodoFile) -> ProcessResult + Send + 'module>,

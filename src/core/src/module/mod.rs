@@ -4,12 +4,13 @@ mod process_result;
 mod state;
 
 use anyhow::Error;
-use input::{Event, InputOptions, KeyBindings};
+use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
 pub(crate) use self::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State};
+use crate::events::{Event, KeyBindings};
 
 lazy_static! {
 	static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;

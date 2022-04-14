@@ -1,8 +1,8 @@
-use input::{Event, KeyCode};
+use input::KeyCode;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, testutil::module_test};
+use crate::{assert_process_result, events::Event, testutil::module_test};
 
 fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
 	let actual_state = match *actual {

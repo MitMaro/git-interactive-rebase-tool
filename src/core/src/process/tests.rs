@@ -3,14 +3,14 @@ use std::{io::Write, path::Path, sync::atomic::Ordering};
 use anyhow::anyhow;
 use config::Theme;
 use display::{testutil::CrossTerm, Display, Size};
-use input::{testutil::create_test_keybindings, EventHandler};
+use input::EventHandler;
 use tempfile::{Builder, NamedTempFile};
 use view::{assert_rendered_output, render_line};
 
 use super::*;
 use crate::{
 	modules::{Error, WindowSizeError},
-	testutil::TestModule,
+	testutil::{create_test_keybindings, TestModule},
 };
 
 fn create_crossterm() -> CrossTerm {
@@ -53,7 +53,7 @@ fn create_process(rebase_todo_file: TodoFile, events: &[Event]) -> Process {
 	}
 	process
 		.event_sender
-		.enqueue_event(Event::from(MetaEvent::Kill))
+		.enqueue_event(Event::from(StandardEvent::Kill))
 		.unwrap();
 	process
 }
@@ -91,7 +91,7 @@ fn render_error() {
 #[test]
 fn view_sender_is_poisoned() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
-	let mut process = create_process(rebase_todo_file, &[Event::from(MetaEvent::Exit)]);
+	let mut process = create_process(rebase_todo_file, &[Event::from(StandardEvent::Exit)]);
 	let modules = create_modules();
 	process.view_sender.clone_poisoned().store(true, Ordering::Release);
 	assert_eq!(process.run(modules).unwrap(), ExitStatus::StateError);
@@ -100,7 +100,7 @@ fn view_sender_is_poisoned() {
 #[test]
 fn stop_error() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
-	let mut process = create_process(rebase_todo_file, &[Event::from(MetaEvent::Exit)]);
+	let mut process = create_process(rebase_todo_file, &[Event::from(StandardEvent::Exit)]);
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
 	let sender = process.view_sender.clone();
@@ -117,7 +117,7 @@ fn handle_exit_event_that_is_not_kill() {
 	let (mut rebase_todo_file, _file_path) = create_todo_file();
 	rebase_todo_file.set_lines(vec![]);
 	let mut shadow_rebase_file = create_shadow_todo_file(&rebase_todo_file);
-	let mut process = create_process(rebase_todo_file, &[Event::from(MetaEvent::Exit)]);
+	let mut process = create_process(rebase_todo_file, &[Event::from(StandardEvent::Exit)]);
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
 	test_module.event_callback(|_, _, _| {
@@ -141,7 +141,7 @@ fn handle_exit_event_that_is_kill() {
 	let mut test_module = TestModule::new();
 	test_module.event_callback(|_, _, _| {
 		ProcessResult::new()
-			.event(Event::from(MetaEvent::Kill))
+			.event(Event::from(StandardEvent::Kill))
 			.exit_status(ExitStatus::Kill)
 	});
 	modules.register_module(State::List, test_module);
@@ -185,7 +185,7 @@ fn handle_process_result_exit_event() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::from(MetaEvent::Exit));
+	let result = ProcessResult::from(Event::from(StandardEvent::Exit));
 	process.handle_process_result(&mut modules, &result);
 	assert_eq!(process.exit_status, Some(ExitStatus::Abort));
 }
@@ -195,7 +195,7 @@ fn handle_process_result_kill_event() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::from(MetaEvent::Kill));
+	let result = ProcessResult::from(Event::from(StandardEvent::Kill));
 	process.handle_process_result(&mut modules, &result);
 	assert_eq!(process.exit_status, Some(ExitStatus::Kill));
 }

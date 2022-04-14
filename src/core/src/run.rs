@@ -5,12 +5,13 @@ use display::testutil::CrossTerm;
 use display::CrossTerm;
 use display::Display;
 use git::Repository;
-use input::{EventHandler, KeyBindings};
+use input::EventHandler;
 use todo_file::TodoFile;
 use view::View;
 
 use crate::{
 	arguments::Args,
+	events::KeyBindings,
 	exit::Exit,
 	help::build_help,
 	module::{ExitStatus, Modules, State},

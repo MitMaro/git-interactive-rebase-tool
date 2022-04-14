@@ -1,8 +1,8 @@
-use input::{Event, KeyCode};
+use input::KeyCode;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, testutil::module_test};
+use crate::{assert_process_result, events::Event, testutil::module_test};
 
 #[test]
 fn activate() {

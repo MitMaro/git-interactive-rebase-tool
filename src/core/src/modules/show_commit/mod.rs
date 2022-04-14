@@ -9,9 +9,9 @@ use anyhow::anyhow;
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
-use input::{Event, InputOptions, KeyBindings, MetaEvent};
+use input::InputOptions;
 use todo_file::TodoFile;
-use view::{handle_view_data_scroll, RenderContext, ViewData, ViewSender};
+use view::{RenderContext, ViewData, ViewSender};
 
 use self::{
 	show_commit_state::ShowCommitState,
@@ -20,8 +20,10 @@ use self::{
 };
 use crate::{
 	components::help::Help,
+	events::{Event, KeyBindings, MetaEvent},
 	module::{Module, ProcessResult, State},
 	select,
+	util::handle_view_data_scroll,
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
@@ -121,6 +123,7 @@ impl Module for ShowCommit {
 		select!(
 			default || {
 				key_bindings
+					.custom
 					.show_diff
 					.contains(&event)
 					.then(|| Event::from(MetaEvent::ShowDiff))
@@ -145,14 +148,14 @@ impl Module for ShowCommit {
 
 		if handle_view_data_scroll(event, view_sender).is_none() {
 			match event {
-				Event::Meta(meta_event) if meta_event == MetaEvent::ShowDiff => {
+				Event::MetaEvent(meta_event) if meta_event == MetaEvent::ShowDiff => {
 					active_view_data.update_view_data(|updater| updater.clear());
 					self.state = match self.state {
 						ShowCommitState::Overview => ShowCommitState::Diff,
 						ShowCommitState::Diff => ShowCommitState::Overview,
 					}
 				},
-				Event::Meta(meta_event) if meta_event == MetaEvent::Help => self.help.set_active(),
+				Event::MetaEvent(meta_event) if meta_event == MetaEvent::Help => self.help.set_active(),
 				Event::Key(_) => {
 					active_view_data.update_view_data(|updater| updater.clear());
 					if self.state == ShowCommitState::Diff {

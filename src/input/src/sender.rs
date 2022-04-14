@@ -13,7 +13,7 @@ use parking_lot::Mutex;
 
 use crate::{event_action::EventAction, Event};
 
-fn map_send_err(_: crossbeam_channel::SendError<EventAction>) -> Error {
+fn map_send_err<CustomEvent: crate::CustomEvent>(_: crossbeam_channel::SendError<EventAction<CustomEvent>>) -> Error {
 	anyhow!("Unable to send data")
 }
 
@@ -21,18 +21,21 @@ const EVENT_POLL_TIMEOUT: Duration = Duration::from_secs(1);
 
 /// Represents a message sender and receiver for passing actions between threads.
 #[derive(Clone, Debug)]
-pub struct Sender {
-	event_queue: Arc<Mutex<VecDeque<Event>>>,
+pub struct Sender<CustomEvent: crate::CustomEvent> {
+	event_queue: Arc<Mutex<VecDeque<Event<CustomEvent>>>>,
 	poisoned: Arc<AtomicBool>,
 	receiver: crossbeam_channel::Receiver<()>,
-	sender: crossbeam_channel::Sender<EventAction>,
+	sender: crossbeam_channel::Sender<EventAction<CustomEvent>>,
 }
 
-impl Sender {
+impl<CustomEvent: crate::CustomEvent> Sender<CustomEvent> {
 	/// Create a new instance.
 	#[inline]
 	#[must_use]
-	pub fn new(sender: crossbeam_channel::Sender<EventAction>, receiver: crossbeam_channel::Receiver<()>) -> Self {
+	pub fn new(
+		sender: crossbeam_channel::Sender<EventAction<CustomEvent>>,
+		receiver: crossbeam_channel::Receiver<()>,
+	) -> Self {
 		Self {
 			event_queue: Arc::new(Mutex::new(VecDeque::new())),
 			poisoned: Arc::new(AtomicBool::new(false)),
@@ -56,7 +59,7 @@ impl Sender {
 	}
 
 	#[inline]
-	pub(crate) fn clone_event_queue(&self) -> Arc<Mutex<VecDeque<Event>>> {
+	pub(crate) fn clone_event_queue(&self) -> Arc<Mutex<VecDeque<Event<CustomEvent>>>> {
 		Arc::clone(&self.event_queue)
 	}
 
@@ -71,7 +74,7 @@ impl Sender {
 
 	/// Read an event from the queue
 	#[inline]
-	pub fn read_event(&mut self) -> Event {
+	pub fn read_event(&mut self) -> Event<CustomEvent> {
 		// clear existing message since last read
 		while self.receiver.try_recv().is_ok() {}
 		loop {
@@ -96,7 +99,7 @@ impl Sender {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn enqueue_event(&self, event: Event) -> Result<()> {
+	pub fn enqueue_event(&self, event: Event<CustomEvent>) -> Result<()> {
 		self.sender.send(EventAction::EnqueueEvent(event)).map_err(map_send_err)
 	}
 
@@ -105,7 +108,7 @@ impl Sender {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn push_event(&self, event: Event) -> Result<()> {
+	pub fn push_event(&self, event: Event<CustomEvent>) -> Result<()> {
 		self.sender.send(EventAction::PushEvent(event)).map_err(map_send_err)
 	}
 }
@@ -117,6 +120,9 @@ mod tests {
 	use crossbeam_channel::bounded;
 
 	use super::*;
+	use crate::testutil::local::TestEvent;
+
+	type Sender = super::Sender<TestEvent>;
 
 	#[test]
 	fn end() {

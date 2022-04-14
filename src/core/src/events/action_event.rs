@@ -1,9 +1,15 @@
-/// Represents an event that is not tied directly to a user input device.
-#[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
-#[non_exhaustive]
-pub enum MetaEvent {
+use crate::events::Event;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
+pub(crate) enum MetaEvent {
 	/// The abort meta event.
 	Abort,
+	/// The force abort meta event.
+	ForceAbort,
+	/// The rebase meta event.
+	Rebase,
+	/// The force rebase meta event.
+	ForceRebase,
 	/// The break action meta event.
 	ActionBreak,
 	/// The drop action meta event.
@@ -18,22 +24,6 @@ pub enum MetaEvent {
 	ActionReword,
 	/// The squash action meta event.
 	ActionSquash,
-	/// The edit meta event.
-	Edit,
-	/// The exit meta event.
-	Exit,
-	/// The delete meta event.
-	Delete,
-	/// The force abort meta event.
-	ForceAbort,
-	/// The force rebase meta event.
-	ForceRebase,
-	/// The help meta event.
-	Help,
-	/// The insert line meta event.
-	InsertLine,
-	/// The kill meta event.
-	Kill,
 	/// The move cursor down meta event.
 	MoveCursorDown,
 	/// The move cursor to end meta event.
@@ -50,30 +40,12 @@ pub enum MetaEvent {
 	MoveCursorRight,
 	/// The move cursor up meta event.
 	MoveCursorUp,
-	/// The no meta event.
-	No,
+	/// The delete meta event.
+	Delete,
+	/// The edit meta event.
+	Edit,
 	/// The open in editor meta event.
 	OpenInEditor,
-	/// The rebase meta event.
-	Rebase,
-	/// The redo meta event.
-	Redo,
-	/// The scroll bottom meta event.
-	ScrollBottom,
-	/// The scroll bottom meta event.
-	ScrollDown,
-	/// The scroll to bottom meta event.
-	ScrollJumpDown,
-	/// The scroll jump down meta event.
-	ScrollJumpUp,
-	/// The scroll jump up meta event.
-	ScrollLeft,
-	/// The scroll left meta event.
-	ScrollRight,
-	/// The scroll right meta event.
-	ScrollTop,
-	/// The scroll to top meta event.
-	ScrollUp,
 	/// The show commit meta event.
 	ShowCommit,
 	/// The show diff meta event.
@@ -84,12 +56,25 @@ pub enum MetaEvent {
 	SwapSelectedUp,
 	/// The toggle visual mode meta event.
 	ToggleVisualMode,
-	/// The undo meta event.
-	Undo,
+	/// The help meta event.
+	Help,
+	/// The insert line meta event.
+	InsertLine,
+	/// The no meta event.
+	No,
 	/// The yes meta event.
 	Yes,
 	/// The external command was successful meta event.
 	ExternalCommandSuccess,
 	/// the external command was an error meta event.
 	ExternalCommandError,
+}
+
+impl input::CustomEvent for MetaEvent {}
+
+impl From<MetaEvent> for Event {
+	#[inline]
+	fn from(event: MetaEvent) -> Self {
+		Self::MetaEvent(event)
+	}
 }

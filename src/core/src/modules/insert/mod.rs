@@ -5,7 +5,7 @@ mod line_type;
 mod tests;
 
 use display::DisplayColor;
-use input::{Event, InputOptions};
+use input::InputOptions;
 use todo_file::{Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewSender};
 
@@ -15,6 +15,7 @@ use crate::{
 		choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
 		edit::{Edit, INPUT_OPTIONS as EDIT_INPUT_OPTIONS},
 	},
+	events::Event,
 	module::{Module, ProcessResult, State},
 };
 

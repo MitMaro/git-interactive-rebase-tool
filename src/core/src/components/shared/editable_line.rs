@@ -1,7 +1,9 @@
 use display::DisplayColor;
-use input::{Event, KeyCode, KeyEvent, KeyModifiers};
+use input::{KeyCode, KeyEvent, KeyModifiers};
 use unicode_segmentation::UnicodeSegmentation;
 use view::LineSegment;
+
+use crate::events::Event;
 
 pub(crate) struct EditableLine {
 	content: String,

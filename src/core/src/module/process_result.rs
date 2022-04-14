@@ -1,7 +1,9 @@
 use anyhow::Error;
-use input::Event;
 
-use crate::module::{ExitStatus, State};
+use crate::{
+	events::Event,
+	module::{ExitStatus, State},
+};
 
 #[derive(Debug)]
 pub(crate) struct ProcessResult {

@@ -1,24 +1,26 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent};
 
-use super::MetaEvent;
+use super::StandardEvent;
 
 /// An event, either from an input device, system change or action event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 #[allow(clippy::exhaustive_enums)]
-pub enum Event {
+pub enum Event<CustomEvent: crate::CustomEvent> {
 	/// A keyboard event.
 	Key(KeyEvent),
 	/// An action event.
-	Meta(MetaEvent),
+	Standard(StandardEvent),
 	/// A mouse event.
 	Mouse(MouseEvent),
 	/// An empty event.
 	None,
 	/// A terminal resize event.
 	Resize(u16, u16),
+	/// Custom application defined events
+	MetaEvent(CustomEvent),
 }
 
-impl From<crossterm::event::Event> for Event {
+impl<CustomEvent: crate::CustomEvent> From<crossterm::event::Event> for Event<CustomEvent> {
 	#[inline]
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
@@ -29,14 +31,14 @@ impl From<crossterm::event::Event> for Event {
 	}
 }
 
-impl From<MetaEvent> for Event {
+impl<CustomEvent: crate::CustomEvent> From<StandardEvent> for Event<CustomEvent> {
 	#[inline]
-	fn from(event: MetaEvent) -> Self {
-		Self::Meta(event)
+	fn from(event: StandardEvent) -> Self {
+		Self::Standard(event)
 	}
 }
 
-impl From<KeyCode> for Event {
+impl<CustomEvent: crate::CustomEvent> From<KeyCode> for Event<CustomEvent> {
 	#[inline]
 	fn from(code: KeyCode) -> Self {
 		Self::Key(KeyEvent {
@@ -46,7 +48,7 @@ impl From<KeyCode> for Event {
 	}
 }
 
-impl From<char> for Event {
+impl<CustomEvent: crate::CustomEvent> From<char> for Event<CustomEvent> {
 	#[inline]
 	fn from(c: char) -> Self {
 		Self::Key(KeyEvent {
@@ -61,6 +63,7 @@ mod tests {
 	use crossterm::event::MouseEventKind;
 
 	use super::*;
+	use crate::testutil::local::Event;
 
 	#[test]
 	fn from_crossterm_key_event() {
@@ -89,8 +92,8 @@ mod tests {
 
 	#[test]
 	fn from_meta_event() {
-		let event = Event::from(MetaEvent::Kill);
-		assert_eq!(event, Event::Meta(MetaEvent::Kill));
+		let event = Event::from(StandardEvent::Kill);
+		assert_eq!(event, Event::Standard(StandardEvent::Kill));
 	}
 
 	#[test]
