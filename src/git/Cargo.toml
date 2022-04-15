@@ -15,7 +15,7 @@ readme = "README.md"
 name = "git"
 
 [dependencies]
-anyhow = "1.0.53"
+anyhow = "1.0.56"
 chrono = "0.4.19"
 lazy_static = "1.4.0"
 parking_lot = "0.12.0"
