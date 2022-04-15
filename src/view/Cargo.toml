@@ -9,7 +9,7 @@ repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
 edition = "2021"
 keywords = ["git", "view"]
 categories = ["command-line-interface", "command-line-utilities", "text-editors"]
-readme = "../../README.md"
+readme = "README.md"
 
 [lib]
 name = "view"
