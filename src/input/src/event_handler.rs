@@ -65,10 +65,6 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 				code: KeyCode::Char('c'),
 				modifiers: KeyModifiers::CONTROL,
 			}) => Some(Event::from(StandardEvent::Kill)),
-			Event::Key(KeyEvent {
-				code: KeyCode::Char('d'),
-				modifiers: KeyModifiers::CONTROL,
-			}) => Some(Event::from(StandardEvent::Exit)),
 			_ => None,
 		}
 	}
@@ -210,10 +206,6 @@ mod tests {
 		code: KeyCode::Char('c'),
 		modifiers: KeyModifiers::CONTROL,
 	}), Event::from(StandardEvent::Kill))]
-	#[case::standard(Event::Key(KeyEvent {
-		code: KeyCode::Char('d'),
-		modifiers: KeyModifiers::CONTROL,
-	}), Event::from(StandardEvent::Exit))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn standard_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());

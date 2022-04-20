@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 - Added mew keybindings for customizing the scrolling the view. ([#647](https://github.com/MitMaro/git-interactive-rebase-tool/pull/647))
 
+### Removed
+- `ctrl-d` keybinding, since it conflicts with the `ctrl-d` keybinding in Vim. ([#648](https://github.com/MitMaro/git-interactive-rebase-tool/pull/648))
+
 ## [2.1.0] - 2021-04-20
 
 ### Added

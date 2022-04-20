@@ -170,10 +170,9 @@ A single action can have multiple bindings by providing a whitespace separate li
 
 Some key combinations are restricted as they have special meaning. They are:
 
-| Key                | Description |
-| ------------------ | ----------- |
+| Key                | Description                                                                 |
+| ------------------ |-----------------------------------------------------------------------------|
 | `Control+c`        | Immediately aborts the program without writing the rebase todo file to disk |
-| `Control+d`        | Immediately writes the rebase todo file to disk and exits |
 
 
 ## External Editor
