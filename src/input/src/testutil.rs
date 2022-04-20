@@ -1,7 +1,7 @@
 //! Utilities for writing tests that interact with input events.
 
 use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers};
-use crate::{event_action::EventAction, Sender};
+use crate::{event_action::EventAction, map_keybindings, Sender};
 
 #[cfg(test)]
 pub(crate) mod local {
@@ -46,6 +46,14 @@ pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEv
 				modifiers: KeyModifiers::CONTROL,
 			}
 		})],
+		scroll_down: map_keybindings(&[String::from("Down")]),
+		scroll_end: map_keybindings(&[String::from("End")]),
+		scroll_home: map_keybindings(&[String::from("Home")]),
+		scroll_left: map_keybindings(&[String::from("Left")]),
+		scroll_right: map_keybindings(&[String::from("Right")]),
+		scroll_up: map_keybindings(&[String::from("Up")]),
+		scroll_step_down: map_keybindings(&[String::from("PageDown")]),
+		scroll_step_up: map_keybindings(&[String::from("PageUp")]),
 		custom: custom_key_bindings,
 	}
 }

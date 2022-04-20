@@ -38,10 +38,9 @@ pub struct KeyBindings {
 	pub help: Vec<String>,
 	/// Key bindings for inserting a line.
 	pub insert_line: Vec<String>,
+
 	/// Key bindings for moving down.
 	pub move_down: Vec<String>,
-	/// Key bindings for moving down a step.
-	pub move_down_step: Vec<String>,
 	/// Key bindings for moving to the end.
 	pub move_end: Vec<String>,
 	/// Key bindings for moving to the start.
@@ -50,14 +49,34 @@ pub struct KeyBindings {
 	pub move_left: Vec<String>,
 	/// Key bindings for moving to the right.
 	pub move_right: Vec<String>,
+	/// Key bindings for moving up.
+	pub move_up: Vec<String>,
+	/// Key bindings for moving down a step.
+	pub move_down_step: Vec<String>,
+	/// Key bindings for moving up a step.
+	pub move_up_step: Vec<String>,
 	/// Key bindings for moving the selection down.
 	pub move_selection_down: Vec<String>,
 	/// Key bindings for moving the selection up.
 	pub move_selection_up: Vec<String>,
-	/// Key bindings for moving up.
-	pub move_up: Vec<String>,
-	/// Key bindings for moving up a step.
-	pub move_up_step: Vec<String>,
+
+	/// Key bindings for scrolling down.
+	pub scroll_down: Vec<String>,
+	/// Key bindings for scrolling to the end.
+	pub scroll_end: Vec<String>,
+	/// Key bindings for scrolling to the start.
+	pub scroll_home: Vec<String>,
+	/// Key bindings for scrolling to the left.
+	pub scroll_left: Vec<String>,
+	/// Key bindings for scrolling to the right.
+	pub scroll_right: Vec<String>,
+	/// Key bindings for scrolling up.
+	pub scroll_up: Vec<String>,
+	/// Key bindings for scrolling down a step.
+	pub scroll_step_down: Vec<String>,
+	/// Key bindings for scrolling up a step.
+	pub scroll_step_up: Vec<String>,
+
 	/// Key bindings for opening the external editor.
 	pub open_in_external_editor: Vec<String>,
 	/// Key bindings for rebasing.
@@ -110,15 +129,23 @@ impl KeyBindings {
 			help: get_input(git_config, "interactive-rebase-tool.inputHelp", "?")?,
 			insert_line: get_input(git_config, "interactive-rebase-tool.insertLine", "I")?,
 			move_down: get_input(git_config, "interactive-rebase-tool.inputMoveDown", "Down")?,
-			move_down_step: get_input(git_config, "interactive-rebase-tool.inputMoveStepDown", "PageDown")?,
 			move_end: get_input(git_config, "interactive-rebase-tool.inputMoveEnd", "End")?,
 			move_home: get_input(git_config, "interactive-rebase-tool.inputMoveHome", "Home")?,
 			move_left: get_input(git_config, "interactive-rebase-tool.inputMoveLeft", "Left")?,
 			move_right: get_input(git_config, "interactive-rebase-tool.inputMoveRight", "Right")?,
-			move_selection_down: get_input(git_config, "interactive-rebase-tool.inputMoveSelectionDown", "j")?,
-			move_selection_up: get_input(git_config, "interactive-rebase-tool.inputMoveSelectionUp", "k")?,
+			move_down_step: get_input(git_config, "interactive-rebase-tool.inputMoveStepDown", "PageDown")?,
 			move_up_step: get_input(git_config, "interactive-rebase-tool.inputMoveStepUp", "PageUp")?,
 			move_up: get_input(git_config, "interactive-rebase-tool.inputMoveUp", "Up")?,
+			move_selection_down: get_input(git_config, "interactive-rebase-tool.inputMoveSelectionDown", "j")?,
+			move_selection_up: get_input(git_config, "interactive-rebase-tool.inputMoveSelectionUp", "k")?,
+			scroll_down: get_input(git_config, "interactive-rebase-tool.inputScrollDown", "Down")?,
+			scroll_end: get_input(git_config, "interactive-rebase-tool.inputScrollEnd", "End")?,
+			scroll_home: get_input(git_config, "interactive-rebase-tool.inputScrollHome", "Home")?,
+			scroll_left: get_input(git_config, "interactive-rebase-tool.inputScrollLeft", "Left")?,
+			scroll_right: get_input(git_config, "interactive-rebase-tool.inputScrollRight", "Right")?,
+			scroll_up: get_input(git_config, "interactive-rebase-tool.inputScrollUp", "Up")?,
+			scroll_step_down: get_input(git_config, "interactive-rebase-tool.inputScrollStepDown", "PageDown")?,
+			scroll_step_up: get_input(git_config, "interactive-rebase-tool.inputScrollStepUp", "PageUp")?,
 			open_in_external_editor: get_input(git_config, "interactive-rebase-tool.inputOpenInExternalEditor", "!")?,
 			rebase: get_input(git_config, "interactive-rebase-tool.inputRebase", "w")?,
 			redo: get_input(git_config, "interactive-rebase-tool.inputRedo", "control+y")?,
@@ -278,15 +305,23 @@ mod tests {
 	#[case::help("inputHelp", "?", |bindings: KeyBindings| bindings.help)]
 	#[case::insert_line("insertLine", "I", |bindings: KeyBindings| bindings.insert_line)]
 	#[case::move_down("inputMoveDown", "Down", |bindings: KeyBindings| bindings.move_down)]
-	#[case::move_down_step("inputMoveStepDown", "PageDown", |bindings: KeyBindings| bindings.move_down_step)]
 	#[case::move_end("inputMoveEnd", "End", |bindings: KeyBindings| bindings.move_end)]
 	#[case::move_home("inputMoveHome", "Home", |bindings: KeyBindings| bindings.move_home)]
 	#[case::move_left("inputMoveLeft", "Left", |bindings: KeyBindings| bindings.move_left)]
 	#[case::move_right("inputMoveRight", "Right", |bindings: KeyBindings| bindings.move_right)]
+	#[case::move_up("inputMoveUp", "Up", |bindings: KeyBindings| bindings.move_up)]
+	#[case::move_down_step("inputMoveStepDown", "PageDown", |bindings: KeyBindings| bindings.move_down_step)]
+	#[case::move_up_step("inputMoveStepUp", "PageUp", |bindings: KeyBindings| bindings.move_up_step)]
 	#[case::move_selection_down("inputMoveSelectionDown", "j", |bindings: KeyBindings| bindings.move_selection_down)]
 	#[case::move_selection_up("inputMoveSelectionUp", "k", |bindings: KeyBindings| bindings.move_selection_up)]
-	#[case::move_up("inputMoveUp", "Up", |bindings: KeyBindings| bindings.move_up)]
-	#[case::move_up_step("inputMoveStepUp", "PageUp", |bindings: KeyBindings| bindings.move_up_step)]
+	#[case::scroll_down("inputScrollDown", "Down", |bindings: KeyBindings| bindings.scroll_down)]
+	#[case::scroll_end("inputScrollEnd", "End", |bindings: KeyBindings| bindings.scroll_end)]
+	#[case::scroll_home("inputScrollHome", "Home", |bindings: KeyBindings| bindings.scroll_home)]
+	#[case::scroll_left("inputScrollLeft", "Left", |bindings: KeyBindings| bindings.scroll_left)]
+	#[case::scroll_right("inputScrollRight", "Right", |bindings: KeyBindings| bindings.scroll_right)]
+	#[case::scroll_up("inputScrollUp", "Up", |bindings: KeyBindings| bindings.scroll_up)]
+	#[case::scroll_page_down("inputScrollStepDown", "PageDown", |bindings: KeyBindings| bindings.scroll_step_down)]
+	#[case::scroll_page_up("inputScrollStepUp", "PageUp", |bindings: KeyBindings| bindings.scroll_step_up)]
 	#[case::open_in_external_editor(
 		"inputOpenInExternalEditor",
 		"!",

@@ -25,7 +25,7 @@ Native cross-platform full feature terminal based [sequence editor][git-sequence
 
 ### Cross-platform
 
-Built and works on Linux, macOS, Windows and BSD.
+Built and works on Linux, macOS, Windows and many others.
 
 ### Set action
 
@@ -120,36 +120,44 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 
 Key bindings can be configured, see [configuration](readme/customization.md#key-bindings) for more information.
 
-| Key          | Mode   | Description |
-| ------------ | ------ | ----------- |
-|  Up          | All    | Move selection up |
-|  Down        | All    | Move selection down |
-|  Page Up     | All    | Move selection up five lines |
-|  Page Down   | All    | Move selection down five lines |
-|  Home        | All    | Move selection to start of list |
-|  End         | All    | Move selection to home of list |
-|  `q`         | Normal | Abort interactive rebase |
-|  `Q`         | Normal | Immediately abort interactive rebase |
-|  `w`         | Normal | Write interactive rebase file |
-|  `W`         | Normal | Immediately write interactive rebase file |
-|  `?`         | All    | Show help |
-|  `c`         | Normal | Show commit information |
-|  `j`         | All    | Move selected commit(s) down |
-|  `k`         | All    | Move selected commit(s) up |
-|  `b`         | Normal | Toggle break action |
-|  `p`         | All    | Set selected commit(s) to be picked |
-|  `r`         | All    | Set selected commit(s) to be reworded |
-|  `e`         | All    | Set selected commit(s) to be edited |
-|  `s`         | All    | Set selected commit(s) to be squashed |
-|  `f`         | All    | Set selected commit(s) to be fixed-up |
-|  `d`         | All    | Set selected commit(s) to be dropped |
-|  `E`         | Normal | Edit the command of an exec action |
-|  `v`         | All    | Enter and exit visual mode |
-|  `d`         | Diff   | Show full commit diff |
-|  `I`         | Normal | Insert a new line |
-|  `Delete`    | All    | Remove selected lines |
-| `Control+z`  | All    | Undo the previous change |
-| `Control+y`  | All    | Redo the previously undone change |
+| Key         | Mode   | Description                               |
+|-------------| ------ |-------------------------------------------|
+| Up          | All    | Move selection up                         |
+| Down        | All    | Move selection down                       |
+| Page Up     | All    | Move selection up five lines              |
+| Page Down   | All    | Move selection down five lines            |
+| Home        | All    | Move selection to start of list           |
+| End         | All    | Move selection to home of list            |
+| `q`         | Normal | Abort interactive rebase                  |
+| `Q`         | Normal | Immediately abort interactive rebase      |
+| `w`         | Normal | Write interactive rebase file             |
+| `W`         | Normal | Immediately write interactive rebase file |
+| `?`         | All    | Show help                                 |
+| `c`         | Normal | Show commit information                   |
+| `j`         | All    | Move selected commit(s) down              |
+| `k`         | All    | Move selected commit(s) up                |
+| `b`         | Normal | Toggle break action                       |
+| `p`         | All    | Set selected commit(s) to be picked       |
+| `r`         | All    | Set selected commit(s) to be reworded     |
+| `e`         | All    | Set selected commit(s) to be edited       |
+| `s`         | All    | Set selected commit(s) to be squashed     |
+| `f`         | All    | Set selected commit(s) to be fixed-up     |
+| `d`         | All    | Set selected commit(s) to be dropped      |
+| `E`         | Normal | Edit the command of an exec action        |
+| `v`         | All    | Enter and exit visual mode                |
+| `I`         | Normal | Insert a new line                         |
+| `Delete`    | All    | Remove selected lines                     |
+| `Control+z` | All    | Undo the previous change                  |
+| `Control+y` | All    | Redo the previously undone change         |
+| Down        | Diff   | Scroll view down                          |
+| Up          | Diff   | Scroll view up                            |
+| Left        | Diff   | Scroll view left                          |
+| Right       | Diff   | Scroll view right                         |
+| Home        | Diff   | Scroll view to the top                    |
+| End         | Diff   | Scroll view to the end                    |
+| PageUp      | Diff   | Scroll view a step up                     |
+| PageDown    | Diff   | Scroll view a step down                   |
+| `d`         | Diff   | Show full commit diff                     |
 
 ## Development
 

@@ -44,7 +44,7 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 		}
 
 		if input_options.contains(InputOptions::MOVEMENT) {
-			if let Some(evt) = Self::handle_movement_inputs(event) {
+			if let Some(evt) = Self::handle_movement_inputs(&self.key_bindings, event) {
 				return evt;
 			}
 		}
@@ -74,42 +74,54 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 	}
 
 	#[allow(clippy::wildcard_enum_match_arm)]
-	fn handle_movement_inputs(event: Event<CustomEvent>) -> Option<Event<CustomEvent>> {
-		match event {
+	fn handle_movement_inputs(
+		key_bindings: &KeyBindings<CustomKeybinding, CustomEvent>,
+		event: Event<CustomEvent>,
+	) -> Option<Event<CustomEvent>> {
+		Some(match event {
+			e if key_bindings.scroll_down.contains(&e) => Event::from(StandardEvent::ScrollDown),
+			e if key_bindings.scroll_end.contains(&e) => Event::from(StandardEvent::ScrollBottom),
+			e if key_bindings.scroll_home.contains(&e) => Event::from(StandardEvent::ScrollTop),
+			e if key_bindings.scroll_left.contains(&e) => Event::from(StandardEvent::ScrollLeft),
+			e if key_bindings.scroll_right.contains(&e) => Event::from(StandardEvent::ScrollRight),
+			e if key_bindings.scroll_up.contains(&e) => Event::from(StandardEvent::ScrollUp),
+			e if key_bindings.scroll_step_down.contains(&e) => Event::from(StandardEvent::ScrollJumpDown),
+			e if key_bindings.scroll_step_up.contains(&e) => Event::from(StandardEvent::ScrollJumpUp),
+			// these are required, since in some contexts (like editing), other keybindings will not work
 			Event::Key(KeyEvent {
 				code: KeyCode::Up,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollUp)),
+			}) => Event::from(StandardEvent::ScrollUp),
 			Event::Key(KeyEvent {
 				code: KeyCode::Down,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollDown)),
+			}) => Event::from(StandardEvent::ScrollDown),
 			Event::Key(KeyEvent {
 				code: KeyCode::Left,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollLeft)),
+			}) => Event::from(StandardEvent::ScrollLeft),
 			Event::Key(KeyEvent {
 				code: KeyCode::Right,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollRight)),
+			}) => Event::from(StandardEvent::ScrollRight),
 			Event::Key(KeyEvent {
 				code: KeyCode::PageUp,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollJumpUp)),
+			}) => Event::from(StandardEvent::ScrollJumpUp),
 			Event::Key(KeyEvent {
 				code: KeyCode::PageDown,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollJumpDown)),
+			}) => Event::from(StandardEvent::ScrollJumpDown),
 			Event::Key(KeyEvent {
 				code: KeyCode::Home,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollTop)),
+			}) => Event::from(StandardEvent::ScrollTop),
 			Event::Key(KeyEvent {
 				code: KeyCode::End,
 				modifiers: KeyModifiers::NONE,
-			}) => Some(Event::from(StandardEvent::ScrollBottom)),
-			_ => None,
-		}
+			}) => Event::from(StandardEvent::ScrollBottom),
+			_ => return None,
+		})
 	}
 
 	fn handle_undo_redo(
@@ -133,7 +145,10 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::testutil::local::{create_test_keybindings, Event, EventHandler};
+	use crate::{
+		map_keybindings,
+		testutil::local::{create_test_keybindings, Event, EventHandler},
+	};
 
 	#[rstest]
 	#[case::standard(Event::Key(KeyEvent {
@@ -218,6 +233,31 @@ mod tests {
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn movement_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());
+		let result = event_handler.read_event(event, &InputOptions::MOVEMENT, |_, _| Event::from(KeyCode::Null));
+		assert_eq!(result, expected);
+	}
+
+	#[rstest]
+	#[case::standard(Event::from(KeyCode::Up), Event::from(StandardEvent::ScrollUp))]
+	#[case::standard(Event::from(KeyCode::Down), Event::from(StandardEvent::ScrollDown))]
+	#[case::standard(Event::from(KeyCode::Left), Event::from(StandardEvent::ScrollLeft))]
+	#[case::standard(Event::from(KeyCode::Right), Event::from(StandardEvent::ScrollRight))]
+	#[case::standard(Event::from(KeyCode::PageUp), Event::from(StandardEvent::ScrollJumpUp))]
+	#[case::standard(Event::from(KeyCode::PageDown), Event::from(StandardEvent::ScrollJumpDown))]
+	#[case::standard(Event::from(KeyCode::Home), Event::from(StandardEvent::ScrollTop))]
+	#[case::standard(Event::from(KeyCode::End), Event::from(StandardEvent::ScrollBottom))]
+	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
+	fn default_movement_inputs(#[case] event: Event, #[case] expected: Event) {
+		let mut bindings = create_test_keybindings();
+		bindings.scroll_down = map_keybindings(&[String::from("x")]);
+		bindings.scroll_end = map_keybindings(&[String::from("x")]);
+		bindings.scroll_home = map_keybindings(&[String::from("x")]);
+		bindings.scroll_left = map_keybindings(&[String::from("x")]);
+		bindings.scroll_right = map_keybindings(&[String::from("x")]);
+		bindings.scroll_up = map_keybindings(&[String::from("x")]);
+		bindings.scroll_step_down = map_keybindings(&[String::from("x")]);
+		bindings.scroll_step_up = map_keybindings(&[String::from("x")]);
+		let event_handler = EventHandler::new(bindings);
 		let result = event_handler.read_event(event, &InputOptions::MOVEMENT, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}

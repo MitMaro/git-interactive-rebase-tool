@@ -45,6 +45,8 @@ pub(crate) fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) ->
 		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollRight => view_sender.scroll_right(),
 		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollDown => view_sender.scroll_down(),
 		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollUp => view_sender.scroll_up(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollTop => view_sender.scroll_top(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollBottom => view_sender.scroll_bottom(),
 		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpDown => view_sender.scroll_page_down(),
 		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpUp => view_sender.scroll_page_up(),
 		_ => return None,

@@ -8,6 +8,24 @@ pub struct KeyBindings<CustomKeybinding: crate::CustomKeybinding, CustomEvent: c
 	pub redo: Vec<Event<CustomEvent>>,
 	/// Key bindings for undoing a change.
 	pub undo: Vec<Event<CustomEvent>>,
+
+	/// Key bindings for scrolling down.
+	pub scroll_down: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling to the end.
+	pub scroll_end: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling to the start.
+	pub scroll_home: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling to the left.
+	pub scroll_left: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling to the right.
+	pub scroll_right: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling up.
+	pub scroll_up: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling down a step.
+	pub scroll_step_down: Vec<Event<CustomEvent>>,
+	/// Key bindings for scrolling up a step.
+	pub scroll_step_up: Vec<Event<CustomEvent>>,
+
 	/// Custom keybindings
 	pub custom: CustomKeybinding,
 }
@@ -73,6 +91,14 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 		Self {
 			redo: map_keybindings(&key_bindings.redo),
 			undo: map_keybindings(&key_bindings.undo),
+			scroll_down: map_keybindings(&key_bindings.scroll_down),
+			scroll_end: map_keybindings(&key_bindings.scroll_end),
+			scroll_home: map_keybindings(&key_bindings.scroll_home),
+			scroll_left: map_keybindings(&key_bindings.scroll_left),
+			scroll_right: map_keybindings(&key_bindings.scroll_right),
+			scroll_up: map_keybindings(&key_bindings.scroll_up),
+			scroll_step_down: map_keybindings(&key_bindings.scroll_step_down),
+			scroll_step_up: map_keybindings(&key_bindings.scroll_step_up),
 			custom: CustomKeybinding::new(key_bindings),
 		}
 	}
