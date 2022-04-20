@@ -1,7 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
+The format is based on [Keep a Changelog](http://keepachangelog.com/).
+
+## [2.2.0] - 2022-04-15
+### Added
+- Added mew keybindings for customizing the scrolling the view. ([#647](https://github.com/MitMaro/git-interactive-rebase-tool/pull/647))
 
 ## [2.1.0] - 2021-04-20
 

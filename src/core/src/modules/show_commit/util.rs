@@ -12,15 +12,18 @@ const TO_FILE_INDICATOR_SHORT: &str = "\u{2192}"; // "→"
 
 pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec<String>, String)> {
 	vec![
-		(key_bindings.move_up.clone(), String::from("Scroll up")),
-		(key_bindings.move_down.clone(), String::from("Scroll down")),
-		(key_bindings.move_up_step.clone(), String::from("Scroll up half a page")),
+		(key_bindings.scroll_up.clone(), String::from("Scroll up")),
+		(key_bindings.scroll_down.clone(), String::from("Scroll down")),
 		(
-			key_bindings.move_down_step.clone(),
+			key_bindings.scroll_step_up.clone(),
+			String::from("Scroll up half a page"),
+		),
+		(
+			key_bindings.scroll_step_down.clone(),
 			String::from("Scroll down half a page"),
 		),
-		(key_bindings.move_right.clone(), String::from("Scroll right")),
-		(key_bindings.move_left.clone(), String::from("Scroll left")),
+		(key_bindings.scroll_right.clone(), String::from("Scroll right")),
+		(key_bindings.scroll_left.clone(), String::from("Scroll left")),
 		(key_bindings.show_diff.clone(), String::from("Show full diff")),
 		(key_bindings.help.clone(), String::from("Show help")),
 	]

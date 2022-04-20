@@ -79,6 +79,14 @@ impl RenderSlice {
 		self.actions.push_back(RenderAction::ScrollRight);
 	}
 
+	pub fn record_scroll_top(&mut self) {
+		self.actions.push_back(RenderAction::ScrollTop);
+	}
+
+	pub fn record_scroll_bottom(&mut self) {
+		self.actions.push_back(RenderAction::ScrollBottom);
+	}
+
 	pub fn record_resize(&mut self, width: usize, height: usize) {
 		self.actions.push_back(RenderAction::Resize(width, height));
 	}
@@ -97,6 +105,8 @@ impl RenderSlice {
 				RenderAction::ScrollUp => self.scroll_position.scroll_up(),
 				RenderAction::ScrollRight => self.scroll_position.scroll_right(),
 				RenderAction::ScrollLeft => self.scroll_position.scroll_left(),
+				RenderAction::ScrollTop => self.scroll_position.scroll_top(),
+				RenderAction::ScrollBottom => self.scroll_position.scroll_bottom(),
 				RenderAction::PageUp => self.scroll_position.page_up(),
 				RenderAction::PageDown => self.scroll_position.page_down(),
 				RenderAction::Resize(width, height) => self.set_size(width, height),

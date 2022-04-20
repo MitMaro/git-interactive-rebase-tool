@@ -1,9 +1,11 @@
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum ScrollDirection {
-	Up,
-	Down,
-	Left,
-	Right,
+	Top,
+	Up(usize),
+	Down(usize),
+	Left(usize),
+	Right(usize),
+	Bottom,
 }
 
 #[derive(Debug)]
@@ -38,27 +40,35 @@ impl ScrollPosition {
 	}
 
 	pub(crate) fn scroll_up(&mut self) {
-		self.update_top(1, ScrollDirection::Up);
+		self.update_top(ScrollDirection::Up(1));
 	}
 
 	pub(crate) fn scroll_down(&mut self) {
-		self.update_top(1, ScrollDirection::Down);
+		self.update_top(ScrollDirection::Down(1));
 	}
 
 	pub(crate) fn page_up(&mut self) {
-		self.update_top(self.view_height / 2, ScrollDirection::Up);
+		self.update_top(ScrollDirection::Up(self.view_height / 2));
 	}
 
 	pub(crate) fn page_down(&mut self) {
-		self.update_top(self.view_height / 2, ScrollDirection::Down);
+		self.update_top(ScrollDirection::Down(self.view_height / 2));
 	}
 
 	pub(crate) fn scroll_left(&mut self) {
-		self.update_left(1, ScrollDirection::Left);
+		self.update_left(ScrollDirection::Left(1));
 	}
 
 	pub(crate) fn scroll_right(&mut self) {
-		self.update_left(1, ScrollDirection::Right);
+		self.update_left(ScrollDirection::Right(1));
+	}
+
+	pub(crate) fn scroll_top(&mut self) {
+		self.update_top(ScrollDirection::Top);
+	}
+
+	pub(crate) fn scroll_bottom(&mut self) {
+		self.update_top(ScrollDirection::Bottom);
 	}
 
 	pub(crate) fn ensure_line_visible(&mut self, line_index: usize) {
@@ -141,10 +151,9 @@ impl ScrollPosition {
 		}
 		// recalculate left to remove any padding space to the right
 		else if self.max_line_width > self.view_width && self.max_line_width <= (self.view_width + self.left_value) {
-			self.update_left(
+			self.update_left(ScrollDirection::Left(
 				self.view_width + self.left_value - self.max_line_width,
-				ScrollDirection::Left,
-			);
+			));
 		}
 	}
 
@@ -154,14 +163,13 @@ impl ScrollPosition {
 		}
 		// recalculate top to remove any padding space below the set of lines
 		else if self.lines_length > self.view_height && self.lines_length <= (self.view_height + self.top_value) {
-			self.update_top(
+			self.update_top(ScrollDirection::Up(
 				self.view_height + self.top_value - self.lines_length,
-				ScrollDirection::Up,
-			);
+			));
 		}
 	}
 
-	fn update_top(&mut self, amount: usize, direction: ScrollDirection) {
+	fn update_top(&mut self, direction: ScrollDirection) {
 		if self.view_height >= self.lines_length {
 			self.top_value = 0;
 			return;
@@ -169,41 +177,53 @@ impl ScrollPosition {
 
 		let current_value = self.top_value;
 
-		if direction == ScrollDirection::Up {
-			if current_value < amount {
-				self.top_value = 0;
-			}
-			else {
-				self.top_value = current_value - amount;
-			}
-		}
-		else if current_value + amount + self.view_height > self.lines_length {
-			self.top_value = self.lines_length - self.view_height;
-		}
-		else {
-			self.top_value = current_value + amount;
+		match direction {
+			ScrollDirection::Top => self.top_value = 0,
+			ScrollDirection::Up(amount) => {
+				if current_value < amount {
+					self.top_value = 0;
+				}
+				else {
+					self.top_value = current_value - amount;
+				}
+			},
+			ScrollDirection::Down(amount) => {
+				if current_value + amount + self.view_height > self.lines_length {
+					self.top_value = self.lines_length - self.view_height;
+				}
+				else {
+					self.top_value = current_value + amount;
+				}
+			},
+			ScrollDirection::Bottom => self.top_value = self.lines_length - self.view_height,
+			ScrollDirection::Left(_) | ScrollDirection::Right(_) => {},
 		}
 	}
 
-	fn update_left(&mut self, amount: usize, direction: ScrollDirection) {
+	fn update_left(&mut self, direction: ScrollDirection) {
 		if self.view_width >= self.max_line_width {
 			self.left_value = 0;
 			return;
 		}
 
-		if direction == ScrollDirection::Left {
-			if self.left_value < amount {
-				self.left_value = 0;
-			}
-			else {
-				self.left_value -= amount;
-			}
-		}
-		else if self.left_value + amount + self.view_width > self.max_line_width {
-			self.left_value = self.max_line_width - self.view_width;
-		}
-		else {
-			self.left_value += amount;
+		match direction {
+			ScrollDirection::Left(amount) => {
+				if self.left_value < amount {
+					self.left_value = 0;
+				}
+				else {
+					self.left_value -= amount;
+				}
+			},
+			ScrollDirection::Right(amount) => {
+				if self.left_value + amount + self.view_width > self.max_line_width {
+					self.left_value = self.max_line_width - self.view_width;
+				}
+				else {
+					self.left_value += amount;
+				}
+			},
+			ScrollDirection::Top | ScrollDirection::Up(_) | ScrollDirection::Down(_) | ScrollDirection::Bottom => {},
 		}
 	}
 }
@@ -572,6 +592,42 @@ mod tests {
 		scroll_position.view_width = 100;
 		scroll_position.scroll_right();
 		assert_eq!(scroll_position.get_left_position(), 0);
+	}
+
+	#[test]
+	fn scroll_position_scroll_top() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.lines_length = 5;
+		scroll_position.view_height = 10;
+		scroll_position.scroll_top();
+		assert_eq!(scroll_position.get_top_position(), 0);
+	}
+
+	#[test]
+	fn scroll_position_scroll_bottom_view_size_equal_list() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.lines_length = 10;
+		scroll_position.view_height = 10;
+		scroll_position.scroll_bottom();
+		assert_eq!(scroll_position.get_top_position(), 0);
+	}
+
+	#[test]
+	fn scroll_position_scroll_bottom_view_size_less_list() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.lines_length = 10;
+		scroll_position.view_height = 5;
+		scroll_position.scroll_bottom();
+		assert_eq!(scroll_position.get_top_position(), 5);
+	}
+
+	#[test]
+	fn scroll_position_scroll_bottom_view_size_greater_list() {
+		let mut scroll_position = ScrollPosition::new();
+		scroll_position.lines_length = 5;
+		scroll_position.view_height = 15;
+		scroll_position.scroll_bottom();
+		assert_eq!(scroll_position.get_top_position(), 0);
 	}
 
 	#[test]

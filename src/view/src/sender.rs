@@ -87,6 +87,18 @@ impl Sender {
 
 	/// Queue a scroll up action.
 	#[inline]
+	pub fn scroll_top(&self) {
+		self.render_slice.lock().borrow_mut().record_scroll_top();
+	}
+
+	/// Queue a scroll up action.
+	#[inline]
+	pub fn scroll_bottom(&self) {
+		self.render_slice.lock().borrow_mut().record_scroll_bottom();
+	}
+
+	/// Queue a scroll up action.
+	#[inline]
 	pub fn scroll_up(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_up();
 	}
@@ -204,6 +216,22 @@ mod tests {
 		with_view_sender(|mut context| {
 			context.drop_receiver();
 			assert_eq!(context.sender.end().unwrap_err().to_string(), "Unable to send data");
+		});
+	}
+
+	#[test]
+	fn scroll_top() {
+		with_view_sender(|context| {
+			context.sender.scroll_top();
+			context.assert_render_action(&["ScrollTop"]);
+		});
+	}
+
+	#[test]
+	fn scroll_bottom() {
+		with_view_sender(|context| {
+			context.sender.scroll_bottom();
+			context.assert_render_action(&["ScrollBottom"]);
 		});
 	}
 

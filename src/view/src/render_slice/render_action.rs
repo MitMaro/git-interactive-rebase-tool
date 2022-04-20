@@ -4,6 +4,8 @@ pub(crate) enum RenderAction {
 	ScrollUp,
 	ScrollRight,
 	ScrollLeft,
+	ScrollTop,
+	ScrollBottom,
 	PageUp,
 	PageDown,
 	Resize(usize, usize),

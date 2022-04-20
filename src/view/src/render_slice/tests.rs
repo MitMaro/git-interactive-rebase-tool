@@ -210,6 +210,51 @@ fn resize_action() {
 }
 
 #[test]
+fn scroll_top_action() {
+	let view_data = create_view_data(2, 10, 2);
+	let mut render_slice = create_render_slice(100, 8, &view_data);
+	for _ in 0..6 {
+		render_slice.scroll_position.scroll_down();
+	}
+	render_slice.record_scroll_top();
+	render_slice.sync_view_data(&view_data);
+	assert_rendered(&render_slice, &[
+		"{LEADING}",
+		"{Normal}L(1)",
+		"{Normal}L(2)",
+		"{BODY}",
+		"{Normal}B(1)",
+		"{Normal}B(2)",
+		"{Normal}B(3)",
+		"{Normal}B(4)",
+		"{TRAILING}",
+		"{Normal}T(1)",
+		"{Normal}T(2)",
+	]);
+}
+
+#[test]
+fn scroll_bottom_action() {
+	let view_data = create_view_data(2, 10, 2);
+	let mut render_slice = create_render_slice(100, 8, &view_data);
+	render_slice.record_scroll_bottom();
+	render_slice.sync_view_data(&view_data);
+	assert_rendered(&render_slice, &[
+		"{LEADING}",
+		"{Normal}L(1)",
+		"{Normal}L(2)",
+		"{BODY}",
+		"{Normal}B(7)",
+		"{Normal}B(8)",
+		"{Normal}B(9)",
+		"{Normal}B(10)",
+		"{TRAILING}",
+		"{Normal}T(1)",
+		"{Normal}T(2)",
+	]);
+}
+
+#[test]
 fn resize_action_zero_width() {
 	let view_data = create_view_data(0, 3, 0);
 	let mut render_slice = create_render_slice(1, 1, &view_data);

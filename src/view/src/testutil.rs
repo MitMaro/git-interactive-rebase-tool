@@ -311,6 +311,8 @@ fn assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[Stri
 				RenderAction::ScrollUp => String::from("ScrollUp"),
 				RenderAction::ScrollRight => String::from("ScrollRight"),
 				RenderAction::ScrollLeft => String::from("ScrollLeft"),
+				RenderAction::ScrollTop => String::from("ScrollTop"),
+				RenderAction::ScrollBottom => String::from("ScrollBottom"),
 				RenderAction::PageUp => String::from("PageUp"),
 				RenderAction::PageDown => String::from("PageDown"),
 				RenderAction::Resize(width, height) => format!("Resize({}, {})", width, height),
