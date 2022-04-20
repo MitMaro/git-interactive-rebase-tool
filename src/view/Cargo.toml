@@ -25,8 +25,8 @@ unicode-width = "0.1.9"
 xi-unicode = "0.3.0"
 
 [dependencies.uuid]
-version = "0.8.1"
-features = ["v4"]
+version = "1.0.0"
+features = ["v4", "fast-rng"]
 
 [dev-dependencies]
 girt-config = {version = "1.0.0", path = "../config"}
