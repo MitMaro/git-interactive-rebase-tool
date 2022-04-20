@@ -27,7 +27,7 @@ impl ViewData {
 			lines: vec![],
 			lines_leading: vec![],
 			lines_trailing: vec![],
-			name: Uuid::new_v4().to_hyphenated().to_string(),
+			name: Uuid::new_v4().hyphenated().to_string(),
 			retain_scroll_position: true,
 			scroll_version: 0,
 			show_help: false,
