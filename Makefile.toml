@@ -39,7 +39,7 @@ command = "cargo"
 args = ["clean"]
 
 [tasks.coverage]
-toolchain = "nightly-2021-11-07"
+toolchain = "nightly"
 command = "cargo"
 condition = { platforms = ["linux"] }
 env = { "RUSTFLAGS" = "-C link-dead-code" }
