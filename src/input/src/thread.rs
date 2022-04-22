@@ -1,4 +1,5 @@
 use std::{
+	mem,
 	sync::atomic::Ordering,
 	thread::{spawn, JoinHandle},
 };
@@ -35,7 +36,14 @@ where F: Fn() -> Result<Option<crossterm::event::Event>> {
 				},
 				EventAction::EnqueueEvent(event) => {
 					let mut events = event_queue.lock();
-					if events.len() < MAXIMUM_EVENTS {
+
+					// debounce resize events
+					let is_duplicate_resize = matches!(event, Event::Resize(..))
+						&& events.back().map_or(false, |e| matches!(e, &Event::Resize(..)));
+					if is_duplicate_resize {
+						let _old = mem::replace(events.back_mut().expect("Value exists"), event);
+					}
+					else if events.len() < MAXIMUM_EVENTS {
 						events.push_back(event);
 					}
 					let _send_result = new_event_sender.send(());
@@ -145,6 +153,31 @@ mod tests {
 
 		assert_eq!(sender.read_event(), Event::None);
 		assert_ne!(events_received.last().unwrap(), &Event::from('b'));
+	}
+
+	#[test]
+	fn thread_enqueue_event_multiple_resizes() {
+		let (mut sender, _thread) = spawn_event_thread(|| Ok(None));
+
+		sender.enqueue_event(Event::Resize(0, 0)).unwrap();
+		sender.enqueue_event(Event::Resize(1, 1)).unwrap();
+		sender.enqueue_event(Event::from('b')).unwrap();
+		sender.end().unwrap();
+		while !sender.is_poisoned() {}
+
+		let mut events_received = vec![];
+		loop {
+			let event = sender.read_event();
+			if event != Event::None {
+				events_received.push(event);
+			}
+
+			if events_received.len() == 2 {
+				break;
+			}
+		}
+
+		assert_eq!(events_received, vec![Event::Resize(1, 1), Event::from('b')]);
 	}
 
 	#[test]
