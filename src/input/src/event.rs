@@ -24,7 +24,12 @@ impl<CustomEvent: crate::CustomEvent> From<crossterm::event::Event> for Event<Cu
 	#[inline]
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
-			crossterm::event::Event::Key(evt) => Self::Key(evt),
+			crossterm::event::Event::Key(mut evt) => {
+				if let KeyCode::Char(_) = evt.code {
+					evt.modifiers.remove(KeyModifiers::SHIFT);
+				}
+				Self::Key(evt)
+			},
 			crossterm::event::Event::Mouse(evt) => Self::Mouse(evt),
 			crossterm::event::Event::Resize(width, height) => Self::Resize(width, height),
 		}
@@ -70,6 +75,13 @@ mod tests {
 		let key_event = KeyEvent::new(KeyCode::Null, KeyModifiers::empty());
 		let event = Event::from(crossterm::event::Event::Key(key_event));
 		assert_eq!(event, Event::Key(key_event));
+	}
+
+	#[test]
+	fn from_crossterm_key_event_char_with_shift_modifier() {
+		let key_event = KeyEvent::new(KeyCode::Char('?'), KeyModifiers::SHIFT);
+		let event = Event::from(crossterm::event::Event::Key(key_event));
+		assert_eq!(event, Event::Key(KeyEvent::from(KeyCode::Char('?'))));
 	}
 
 	#[test]

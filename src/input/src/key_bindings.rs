@@ -74,7 +74,11 @@ pub fn map_keybindings<CustomEvent: crate::CustomEvent>(bindings: &[String]) -> 
 					let key_number = k[1..].parse::<u8>().unwrap_or(1);
 					KeyCode::F(key_number)
 				},
-				k => KeyCode::Char(k.chars().next().expect("Expected only one character from Char KeyCode")),
+				k => {
+					// printable characters cannot use shift
+					modifiers.remove(KeyModifiers::SHIFT);
+					KeyCode::Char(k.chars().next().expect("Expected only one character from Char KeyCode"))
+				},
 			};
 			Event::Key(KeyEvent::new(code, modifiers))
 		})
@@ -118,12 +122,13 @@ mod tests {
 
 	#[test]
 	fn map_keybindings_with_modifiers() {
-		assert_eq!(map_keybindings::<TestEvent>(&[String::from("ControlAltShifta")]), vec![
-			Event::Key(KeyEvent {
-				code: KeyCode::Char('a'),
+		assert_eq!(
+			map_keybindings::<TestEvent>(&[String::from("ControlAltShiftUp")]),
+			vec![Event::Key(KeyEvent {
+				code: KeyCode::Up,
 				modifiers: KeyModifiers::all()
-			})
-		]);
+			})]
+		);
 	}
 
 	#[rstest]
@@ -148,6 +153,13 @@ mod tests {
 	fn map_keybindings_key_code(#[case] binding: &str, #[case] key_code: KeyCode) {
 		assert_eq!(map_keybindings::<TestEvent>(&[String::from(binding)]), vec![
 			Event::from(key_code)
+		]);
+	}
+
+	#[test]
+	fn map_keybindings_key_code_char_remove_shift() {
+		assert_eq!(map_keybindings::<TestEvent>(&[String::from("ShiftA")]), vec![
+			Event::from(KeyCode::Char('A'))
 		]);
 	}
 }
