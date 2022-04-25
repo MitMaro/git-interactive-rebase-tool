@@ -1184,6 +1184,8 @@ fn render_help() {
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
 				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
 				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
+				"{IndicatorColor} Home    {Normal,Dimmed}|{Normal}Scroll to the top",
+				"{IndicatorColor} End     {Normal,Dimmed}|{Normal}Scroll to the bottom",
 				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
 				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
 				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",

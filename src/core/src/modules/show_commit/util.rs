@@ -22,6 +22,8 @@ pub(super) fn get_show_commit_help_lines(key_bindings: &KeyBindings) -> Vec<(Vec
 			key_bindings.scroll_step_down.clone(),
 			String::from("Scroll down half a page"),
 		),
+		(key_bindings.scroll_home.clone(), String::from("Scroll to the top")),
+		(key_bindings.scroll_end.clone(), String::from("Scroll to the bottom")),
 		(key_bindings.scroll_right.clone(), String::from("Scroll right")),
 		(key_bindings.scroll_left.clone(), String::from("Scroll left")),
 		(key_bindings.show_diff.clone(), String::from("Show full diff")),
