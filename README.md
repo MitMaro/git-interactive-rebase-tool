@@ -83,7 +83,7 @@ Need to do something in your Git editor? Quickly shell out to your editor, make 
 
 ### Windows
 
-#### Standard Command Prompt
+#### Standard Command Prompt and Windows Terminal
 
     git config --global sequence.editor "'C:/path/to/interactive-rebase-tool.exe'"
 
@@ -104,7 +104,7 @@ You can temporarily use a different sequence editor by using the `GIT_SEQUENCE_E
 
     GIT_SEQUENCE_EDITOR=emacs git rebase -i [<upstream> [<branch>]]
 
-## Usage
+## Direct Usage
 
 ```shell
 interactive-rebase-tool <rebase-todo-filepath>
@@ -121,7 +121,7 @@ The tool has built-in help that can be accessed by hitting the `?` key.
 Key bindings can be configured, see [configuration](readme/customization.md#key-bindings) for more information.
 
 | Key         | Mode   | Description                               |
-|-------------| ------ |-------------------------------------------|
+|-------------|--------|-------------------------------------------|
 | Up          | All    | Move selection up                         |
 | Down        | All    | Move selection down                       |
 | Page Up     | All    | Move selection up five lines              |
@@ -158,6 +158,30 @@ Key bindings can be configured, see [configuration](readme/customization.md#key-
 | PageUp      | Diff   | Scroll view a step up                     |
 | PageDown    | Diff   | Scroll view a step down                   |
 | `d`         | Diff   | Show full commit diff                     |
+
+## Supported Platforms
+
+### Linux
+
+Supported on all Linux based distributions. The project is tested on Debian and Ubuntu, but should work on any standard Linux distribution. If the project is not working on your platform, please [open an issue](https://github.com/MitMaro/git-interactive-rebase-tool/issues/new).
+
+The tool is tested in [Tilix](https://gnunn1.github.io/tilix-web/) and [Gnome Terminal](https://help.gnome.org/users/gnome-terminal/stable/).
+
+### macOS
+
+Supported on the latest version of macOS, though previous versions should work.
+
+The tool is tested in [iTerm2](https://www.iterm2.com/) and [Terminal](https://support.apple.com/en-ca/guide/terminal/welcome/mac).
+
+### Windows
+
+Supported on the latest versions of Windows 8.1 and Windows 10 and Windows 11.
+
+The tool is tested on Windows 10 in [PowerShell](https://docs.microsoft.com/powershell/) and Command Prompt inside [Windows Console](https://docs.microsoft.com/windows/console/) and [Windows Terminal](https://docs.microsoft.com/windows/terminal/). The latest version of Git Bash provided from [Git for Windows](https://gitforwindows.org/) is also supported.
+
+Windows Console and Git Bash are only minimally supported, and some features or graphical glitches may occur. Windows Console running in [legacy mode](https://docs.microsoft.com/windows/console/legacymode) is not supported.
+
+[Cygwin](https://www.cygwin.com/) is not officially supported.
 
 ## Development
 
