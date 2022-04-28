@@ -183,6 +183,10 @@ Windows Console and Git Bash are only minimally supported, and some features or 
 
 [Cygwin](https://www.cygwin.com/) is not officially supported.
 
+### Others
+
+Other platforms are not officially supported. Some platforms have community support, and if you are having trouble getting the project working on your platform, please [open an issue](https://github.com/MitMaro/git-interactive-rebase-tool/issues/new).
+
 ## Development
 
 ### Install Rust
