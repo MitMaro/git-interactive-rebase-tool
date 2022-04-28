@@ -180,6 +180,7 @@ impl Process {
 
 	fn run_command(&mut self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
 		self.view_sender.stop()?;
+		self.event_sender.pause();
 
 		let mut cmd = Command::new(external_command.0.clone());
 		let _ = cmd.args(external_command.1.clone());
@@ -196,6 +197,7 @@ impl Process {
 			})
 			.map_err(|err| anyhow!(err));
 
+		self.event_sender.resume();
 		self.view_sender.start()?;
 
 		result

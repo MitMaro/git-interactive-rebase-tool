@@ -24,6 +24,7 @@ const EVENT_POLL_TIMEOUT: Duration = Duration::from_secs(1);
 pub struct Sender<CustomEvent: crate::CustomEvent> {
 	event_queue: Arc<Mutex<VecDeque<Event<CustomEvent>>>>,
 	poisoned: Arc<AtomicBool>,
+	paused: Arc<AtomicBool>,
 	receiver: crossbeam_channel::Receiver<()>,
 	sender: crossbeam_channel::Sender<EventAction<CustomEvent>>,
 }
@@ -39,6 +40,7 @@ impl<CustomEvent: crate::CustomEvent> Sender<CustomEvent> {
 		Self {
 			event_queue: Arc::new(Mutex::new(VecDeque::new())),
 			poisoned: Arc::new(AtomicBool::new(false)),
+			paused: Arc::new(AtomicBool::new(false)),
 			receiver,
 			sender,
 		}
@@ -56,6 +58,13 @@ impl<CustomEvent: crate::CustomEvent> Sender<CustomEvent> {
 	#[must_use]
 	pub fn is_poisoned(&self) -> bool {
 		self.poisoned.load(Ordering::Relaxed)
+	}
+
+	/// Is the sender paused from reading events.
+	#[inline]
+	#[must_use]
+	pub fn is_paused(&self) -> bool {
+		self.paused.load(Ordering::Relaxed)
 	}
 
 	#[inline]
@@ -110,6 +119,18 @@ impl<CustomEvent: crate::CustomEvent> Sender<CustomEvent> {
 	#[inline]
 	pub fn push_event(&self, event: Event<CustomEvent>) -> Result<()> {
 		self.sender.send(EventAction::PushEvent(event)).map_err(map_send_err)
+	}
+
+	/// Pause the event read thread.
+	#[inline]
+	pub fn pause(&self) {
+		self.paused.store(true, Ordering::Relaxed);
+	}
+
+	/// Resume the event read thread.
+	#[inline]
+	pub fn resume(&self) {
+		self.paused.store(false, Ordering::Relaxed);
 	}
 }
 

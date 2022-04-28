@@ -20,6 +20,7 @@ const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 pub fn spawn_view_thread<T: Tui + Send + 'static>(mut view: View<T>) -> (Sender, JoinHandle<()>) {
 	let (sender, receiver) = unbounded();
 	let view_sender = Sender::new(sender.clone());
+	let refresh_thread_view_sender = view_sender.clone();
 	let view_render_slice = view_sender.clone_render_slice();
 	let crashed = view_sender.clone_poisoned();
 
@@ -61,8 +62,13 @@ pub fn spawn_view_thread<T: Tui + Send + 'static>(mut view: View<T>) -> (Sender,
 		let sleep_time = MINIMUM_TICK_RATE / 2;
 		let mut time = Instant::now();
 		while sender.send(ViewAction::Refresh).is_ok() {
-			sleep(time.saturating_duration_since(Instant::now()));
-			time += sleep_time;
+			loop {
+				sleep(time.saturating_duration_since(Instant::now()));
+				time += sleep_time;
+				if !refresh_thread_view_sender.is_paused() {
+					break;
+				}
+			}
 		}
 	});
 
