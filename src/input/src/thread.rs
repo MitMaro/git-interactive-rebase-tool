@@ -1,7 +1,8 @@
 use std::{
 	mem,
 	sync::atomic::Ordering,
-	thread::{spawn, JoinHandle},
+	thread::{sleep, spawn, JoinHandle},
+	time::{Duration, Instant},
 };
 
 use anyhow::Result;
@@ -10,6 +11,7 @@ use crossbeam_channel::{bounded, unbounded};
 use crate::{event::Event, event_action::EventAction, sender::Sender};
 
 const MAXIMUM_EVENTS: usize = 100;
+const MINIMUM_PAUSE_RATE: Duration = Duration::from_millis(100);
 
 /// Spawn a thead for handling events.
 ///
@@ -27,6 +29,7 @@ where F: Fn() -> Result<Option<crossterm::event::Event>> {
 	let event_queue = event_sender.clone_event_queue();
 	let push_thread_event_sender = event_sender.clone();
 	let poisoned = event_sender.clone_poisoned();
+
 	let thread = spawn(move || {
 		for msg in receiver {
 			match msg {
@@ -61,7 +64,12 @@ where F: Fn() -> Result<Option<crossterm::event::Event>> {
 	});
 
 	let _push_events_thread = spawn(move || {
+		let mut time = Instant::now();
 		while !push_thread_event_sender.is_poisoned() {
+			while push_thread_event_sender.is_paused() {
+				sleep(time.saturating_duration_since(Instant::now()));
+				time += MINIMUM_PAUSE_RATE;
+			}
 			if let Ok(Some(event)) = (event_provider)() {
 				let _result = push_thread_event_sender.enqueue_event(Event::from(event));
 			}
@@ -231,5 +239,24 @@ mod tests {
 		assert_eq!(sender.read_event(), Event::None);
 		assert_eq!(events_received.first().unwrap(), &Event::from('b'));
 		assert_eq!(events_received.last().unwrap(), &Event::from('a'));
+	}
+
+	#[test]
+	fn thread_pause_resume() {
+		// setup event provider to continuously provide a key event
+		let (mut sender, _thread) = spawn_event_thread(|| {
+			Ok(Some(crossterm::event::Event::Key(crossterm::event::KeyEvent::new(
+				crossterm::event::KeyCode::Char('a'),
+				crossterm::event::KeyModifiers::empty(),
+			))))
+		});
+
+		sender.pause();
+		sender.clone_event_queue().lock().clear(); // remove any events that were already enqueued
+		assert_eq!(sender.read_event(), Event::None); // sadly this will pause for a second
+		sender.resume();
+		assert_eq!(sender.read_event(), Event::from('a'));
+		sender.end().unwrap();
+		while !sender.is_poisoned() {}
 	}
 }

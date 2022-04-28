@@ -20,6 +20,7 @@ fn map_send_err(_: channel::SendError<ViewAction>) -> Error {
 #[derive(Clone, Debug)]
 pub struct Sender {
 	poisoned: Arc<AtomicBool>,
+	paused: Arc<AtomicBool>,
 	sender: channel::Sender<ViewAction>,
 	render_slice: Arc<Mutex<RenderSlice>>,
 }
@@ -32,6 +33,7 @@ impl Sender {
 		Self {
 			poisoned: Arc::new(AtomicBool::new(false)),
 			sender,
+			paused: Arc::new(AtomicBool::new(false)),
 			render_slice: Arc::new(Mutex::new(RenderSlice::new())),
 		}
 	}
@@ -50,6 +52,13 @@ impl Sender {
 		self.poisoned.load(Ordering::Acquire)
 	}
 
+	/// Is the sender paused from refreshing the view.
+	#[inline]
+	#[must_use]
+	pub fn is_paused(&self) -> bool {
+		self.paused.load(Ordering::Relaxed)
+	}
+
 	/// Clone the render slice.
 	#[inline]
 	#[must_use]
@@ -63,6 +72,7 @@ impl Sender {
 	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn start(&self) -> Result<()> {
+		self.paused.store(false, Ordering::Relaxed);
 		self.sender.send(ViewAction::Start).map_err(map_send_err)
 	}
 
@@ -72,6 +82,7 @@ impl Sender {
 	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn stop(&self) -> Result<()> {
+		self.paused.store(true, Ordering::Relaxed);
 		self.sender.send(ViewAction::Stop).map_err(map_send_err)
 	}
 
@@ -176,6 +187,7 @@ mod tests {
 		with_view_sender(|context| {
 			context.sender.start().unwrap();
 			context.assert_sent_messages(vec!["Start"]);
+			assert!(!context.sender.is_paused());
 		});
 	}
 
@@ -192,6 +204,7 @@ mod tests {
 		with_view_sender(|context| {
 			context.sender.stop().unwrap();
 			context.assert_sent_messages(vec!["Stop"]);
+			assert!(context.sender.is_paused());
 		});
 	}
 
