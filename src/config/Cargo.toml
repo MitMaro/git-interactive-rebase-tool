@@ -1,6 +1,6 @@
 [package]
 name = "girt-config"
-version = "1.0.0"
+version = "2.2.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Configuration for git-interactive-rebase-tool"
@@ -16,7 +16,7 @@ name = "config"
 
 [dependencies]
 anyhow = "1.0"
-girt-git = {version = "0.2.0", path = "../../src/git"}
+girt-git = {version = "2.2.0", path = "../../src/git"}
 
 [dev-dependencies]
 lazy_static = "1.4.0"

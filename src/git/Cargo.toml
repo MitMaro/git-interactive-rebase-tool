@@ -1,6 +1,6 @@
 [package]
 name = "girt-git"
-version = "0.2.0"
+version = "2.2.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Git module for git-interactive-rebase-tool"

@@ -1,6 +1,6 @@
 [package]
 name = "girt-core"
-version = "1.0.0"
+version = "2.2.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Core modules for git-interactive-rebase-tool"
@@ -21,12 +21,12 @@ lazy_static = "1.4.0"
 num-format = "0.4.0"
 pico-args = "0.4.2"
 unicode-segmentation = "1.9.0"
-girt-config = {version = "1.0.0", path = "../../src/config"}
-girt-display = {version = "1.0.0", path = "../../src/display"}
-girt-git = {version = "0.2.0", path = "../../src/git"}
-girt-input = {version = "1.0.0", path = "../../src/input"}
-girt-todo-file = {version = "1.0.0", path = "../../src/todo_file"}
-girt-view = {version = "1.1.0", path = "../../src/view"}
+girt-config = {version = "2.2.0", path = "../../src/config"}
+girt-display = {version = "2.2.0", path = "../../src/display"}
+girt-git = {version = "2.2.0", path = "../../src/git"}
+girt-input = {version = "2.2.0", path = "../../src/input"}
+girt-todo-file = {version = "2.2.0", path = "../../src/todo_file"}
+girt-view = {version = "2.2.0", path = "../../src/view"}
 
 [dev-dependencies]
 captur = "0.1.0"
