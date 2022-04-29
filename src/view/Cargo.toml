@@ -1,6 +1,6 @@
 [package]
 name = "girt-view"
-version = "1.1.0"
+version = "2.2.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "View modules for git-interactive-rebase-tool"
@@ -18,18 +18,18 @@ name = "view"
 anyhow = "1.0.57"
 bitflags = "1.3.2"
 crossbeam-channel = "0.5.4"
-girt-display = {version = "1.0.0", path = "../display"}
 parking_lot = "0.12.0"
 unicode-segmentation = "1.9.0"
 unicode-width = "0.1.9"
 xi-unicode = "0.3.0"
+girt-display = {version = "2.2.0", path = "../display"}
 
 [dependencies.uuid]
 version = "1.0.0"
 features = ["v4", "fast-rng"]
 
 [dev-dependencies]
-girt-config = {version = "1.0.0", path = "../config"}
+girt-config = {version = "2.2.0", path = "../config"}
 
 [build-dependencies]
 rustc_version = "0.4.0"

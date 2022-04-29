@@ -165,7 +165,7 @@ dependencies = [
 
 [[package]]
 name = "girt-config"
-version = "1.0.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "girt-git",
@@ -178,7 +178,7 @@ dependencies = [
 
 [[package]]
 name = "girt-core"
-version = "1.0.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "captur",
@@ -202,7 +202,7 @@ dependencies = [
 
 [[package]]
 name = "girt-display"
-version = "1.0.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "crossterm",
@@ -214,7 +214,7 @@ dependencies = [
 
 [[package]]
 name = "girt-git"
-version = "0.2.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -230,7 +230,7 @@ dependencies = [
 
 [[package]]
 name = "girt-input"
-version = "1.0.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -244,7 +244,7 @@ dependencies = [
 
 [[package]]
 name = "girt-todo-file"
-version = "1.0.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "rstest 0.12.0",
@@ -254,7 +254,7 @@ dependencies = [
 
 [[package]]
 name = "girt-view"
-version = "1.1.0"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -271,7 +271,7 @@ dependencies = [
 
 [[package]]
 name = "git-interactive-rebase-tool"
-version = "2.1.0"
+version = "2.2.0"
 dependencies = [
  "girt-core",
  "rustc_version",

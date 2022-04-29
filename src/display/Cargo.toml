@@ -1,6 +1,6 @@
 [package]
 name = "girt-display"
-version = "1.0.0"
+version = "2.2.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Display modules for git-interactive-rebase-tool"
@@ -17,7 +17,7 @@ name = "display"
 [dependencies]
 anyhow = "1.0"
 crossterm = "0.23.2"
-girt-config = {version = "1.0.0", path = "../config"}
+girt-config = {version = "2.2.0", path = "../config"}
 
 [dev-dependencies]
 rstest = "0.12.0"
