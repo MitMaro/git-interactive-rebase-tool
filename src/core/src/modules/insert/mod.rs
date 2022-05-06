@@ -16,7 +16,8 @@ use crate::{
 		edit::{Edit, INPUT_OPTIONS as EDIT_INPUT_OPTIONS},
 	},
 	events::Event,
-	module::{Module, ProcessResult, State},
+	module::{Module, State},
+	process::Results,
 };
 
 pub(crate) struct Insert {
@@ -27,10 +28,10 @@ pub(crate) struct Insert {
 }
 
 impl Module for Insert {
-	fn activate(&mut self, _: &TodoFile, _: State) -> ProcessResult {
+	fn activate(&mut self, _: &TodoFile, _: State) -> Results {
 		self.state = InsertState::Prompt;
 		self.edit.clear();
-		ProcessResult::new()
+		Results::new()
 	}
 
 	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
@@ -59,14 +60,14 @@ impl Module for Insert {
 	}
 
 	#[allow(clippy::unreachable)]
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, rebase_todo: &mut TodoFile) -> Results {
+		let mut results = Results::new();
 		match self.state {
 			InsertState::Prompt => {
 				let choice = self.action_choices.handle_event(event, view_sender);
-				let mut result = ProcessResult::from(event);
 				if let Some(action) = choice {
 					if action == &LineType::Cancel {
-						result = result.state(State::List);
+						results.state(State::List);
 					}
 					else {
 						self.line_type = action.clone();
@@ -74,14 +75,12 @@ impl Module for Insert {
 						self.state = InsertState::Edit;
 					}
 				}
-				result
 			},
 			InsertState::Edit => {
-				let mut result = ProcessResult::from(event);
 				self.edit.handle_event(event);
 				if self.edit.is_finished() {
 					let content = self.edit.get_content();
-					result = result.state(State::List);
+					results.state(State::List);
 					if !content.is_empty() {
 						let line = match self.line_type {
 							LineType::Exec => Line::new_exec(content),
@@ -97,9 +96,9 @@ impl Module for Insert {
 						rebase_todo.set_selected_line_index(new_line_index);
 					}
 				}
-				result
 			},
 		}
+		results
 	}
 }
 

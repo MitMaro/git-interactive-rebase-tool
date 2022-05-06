@@ -16,7 +16,8 @@ use self::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lin
 use crate::{
 	components::{edit::Edit, help::Help},
 	events::{Event, KeyBindings, MetaEvent},
-	module::{ExitStatus, Module, ProcessResult, State},
+	module::{ExitStatus, Module, State},
+	process::Results,
 	select,
 };
 
@@ -66,7 +67,7 @@ impl Module for List {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> Results {
 		select!(
 			default || {
 				match self.state {
@@ -155,24 +156,24 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn abort(&self, result: ProcessResult) -> ProcessResult {
-		result.state(State::ConfirmAbort)
+	fn abort(&self, results: &mut Results) {
+		results.state(State::ConfirmAbort);
 	}
 
 	#[allow(clippy::unused_self)]
-	fn force_abort(&self, rebase_todo: &mut TodoFile, result: ProcessResult) -> ProcessResult {
+	fn force_abort(&self, results: &mut Results, rebase_todo: &mut TodoFile) {
 		rebase_todo.set_lines(vec![]);
-		result.exit_status(ExitStatus::Good)
+		results.exit_status(ExitStatus::Good);
 	}
 
 	#[allow(clippy::unused_self)]
-	fn rebase(&self, result: ProcessResult) -> ProcessResult {
-		result.state(State::ConfirmRebase)
+	fn rebase(&self, results: &mut Results) {
+		results.state(State::ConfirmRebase);
 	}
 
 	#[allow(clippy::unused_self)]
-	const fn force_rebase(&self, result: ProcessResult) -> ProcessResult {
-		result.exit_status(ExitStatus::Good)
+	fn force_rebase(&self, results: &mut Results) {
+		results.exit_status(ExitStatus::Good);
 	}
 
 	fn swap_selected_up(&mut self, todo_file: &mut TodoFile) {
@@ -252,8 +253,8 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn open_in_editor(&mut self, result: ProcessResult) -> ProcessResult {
-		result.state(State::ExternalEditor)
+	fn open_in_editor(&mut self, results: &mut Results) {
+		results.state(State::ExternalEditor);
 	}
 
 	fn toggle_visual_mode(&mut self, todo_file: &mut TodoFile) {
@@ -281,13 +282,12 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn show_commit(&mut self, todo_file: &TodoFile, mut result: ProcessResult) -> ProcessResult {
+	fn show_commit(&mut self, results: &mut Results, todo_file: &TodoFile) {
 		if let Some(selected_line) = todo_file.get_selected_line() {
 			if selected_line.has_reference() {
-				result = result.state(State::ShowCommit);
+				results.state(State::ShowCommit);
 			}
 		}
-		result
 	}
 
 	fn action_break(&mut self, todo_file: &mut TodoFile) {
@@ -322,8 +322,8 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn insert_line(&mut self, result: ProcessResult) -> ProcessResult {
-		result.state(State::Insert)
+	fn insert_line(&mut self, results: &mut Results) {
+		results.state(State::Insert);
 	}
 
 	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
@@ -425,17 +425,17 @@ impl List {
 		}
 	}
 
-	fn handle_normal_help_input(&mut self, event: Event, view_sender: &ViewSender) -> Option<ProcessResult> {
+	fn handle_normal_help_input(&mut self, event: Event, view_sender: &ViewSender) -> Option<Results> {
 		self.normal_mode_help.is_active().then(|| {
 			self.normal_mode_help.handle_event(event, view_sender);
-			ProcessResult::from(event)
+			Results::new()
 		})
 	}
 
-	fn handle_visual_help_input(&mut self, event: Event, view_sender: &ViewSender) -> Option<ProcessResult> {
+	fn handle_visual_help_input(&mut self, event: Event, view_sender: &ViewSender) -> Option<Results> {
 		self.visual_mode_help.is_active().then(|| {
 			self.visual_mode_help.handle_event(event, view_sender);
-			ProcessResult::from(event)
+			Results::new()
 		})
 	}
 
@@ -445,12 +445,12 @@ impl List {
 		event: Event,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
-	) -> Option<ProcessResult> {
-		let mut result = ProcessResult::from(event);
+	) -> Option<Results> {
+		let mut results = Results::new();
 		match event {
 			Event::MetaEvent(meta_event) => {
 				match meta_event {
-					MetaEvent::Abort => result = self.abort(result),
+					MetaEvent::Abort => self.abort(&mut results),
 					MetaEvent::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
 					MetaEvent::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
 					MetaEvent::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
@@ -458,8 +458,8 @@ impl List {
 					MetaEvent::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
 					MetaEvent::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
 					MetaEvent::Delete => self.delete(rebase_todo),
-					MetaEvent::ForceAbort => result = self.force_abort(rebase_todo, result),
-					MetaEvent::ForceRebase => result = self.force_rebase(result),
+					MetaEvent::ForceAbort => self.force_abort(&mut results, rebase_todo),
+					MetaEvent::ForceRebase => self.force_rebase(&mut results),
 					MetaEvent::Help => self.help(),
 					MetaEvent::MoveCursorDown => self.move_cursor_down(rebase_todo, 1),
 					MetaEvent::MoveCursorEnd => self.move_cursor_end(rebase_todo),
@@ -469,8 +469,8 @@ impl List {
 					MetaEvent::MoveCursorPageUp => self.move_cursor_up(rebase_todo, self.height / 2),
 					MetaEvent::MoveCursorRight => self.move_cursor_right(view_sender),
 					MetaEvent::MoveCursorUp => self.move_cursor_up(rebase_todo, 1),
-					MetaEvent::OpenInEditor => result = self.open_in_editor(result),
-					MetaEvent::Rebase => result = self.rebase(result),
+					MetaEvent::OpenInEditor => self.open_in_editor(&mut results),
+					MetaEvent::Rebase => self.rebase(&mut results),
 					MetaEvent::SwapSelectedDown => self.swap_selected_down(rebase_todo),
 					MetaEvent::SwapSelectedUp => self.swap_selected_up(rebase_todo),
 					MetaEvent::ToggleVisualMode => self.toggle_visual_mode(rebase_todo),
@@ -488,7 +488,7 @@ impl List {
 			_ => {},
 		}
 
-		Some(result)
+		Some(results)
 	}
 
 	fn handle_normal_mode_event(
@@ -496,22 +496,22 @@ impl List {
 		event: Event,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
-		if let Some(result) = self.handle_common_list_input(event, view_sender, rebase_todo) {
-			result
+	) -> Results {
+		if let Some(results) = self.handle_common_list_input(event, view_sender, rebase_todo) {
+			results
 		}
 		else {
-			let mut result = ProcessResult::from(event);
+			let mut results = Results::new();
 			if let Event::MetaEvent(meta_event) = event {
 				match meta_event {
 					MetaEvent::ActionBreak => self.action_break(rebase_todo),
 					MetaEvent::Edit => self.edit(rebase_todo),
-					MetaEvent::InsertLine => result = self.insert_line(result),
-					MetaEvent::ShowCommit => result = self.show_commit(rebase_todo, result),
+					MetaEvent::InsertLine => self.insert_line(&mut results),
+					MetaEvent::ShowCommit => self.show_commit(&mut results, rebase_todo),
 					_ => {},
 				}
 			}
-			result
+			results
 		}
 	}
 
@@ -520,12 +520,12 @@ impl List {
 		event: Event,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	) -> Results {
 		self.handle_common_list_input(event, view_sender, rebase_todo)
-			.unwrap_or_else(|| ProcessResult::from(event))
+			.unwrap_or_else(Results::new)
 	}
 
-	fn handle_edit_mode_input(&mut self, event: Event, rebase_todo: &mut TodoFile) -> ProcessResult {
+	fn handle_edit_mode_input(&mut self, event: Event, rebase_todo: &mut TodoFile) -> Results {
 		self.edit.handle_event(event);
 		if self.edit.is_finished() {
 			let selected_index = rebase_todo.get_selected_line_index();
@@ -537,6 +537,6 @@ impl List {
 			self.visual_index_start = None;
 			self.state = ListState::Normal;
 		}
-		ProcessResult::from(event)
+		Results::new()
 	}
 }

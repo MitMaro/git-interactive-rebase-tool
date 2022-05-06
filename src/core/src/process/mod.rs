@@ -1,17 +1,21 @@
+mod artifact;
+mod results;
 #[cfg(test)]
 mod tests;
 
 use std::{process::Command, thread};
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Error, Result};
+pub(crate) use artifact::Artifact;
 use display::{CrossTerm, Tui};
 use input::{spawn_event_thread, Sender as EventSender, StandardEvent};
+pub(crate) use results::Results;
 use todo_file::TodoFile;
 use view::{spawn_view_thread, RenderContext, View, ViewSender};
 
 use crate::{
 	events::{Event, MetaEvent},
-	module::{ExitStatus, Modules, ProcessResult, State},
+	module::{ExitStatus, Modules, State},
 };
 
 pub(crate) struct Process {
@@ -52,15 +56,8 @@ impl Process {
 			return Ok(ExitStatus::StateError);
 		}
 
-		self.handle_process_result(
-			&mut modules,
-			&ProcessResult::new().event(Event::Resize(
-				self.render_context.width() as u16,
-				self.render_context.height() as u16,
-			)),
-		);
-
-		self.activate(&mut modules, State::List);
+		let activate_results = self.activate(&mut modules, State::List);
+		self.handle_results(&mut modules, activate_results);
 		while self.exit_status.is_none() {
 			let view_data = modules.build_view_data(self.state, &self.render_context, &self.rebase_todo);
 			if self.view_sender.render(view_data).is_err() {
@@ -72,7 +69,7 @@ impl Process {
 					self.exit_status = Some(ExitStatus::StateError);
 					break;
 				}
-				let result = modules.handle_event(
+				let results_maybe = modules.handle_event(
 					self.state,
 					&mut self.event_sender,
 					&self.view_sender,
@@ -83,11 +80,9 @@ impl Process {
 					break;
 				}
 
-				if let Some(event) = result.event {
-					if event != Event::None {
-						self.handle_process_result(&mut modules, &result);
-						break;
-					}
+				if let Some(results) = results_maybe {
+					self.handle_results(&mut modules, results);
+					break;
 				}
 			}
 		}
@@ -115,67 +110,94 @@ impl Process {
 		Ok(self.exit_status.unwrap_or(ExitStatus::Good))
 	}
 
-	fn handle_process_result(&mut self, modules: &mut Modules<'_>, result: &ProcessResult) {
-		let previous_state = self.state;
-
-		// render context and view_sender need a size update early
-		if let Some(Event::Resize(width, height)) = result.event {
-			self.view_sender.resize(width, height);
-			self.render_context.update(width, height);
+	fn handle_results(&mut self, modules: &mut Modules<'_>, mut results: Results) {
+		while let Some(artifact) = results.artifact() {
+			results.append(match artifact {
+				Artifact::Event(event) => self.handle_event_artifact(event),
+				Artifact::ChangeState(state) => self.handle_state(state, modules),
+				Artifact::Error(err, previous_state) => self.handle_error(&err, previous_state, modules),
+				Artifact::ExitStatus(exit_status) => self.handle_exit_status(exit_status),
+				Artifact::ExternalCommand(command) => self.handle_external_command(&command),
+				Artifact::EnqueueResize => self.handle_enqueue_resize(),
+			});
 		}
+	}
 
-		if let Some(exit_status) = result.exit_status {
-			self.exit_status = Some(exit_status);
-		}
-
-		if let Some(ref error) = result.error {
-			self.state = State::Error;
-			modules.error(self.state, error);
-			self.activate(modules, result.state.unwrap_or(previous_state));
-		}
-		else if let Some(new_state) = result.state {
-			if new_state != self.state {
-				modules.deactivate(self.state);
-				self.state = new_state;
-				self.activate(modules, previous_state);
-			}
-		}
-
-		match result.event {
-			Some(Event::Standard(StandardEvent::Exit)) => {
-				self.exit_status = Some(ExitStatus::Abort);
+	fn handle_event_artifact(&mut self, event: Event) -> Results {
+		let mut results = Results::new();
+		match event {
+			Event::Standard(StandardEvent::Exit) => {
+				results.exit_status(ExitStatus::Abort);
 			},
-			Some(Event::Standard(StandardEvent::Kill)) => {
-				self.exit_status = Some(ExitStatus::Kill);
+			Event::Standard(StandardEvent::Kill) => {
+				results.exit_status(ExitStatus::Kill);
 			},
-			Some(Event::Resize(..)) => {
+			Event::Resize(width, height) => {
+				self.view_sender.resize(width, height);
+				self.render_context.update(width, height);
+
 				if self.state != State::WindowSizeError && self.render_context.is_window_too_small() {
-					self.state = State::WindowSizeError;
-					self.activate(modules, previous_state);
+					results.state(State::WindowSizeError);
 				}
 			},
 			_ => {},
 		};
+		results
+	}
 
-		if let Some(ref external_command) = result.external_command {
-			match self.run_command(external_command) {
-				Ok(meta_event) => {
-					self.event_sender
-						.enqueue_event(Event::from(meta_event))
-						.expect("Enqueue event failed");
-				},
-				Err(err) => {
-					self.handle_process_result(
-						modules,
-						&ProcessResult::new().state(State::List).error(err.context(format!(
-							"Unable to run {} {}",
-							external_command.0,
-							external_command.1.join(" ")
-						))),
-					);
-				},
-			}
+	fn handle_state(&mut self, state: State, modules: &mut Modules<'_>) -> Results {
+		let mut results = Results::new();
+		if self.state != state {
+			let previous_state = self.state;
+			self.state = state;
+			results.append(modules.deactivate(previous_state));
+			results.append(self.activate(modules, previous_state));
 		}
+		results
+	}
+
+	fn handle_error(&mut self, error: &Error, previous_state: Option<State>, modules: &mut Modules<'_>) -> Results {
+		let return_state = previous_state.unwrap_or(self.state);
+		self.state = State::Error;
+		modules.error(self.state, error);
+		self.activate(modules, return_state)
+	}
+
+	fn handle_exit_status(&mut self, exit_status: ExitStatus) -> Results {
+		self.exit_status = Some(exit_status);
+		Results::new()
+	}
+
+	fn handle_enqueue_resize(&mut self) -> Results {
+		self.event_sender
+			.enqueue_event(Event::Resize(
+				self.render_context.width() as u16,
+				self.render_context.height() as u16,
+			))
+			.expect("Enqueue Resize event failed");
+		Results::new()
+	}
+
+	fn handle_external_command(&mut self, external_command: &(String, Vec<String>)) -> Results {
+		let mut results = Results::new();
+		match self.run_command(external_command) {
+			Ok(meta_event) => {
+				self.event_sender
+					.enqueue_event(Event::from(meta_event))
+					.expect("Enqueue event failed");
+			},
+			Err(err) => {
+				results.error_with_return(
+					err.context(format!(
+						"Unable to run {} {}",
+						external_command.0,
+						external_command.1.join(" ")
+					)),
+					State::List,
+				);
+			},
+		}
+		results
 	}
 
 	fn run_command(&mut self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
@@ -203,15 +225,10 @@ impl Process {
 		result
 	}
 
-	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) {
-		let result = modules.activate(self.state, &self.rebase_todo, previous_state);
+	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) -> Results {
+		let mut results = modules.activate(self.state, &self.rebase_todo, previous_state);
 		// always trigger a resize on activate, for modules that track size
-		self.event_sender
-			.enqueue_event(Event::Resize(
-				self.render_context.width() as u16,
-				self.render_context.height() as u16,
-			))
-			.expect("Enqueue Resize event failed");
-		self.handle_process_result(modules, &result);
+		results.enqueue_resize();
+		results
 	}
 }

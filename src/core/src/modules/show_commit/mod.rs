@@ -21,7 +21,8 @@ use self::{
 use crate::{
 	components::help::Help,
 	events::{Event, KeyBindings, MetaEvent},
-	module::{Module, ProcessResult, State},
+	module::{Module, State},
+	process::Results,
 	select,
 	util::handle_view_data_scroll,
 };
@@ -41,13 +42,14 @@ pub(crate) struct ShowCommit {
 }
 
 impl Module for ShowCommit {
-	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> ProcessResult {
+	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> Results {
+		let mut results = Results::new();
 		if let Some(selected_line) = rebase_todo.get_selected_line() {
 			// skip loading commit data if the currently loaded commit has not changed, this retains
 			// position after returning to the list view or help
 			if let Some(diff) = self.diff.as_ref() {
 				if diff.commit().hash() == selected_line.get_hash() {
-					return ProcessResult::new();
+					return results;
 				}
 			}
 			self.overview_view_data.update_view_data(|updater| {
@@ -67,20 +69,16 @@ impl Module for ShowCommit {
 			match new_diff {
 				Ok(diff) => {
 					self.diff = Some(diff);
-					ProcessResult::new()
 				},
 				Err(e) => {
-					ProcessResult::new()
-						.error(e.context(anyhow!("Error loading commit")))
-						.state(State::List)
+					results.error_with_return(e.context(anyhow!("Error loading commit")), State::List);
 				},
 			}
 		}
 		else {
-			ProcessResult::new()
-				.error(anyhow!("No valid commit to show"))
-				.state(State::List)
+			results.error_with_return(anyhow!("No valid commit to show"), State::List);
 		}
+		results
 	}
 
 	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &ViewData {
@@ -133,13 +131,13 @@ impl Module for ShowCommit {
 		)
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> ProcessResult {
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> Results {
 		if self.help.is_active() {
 			self.help.handle_event(event, view_sender);
-			return ProcessResult::from(event);
+			return Results::new();
 		}
 
-		let mut result = ProcessResult::from(event);
+		let mut results = Results::new();
 
 		let active_view_data = match self.state {
 			ShowCommitState::Overview => &mut self.overview_view_data,
@@ -162,14 +160,14 @@ impl Module for ShowCommit {
 						self.state = ShowCommitState::Overview;
 					}
 					else {
-						result = result.state(State::List);
+						results.state(State::List);
 					}
 				},
 				Event::Resize(..) => active_view_data.update_view_data(|updater| updater.clear()),
 				_ => {},
 			}
 		}
-		result
+		results
 	}
 }
 

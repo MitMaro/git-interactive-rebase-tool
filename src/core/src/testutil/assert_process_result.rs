@@ -6,7 +6,7 @@ use crate::{
 	module::{ExitStatus, ProcessResult, State},
 };
 
-fn format_process_result(
+fn format_results(
 	event: Option<Event>,
 	state: Option<State>,
 	exit_status: Option<ExitStatus>,

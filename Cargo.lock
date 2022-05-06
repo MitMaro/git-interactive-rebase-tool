@@ -193,6 +193,7 @@ dependencies = [
  "num-format",
  "parking_lot 0.12.0",
  "pico-args",
+ "pretty_assertions",
  "rstest 0.12.0",
  "rustc_version",
  "serial_test",

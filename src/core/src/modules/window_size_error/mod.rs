@@ -5,7 +5,8 @@ use view::{RenderContext, ViewData, ViewLine, ViewSender};
 
 use crate::{
 	events::Event,
-	module::{Module, ProcessResult, State},
+	module::{Module, State},
+	process::Results,
 };
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
@@ -22,9 +23,9 @@ pub(crate) struct WindowSizeError {
 }
 
 impl Module for WindowSizeError {
-	fn activate(&mut self, _: &TodoFile, previous_state: State) -> ProcessResult {
+	fn activate(&mut self, _: &TodoFile, previous_state: State) -> Results {
 		self.return_state = previous_state;
-		ProcessResult::new()
+		Results::new()
 	}
 
 	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &ViewData {
@@ -57,17 +58,17 @@ impl Module for WindowSizeError {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
-		let mut result = ProcessResult::from(event);
+	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
+		let mut results = Results::new();
 
 		if let Event::Resize(width, height) = event {
 			let render_context = RenderContext::new(width, height);
 			if !render_context.is_window_too_small() {
-				result = result.state(self.return_state);
+				results.state(self.return_state);
 			}
 		}
 
-		result
+		results
 	}
 }
 
@@ -86,7 +87,7 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, testutil::module_test};
+	use crate::{assert_results, process::Artifact, testutil::module_test};
 
 	const MINIMUM_WINDOW_HEIGHT: usize = 5;
 	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
@@ -123,7 +124,10 @@ mod tests {
 		module_test(&[], &[Event::Resize(1, 1)], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(1, 1));
+			assert_results!(
+				test_context.handle_event(&mut module),
+				Artifact::Event(Event::Resize(1, 1))
+			);
 		});
 	}
 
@@ -132,10 +136,10 @@ mod tests {
 		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::Resize(100, 100),
-				state = State::ConfirmRebase
+				Artifact::Event(Event::Resize(100, 100)),
+				Artifact::ChangeState(State::ConfirmRebase)
 			);
 		});
 	}
@@ -145,7 +149,10 @@ mod tests {
 		module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));
+			assert_results!(
+				test_context.handle_event(&mut module),
+				Artifact::Event(Event::from('a'))
+			);
 		});
 	}
 }

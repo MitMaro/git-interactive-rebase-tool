@@ -6,7 +6,8 @@ use input::StandardEvent;
 use super::*;
 use crate::{
 	events::Event,
-	module::{ExitStatus, ProcessResult, State},
+	module::{ExitStatus, State},
+	process::Results,
 	run::{create_modules, create_process, load_config, load_todo_file, run_process},
 	testutil::TestModule,
 };
@@ -57,6 +58,17 @@ fn load_todo_file_error_empty_file() {
 	assert_eq!(
 		run(args(&[todo_file.to_str().unwrap()])),
 		Exit::new(ExitStatus::Good, "An empty rebase was provided, nothing to edit")
+	);
+}
+
+#[test]
+#[serial_test::serial]
+#[allow(unsafe_code)]
+fn load_todo_file_error_non_utf_arg() {
+	let todo_file = unsafe { String::from_utf8_unchecked(vec![0xC3, 0x28]) };
+	assert_eq!(
+		run(args(&[todo_file.as_str()])),
+		Exit::new(ExitStatus::StateError, "argument is not a UTF-8 string")
 	);
 }
 
@@ -138,7 +150,11 @@ fn run_process_error() {
 	let rebase_todo_file = load_todo_file(todo_file_path.to_str().unwrap(), &config).unwrap();
 	let process = create_process(rebase_todo_file, &config);
 	let mut module = TestModule::new();
-	module.event_callback(move |_, _, _| ProcessResult::from(Event::from(StandardEvent::Exit)));
+	module.event_callback(move |_, _, _| {
+		let mut results = Results::new();
+		results.event(Event::from(StandardEvent::Exit));
+		results
+	});
 	let mut modules = create_modules(&config, repo);
 	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(
@@ -160,7 +176,11 @@ fn run_process_success() {
 	let rebase_todo_file = load_todo_file(todo_file.to_str().unwrap(), &config).unwrap();
 	let process = create_process(rebase_todo_file, &config);
 	let mut module = TestModule::new();
-	module.event_callback(move |_, _, _| ProcessResult::from(Event::from(StandardEvent::Exit)));
+	module.event_callback(move |_, _, _| {
+		let mut results = Results::new();
+		results.event(Event::from(StandardEvent::Exit));
+		results
+	});
 	let mut modules = create_modules(&config, repo);
 	modules.register_module(State::WindowSizeError, module);
 	assert_eq!(run_process(process, modules), Exit::from(ExitStatus::Abort));

@@ -13,7 +13,7 @@ use rstest::rstest;
 use view::{assert_rendered_output, render_line, ViewLine};
 
 use super::*;
-use crate::{assert_process_result, testutil::module_test};
+use crate::{assert_results, process::Artifact, testutil::module_test};
 
 #[test]
 fn load_commit_during_activate() {
@@ -22,7 +22,7 @@ fn load_commit_during_activate() {
 		let line = format!("pick {} comment1", oid.to_string());
 		module_test(&[line.as_str()], &[], |test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
-			assert_process_result!(test_context.activate(&mut module, State::List));
+			assert_results!(test_context.activate(&mut module, State::List));
 			assert!(module.diff.is_some());
 		});
 		Ok(())
@@ -37,8 +37,8 @@ fn cached_commit_in_activate() {
 		module_test(&[line.as_str()], &[], |test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
 			// would be nice to be able to test that a second call to load_commit_diff did not happen here
-			assert_process_result!(test_context.activate(&mut module, State::List));
-			assert_process_result!(test_context.activate(&mut module, State::List));
+			assert_results!(test_context.activate(&mut module, State::List));
+			assert_results!(test_context.activate(&mut module, State::List));
 		});
 		Ok(())
 	});
@@ -49,10 +49,9 @@ fn no_selected_line_in_activate() {
 	with_temp_repository(|repo| {
 		module_test(&[], &[], |test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
-			assert_process_result!(
+			assert_results!(
 				test_context.activate(&mut module, State::List),
-				state = State::List,
-				error = anyhow!("No valid commit to show")
+				Artifact::Error(anyhow!("No valid commit to show"), Some(State::List))
 			);
 		});
 		Ok(())
@@ -64,11 +63,13 @@ fn activate_error() {
 	with_temp_repository(|repo| {
 		module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
-			assert_process_result!(
+			assert_results!(
 				test_context.activate(&mut module, State::List),
-				state = State::List,
-				error = anyhow!(
-					"Error loading commit: revspec 'aaaaaaaaaa' not found; class=Reference (4); code=NotFound (-3)"
+				Artifact::Error(
+					anyhow!(
+						"Error loading commit: revspec 'aaaaaaaaaa' not found; class=Reference (4); code=NotFound (-3)"
+					),
+					Some(State::List)
 				)
 			);
 		});
@@ -1117,9 +1118,9 @@ fn handle_event_toggle_diff_to_overview() {
 					.diff_view_data
 					.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
 				module.state = ShowCommitState::Diff;
-				assert_process_result!(
+				assert_results!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ShowDiff)
+					Artifact::Event(Event::from(MetaEvent::ShowDiff))
 				);
 				assert!(module.diff_view_data.is_empty());
 				assert_eq!(module.state, ShowCommitState::Overview);
@@ -1141,9 +1142,9 @@ fn handle_event_toggle_overview_to_diff() {
 					.overview_view_data
 					.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
 				module.state = ShowCommitState::Overview;
-				assert_process_result!(
+				assert_results!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::ShowDiff)
+					Artifact::Event(Event::from(MetaEvent::ShowDiff))
 				);
 				assert!(module.diff_view_data.is_empty());
 				assert_eq!(module.state, ShowCommitState::Diff);
@@ -1161,7 +1162,10 @@ fn handle_event_resize() {
 			&[Event::Resize(100, 100)],
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), repo);
-				assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
+				assert_results!(
+					test_context.handle_event(&mut module),
+					Artifact::Event(Event::Resize(100, 100))
+				);
 			},
 		);
 		Ok(())
@@ -1234,7 +1238,10 @@ fn handle_event_other_key_from_diff() {
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), repo);
 				module.state = ShowCommitState::Diff;
-				assert_process_result!(test_context.handle_event(&mut module), event = Event::from('a'));
+				assert_results!(
+					test_context.handle_event(&mut module),
+					Artifact::Event(Event::from('a'))
+				);
 				assert_eq!(module.state, ShowCommitState::Overview);
 			},
 		);
@@ -1251,10 +1258,10 @@ fn handle_event_other_key_from_overview() {
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), repo);
 				module.state = ShowCommitState::Overview;
-				assert_process_result!(
+				assert_results!(
 					test_context.handle_event(&mut module),
-					event = Event::from('a'),
-					state = State::List
+					Artifact::Event(Event::from('a')),
+					Artifact::ChangeState(State::List)
 				);
 			},
 		);
@@ -1273,7 +1280,10 @@ fn scroll_events(#[case] event: StandardEvent) {
 	with_temp_repository(|repo| {
 		module_test(&[], &[Event::from(event)], |mut test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
-			assert_process_result!(test_context.handle_event(&mut module), event = Event::from(event));
+			assert_results!(
+				test_context.handle_event(&mut module),
+				Artifact::Event(Event::from(event))
+			);
 		});
 		Ok(())
 	});

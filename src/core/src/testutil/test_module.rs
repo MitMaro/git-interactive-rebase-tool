@@ -1,13 +1,10 @@
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
-use crate::{
-	events::Event,
-	module::{Module, ProcessResult},
-};
+use crate::{events::Event, module::Module, process::Results};
 
 pub(crate) struct TestModule<'module> {
-	event_callback: Box<dyn Fn(Event, &ViewSender, &mut TodoFile) -> ProcessResult + Send + 'module>,
+	event_callback: Box<dyn Fn(Event, &ViewSender, &mut TodoFile) -> Results + Send + 'module>,
 	view_data: ViewData,
 	view_data_callback: Box<dyn Fn(&mut ViewData) + Send + 'module>,
 }
@@ -15,7 +12,11 @@ pub(crate) struct TestModule<'module> {
 impl<'module> TestModule<'module> {
 	pub(crate) fn new() -> Self {
 		Self {
-			event_callback: Box::new(|event, _, _| ProcessResult::from(event)),
+			event_callback: Box::new(|event, _, _| {
+				let mut results = Results::new();
+				results.event(event);
+				results
+			}),
 			view_data: ViewData::new(|_| {}),
 			view_data_callback: Box::new(|_| {}),
 		}
@@ -23,7 +24,7 @@ impl<'module> TestModule<'module> {
 
 	pub(crate) fn event_callback<EC>(&mut self, callback: EC)
 	where
-		EC: Fn(Event, &ViewSender, &mut TodoFile) -> ProcessResult,
+		EC: Fn(Event, &ViewSender, &mut TodoFile) -> Results,
 		EC: Send + 'module,
 	{
 		self.event_callback = Box::new(callback);
@@ -44,7 +45,7 @@ impl Module for TestModule<'_> {
 		&self.view_data
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> ProcessResult {
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> Results {
 		(self.event_callback)(event, view_sender, todo_file)
 	}
 }
