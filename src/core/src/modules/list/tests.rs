@@ -2,7 +2,7 @@ use ::input::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, testutil::module_test};
+use crate::{assert_results, process::Artifact, testutil::module_test};
 
 #[test]
 fn render_empty_list() {
@@ -936,10 +936,10 @@ fn normal_mode_show_commit_when_hash_available() {
 		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ShowCommit),
-				state = State::ShowCommit
+				Artifact::Event(Event::from(MetaEvent::ShowCommit)),
+				Artifact::ChangeState(State::ShowCommit)
 			);
 		},
 	);
@@ -949,9 +949,9 @@ fn normal_mode_show_commit_when_hash_available() {
 fn normal_mode_show_commit_when_no_selected_line() {
 	module_test(&[], &[Event::from(MetaEvent::ShowCommit)], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::ShowCommit)
+			Artifact::Event(Event::from(MetaEvent::ShowCommit))
 		);
 	});
 }
@@ -963,9 +963,9 @@ fn normal_mode_do_not_show_commit_when_hash_not_available() {
 		&[Event::from(MetaEvent::ShowCommit)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ShowCommit)
+				Artifact::Event(Event::from(MetaEvent::ShowCommit))
 			);
 		},
 	);
@@ -978,10 +978,10 @@ fn normal_mode_abort() {
 		&[Event::from(MetaEvent::Abort)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Abort),
-				state = State::ConfirmAbort
+				Artifact::Event(Event::from(MetaEvent::Abort)),
+				Artifact::ChangeState(State::ConfirmAbort)
 			);
 		},
 	);
@@ -994,10 +994,10 @@ fn normal_mode_force_abort() {
 		&[Event::from(MetaEvent::ForceAbort)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ForceAbort),
-				exit_status = ExitStatus::Good
+				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
+				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(test_context.rebase_todo_file.is_empty());
 		},
@@ -1011,10 +1011,10 @@ fn normal_mode_rebase() {
 		&[Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Rebase),
-				state = State::ConfirmRebase
+				Artifact::Event(Event::from(MetaEvent::Rebase)),
+				Artifact::ChangeState(State::ConfirmRebase)
 			);
 		},
 	);
@@ -1027,10 +1027,10 @@ fn normal_mode_force_rebase() {
 		&[Event::from(MetaEvent::ForceRebase)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ForceRebase),
-				exit_status = ExitStatus::Good
+				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
+				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(!test_context.rebase_todo_file.is_noop());
 		},
@@ -1044,9 +1044,9 @@ fn normal_mode_edit_with_edit_content() {
 		&[Event::from(MetaEvent::Edit)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Edit)
+				Artifact::Event(Event::from(MetaEvent::Edit))
 			);
 			assert_eq!(module.state, ListState::Edit);
 		},
@@ -1057,9 +1057,9 @@ fn normal_mode_edit_with_edit_content() {
 fn normal_mode_edit_without_edit_content() {
 	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::Edit)
+			Artifact::Event(Event::from(MetaEvent::Edit))
 		);
 		assert_eq!(module.state, ListState::Normal);
 	});
@@ -1069,9 +1069,9 @@ fn normal_mode_edit_without_edit_content() {
 fn normal_mode_edit_without_selected_line() {
 	module_test(&[], &[Event::from(MetaEvent::Edit)], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::Edit)
+			Artifact::Event(Event::from(MetaEvent::Edit))
 		);
 		assert_eq!(module.state, ListState::Normal);
 	});
@@ -1081,10 +1081,10 @@ fn normal_mode_edit_without_selected_line() {
 fn normal_mode_insert_line() {
 	module_test(&[], &[Event::from(MetaEvent::InsertLine)], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from(MetaEvent::InsertLine),
-			state = State::Insert
+			Artifact::Event(Event::from(MetaEvent::InsertLine)),
+			Artifact::ChangeState(State::Insert)
 		);
 	});
 }
@@ -1096,10 +1096,10 @@ fn normal_mode_open_external_editor() {
 		&[Event::from(MetaEvent::OpenInEditor)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::OpenInEditor),
-				state = State::ExternalEditor
+				Artifact::Event(Event::from(MetaEvent::OpenInEditor)),
+				Artifact::ChangeState(State::ExternalEditor)
 			);
 		},
 	);
@@ -1113,9 +1113,9 @@ fn normal_mode_undo() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(StandardEvent::Undo)
+				Artifact::Event(Event::from(StandardEvent::Undo))
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1167,9 +1167,9 @@ fn normal_mode_redo() {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(StandardEvent::Redo)
+				Artifact::Event(Event::from(StandardEvent::Redo))
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -1275,9 +1275,9 @@ fn normal_mode_toggle_visual_mode() {
 		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ToggleVisualMode)
+				Artifact::Event(Event::from(MetaEvent::ToggleVisualMode))
 			);
 			assert_eq!(module.visual_index_start, Some(0));
 			assert_eq!(module.state, ListState::Visual);
@@ -1289,9 +1289,9 @@ fn normal_mode_toggle_visual_mode() {
 fn normal_mode_other_event() {
 	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from(KeyCode::Null)
+			Artifact::Event(Event::from(KeyCode::Null))
 		);
 	});
 }
@@ -1568,10 +1568,10 @@ fn visual_mode_abort() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Abort),
-				state = State::ConfirmAbort
+				Artifact::Event(Event::from(MetaEvent::Abort)),
+				Artifact::ChangeState(State::ConfirmAbort)
 			);
 		},
 	);
@@ -1588,10 +1588,10 @@ fn visual_mode_force_abort() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ForceAbort),
-				exit_status = ExitStatus::Good
+				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
+				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(test_context.rebase_todo_file.is_empty());
 		},
@@ -1606,10 +1606,10 @@ fn visual_mode_rebase() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::Rebase),
-				state = State::ConfirmRebase
+				Artifact::Event(Event::from(MetaEvent::Rebase)),
+				Artifact::ChangeState(State::ConfirmRebase)
 			);
 		},
 	);
@@ -1626,10 +1626,10 @@ fn visual_mode_force_rebase() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ForceRebase),
-				exit_status = ExitStatus::Good
+				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
+				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(!test_context.rebase_todo_file.is_noop());
 		},
@@ -1939,9 +1939,9 @@ fn visual_mode_toggle_visual_mode() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::ToggleVisualMode)
+				Artifact::Event(Event::from(MetaEvent::ToggleVisualMode))
 			);
 			assert_eq!(module.visual_index_start, None);
 			assert_eq!(module.state, ListState::Normal);
@@ -1960,10 +1960,10 @@ fn visual_mode_open_external_editor() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_event(&mut module);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(MetaEvent::OpenInEditor),
-				state = State::ExternalEditor
+				Artifact::Event(Event::from(MetaEvent::OpenInEditor)),
+				Artifact::ChangeState(State::ExternalEditor)
 			);
 		},
 	);
@@ -1982,9 +1982,9 @@ fn visual_mode_undo() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_n_events(&mut module, 3);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(StandardEvent::Undo)
+				Artifact::Event(Event::from(StandardEvent::Undo))
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2010,9 +2010,9 @@ fn visual_mode_undo_normal_mode_change() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_n_events(&mut module, 3);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(StandardEvent::Undo)
+				Artifact::Event(Event::from(StandardEvent::Undo))
 			);
 			assert_rendered_output!(
 				test_context.build_view_data(&mut module),
@@ -2225,9 +2225,9 @@ fn visual_mode_remove_lines_end_index_last() {
 fn visual_mode_other_event() {
 	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from(KeyCode::Null)
+			Artifact::Event(Event::from(KeyCode::Null))
 		);
 	});
 }

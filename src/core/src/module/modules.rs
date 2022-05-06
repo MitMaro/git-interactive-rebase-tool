@@ -4,8 +4,11 @@ use input::{EventHandler, Sender as EventSender};
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
-use super::{Module, ProcessResult, State};
-use crate::events::{AppKeyBindings, MetaEvent};
+use super::{Module, State};
+use crate::{
+	events::{AppKeyBindings, Event, MetaEvent},
+	process::Results,
+};
 
 pub(crate) struct Modules<'modules> {
 	event_handler: EventHandler<AppKeyBindings, MetaEvent>,
@@ -38,12 +41,12 @@ impl<'modules> Modules<'modules> {
 			.unwrap_or_else(|| panic!("Invalid module for provided state: {:?}", state))
 	}
 
-	pub(crate) fn activate(&mut self, state: State, rebase_todo: &TodoFile, previous_state: State) -> ProcessResult {
+	pub(crate) fn activate(&mut self, state: State, rebase_todo: &TodoFile, previous_state: State) -> Results {
 		self.get_mut_module(state).activate(rebase_todo, previous_state)
 	}
 
-	pub(crate) fn deactivate(&mut self, state: State) {
-		self.get_mut_module(state).deactivate();
+	pub(crate) fn deactivate(&mut self, state: State) -> Results {
+		self.get_mut_module(state).deactivate()
 	}
 
 	pub(crate) fn build_view_data(
@@ -61,7 +64,7 @@ impl<'modules> Modules<'modules> {
 		event_sender: &mut EventSender<MetaEvent>,
 		view_sender: &ViewSender,
 		rebase_todo: &mut TodoFile,
-	) -> ProcessResult {
+	) -> Option<Results> {
 		let module = self.get_module(state);
 		let input_options = module.input_options();
 		let event = self
@@ -69,7 +72,12 @@ impl<'modules> Modules<'modules> {
 			.read_event(event_sender.read_event(), input_options, |event, key_bindings| {
 				module.read_event(event, key_bindings)
 			});
-		self.get_mut_module(state).handle_event(event, view_sender, rebase_todo)
+		(event != Event::None).then(|| {
+			let mut results = Results::new();
+			results.event(event);
+			results.append(self.get_mut_module(state).handle_event(event, view_sender, rebase_todo));
+			results
+		})
 	}
 
 	pub(crate) fn error(&mut self, state: State, error: &anyhow::Error) {
@@ -108,13 +116,14 @@ mod tests {
 	}
 
 	impl Module for TestModule {
-		fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
+		fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> Results {
 			self.trace.lock().push(String::from("Activate"));
-			ProcessResult::new()
+			Results::new()
 		}
 
-		fn deactivate(&mut self) {
+		fn deactivate(&mut self) -> Results {
 			self.trace.lock().push(String::from("Deactivate"));
+			Results::new()
 		}
 
 		fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &ViewData {
@@ -122,9 +131,9 @@ mod tests {
 			&self.view_data
 		}
 
-		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
+		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
 			self.trace.lock().push(String::from("Handle Events"));
-			ProcessResult::new()
+			Results::new()
 		}
 
 		fn handle_error(&mut self, error: &Error) {
@@ -150,7 +159,7 @@ mod tests {
 					&mut context.rebase_todo_file,
 				);
 				let _ = modules.build_view_data(State::List, &RenderContext::new(100, 100), &context.rebase_todo_file);
-				modules.deactivate(State::List);
+				let _ = modules.deactivate(State::List);
 				assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
 			},
 		);

@@ -5,7 +5,8 @@ use view::{RenderContext, ViewData, ViewSender};
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	events::{Event, KeyBindings},
-	module::{ExitStatus, Module, ProcessResult, State},
+	module::{ExitStatus, Module, State},
+	process::Results,
 };
 
 pub(crate) struct ConfirmRebase {
@@ -25,19 +26,19 @@ impl Module for ConfirmRebase {
 		Confirm::read_event(event, key_bindings)
 	}
 
-	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> ProcessResult {
+	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
 		let confirmed = self.dialog.handle_event(event);
-		let mut result = ProcessResult::from(event);
+		let mut results = Results::new();
 		match confirmed {
 			Confirmed::Yes => {
-				result = result.exit_status(ExitStatus::Good);
+				results.exit_status(ExitStatus::Good);
 			},
 			Confirmed::No => {
-				result = result.state(State::List);
+				results.state(State::List);
 			},
 			Confirmed::Other => {},
 		}
-		result
+		results
 	}
 }
 
@@ -55,7 +56,7 @@ mod tests {
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, events::MetaEvent, testutil::module_test};
+	use crate::{assert_results, events::MetaEvent, process::Artifact, testutil::module_test};
 
 	fn create_confirm_rebase() -> ConfirmRebase {
 		ConfirmRebase::new(&[String::from("y")], &[String::from("n")])
@@ -83,10 +84,10 @@ mod tests {
 			&[Event::from(MetaEvent::Yes)],
 			|mut test_context| {
 				let mut module = create_confirm_rebase();
-				assert_process_result!(
+				assert_results!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::Yes),
-					exit_status = ExitStatus::Good
+					Artifact::Event(Event::from(MetaEvent::Yes)),
+					Artifact::ExitStatus(ExitStatus::Good)
 				);
 				assert!(!test_context.rebase_todo_file.is_empty());
 			},
@@ -100,10 +101,10 @@ mod tests {
 			&[Event::from(MetaEvent::No)],
 			|mut test_context| {
 				let mut module = create_confirm_rebase();
-				assert_process_result!(
+				assert_results!(
 					test_context.handle_event(&mut module),
-					event = Event::from(MetaEvent::No),
-					state = State::List
+					Artifact::Event(Event::from(MetaEvent::No)),
+					Artifact::ChangeState(State::List)
 				);
 			},
 		);
@@ -116,9 +117,9 @@ mod tests {
 			&[Event::from(KeyCode::Null)],
 			|mut test_context| {
 				let mut module = create_confirm_rebase();
-				assert_process_result!(
+				assert_results!(
 					test_context.handle_event(&mut module),
-					event = Event::from(KeyCode::Null)
+					Artifact::Event(Event::from(KeyCode::Null))
 				);
 			},
 		);

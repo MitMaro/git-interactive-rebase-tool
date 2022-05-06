@@ -2,13 +2,13 @@ use input::KeyCode;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_process_result, events::Event, testutil::module_test};
+use crate::{assert_results, events::Event, process::Artifact, testutil::module_test};
 
 #[test]
 fn activate() {
 	module_test(&[], &[], |test_context| {
 		let mut module = Insert::new();
-		assert_process_result!(test_context.activate(&mut module, State::List));
+		assert_results!(test_context.activate(&mut module, State::List));
 	});
 }
 
@@ -40,10 +40,10 @@ fn render_prompt() {
 fn prompt_cancel() {
 	module_test(&[], &[Event::from('q')], |mut test_context| {
 		let mut module = Insert::new();
-		assert_process_result!(
+		assert_results!(
 			test_context.handle_event(&mut module),
-			event = Event::from('q'),
-			state = State::List
+			Artifact::Event(Event::from('q')),
+			Artifact::ChangeState(State::List)
 		);
 	});
 }
@@ -74,10 +74,10 @@ fn edit_render_exec() {
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(KeyCode::Enter),
-				state = State::List
+				Artifact::Event(Event::from(KeyCode::Enter)),
+				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().to_text(), "exec foo");
 		},
@@ -110,10 +110,10 @@ fn edit_render_pick() {
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(KeyCode::Enter),
-				state = State::List
+				Artifact::Event(Event::from(KeyCode::Enter)),
+				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
 				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
@@ -149,10 +149,10 @@ fn edit_render_label() {
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(KeyCode::Enter),
-				state = State::List
+				Artifact::Event(Event::from(KeyCode::Enter)),
+				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
 				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
@@ -188,10 +188,10 @@ fn edit_render_reset() {
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(KeyCode::Enter),
-				state = State::List
+				Artifact::Event(Event::from(KeyCode::Enter)),
+				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
 				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
@@ -227,10 +227,10 @@ fn edit_render_merge() {
 				"{TRAILING}",
 				"{IndicatorColor}Enter to finish"
 			);
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from(KeyCode::Enter),
-				state = State::List
+				Artifact::Event(Event::from(KeyCode::Enter)),
+				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
 				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),

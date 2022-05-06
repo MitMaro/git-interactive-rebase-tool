@@ -106,7 +106,9 @@ fn stop_error() {
 	let sender = process.view_sender.clone();
 	test_module.event_callback(move |event, _, _| {
 		while sender.end().is_ok() {}
-		ProcessResult::from(event)
+		let mut results = Results::new();
+		results.event(event);
+		results
 	});
 	modules.register_module(State::List, test_module);
 	assert_eq!(process.run(modules).unwrap(), ExitStatus::StateError);
@@ -117,13 +119,14 @@ fn handle_exit_event_that_is_not_kill() {
 	let (mut rebase_todo_file, _file_path) = create_todo_file();
 	rebase_todo_file.set_lines(vec![]);
 	let mut shadow_rebase_file = create_shadow_todo_file(&rebase_todo_file);
-	let mut process = create_process(rebase_todo_file, &[Event::from(StandardEvent::Exit)]);
+	let mut process = create_process(rebase_todo_file, &[Event::from('q')]);
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
 	test_module.event_callback(|_, _, _| {
-		ProcessResult::new()
-			.event(Event::from(MetaEvent::Rebase))
-			.exit_status(ExitStatus::Good)
+		let mut results = Results::new();
+		results.event(Event::from(MetaEvent::Rebase));
+		results.exit_status(ExitStatus::Good);
+		results
 	});
 	modules.register_module(State::List, test_module);
 	assert_eq!(process.run(modules).unwrap(), ExitStatus::Good);
@@ -136,13 +139,14 @@ fn handle_exit_event_that_is_kill() {
 	let (mut rebase_todo_file, _file_path) = create_todo_file();
 	rebase_todo_file.set_lines(vec![]);
 	let mut shadow_rebase_file = create_shadow_todo_file(&rebase_todo_file);
-	let mut process = create_process(rebase_todo_file, &[]);
+	let mut process = create_process(rebase_todo_file, &[Event::from('q')]);
 	let mut modules = create_modules();
 	let mut test_module = TestModule::new();
 	test_module.event_callback(|_, _, _| {
-		ProcessResult::new()
-			.event(Event::from(StandardEvent::Kill))
-			.exit_status(ExitStatus::Kill)
+		let mut results = Results::new();
+		results.event(Event::from(StandardEvent::Kill));
+		results.exit_status(ExitStatus::Kill);
+		results
 	});
 	modules.register_module(State::List, test_module);
 	assert_eq!(process.run(modules).unwrap(), ExitStatus::Kill);
@@ -151,92 +155,130 @@ fn handle_exit_event_that_is_kill() {
 }
 
 #[test]
-fn handle_process_result_error() {
+fn handle_none_event() {
+	let (mut rebase_todo_file, _file_path) = create_todo_file();
+	rebase_todo_file.set_lines(vec![]);
+	let mut process = create_process(rebase_todo_file, &[Event::None, Event::from('q')]);
+	let mut modules = create_modules();
+	let mut test_module = TestModule::new();
+	test_module.event_callback(|event, _, _| {
+		let mut results = Results::new();
+		if event != Event::None {
+			results.event(Event::from(MetaEvent::Rebase));
+		}
+		results.exit_status(ExitStatus::Good);
+		results
+	});
+	modules.register_module(State::List, test_module);
+	assert_eq!(process.run(modules).unwrap(), ExitStatus::Good);
+}
+
+#[test]
+fn handle_results_error() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::new().error(anyhow!("Test error"));
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.error(anyhow!("Test error"));
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.state, State::Error);
 }
 
 #[test]
-fn handle_process_result_new_state() {
+fn handle_results_with_return_error() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::new().state(State::Error);
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.error_with_return(anyhow!("Test error"), State::ExternalEditor);
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.state, State::Error);
 }
 
 #[test]
-fn handle_process_result_state_same() {
+fn handle_results_change_state() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::new().state(State::List);
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.state(State::Error);
+	process.handle_results(&mut modules, results);
+	assert_eq!(process.state, State::Error);
+}
+
+#[test]
+fn handle_results_state_same() {
+	let (rebase_todo_file, _file_path) = create_todo_file();
+	let mut process = create_process(rebase_todo_file, &[]);
+	let mut modules = create_modules();
+	let mut results = Results::new();
+	results.state(State::List);
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.state, State::List);
 }
 
 #[test]
-fn handle_process_result_exit_event() {
+fn handle_results_exit_event() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::from(StandardEvent::Exit));
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.event(Event::from(StandardEvent::Exit));
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.exit_status, Some(ExitStatus::Abort));
 }
 
 #[test]
-fn handle_process_result_kill_event() {
+fn handle_results_kill_event() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::from(StandardEvent::Kill));
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.event(Event::from(StandardEvent::Kill));
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.exit_status, Some(ExitStatus::Kill));
 }
 
 #[test]
-fn handle_process_result_resize_event_not_too_small() {
+fn handle_results_resize_event_not_too_small() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::Resize(100, 200));
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.event(Event::Resize(100, 200));
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.render_context.width(), 100);
 	assert_eq!(process.render_context.height(), 200);
 	assert_eq!(process.state, State::List);
 }
 
 #[test]
-fn handle_process_result_resize_event_too_small() {
+fn handle_results_resize_event_too_small() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::Resize(10, 20));
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.event(Event::Resize(10, 20));
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.render_context.width(), 10);
 	assert_eq!(process.render_context.height(), 20);
 	assert_eq!(process.state, State::WindowSizeError);
 }
 
 #[test]
-fn handle_process_result_other_event() {
+fn handle_results_other_event() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
-	let result = ProcessResult::from(Event::from('a'));
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.event(Event::from('a'));
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.exit_status, None);
 	assert_eq!(process.state, State::List);
 }
 
 #[test]
-fn handle_process_result_external_command_not_executable() {
+fn handle_results_external_command_not_executable() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
@@ -249,8 +291,9 @@ fn handle_process_result_external_command_not_executable() {
 			.to_str()
 			.unwrap(),
 	);
-	let result = ProcessResult::new().external_command(command.clone(), vec![]);
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.external_command(command.clone(), vec![]);
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.state, State::Error);
 	let view_data = modules.build_view_data(process.state, &process.render_context, &process.rebase_todo);
 	assert_rendered_output!(
@@ -270,7 +313,7 @@ fn handle_process_result_external_command_not_executable() {
 }
 
 #[test]
-fn handle_process_result_external_command_executable_not_found() {
+fn handle_results_external_command_executable_not_found() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
@@ -281,8 +324,9 @@ fn handle_process_result_external_command_executable_not_found() {
 			.to_str()
 			.unwrap(),
 	);
-	let result = ProcessResult::new().external_command(command.clone(), vec![]);
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.external_command(command.clone(), vec![]);
+	process.handle_results(&mut modules, results);
 	assert_eq!(process.state, State::Error);
 	let view_data = modules.build_view_data(process.state, &process.render_context, &process.rebase_todo);
 	assert_rendered_output!(
@@ -302,13 +346,14 @@ fn handle_process_result_external_command_executable_not_found() {
 }
 
 #[test]
-fn handle_process_result_external_command_status_success() {
+fn handle_results_external_command_status_success() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
 	let command = String::from("true");
-	let result = ProcessResult::new().external_command(command, vec![]);
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.external_command(command.clone(), vec![]);
+	process.handle_results(&mut modules, results);
 	process.event_sender.end().unwrap();
 	let mut last_event = Event::None;
 	while !process.event_sender.is_poisoned() {}
@@ -323,13 +368,14 @@ fn handle_process_result_external_command_status_success() {
 }
 
 #[test]
-fn handle_process_result_external_command_status_error() {
+fn handle_results_external_command_status_error() {
 	let (rebase_todo_file, _file_path) = create_todo_file();
 	let mut process = create_process(rebase_todo_file, &[]);
 	let mut modules = create_modules();
 	let command = String::from("false");
-	let result = ProcessResult::new().external_command(command, vec![]);
-	process.handle_process_result(&mut modules, &result);
+	let mut results = Results::new();
+	results.external_command(command.clone(), vec![]);
+	process.handle_results(&mut modules, results);
 	let mut last_event = Event::None;
 	process.event_sender.end().unwrap();
 	while !process.event_sender.is_poisoned() {}

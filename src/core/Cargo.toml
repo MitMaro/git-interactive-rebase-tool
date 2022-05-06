@@ -31,6 +31,7 @@ girt-view = {version = "2.2.0", path = "../../src/view"}
 [dev-dependencies]
 captur = "0.1.0"
 parking_lot = "0.12.0"
+pretty_assertions = "1.2.1"
 rstest = "0.12.0"
 serial_test = "0.6.0"
 tempfile = "3.3.0"

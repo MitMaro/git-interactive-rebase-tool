@@ -7,7 +7,8 @@ use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
 
 use crate::{
 	events::Event,
-	module::{Module, ProcessResult, State},
+	module::{Module, State},
+	process::Results,
 	util::handle_view_data_scroll,
 };
 
@@ -21,9 +22,9 @@ pub(crate) struct Error {
 }
 
 impl Module for Error {
-	fn activate(&mut self, _: &TodoFile, previous_state: State) -> ProcessResult {
+	fn activate(&mut self, _: &TodoFile, previous_state: State) -> Results {
 		self.return_state = previous_state;
-		ProcessResult::new()
+		Results::new()
 	}
 
 	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
@@ -34,14 +35,14 @@ impl Module for Error {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> ProcessResult {
-		let mut result = ProcessResult::from(event);
+	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> Results {
+		let mut results = Results::new();
 		if handle_view_data_scroll(event, view_sender).is_none() {
 			if let Event::Key(_) = event {
-				result = result.state(self.return_state);
+				results.state(self.return_state);
 			}
 		}
-		result
+		results
 	}
 
 	fn handle_error(&mut self, error: &anyhow::Error) {
@@ -77,11 +78,10 @@ impl Error {
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
-	use input::StandardEvent;
 	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_process_result, testutil::module_test};
+	use crate::{assert_results, process::Artifact, testutil::module_test};
 
 	#[test]
 	fn simple_error() {
@@ -144,10 +144,10 @@ mod tests {
 			let mut module = Error::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
 			module.handle_error(&anyhow!("Test Error"));
-			assert_process_result!(
+			assert_results!(
 				test_context.handle_event(&mut module),
-				event = Event::from('a'),
-				state = State::ConfirmRebase
+				Artifact::Event(Event::from('a')),
+				Artifact::ChangeState(State::ConfirmRebase)
 			);
 		});
 	}
@@ -158,51 +158,10 @@ mod tests {
 			let mut module = Error::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
 			module.handle_error(&anyhow!("Test Error"));
-			assert_process_result!(test_context.handle_event(&mut module), event = Event::Resize(100, 100));
+			assert_results!(
+				test_context.handle_event(&mut module),
+				Artifact::Event(Event::Resize(100, 100))
+			);
 		});
-	}
-
-	#[test]
-	fn scroll_events() {
-		module_test(
-			&[],
-			&[
-				Event::from(StandardEvent::ScrollLeft),
-				Event::from(StandardEvent::ScrollRight),
-				Event::from(StandardEvent::ScrollDown),
-				Event::from(StandardEvent::ScrollUp),
-				Event::from(StandardEvent::ScrollJumpDown),
-				Event::from(StandardEvent::ScrollJumpUp),
-			],
-			|mut test_context| {
-				let mut module = Error::new();
-				let _ = test_context.activate(&mut module, State::ConfirmRebase);
-				module.handle_error(&anyhow!("Test Error"));
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from(StandardEvent::ScrollLeft)
-				);
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from(StandardEvent::ScrollRight)
-				);
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from(StandardEvent::ScrollDown)
-				);
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from(StandardEvent::ScrollUp)
-				);
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from(StandardEvent::ScrollJumpDown)
-				);
-				assert_process_result!(
-					test_context.handle_event(&mut module),
-					event = Event::from(StandardEvent::ScrollJumpUp)
-				);
-			},
-		);
 	}
 }

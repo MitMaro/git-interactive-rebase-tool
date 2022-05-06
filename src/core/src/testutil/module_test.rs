@@ -12,7 +12,8 @@ use view::{
 
 use crate::{
 	events::{AppKeyBindings, Event, MetaEvent},
-	module::{Module, ProcessResult, State},
+	module::{Module, State},
+	process::Results,
 	testutil::create_test_custom_keybindings,
 };
 
@@ -29,30 +30,33 @@ impl TestContext {
 		module.build_view_data(&self.render_context, &self.rebase_todo_file)
 	}
 
-	pub(crate) fn activate(&self, module: &'_ mut dyn Module, state: State) -> ProcessResult {
+	pub(crate) fn activate(&self, module: &'_ mut dyn Module, state: State) -> Results {
 		module.activate(&self.rebase_todo_file, state)
 	}
 
 	#[allow(clippy::unused_self)]
-	pub(crate) fn deactivate(&mut self, module: &'_ mut dyn Module) {
-		module.deactivate();
+	pub(crate) fn deactivate(&mut self, module: &'_ mut dyn Module) -> Results {
+		module.deactivate()
 	}
 
 	pub(crate) fn build_view_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
 		self.get_build_data(module)
 	}
 
-	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> ProcessResult {
+	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> Results {
 		let input_options = module.input_options();
 		let event = self.event_handler_context.event_handler.read_event(
 			self.event_handler_context.sender.read_event(),
 			input_options,
 			|event, key_bindings| module.read_event(event, key_bindings),
 		);
-		module.handle_event(event, &self.view_sender_context.sender, &mut self.rebase_todo_file)
+		let mut results = Results::new();
+		results.event(event);
+		results.append(module.handle_event(event, &self.view_sender_context.sender, &mut self.rebase_todo_file));
+		results
 	}
 
-	pub(crate) fn handle_n_events(&mut self, module: &'_ mut dyn Module, n: usize) -> Vec<ProcessResult> {
+	pub(crate) fn handle_n_events(&mut self, module: &'_ mut dyn Module, n: usize) -> Vec<Results> {
 		let mut results = vec![];
 		for _ in 0..n {
 			results.push(self.handle_event(module));
@@ -60,7 +64,7 @@ impl TestContext {
 		results
 	}
 
-	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<ProcessResult> {
+	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<Results> {
 		self.handle_n_events(module, self.event_handler_context.number_events)
 	}
 

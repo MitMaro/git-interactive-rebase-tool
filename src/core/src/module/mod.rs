@@ -1,6 +1,5 @@
 mod exit_status;
 mod modules;
-mod process_result;
 mod state;
 
 use anyhow::Error;
@@ -9,19 +8,24 @@ use lazy_static::lazy_static;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewSender};
 
-pub(crate) use self::{exit_status::ExitStatus, modules::Modules, process_result::ProcessResult, state::State};
-use crate::events::{Event, KeyBindings};
+pub(crate) use self::{exit_status::ExitStatus, modules::Modules, state::State};
+use crate::{
+	events::{Event, KeyBindings},
+	process::Results,
+};
 
 lazy_static! {
 	static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 }
 
 pub(crate) trait Module: Send {
-	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> ProcessResult {
-		ProcessResult::new()
+	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> Results {
+		Results::new()
 	}
 
-	fn deactivate(&mut self) {}
+	fn deactivate(&mut self) -> Results {
+		Results::new()
+	}
 
 	fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &ViewData;
 
@@ -33,7 +37,7 @@ pub(crate) trait Module: Send {
 		event
 	}
 
-	fn handle_event(&mut self, event: Event, _view_sender: &ViewSender, _rebase_todo: &mut TodoFile) -> ProcessResult;
+	fn handle_event(&mut self, event: Event, _view_sender: &ViewSender, _rebase_todo: &mut TodoFile) -> Results;
 
 	fn handle_error(&mut self, _error: &Error) {}
 }
