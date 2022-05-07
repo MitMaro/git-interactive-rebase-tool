@@ -58,6 +58,38 @@ impl Results {
 	}
 }
 
+impl From<Event> for Results {
+	fn from(event: Event) -> Self {
+		Self {
+			artifacts: VecDeque::from(vec![Artifact::Event(event)]),
+		}
+	}
+}
+
+impl From<Error> for Results {
+	fn from(error: Error) -> Self {
+		Self {
+			artifacts: VecDeque::from(vec![Artifact::Error(error, None)]),
+		}
+	}
+}
+
+impl From<ExitStatus> for Results {
+	fn from(status: ExitStatus) -> Self {
+		Self {
+			artifacts: VecDeque::from(vec![Artifact::ExitStatus(status)]),
+		}
+	}
+}
+
+impl From<State> for Results {
+	fn from(state: State) -> Self {
+		Self {
+			artifacts: VecDeque::from(vec![Artifact::ChangeState(state)]),
+		}
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
@@ -72,15 +104,13 @@ mod tests {
 
 	#[test]
 	fn event() {
-		let mut results = Results::new();
-		results.event(Event::from('a'));
+		let mut results = Results::from(Event::from('a'));
 		assert!(matches!(results.artifact(), Some(Artifact::Event(_))));
 	}
 
 	#[test]
 	fn error() {
-		let mut results = Results::new();
-		results.error(anyhow!("Test Error"));
+		let mut results = Results::from(anyhow!("Test Error"));
 		assert!(matches!(results.artifact(), Some(Artifact::Error(_, None))));
 	}
 
@@ -96,8 +126,7 @@ mod tests {
 
 	#[test]
 	fn exit_status() {
-		let mut results = Results::new();
-		results.exit_status(ExitStatus::Good);
+		let mut results = Results::from(ExitStatus::Good);
 		assert!(matches!(
 			results.artifact(),
 			Some(Artifact::ExitStatus(ExitStatus::Good))
@@ -106,8 +135,7 @@ mod tests {
 
 	#[test]
 	fn state() {
-		let mut results = Results::new();
-		results.state(State::List);
+		let mut results = Results::from(State::List);
 		assert!(matches!(results.artifact(), Some(Artifact::ChangeState(State::List))));
 	}
 
