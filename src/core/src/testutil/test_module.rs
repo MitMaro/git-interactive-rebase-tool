@@ -12,11 +12,7 @@ pub(crate) struct TestModule<'module> {
 impl<'module> TestModule<'module> {
 	pub(crate) fn new() -> Self {
 		Self {
-			event_callback: Box::new(|event, _, _| {
-				let mut results = Results::new();
-				results.event(event);
-				results
-			}),
+			event_callback: Box::new(|event, _, _| Results::from(event)),
 			view_data: ViewData::new(|_| {}),
 			view_data_callback: Box::new(|_| {}),
 		}

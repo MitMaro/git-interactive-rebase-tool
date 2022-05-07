@@ -106,9 +106,7 @@ fn stop_error() {
 	let sender = process.view_sender.clone();
 	test_module.event_callback(move |event, _, _| {
 		while sender.end().is_ok() {}
-		let mut results = Results::new();
-		results.event(event);
-		results
+		Results::from(event)
 	});
 	modules.register_module(State::List, test_module);
 	assert_eq!(process.run(modules).unwrap(), ExitStatus::StateError);
