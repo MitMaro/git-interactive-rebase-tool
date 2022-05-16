@@ -14,8 +14,7 @@ use crate::{
 	events::KeyBindings,
 	exit::Exit,
 	help::build_help,
-	module::{ExitStatus, Modules, State},
-	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
+	module::{ExitStatus, ModuleHandler, ModuleProvider, Modules},
 	process::Process,
 };
 
@@ -46,23 +45,11 @@ pub(super) fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile
 	Ok(todo_file)
 }
 
-pub(super) fn create_modules(config: &Config, repository: Repository) -> Modules<'_> {
-	let mut modules = Modules::new(EventHandler::new(KeyBindings::new(&config.key_bindings)));
-	modules.register_module(State::Error, Error::new());
-	modules.register_module(State::List, List::new(config));
-	modules.register_module(State::ShowCommit, ShowCommit::new(config, repository));
-	modules.register_module(State::WindowSizeError, WindowSizeError::new());
-	modules.register_module(
-		State::ConfirmAbort,
-		ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
-	);
-	modules.register_module(
-		State::ConfirmRebase,
-		ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
-	);
-	modules.register_module(State::ExternalEditor, ExternalEditor::new(config.git.editor.as_str()));
-	modules.register_module(State::Insert, Insert::new());
-	modules
+pub(super) fn create_module_handler(config: &Config, repo: Repository) -> ModuleHandler<Modules> {
+	ModuleHandler::new(
+		EventHandler::new(KeyBindings::new(&config.key_bindings)),
+		Modules::new(config, repo),
+	)
 }
 
 pub(super) fn create_process(todo_file: TodoFile, config: &Config) -> Process {
@@ -82,8 +69,8 @@ pub(super) fn create_process(todo_file: TodoFile, config: &Config) -> Process {
 	)
 }
 
-pub(crate) fn run_process(mut process: Process, modules: Modules<'_>) -> Exit {
-	match process.run(modules) {
+pub(crate) fn run_process<T: ModuleProvider>(mut process: Process, module_handler: ModuleHandler<T>) -> Exit {
+	match process.run(module_handler) {
 		Ok(status) => Exit::from(status),
 		Err(err) => Exit::new(ExitStatus::FileWriteError, err.to_string().as_str()),
 	}
@@ -111,7 +98,7 @@ pub(crate) fn run(args: &Args) -> Exit {
 		};
 
 		let process = create_process(todo_file, &config);
-		run_process(process, create_modules(&config, repo))
+		run_process(process, create_module_handler(&config, repo))
 	}
 	else {
 		Exit::new(

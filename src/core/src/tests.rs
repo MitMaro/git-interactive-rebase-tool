@@ -2,14 +2,16 @@ use std::{env::set_var, fs::File, path::Path};
 
 use ::git::Repository;
 use input::StandardEvent;
+use todo_file::TodoFile;
+use view::ViewSender;
 
 use super::*;
 use crate::{
 	events::Event,
-	module::{ExitStatus, State},
+	module::{ExitStatus, Module},
 	process::Results,
-	run::{create_modules, create_process, load_config, load_todo_file, run_process},
-	testutil::TestModule,
+	run::{create_module_handler, create_process, load_config, load_todo_file, run_process},
+	testutil::create_test_module_handler,
 };
 
 fn set_git_directory(repo: &str) -> String {
@@ -138,23 +140,40 @@ fn run_with_argument_license() {
 
 #[test]
 #[serial_test::serial]
+fn module_handler() {
+	let _ = set_git_directory("fixtures/simple");
+	let repo = Repository::open_from_env().unwrap();
+	let config = load_config(&repo).unwrap();
+	let _ = create_module_handler(&config, repo);
+}
+
+#[test]
+#[serial_test::serial]
 fn run_process_error() {
+	struct TestModule {}
+
+	impl Module for TestModule {
+		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
+			Results::from(Event::from(StandardEvent::Exit))
+		}
+	}
+
 	let path = set_git_directory("fixtures/simple");
 	let todo_file_path = Path::new(path.as_str()).join("rebase-todo-readonly");
 	let todo_file = File::open(todo_file_path.as_path()).unwrap();
 	let mut permissions = todo_file.metadata().unwrap().permissions();
 	permissions.set_readonly(true);
 	todo_file.set_permissions(permissions).unwrap();
+
 	let repo = Repository::open_from_env().unwrap();
 	let config = load_config(&repo).unwrap();
 	let rebase_todo_file = load_todo_file(todo_file_path.to_str().unwrap(), &config).unwrap();
 	let process = create_process(rebase_todo_file, &config);
-	let mut module = TestModule::new();
-	module.event_callback(move |_, _, _| Results::from(Event::from(StandardEvent::Exit)));
-	let mut modules = create_modules(&config, repo);
-	modules.register_module(State::WindowSizeError, module);
+
+	let test_module = TestModule {};
+	let module_provider = create_test_module_handler(test_module);
 	assert_eq!(
-		run_process(process, modules),
+		run_process(process, module_provider),
 		Exit::new(
 			ExitStatus::FileWriteError,
 			format!("Error opening file: {}", todo_file_path.to_str().unwrap()).as_str()
@@ -165,15 +184,22 @@ fn run_process_error() {
 #[test]
 #[serial_test::serial]
 fn run_process_success() {
+	struct TestModule {}
+
+	impl Module for TestModule {
+		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
+			Results::from(Event::from(StandardEvent::Exit))
+		}
+	}
+
 	let path = set_git_directory("fixtures/simple");
 	let todo_file = Path::new(path.as_str()).join("rebase-todo");
 	let repo = Repository::open_from_env().unwrap();
 	let config = load_config(&repo).unwrap();
 	let rebase_todo_file = load_todo_file(todo_file.to_str().unwrap(), &config).unwrap();
 	let process = create_process(rebase_todo_file, &config);
-	let mut module = TestModule::new();
-	module.event_callback(move |_, _, _| Results::from(Event::from(StandardEvent::Exit)));
-	let mut modules = create_modules(&config, repo);
-	modules.register_module(State::WindowSizeError, module);
-	assert_eq!(run_process(process, modules), Exit::from(ExitStatus::Abort));
+
+	let test_module = TestModule {};
+	let module_provider = create_test_module_handler(test_module);
+	assert_eq!(run_process(process, module_provider), Exit::from(ExitStatus::Abort));
 }

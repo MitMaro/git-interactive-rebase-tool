@@ -15,7 +15,7 @@ use view::{spawn_view_thread, RenderContext, View, ViewSender};
 
 use crate::{
 	events::{Event, MetaEvent},
-	module::{ExitStatus, Modules, State},
+	module::{ExitStatus, ModuleHandler, State},
 };
 
 pub(crate) struct Process {
@@ -50,16 +50,19 @@ impl Process {
 		}
 	}
 
-	pub(crate) fn run(&mut self, mut modules: Modules<'_>) -> Result<ExitStatus> {
+	pub(crate) fn run<ModuleProvider: crate::module::ModuleProvider>(
+		&mut self,
+		mut module_handler: ModuleHandler<ModuleProvider>,
+	) -> Result<ExitStatus> {
 		if self.view_sender.start().is_err() {
 			self.exit_status = Some(ExitStatus::StateError);
 			return Ok(ExitStatus::StateError);
 		}
 
-		let activate_results = self.activate(&mut modules, State::List);
-		self.handle_results(&mut modules, activate_results);
+		let activate_results = self.activate(&mut module_handler, State::List);
+		self.handle_results(&mut module_handler, activate_results);
 		while self.exit_status.is_none() {
-			let view_data = modules.build_view_data(self.state, &self.render_context, &self.rebase_todo);
+			let view_data = module_handler.build_view_data(self.state, &self.render_context, &self.rebase_todo);
 			if self.view_sender.render(view_data).is_err() {
 				self.exit_status = Some(ExitStatus::StateError);
 				continue;
@@ -69,7 +72,7 @@ impl Process {
 					self.exit_status = Some(ExitStatus::StateError);
 					break;
 				}
-				let results_maybe = modules.handle_event(
+				let results_maybe = module_handler.handle_event(
 					self.state,
 					&mut self.event_sender,
 					&self.view_sender,
@@ -81,7 +84,7 @@ impl Process {
 				}
 
 				if let Some(results) = results_maybe {
-					self.handle_results(&mut modules, results);
+					self.handle_results(&mut module_handler, results);
 					break;
 				}
 			}
@@ -110,7 +113,11 @@ impl Process {
 		Ok(self.exit_status.unwrap_or(ExitStatus::Good))
 	}
 
-	fn handle_results(&mut self, modules: &mut Modules<'_>, mut results: Results) {
+	fn handle_results<ModuleProvider: crate::module::ModuleProvider>(
+		&mut self,
+		modules: &mut ModuleHandler<ModuleProvider>,
+		mut results: Results,
+	) {
 		while let Some(artifact) = results.artifact() {
 			results.append(match artifact {
 				Artifact::Event(event) => self.handle_event_artifact(event),
@@ -145,7 +152,11 @@ impl Process {
 		results
 	}
 
-	fn handle_state(&mut self, state: State, modules: &mut Modules<'_>) -> Results {
+	fn handle_state<ModuleProvider: crate::module::ModuleProvider>(
+		&mut self,
+		state: State,
+		modules: &mut ModuleHandler<ModuleProvider>,
+	) -> Results {
 		let mut results = Results::new();
 		if self.state != state {
 			let previous_state = self.state;
@@ -156,7 +167,12 @@ impl Process {
 		results
 	}
 
-	fn handle_error(&mut self, error: &Error, previous_state: Option<State>, modules: &mut Modules<'_>) -> Results {
+	fn handle_error<ModuleProvider: crate::module::ModuleProvider>(
+		&mut self,
+		error: &Error,
+		previous_state: Option<State>,
+		modules: &mut ModuleHandler<ModuleProvider>,
+	) -> Results {
 		let return_state = previous_state.unwrap_or(self.state);
 		self.state = State::Error;
 		modules.error(self.state, error);
@@ -225,7 +241,11 @@ impl Process {
 		result
 	}
 
-	fn activate(&mut self, modules: &mut Modules<'_>, previous_state: State) -> Results {
+	fn activate<ModuleProvider: crate::module::ModuleProvider>(
+		&mut self,
+		modules: &mut ModuleHandler<ModuleProvider>,
+		previous_state: State,
+	) -> Results {
 		let mut results = modules.activate(self.state, &self.rebase_todo, previous_state);
 		// always trigger a resize on activate, for modules that track size
 		results.enqueue_resize();
