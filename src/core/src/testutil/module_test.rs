@@ -1,7 +1,6 @@
 use std::{cell::Cell, path::Path};
 
 use captur::capture;
-use input::testutil::{with_event_handler, TestContext as EventHandlerTestContext};
 use tempfile::{Builder, NamedTempFile};
 use todo_file::{Line, TodoFile};
 use view::{
@@ -11,14 +10,14 @@ use view::{
 };
 
 use crate::{
-	events::{AppKeyBindings, Event, MetaEvent},
+	events::Event,
 	module::{Module, State},
 	process::Results,
-	testutil::create_test_custom_keybindings,
+	testutil::{with_event_handler, EventHandlerTestContext},
 };
 
 pub(crate) struct TestContext {
-	pub(crate) event_handler_context: EventHandlerTestContext<AppKeyBindings, MetaEvent>,
+	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) view_sender_context: ViewSenderContext,
 	pub(crate) rebase_todo_file: TodoFile,
 	pub(crate) render_context: RenderContext,
@@ -94,7 +93,7 @@ impl TestContext {
 
 pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
-	with_event_handler(create_test_custom_keybindings(), events, |event_handler_context| {
+	with_event_handler(events, |event_handler_context| {
 		with_view_sender(|view_sender_context| {
 			capture!(lines);
 			let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -102,14 +101,11 @@ where C: FnOnce(TestContext) {
 				.join("..")
 				.join("test")
 				.join("fixtures")
-				.join("simple")
-				.to_str()
-				.unwrap()
-				.to_owned();
+				.join("simple");
 			let todo_file = Builder::new()
 				.prefix("git-rebase-todo-scratch")
 				.suffix("")
-				.tempfile_in(git_repo_dir.as_str())
+				.tempfile_in(git_repo_dir.as_path())
 				.unwrap();
 
 			let mut rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), 1, "#");
