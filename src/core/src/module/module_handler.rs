@@ -14,7 +14,10 @@ pub(crate) struct ModuleHandler<ModuleProvider: crate::module::ModuleProvider> {
 }
 
 impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider> {
-	pub(crate) fn new(event_handler: EventHandler<AppKeyBindings, MetaEvent>, module_provider: ModuleProvider) -> Self {
+	pub(crate) const fn new(
+		event_handler: EventHandler<AppKeyBindings, MetaEvent>,
+		module_provider: ModuleProvider,
+	) -> Self {
 		Self {
 			event_handler,
 			module_provider,

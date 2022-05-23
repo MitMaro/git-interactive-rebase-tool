@@ -13,7 +13,7 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 	/// Create a new instance of the `EventHandler`.
 	#[inline]
 	#[must_use]
-	pub fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
+	pub const fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
 		Self { key_bindings }
 	}
 
