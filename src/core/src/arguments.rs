@@ -6,7 +6,7 @@ use crate::{exit::Exit, module::ExitStatus};
 
 #[derive(Debug)]
 pub(crate) enum Mode {
-	Normal,
+	Editor,
 	Help,
 	Version,
 	License,
@@ -40,11 +40,11 @@ impl TryFrom<Vec<OsString>> for Args {
 		else if pargs.contains(["-v", "--version"]) {
 			Mode::Version
 		}
-		else if pargs.contains(["-v", "--license"]) {
+		else if pargs.contains("--license") {
 			Mode::License
 		}
 		else {
-			Mode::Normal
+			Mode::Editor
 		};
 
 		let todo_file_path = pargs
@@ -52,5 +52,68 @@ impl TryFrom<Vec<OsString>> for Args {
 			.map_err(|err| Exit::new(ExitStatus::StateError, err.to_string().as_str()))?;
 
 		Ok(Self { mode, todo_file_path })
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn create_args(args: &[&str]) -> Vec<OsString> {
+		args.iter().map(OsString::from).collect()
+	}
+
+	#[test]
+	fn mode_help() {
+		assert!(matches!(
+			Args::try_from(create_args(&["-h"])).unwrap().mode(),
+			Mode::Help
+		));
+		assert!(matches!(
+			Args::try_from(create_args(&["--help"])).unwrap().mode(),
+			Mode::Help
+		));
+	}
+
+	#[test]
+	fn mode_version() {
+		assert!(matches!(
+			Args::try_from(create_args(&["-v"])).unwrap().mode(),
+			Mode::Version
+		));
+		assert!(matches!(
+			Args::try_from(create_args(&["--version"])).unwrap().mode(),
+			Mode::Version
+		));
+	}
+
+	#[test]
+	fn mode_license() {
+		assert!(matches!(
+			Args::try_from(create_args(&["--license"])).unwrap().mode(),
+			Mode::License
+		));
+	}
+
+	#[test]
+	fn todo_file_ok() {
+		let args = Args::try_from(create_args(&["todofile"])).unwrap();
+		assert!(matches!(args.mode(), Mode::Editor));
+		assert_eq!(args.todo_file_path(), &Some(String::from("todofile")));
+	}
+
+	#[test]
+	fn todo_file_missing() {
+		let args = Args::try_from(create_args(&[])).unwrap();
+		assert!(matches!(args.mode(), Mode::Editor));
+		assert!(args.todo_file_path().is_none());
+	}
+
+	#[cfg(unix)]
+	#[test]
+	#[allow(unsafe_code)]
+	fn todo_file_invalid() {
+		let args = unsafe { vec![OsString::from(String::from_utf8_unchecked(vec![0xC3, 0x28]))] };
+		assert!(Args::try_from(args).is_err());
 	}
 }
