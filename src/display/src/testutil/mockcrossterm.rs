@@ -4,7 +4,11 @@ use crossterm::{
 	style::{Attribute, Attributes, Color, Colors},
 };
 
-use crate::{testutil::State, ColorMode, Size, Tui};
+use crate::{
+	testutil::{MockableTui, State},
+	ColorMode,
+	Size,
+};
 
 /// A mocked version of `CrossTerm`, useful for testing.
 #[derive(Debug)]
@@ -19,7 +23,7 @@ pub struct CrossTerm {
 	state: State,
 }
 
-impl Tui for CrossTerm {
+impl MockableTui for CrossTerm {
 	#[inline]
 	fn get_color_mode(&self) -> ColorMode {
 		self.color_mode
