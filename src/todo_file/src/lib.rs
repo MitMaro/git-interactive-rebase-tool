@@ -368,7 +368,6 @@ impl TodoFile {
 	}
 
 	/// Get an iterator over the lines.
-	#[must_use]
 	#[inline]
 	pub fn lines_iter(&self) -> Iter<'_, Line> {
 		self.lines.iter()

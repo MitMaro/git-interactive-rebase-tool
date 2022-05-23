@@ -115,7 +115,7 @@ pub fn run(os_args: Vec<OsString>) -> Exit {
 				Mode::Help => help::run(),
 				Mode::Version => version::run(),
 				Mode::License => license::run(),
-				Mode::Normal => run::run(&args),
+				Mode::Editor => run::run(&args),
 			}
 		},
 	}
