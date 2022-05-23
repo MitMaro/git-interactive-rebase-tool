@@ -1,8 +1,9 @@
 //! Utilities for writing tests that interact with the display.
+mod mockable_tui;
 mod mockcrossterm;
 mod state;
 
-pub use self::{mockcrossterm::CrossTerm, state::State};
+pub use self::{mockable_tui::MockableTui, mockcrossterm::CrossTerm, state::State};
 use crate::Display;
 
 /// Assert the the content of the Display is an expected value.
