@@ -29,3 +29,27 @@ pub(crate) fn build_help(message: Option<String>) -> String {
 pub(crate) fn run() -> Exit {
 	Exit::from(build_help(None))
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_run() {
+		assert!(run()
+			.get_message()
+			.as_ref()
+			.unwrap()
+			.contains("Full feature terminal based sequence editor for git interactive rebase."));
+	}
+
+	#[test]
+	fn build_help_no_message() {
+		assert!(build_help(None).contains("Full feature terminal based sequence editor for git interactive rebase."));
+	}
+
+	#[test]
+	fn build_help_message() {
+		assert!(build_help(Some(String::from("Custom Message"))).contains("Custom Message"));
+	}
+}
