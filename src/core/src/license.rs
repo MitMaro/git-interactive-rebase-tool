@@ -25,3 +25,17 @@ A list of open source software and the license terms can be found at
 pub(crate) fn run() -> Exit {
 	Exit::from(LICENSE_MESSAGE)
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_run() {
+		assert!(run()
+			.get_message()
+			.as_ref()
+			.unwrap()
+			.contains("Sequence Editor for Git Interactive Rebase"));
+	}
+}
