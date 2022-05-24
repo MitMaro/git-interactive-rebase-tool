@@ -44,7 +44,6 @@ where F: FnOnce(Repository) -> Result<()> {
 				.unwrap();
 		}
 		if let Err(e) = callback(Repository::from(repo)) {
-			eprintln!("{:?}", e);
 			panic!("{} failed with {}", stringify!(e), e)
 		}
 	});
