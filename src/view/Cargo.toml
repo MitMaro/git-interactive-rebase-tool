@@ -25,7 +25,7 @@ xi-unicode = "0.3.0"
 girt-display = {version = "2.2.0", path = "../display"}
 
 [dependencies.uuid]
-version = "1.0.0"
+version = "1.1.0"
 features = ["v4", "fast-rng"]
 
 [dev-dependencies]
