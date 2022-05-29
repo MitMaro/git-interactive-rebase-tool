@@ -171,10 +171,12 @@ impl Process {
 		previous_state: Option<State>,
 		modules: &mut ModuleHandler<ModuleProvider>,
 	) -> Results {
+		let mut results = Results::new();
 		let return_state = previous_state.unwrap_or(self.state);
 		self.state = State::Error;
-		modules.error(self.state, error);
-		self.activate(modules, return_state)
+		results.append(modules.error(self.state, error));
+		results.append(self.activate(modules, return_state));
+		results
 	}
 
 	fn handle_exit_status(&mut self, exit_status: ExitStatus) -> Results {

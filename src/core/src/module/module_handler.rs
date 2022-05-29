@@ -71,8 +71,8 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 		})
 	}
 
-	pub(crate) fn error(&mut self, state: State, error: &anyhow::Error) {
-		self.module_provider.get_mut_module(state).handle_error(error);
+	pub(crate) fn error(&mut self, state: State, error: &anyhow::Error) -> Results {
+		self.module_provider.get_mut_module(state).handle_error(error)
 	}
 }
 
@@ -130,8 +130,9 @@ mod tests {
 			Results::new()
 		}
 
-		fn handle_error(&mut self, error: &Error) {
+		fn handle_error(&mut self, error: &Error) -> Results {
 			self.trace.lock().push(error.to_string());
+			Results::new()
 		}
 	}
 
@@ -176,7 +177,7 @@ mod tests {
 					context.event_handler_context.event_handler,
 					TestModuleProvider::new(test_module.clone()),
 				);
-				module_handler.error(State::Error, &anyhow!("Test Error"));
+				let _ = module_handler.error(State::Error, &anyhow!("Test Error"));
 				assert_eq!(test_module.trace(), "Test Error");
 			},
 		);

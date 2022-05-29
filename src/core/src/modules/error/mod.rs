@@ -45,7 +45,7 @@ impl Module for Error {
 		results
 	}
 
-	fn handle_error(&mut self, error: &anyhow::Error) {
+	fn handle_error(&mut self, error: &anyhow::Error) -> Results {
 		self.view_data.update_view_data(|updater| {
 			capture!(error);
 			updater.clear();
@@ -60,6 +60,7 @@ impl Module for Error {
 				DisplayColor::IndicatorColor,
 			)));
 		});
+		Results::new()
 	}
 }
 
@@ -87,7 +88,7 @@ mod tests {
 	fn simple_error() {
 		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			module.handle_error(&anyhow!("Test Error"));
+			let _ = module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -104,7 +105,7 @@ mod tests {
 	fn error_with_contest() {
 		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			module.handle_error(&anyhow!("Test Error").context("Context"));
+			let _ = module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -122,7 +123,7 @@ mod tests {
 	fn error_with_newlines() {
 		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
+			let _ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -143,7 +144,7 @@ mod tests {
 		module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = Error::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			module.handle_error(&anyhow!("Test Error"));
+			let _ = module.handle_error(&anyhow!("Test Error"));
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from('a')),
@@ -157,7 +158,7 @@ mod tests {
 		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = Error::new();
 			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			module.handle_error(&anyhow!("Test Error"));
+			let _ = module.handle_error(&anyhow!("Test Error"));
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::Resize(100, 100))
