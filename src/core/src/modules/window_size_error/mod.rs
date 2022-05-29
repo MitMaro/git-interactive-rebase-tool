@@ -62,7 +62,7 @@ impl Module for WindowSizeError {
 		let mut results = Results::new();
 
 		if let Event::Resize(width, height) = event {
-			let render_context = RenderContext::new(width, height);
+			let render_context = RenderContext::new(width as usize, height as usize);
 			if !render_context.is_window_too_small() {
 				results.state(self.return_state);
 			}

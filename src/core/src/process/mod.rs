@@ -42,7 +42,7 @@ impl Process {
 		Self {
 			exit_status: ExitStatus::None,
 			rebase_todo,
-			render_context: RenderContext::new(view_size.width() as u16, view_size.height() as u16),
+			render_context: RenderContext::new(view_size.width(), view_size.height()),
 			state: State::List,
 			threads,
 			view_sender,
