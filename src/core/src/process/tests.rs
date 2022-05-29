@@ -216,7 +216,7 @@ fn handle_results_with_return_error() {
 		results.error_with_return(anyhow!("Test error"), State::ExternalEditor);
 		process.handle_results(&mut create_default_test_module_handler(), results);
 		assert_eq!(process.state, State::Error);
-		assert!(process.exit_status.is_none());
+		assert_eq!(process.exit_status, ExitStatus::None);
 	});
 }
 
@@ -246,7 +246,7 @@ fn handle_results_exit_event() {
 		let mut results = Results::new();
 		results.event(Event::from(StandardEvent::Exit));
 		process.handle_results(&mut create_default_test_module_handler(), results);
-		assert_eq!(process.exit_status, Some(ExitStatus::Abort));
+		assert_eq!(process.exit_status, ExitStatus::Abort);
 	});
 }
 
@@ -256,7 +256,7 @@ fn handle_results_kill_event() {
 		let mut results = Results::new();
 		results.event(Event::from(StandardEvent::Kill));
 		process.handle_results(&mut create_default_test_module_handler(), results);
-		assert_eq!(process.exit_status, Some(ExitStatus::Kill));
+		assert_eq!(process.exit_status, ExitStatus::Kill);
 	});
 }
 
@@ -290,7 +290,7 @@ fn handle_results_other_event() {
 		let mut results = Results::new();
 		results.event(Event::from('a'));
 		process.handle_results(&mut create_default_test_module_handler(), results);
-		assert_eq!(process.exit_status, None);
+		assert_eq!(process.exit_status, ExitStatus::None);
 		assert_eq!(process.state, State::List);
 	});
 }
