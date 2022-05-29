@@ -66,7 +66,7 @@ pub(crate) enum MetaEvent {
 	Yes,
 	/// The external command was successful meta event.
 	ExternalCommandSuccess,
-	/// the external command was an error meta event.
+	/// The external command was an error meta event.
 	ExternalCommandError,
 }
 
