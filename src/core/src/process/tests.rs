@@ -311,8 +311,9 @@ fn handle_results_external_command_not_executable() {
 	}
 
 	impl Module for TestModule {
-		fn handle_error(&mut self, _: &Error) {
+		fn handle_error(&mut self, _: &Error) -> Results {
 			self.error_called.store(true, Ordering::Relaxed);
+			Results::new()
 		}
 	}
 
@@ -351,8 +352,9 @@ fn handle_results_external_command_executable_not_found() {
 	}
 
 	impl Module for TestModule {
-		fn handle_error(&mut self, _: &Error) {
+		fn handle_error(&mut self, _: &Error) -> Results {
 			self.error_called.store(true, Ordering::Relaxed);
+			Results::new()
 		}
 	}
 

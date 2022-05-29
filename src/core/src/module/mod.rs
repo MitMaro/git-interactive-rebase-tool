@@ -52,5 +52,7 @@ pub(crate) trait Module: Send {
 		Results::new()
 	}
 
-	fn handle_error(&mut self, _error: &Error) {}
+	fn handle_error(&mut self, _error: &Error) -> Results {
+		Results::new()
+	}
 }
