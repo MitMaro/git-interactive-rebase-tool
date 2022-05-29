@@ -110,6 +110,13 @@ mod tests {
 
 	#[test]
 	fn error() {
+		let mut results = Results::new();
+		results.error(anyhow!("Test Error"));
+		assert!(matches!(results.artifact(), Some(Artifact::Error(_, None))));
+	}
+
+	#[test]
+	fn error_from() {
 		let mut results = Results::from(anyhow!("Test Error"));
 		assert!(matches!(results.artifact(), Some(Artifact::Error(_, None))));
 	}
