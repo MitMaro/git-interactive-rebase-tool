@@ -1,5 +1,6 @@
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ExitStatus {
+	None,
 	Abort,
 	ConfigError,
 	FileReadError,
@@ -16,7 +17,7 @@ impl ExitStatus {
 			Self::ConfigError => 1,
 			Self::FileReadError => 2,
 			Self::FileWriteError => 3,
-			Self::Good => 0,
+			Self::None | Self::Good => 0,
 			Self::StateError => 4,
 			Self::Kill => 6,
 		}
@@ -30,6 +31,7 @@ mod tests {
 	use super::*;
 
 	#[rstest]
+	#[case::abort(ExitStatus::None, 0)]
 	#[case::abort(ExitStatus::Abort, 5)]
 	#[case::config_error(ExitStatus::ConfigError, 1)]
 	#[case::file_read_error(ExitStatus::FileReadError, 2)]

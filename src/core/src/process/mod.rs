@@ -19,7 +19,7 @@ use crate::{
 };
 
 pub(crate) struct Process {
-	exit_status: Option<ExitStatus>,
+	exit_status: ExitStatus,
 	rebase_todo: TodoFile,
 	render_context: RenderContext,
 	state: State,
@@ -40,7 +40,7 @@ impl Process {
 		threads.push(event_thread);
 
 		Self {
-			exit_status: None,
+			exit_status: ExitStatus::None,
 			rebase_todo,
 			render_context: RenderContext::new(view_size.width() as u16, view_size.height() as u16),
 			state: State::List,
@@ -55,21 +55,21 @@ impl Process {
 		mut module_handler: ModuleHandler<ModuleProvider>,
 	) -> Result<ExitStatus> {
 		if self.view_sender.start().is_err() {
-			self.exit_status = Some(ExitStatus::StateError);
+			self.exit_status = ExitStatus::StateError;
 			return Ok(ExitStatus::StateError);
 		}
 
 		let activate_results = self.activate(&mut module_handler, State::List);
 		self.handle_results(&mut module_handler, activate_results);
-		while self.exit_status.is_none() {
+		while self.exit_status == ExitStatus::None {
 			let view_data = module_handler.build_view_data(self.state, &self.render_context, &self.rebase_todo);
 			if self.view_sender.render(view_data).is_err() {
-				self.exit_status = Some(ExitStatus::StateError);
+				self.exit_status = ExitStatus::StateError;
 				continue;
 			}
 			loop {
 				if self.view_sender.is_poisoned() {
-					self.exit_status = Some(ExitStatus::StateError);
+					self.exit_status = ExitStatus::StateError;
 					break;
 				}
 				let results_maybe = module_handler.handle_event(
@@ -79,7 +79,7 @@ impl Process {
 					&mut self.rebase_todo,
 				);
 
-				if self.exit_status.is_some() {
+				if self.exit_status != ExitStatus::None {
 					break;
 				}
 
@@ -92,10 +92,8 @@ impl Process {
 		if self.view_sender.stop().is_err() {
 			return Ok(ExitStatus::StateError);
 		}
-		if let Some(status) = self.exit_status {
-			if status != ExitStatus::Kill {
-				self.rebase_todo.write_file()?;
-			}
+		if self.exit_status != ExitStatus::Kill {
+			self.rebase_todo.write_file()?;
 		}
 
 		let (view_end_result, event_end_result) = (self.view_sender.end(), self.event_sender.end());
@@ -110,7 +108,7 @@ impl Process {
 			}
 		}
 
-		Ok(self.exit_status.unwrap_or(ExitStatus::Good))
+		Ok(self.exit_status)
 	}
 
 	fn handle_results<ModuleProvider: crate::module::ModuleProvider>(
@@ -180,7 +178,7 @@ impl Process {
 	}
 
 	fn handle_exit_status(&mut self, exit_status: ExitStatus) -> Results {
-		self.exit_status = Some(exit_status);
+		self.exit_status = exit_status;
 		Results::new()
 	}
 
