@@ -13,11 +13,8 @@ impl RenderContext {
 	/// Create a new instance with a width and height.
 	#[must_use]
 	#[inline]
-	pub const fn new(width: u16, height: u16) -> Self {
-		Self {
-			height: height as usize,
-			width: width as usize,
-		}
+	pub const fn new(width: usize, height: usize) -> Self {
+		Self { height, width }
 	}
 
 	/// Update the recorded width and height.
