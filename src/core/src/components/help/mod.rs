@@ -4,7 +4,7 @@ mod tests;
 use display::DisplayColor;
 use input::InputOptions;
 use unicode_segmentation::UnicodeSegmentation;
-use view::{LineSegment, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, ViewData, ViewLine};
 
 use crate::{
 	events::{Event, KeyBindings, MetaEvent},
@@ -94,14 +94,14 @@ impl Help {
 		}
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event, view_sender: &ViewSender) {
+	pub(crate) fn handle_event(&mut self, event: Event, view_state: &view::State) {
 		let mut event_handler = || {
 			if event == Event::from(MetaEvent::Help) {
 				self.active = false;
 			}
 			Some(())
 		};
-		first!(|| handle_view_data_scroll(event, view_sender), event_handler);
+		first!(|| handle_view_data_scroll(event, view_state), event_handler);
 	}
 
 	pub(crate) fn set_active(&mut self) {

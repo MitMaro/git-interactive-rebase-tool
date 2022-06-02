@@ -2279,7 +2279,7 @@ fn scroll_right() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_all_events(&mut module);
-			test_context.view_sender_context.assert_render_action(&["ScrollRight"]);
+			test_context.view_context.assert_render_action(&["ScrollRight"]);
 		},
 	);
 }
@@ -2292,7 +2292,7 @@ fn scroll_left() {
 		|mut test_context| {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_all_events(&mut module);
-			test_context.view_sender_context.assert_render_action(&["ScrollLeft"]);
+			test_context.view_context.assert_render_action(&["ScrollLeft"]);
 		},
 	);
 }

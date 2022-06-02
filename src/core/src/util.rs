@@ -1,7 +1,7 @@
 use input::StandardEvent;
-use view::ViewSender;
 
 use crate::events::Event;
+
 #[macro_export]
 macro_rules! select {
 	(default $default: expr, $first: expr) => {
@@ -39,16 +39,16 @@ macro_rules! first {
 #[inline]
 #[must_use]
 #[allow(clippy::wildcard_enum_match_arm)]
-pub(crate) fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) -> Option<Event> {
+pub(crate) fn handle_view_data_scroll(event: Event, view_state: &view::State) -> Option<Event> {
 	match event {
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollLeft => view_sender.scroll_left(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollRight => view_sender.scroll_right(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollDown => view_sender.scroll_down(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollUp => view_sender.scroll_up(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollTop => view_sender.scroll_top(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollBottom => view_sender.scroll_bottom(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpDown => view_sender.scroll_page_down(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpUp => view_sender.scroll_page_up(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollLeft => view_state.scroll_left(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollRight => view_state.scroll_right(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollDown => view_state.scroll_down(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollUp => view_state.scroll_up(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollTop => view_state.scroll_top(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollBottom => view_state.scroll_bottom(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpDown => view_state.scroll_page_down(),
+		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpUp => view_state.scroll_page_up(),
 		_ => return None,
 	};
 	Some(event)
@@ -58,7 +58,7 @@ pub(crate) fn handle_view_data_scroll(event: Event, view_sender: &ViewSender) ->
 mod tests {
 	use captur::capture;
 	use rstest::rstest;
-	use view::testutil::with_view_sender;
+	use view::testutil::with_view_state;
 
 	use super::*;
 
@@ -70,19 +70,19 @@ mod tests {
 	#[case::jump_down(StandardEvent::ScrollJumpDown, "PageDown")]
 	#[case::jump_up(StandardEvent::ScrollJumpUp, "PageUp")]
 	fn handle_view_data_scroll_event(#[case] meta_event: StandardEvent, #[case] action: &str) {
-		with_view_sender(|context| {
+		with_view_state(|context| {
 			capture!(action);
 			let event = Event::from(meta_event);
-			assert_eq!(handle_view_data_scroll(event, &context.sender), Some(event));
+			assert_eq!(handle_view_data_scroll(event, &context.state), Some(event));
 			context.assert_render_action(&[action]);
 		});
 	}
 
 	#[test]
 	fn handle_view_data_scroll_event_other() {
-		with_view_sender(|context| {
+		with_view_state(|context| {
 			let event = Event::from('a');
-			assert!(handle_view_data_scroll(event, &context.sender).is_none());
+			assert!(handle_view_data_scroll(event, &context.state).is_none());
 			context.assert_render_action(&[]);
 		});
 	}

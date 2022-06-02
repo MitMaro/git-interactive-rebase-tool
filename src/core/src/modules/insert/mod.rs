@@ -7,7 +7,7 @@ mod tests;
 use display::DisplayColor;
 use input::InputOptions;
 use todo_file::{Line, TodoFile};
-use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewSender};
+use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine};
 
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
@@ -60,11 +60,11 @@ impl Module for Insert {
 	}
 
 	#[allow(clippy::unreachable)]
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, rebase_todo: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State, rebase_todo: &mut TodoFile) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			InsertState::Prompt => {
-				let choice = self.action_choices.handle_event(event, view_sender);
+				let choice = self.action_choices.handle_event(event, view_state);
 				if let Some(action) = choice {
 					if action == &LineType::Cancel {
 						results.state(State::List);

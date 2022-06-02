@@ -1,6 +1,6 @@
 use input::StandardEvent;
 use rstest::rstest;
-use view::{assert_rendered_output, testutil::with_view_sender};
+use view::{assert_rendered_output, testutil::with_view_state};
 
 use super::*;
 
@@ -55,9 +55,9 @@ fn render_options_prompt() {
 
 #[test]
 fn valid_selection() {
-	with_view_sender(|context| {
+	with_view_state(|context| {
 		let mut module = Choice::new(create_choices());
-		let choice = module.handle_event(Event::from('b'), &context.sender);
+		let choice = module.handle_event(Event::from('b'), &context.state);
 		assert_eq!(choice.unwrap(), &TestAction::B);
 		assert_rendered_output!(
 			module.get_view_data(),
@@ -74,9 +74,9 @@ fn valid_selection() {
 
 #[test]
 fn invalid_selection_character() {
-	with_view_sender(|context| {
+	with_view_state(|context| {
 		let mut module = Choice::new(create_choices());
-		let choice = module.handle_event(Event::from('z'), &context.sender);
+		let choice = module.handle_event(Event::from('z'), &context.state);
 		assert!(choice.is_none());
 		assert_rendered_output!(
 			module.get_view_data(),
@@ -100,9 +100,9 @@ fn invalid_selection_character() {
 #[case::scroll_jump_down(Event::from(StandardEvent::ScrollJumpDown))]
 #[case::scroll_jump_up(Event::from(StandardEvent::ScrollJumpUp))]
 fn event_standard(#[case] event: Event) {
-	with_view_sender(|context| {
+	with_view_state(|context| {
 		let mut module = Choice::new(create_choices());
-		let _ = module.handle_event(event, &context.sender);
+		let _ = module.handle_event(event, &context.state);
 		assert!(!module.invalid_selection);
 	});
 }

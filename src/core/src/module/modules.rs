@@ -19,6 +19,19 @@ pub(crate) struct Modules {
 }
 
 impl ModuleProvider for Modules {
+	fn new(config: &Config, repository: Repository) -> Self {
+		Self {
+			error: Error::new(),
+			list: List::new(config),
+			show_commit: ShowCommit::new(config, repository),
+			window_size_error: WindowSizeError::new(),
+			confirm_abort: ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
+			confirm_rebase: ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
+			external_editor: ExternalEditor::new(config.git.editor.as_str()),
+			insert: Insert::new(),
+		}
+	}
+
 	fn get_mut_module(&mut self, state: State) -> &mut dyn Module {
 		match state {
 			State::ConfirmAbort => &mut self.confirm_abort,
@@ -42,21 +55,6 @@ impl ModuleProvider for Modules {
 			State::List => &self.list,
 			State::ShowCommit => &self.show_commit,
 			State::WindowSizeError => &self.window_size_error,
-		}
-	}
-}
-
-impl Modules {
-	pub(crate) fn new(config: &Config, repository: Repository) -> Self {
-		Self {
-			error: Error::new(),
-			list: List::new(config),
-			show_commit: ShowCommit::new(config, repository),
-			window_size_error: WindowSizeError::new(),
-			confirm_abort: ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
-			confirm_rebase: ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
-			external_editor: ExternalEditor::new(config.git.editor.as_str()),
-			insert: Insert::new(),
 		}
 	}
 }

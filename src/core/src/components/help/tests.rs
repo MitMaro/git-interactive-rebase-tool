@@ -1,6 +1,6 @@
 use input::{KeyModifiers, MouseEvent, MouseEventKind, StandardEvent};
 use rstest::rstest;
-use view::{assert_rendered_output, testutil::with_view_sender};
+use view::{assert_rendered_output, testutil::with_view_state};
 
 use super::*;
 use crate::testutil::create_test_keybindings;
@@ -8,7 +8,7 @@ use crate::testutil::create_test_keybindings;
 fn handle_event(help: &mut Help, event: Event) {
 	let key_bindings = &create_test_keybindings();
 	if let Some(evt) = help.read_event(event, key_bindings) {
-		with_view_sender(|context| help.handle_event(evt, &context.sender));
+		with_view_state(|context| help.handle_event(evt, &context.state));
 	}
 }
 

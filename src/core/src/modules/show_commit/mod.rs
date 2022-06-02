@@ -11,7 +11,7 @@ use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use input::InputOptions;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData, ViewSender};
+use view::{RenderContext, ViewData};
 
 use self::{
 	show_commit_state::ShowCommitState,
@@ -131,9 +131,9 @@ impl Module for ShowCommit {
 		)
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State, _: &mut TodoFile) -> Results {
 		if self.help.is_active() {
-			self.help.handle_event(event, view_sender);
+			self.help.handle_event(event, view_state);
 			return Results::new();
 		}
 
@@ -144,7 +144,7 @@ impl Module for ShowCommit {
 			ShowCommitState::Diff => &mut self.diff_view_data,
 		};
 
-		if handle_view_data_scroll(event, view_sender).is_none() {
+		if handle_view_data_scroll(event, view_state).is_none() {
 			match event {
 				Event::MetaEvent(meta_event) if meta_event == MetaEvent::ShowDiff => {
 					active_view_data.update_view_data(|updater| updater.clear());

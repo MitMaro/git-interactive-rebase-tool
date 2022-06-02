@@ -1,1 +1,2 @@
-this is some invalid content that should cause an error [[[
+[interactive-rebase-tool]
+autoSelectNext = invalid

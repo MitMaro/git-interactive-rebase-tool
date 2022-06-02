@@ -3,7 +3,7 @@ use display::DisplayColor;
 use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
-use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
 use crate::{
 	events::Event,
@@ -35,9 +35,9 @@ impl Module for Error {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State, _: &mut TodoFile) -> Results {
 		let mut results = Results::new();
-		if handle_view_data_scroll(event, view_sender).is_none() {
+		if handle_view_data_scroll(event, view_state).is_none() {
 			if let Event::Key(_) = event {
 				results.state(self.return_state);
 			}

@@ -3,12 +3,14 @@ mod module_handler;
 mod module_provider;
 mod modules;
 mod state;
+#[cfg(test)]
+mod tests;
 
 use anyhow::Error;
 use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData, ViewSender};
+use view::{RenderContext, ViewData};
 
 pub(crate) use self::{
 	exit_status::ExitStatus,
@@ -23,7 +25,7 @@ use crate::{
 };
 
 lazy_static! {
-	static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
+	pub(crate) static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 	pub(crate) static ref DEFAULT_VIEW_DATA: ViewData = ViewData::new(|_| {});
 }
 
@@ -48,7 +50,7 @@ pub(crate) trait Module: Send {
 		event
 	}
 
-	fn handle_event(&mut self, _event: Event, _view_sender: &ViewSender, _rebase_todo: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, _event: Event, _view_state: &view::State, _rebase_todo: &mut TodoFile) -> Results {
 		Results::new()
 	}
 

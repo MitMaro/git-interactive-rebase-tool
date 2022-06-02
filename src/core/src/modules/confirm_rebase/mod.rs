@@ -1,6 +1,6 @@
 use input::InputOptions;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData, ViewSender};
+use view::{RenderContext, ViewData};
 
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
@@ -26,7 +26,7 @@ impl Module for ConfirmRebase {
 		Confirm::read_event(event, key_bindings)
 	}
 
-	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, _: &view::State, _: &mut TodoFile) -> Results {
 		let confirmed = self.dialog.handle_event(event);
 		let mut results = Results::new();
 		match confirmed {
