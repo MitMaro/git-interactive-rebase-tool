@@ -13,6 +13,7 @@ crates=(
 	"src/config"
 	"src/display"
 	"src/todo_file"
+	"src/runtime"
 	"src/input"
 	"src/view"
 	"src/core"
