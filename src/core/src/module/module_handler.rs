@@ -1,9 +1,10 @@
-use input::{EventHandler, Sender as EventSender};
+use input::EventHandler;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData, ViewSender};
+use view::{RenderContext, ViewData};
 
 use super::State;
 use crate::{
+	events,
 	events::{AppKeyBindings, Event, MetaEvent},
 	process::Results,
 };
@@ -48,15 +49,15 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 	pub(crate) fn handle_event(
 		&mut self,
 		state: State,
-		event_sender: &mut EventSender<MetaEvent>,
-		view_sender: &ViewSender,
+		input_state: &events::State,
+		view_state: &view::State,
 		rebase_todo: &mut TodoFile,
 	) -> Option<Results> {
 		let module = self.module_provider.get_module(state);
 		let input_options = module.input_options();
 		let event = self
 			.event_handler
-			.read_event(event_sender.read_event(), input_options, |event, key_bindings| {
+			.read_event(input_state.read_event(), input_options, |event, key_bindings| {
 				module.read_event(event, key_bindings)
 			});
 		(event != Event::None).then(|| {
@@ -65,7 +66,7 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 			results.append(
 				self.module_provider
 					.get_mut_module(state)
-					.handle_event(event, view_sender, rebase_todo),
+					.handle_event(event, view_state, rebase_todo),
 			);
 			results
 		})
@@ -125,7 +126,7 @@ mod tests {
 			&self.view_data
 		}
 
-		fn handle_event(&mut self, _: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
+		fn handle_event(&mut self, _: Event, _: &view::State, _: &mut TodoFile) -> Results {
 			self.trace.lock().push(String::from("Handle Events"));
 			Results::new()
 		}
@@ -145,13 +146,13 @@ mod tests {
 				let test_module = TestModule::new();
 				let mut module_handler = ModuleHandler::new(
 					context.event_handler_context.event_handler,
-					TestModuleProvider::new(test_module.clone()),
+					TestModuleProvider::from(test_module.clone()),
 				);
 				let _ = module_handler.activate(State::List, &context.rebase_todo_file, State::Insert);
 				let _ = module_handler.handle_event(
 					State::List,
-					&mut context.event_handler_context.sender,
-					&context.view_sender_context.sender,
+					&context.event_handler_context.state,
+					&context.view_context.state,
 					&mut context.rebase_todo_file,
 				);
 
@@ -175,7 +176,7 @@ mod tests {
 				let test_module = TestModule::new();
 				let mut module_handler = ModuleHandler::new(
 					context.event_handler_context.event_handler,
-					TestModuleProvider::new(test_module.clone()),
+					TestModuleProvider::from(test_module.clone()),
 				);
 				let _ = module_handler.error(State::Error, &anyhow!("Test Error"));
 				assert_eq!(test_module.trace(), "Test Error");

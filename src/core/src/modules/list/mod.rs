@@ -10,7 +10,7 @@ use config::Config;
 use display::DisplayColor;
 use input::{InputOptions, MouseEventKind, StandardEvent};
 use todo_file::{Action, EditContext, Line, TodoFile};
-use view::{LineSegment, RenderContext, ViewData, ViewLine, ViewSender};
+use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
 use self::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
 use crate::{
@@ -67,17 +67,17 @@ impl Module for List {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State, todo_file: &mut TodoFile) -> Results {
 		select!(
 			default || {
 				match self.state {
-					ListState::Normal => self.handle_normal_mode_event(event, view_sender, todo_file),
-					ListState::Visual => self.handle_visual_mode_input(event, view_sender, todo_file),
+					ListState::Normal => self.handle_normal_mode_event(event, view_state, todo_file),
+					ListState::Visual => self.handle_visual_mode_input(event, view_state, todo_file),
 					ListState::Edit => self.handle_edit_mode_input(event, todo_file),
 				}
 			},
-			|| self.handle_normal_help_input(event, view_sender),
-			|| self.handle_visual_help_input(event, view_sender)
+			|| self.handle_normal_help_input(event, view_state),
+			|| self.handle_visual_help_input(event, view_state)
 		)
 	}
 
@@ -125,13 +125,13 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn move_cursor_left(&self, view_sender: &ViewSender) {
-		view_sender.scroll_left();
+	fn move_cursor_left(&self, view_state: &view::State) {
+		view_state.scroll_left();
 	}
 
 	#[allow(clippy::unused_self)]
-	fn move_cursor_right(&self, view_sender: &ViewSender) {
-		view_sender.scroll_right();
+	fn move_cursor_right(&self, view_state: &view::State) {
+		view_state.scroll_right();
 	}
 
 	fn move_cursor_up(&mut self, todo_file: &mut TodoFile, amount: usize) {
@@ -425,16 +425,16 @@ impl List {
 		}
 	}
 
-	fn handle_normal_help_input(&mut self, event: Event, view_sender: &ViewSender) -> Option<Results> {
+	fn handle_normal_help_input(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
 		self.normal_mode_help.is_active().then(|| {
-			self.normal_mode_help.handle_event(event, view_sender);
+			self.normal_mode_help.handle_event(event, view_state);
 			Results::new()
 		})
 	}
 
-	fn handle_visual_help_input(&mut self, event: Event, view_sender: &ViewSender) -> Option<Results> {
+	fn handle_visual_help_input(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
 		self.visual_mode_help.is_active().then(|| {
-			self.visual_mode_help.handle_event(event, view_sender);
+			self.visual_mode_help.handle_event(event, view_state);
 			Results::new()
 		})
 	}
@@ -443,7 +443,7 @@ impl List {
 	fn handle_common_list_input(
 		&mut self,
 		event: Event,
-		view_sender: &ViewSender,
+		view_state: &view::State,
 		rebase_todo: &mut TodoFile,
 	) -> Option<Results> {
 		let mut results = Results::new();
@@ -464,10 +464,10 @@ impl List {
 					MetaEvent::MoveCursorDown => self.move_cursor_down(rebase_todo, 1),
 					MetaEvent::MoveCursorEnd => self.move_cursor_end(rebase_todo),
 					MetaEvent::MoveCursorHome => self.move_cursor_home(rebase_todo),
-					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_sender),
+					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_state),
 					MetaEvent::MoveCursorPageDown => self.move_cursor_down(rebase_todo, self.height / 2),
 					MetaEvent::MoveCursorPageUp => self.move_cursor_up(rebase_todo, self.height / 2),
-					MetaEvent::MoveCursorRight => self.move_cursor_right(view_sender),
+					MetaEvent::MoveCursorRight => self.move_cursor_right(view_state),
 					MetaEvent::MoveCursorUp => self.move_cursor_up(rebase_todo, 1),
 					MetaEvent::OpenInEditor => self.open_in_editor(&mut results),
 					MetaEvent::Rebase => self.rebase(&mut results),
@@ -494,10 +494,10 @@ impl List {
 	fn handle_normal_mode_event(
 		&mut self,
 		event: Event,
-		view_sender: &ViewSender,
+		view_state: &view::State,
 		rebase_todo: &mut TodoFile,
 	) -> Results {
-		if let Some(results) = self.handle_common_list_input(event, view_sender, rebase_todo) {
+		if let Some(results) = self.handle_common_list_input(event, view_state, rebase_todo) {
 			results
 		}
 		else {
@@ -518,10 +518,10 @@ impl List {
 	fn handle_visual_mode_input(
 		&mut self,
 		event: Event,
-		view_sender: &ViewSender,
+		view_state: &view::State,
 		rebase_todo: &mut TodoFile,
 	) -> Results {
-		self.handle_common_list_input(event, view_sender, rebase_todo)
+		self.handle_common_list_input(event, view_state, rebase_todo)
 			.unwrap_or_else(Results::new)
 	}
 

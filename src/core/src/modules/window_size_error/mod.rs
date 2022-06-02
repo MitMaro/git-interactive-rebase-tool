@@ -1,7 +1,7 @@
 use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData, ViewLine, ViewSender};
+use view::{RenderContext, ViewData, ViewLine};
 
 use crate::{
 	events::Event,
@@ -58,7 +58,7 @@ impl Module for WindowSizeError {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, _: &ViewSender, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, _: &view::State, _: &mut TodoFile) -> Results {
 		let mut results = Results::new();
 
 		if let Event::Resize(width, height) = event {

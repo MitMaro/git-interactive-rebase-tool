@@ -2,133 +2,158 @@ mod artifact;
 mod results;
 #[cfg(test)]
 mod tests;
+pub(crate) mod thread;
 
-use std::{process::Command, thread};
+use std::{
+	io::ErrorKind,
+	process::Command,
+	sync::{
+		atomic::{AtomicBool, Ordering},
+		Arc,
+	},
+};
 
 use anyhow::{anyhow, Error, Result};
-pub(crate) use artifact::Artifact;
-use display::{CrossTerm, Tui};
-use input::{spawn_event_thread, Sender as EventSender, StandardEvent};
-pub(crate) use results::Results;
+use display::Size;
+use input::StandardEvent;
+use parking_lot::Mutex;
+use runtime::ThreadStatuses;
 use todo_file::TodoFile;
-use view::{spawn_view_thread, RenderContext, View, ViewSender};
+use view::RenderContext;
 
+pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
+	events,
 	events::{Event, MetaEvent},
+	module,
 	module::{ExitStatus, ModuleHandler, State},
 };
 
-pub(crate) struct Process {
-	exit_status: ExitStatus,
-	rebase_todo: TodoFile,
-	render_context: RenderContext,
-	state: State,
-	threads: Vec<thread::JoinHandle<()>>,
-	view_sender: ViewSender,
-	event_sender: EventSender<MetaEvent>,
+pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
+	ended: Arc<AtomicBool>,
+	exit_status: Arc<Mutex<ExitStatus>>,
+	input_state: events::State,
+	module_handler: Arc<Mutex<ModuleHandler<ModuleProvider>>>,
+	paused: Arc<AtomicBool>,
+	rebase_todo: Arc<Mutex<TodoFile>>,
+	render_context: Arc<Mutex<RenderContext>>,
+	state: Arc<Mutex<State>>,
+	thread_statuses: ThreadStatuses,
+	view_state: view::State,
 }
 
-impl Process {
-	pub(crate) fn new<C: Tui + Send + 'static>(rebase_todo: TodoFile, view: View<C>) -> Self {
-		#[allow(deprecated)]
-		let view_size = view.get_view_size();
-		let mut threads = vec![];
-
-		let (view_sender, view_thread) = spawn_view_thread(view);
-		threads.push(view_thread);
-		let (event_sender, event_thread) = spawn_event_thread(CrossTerm::read_event);
-		threads.push(event_thread);
-
+impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
+	fn clone(&self) -> Self {
 		Self {
-			exit_status: ExitStatus::None,
-			rebase_todo,
-			render_context: RenderContext::new(view_size.width(), view_size.height()),
-			state: State::List,
-			threads,
-			view_sender,
-			event_sender,
+			ended: Arc::clone(&self.ended),
+			exit_status: Arc::clone(&self.exit_status),
+			input_state: self.input_state.clone(),
+			module_handler: Arc::clone(&self.module_handler),
+			paused: Arc::clone(&self.paused),
+			rebase_todo: Arc::clone(&self.rebase_todo),
+			render_context: Arc::clone(&self.render_context),
+			state: Arc::clone(&self.state),
+			thread_statuses: self.thread_statuses.clone(),
+			view_state: self.view_state.clone(),
+		}
+	}
+}
+
+impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
+	pub(crate) fn new(
+		initial_display_size: Size,
+		rebase_todo: TodoFile,
+		module_handler: ModuleHandler<ModuleProvider>,
+		input_state: events::State,
+		view_state: view::State,
+		thread_statuses: ThreadStatuses,
+	) -> Self {
+		Self {
+			ended: Arc::new(AtomicBool::from(false)),
+			exit_status: Arc::new(Mutex::new(ExitStatus::None)),
+			input_state,
+			module_handler: Arc::new(Mutex::new(module_handler)),
+			paused: Arc::new(AtomicBool::from(false)),
+			rebase_todo: Arc::new(Mutex::new(rebase_todo)),
+			render_context: Arc::new(Mutex::new(RenderContext::new(
+				initial_display_size.width(),
+				initial_display_size.height(),
+			))),
+			state: Arc::new(Mutex::new(State::WindowSizeError)),
+			thread_statuses,
+			view_state,
 		}
 	}
 
-	pub(crate) fn run<ModuleProvider: crate::module::ModuleProvider>(
-		&mut self,
-		mut module_handler: ModuleHandler<ModuleProvider>,
-	) -> Result<ExitStatus> {
-		if self.view_sender.start().is_err() {
-			self.exit_status = ExitStatus::StateError;
-			return Ok(ExitStatus::StateError);
-		}
-
-		let activate_results = self.activate(&mut module_handler, State::List);
-		self.handle_results(&mut module_handler, activate_results);
-		while self.exit_status == ExitStatus::None {
-			let view_data = module_handler.build_view_data(self.state, &self.render_context, &self.rebase_todo);
-			if self.view_sender.render(view_data).is_err() {
-				self.exit_status = ExitStatus::StateError;
-				continue;
-			}
-			loop {
-				if self.view_sender.is_poisoned() {
-					self.exit_status = ExitStatus::StateError;
-					break;
-				}
-				let results_maybe = module_handler.handle_event(
-					self.state,
-					&mut self.event_sender,
-					&self.view_sender,
-					&mut self.rebase_todo,
-				);
-
-				if self.exit_status != ExitStatus::None {
-					break;
-				}
-
-				if let Some(results) = results_maybe {
-					self.handle_results(&mut module_handler, results);
-					break;
-				}
-			}
-		}
-		if self.view_sender.stop().is_err() {
-			return Ok(ExitStatus::StateError);
-		}
-		if self.exit_status != ExitStatus::Kill {
-			self.rebase_todo.write_file()?;
-		}
-
-		let (view_end_result, event_end_result) = (self.view_sender.end(), self.event_sender.end());
-
-		if view_end_result.is_err() || event_end_result.is_err() {
-			return Ok(ExitStatus::StateError);
-		}
-
-		while let Some(handle) = self.threads.pop() {
-			if handle.join().is_err() {
-				return Ok(ExitStatus::StateError);
-			}
-		}
-
-		Ok(self.exit_status)
+	pub(crate) fn is_ended(&self) -> bool {
+		self.ended.load(Ordering::Acquire)
 	}
 
-	fn handle_results<ModuleProvider: crate::module::ModuleProvider>(
-		&mut self,
-		modules: &mut ModuleHandler<ModuleProvider>,
-		mut results: Results,
-	) {
-		while let Some(artifact) = results.artifact() {
-			results.append(match artifact {
-				Artifact::Event(event) => self.handle_event_artifact(event),
-				Artifact::ChangeState(state) => self.handle_state(state, modules),
-				Artifact::Error(err, previous_state) => self.handle_error(&err, previous_state, modules),
-				Artifact::ExitStatus(exit_status) => self.handle_exit_status(exit_status),
-				Artifact::ExternalCommand(command) => self.handle_external_command(&command),
-				Artifact::EnqueueResize => self.handle_enqueue_resize(),
-			});
-		}
+	/// Permanently End the event read thread.
+	pub(crate) fn end(&self) {
+		self.ended.store(true, Ordering::Release);
 	}
 
-	fn handle_event_artifact(&mut self, event: Event) -> Results {
+	pub(crate) fn state(&self) -> State {
+		*self.state.lock()
+	}
+
+	pub(crate) fn set_state(&self, state: State) {
+		*self.state.lock() = state;
+	}
+
+	pub(crate) fn exit_status(&self) -> ExitStatus {
+		*self.exit_status.lock()
+	}
+
+	pub(crate) fn set_exit_status(&self, exit_status: ExitStatus) {
+		*self.exit_status.lock() = exit_status;
+	}
+
+	pub(crate) fn should_exit(&self) -> bool {
+		self.exit_status() != ExitStatus::None || self.is_ended()
+	}
+
+	pub(crate) fn is_exit_status_kill(&self) -> bool {
+		self.exit_status() == ExitStatus::Kill
+	}
+
+	fn activate(&self, previous_state: State) -> Results {
+		let mut module_handler = self.module_handler.lock();
+		let mut results = module_handler.activate(self.state(), &self.rebase_todo.lock(), previous_state);
+		// always trigger a resize on activate, for modules that track size
+		results.enqueue_resize();
+		results
+	}
+
+	pub(crate) fn render(&self) {
+		let rebase_todo = self.rebase_todo.lock();
+		let render_context = *self.render_context.lock();
+		let mut module_handler = self.module_handler.lock();
+		let view_data = module_handler.build_view_data(self.state(), &render_context, &rebase_todo);
+		// TODO It is not possible for this to fail. view::State should be updated to not return an error
+		self.view_state.render(view_data).expect("Render failed");
+	}
+
+	pub(crate) fn write_todo_file(&self) -> Result<()> {
+		self.rebase_todo.lock().write_file()
+	}
+
+	fn deactivate(&self, state: State) -> Results {
+		let mut module_handler = self.module_handler.lock();
+		module_handler.deactivate(state)
+	}
+
+	pub(crate) fn handle_event(&self) -> Option<Results> {
+		self.module_handler.lock().handle_event(
+			self.state(),
+			&self.input_state.clone(),
+			&self.view_state.clone(),
+			&mut self.rebase_todo.lock(),
+		)
+	}
+
+	fn handle_event_artifact(&self, event: Event) -> Results {
 		let mut results = Results::new();
 		match event {
 			Event::Standard(StandardEvent::Exit) => {
@@ -138,10 +163,11 @@ impl Process {
 				results.exit_status(ExitStatus::Kill);
 			},
 			Event::Resize(width, height) => {
-				self.view_sender.resize(width, height);
-				self.render_context.update(width, height);
+				self.view_state.resize(width, height);
 
-				if self.state != State::WindowSizeError && self.render_context.is_window_too_small() {
+				let mut render_context = self.render_context.lock();
+				render_context.update(width, height);
+				if self.state() != State::WindowSizeError && render_context.is_window_too_small() {
 					results.state(State::WindowSizeError);
 				}
 			},
@@ -150,57 +176,47 @@ impl Process {
 		results
 	}
 
-	fn handle_state<ModuleProvider: crate::module::ModuleProvider>(
-		&mut self,
-		state: State,
-		modules: &mut ModuleHandler<ModuleProvider>,
-	) -> Results {
+	fn handle_state(&self, state: State) -> Results {
 		let mut results = Results::new();
-		if self.state != state {
-			let previous_state = self.state;
-			self.state = state;
-			results.append(modules.deactivate(previous_state));
-			results.append(self.activate(modules, previous_state));
+		let previous_state = self.state();
+		if previous_state != state {
+			self.set_state(state);
+			results.append(self.deactivate(previous_state));
+			results.append(self.activate(previous_state));
 		}
 		results
 	}
 
-	fn handle_error<ModuleProvider: crate::module::ModuleProvider>(
-		&mut self,
-		error: &Error,
-		previous_state: Option<State>,
-		modules: &mut ModuleHandler<ModuleProvider>,
-	) -> Results {
+	fn handle_error(&self, error: &Error, previous_state: Option<State>) -> Results {
 		let mut results = Results::new();
-		let return_state = previous_state.unwrap_or(self.state);
-		self.state = State::Error;
-		results.append(modules.error(self.state, error));
-		results.append(self.activate(modules, return_state));
+		let return_state = previous_state.unwrap_or_else(|| self.state());
+		self.set_state(State::Error);
+		results.append(self.activate(return_state));
+		let mut module_handler = self.module_handler.lock();
+		results.append(module_handler.error(State::Error, error));
 		results
 	}
 
-	fn handle_exit_status(&mut self, exit_status: ExitStatus) -> Results {
-		self.exit_status = exit_status;
+	fn handle_exit_status(&self, exit_status: ExitStatus) -> Results {
+		self.set_exit_status(exit_status);
 		Results::new()
 	}
 
-	fn handle_enqueue_resize(&mut self) -> Results {
-		self.event_sender
-			.enqueue_event(Event::Resize(
-				self.render_context.width() as u16,
-				self.render_context.height() as u16,
-			))
-			.expect("Enqueue Resize event failed");
+	fn handle_enqueue_resize(&self) -> Results {
+		let render_context = self.render_context.lock();
+		self.input_state.enqueue_event(Event::Resize(
+			render_context.width() as u16,
+			render_context.height() as u16,
+		));
 		Results::new()
 	}
 
-	fn handle_external_command(&mut self, external_command: &(String, Vec<String>)) -> Results {
+	fn handle_external_command(&self, external_command: &(String, Vec<String>)) -> Results {
 		let mut results = Results::new();
+
 		match self.run_command(external_command) {
 			Ok(meta_event) => {
-				self.event_sender
-					.enqueue_event(Event::from(meta_event))
-					.expect("Enqueue event failed");
+				self.input_state.enqueue_event(Event::from(meta_event));
 			},
 			Err(err) => {
 				results.error_with_return(
@@ -216,9 +232,14 @@ impl Process {
 		results
 	}
 
-	fn run_command(&mut self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
-		self.view_sender.stop()?;
-		self.event_sender.pause();
+	fn run_command(&self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
+		self.view_state.stop()?;
+		self.input_state.pause();
+
+		self.thread_statuses
+			.wait_for_status(view::REFRESH_THREAD_NAME, &runtime::Status::Waiting)?;
+		self.thread_statuses
+			.wait_for_status(input::THREAD_NAME, &runtime::Status::Waiting)?;
 
 		let mut cmd = Command::new(external_command.0.clone());
 		let _ = cmd.args(external_command.1.clone());
@@ -233,22 +254,33 @@ impl Process {
 					MetaEvent::ExternalCommandError
 				}
 			})
-			.map_err(|err| anyhow!(err));
+			.map_err(|err| {
+				match err.kind() {
+					ErrorKind::NotFound => {
+						anyhow!("File does not exist: {}", external_command.0)
+					},
+					ErrorKind::PermissionDenied => {
+						anyhow!("File not executable: {}", external_command.0)
+					},
+					_ => Error::from(err),
+				}
+			});
 
-		self.event_sender.resume();
-		self.view_sender.start()?;
-
+		self.input_state.resume();
+		self.view_state.start()?;
 		result
 	}
 
-	fn activate<ModuleProvider: crate::module::ModuleProvider>(
-		&mut self,
-		modules: &mut ModuleHandler<ModuleProvider>,
-		previous_state: State,
-	) -> Results {
-		let mut results = modules.activate(self.state, &self.rebase_todo, previous_state);
-		// always trigger a resize on activate, for modules that track size
-		results.enqueue_resize();
-		results
+	fn handle_results(&self, mut results: Results) {
+		while let Some(artifact) = results.artifact() {
+			results.append(match artifact {
+				Artifact::ChangeState(state) => self.handle_state(state),
+				Artifact::EnqueueResize => self.handle_enqueue_resize(),
+				Artifact::Error(err, previous_state) => self.handle_error(&err, previous_state),
+				Artifact::Event(event) => self.handle_event_artifact(event),
+				Artifact::ExitStatus(exit_status) => self.handle_exit_status(exit_status),
+				Artifact::ExternalCommand(command) => self.handle_external_command(&command),
+			});
+		}
 	}
 }

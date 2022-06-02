@@ -4,7 +4,7 @@ use captur::capture;
 use tempfile::{Builder, NamedTempFile};
 use todo_file::{Line, TodoFile};
 use view::{
-	testutil::{with_view_sender, TestContext as ViewSenderContext},
+	testutil::{with_view_state, TestContext as ViewContext},
 	RenderContext,
 	ViewData,
 };
@@ -18,9 +18,9 @@ use crate::{
 
 pub(crate) struct TestContext {
 	pub(crate) event_handler_context: EventHandlerTestContext,
-	pub(crate) view_sender_context: ViewSenderContext,
 	pub(crate) rebase_todo_file: TodoFile,
 	pub(crate) render_context: RenderContext,
+	pub(crate) view_context: ViewContext,
 	todo_file: Cell<NamedTempFile>,
 }
 
@@ -45,13 +45,13 @@ impl TestContext {
 	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> Results {
 		let input_options = module.input_options();
 		let event = self.event_handler_context.event_handler.read_event(
-			self.event_handler_context.sender.read_event(),
+			self.event_handler_context.state.read_event(),
 			input_options,
 			|event, key_bindings| module.read_event(event, key_bindings),
 		);
 		let mut results = Results::new();
 		results.event(event);
-		results.append(module.handle_event(event, &self.view_sender_context.sender, &mut self.rebase_todo_file));
+		results.append(module.handle_event(event, &self.view_context.state, &mut self.rebase_todo_file));
 		results
 	}
 
@@ -94,7 +94,7 @@ impl TestContext {
 pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
 where C: FnOnce(TestContext) {
 	with_event_handler(events, |event_handler_context| {
-		with_view_sender(|view_sender_context| {
+		with_view_state(|view_context| {
 			capture!(lines);
 			let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
 				.join("..")
@@ -113,7 +113,7 @@ where C: FnOnce(TestContext) {
 			callback(TestContext {
 				event_handler_context,
 				rebase_todo_file,
-				view_sender_context,
+				view_context,
 				todo_file: Cell::new(todo_file),
 				render_context: RenderContext::new(300, 120),
 			});

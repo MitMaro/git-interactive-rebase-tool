@@ -81,8 +81,10 @@
 	rustdoc::missing_crate_level_docs
 )]
 
+mod application;
 mod arguments;
 mod components;
+mod editor;
 mod events;
 mod exit;
 mod help;
@@ -90,8 +92,7 @@ mod license;
 mod module;
 mod modules;
 mod process;
-mod run;
-#[cfg(all(unix, test))]
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 pub mod testutil;
@@ -115,7 +116,7 @@ pub fn run(os_args: Vec<OsString>) -> Exit {
 				Mode::Help => help::run(),
 				Mode::Version => version::run(),
 				Mode::License => license::run(),
-				Mode::Editor => run::run(&args),
+				Mode::Editor => editor::run(&args),
 			}
 		},
 	}

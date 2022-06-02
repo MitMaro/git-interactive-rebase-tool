@@ -9,7 +9,7 @@ use anyhow::{anyhow, Result};
 use input::InputOptions;
 use lazy_static::lazy_static;
 use todo_file::{Line, TodoFile};
-use view::{RenderContext, ViewData, ViewLine, ViewSender};
+use view::{RenderContext, ViewData, ViewLine};
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
@@ -87,7 +87,7 @@ impl Module for ExternalEditor {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_sender: &ViewSender, todo_file: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State, todo_file: &mut TodoFile) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			ExternalEditorState::Active => {
@@ -115,7 +115,7 @@ impl Module for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Empty => {
-				let choice = self.empty_choice.handle_event(event, view_sender);
+				let choice = self.empty_choice.handle_event(event, view_state);
 				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => results.exit_status(ExitStatus::Good),
@@ -129,7 +129,7 @@ impl Module for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let choice = self.error_choice.handle_event(event, view_sender);
+				let choice = self.error_choice.handle_event(event, view_state);
 				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => {
