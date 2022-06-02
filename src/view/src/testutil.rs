@@ -2,10 +2,10 @@
 use std::time::Duration;
 
 use bitflags::bitflags;
-use crossbeam_channel::{unbounded, Receiver};
 use display::DisplayColor;
 
-use super::{action::ViewAction, render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, ViewSender};
+use super::{render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, State};
+use crate::thread::ViewAction;
 
 const STARTS_WITH: &str = "{{StartsWith}}";
 const ENDS_WITH: &str = "{{EndsWith}}";
@@ -299,9 +299,9 @@ macro_rules! assert_rendered_output {
 }
 
 #[allow(clippy::panic)]
-fn assert_view_sender_actions(view_sender: &ViewSender, expected_actions: &[String]) {
-	let actions = view_sender
-		.clone_render_slice()
+fn assert_view_state_actions(state: &State, expected_actions: &[String]) {
+	let actions = state
+		.render_slice()
 		.lock()
 		.get_actions()
 		.iter()
@@ -371,29 +371,20 @@ fn action_to_string(action: ViewAction) -> String {
 	})
 }
 
-/// Context for a `ViewSender` test.
+/// Context for a view state test.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct TestContext {
-	/// The sender instance.
-	pub sender: ViewSender,
-	/// The receiver instance.
-	pub receiver: Receiver<ViewAction>,
+	/// The state instance.
+	pub state: State,
 }
 
 impl TestContext {
-	/// Drop the receiver, useful for testing disconnect error handling.
-	#[inline]
-	pub fn drop_receiver(&mut self) {
-		let (_, receiver) = unbounded();
-		self.receiver = receiver;
-	}
-
 	/// Assert that render actions were sent.
 	#[inline]
 	pub fn assert_render_action(&self, actions: &[&str]) {
-		assert_view_sender_actions(
-			&self.sender,
+		assert_view_state_actions(
+			&self.state,
 			actions
 				.iter()
 				.map(|s| String::from(*s))
@@ -402,7 +393,7 @@ impl TestContext {
 		);
 	}
 
-	/// Assert that certain messages were sent by the `ViewSender`.
+	/// Assert that certain messages were sent by the `State`.
 	#[inline]
 	#[allow(clippy::missing_panics_doc, clippy::panic)]
 	pub fn assert_sent_messages(&self, messages: Vec<&str>) {
@@ -414,8 +405,9 @@ impl TestContext {
 			String::from("=========="),
 		];
 
+		let update_receiver = self.state.update_receiver();
 		for message in messages {
-			if let Ok(action) = self.receiver.recv_timeout(Duration::new(1, 0)) {
+			if let Ok(action) = update_receiver.recv_timeout(Duration::new(1, 0)) {
 				let action_name = action_to_string(action);
 				if message == action_name {
 					error_output.push(format!(" {}", message));
@@ -432,7 +424,7 @@ impl TestContext {
 		}
 
 		// wait some time for any other actions that were sent that should have not been
-		while let Ok(action) = self.receiver.recv_timeout(Duration::new(0, 10000)) {
+		while let Ok(action) = update_receiver.recv_timeout(Duration::new(0, 10000)) {
 			mismatch = true;
 			error_output.push(format!("+{}", action_to_string(action)));
 		}
@@ -444,15 +436,9 @@ impl TestContext {
 	}
 }
 
-/// Provide an `ViewSender` instance for use within a test.
+/// Provide a `State` instance for use within a view test.
 #[inline]
-pub fn with_view_sender<C>(callback: C)
+pub fn with_view_state<C>(callback: C)
 where C: FnOnce(TestContext) {
-	let (sender, receiver) = unbounded();
-	let view_sender = ViewSender::new(sender);
-
-	callback(TestContext {
-		sender: view_sender,
-		receiver,
-	});
+	callback(TestContext { state: State::new() });
 }

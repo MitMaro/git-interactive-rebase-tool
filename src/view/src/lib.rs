@@ -84,12 +84,10 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance should only be used in test code.
 
-mod action;
 mod line_segment;
 mod render_context;
 mod render_slice;
 mod scroll_position;
-mod sender;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod thread;
@@ -101,19 +99,17 @@ mod view_line;
 mod tests;
 
 use anyhow::Result;
-use display::{Display, DisplayColor, Size, Tui};
+use display::{Display, DisplayColor, Tui};
 
-use self::render_slice::RenderSlice;
 pub use self::{
-	action::ViewAction,
 	line_segment::LineSegment,
 	render_context::RenderContext,
-	sender::Sender as ViewSender,
-	thread::spawn_view_thread,
+	thread::{State, Thread, MAIN_THREAD_NAME, REFRESH_THREAD_NAME},
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,
 };
+use self::{render_slice::RenderSlice, thread::ViewAction};
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";
@@ -146,7 +142,7 @@ impl<C: Tui> View<C> {
 	/// # Errors
 	/// Results in an error if the terminal cannot be started.
 	#[inline]
-	pub fn start(&mut self) -> Result<()> {
+	pub(crate) fn start(&mut self) -> Result<()> {
 		self.display.start()
 	}
 
@@ -155,15 +151,8 @@ impl<C: Tui> View<C> {
 	/// # Errors
 	/// Results in an error if the terminal cannot be ended.
 	#[inline]
-	pub fn end(&mut self) -> Result<()> {
+	pub(crate) fn end(&mut self) -> Result<()> {
 		self.display.end()
-	}
-
-	/// Get the size of the view.
-	#[inline]
-	#[deprecated = "This leaks internals of the Display and will eventually be removed"]
-	pub fn get_view_size(&self) -> Size {
-		self.display.get_window_size()
 	}
 
 	/// Render a slice.

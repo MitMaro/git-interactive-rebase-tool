@@ -7,62 +7,57 @@ use std::{
 };
 
 use anyhow::{anyhow, Error, Result};
-use crossbeam_channel as channel;
+use crossbeam_channel::{unbounded, SendError};
 use parking_lot::Mutex;
 
-use super::{action::ViewAction, render_slice::RenderSlice, view_data::ViewData};
+use crate::{RenderSlice, ViewAction, ViewData};
 
-fn map_send_err(_: channel::SendError<ViewAction>) -> Error {
+fn map_send_err(_: SendError<ViewAction>) -> Error {
 	anyhow!("Unable to send data")
 }
 
 /// Represents a message sender and receiver for passing actions between threads.
 #[derive(Clone, Debug)]
-pub struct Sender {
-	poisoned: Arc<AtomicBool>,
+pub struct State {
+	ended: Arc<AtomicBool>,
 	paused: Arc<AtomicBool>,
-	sender: channel::Sender<ViewAction>,
 	render_slice: Arc<Mutex<RenderSlice>>,
+	pub(crate) update_receiver: crossbeam_channel::Receiver<ViewAction>,
+	update_sender: crossbeam_channel::Sender<ViewAction>,
 }
 
-impl Sender {
+#[allow(clippy::new_without_default)]
+impl State {
 	/// Create a new instance.
 	#[inline]
 	#[must_use]
-	pub fn new(sender: channel::Sender<ViewAction>) -> Self {
+	pub fn new() -> Self {
+		let (update_sender, update_receiver) = unbounded();
 		Self {
-			poisoned: Arc::new(AtomicBool::new(false)),
-			sender,
-			paused: Arc::new(AtomicBool::new(false)),
+			ended: Arc::new(AtomicBool::from(false)),
+			paused: Arc::new(AtomicBool::from(false)),
 			render_slice: Arc::new(Mutex::new(RenderSlice::new())),
+			update_receiver,
+			update_sender,
 		}
 	}
 
-	/// Clone the poisoned flag.
-	#[inline]
-	#[must_use]
-	pub fn clone_poisoned(&self) -> Arc<AtomicBool> {
-		Arc::clone(&self.poisoned)
+	pub(crate) fn update_receiver(&self) -> crossbeam_channel::Receiver<ViewAction> {
+		self.update_receiver.clone()
 	}
 
-	/// Is the sender poisoned, and not longer accepting actions.
-	#[inline]
-	#[must_use]
-	pub fn is_poisoned(&self) -> bool {
-		self.poisoned.load(Ordering::Acquire)
+	pub(crate) fn is_ended(&self) -> bool {
+		self.ended.load(Ordering::Relaxed)
 	}
 
-	/// Is the sender paused from refreshing the view.
-	#[inline]
-	#[must_use]
-	pub fn is_paused(&self) -> bool {
+	pub(crate) fn is_paused(&self) -> bool {
 		self.paused.load(Ordering::Relaxed)
 	}
 
 	/// Clone the render slice.
 	#[inline]
 	#[must_use]
-	pub fn clone_render_slice(&self) -> Arc<Mutex<RenderSlice>> {
+	pub fn render_slice(&self) -> Arc<Mutex<RenderSlice>> {
 		Arc::clone(&self.render_slice)
 	}
 
@@ -72,18 +67,18 @@ impl Sender {
 	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn start(&self) -> Result<()> {
-		self.paused.store(false, Ordering::Relaxed);
-		self.sender.send(ViewAction::Start).map_err(map_send_err)
+		self.paused.store(false, Ordering::Release);
+		self.update_sender.send(ViewAction::Start).map_err(map_send_err)
 	}
 
-	/// Queue a stop action.
+	/// Pause the event read thread.
 	///
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn stop(&self) -> Result<()> {
-		self.paused.store(true, Ordering::Relaxed);
-		self.sender.send(ViewAction::Stop).map_err(map_send_err)
+		self.paused.store(true, Ordering::Release);
+		self.update_sender.send(ViewAction::Stop).map_err(map_send_err)
 	}
 
 	/// Queue an end action.
@@ -92,8 +87,18 @@ impl Sender {
 	/// Results in an error if the sender has been closed.
 	#[inline]
 	pub fn end(&self) -> Result<()> {
+		self.ended.store(true, Ordering::Release);
 		self.stop()?;
-		self.sender.send(ViewAction::End).map_err(map_send_err)
+		self.update_sender.send(ViewAction::End).map_err(map_send_err)
+	}
+
+	/// Queue a refresh action.
+	///
+	/// # Errors
+	/// Results in an error if the sender has been closed.
+	#[inline]
+	pub fn refresh(&self) -> Result<()> {
+		self.update_sender.send(ViewAction::Refresh).map_err(map_send_err)
 	}
 
 	/// Queue a scroll up action.
@@ -160,160 +165,134 @@ impl Sender {
 	#[inline]
 	pub fn render(&self, view_data: &ViewData) -> Result<()> {
 		self.render_slice.lock().borrow_mut().sync_view_data(view_data);
-		self.sender.send(ViewAction::Render).map_err(map_send_err)
+		self.update_sender.send(ViewAction::Render).map_err(map_send_err)
 	}
 }
 
 #[cfg(test)]
 mod tests {
-	use std::sync::atomic::Ordering;
-
 	use crate::{
-		testutil::{render_view_line, with_view_sender},
+		testutil::{render_view_line, with_view_state},
 		ViewData,
 		ViewLine,
 	};
 
 	#[test]
-	fn poisoned() {
-		with_view_sender(|context| {
-			context.sender.clone_poisoned().store(true, Ordering::Release);
-			assert!(context.sender.is_poisoned());
-		});
-	}
-
-	#[test]
-	fn start_success() {
-		with_view_sender(|context| {
-			context.sender.start().unwrap();
+	fn start() {
+		with_view_state(|context| {
+			context.state.start().unwrap();
 			context.assert_sent_messages(vec!["Start"]);
-			assert!(!context.sender.is_paused());
+			assert!(!context.state.is_paused());
 		});
 	}
 
 	#[test]
-	fn start_error() {
-		with_view_sender(|mut context| {
-			context.drop_receiver();
-			assert_eq!(context.sender.start().unwrap_err().to_string(), "Unable to send data");
-		});
-	}
-
-	#[test]
-	fn stop_success() {
-		with_view_sender(|context| {
-			context.sender.stop().unwrap();
+	fn stop() {
+		with_view_state(|context| {
+			context.state.stop().unwrap();
 			context.assert_sent_messages(vec!["Stop"]);
-			assert!(context.sender.is_paused());
+			assert!(context.state.is_paused());
 		});
 	}
 
 	#[test]
-	fn stop_error() {
-		with_view_sender(|mut context| {
-			context.drop_receiver();
-			assert_eq!(context.sender.stop().unwrap_err().to_string(), "Unable to send data");
-		});
-	}
-
-	#[test]
-	fn end_success() {
-		with_view_sender(|context| {
-			context.sender.end().unwrap();
+	fn end() {
+		with_view_state(|context| {
+			context.state.end().unwrap();
 			context.assert_sent_messages(vec!["Stop", "End"]);
 		});
 	}
 
 	#[test]
-	fn end_error() {
-		with_view_sender(|mut context| {
-			context.drop_receiver();
-			assert_eq!(context.sender.end().unwrap_err().to_string(), "Unable to send data");
+	fn refresh() {
+		with_view_state(|context| {
+			context.state.refresh().unwrap();
+			context.assert_sent_messages(vec!["Refresh"]);
 		});
 	}
 
 	#[test]
 	fn scroll_top() {
-		with_view_sender(|context| {
-			context.sender.scroll_top();
+		with_view_state(|context| {
+			context.state.scroll_top();
 			context.assert_render_action(&["ScrollTop"]);
 		});
 	}
 
 	#[test]
 	fn scroll_bottom() {
-		with_view_sender(|context| {
-			context.sender.scroll_bottom();
+		with_view_state(|context| {
+			context.state.scroll_bottom();
 			context.assert_render_action(&["ScrollBottom"]);
 		});
 	}
 
 	#[test]
 	fn scroll_up() {
-		with_view_sender(|context| {
-			context.sender.scroll_up();
+		with_view_state(|context| {
+			context.state.scroll_up();
 			context.assert_render_action(&["ScrollUp"]);
 		});
 	}
 
 	#[test]
 	fn scroll_down() {
-		with_view_sender(|context| {
-			context.sender.scroll_down();
+		with_view_state(|context| {
+			context.state.scroll_down();
 			context.assert_render_action(&["ScrollDown"]);
 		});
 	}
 
 	#[test]
 	fn scroll_left() {
-		with_view_sender(|context| {
-			context.sender.scroll_left();
+		with_view_state(|context| {
+			context.state.scroll_left();
 			context.assert_render_action(&["ScrollLeft"]);
 		});
 	}
 
 	#[test]
 	fn scroll_right() {
-		with_view_sender(|context| {
-			context.sender.scroll_right();
+		with_view_state(|context| {
+			context.state.scroll_right();
 			context.assert_render_action(&["ScrollRight"]);
 		});
 	}
 
 	#[test]
 	fn scroll_page_up() {
-		with_view_sender(|context| {
-			context.sender.scroll_page_up();
+		with_view_state(|context| {
+			context.state.scroll_page_up();
 			context.assert_render_action(&["PageUp"]);
 		});
 	}
 
 	#[test]
 	fn scroll_page_down() {
-		with_view_sender(|context| {
-			context.sender.scroll_page_down();
+		with_view_state(|context| {
+			context.state.scroll_page_down();
 			context.assert_render_action(&["PageDown"]);
 		});
 	}
 
 	#[test]
 	fn resize() {
-		with_view_sender(|context| {
-			context.sender.resize(10, 20);
+		with_view_state(|context| {
+			context.state.resize(10, 20);
 			context.assert_render_action(&["Resize(10, 20)"]);
 		});
 	}
 
 	#[test]
 	fn render() {
-		with_view_sender(|context| {
-			context.sender.resize(300, 100);
+		with_view_state(|context| {
+			context.state.resize(300, 100);
 			context
-				.sender
+				.state
 				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))))
 				.unwrap();
 			assert_eq!(
-				render_view_line(context.sender.clone_render_slice().lock().get_lines().first().unwrap()),
+				render_view_line(context.state.render_slice().lock().get_lines().first().unwrap()),
 				"{Normal}Foo"
 			);
 		});

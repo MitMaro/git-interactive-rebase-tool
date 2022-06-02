@@ -1,7 +1,7 @@
 /// An action to send to the thread handling updates to the view.
 #[derive(Debug, Copy, Clone)]
 #[allow(clippy::exhaustive_enums)]
-pub enum ViewAction {
+pub(crate) enum ViewAction {
 	/// Stop processing actions.
 	Stop,
 	/// Force a refresh of the view.
