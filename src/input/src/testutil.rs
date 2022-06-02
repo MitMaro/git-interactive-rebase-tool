@@ -1,7 +1,6 @@
 //! Utilities for writing tests that interact with input events.
 
-use super::{Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers};
-use crate::{event_action::EventAction, map_keybindings, Sender};
+use crate::{map_keybindings, thread::State, Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers};
 
 #[cfg(test)]
 pub(crate) mod local {
@@ -65,9 +64,7 @@ pub struct TestContext<TestKeybinding: crate::CustomKeybinding, CustomEvent: cra
 	/// The `EventHandler` instance.
 	pub event_handler: EventHandler<TestKeybinding, CustomEvent>,
 	/// The sender instance.
-	pub sender: Sender<CustomEvent>,
-	/// The receiver instance.
-	pub receiver: crossbeam_channel::Receiver<EventAction<CustomEvent>>,
+	pub state: State<CustomEvent>,
 	/// The number of known available events.
 	pub number_events: usize,
 }
@@ -83,19 +80,15 @@ pub fn with_event_handler<C, TestKeybinding: crate::CustomKeybinding, CustomEven
 	C: FnOnce(TestContext<TestKeybinding, CustomEvent>),
 {
 	let event_handler = EventHandler::new(create_test_keybindings(custom_key_bindings));
-	let (sender, receiver) = crossbeam_channel::bounded(10);
-	let (_, new_event_receiver) = crossbeam_channel::unbounded();
-	let event_sender = Sender::new(sender, new_event_receiver);
-	let event_queue = event_sender.clone_event_queue();
+	let state = State::new();
 
 	for event in events {
-		event_queue.lock().push_back(*event);
+		state.enqueue_event(*event);
 	}
 
 	callback(TestContext {
 		event_handler,
-		sender: event_sender,
-		receiver,
+		state,
 		number_events: events.len(),
 	});
 }
