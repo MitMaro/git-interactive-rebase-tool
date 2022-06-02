@@ -86,17 +86,15 @@
 mod custom_event;
 mod custom_key_binding;
 mod event;
-mod event_action;
 mod event_handler;
 mod input_options;
 mod key_bindings;
-mod sender;
 mod standard_event;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod thread;
 
-pub use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
+pub use crossterm::event::{Event as RawEvent, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 
 pub use self::{
 	custom_event::CustomEvent,
@@ -105,7 +103,6 @@ pub use self::{
 	event_handler::EventHandler,
 	input_options::InputOptions,
 	key_bindings::{map_keybindings, KeyBindings},
-	sender::Sender,
 	standard_event::StandardEvent,
-	thread::spawn_event_thread,
+	thread::{State, Thread, THREAD_NAME},
 };
