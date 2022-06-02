@@ -1,5 +1,8 @@
 use config::Theme;
-use display::testutil::{assert_output, CrossTerm};
+use display::{
+	testutil::{assert_output, CrossTerm},
+	Size,
+};
 
 use super::*;
 
