@@ -1,0 +1,25 @@
+[package]
+name = "girt-runtime"
+version = "0.1.0"
+authors = ["Tim Oram <dev@mitmaro.ca>"]
+license = "GPL-3.0-or-later"
+description = "Core modules for git-interactive-rebase-tool"
+homepage = "https://gitrebasetool.mitmaro.ca/"
+repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
+edition = "2021"
+keywords = ["git", "cli"]
+categories = ["command-line-interface", "command-line-utilities", "text-editors"]
+readme = "../../README.md"
+
+[lib]
+name = "runtime"
+
+[dependencies]
+anyhow = "1.0.53"
+crossbeam-channel = "0.5.2"
+parking_lot = "0.12.0"
+
+[dev-dependencies]
+
+[build-dependencies]
+rustc_version = "0.4.0"

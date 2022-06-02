@@ -30,6 +30,7 @@ members = [
     "src/display",
     "src/git",
     "src/input",
+    "src/runtime",
     "src/todo_file",
     "src/view",
 ]
