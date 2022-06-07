@@ -86,7 +86,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 
 				let render_slice = state.render_slice();
 				let update_receiver = state.update_receiver();
-				let mut last_render_time = Instant::now() + MINIMUM_TICK_RATE;
+				let mut last_render_time = Instant::now();
 				let mut should_render = true;
 
 				for msg in update_receiver {
@@ -351,12 +351,8 @@ mod tests {
 
 		with_view(TestCrossTerm {}, |view| {
 			let thread = Thread::new(view);
-			let state = thread.state();
-			let view_data = ViewData::new(|_| {});
-
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
-			let _ = state.render(&view_data);
 			tester.wait_for_status(&Status::Error(anyhow!("Error")));
 		});
 	}
