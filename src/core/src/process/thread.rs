@@ -43,8 +43,9 @@ impl<ModuleProvider: module::ModuleProvider + Send + 'static> Threadable for Thr
 
 				if !process.is_exit_status_kill() {
 					if let Err(err) = process.write_todo_file() {
-						notifier.error(err);
 						process.handle_results(Results::from(ExitStatus::FileWriteError));
+						notifier.error(err);
+						return;
 					}
 				}
 
