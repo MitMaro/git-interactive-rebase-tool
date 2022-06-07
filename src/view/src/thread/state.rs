@@ -6,15 +6,10 @@ use std::{
 	},
 };
 
-use anyhow::{anyhow, Error, Result};
-use crossbeam_channel::{unbounded, SendError};
+use crossbeam_channel::unbounded;
 use parking_lot::Mutex;
 
 use crate::{RenderSlice, ViewAction, ViewData};
-
-fn map_send_err(_: SendError<ViewAction>) -> Error {
-	anyhow!("Unable to send data")
-}
 
 /// Represents a message sender and receiver for passing actions between threads.
 #[derive(Clone, Debug)]
@@ -42,6 +37,10 @@ impl State {
 		}
 	}
 
+	fn send_update(&self, action: ViewAction) {
+		self.update_sender.send(action).expect("Sender unable to send message");
+	}
+
 	pub(crate) fn update_receiver(&self) -> crossbeam_channel::Receiver<ViewAction> {
 		self.update_receiver.clone()
 	}
@@ -66,9 +65,9 @@ impl State {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn start(&self) -> Result<()> {
+	pub fn start(&self) {
 		self.paused.store(false, Ordering::Release);
-		self.update_sender.send(ViewAction::Start).map_err(map_send_err)
+		self.send_update(ViewAction::Start);
 	}
 
 	/// Pause the event read thread.
@@ -76,9 +75,9 @@ impl State {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn stop(&self) -> Result<()> {
+	pub fn stop(&self) {
 		self.paused.store(true, Ordering::Release);
-		self.update_sender.send(ViewAction::Stop).map_err(map_send_err)
+		self.send_update(ViewAction::Stop);
 	}
 
 	/// Queue an end action.
@@ -86,10 +85,10 @@ impl State {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn end(&self) -> Result<()> {
+	pub fn end(&self) {
 		self.ended.store(true, Ordering::Release);
-		self.stop()?;
-		self.update_sender.send(ViewAction::End).map_err(map_send_err)
+		self.stop();
+		self.send_update(ViewAction::End);
 	}
 
 	/// Queue a refresh action.
@@ -97,8 +96,8 @@ impl State {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn refresh(&self) -> Result<()> {
-		self.update_sender.send(ViewAction::Refresh).map_err(map_send_err)
+	pub fn refresh(&self) {
+		self.send_update(ViewAction::Refresh);
 	}
 
 	/// Queue a scroll up action.
@@ -163,9 +162,9 @@ impl State {
 	/// # Errors
 	/// Results in an error if the sender has been closed.
 	#[inline]
-	pub fn render(&self, view_data: &ViewData) -> Result<()> {
+	pub fn render(&self, view_data: &ViewData) {
 		self.render_slice.lock().borrow_mut().sync_view_data(view_data);
-		self.update_sender.send(ViewAction::Render).map_err(map_send_err)
+		self.send_update(ViewAction::Render);
 	}
 }
 
@@ -180,7 +179,7 @@ mod tests {
 	#[test]
 	fn start() {
 		with_view_state(|context| {
-			context.state.start().unwrap();
+			context.state.start();
 			context.assert_sent_messages(vec!["Start"]);
 			assert!(!context.state.is_paused());
 		});
@@ -189,7 +188,7 @@ mod tests {
 	#[test]
 	fn stop() {
 		with_view_state(|context| {
-			context.state.stop().unwrap();
+			context.state.stop();
 			context.assert_sent_messages(vec!["Stop"]);
 			assert!(context.state.is_paused());
 		});
@@ -198,7 +197,7 @@ mod tests {
 	#[test]
 	fn end() {
 		with_view_state(|context| {
-			context.state.end().unwrap();
+			context.state.end();
 			context.assert_sent_messages(vec!["Stop", "End"]);
 		});
 	}
@@ -206,7 +205,7 @@ mod tests {
 	#[test]
 	fn refresh() {
 		with_view_state(|context| {
-			context.state.refresh().unwrap();
+			context.state.refresh();
 			context.assert_sent_messages(vec!["Refresh"]);
 		});
 	}
@@ -289,8 +288,7 @@ mod tests {
 			context.state.resize(300, 100);
 			context
 				.state
-				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))))
-				.unwrap();
+				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))));
 			assert_eq!(
 				render_view_line(context.state.render_slice().lock().get_lines().first().unwrap()),
 				"{Normal}Foo"

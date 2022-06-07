@@ -132,7 +132,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		let mut module_handler = self.module_handler.lock();
 		let view_data = module_handler.build_view_data(self.state(), &render_context, &rebase_todo);
 		// TODO It is not possible for this to fail. view::State should be updated to not return an error
-		self.view_state.render(view_data).expect("Render failed");
+		self.view_state.render(view_data);
 	}
 
 	pub(crate) fn write_todo_file(&self) -> Result<()> {
@@ -233,7 +233,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 	}
 
 	fn run_command(&self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
-		self.view_state.stop()?;
+		self.view_state.stop();
 		self.input_state.pause();
 
 		self.thread_statuses
@@ -267,7 +267,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 			});
 
 		self.input_state.resume();
-		self.view_state.start()?;
+		self.view_state.start();
 		result
 	}
 

@@ -42,17 +42,20 @@ impl<ViewTui: Tui + Send + 'static> Threadable for Thread<ViewTui> {
 
 	#[inline]
 	fn pause(&self) -> Result<()> {
-		self.state.stop()
+		self.state.stop();
+		Ok(())
 	}
 
 	#[inline]
 	fn resume(&self) -> Result<()> {
-		self.state.start()
+		self.state.start();
+		Ok(())
 	}
 
 	#[inline]
 	fn end(&self) -> Result<()> {
-		self.state.end()
+		self.state.end();
+		Ok(())
 	}
 }
 
@@ -81,7 +84,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 			move || {
 				capture!(notifier, state);
 				notifier.busy();
-				state.start().expect("Unexpected start failure");
+				state.start();
 				notifier.wait();
 
 				let render_slice = state.render_slice();
@@ -138,8 +141,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 				let mut time = Instant::now();
 				while !state.is_ended() {
 					notifier.busy();
-					// an error here is okay, since the main thread will also error and end this thread
-					let _result = state.refresh();
+					state.refresh();
 					notifier.wait();
 					loop {
 						sleep(time.saturating_duration_since(Instant::now()));
