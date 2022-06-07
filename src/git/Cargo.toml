@@ -28,7 +28,7 @@ features = []
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-rstest = "0.11.0"
+rstest = "0.13.0"
 serial_test = "0.7.0"
 
 [build-dependencies]
