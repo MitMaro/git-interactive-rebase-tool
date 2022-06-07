@@ -19,7 +19,7 @@ anyhow = "1.0.57"
 captur = "0.1.0"
 lazy_static = "1.4.0"
 num-format = "0.4.0"
-parking_lot = "0.12.0"
+parking_lot = "0.12.1"
 pico-args = "0.4.2"
 unicode-segmentation = "1.9.0"
 girt-config = {version = "2.2.0", path = "../../src/config"}
