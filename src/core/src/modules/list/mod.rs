@@ -24,7 +24,7 @@ use crate::{
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
 const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO.union(InputOptions::RESIZE);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 enum ListState {
 	Normal,
 	Visual,

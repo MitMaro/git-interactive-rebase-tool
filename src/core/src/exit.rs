@@ -1,6 +1,6 @@
 use crate::module::ExitStatus;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Exit {
 	message: Option<String>,
 	status: ExitStatus,

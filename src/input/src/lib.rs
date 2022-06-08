@@ -71,6 +71,7 @@
 	rustdoc::private_doc_tests,
 	rustdoc::private_intra_doc_links
 )]
+#![cfg_attr(include_nightly_lints, allow(clippy::pub_use))]
 // LINT-REPLACE-END
 
 //! Git Interactive Rebase Tool - Input Module

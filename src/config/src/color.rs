@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error};
 
 /// Represents a color.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Color {
 	/// The default teminal color.

@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error};
 
 /// Describes an rebase action.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Action {
 	/// A break action.

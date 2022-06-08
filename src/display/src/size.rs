@@ -1,5 +1,5 @@
 /// Represents a terminal window size.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Size {
 	width: usize,
 	height: usize,

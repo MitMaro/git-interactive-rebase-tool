@@ -3,7 +3,7 @@ use chrono::{DateTime, Local, TimeZone};
 use crate::{reference::Reference, user::User};
 
 /// Represents a commit.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Commit {
 	pub(crate) hash: String,
 	pub(crate) reference: Option<Reference>,
