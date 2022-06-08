@@ -1,7 +1,7 @@
 use crate::Origin;
 
 /// Represents a single line in a diff
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiffLine {
 	end_of_file: bool,
 	line: String,

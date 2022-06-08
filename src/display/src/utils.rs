@@ -153,7 +153,7 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 		Color::Rgb { red, green, blue } if color_mode.has_minimum_four_bit_color() => {
 			// If red, green and blue are equal then we assume a grey scale color
 			// shades less than 8 should go to pure black, while shades greater than 247 should go to pure white
-			if red == green && green == blue && red >= 8 && red < 247 {
+			if red == green && green == blue && (8..247).contains(&red) {
 				// The grayscale palette says the colors 232 + n are: (red = green = blue) = 8 + 10 * n
 				// With 0 <= n <= 23. This gives: (red - 8) / 10 = n
 				CrosstermColor::AnsiValue(232 + (red - 8) / 10)

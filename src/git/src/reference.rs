@@ -1,7 +1,7 @@
 use crate::reference_kind::ReferenceKind;
 
 /// Represents a pointer to an object in Git.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Reference {
 	/// The object id
 	pub(crate) hash: String,

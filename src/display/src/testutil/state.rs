@@ -1,5 +1,5 @@
 /// The state of the `CrossTerm` instance.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum State {
 	/// The TUI is new and unchanged.

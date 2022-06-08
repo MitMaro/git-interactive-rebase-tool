@@ -4,7 +4,7 @@ use super::{delta::Delta, status::Status};
 use crate::file_mode::FileMode;
 
 /// Represents a file change within a Git repository
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FileStatus {
 	pub(crate) deltas: Vec<Delta>,
 	pub(crate) destination_is_binary: bool,

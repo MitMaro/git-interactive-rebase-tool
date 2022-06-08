@@ -71,6 +71,7 @@
 	rustdoc::private_doc_tests,
 	rustdoc::private_intra_doc_links
 )]
+#![cfg_attr(include_nightly_lints, allow(clippy::pub_use))]
 // LINT-REPLACE-END
 
 //! Git Interactive Rebase Tool - Configuration Module
@@ -447,7 +448,6 @@ mod tests {
 		"\"interactive-rebase-tool.undoLimit\" is not valid: \"-100\" is outside of valid range for an unsigned \
 		 32-bit integer"
 	)]
-
 	fn value_parsing_invalid(#[case] config_name: &str, #[case] config_value: &str, #[case] expected_error: &str) {
 		with_git_config(
 			&[

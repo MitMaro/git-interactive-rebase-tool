@@ -1,5 +1,5 @@
 /// Configuration option for how to ignore whitespace during diff calculation.
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum DiffIgnoreWhitespaceSetting {
 	/// Do not ignore whitespace when calculating diffs.

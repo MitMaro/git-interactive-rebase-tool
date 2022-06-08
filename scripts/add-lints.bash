@@ -90,7 +90,8 @@ content="\
 	rustdoc::missing_crate_level_docs,
 	rustdoc::private_doc_tests,
 	rustdoc::private_intra_doc_links
-)]\
+)]
+#![cfg_attr(include_nightly_lints, allow(clippy::pub_use))]\
 "
 content="${content//$'\n'/\\n}"
 

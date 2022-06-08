@@ -1,6 +1,6 @@
 use crate::{history::operation::Operation, Line};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) struct HistoryItem {
 	pub(crate) start_index: usize,
 	pub(crate) end_index: usize,

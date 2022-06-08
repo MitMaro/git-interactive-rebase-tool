@@ -3,7 +3,7 @@ use anyhow::{anyhow, Result};
 use super::action::Action;
 
 /// Represents a line in the rebase file.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Line {
 	action: Action,
 	content: String,

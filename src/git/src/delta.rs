@@ -1,7 +1,7 @@
 use crate::DiffLine;
 
 /// Represents a single set of changes
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Delta {
 	old_lines_start: u32,
 	old_number_lines: u32,

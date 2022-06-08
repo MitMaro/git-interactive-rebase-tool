@@ -1,7 +1,7 @@
 use super::color_mode::ColorMode::{EightBit, FourBit, TrueColor};
 
 /// Represents the color mode of a terminal interface.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum ColorMode {
 	/// Supports 2 colors.
