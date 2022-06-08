@@ -217,6 +217,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "claim"
+version = "0.5.0"
+source = "git+https://github.com/Turbo87/rust-claim.git?rev=23892a3#23892a345d38e1434303143a73033925284ad04d"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -530,6 +538,7 @@ name = "girt-todo-file"
 version = "2.2.0"
 dependencies = [
  "anyhow",
+ "claim",
  "rstest",
  "rustc_version",
  "tempfile",

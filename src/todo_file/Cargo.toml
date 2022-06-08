@@ -18,6 +18,7 @@ name = "todo_file"
 anyhow = "1.0"
 
 [dev-dependencies]
+claim = { git = "https://github.com/Turbo87/rust-claim.git", rev = "23892a3" }
 rstest = "0.13.0"
 tempfile = "3.3.0"
 
