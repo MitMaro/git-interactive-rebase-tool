@@ -237,7 +237,7 @@ pub(super) fn get_todo_line_segments(
 	));
 
 	let action_name = if is_full_width {
-		format!("{:6} ", action.as_string())
+		format!("{:6} ", action.to_string())
 	}
 	else {
 		format!("{:1} ", action.to_abbreviation())

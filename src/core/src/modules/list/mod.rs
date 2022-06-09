@@ -315,8 +315,7 @@ impl List {
 			if selected_line.is_editable() {
 				self.state = ListState::Edit;
 				self.edit.set_content(selected_line.get_content());
-				self.edit
-					.set_label(format!("{} ", selected_line.get_action().as_string()).as_str());
+				self.edit.set_label(format!("{} ", selected_line.get_action()).as_str());
 			}
 		}
 	}

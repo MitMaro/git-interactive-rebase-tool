@@ -215,12 +215,12 @@ impl Line {
 	pub fn to_text(&self) -> String {
 		match self.action {
 			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
-				format!("{} {} {}", self.action.as_string(), self.hash, self.content)
+				format!("{} {} {}", self.action, self.hash, self.content)
 			},
 			Action::Exec | Action::Label | Action::Reset | Action::Merge => {
-				format!("{} {}", self.action.as_string(), self.content)
+				format!("{} {}", self.action, self.content)
 			},
-			Action::Noop | Action::Break => self.action.as_string(),
+			Action::Noop | Action::Break => self.action.to_string(),
 		}
 	}
 }
@@ -399,7 +399,7 @@ mod tests {
 	#[case::reword(Action::Reword, Action::Fixup)]
 	#[case::squash(Action::Squash, Action::Fixup)]
 	fn set_action_non_static(#[case] from: Action, #[case] to: Action) {
-		let mut line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
+		let mut line = Line::new(format!("{} aaa bbb", from).as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, to);
 		assert!(line.mutated);
@@ -413,7 +413,7 @@ mod tests {
 	#[case::exec(Action::Exec, Action::Fixup)]
 	#[case::noop(Action::Noop, Action::Fixup)]
 	fn set_action_static(#[case] from: Action, #[case] to: Action) {
-		let mut line = Line::new(format!("{} comment", from.as_string()).as_str()).unwrap();
+		let mut line = Line::new(format!("{} comment", from).as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, from);
 		assert!(!line.mutated);
@@ -522,7 +522,7 @@ mod tests {
 	#[case::squash(Action::Reset, true)]
 	#[case::squash(Action::Merge, true)]
 	fn is_editable(#[case] from: Action, #[case] editable: bool) {
-		let line = Line::new(format!("{} aaa bbb", from.as_string()).as_str()).unwrap();
+		let line = Line::new(format!("{} aaa bbb", from).as_str()).unwrap();
 		assert_eq!(line.is_editable(), editable);
 	}
 
