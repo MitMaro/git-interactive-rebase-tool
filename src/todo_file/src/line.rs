@@ -1,6 +1,4 @@
-use anyhow::{anyhow, Result};
-
-use super::action::Action;
+use crate::{errors::ParseError, Action};
 
 /// Represents a line in the rebase file.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -101,7 +99,7 @@ impl Line {
 	///
 	/// Returns an error if an invalid line is provided.
 	#[inline]
-	pub fn new(input_line: &str) -> Result<Self> {
+	pub fn new(input_line: &str) -> Result<Self, ParseError> {
 		if input_line.starts_with("noop") {
 			return Ok(Self::new_noop());
 		}
@@ -144,7 +142,7 @@ impl Line {
 			}
 		}
 
-		Err(anyhow!("Invalid line: {}", input_line))
+		Err(ParseError::InvalidLine(String::from(input_line)))
 	}
 
 	/// Set the action of the line.
@@ -227,6 +225,7 @@ impl Line {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_ok_eq;
 	use rstest::rstest;
 
 	use super::*;
@@ -311,7 +310,7 @@ mod tests {
 		mutated: false,
 	})]
 	fn new(#[case] line: &str, #[case] expected: &Line) {
-		assert_eq!(&Line::new(line).unwrap(), expected);
+		assert_ok_eq!(&Line::new(line), expected);
 	}
 
 	#[test]
@@ -374,21 +373,31 @@ mod tests {
 		});
 	}
 
+	#[test]
+	fn new_err_invalid_action() {
+		assert_eq!(
+			Line::new("invalid aaa comment").unwrap_err(),
+			ParseError::InvalidAction(String::from("invalid"))
+		);
+	}
+
 	#[rstest]
-	#[case::invalid_action("invalid aaa comment", "Invalid action: invalid")]
-	#[case::invalid_line_only("invalid", "Invalid line: invalid")]
-	#[case::pick_line_only("pick", "Invalid line: pick")]
-	#[case::reword_line_only("reword", "Invalid line: reword")]
-	#[case::edit_line_only("edit", "Invalid line: edit")]
-	#[case::squash_line_only("squash", "Invalid line: squash")]
-	#[case::fixup_line_only("fixup", "Invalid line: fixup")]
-	#[case::exec_line_only("exec", "Invalid line: exec")]
-	#[case::drop_line_only("drop", "Invalid line: drop")]
-	#[case::label_line_only("label", "Invalid line: label")]
-	#[case::reset_line_only("reset", "Invalid line: reset")]
-	#[case::merge_line_only("merge", "Invalid line: merge")]
-	fn new_err(#[case] line: &str, #[case] expected_err: &str) {
-		assert_eq!(Line::new(line).unwrap_err().to_string(), expected_err);
+	#[case::invalid_line_only("invalid")]
+	#[case::pick_line_only("pick")]
+	#[case::reword_line_only("reword")]
+	#[case::edit_line_only("edit")]
+	#[case::squash_line_only("squash")]
+	#[case::fixup_line_only("fixup")]
+	#[case::exec_line_only("exec")]
+	#[case::drop_line_only("drop")]
+	#[case::label_line_only("label")]
+	#[case::reset_line_only("reset")]
+	#[case::merge_line_only("merge")]
+	fn new_err(#[case] line: &str) {
+		assert_eq!(
+			Line::new(line).unwrap_err(),
+			ParseError::InvalidLine(String::from(line))
+		);
 	}
 
 	#[rstest]

@@ -136,7 +136,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 	}
 
 	pub(crate) fn write_todo_file(&self) -> Result<()> {
-		self.rebase_todo.lock().write_file()
+		self.rebase_todo.lock().write_file().map_err(Error::from)
 	}
 
 	fn deactivate(&self, state: State) -> Results {

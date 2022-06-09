@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use anyhow::{anyhow, Error};
+use crate::errors::ParseError;
 
 /// Describes an rebase action.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -85,7 +85,7 @@ impl Display for Action {
 }
 
 impl TryFrom<&str> for Action {
-	type Error = Error;
+	type Error = ParseError;
 
 	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
@@ -102,7 +102,7 @@ impl TryFrom<&str> for Action {
 			"label" | "l" => Ok(Self::Label),
 			"reset" | "t" => Ok(Self::Reset),
 			"merge" | "m" => Ok(Self::Merge),
-			_ => Err(anyhow!("Invalid action: {}", s)),
+			_ => Err(ParseError::InvalidAction(String::from(s))),
 		}
 	}
 }
@@ -162,9 +162,10 @@ mod tests {
 
 	#[test]
 	fn action_try_from_invalid() {
+		let invalid = String::from("invalid");
 		assert_eq!(
-			Action::try_from("invalid").unwrap_err().to_string(),
-			"Invalid action: invalid"
+			Action::try_from(invalid.as_str()).unwrap_err(),
+			ParseError::InvalidAction(invalid)
 		);
 	}
 
