@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 use anyhow::{anyhow, Error};
 
 /// Describes an rebase action.
@@ -31,26 +33,6 @@ pub enum Action {
 }
 
 impl Action {
-	/// Get the full string version of the action.
-	#[must_use]
-	#[inline]
-	pub fn as_string(self) -> String {
-		String::from(match self {
-			Self::Break => "break",
-			Self::Drop => "drop",
-			Self::Edit => "edit",
-			Self::Exec => "exec",
-			Self::Fixup => "fixup",
-			Self::Label => "label",
-			Self::Merge => "merge",
-			Self::Noop => "noop",
-			Self::Pick => "pick",
-			Self::Reset => "reset",
-			Self::Reword => "reword",
-			Self::Squash => "squash",
-		})
-	}
-
 	/// Get the abbreviated version of the action.
 	#[must_use]
 	#[inline]
@@ -82,6 +64,26 @@ impl Action {
 	}
 }
 
+impl Display for Action {
+	#[inline]
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", match *self {
+			Self::Break => "break",
+			Self::Drop => "drop",
+			Self::Edit => "edit",
+			Self::Exec => "exec",
+			Self::Fixup => "fixup",
+			Self::Label => "label",
+			Self::Merge => "merge",
+			Self::Noop => "noop",
+			Self::Pick => "pick",
+			Self::Reset => "reset",
+			Self::Reword => "reword",
+			Self::Squash => "squash",
+		})
+	}
+}
+
 impl TryFrom<&str> for Action {
 	type Error = Error;
 
@@ -107,6 +109,7 @@ impl TryFrom<&str> for Action {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_ok_eq;
 	use rstest::rstest;
 
 	use super::*;
@@ -125,7 +128,7 @@ mod tests {
 	#[case::reset(Action::Reset, "reset")]
 	#[case::merge(Action::Merge, "merge")]
 	fn to_string(#[case] action: Action, #[case] expected: &str) {
-		assert_eq!(action.as_string(), expected);
+		assert_eq!(format!("{}", action), expected);
 	}
 
 	#[rstest]
@@ -154,7 +157,7 @@ mod tests {
 	#[case::m("m", Action::Merge)]
 	#[case::merge("merge", Action::Merge)]
 	fn try_from(#[case] action_str: &str, #[case] expected: Action) {
-		assert_eq!(Action::try_from(action_str).unwrap(), expected);
+		assert_ok_eq!(Action::try_from(action_str), expected);
 	}
 
 	#[test]
