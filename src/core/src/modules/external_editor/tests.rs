@@ -75,10 +75,7 @@ fn activate_write_file_fail() {
 		test_context.set_todo_file_readonly();
 		assert_results!(
 			test_context.activate(&mut module, State::List),
-			Artifact::Error(
-				anyhow!("Error opening file: {}: Permission denied (os error 13)", todo_path),
-				Some(State::List)
-			)
+			Artifact::Error(anyhow!("Unable to read file `{}`", todo_path), Some(State::List))
 		);
 	});
 }
@@ -307,17 +304,14 @@ fn editor_reload_error() {
 			);
 			assert_external_editor_state_eq!(
 				module.state,
-				ExternalEditorState::Error(
-					anyhow!("Error reading file: {}", todo_path).context("No such file or directory (os error 2)")
-				)
+				ExternalEditorState::Error(anyhow!("Unable to read file `{}`", todo_path))
 			);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal}No such file or directory (os error 2)",
-				format!("{{Normal}}Error reading file: {}", todo_path),
+				format!("{{Normal}}Unable to read file `{}`", todo_path),
 				"",
 				"{BODY}",
 				"{Normal}1) Abort rebase",

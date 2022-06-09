@@ -37,7 +37,7 @@ impl Module for ExternalEditor {
 	fn activate(&mut self, todo_file: &TodoFile, _: State) -> Results {
 		let mut results = Results::new();
 		if let Err(err) = todo_file.write_file() {
-			results.error_with_return(err, State::List);
+			results.error_with_return(err.into(), State::List);
 			return results;
 		}
 
@@ -102,7 +102,7 @@ impl Module for ExternalEditor {
 									results.state(State::List);
 								}
 							},
-							Err(e) => self.set_state(&mut results, ExternalEditorState::Error(e)),
+							Err(e) => self.set_state(&mut results, ExternalEditorState::Error(e.into())),
 						}
 					},
 					Event::MetaEvent(MetaEvent::ExternalCommandError) => {
@@ -141,7 +141,7 @@ impl Module for ExternalEditor {
 							todo_file.set_lines(self.lines.clone());
 							results.state(State::List);
 							if let Err(err) = todo_file.write_file() {
-								results.error(err);
+								results.error(err.into());
 							}
 						},
 						Action::UndoAndEdit => {
@@ -212,7 +212,7 @@ impl ExternalEditor {
 	fn undo_and_edit(&mut self, results: &mut Results, todo_file: &mut TodoFile) {
 		todo_file.set_lines(self.lines.clone());
 		if let Err(err) = todo_file.write_file() {
-			results.error_with_return(err, State::List);
+			results.error_with_return(err.into(), State::List);
 			return;
 		}
 		self.set_state(results, ExternalEditorState::Active);

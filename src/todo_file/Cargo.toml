@@ -15,7 +15,7 @@ readme = "README.md"
 name = "todo_file"
 
 [dependencies]
-anyhow = "1.0"
+thiserror = "1.0.31"
 
 [dev-dependencies]
 claim = { git = "https://github.com/Turbo87/rust-claim.git", rev = "23892a3" }

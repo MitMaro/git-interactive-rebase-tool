@@ -82,6 +82,7 @@
 
 mod action;
 mod edit_content;
+pub mod errors;
 mod history;
 mod line;
 mod utils;
@@ -93,13 +94,14 @@ use std::{
 	slice::Iter,
 };
 
-use anyhow::{anyhow, Result};
-
+// /// A specialized `Result` type for todo file  operations.
+// pub type Result<T, E = TodoFileError> = anyhow::Result<T, E>;
 pub use self::{action::Action, edit_content::EditContext, line::Line};
 use self::{
 	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},
 };
+use crate::errors::{FileReadErrorCause, IoError};
 
 /// Represents a rebase file.
 #[derive(Debug)]
@@ -149,23 +151,30 @@ impl TodoFile {
 	///
 	/// Returns error if the file cannot be read.
 	#[inline]
-	pub fn load_file(&mut self) -> Result<()> {
-		let lines =
-			read_to_string(self.filepath.as_path())
-				.map_err(|err| anyhow!("Error reading file: {}", self.filepath.to_string_lossy()).context(err))?
-				.lines()
-				.filter_map(|l| {
-					if l.starts_with(self.comment_char.as_str()) || l.is_empty() {
-						None
-					}
-					else {
-						Some(Line::new(l).map_err(|err| {
-							anyhow!("Error reading file: {}", self.filepath.to_string_lossy()).context(err)
-						}))
-					}
-				})
-				.collect::<Result<Vec<Line>>>()?;
-		self.set_lines(lines);
+	pub fn load_file(&mut self) -> Result<(), IoError> {
+		let lines: Result<Vec<Line>, IoError> = read_to_string(self.filepath.as_path())
+			.map_err(|err| {
+				IoError::FileRead {
+					file: self.filepath.clone(),
+					cause: FileReadErrorCause::from(err),
+				}
+			})?
+			.lines()
+			.filter_map(|l| {
+				if l.starts_with(self.comment_char.as_str()) || l.is_empty() {
+					None
+				}
+				else {
+					Some(Line::new(l).map_err(|err| {
+						IoError::FileRead {
+							file: self.filepath.clone(),
+							cause: FileReadErrorCause::from(err),
+						}
+					}))
+				}
+			})
+			.collect();
+		self.set_lines(lines?);
 		Ok(())
 	}
 
@@ -174,17 +183,25 @@ impl TodoFile {
 	///
 	/// Returns error if the file cannot be written.
 	#[inline]
-	pub fn write_file(&self) -> Result<()> {
-		let mut file = File::create(&self.filepath)
-			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath.to_string_lossy())))?;
+	pub fn write_file(&self) -> Result<(), IoError> {
+		let mut file = File::create(&self.filepath).map_err(|err| {
+			IoError::FileRead {
+				file: self.filepath.clone(),
+				cause: FileReadErrorCause::from(err),
+			}
+		})?;
 		let file_contents = if self.is_noop {
 			String::from("noop")
 		}
 		else {
 			self.lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
 		};
-		writeln!(file, "{}", file_contents)
-			.map_err(|err| anyhow!(err).context(anyhow!("Error writing file: {}", self.filepath.to_string_lossy())))?;
+		writeln!(file, "{}", file_contents).map_err(|err| {
+			IoError::FileRead {
+				file: self.filepath.clone(),
+				cause: FileReadErrorCause::from(err),
+			}
+		})?;
 		Ok(())
 	}
 
