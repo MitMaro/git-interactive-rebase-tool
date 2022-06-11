@@ -49,7 +49,7 @@ fn activate() {
 		assert_results!(
 			test_context.activate(&mut module, State::List),
 			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context.rebase_todo_file.get_filepath()
+				test_context.rebase_todo_file.get_filepath().to_string_lossy()
 			)]))
 		);
 		assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
@@ -61,7 +61,7 @@ fn activate() {
 		assert_eq!(
 			module.external_command,
 			(String::from("editor"), vec![String::from(
-				test_context.rebase_todo_file.get_filepath()
+				test_context.rebase_todo_file.get_filepath().to_string_lossy()
 			)])
 		);
 	});
@@ -91,7 +91,7 @@ fn activate_file_placement_marker() {
 			test_context.activate(&mut module, State::List),
 			Artifact::ExternalCommand((String::from("editor"), vec![
 				String::from("a"),
-				String::from(test_context.rebase_todo_file.get_filepath()),
+				String::from(test_context.rebase_todo_file.get_filepath().to_string_lossy()),
 				String::from("b")
 			]))
 		);
@@ -185,7 +185,7 @@ fn empty_edit_re_edit_rebase_file() {
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('2')),
 			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context.rebase_todo_file.get_filepath()
+				test_context.rebase_todo_file.get_filepath().to_string_lossy()
 			)]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
@@ -205,7 +205,7 @@ fn empty_edit_undo_and_edit() {
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from('3')),
 				Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-					test_context.rebase_todo_file.get_filepath()
+					test_context.rebase_todo_file.get_filepath().to_string_lossy()
 				)]))
 			);
 			assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
@@ -356,7 +356,7 @@ fn error_edit_rebase() {
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('2')),
 			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context.rebase_todo_file.get_filepath()
+				test_context.rebase_todo_file.get_filepath().to_string_lossy()
 			)]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
@@ -391,7 +391,7 @@ fn error_undo_modifications_and_reedit() {
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('4')),
 			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context.rebase_todo_file.get_filepath()
+				test_context.rebase_todo_file.get_filepath().to_string_lossy()
 			)]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);

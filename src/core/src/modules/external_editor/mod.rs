@@ -230,7 +230,12 @@ impl ExternalEditor {
 			})
 			.map_err(|e| anyhow!("Please see the git \"core.editor\" configuration for details").context(e))?;
 
-		let filepath = todo_file.get_filepath();
+		let filepath = todo_file.get_filepath().to_str().ok_or_else(|| {
+			anyhow!(
+				"The file path {} is invalid",
+				todo_file.get_filepath().to_string_lossy()
+			)
+		})?;
 		let mut file_pattern_found = false;
 		let command = parameters.next().unwrap_or_else(|| String::from("false"));
 		let mut arguments = parameters
