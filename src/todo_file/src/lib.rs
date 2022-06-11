@@ -89,7 +89,7 @@ mod utils;
 use std::{
 	fs::{read_to_string, File},
 	io::Write,
-	path::Path,
+	path::{Path, PathBuf},
 	slice::Iter,
 };
 
@@ -105,7 +105,7 @@ use self::{
 #[derive(Debug)]
 pub struct TodoFile {
 	comment_char: String,
-	filepath: String,
+	filepath: PathBuf,
 	history: History,
 	is_noop: bool,
 	lines: Vec<Line>,
@@ -116,10 +116,10 @@ impl TodoFile {
 	/// Create a new instance.
 	#[must_use]
 	#[inline]
-	pub fn new(path: &str, undo_limit: u32, comment_char: &str) -> Self {
+	pub fn new<Path: AsRef<std::path::Path>>(path: Path, undo_limit: u32, comment_char: &str) -> Self {
 		Self {
 			comment_char: String::from(comment_char),
-			filepath: path.to_owned(),
+			filepath: PathBuf::from(path.as_ref()),
 			history: History::new(undo_limit),
 			lines: vec![],
 			is_noop: false,
@@ -150,18 +150,21 @@ impl TodoFile {
 	/// Returns error if the file cannot be read.
 	#[inline]
 	pub fn load_file(&mut self) -> Result<()> {
-		let lines = read_to_string(Path::new(&self.filepath))
-			.map_err(|err| anyhow!("Error reading file: {}", self.filepath).context(err))?
-			.lines()
-			.filter_map(|l| {
-				if l.starts_with(self.comment_char.as_str()) || l.is_empty() {
-					None
-				}
-				else {
-					Some(Line::new(l).map_err(|err| anyhow!("Error reading file: {}", self.filepath).context(err)))
-				}
-			})
-			.collect::<Result<Vec<Line>>>()?;
+		let lines =
+			read_to_string(self.filepath.as_path())
+				.map_err(|err| anyhow!("Error reading file: {}", self.filepath.to_string_lossy()).context(err))?
+				.lines()
+				.filter_map(|l| {
+					if l.starts_with(self.comment_char.as_str()) || l.is_empty() {
+						None
+					}
+					else {
+						Some(Line::new(l).map_err(|err| {
+							anyhow!("Error reading file: {}", self.filepath.to_string_lossy()).context(err)
+						}))
+					}
+				})
+				.collect::<Result<Vec<Line>>>()?;
 		self.set_lines(lines);
 		Ok(())
 	}
@@ -173,7 +176,7 @@ impl TodoFile {
 	#[inline]
 	pub fn write_file(&self) -> Result<()> {
 		let mut file = File::create(&self.filepath)
-			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath)))?;
+			.map_err(|err| anyhow!(err).context(anyhow!("Error opening file: {}", self.filepath.to_string_lossy())))?;
 		let file_contents = if self.is_noop {
 			String::from("noop")
 		}
@@ -181,7 +184,7 @@ impl TodoFile {
 			self.lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
 		};
 		writeln!(file, "{}", file_contents)
-			.map_err(|err| anyhow!(err).context(anyhow!("Error writing file: {}", self.filepath)))?;
+			.map_err(|err| anyhow!(err).context(anyhow!("Error writing file: {}", self.filepath.to_string_lossy())))?;
 		Ok(())
 	}
 
@@ -343,8 +346,8 @@ impl TodoFile {
 	/// Get the file path to the rebase file.
 	#[must_use]
 	#[inline]
-	pub fn get_filepath(&self) -> &str {
-		self.filepath.as_str()
+	pub fn get_filepath(&self) -> &Path {
+		self.filepath.as_path()
 	}
 
 	/// Get a line by index.
@@ -821,7 +824,7 @@ mod tests {
 	#[test]
 	fn get_file_path() {
 		let (todo_file, filepath) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		assert_eq!(todo_file.get_filepath(), filepath.path().to_str().unwrap());
+		assert_eq!(todo_file.get_filepath(), filepath.path());
 	}
 
 	#[test]
