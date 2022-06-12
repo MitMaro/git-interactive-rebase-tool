@@ -31,6 +31,7 @@ members = [
     "src/git",
     "src/input",
     "src/runtime",
+    "src/testutils",
     "src/todo_file",
     "src/view",
 ]

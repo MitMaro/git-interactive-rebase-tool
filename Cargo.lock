@@ -534,6 +534,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "girt-testutils"
+version = "0.1.0"
+dependencies = [
+ "rustc_version",
+]
+
+[[package]]
 name = "girt-todo-file"
 version = "2.2.0"
 dependencies = [
