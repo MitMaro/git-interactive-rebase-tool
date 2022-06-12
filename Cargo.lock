@@ -497,6 +497,7 @@ version = "2.2.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "claim",
  "git2",
  "lazy_static",
  "parking_lot",

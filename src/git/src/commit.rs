@@ -61,15 +61,15 @@ impl Commit {
 	/// Get the commit message summary.
 	#[must_use]
 	#[inline]
-	pub const fn summary(&self) -> &Option<String> {
-		&self.summary
+	pub fn summary(&self) -> Option<&str> {
+		self.summary.as_deref()
 	}
 
 	/// Get the full commit message.
 	#[must_use]
 	#[inline]
-	pub const fn message(&self) -> &Option<String> {
-		&self.message
+	pub fn message(&self) -> Option<&str> {
+		self.message.as_deref()
 	}
 
 	fn new(commit: &git2::Commit<'_>, reference: Option<&git2::Reference<'_>>) -> Self {
@@ -119,6 +119,8 @@ impl From<&git2::Commit<'_>> for Commit {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_some_eq;
+
 	use super::*;
 	use crate::testutil::{
 		create_commit,
@@ -169,13 +171,13 @@ mod tests {
 	#[test]
 	fn summary() {
 		let commit = CommitBuilder::new("0123456789ABCDEF").summary("title").build();
-		assert_eq!(commit.summary().as_ref().unwrap(), "title");
+		assert_some_eq!(commit.summary(), "title");
 	}
 
 	#[test]
 	fn message() {
 		let commit = CommitBuilder::new("0123456789ABCDEF").message("title\n\nbody").build();
-		assert_eq!(commit.message().as_ref().unwrap(), "title\n\nbody");
+		assert_some_eq!(commit.message(), "title\n\nbody");
 	}
 
 	#[test]

@@ -19,15 +19,15 @@ impl User {
 	/// Get the optional name of the user
 	#[inline]
 	#[must_use]
-	pub const fn name(&self) -> &Option<String> {
-		&self.name
+	pub fn name(&self) -> Option<&str> {
+		self.name.as_deref()
 	}
 
 	/// Get the optional email of the user
 	#[inline]
 	#[must_use]
-	pub const fn email(&self) -> &Option<String> {
-		&self.email
+	pub fn email(&self) -> Option<&str> {
+		self.email.as_deref()
 	}
 
 	/// Returns `true` if one of name or email is a `Some` value.
@@ -71,6 +71,7 @@ impl ToString for User {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_some_eq;
 	use rstest::rstest;
 
 	use super::*;
@@ -78,13 +79,13 @@ mod tests {
 	#[test]
 	fn name() {
 		let user = User::new(Some("name"), None);
-		assert_eq!(user.name(), &Some(String::from("name")));
+		assert_some_eq!(user.name(), "name");
 	}
 
 	#[test]
 	fn email() {
 		let user = User::new(None, Some("email"));
-		assert_eq!(user.email(), &Some(String::from("email")));
+		assert_some_eq!(user.email(), "email");
 	}
 
 	#[rstest]
