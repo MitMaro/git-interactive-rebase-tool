@@ -404,6 +404,7 @@ impl TodoFile {
 mod tests {
 	use claim::{assert_none, assert_some_eq};
 	use tempfile::{Builder, NamedTempFile};
+	use testutils::{assert_empty, assert_not_empty};
 
 	use super::*;
 
@@ -452,7 +453,7 @@ mod tests {
 	#[test]
 	fn load_noop_file() {
 		let (todo_file, _) = create_and_load_todo_file(&["noop"]);
-		assert!(todo_file.is_empty());
+		assert_empty!(todo_file);
 		assert!(todo_file.is_noop());
 	}
 
@@ -856,12 +857,12 @@ mod tests {
 	#[test]
 	fn is_empty_true() {
 		let (todo_file, _) = create_and_load_todo_file(&[]);
-		assert!(todo_file.is_empty());
+		assert_empty!(todo_file);
 	}
 
 	#[test]
 	fn is_empty_false() {
 		let (todo_file, _) = create_and_load_todo_file(&["pick aaa comment"]);
-		assert!(!todo_file.is_empty());
+		assert_not_empty!(todo_file);
 	}
 }

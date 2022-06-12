@@ -22,6 +22,7 @@ claim = { git = "https://github.com/Turbo87/rust-claim.git", rev = "23892a3" }
 pretty_assertions = "1.2.1"
 rstest = "0.13.0"
 tempfile = "3.3.0"
+girt-testutils = {version = "0.1.0", path = "../testutils"}
 
 [build-dependencies]
 rustc_version = "0.4.0"

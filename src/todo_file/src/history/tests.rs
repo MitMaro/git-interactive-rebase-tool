@@ -1,4 +1,5 @@
 use claim::assert_some_eq;
+use testutils::assert_empty;
 
 use super::*;
 
@@ -54,8 +55,8 @@ macro_rules! assert_todo_lines {
 fn new() {
 	let history = History::new(100);
 	assert_eq!(history.limit, 100);
-	assert!(history.undo_history.is_empty());
-	assert!(history.redo_history.is_empty());
+	assert_empty!(history.undo_history);
+	assert_empty!(history.redo_history);
 }
 
 #[test]
@@ -64,7 +65,7 @@ fn record_history() {
 	history.redo_history.push_front(HistoryItem::new_add(1, 1));
 	history.record(HistoryItem::new_add(1, 1));
 	assert_history_items!(history.undo_history, HistoryItem::new_add(1, 1));
-	assert!(history.redo_history.is_empty());
+	assert_empty!(history.redo_history);
 }
 
 #[test]
@@ -80,7 +81,7 @@ fn record_history_overflow_limit() {
 		HistoryItem::new_add(3, 3),
 		HistoryItem::new_add(4, 4)
 	);
-	assert!(history.redo_history.is_empty());
+	assert_empty!(history.redo_history);
 }
 
 #[test]
@@ -879,6 +880,6 @@ fn reset() {
 	history.redo_history.push_front(HistoryItem::new_add(1, 1));
 	history.undo_history.push_front(HistoryItem::new_add(1, 1));
 	history.reset();
-	assert!(history.undo_history.is_empty());
-	assert!(history.redo_history.is_empty());
+	assert_empty!(history.undo_history);
+	assert_empty!(history.redo_history);
 }
