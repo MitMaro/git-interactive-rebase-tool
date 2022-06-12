@@ -94,8 +94,6 @@ use std::{
 	slice::Iter,
 };
 
-// /// A specialized `Result` type for todo file  operations.
-// pub type Result<T, E = TodoFileError> = anyhow::Result<T, E>;
 pub use self::{action::Action, edit_content::EditContext, line::Line};
 use self::{
 	history::{History, HistoryItem},
@@ -404,9 +402,14 @@ impl TodoFile {
 
 #[cfg(test)]
 mod tests {
+	use claim::{assert_none, assert_some_eq};
 	use tempfile::{Builder, NamedTempFile};
 
 	use super::*;
+
+	fn create_line(line: &str) -> Line {
+		Line::new(line).expect("Invalid line")
+	}
 
 	fn create_and_load_todo_file(file_contents: &[&str]) -> (TodoFile, NamedTempFile) {
 		let todo_file_path = Builder::new()
@@ -424,7 +427,7 @@ mod tests {
 		($todo_file_path:expr, $($arg:expr),*) => {
 			let expected = vec![$( $arg, )*];
 			let content = read_to_string(Path::new($todo_file_path)).unwrap();
-			assert_eq!(content, format!("{}\n", expected.join("\n")));
+			pretty_assertions::assert_str_eq!(content, format!("{}\n", expected.join("\n")));
 		};
 	}
 
@@ -432,10 +435,10 @@ mod tests {
 		($todo_file_path:expr, $($arg:expr),*) => {
 			let actual_lines = $todo_file_path.get_lines_owned();
 
-			let expected = vec![$( Line::new($arg).unwrap(), )*];
-			assert_eq!(
-				actual_lines.iter().map(Line::to_text).collect::<Vec<String>>().join(", "),
-				expected.iter().map(Line::to_text).collect::<Vec<String>>().join(", ")
+			let expected = vec![$( create_line($arg), )*];
+			pretty_assertions::assert_str_eq!(
+				actual_lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n"),
+				expected.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
 			);
 		};
 	}
@@ -468,7 +471,7 @@ mod tests {
 	#[test]
 	fn set_lines() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
-		todo_file.set_lines(vec![Line::new("pick bbb comment").unwrap()]);
+		todo_file.set_lines(vec![create_line("pick bbb comment")]);
 		assert_todo_lines!(todo_file, "pick bbb comment");
 	}
 
@@ -476,15 +479,15 @@ mod tests {
 	fn set_lines_reset_history() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
 		todo_file.history.record(HistoryItem::new_add(1, 1));
-		todo_file.set_lines(vec![Line::new("pick bbb comment").unwrap()]);
-		assert!(todo_file.undo().is_none());
+		todo_file.set_lines(vec![create_line("pick bbb comment")]);
+		assert_none!(todo_file.undo());
 	}
 
 	#[test]
 	fn set_lines_reset_selected_index() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["pick a a", "pick b b", "pick c c"]);
 		todo_file.selected_line_index = 2;
-		todo_file.set_lines(vec![Line::new("pick a a").unwrap(), Line::new("pick b b").unwrap()]);
+		todo_file.set_lines(vec![create_line("pick a a"), create_line("pick b b")]);
 		assert_eq!(todo_file.selected_line_index, 1);
 	}
 
@@ -499,7 +502,7 @@ mod tests {
 	#[test]
 	fn write_file() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
-		todo_file.set_lines(vec![Line::new("pick bbb comment").unwrap()]);
+		todo_file.set_lines(vec![create_line("pick bbb comment")]);
 		todo_file.write_file().unwrap();
 		assert_todo_lines!(todo_file, "pick bbb comment");
 	}
@@ -507,7 +510,7 @@ mod tests {
 	#[test]
 	fn write_file_noop() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
-		todo_file.set_lines(vec![Line::new("noop").unwrap()]);
+		todo_file.set_lines(vec![create_line("noop")]);
 		todo_file.write_file().unwrap();
 		assert_read_todo_file!(todo_file.get_filepath(), "noop");
 	}
@@ -516,7 +519,7 @@ mod tests {
 	fn add_line_index_miss() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		todo_file.add_line(100, Line::new("fixup ddd comment").unwrap());
+		todo_file.add_line(100, create_line("fixup ddd comment"));
 		assert_todo_lines!(
 			todo_file,
 			"pick aaa comment",
@@ -530,7 +533,7 @@ mod tests {
 	fn add_line() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
-		todo_file.add_line(1, Line::new("fixup ddd comment").unwrap());
+		todo_file.add_line(1, create_line("fixup ddd comment"));
 		assert_todo_lines!(
 			todo_file,
 			"pick aaa comment",
@@ -543,7 +546,7 @@ mod tests {
 	#[test]
 	fn add_line_record_history() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["pick aaa comment"]);
-		todo_file.add_line(1, Line::new("fixup ddd comment").unwrap());
+		todo_file.add_line(1, create_line("fixup ddd comment"));
 		let _undo_result = todo_file.undo();
 		assert_todo_lines!(todo_file, "pick aaa comment");
 	}
@@ -804,14 +807,14 @@ mod tests {
 	fn selected_line() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
 		todo_file.set_selected_line_index(0);
-		assert_eq!(todo_file.get_selected_line().unwrap(), &Line::new("exec foo").unwrap());
+		assert_some_eq!(todo_file.get_selected_line(), &create_line("exec foo"));
 	}
 
 	#[test]
 	fn selected_line_empty_list() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
 		todo_file.set_selected_line_index(0);
-		assert!(todo_file.get_selected_line().is_none());
+		assert_none!(todo_file.get_selected_line());
 	}
 
 	#[test]
@@ -829,13 +832,13 @@ mod tests {
 	#[test]
 	fn get_line_miss_high() {
 		let (todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		assert!(todo_file.get_line(4).is_none());
+		assert_none!(todo_file.get_line(4));
 	}
 
 	#[test]
 	fn get_line_hit() {
 		let (todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		assert_eq!(todo_file.get_line(1).unwrap(), &Line::new("exec bar").unwrap());
+		assert_some_eq!(todo_file.get_line(1), &create_line("exec bar"));
 	}
 
 	#[test]
@@ -847,10 +850,7 @@ mod tests {
 	#[test]
 	fn iter() {
 		let (todo_file, _) = create_and_load_todo_file(&["pick aaa comment"]);
-		assert_eq!(
-			todo_file.lines_iter().next().unwrap(),
-			&Line::new("pick aaa comment").unwrap()
-		);
+		assert_some_eq!(todo_file.lines_iter().next(), &create_line("pick aaa comment"));
 	}
 
 	#[test]

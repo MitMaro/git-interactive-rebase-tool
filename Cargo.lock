@@ -538,6 +538,7 @@ name = "girt-todo-file"
 version = "2.2.0"
 dependencies = [
  "claim",
+ "pretty_assertions",
  "rstest",
  "rustc_version",
  "tempfile",
