@@ -81,4 +81,6 @@
 //! utilities. These utilities are not tested, are often optimized for developer experience, rather
 //! than performance, and should only be used in test code.
 
+mod assert_empty;
 mod assert_err_eq;
+mod assert_not_empty;
