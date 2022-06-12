@@ -122,13 +122,13 @@ impl ViewBuilder {
 			]));
 		}
 
-		if let Some(ref summary) = *commit.summary() {
-			updater.push_lines(summary.as_str());
+		if let Some(summary) = commit.summary() {
+			updater.push_lines(summary);
 			updater.push_line(ViewLine::from(""));
 		}
 
-		if let Some(ref message) = *commit.message() {
-			updater.push_lines(message.as_str());
+		if let Some(message) = commit.message() {
+			updater.push_lines(message);
 			updater.push_line(ViewLine::from(""));
 		}
 
