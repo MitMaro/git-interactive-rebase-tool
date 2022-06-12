@@ -227,6 +227,7 @@ impl Line {
 mod tests {
 	use claim::assert_ok_eq;
 	use rstest::rstest;
+	use testutils::assert_err_eq;
 
 	use super::*;
 
@@ -375,8 +376,8 @@ mod tests {
 
 	#[test]
 	fn new_err_invalid_action() {
-		assert_eq!(
-			Line::new("invalid aaa comment").unwrap_err(),
+		assert_err_eq!(
+			Line::new("invalid aaa comment"),
 			ParseError::InvalidAction(String::from("invalid"))
 		);
 	}
@@ -394,10 +395,7 @@ mod tests {
 	#[case::reset_line_only("reset")]
 	#[case::merge_line_only("merge")]
 	fn new_err(#[case] line: &str) {
-		assert_eq!(
-			Line::new(line).unwrap_err(),
-			ParseError::InvalidLine(String::from(line))
-		);
+		assert_err_eq!(Line::new(line), ParseError::InvalidLine(String::from(line)));
 	}
 
 	#[rstest]

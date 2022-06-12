@@ -111,6 +111,7 @@ impl TryFrom<&str> for Action {
 mod tests {
 	use claim::assert_ok_eq;
 	use rstest::rstest;
+	use testutils::assert_err_eq;
 
 	use super::*;
 
@@ -163,10 +164,7 @@ mod tests {
 	#[test]
 	fn action_try_from_invalid() {
 		let invalid = String::from("invalid");
-		assert_eq!(
-			Action::try_from(invalid.as_str()).unwrap_err(),
-			ParseError::InvalidAction(invalid)
-		);
+		assert_err_eq!(Action::try_from(invalid.as_str()), ParseError::InvalidAction(invalid));
 	}
 
 	#[rstest]
