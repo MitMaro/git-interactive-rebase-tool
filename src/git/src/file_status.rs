@@ -132,6 +132,8 @@ impl FileStatus {
 
 #[cfg(test)]
 mod tests {
+	use testutils::assert_empty;
+
 	use super::*;
 
 	fn create_file_stat() -> FileStatus {
@@ -184,7 +186,7 @@ mod tests {
 	#[test]
 	fn deltas_empty() {
 		let file_stat = create_file_stat();
-		assert_eq!(file_stat.deltas(), &vec![]);
+		assert_empty!(file_stat.deltas());
 		assert_eq!(file_stat.last_old_line_number(), 0);
 		assert_eq!(file_stat.last_new_line_number(), 0);
 	}

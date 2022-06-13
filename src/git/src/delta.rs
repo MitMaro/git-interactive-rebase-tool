@@ -94,6 +94,8 @@ impl Delta {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_err;
+
 	use super::{super::origin::Origin, *};
 
 	#[test]
@@ -160,17 +162,15 @@ mod tests {
 		.unwrap();
 
 		// using err return to ensure assert ran
-		assert!(diff
-			.print(git2::DiffFormat::Patch, |_, diff_hunk, _| {
-				if diff_hunk.is_none() {
-					return true;
-				}
-				assert_eq!(
-					Delta::from(&diff_hunk.unwrap()),
-					Delta::new("@@ -4,3 +4,3 @@ use git2::Delta;", 4, 4, 3, 3)
-				);
-				false
-			})
-			.is_err());
+		assert_err!(diff.print(git2::DiffFormat::Patch, |_, diff_hunk, _| {
+			if diff_hunk.is_none() {
+				return true;
+			}
+			assert_eq!(
+				Delta::from(&diff_hunk.unwrap()),
+				Delta::new("@@ -4,3 +4,3 @@ use git2::Delta;", 4, 4, 3, 3)
+			);
+			false
+		}));
 	}
 }
