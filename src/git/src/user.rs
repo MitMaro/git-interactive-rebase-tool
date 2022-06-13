@@ -89,21 +89,20 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case(None, None, false)]
-	#[case(Some("name"), None, true)]
-	#[case(None, Some("email"), true)]
-	#[case(Some("email"), Some("email"), true)]
-	fn is_some(#[case] name: Option<&str>, #[case] email: Option<&str>, #[case] expected: bool) {
-		assert_eq!(User::new(name, email).is_some(), expected);
+	#[case(Some("name"), None)]
+	#[case(None, Some("email"))]
+	#[case(Some("email"), Some("email"))]
+	fn is_some_none_when_some(#[case] name: Option<&str>, #[case] email: Option<&str>) {
+		let user = User::new(name, email);
+		assert!(user.is_some());
+		assert!(!user.is_none());
 	}
 
-	#[rstest]
-	#[case(None, None, true)]
-	#[case(Some("name"), None, false)]
-	#[case(None, Some("email"), false)]
-	#[case(Some("email"), Some("email"), false)]
-	fn is_none(#[case] name: Option<&str>, #[case] email: Option<&str>, #[case] expected: bool) {
-		assert_eq!(User::new(name, email).is_none(), expected);
+	#[test]
+	fn is_some_none_when_none() {
+		let user = User::new(None, None);
+		assert!(!user.is_some());
+		assert!(user.is_none());
 	}
 
 	#[test]

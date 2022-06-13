@@ -57,6 +57,8 @@ impl CommitDiff {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_some_eq;
+
 	use crate::{
 		delta::Delta,
 		diff_line::DiffLine,
@@ -79,10 +81,7 @@ mod tests {
 		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
 			.parent(CommitBuilder::new("ABCDEF0123456789").build())
 			.build();
-		assert_eq!(
-			diff.parent().as_ref().unwrap(),
-			&CommitBuilder::new("ABCDEF0123456789").build()
-		);
+		assert_some_eq!(diff.parent(), &CommitBuilder::new("ABCDEF0123456789").build());
 	}
 
 	#[test]
@@ -103,7 +102,7 @@ mod tests {
 		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
 			.file_statuses(file_statuses)
 			.build();
-		assert_eq!(diff.file_statuses()[0].source_path.to_str().unwrap(), "foo");
+		assert_eq!(diff.file_statuses()[0].source_path.to_string_lossy(), "foo");
 	}
 
 	#[test]

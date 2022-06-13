@@ -163,6 +163,8 @@ impl ::std::fmt::Debug for Repository {
 mod tests {
 	use std::env::set_var;
 
+	use claim::assert_ok;
+
 	use super::*;
 	use crate::testutil::{commit_id_from_ref, create_commit, with_temp_bare_repository, with_temp_repository};
 
@@ -174,7 +176,7 @@ mod tests {
 			.join("fixtures")
 			.join("simple");
 		set_var("GIT_DIR", path.to_str().unwrap());
-		assert!(Repository::open_from_env().is_ok());
+		assert_ok!(Repository::open_from_env());
 	}
 
 	#[test]
@@ -200,7 +202,7 @@ mod tests {
 			.join("test")
 			.join("fixtures")
 			.join("simple");
-		assert!(Repository::open_from_path(&path).is_ok());
+		assert_ok!(Repository::open_from_path(&path));
 	}
 
 	#[test]
@@ -221,7 +223,7 @@ mod tests {
 	#[test]
 	fn load_config() {
 		with_temp_bare_repository(|repo| {
-			let _repo = repo.load_config()?;
+			assert_ok!(repo.load_config());
 			Ok(())
 		});
 	}
@@ -231,9 +233,7 @@ mod tests {
 		with_temp_repository(|repository| {
 			create_commit(&repository, None);
 			let id = commit_id_from_ref(&repository, "refs/heads/main");
-			let _diff = repository
-				.load_commit_diff(id.to_string().as_str(), &CommitDiffLoaderOptions::new())
-				.unwrap();
+			assert_ok!(repository.load_commit_diff(id.to_string().as_str(), &CommitDiffLoaderOptions::new()));
 			Ok(())
 		});
 	}

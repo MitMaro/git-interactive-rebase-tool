@@ -119,7 +119,7 @@ impl From<&git2::Commit<'_>> for Commit {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_some_eq;
+	use claim::{assert_none, assert_some_eq};
 
 	use super::*;
 	use crate::testutil::{
@@ -143,10 +143,7 @@ mod tests {
 			.reference(ReferenceBuilder::new("0123456789ABCDEF").build())
 			.build();
 
-		assert_eq!(
-			commit.reference().as_ref().unwrap(),
-			&ReferenceBuilder::new("0123456789ABCDEF").build()
-		);
+		assert_some_eq!(commit.reference(), &ReferenceBuilder::new("0123456789ABCDEF").build());
 	}
 
 	#[test]
@@ -188,7 +185,7 @@ mod tests {
 				Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)),
 			);
 			let commit = repository.find_commit("refs/heads/main")?;
-			assert!(commit.authored_date().is_none());
+			assert_none!(commit.authored_date());
 			Ok(())
 		});
 	}
@@ -205,8 +202,8 @@ mod tests {
 				),
 			);
 			let commit = repository.find_commit("refs/heads/main")?;
-			assert_eq!(
-				commit.authored_date().as_ref().unwrap(),
+			assert_some_eq!(
+				commit.authored_date(),
 				&DateTime::parse_from_rfc3339("2021-01-01T00:00:01Z").unwrap()
 			);
 			Ok(())
@@ -218,8 +215,8 @@ mod tests {
 		with_temp_repository(|repository| {
 			create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
 			let commit = repository.find_commit("refs/heads/main")?;
-			assert_eq!(
-				commit.committer().as_ref().unwrap(),
+			assert_some_eq!(
+				commit.committer(),
 				&User::new(Some("Committer"), Some("committer@example.com"))
 			);
 			Ok(())
@@ -230,7 +227,7 @@ mod tests {
 	fn new_committer_same_as_author() {
 		with_temp_repository(|repository| {
 			let commit = repository.find_commit("refs/heads/main")?;
-			assert!(commit.committer().is_none());
+			assert_none!(commit.committer());
 			Ok(())
 		});
 	}

@@ -498,6 +498,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "claim",
+ "girt-testutils",
  "git2",
  "lazy_static",
  "parking_lot",

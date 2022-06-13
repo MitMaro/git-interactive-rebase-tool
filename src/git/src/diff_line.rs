@@ -86,6 +86,7 @@ impl DiffLine {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_some_eq;
 	use parking_lot::Mutex;
 
 	use super::*;
@@ -106,17 +107,17 @@ mod tests {
 
 	#[test]
 	fn old_line_number() {
-		assert_eq!(create_diff_line().old_line_number(), Some(1));
+		assert_some_eq!(create_diff_line().old_line_number(), 1);
 	}
 
 	#[test]
 	fn new_line_number() {
-		assert_eq!(create_diff_line().new_line_number(), Some(2));
+		assert_some_eq!(create_diff_line().new_line_number(), 2);
 	}
 
 	#[test]
 	fn end_of_file() {
-		assert_eq!(create_diff_line().end_of_file(), false);
+		assert!(!create_diff_line().end_of_file());
 	}
 
 	#[test]
