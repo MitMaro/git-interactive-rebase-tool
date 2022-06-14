@@ -25,7 +25,6 @@ fn load_commit_during_activate() {
 			assert_results!(test_context.activate(&mut module, State::List));
 			assert!(module.diff.is_some());
 		});
-		Ok(())
 	});
 }
 
@@ -40,7 +39,6 @@ fn cached_commit_in_activate() {
 			assert_results!(test_context.activate(&mut module, State::List));
 			assert_results!(test_context.activate(&mut module, State::List));
 		});
-		Ok(())
 	});
 }
 
@@ -54,7 +52,6 @@ fn no_selected_line_in_activate() {
 				Artifact::Error(anyhow!("No valid commit to show"), Some(State::List))
 			);
 		});
-		Ok(())
 	});
 }
 
@@ -67,13 +64,13 @@ fn activate_error() {
 				test_context.activate(&mut module, State::List),
 				Artifact::Error(
 					anyhow!(
-						"Error loading commit: revspec 'aaaaaaaaaa' not found; class=Reference (4); code=NotFound (-3)"
+						"Could not load commit: revspec 'aaaaaaaaaa' not found; class=Reference (4); code=NotFound \
+						 (-3)"
 					),
 					Some(State::List)
 				)
 			);
 		});
-		Ok(())
 	});
 }
 
@@ -102,7 +99,6 @@ fn render_overview_minimal_commit() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -131,7 +127,6 @@ fn render_overview_minimal_commit_compact() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -158,7 +153,6 @@ fn render_overview_with_author() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -186,7 +180,6 @@ fn render_overview_with_author_compact() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -213,7 +206,6 @@ fn render_overview_with_committer() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -241,7 +233,6 @@ fn render_overview_with_committer_compact() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -268,7 +259,6 @@ fn render_overview_with_commit_summary() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -295,7 +285,6 @@ fn render_overview_with_commit_body() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -325,7 +314,6 @@ fn render_overview_with_commit_summary_and_body() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -393,7 +381,6 @@ fn render_overview_with_file_stats() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -461,7 +448,6 @@ fn render_overview_with_file_stats_compact() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -485,7 +471,6 @@ fn render_overview_single_file_changed() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -510,7 +495,6 @@ fn render_overview_more_than_one_file_changed() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -535,7 +519,6 @@ fn render_overview_single_insertion() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -560,7 +543,6 @@ fn render_overview_more_than_one_insertion() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -585,7 +567,6 @@ fn render_overview_single_deletion() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -610,7 +591,6 @@ fn render_overview_more_than_one_deletion() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -640,7 +620,6 @@ fn render_diff_minimal_commit() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -670,7 +649,6 @@ fn render_diff_minimal_commit_compact() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -747,7 +725,6 @@ fn render_diff_basic_file_stats() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -791,7 +768,6 @@ fn render_diff_end_new_line_missing() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -833,7 +809,6 @@ fn render_diff_add_line() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -875,7 +850,6 @@ fn render_diff_delete_line() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -923,7 +897,6 @@ fn render_diff_context_add_remove_lines() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -986,7 +959,6 @@ fn render_diff_show_both_whitespace() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1026,7 +998,6 @@ fn render_diff_show_leading_whitespace() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1066,7 +1037,6 @@ fn render_diff_show_no_whitespace() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1102,7 +1072,6 @@ fn render_diff_show_whitespace_all_spaces() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1126,7 +1095,6 @@ fn handle_event_toggle_diff_to_overview() {
 				assert_eq!(module.state, ShowCommitState::Overview);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1150,7 +1118,6 @@ fn handle_event_toggle_overview_to_diff() {
 				assert_eq!(module.state, ShowCommitState::Diff);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1168,7 +1135,6 @@ fn handle_event_resize() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1198,7 +1164,6 @@ fn render_help() {
 				"{IndicatorColor}Press any key to close"
 			);
 		});
-		Ok(())
 	});
 }
 
@@ -1210,7 +1175,6 @@ fn handle_help_event_show() {
 			let _ = test_context.handle_all_events(&mut module);
 			assert!(module.help.is_active());
 		});
-		Ok(())
 	});
 }
 #[test]
@@ -1225,7 +1189,6 @@ fn handle_help_event_hide() {
 				assert!(!module.help.is_active());
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1245,7 +1208,6 @@ fn handle_event_other_key_from_diff() {
 				assert_eq!(module.state, ShowCommitState::Overview);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1265,7 +1227,6 @@ fn handle_event_other_key_from_overview() {
 				);
 			},
 		);
-		Ok(())
 	});
 }
 
@@ -1285,6 +1246,5 @@ fn scroll_events(#[case] event: StandardEvent) {
 				Artifact::Event(Event::from(event))
 			);
 		});
-		Ok(())
 	});
 }

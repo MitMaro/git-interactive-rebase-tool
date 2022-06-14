@@ -62,8 +62,6 @@ impl Reference {
 
 #[cfg(test)]
 mod tests {
-	use anyhow::Error;
-
 	use super::*;
 	use crate::testutil::{head_id, with_temp_repository};
 
@@ -71,12 +69,11 @@ mod tests {
 	fn test() {
 		with_temp_repository(|repository| {
 			let oid = head_id(&repository, "main");
-			let reference = repository.find_reference("refs/heads/main").map_err(Error::from)?;
+			let reference = repository.find_reference("refs/heads/main").unwrap();
 			assert_eq!(reference.hash(), format!("{}", oid));
 			assert_eq!(reference.name(), "refs/heads/main");
 			assert_eq!(reference.shortname(), "main");
 			assert_eq!(reference.kind(), ReferenceKind::Branch);
-			Ok(())
 		});
 	}
 }

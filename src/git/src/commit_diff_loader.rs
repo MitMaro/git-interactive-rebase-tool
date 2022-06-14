@@ -1,6 +1,5 @@
 use std::{path::PathBuf, sync::Arc};
 
-use anyhow::Result;
 use git2::{DiffFindOptions, DiffOptions, Oid, Repository};
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, MutexGuard};
@@ -282,33 +281,50 @@ mod tests {
 		};
 	}
 
-	fn write_normal_file(repository: &crate::Repository, name: &str, contents: &[&str]) -> Result<()> {
-		let root = repository.repo_path().parent().unwrap().to_path_buf();
+	fn write_normal_file(repository: &crate::Repository, name: &str, contents: &[&str]) {
+		let root = repository
+			.repo_path()
+			.parent()
+			.expect("Repo has no parent")
+			.to_path_buf();
 
 		let file_path = root.join(name);
 		let mut file = File::create(file_path.as_path()).expect("Unable to write file");
 		if !contents.is_empty() {
-			writeln!(file, "{}", contents.join("\n")).unwrap();
+			writeln!(file, "{}", contents.join("\n")).expect("Unable to write file")
 		}
-		repository.add_path_to_index(PathBuf::from(name).as_path())
+		repository
+			.add_path_to_index(PathBuf::from(name).as_path())
+			.expect("Unable to add path to index")
 	}
 
-	fn remove_path(repository: &crate::Repository, name: &str) -> Result<()> {
-		let root = repository.repo_path().parent().unwrap().to_path_buf();
+	fn remove_path(repository: &crate::Repository, name: &str) {
+		let root = repository
+			.repo_path()
+			.parent()
+			.expect("Repo has no parent")
+			.to_path_buf();
 
 		let file_path = root.join(name);
-		let _ = remove_file(file_path)?;
+		let _ = remove_file(file_path);
 
-		repository.remove_path_from_index(PathBuf::from(name).as_path())
+		repository
+			.remove_path_from_index(PathBuf::from(name).as_path())
+			.expect("Unable to remove path from index");
 	}
 
-	fn create_commit(repository: &crate::Repository) -> Result<()> {
-		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0))?;
-		repository.create_commit_on_index("refs/heads/main", &sig, &sig, "title")
+	fn create_commit(repository: &crate::Repository) {
+		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0))
+			.expect("Unable to create signature");
+		repository
+			.create_commit_on_index("refs/heads/main", &sig, &sig, "title")
+			.expect("Unable to create commit on index");
 	}
 
 	fn diff_from_head(repository: &crate::Repository, options: &CommitDiffLoaderOptions) -> CommitDiff {
-		let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
+		let id = repository
+			.commit_id_from_ref("refs/heads/main")
+			.expect("Unable to load commit from ref");
 		let loader = CommitDiffLoader::new(repository.repository(), options);
 		loader.load_from_hash(id).unwrap().remove(0)
 	}
@@ -320,31 +336,29 @@ mod tests {
 			assert_eq!(diff.number_files_changed(), 0);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_added_file() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line1"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line1"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 1);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (o) > a (n)", "Status Added", "@@ -0,0 +1,1 @@", "+  1| line1");
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_removed_file() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line1"])?;
-			create_commit(&repo)?;
-			remove_path(&repo, "a")?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line1"]);
+			create_commit(&repo);
+			remove_path(&repo, "a");
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
@@ -356,17 +370,16 @@ mod tests {
 				"@@ -1,1 +0,0 @@",
 				"-1  | line1"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_modified_file() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line1"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["line2"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line1"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["line2"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 1);
@@ -379,17 +392,16 @@ mod tests {
 				"-1  | line1",
 				"+  1| line2"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_with_context() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3-m", "line4", "line5"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3-m", "line4", "line5"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().context_lines(2));
 			assert_commit_diff!(
 				&diff,
@@ -403,17 +415,16 @@ mod tests {
 				" 5 5| line4",
 				" 6 6| line5"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_ignore_white_space_change() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &[" line0", "line1"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["  line0", " line1-m"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &[" line0", "line1"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["  line0", " line1-m"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().ignore_whitespace_change(true));
 			assert_commit_diff!(
 				&diff,
@@ -423,17 +434,16 @@ mod tests {
 				"-2  | line1",
 				"+  2|  line1-m"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_ignore_white_space() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0", "line1"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["  line0", " line1-m"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0", "line1"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["  line0", " line1-m"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().ignore_whitespace(true));
 			assert_commit_diff!(
 				&diff,
@@ -443,34 +453,32 @@ mod tests {
 				"-2  | line1",
 				"+  2|  line1-m"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_copies() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "b", &["line0"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "b", &["line0"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().copies(true));
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (n) > b (n)", "Status Copied");
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_copies_modified_source() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["line0", "a"])?;
-			write_normal_file(&repo, "b", &["line0"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["line0", "a"]);
+			write_normal_file(&repo, "b", &["line0"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().copies(true));
 			assert_eq!(diff.number_files_changed(), 2);
 			assert_eq!(diff.number_insertions(), 1);
@@ -484,17 +492,16 @@ mod tests {
 				"a (n) > b (n)",
 				"Status Copied"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_interhunk_context() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["line0", "line1-m", "line2", "line3", "line4-m", "line5"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["line0", "line1-m", "line2", "line3", "line4-m", "line5"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().interhunk_context(2));
 			assert_commit_diff!(
 				&diff,
@@ -508,24 +515,22 @@ mod tests {
 				"-5  | line4",
 				"+  5| line4-m"
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn load_from_hash_rename_source_not_modified() {
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0"])?;
-			create_commit(&repo)?;
-			remove_path(&repo, "a")?;
-			write_normal_file(&repo, "b", &["line0"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0"]);
+			create_commit(&repo);
+			remove_path(&repo, "a");
+			write_normal_file(&repo, "b", &["line0"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (n) > b (n)", "Status Renamed");
-			Ok(())
 		});
 	}
 
@@ -538,11 +543,11 @@ mod tests {
 		// this creates a situation where git detects the rename from the original unmodified
 		// version of "a" before a new file called "a" was created
 		with_temp_repository(|repo| {
-			write_normal_file(&repo, "a", &["line0"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["other0"])?;
-			write_normal_file(&repo, "b", &["line0"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["other0"]);
+			write_normal_file(&repo, "b", &["line0"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
 			assert_eq!(diff.number_files_changed(), 2);
 			assert_eq!(diff.number_insertions(), 1);
@@ -556,7 +561,6 @@ mod tests {
 				"a (n) > b (n)",
 				"Status Renamed"
 			);
-			Ok(())
 		});
 	}
 
@@ -567,20 +571,19 @@ mod tests {
 			use std::os::unix::fs::PermissionsExt;
 			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
-			write_normal_file(&repo, "a", &["line0"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, "a", &["line0"]);
+			create_commit(&repo);
 			let file = File::open(root.join("a")).unwrap();
 			let mut permissions = file.metadata().unwrap().permissions();
 			permissions.set_mode(0o755);
 			file.set_permissions(permissions).unwrap();
 			add_path_to_index(&repo, PathBuf::from("a").as_path());
-			create_commit(&repo)?;
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (n) > a (x)", "Status Modified");
-			Ok(())
 		});
 	}
 
@@ -590,20 +593,19 @@ mod tests {
 		with_temp_repository(|repo| {
 			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
-			write_normal_file(&repo, "a", &["line0"])?;
-			write_normal_file(&repo, "b", &["line0"])?;
-			create_commit(&repo)?;
-			remove_path(&repo, "a")?;
+			write_normal_file(&repo, "a", &["line0"]);
+			write_normal_file(&repo, "b", &["line0"]);
+			create_commit(&repo);
+			remove_path(&repo, "a");
 			symlink(root.join("b"), root.join("a")).unwrap();
 			add_path_to_index(&repo, PathBuf::from("a").as_path());
 			add_path_to_index(&repo, PathBuf::from("b").as_path());
-			create_commit(&repo)?;
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (n) > a (l)", "Status Typechange");
-			Ok(())
 		});
 	}
 
@@ -611,16 +613,15 @@ mod tests {
 	fn load_from_hash_binary_added_file() {
 		with_temp_repository(|repo| {
 			// treat all files as binary
-			write_normal_file(&repo, ".gitattributes", &["a binary"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["line1"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, ".gitattributes", &["a binary"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["line1"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (o,b) > a (n,b)", "Status Added");
-			Ok(())
 		});
 	}
 
@@ -628,17 +629,16 @@ mod tests {
 	fn load_from_hash_binary_modified_file() {
 		with_temp_repository(|repo| {
 			// treat all files as binary
-			write_normal_file(&repo, ".gitattributes", &["a binary"])?;
-			write_normal_file(&repo, "a", &["line1"])?;
-			create_commit(&repo)?;
-			write_normal_file(&repo, "a", &["line2"])?;
-			create_commit(&repo)?;
+			write_normal_file(&repo, ".gitattributes", &["a binary"]);
+			write_normal_file(&repo, "a", &["line1"]);
+			create_commit(&repo);
+			write_normal_file(&repo, "a", &["line2"]);
+			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (n,b)", "Status Modified");
-			Ok(())
 		});
 	}
 }

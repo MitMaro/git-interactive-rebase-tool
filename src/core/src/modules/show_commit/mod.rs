@@ -5,7 +5,7 @@ mod view_builder;
 #[cfg(test)]
 mod tests;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Error};
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
@@ -71,7 +71,7 @@ impl Module for ShowCommit {
 					self.diff = Some(diff);
 				},
 				Err(e) => {
-					results.error_with_return(e.context(anyhow!("Error loading commit")), State::List);
+					results.error_with_return(Error::from(e), State::List);
 				},
 			}
 		}
