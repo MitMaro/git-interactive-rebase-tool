@@ -187,7 +187,9 @@ impl TryFrom<&Repository> for Config {
 	/// Will return an `Err` if there is a problem loading the configuration.
 	#[inline]
 	fn try_from(repo: &Repository) -> core::result::Result<Self, Error> {
-		let config = repo.load_config().map_err(|e| e.context("Error loading git config"))?;
+		let config = repo
+			.load_config()
+			.map_err(|e| Error::from(e).context("Error loading git config"))?;
 		Self::new_with_config(Some(&config)).map_err(|e| e.context("Error reading git config"))
 	}
 }
@@ -224,7 +226,6 @@ mod tests {
 	fn try_from_repository() {
 		with_temp_bare_repository(|repository| {
 			assert!(Config::try_from(&repository).is_ok());
-			Ok(())
 		});
 	}
 

@@ -98,6 +98,7 @@ mod commit_diff_loader;
 mod commit_diff_loader_options;
 mod delta;
 mod diff_line;
+pub mod errors;
 mod file_mode;
 mod file_status;
 mod file_status_builder;

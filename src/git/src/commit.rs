@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local, TimeZone};
 
-use crate::{reference::Reference, user::User};
+use crate::{errors::GitError, reference::Reference, user::User};
 
 /// Represents a commit.
 #[derive(Debug, PartialEq, Eq)]
@@ -101,11 +101,13 @@ impl Commit {
 }
 
 impl TryFrom<&git2::Reference<'_>> for Commit {
-	type Error = anyhow::Error;
+	type Error = GitError;
 
 	#[inline]
 	fn try_from(reference: &git2::Reference<'_>) -> Result<Self, Self::Error> {
-		let commit = reference.peel_to_commit()?;
+		let commit = reference
+			.peel_to_commit()
+			.map_err(|e| GitError::CommitLoad { cause: e })?;
 		Ok(Self::new(&commit, Some(reference)))
 	}
 }
@@ -120,6 +122,7 @@ impl From<&git2::Commit<'_>> for Commit {
 #[cfg(test)]
 mod tests {
 	use claim::{assert_none, assert_some_eq};
+	use testutils::assert_err_eq;
 
 	use super::*;
 	use crate::testutil::{
@@ -184,9 +187,8 @@ mod tests {
 				&repository,
 				Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)),
 			);
-			let commit = repository.find_commit("refs/heads/main")?;
+			let commit = repository.find_commit("refs/heads/main").unwrap();
 			assert_none!(commit.authored_date());
-			Ok(())
 		});
 	}
 
@@ -201,12 +203,11 @@ mod tests {
 						.author_time(JAN_2021_EPOCH + 1),
 				),
 			);
-			let commit = repository.find_commit("refs/heads/main")?;
+			let commit = repository.find_commit("refs/heads/main").unwrap();
 			assert_some_eq!(
 				commit.authored_date(),
 				&DateTime::parse_from_rfc3339("2021-01-01T00:00:01Z").unwrap()
 			);
-			Ok(())
 		});
 	}
 
@@ -214,21 +215,53 @@ mod tests {
 	fn new_committer_different_than_author() {
 		with_temp_repository(|repository| {
 			create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
-			let commit = repository.find_commit("refs/heads/main")?;
+			let commit = repository.find_commit("refs/heads/main").unwrap();
 			assert_some_eq!(
 				commit.committer(),
 				&User::new(Some("Committer"), Some("committer@example.com"))
 			);
-			Ok(())
 		});
 	}
 
 	#[test]
 	fn new_committer_same_as_author() {
 		with_temp_repository(|repository| {
-			let commit = repository.find_commit("refs/heads/main")?;
+			let commit = repository.find_commit("refs/heads/main").unwrap();
 			assert_none!(commit.committer());
-			Ok(())
+		});
+	}
+
+	#[test]
+	fn try_from_success() {
+		with_temp_repository(|repository| {
+			let repo = repository.repository();
+			let repo_lock = repo.lock();
+			let reference = repo_lock.find_reference("refs/heads/main").unwrap();
+			let commit = Commit::try_from(&reference).unwrap();
+
+			assert_eq!(commit.reference.unwrap().shortname(), "main");
+		});
+	}
+
+	#[test]
+	fn try_from_error() {
+		with_temp_repository(|repository| {
+			let repo = repository.repository();
+			let repo_lock = repo.lock();
+			let blob = repo_lock.blob("foo".as_bytes()).unwrap();
+			let _ = repo_lock.reference("refs/blob", blob, false, "blob").unwrap();
+
+			let reference = repo_lock.find_reference("refs/blob").unwrap();
+			assert_err_eq!(Commit::try_from(&reference), GitError::CommitLoad {
+				cause: git2::Error::new(
+					git2::ErrorCode::InvalidSpec,
+					git2::ErrorClass::Object,
+					format!(
+						"the git_object of id '{}' can not be successfully peeled into a commit (git_object_t=1).",
+						blob
+					)
+				)
+			});
 		});
 	}
 }

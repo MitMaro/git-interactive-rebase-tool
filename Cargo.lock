@@ -495,7 +495,6 @@ dependencies = [
 name = "girt-git"
 version = "2.2.0"
 dependencies = [
- "anyhow",
  "chrono",
  "claim",
  "girt-testutils",
@@ -507,6 +506,7 @@ dependencies = [
  "rustc_version",
  "serial_test",
  "tempfile",
+ "thiserror",
 ]
 
 [[package]]

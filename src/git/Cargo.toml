@@ -15,11 +15,11 @@ readme = "README.md"
 name = "git"
 
 [dependencies]
-anyhow = "1.0.57"
 chrono = "0.4.19"
 lazy_static = "1.4.0"
 parking_lot = "0.12.1"
 tempfile = "3.3.0"
+thiserror = "1.0.31"
 
 [dependencies.git2]
 version = "=0.14.4"

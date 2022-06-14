@@ -71,7 +71,6 @@ mod tests {
 			let config = Config::new();
 			let modules = Modules::new(&config, repository);
 			callback(modules);
-			Ok(())
 		});
 	}
 

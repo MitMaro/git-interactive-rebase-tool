@@ -2,7 +2,6 @@
 
 use std::path::Path;
 
-use anyhow::Result;
 use tempfile::Builder;
 
 use crate::{testutil::JAN_2021_EPOCH, Repository};
@@ -26,26 +25,28 @@ where F: FnOnce(&Path) {
 /// # Panics
 ///
 /// If the repository cannot be created for any reason, this function will panic.
-#[allow(clippy::panic, clippy::unwrap_used)]
 #[inline]
 pub fn with_temp_repository<F>(callback: F)
-where F: FnOnce(Repository) -> Result<()> {
+where F: FnOnce(Repository) {
 	with_temporary_path(|path| {
 		let mut opts = git2::RepositoryInitOptions::new();
 		let _ = opts.initial_head("main");
-		let repo = git2::Repository::init_opts(path, &opts).unwrap();
+		let repo = git2::Repository::init_opts(path, &opts).expect("Unable to init repository");
 
 		{
-			let id = repo.index().unwrap().write_tree().unwrap();
-			let tree = repo.find_tree(id).unwrap();
-			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0)).unwrap();
+			let id = repo
+				.index()
+				.expect("Unable to get repository index")
+				.write_tree()
+				.expect("Unable to get Oid for write tree");
+			let tree = repo.find_tree(id).expect("Unable to find tree");
+			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0))
+				.expect("Unable to create signature");
 			let _ = repo
 				.commit(Some("HEAD"), &sig, &sig, "initial commit", &tree, &[])
-				.unwrap();
+				.expect("Unable to create commit");
 		}
-		if let Err(e) = callback(Repository::from(repo)) {
-			panic!("{} failed with {}", stringify!(e), e)
-		}
+		callback(Repository::from(repo));
 	});
 }
 
@@ -57,12 +58,10 @@ where F: FnOnce(Repository) -> Result<()> {
 #[inline]
 #[allow(clippy::panic)]
 pub fn with_temp_bare_repository<F>(callback: F)
-where F: FnOnce(Repository) -> Result<()> {
+where F: FnOnce(Repository) {
 	with_temporary_path(|path| {
 		let git2_repository = git2::Repository::init_bare(path).expect("Unable to init a bare repository");
 		let repository = Repository::from(git2_repository);
-		if let Err(e) = callback(repository) {
-			panic!("{} failed with {}", stringify!(e), e)
-		};
+		callback(repository);
 	});
 }
