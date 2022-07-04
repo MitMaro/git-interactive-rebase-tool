@@ -20,7 +20,7 @@ girt-git = {version = "2.2.0", path = "../../src/git"}
 
 [dev-dependencies]
 lazy_static = "1.4.0"
-rstest = "0.13.0"
+rstest = "0.15.0"
 serial_test = "0.7.0"
 tempfile = "3.3.0"
 
