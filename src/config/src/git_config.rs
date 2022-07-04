@@ -1,7 +1,7 @@
-use anyhow::{anyhow, Error, Result};
 use git::Config;
 
 use super::utils::{editor_from_env, get_string, get_unsigned_integer};
+use crate::{errors::ConfigError, utils::git_diff_renames};
 
 /// Represents the git configuration options.
 #[derive(Clone, Debug)]
@@ -45,25 +45,13 @@ impl GitConfig {
 		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
 	}
 
-	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self> {
+	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
 		let mut comment_char = get_string(git_config, "core.commentChar", "#")?;
 		if comment_char.as_str().eq("auto") {
 			comment_char = String::from("#");
 		}
 
-		let git_diff_renames = get_string(git_config, "diff.renames", "true")?.to_lowercase();
-		let (diff_renames, diff_copies) = match git_diff_renames.to_lowercase().as_str() {
-			"true" => (true, false),
-			"false" => (false, false),
-			"copy" | "copies" => (true, true),
-			v => {
-				return Err(anyhow!(
-					"\"{}\" does not match one of \"true\", \"false\", \"copy\" or \"copies\"",
-					v
-				)
-				.context("\"diff.renames\" is not valid"));
-			},
-		};
+		let (diff_renames, diff_copies) = git_diff_renames(git_config, "diff.renames")?;
 
 		Ok(Self {
 			comment_char,
@@ -85,10 +73,10 @@ impl Default for GitConfig {
 }
 
 impl TryFrom<&Config> for GitConfig {
-	type Error = Error;
+	type Error = ConfigError;
 
 	#[inline]
-	fn try_from(config: &Config) -> core::result::Result<Self, Error> {
+	fn try_from(config: &Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}
 }
@@ -97,8 +85,13 @@ impl TryFrom<&Config> for GitConfig {
 mod tests {
 	use std::env::{remove_var, set_var};
 
+	use testutils::assert_err_eq;
+
 	use super::*;
-	use crate::testutils::{assert_error, invalid_utf, with_git_config};
+	use crate::{
+		testutils::{invalid_utf, with_git_config},
+		ConfigErrorCause,
+	};
 
 	#[test]
 	fn new() {
@@ -151,9 +144,9 @@ mod tests {
 		with_git_config(
 			&["[core]", format!("commentChar = {}", invalid_utf()).as_str()],
 			|git_config| {
-				assert_error(
+				assert_err_eq!(
 					GitConfig::new_with_config(Some(&git_config)),
-					"\"core.commentChar\" is not valid: configuration value is not valid utf8",
+					ConfigError::new_read_error("core.commentChar", ConfigErrorCause::InvalidUtf),
 				);
 			},
 		);
@@ -176,9 +169,9 @@ mod tests {
 	#[test]
 	fn diff_context_invalid() {
 		with_git_config(&["[diff]", "context = invalid"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.context\" is not valid: failed to parse \'invalid\' as a 32-bit integer",
+				ConfigError::new("diff.context", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
 	}
@@ -186,9 +179,9 @@ mod tests {
 	#[test]
 	fn diff_context_invalid_range() {
 		with_git_config(&["[diff]", "context = -100"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.context\" is not valid: \"-100\" is outside of valid range for an unsigned 32-bit integer",
+				ConfigError::new("diff.context", "-100", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
 	}
@@ -210,9 +203,13 @@ mod tests {
 	#[test]
 	fn diff_interhunk_lines_invalid() {
 		with_git_config(&["[diff]", "interHunkContext = invalid"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.interHunkContext\" is not valid: failed to parse \'invalid\' as a 32-bit integer",
+				ConfigError::new(
+					"diff.interHunkContext",
+					"invalid",
+					ConfigErrorCause::InvalidUnsignedInteger
+				),
 			);
 		});
 	}
@@ -220,10 +217,13 @@ mod tests {
 	#[test]
 	fn diff_interhunk_lines_invalid_range() {
 		with_git_config(&["[diff]", "interHunkContext = -100"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.interHunkContext\" is not valid: \"-100\" is outside of valid range for an unsigned 32-bit \
-				 integer",
+				ConfigError::new(
+					"diff.interHunkContext",
+					"-100",
+					ConfigErrorCause::InvalidUnsignedInteger
+				),
 			);
 		});
 	}
@@ -245,9 +245,9 @@ mod tests {
 	#[test]
 	fn diff_rename_limit_invalid() {
 		with_git_config(&["[diff]", "renameLimit = invalid"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.renameLimit\" is not valid: failed to parse \'invalid\' as a 32-bit integer",
+				ConfigError::new("diff.renameLimit", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
 	}
@@ -255,9 +255,9 @@ mod tests {
 	#[test]
 	fn diff_rename_limit_invalid_range() {
 		with_git_config(&["[diff]", "renameLimit = -100"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.renameLimit\" is not valid: \"-100\" is outside of valid range for an unsigned 32-bit integer",
+				ConfigError::new("diff.renameLimit", "-100", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
 	}
@@ -317,10 +317,9 @@ mod tests {
 	#[test]
 	fn diff_renames_invalid() {
 		with_git_config(&["[diff]", "renames = invalid"], |git_config| {
-			assert_error(
+			assert_err_eq!(
 				GitConfig::new_with_config(Some(&git_config)),
-				"\"diff.renames\" is not valid: \"invalid\" does not match one of \"true\", \"false\", \"copy\" or \
-				 \"copies\"",
+				ConfigError::new("diff.renames", "invalid", ConfigErrorCause::InvalidDiffRenames),
 			);
 		});
 	}
@@ -372,9 +371,9 @@ mod tests {
 		with_git_config(
 			&["[core]", format!("editor = {}", invalid_utf()).as_str()],
 			|git_config| {
-				assert_error(
+				assert_err_eq!(
 					GitConfig::new_with_config(Some(&git_config)),
-					"\"core.editor\" is not valid: configuration value is not valid utf8",
+					ConfigError::new_read_error("core.editor", ConfigErrorCause::InvalidUtf),
 				);
 			},
 		);

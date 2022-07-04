@@ -1,10 +1,10 @@
-use anyhow::{anyhow, Error};
+use crate::errors::InvalidColorError;
 
 /// Represents a color.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Color {
-	/// The default teminal color.
+	/// The default terminal color.
 	Default,
 	/// The standard white color.
 	LightWhite,
@@ -56,9 +56,9 @@ pub enum Color {
 }
 
 impl TryFrom<&str> for Color {
-	type Error = Error;
+	type Error = InvalidColorError;
 
-	#[allow(clippy::indexing_slicing)]
+	#[allow(clippy::indexing_slicing, clippy::unwrap_in_result)]
 	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
@@ -89,12 +89,7 @@ impl TryFrom<&str> for Color {
 						let color_index = s.parse::<u8>();
 						match color_index {
 							Ok(i) if (0..=255).contains(&i) => Ok(Self::Index(i)),
-							_ => {
-								Err(anyhow!(
-									"\"{}\" is not a valid color index. Index must be between 0-255.",
-									s
-								))
-							},
+							_ => Err(InvalidColorError::Indexed {}),
 						}
 					},
 					3 => {
@@ -102,25 +97,25 @@ impl TryFrom<&str> for Color {
 						let green = matches[1].parse::<i16>().unwrap_or(-1);
 						let blue = matches[2].parse::<i16>().unwrap_or(-1);
 
-						if red >= 0 && green >= 0 && blue >= 0 && red < 256 && green < 256 && blue < 256 {
-							return Ok(Self::Rgb {
-								red: red
-									.try_into()
-									.map_err(|e| anyhow!("Invalid red color value").context(e))?,
-								green: green
-									.try_into()
-									.map_err(|e| anyhow!("Invalid green color value").context(e))?,
-								blue: blue
-									.try_into()
-									.map_err(|e| anyhow!("Invalid blue color value").context(e))?,
-							});
+						if !(0..=255).contains(&red) {
+							return Err(InvalidColorError::Red {});
 						}
-						Err(anyhow!(
-							"\"{}\" is not a valid color triple. Values must be between 0-255.",
-							s
-						))
+
+						if !(0..=255).contains(&green) {
+							return Err(InvalidColorError::Green {});
+						}
+
+						if !(0..=255).contains(&blue) {
+							return Err(InvalidColorError::Blue {});
+						}
+
+						Ok(Self::Rgb {
+							red: red.try_into().expect("Invalid into"),
+							green: green.try_into().expect("Invalid into"),
+							blue: blue.try_into().expect("Invalid into"),
+						})
 					},
-					_ => Err(anyhow!("\"{}\" is not a valid color value.", s)),
+					_ => Err(InvalidColorError::Invalid {}),
 				}
 			},
 		}
@@ -129,7 +124,9 @@ impl TryFrom<&str> for Color {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_ok_eq;
 	use rstest::rstest;
+	use testutils::assert_err_eq;
 
 	use super::*;
 
@@ -164,48 +161,24 @@ mod tests {
 		blue: 102
 	})]
 	fn try_from(#[case] color_string: &str, #[case] expected: Color) {
-		assert_eq!(Color::try_from(color_string).unwrap(), expected);
+		assert_ok_eq!(Color::try_from(color_string), expected);
 	}
 
 	#[rstest]
-	#[case::non_number_red("red,0,0", "\"red,0,0\" is not a valid color triple. Values must be between 0-255.")]
-	#[case::rgb_non_number_green(
-		"0,green,0",
-		"\"0,green,0\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_blue(
-		"0,0,blue",
-		"\"0,0,blue\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_red_lower_limit(
-		"-1,0,0",
-		"\"-1,0,0\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_green_lower_limit(
-		"0,-1,0",
-		"\"0,-1,0\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_blue_lower_limit(
-		"0,0,-1",
-		"\"0,0,-1\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_red_upper_limit(
-		"256,0,0",
-		"\"256,0,0\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_green_upper_limit(
-		"0,256,0",
-		"\"0,256,0\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::rgb_non_number_blue_upper_limit(
-		"0,0,256",
-		"\"0,0,256\" is not a valid color triple. Values must be between 0-255."
-	)]
-	#[case::index_upper_limit("256", "\"256\" is not a valid color index. Index must be between 0-255.")]
-	#[case::index_lower_limit("-2", "\"-2\" is not a valid color index. Index must be between 0-255.")]
-	#[case::str_single_value("invalid", "\"invalid\" is not a valid color index. Index must be between 0-255.")]
-	#[case::str_multiple_value("invalid,invalid", "\"invalid,invalid\" is not a valid color value.")]
-	fn color_try_from_fail(#[case] color_string: &str, #[case] expected: &str) {
-		assert_eq!(Color::try_from(color_string).unwrap_err().to_string(), expected);
+	#[case::non_number_red("red,0,0", InvalidColorError::Red {})]
+	#[case::rgb_non_number_green("0,green,0", InvalidColorError::Green {})]
+	#[case::rgb_non_number_blue("0,0,blue", InvalidColorError::Blue {})]
+	#[case::rgb_non_number_red_lower_limit("-1,0,0", InvalidColorError::Red {})]
+	#[case::rgb_non_number_green_lower_limit("0,-1,0", InvalidColorError::Green {})]
+	#[case::rgb_non_number_blue_lower_limit("0,0,-1", InvalidColorError::Blue {})]
+	#[case::rgb_non_number_red_upper_limit("256,0,0", InvalidColorError::Red {})]
+	#[case::rgb_non_number_green_upper_limit("0,256,0", InvalidColorError::Green {})]
+	#[case::rgb_non_number_blue_upper_limit("0,0,256", InvalidColorError::Blue {})]
+	#[case::index_upper_limit("256", InvalidColorError::Indexed {})]
+	#[case::index_lower_limit("-2", InvalidColorError::Indexed {})]
+	#[case::str_single_value("invalid", InvalidColorError::Indexed {})]
+	#[case::str_multiple_value("invalid,invalid", InvalidColorError::Invalid {})]
+	fn color_try_from_fail(#[case] color_string: &str, #[case] expected: InvalidColorError) {
+		assert_err_eq!(Color::try_from(color_string), expected);
 	}
 }

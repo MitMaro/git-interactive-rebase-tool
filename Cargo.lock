@@ -270,13 +270,15 @@ dependencies = [
 name = "girt-config"
 version = "2.2.0"
 dependencies = [
- "anyhow",
+ "claim",
  "girt-git",
+ "girt-testutils",
  "lazy_static",
  "rstest",
  "rustc_version",
  "serial_test",
  "tempfile",
+ "thiserror",
 ]
 
 [[package]]
