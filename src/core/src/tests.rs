@@ -19,11 +19,12 @@ fn successful_run_help() {
 #[serial_test::serial]
 fn successful_run_version() {
 	let exit = run(args(&["--version"]));
-	assert!(exit
-		.get_message()
-		.as_ref()
-		.unwrap()
-		.starts_with("interactive-rebase-tool"));
+	assert!(
+		exit.get_message()
+			.as_ref()
+			.unwrap()
+			.starts_with("interactive-rebase-tool")
+	);
 	assert_eq!(exit.get_status(), &ExitStatus::Good);
 }
 
@@ -31,11 +32,12 @@ fn successful_run_version() {
 #[serial_test::serial]
 fn successful_run_license() {
 	let exit = run(args(&["--license"]));
-	assert!(exit
-		.get_message()
-		.as_ref()
-		.unwrap()
-		.contains("Sequence Editor for Git Interactive Rebase"));
+	assert!(
+		exit.get_message()
+			.as_ref()
+			.unwrap()
+			.contains("Sequence Editor for Git Interactive Rebase")
+	);
 	assert_eq!(exit.get_status(), &ExitStatus::Good);
 }
 

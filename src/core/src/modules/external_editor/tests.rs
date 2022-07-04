@@ -368,10 +368,9 @@ fn error_restore_and_abort() {
 			Artifact::Event(Event::from('3')),
 			Artifact::ChangeState(State::List)
 		);
-		assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![Line::new(
-			"pick aaa comment"
-		)
-		.unwrap()]);
+		assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
+			Line::new("pick aaa comment").unwrap()
+		]);
 	});
 }
 
@@ -389,9 +388,8 @@ fn error_undo_modifications_and_reedit() {
 			)]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-		assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![Line::new(
-			"pick aaa comment"
-		)
-		.unwrap()]);
+		assert_eq!(test_context.rebase_todo_file.get_lines_owned(), vec![
+			Line::new("pick aaa comment").unwrap()
+		]);
 	});
 }

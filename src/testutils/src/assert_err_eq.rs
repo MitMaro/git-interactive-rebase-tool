@@ -46,6 +46,7 @@
 /// let res: Result<(), i32> = Ok(());
 ///
 /// assert_err_eq!(res, 1); // Will panic
+/// //
 /// # }
 /// ```
 ///

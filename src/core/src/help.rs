@@ -36,11 +36,13 @@ mod tests {
 
 	#[test]
 	fn test_run() {
-		assert!(run()
-			.get_message()
-			.as_ref()
-			.unwrap()
-			.contains("Full feature terminal based sequence editor for git interactive rebase."));
+		assert!(
+			run()
+				.get_message()
+				.as_ref()
+				.unwrap()
+				.contains("Full feature terminal based sequence editor for git interactive rebase.")
+		);
 	}
 
 	#[test]

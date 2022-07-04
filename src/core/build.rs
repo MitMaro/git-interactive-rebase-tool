@@ -25,11 +25,6 @@ fn git_revision_hash() -> Option<String> {
 		.output();
 	result.ok().and_then(|output| {
 		let v = String::from_utf8_lossy(&output.stdout).trim().to_string();
-		if v.is_empty() {
-			None
-		}
-		else {
-			Some(v)
-		}
+		if v.is_empty() { None } else { Some(v) }
 	})
 }

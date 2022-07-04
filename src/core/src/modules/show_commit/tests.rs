@@ -742,12 +742,14 @@ fn render_diff_end_new_line_missing() {
 				delta.add_line(DiffLine::new(Origin::Addition, "", None, Some(15), true));
 
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(delta)
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(delta)
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -784,12 +786,14 @@ fn render_diff_add_line() {
 				delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
 
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(delta)
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(delta)
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -825,12 +829,14 @@ fn render_diff_delete_line() {
 				delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
 
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(delta)
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(delta)
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -869,12 +875,14 @@ fn render_diff_context_add_remove_lines() {
 				delta.add_line(DiffLine::new(Origin::Context, "context 2", Some(15), Some(15), false));
 
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(delta)
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(delta)
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -936,12 +944,14 @@ fn render_diff_show_both_whitespace() {
 				config.diff_space_symbol = String::from("%");
 				config.diff_tab_width = 2;
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(generate_white_space_delta())
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(generate_white_space_delta())
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -975,12 +985,14 @@ fn render_diff_show_leading_whitespace() {
 				config.diff_space_symbol = String::from("%");
 				config.diff_tab_width = 2;
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(generate_white_space_delta())
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(generate_white_space_delta())
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -1014,12 +1026,14 @@ fn render_diff_show_no_whitespace() {
 				config.diff_space_symbol = String::from("%");
 				config.diff_tab_width = 2;
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(generate_white_space_delta())
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(generate_white_space_delta())
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);
@@ -1055,12 +1069,14 @@ fn render_diff_show_whitespace_all_spaces() {
 				let mut delta = Delta::new("@@ -1,7 +1,7 @@ context", 1, 1, 7, 7);
 				delta.add_line(DiffLine::new(Origin::Addition, "    ", None, Some(1), false));
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
-					.file_statuses(vec![FileStatusBuilder::new()
-						.source_path("file.txt")
-						.destination_path("file.txt")
-						.status(Status::Modified)
-						.push_delta(delta)
-						.build()])
+					.file_statuses(vec![
+						FileStatusBuilder::new()
+							.source_path("file.txt")
+							.destination_path("file.txt")
+							.status(Status::Modified)
+							.push_delta(delta)
+							.build(),
+					])
 					.build();
 				let mut module = ShowCommit::new(&config, repo);
 				module.diff = Some(diff);

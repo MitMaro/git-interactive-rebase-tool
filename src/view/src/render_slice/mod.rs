@@ -395,12 +395,7 @@ impl RenderSlice {
 				else {
 					let sum = line.get_segments().iter().fold(0, |s, l| s + l.get_length());
 
-					if sum > longest {
-						sum
-					}
-					else {
-						longest
-					}
+					if sum > longest { sum } else { longest }
 				}
 			})
 	}

@@ -32,6 +32,7 @@
 /// let vec: Vec<usize> = vec![];
 ///
 /// assert_not_empty!(vec); // Will panic
+/// //
 /// # }
 /// ```
 ///
