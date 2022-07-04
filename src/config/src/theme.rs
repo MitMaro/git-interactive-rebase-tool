@@ -1,10 +1,10 @@
-use anyhow::{Error, Result};
 use git::Config;
 
 use super::{
 	utils::{get_color, get_string},
 	Color,
 };
+use crate::errors::ConfigError;
 
 /// Represents the theme configuration options.
 #[derive(Clone, Debug)]
@@ -63,7 +63,7 @@ impl Theme {
 	}
 
 	/// Create a new theme from a Git Config reference.
-	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self> {
+	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
 		Ok(Self {
 			character_vertical_spacing: get_string(
 				git_config,
@@ -114,20 +114,26 @@ impl Default for Theme {
 }
 
 impl TryFrom<&Config> for Theme {
-	type Error = Error;
+	type Error = ConfigError;
 
 	#[inline]
-	fn try_from(config: &Config) -> core::result::Result<Self, Error> {
+	fn try_from(config: &Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}
 }
 
 #[cfg(test)]
 mod tests {
+	use claim::{assert_err, assert_ok};
 	use rstest::rstest;
+	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{assert_error, invalid_utf, with_git_config};
+	use crate::{
+		errors::InvalidColorError,
+		testutils::{invalid_utf, with_git_config},
+		ConfigErrorCause,
+	};
 
 	#[test]
 	fn new() {
@@ -142,14 +148,14 @@ mod tests {
 	#[test]
 	fn try_from_git_config() {
 		with_git_config(&[], |git_config| {
-			assert!(Theme::try_from(&git_config).is_ok());
+			assert_ok!(Theme::try_from(&git_config));
 		});
 	}
 
 	#[test]
 	fn try_from_git_config_error() {
 		with_git_config(&["[interactive-rebase-tool]", "breakColor = invalid"], |git_config| {
-			assert!(Theme::try_from(&git_config).is_err());
+			assert_err!(Theme::try_from(&git_config));
 		});
 	}
 
@@ -205,25 +211,41 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case::color_invalid_utf(
-		invalid_utf(),
-		"\"interactive-rebase-tool.breakColor\" is not valid: configuration value is not valid utf8"
-	)]
-	#[case::color_invalid_range_under(
-		"-2",
-		"\"interactive-rebase-tool.breakColor\" is not valid: \"-2\" is not a valid color index. Index must be \
-		 between 0-255."
-	)]
-	#[case::color_invalid_range_above(
-		"256",
-		"\"interactive-rebase-tool.breakColor\" is not valid: \"256\" is not a valid color index. Index must be \
-		 between 0-255."
-	)]
-	fn value_parsing_invalid(#[case] value: &str, #[case] expected_error: &str) {
+	#[case::color_invalid_range_under("-2")]
+	#[case::color_invalid_range_above("256")]
+	fn value_parsing_invalid_color(#[case] value: &str) {
 		with_git_config(
 			&["[interactive-rebase-tool]", format!("breakColor = {}", value).as_str()],
 			|git_config| {
-				assert_error(Theme::new_with_config(Some(&git_config)), expected_error);
+				assert_err_eq!(
+					Theme::new_with_config(Some(&git_config)),
+					ConfigError::new(
+						"interactive-rebase-tool.breakColor",
+						value,
+						ConfigErrorCause::InvalidColor(InvalidColorError::Indexed)
+					)
+				);
+			},
+		);
+	}
+
+	#[rstest]
+	#[case::color_invalid_utf("breakColor")]
+	#[case::color_invalid_utf("verticalSpacingCharacter")]
+	fn value_parsing_invalid_utf(#[case] key: &str) {
+		with_git_config(
+			&[
+				"[interactive-rebase-tool]",
+				format!("{} = {}", key, invalid_utf()).as_str(),
+			],
+			|git_config| {
+				assert_err_eq!(
+					Theme::new_with_config(Some(&git_config)),
+					ConfigError::new_read_error(
+						format!("interactive-rebase-tool.{}", key).as_str(),
+						ConfigErrorCause::InvalidUtf
+					)
+				);
 			},
 		);
 	}

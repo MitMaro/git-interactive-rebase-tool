@@ -1,8 +1,7 @@
-use anyhow::{Error, Result};
 use git::Config;
 
 use super::utils::get_input;
-use crate::utils::map_single_ascii_to_lower;
+use crate::{errors::ConfigError, utils::map_single_ascii_to_lower};
 
 /// Represents the key binding configuration options.
 #[derive(Clone, Debug)]
@@ -103,7 +102,7 @@ impl KeyBindings {
 		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
 	}
 
-	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self> {
+	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
 		let confirm_no = get_input(git_config, "interactive-rebase-tool.inputConfirmNo", "n")?
 			.iter()
 			.map(|s| map_single_ascii_to_lower(s))
@@ -166,10 +165,10 @@ impl Default for KeyBindings {
 }
 
 impl TryFrom<&Config> for KeyBindings {
-	type Error = Error;
+	type Error = ConfigError;
 
 	#[inline]
-	fn try_from(config: &Config) -> core::result::Result<Self, Error> {
+	fn try_from(config: &Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}
 }
@@ -177,9 +176,10 @@ impl TryFrom<&Config> for KeyBindings {
 #[cfg(test)]
 mod tests {
 	use rstest::rstest;
+	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{assert_error, invalid_utf, with_git_config};
+	use crate::{testutils::with_git_config, ConfigErrorCause};
 
 	pub(crate) fn with_keybindings<F>(lines: &[&str], callback: F)
 	where F: FnOnce(KeyBindings) {
@@ -260,30 +260,24 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case::invalid_utf(
-		invalid_utf(),
-		"\"interactive-rebase-tool.inputAbort\" is not valid: configuration value is not valid utf8"
-	)]
-	#[case::multiple_characters(
-		"abcd",
-		"interactive-rebase-tool.inputAbort must contain only one character per binding"
-	)]
-	#[case::function_key_index(
-		"F256",
-		"interactive-rebase-tool.inputAbort must contain only one character per binding"
-	)]
-	#[case::multiple_bindings_one_invalid(
-		"f foo",
-		"interactive-rebase-tool.inputAbort must contain only one character per binding"
-	)]
-	fn value_parsing_invalid(#[case] binding: &str, #[case] expected_error: &str) {
+	#[case::multiple_characters("abcd")]
+	#[case::function_key_index("F256")]
+	#[case::multiple_bindings_one_invalid("f foo")]
+	fn value_parsing_invalid(#[case] binding: &str) {
 		with_git_config(
 			&[
 				"[interactive-rebase-tool]",
 				format!("inputAbort = {}", binding).as_str(),
 			],
 			|git_config| {
-				assert_error(KeyBindings::new_with_config(Some(&git_config)), expected_error);
+				assert_err_eq!(
+					KeyBindings::new_with_config(Some(&git_config)),
+					ConfigError::new(
+						"interactive-rebase-tool.inputAbort",
+						binding,
+						ConfigErrorCause::InvalidKeyBinding
+					)
+				);
 			},
 		);
 	}

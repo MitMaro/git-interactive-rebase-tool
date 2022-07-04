@@ -1,6 +1,5 @@
 use std::env;
 
-use anyhow::{anyhow, Result};
 use git::{Config, ErrorCode};
 
 use super::{
@@ -8,11 +7,34 @@ use super::{
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 	Color,
 };
+use crate::errors::{ConfigError, ConfigErrorCause};
+
+fn _get_string(config: Option<&Config>, name: &str) -> Result<Option<String>, ConfigError> {
+	let cfg = match config {
+		None => return Ok(None),
+		Some(c) => c,
+	};
+	match cfg.get_string(name) {
+		Ok(v) => Ok(Some(v)),
+		Err(e) if e.code() == ErrorCode::NotFound => Ok(None),
+		// detecting a UTF-8 error is tricky
+		Err(e) if e.message() == "configuration value is not valid utf8" => {
+			Err(ConfigError::new_read_error(name, ConfigErrorCause::InvalidUtf))
+		},
+		Err(e) => {
+			Err(ConfigError::new_read_error(
+				name,
+				ConfigErrorCause::UnknownError(e.to_string()),
+			))
+		},
+	}
+}
 
 #[allow(clippy::string_slice, clippy::indexing_slicing)]
-pub(super) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>> {
+pub(super) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
 	let mut values = vec![];
-	for mut value in get_string(config, name, default)?.split_whitespace().map(String::from) {
+	let input = get_string(config, name, default)?;
+	for mut value in input.split_whitespace().map(String::from) {
 		let mut modifiers = vec![];
 
 		if let Some(index) = value.to_lowercase().find("shift+") {
@@ -47,14 +69,18 @@ pub(super) fn get_input(config: Option<&Config>, name: &str, default: &str) -> R
 				"right" => String::from("Right"),
 				"tab" => String::from("Tab"),
 				"up" => String::from("Up"),
-				_ => {
-					if value.len() > 1 {
+				v => {
+					if v.len() > 1 {
 						// allow F{number} values
-						if value.to_lowercase().starts_with('f') && value[1..].parse::<u8>().is_ok() {
-							value.to_uppercase()
+						if v.starts_with('f') && v[1..].parse::<u8>().is_ok() {
+							v.to_uppercase()
 						}
 						else {
-							return Err(anyhow!("{} must contain only one character per binding", name));
+							return Err(ConfigError::new(
+								name,
+								input.as_str(),
+								ConfigErrorCause::InvalidKeyBinding,
+							));
 						}
 					}
 					else {
@@ -67,60 +93,85 @@ pub(super) fn get_input(config: Option<&Config>, name: &str, default: &str) -> R
 	Ok(values)
 }
 
-pub(super) fn get_string(config: Option<&Config>, name: &str, default: &str) -> Result<String> {
-	let cfg = match config {
-		None => return Ok(String::from(default)),
-		Some(c) => c,
-	};
-	match cfg.get_string(name) {
-		Ok(v) => Ok(v),
-		Err(ref e) if e.code() == ErrorCode::NotFound => Ok(String::from(default)),
-		Err(e) => Err(anyhow!(String::from(e.message()))),
-	}
-	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
+pub(super) fn get_string(config: Option<&Config>, name: &str, default: &str) -> Result<String, ConfigError> {
+	Ok(_get_string(config, name)?.unwrap_or_else(|| String::from(default)))
 }
 
-pub(super) fn get_bool(config: Option<&Config>, name: &str, default: bool) -> Result<bool> {
-	let cfg = match config {
-		None => return Ok(default),
-		Some(c) => c,
-	};
-	match cfg.get_bool(name) {
-		Ok(v) => Ok(v),
-		Err(ref e) if e.code() == ErrorCode::NotFound => Ok(default),
-		Err(e) => Err(anyhow!(String::from(e.message()))),
+pub(super) fn get_bool(config: Option<&Config>, name: &str, default: bool) -> Result<bool, ConfigError> {
+	if let Some(cfg) = config {
+		match cfg.get_bool(name) {
+			Ok(v) => Ok(v),
+			Err(e) if e.code() == ErrorCode::NotFound => Ok(default),
+			Err(e) if e.message().contains("failed to parse") => {
+				Err(ConfigError::new_with_optional_input(
+					name,
+					_get_string(config, name).ok().flatten(),
+					ConfigErrorCause::InvalidBoolean,
+				))
+			},
+			Err(e) => {
+				Err(ConfigError::new_with_optional_input(
+					name,
+					_get_string(config, name).ok().flatten(),
+					ConfigErrorCause::UnknownError(e.to_string()),
+				))
+			},
+		}
 	}
-	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
+	else {
+		Ok(default)
+	}
 }
 
 #[allow(clippy::map_err_ignore)]
-pub(super) fn get_unsigned_integer(config: Option<&Config>, name: &str, default: u32) -> Result<u32> {
-	let cfg = match config {
-		None => return Ok(default),
-		Some(c) => c,
-	};
-	match cfg.get_i32(name) {
-		Ok(v) => {
-			v.try_into()
-				.map_err(|_| anyhow!("\"{}\" is outside of valid range for an unsigned 32-bit integer", v))
-		},
-		Err(ref e) if e.code() == ErrorCode::NotFound => Ok(default),
-		Err(e) => Err(anyhow!(String::from(e.message()))),
+pub(super) fn get_unsigned_integer(config: Option<&Config>, name: &str, default: u32) -> Result<u32, ConfigError> {
+	if let Some(cfg) = config {
+		// TODO check for overflow of i32 value
+		match cfg.get_i32(name) {
+			Ok(v) => {
+				v.try_into().map_err(|_| {
+					ConfigError::new_with_optional_input(
+						name,
+						_get_string(config, name).ok().flatten(),
+						ConfigErrorCause::InvalidUnsignedInteger,
+					)
+				})
+			},
+			Err(e) if e.code() == ErrorCode::NotFound => Ok(default),
+			Err(e) if e.message().contains("failed to parse") => {
+				Err(ConfigError::new_with_optional_input(
+					name,
+					_get_string(config, name).ok().flatten(),
+					ConfigErrorCause::InvalidUnsignedInteger,
+				))
+			},
+			Err(e) => {
+				Err(ConfigError::new_with_optional_input(
+					name,
+					_get_string(config, name).ok().flatten(),
+					ConfigErrorCause::UnknownError(e.to_string()),
+				))
+			},
+		}
 	}
-	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
+	else {
+		Ok(default)
+	}
 }
 
-pub(super) fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Color> {
-	let cfg = match config {
-		None => return Ok(default),
-		Some(c) => c,
-	};
-	match cfg.get_string(name) {
-		Ok(v) => Color::try_from(v.to_lowercase().as_str()),
-		Err(ref e) if e.code() == ErrorCode::NotFound => Ok(default),
-		Err(e) => Err(anyhow!(String::from(e.message()))),
+pub(super) fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Color, ConfigError> {
+	if let Some(value) = _get_string(config, name)? {
+		Color::try_from(value.to_lowercase().as_str()).map_err(|invalid_color_error| {
+			ConfigError::new(
+				name,
+				value.as_str(),
+				ConfigErrorCause::InvalidColor(invalid_color_error),
+			)
+		})
 	}
-	.map_err(|e| e.context(anyhow!("\"{}\" is not valid", name)))
+	else {
+		Ok(default)
+	}
 }
 
 pub(super) fn editor_from_env() -> String {
@@ -129,39 +180,43 @@ pub(super) fn editor_from_env() -> String {
 		.unwrap_or_else(|_| String::from("vi"))
 }
 
-pub(super) fn get_diff_show_whitespace(git_config: Option<&Config>) -> Result<DiffShowWhitespaceSetting> {
-	let diff_show_whitespace = get_string(git_config, "interactive-rebase-tool.diffShowWhitespace", "both")?;
-
-	match diff_show_whitespace.to_lowercase().as_str() {
+pub(super) fn get_diff_show_whitespace(
+	git_config: Option<&Config>,
+	name: &str,
+) -> Result<DiffShowWhitespaceSetting, ConfigError> {
+	match get_string(git_config, name, "both")?.to_lowercase().as_str() {
 		"true" | "on" | "both" => Ok(DiffShowWhitespaceSetting::Both),
 		"trailing" => Ok(DiffShowWhitespaceSetting::Trailing),
 		"leading" => Ok(DiffShowWhitespaceSetting::Leading),
 		"false" | "off" | "none" => Ok(DiffShowWhitespaceSetting::None),
-		_ => {
-			Err(anyhow!(
-				"\"{}\" does not match one of \"true\", \"on\", \"both\", \"trailing\", \"leading\", \"false\", \
-				 \"off\" or \"none\"",
-				diff_show_whitespace
-			)
-			.context("\"interactive-rebase-tool.diffShowWhitespace\" is not valid"))
+		input => Err(ConfigError::new(name, input, ConfigErrorCause::InvalidShowWhitespace)),
+	}
+}
+
+pub(super) fn get_diff_ignore_whitespace(
+	git_config: Option<&Config>,
+	name: &str,
+) -> Result<DiffIgnoreWhitespaceSetting, ConfigError> {
+	match get_string(git_config, name, "none")?.to_lowercase().as_str() {
+		"true" | "on" | "all" => Ok(DiffIgnoreWhitespaceSetting::All),
+		"change" => Ok(DiffIgnoreWhitespaceSetting::Change),
+		"false" | "off" | "none" => Ok(DiffIgnoreWhitespaceSetting::None),
+		input => {
+			Err(ConfigError::new(
+				name,
+				input,
+				ConfigErrorCause::InvalidDiffIgnoreWhitespace,
+			))
 		},
 	}
 }
 
-pub(super) fn get_diff_ignore_whitespace(git_config: Option<&Config>) -> Result<DiffIgnoreWhitespaceSetting> {
-	let diff_ignore_whitespace = get_string(git_config, "interactive-rebase-tool.diffIgnoreWhitespace", "none")?;
-
-	match diff_ignore_whitespace.to_lowercase().as_str() {
-		"true" | "on" | "all" => Ok(DiffIgnoreWhitespaceSetting::All),
-		"change" => Ok(DiffIgnoreWhitespaceSetting::Change),
-		"false" | "off" | "none" => Ok(DiffIgnoreWhitespaceSetting::None),
-		_ => {
-			Err(anyhow!(
-				"\"{}\" does not match one of \"true\", \"on\", \"all\", \"change\", \"false\", \"off\" or \"none\"",
-				diff_ignore_whitespace
-			)
-			.context("\"interactive-rebase-tool.diffIgnoreWhitespace\" is not valid"))
-		},
+pub(super) fn git_diff_renames(git_config: Option<&Config>, name: &str) -> Result<(bool, bool), ConfigError> {
+	match get_string(git_config, name, "true")?.to_lowercase().as_str() {
+		"true" => Ok((true, false)),
+		"false" => Ok((false, false)),
+		"copy" | "copies" => Ok((true, true)),
+		input => Err(ConfigError::new(name, input, ConfigErrorCause::InvalidDiffRenames)),
 	}
 }
 

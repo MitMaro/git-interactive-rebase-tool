@@ -93,6 +93,7 @@
 mod color;
 mod diff_ignore_whitespace_setting;
 mod diff_show_whitespace_setting;
+pub mod errors;
 mod git_config;
 mod key_bindings;
 mod theme;
@@ -101,7 +102,6 @@ mod utils;
 #[cfg(test)]
 mod testutils;
 
-use anyhow::{Error, Result};
 use git::Repository;
 
 use self::utils::{get_bool, get_diff_ignore_whitespace, get_diff_show_whitespace, get_string, get_unsigned_integer};
@@ -113,6 +113,7 @@ pub use self::{
 	key_bindings::KeyBindings,
 	theme::Theme,
 };
+use crate::errors::{ConfigError, ConfigErrorCause};
 
 const DEFAULT_SPACE_SYMBOL: &str = "\u{b7}"; // ·
 const DEFAULT_TAB_SYMBOL: &str = "\u{2192}"; // →
@@ -151,11 +152,14 @@ impl Config {
 		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
 	}
 
-	fn new_with_config(git_config: Option<&git::Config>) -> Result<Self> {
+	fn new_with_config(git_config: Option<&git::Config>) -> Result<Self, ConfigError> {
 		Ok(Self {
 			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
-			diff_ignore_whitespace: get_diff_ignore_whitespace(git_config)?,
-			diff_show_whitespace: get_diff_show_whitespace(git_config)?,
+			diff_ignore_whitespace: get_diff_ignore_whitespace(
+				git_config,
+				"interactive-rebase-tool.diffIgnoreWhitespace",
+			)?,
+			diff_show_whitespace: get_diff_show_whitespace(git_config, "interactive-rebase-tool.diffShowWhitespace")?,
 			diff_space_symbol: get_string(
 				git_config,
 				"interactive-rebase-tool.diffSpaceSymbol",
@@ -179,7 +183,7 @@ impl Default for Config {
 }
 
 impl TryFrom<&Repository> for Config {
-	type Error = Error;
+	type Error = ConfigError;
 
 	/// Creates a new Config instance loading the Git Config using [`git::Repository`].
 	///
@@ -187,19 +191,19 @@ impl TryFrom<&Repository> for Config {
 	///
 	/// Will return an `Err` if there is a problem loading the configuration.
 	#[inline]
-	fn try_from(repo: &Repository) -> core::result::Result<Self, Error> {
+	fn try_from(repo: &Repository) -> Result<Self, Self::Error> {
 		let config = repo
 			.load_config()
-			.map_err(|e| Error::from(e).context("Error loading git config"))?;
-		Self::new_with_config(Some(&config)).map_err(|e| e.context("Error reading git config"))
+			.map_err(|e| ConfigError::new_read_error("", ConfigErrorCause::GitError(e)))?;
+		Self::new_with_config(Some(&config))
 	}
 }
 
 impl TryFrom<&git::Config> for Config {
-	type Error = Error;
+	type Error = ConfigError;
 
 	#[inline]
-	fn try_from(config: &git::Config) -> core::result::Result<Self, Error> {
+	fn try_from(config: &git::Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}
 }
@@ -207,11 +211,12 @@ impl TryFrom<&git::Config> for Config {
 mod tests {
 	use std::fmt::Debug;
 
+	use ::testutils::assert_err_eq;
 	use git::testutil::with_temp_bare_repository;
 	use rstest::rstest;
 
 	use super::*;
-	use crate::testutils::{assert_error, invalid_utf, with_git_config};
+	use crate::testutils::{invalid_utf, with_git_config};
 
 	#[test]
 	fn new() {
@@ -401,63 +406,50 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case::auto_select_next(
-		"autoSelectNext",
-		"invalid",
-		"\"interactive-rebase-tool.autoSelectNext\" is not valid: failed to parse \'invalid\' as a boolean value"
-	)]
-	#[case::diff_ignore_whitespace(
-		"diffIgnoreWhitespace",
-		"invalid",
-		"\"interactive-rebase-tool.diffIgnoreWhitespace\" is not valid: \"invalid\" does not match one of \"true\", \
-		 \"on\", \"all\", \"change\", \"false\", \"off\" or \"none\""
-	)]
-	#[case::diff_show_whitespace(
-		"diffShowWhitespace",
-		"invalid",
-		"\"interactive-rebase-tool.diffShowWhitespace\" is not valid: \"invalid\" does not match one of \"true\", \
-		 \"on\", \"both\", \"trailing\", \"leading\", \"false\", \"off\" or \"none\""
-	)]
-	#[case::diff_tab_width_non_integer(
-		"diffTabWidth",
-		"invalid",
-		"\"interactive-rebase-tool.diffTabWidth\" is not valid: failed to parse \'invalid\' as a 32-bit integer"
-	)]
-	#[case::diff_tab_width_non_poitive_integer(
-		"diffTabWidth",
-		"-100",
-		"\"interactive-rebase-tool.diffTabWidth\" is not valid: \"-100\" is outside of valid range for an unsigned \
-		 32-bit integer"
-	)]
-	#[case::diff_tab_symbol(
-		"diffTabSymbol",
-		invalid_utf(),
-		"\"interactive-rebase-tool.diffTabSymbol\" is not valid: configuration value is not valid utf8"
-	)]
-	#[case::diff_space_symbol(
-		"diffSpaceSymbol",
-		invalid_utf(),
-		"\"interactive-rebase-tool.diffSpaceSymbol\" is not valid: configuration value is not valid utf8"
-	)]
-	#[case::undo_limit_non_integer(
-		"undoLimit",
-		"invalid",
-		"\"interactive-rebase-tool.undoLimit\" is not valid: failed to parse \'invalid\' as a 32-bit integer"
-	)]
-	#[case::undo_limit_non_positive_integer(
-		"undoLimit",
-		"-100",
-		"\"interactive-rebase-tool.undoLimit\" is not valid: \"-100\" is outside of valid range for an unsigned \
-		 32-bit integer"
-	)]
-	fn value_parsing_invalid(#[case] config_name: &str, #[case] config_value: &str, #[case] expected_error: &str) {
+	#[case::auto_select_next("autoSelectNext", "invalid", ConfigErrorCause::InvalidBoolean)]
+	#[case::diff_ignore_whitespace("diffIgnoreWhitespace", "invalid", ConfigErrorCause::InvalidDiffIgnoreWhitespace)]
+	#[case::diff_show_whitespace("diffShowWhitespace", "invalid", ConfigErrorCause::InvalidShowWhitespace)]
+	#[case::diff_tab_width_non_integer("diffTabWidth", "invalid", ConfigErrorCause::InvalidUnsignedInteger)]
+	#[case::diff_tab_width_non_poitive_integer("diffTabWidth", "-100", ConfigErrorCause::InvalidUnsignedInteger)]
+	#[case::undo_limit_non_integer("undoLimit", "invalid", ConfigErrorCause::InvalidUnsignedInteger)]
+	#[case::undo_limit_non_positive_integer("undoLimit", "-100", ConfigErrorCause::InvalidUnsignedInteger)]
+	fn value_parsing_invalid(#[case] config_name: &str, #[case] config_value: &str, #[case] cause: ConfigErrorCause) {
 		with_git_config(
 			&[
 				"[interactive-rebase-tool]",
 				format!("{} = {}", config_name, config_value).as_str(),
 			],
 			|git_config| {
-				assert_error(Config::new_with_config(Some(&git_config)), expected_error);
+				assert_err_eq!(
+					Config::new_with_config(Some(&git_config)),
+					ConfigError::new(
+						format!("interactive-rebase-tool.{}", config_name).as_str(),
+						config_value,
+						cause
+					)
+				);
+			},
+		);
+	}
+	#[rstest]
+	#[case::diff_tab_symbol("diffIgnoreWhitespace")]
+	#[case::diff_tab_symbol("diffShowWhitespace")]
+	#[case::diff_tab_symbol("diffTabSymbol")]
+	#[case::diff_space_symbol("diffSpaceSymbol")]
+	fn value_parsing_invalid_utf(#[case] config_name: &str) {
+		with_git_config(
+			&[
+				"[interactive-rebase-tool]",
+				format!("{} = {}", config_name, invalid_utf()).as_str(),
+			],
+			|git_config| {
+				assert_err_eq!(
+					Config::new_with_config(Some(&git_config)),
+					ConfigError::new_read_error(
+						format!("interactive-rebase-tool.{}", config_name).as_str(),
+						ConfigErrorCause::InvalidUtf
+					)
+				);
 			},
 		);
 	}

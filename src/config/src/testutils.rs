@@ -1,6 +1,5 @@
 use std::io::Write;
 
-use anyhow::Result;
 use git::Config;
 use lazy_static::lazy_static;
 use tempfile::NamedTempFile;
@@ -14,10 +13,6 @@ where F: FnOnce(Config) {
 	let tmp_file = NamedTempFile::new().unwrap();
 	writeln!(tmp_file.as_file(), "{}", lines.join("\n")).unwrap();
 	callback(Config::open(tmp_file.path()).unwrap());
-}
-
-pub(crate) fn assert_error<T>(actual: Result<T>, expected: &str) {
-	assert_eq!(format!("{:#}", actual.err().unwrap()), expected);
 }
 
 #[allow(unsafe_code)]
