@@ -21,7 +21,7 @@ girt-config = {version = "2.2.0", path = "../config"}
 
 [dev-dependencies]
 rstest = "0.15.0"
-serial_test = "0.7.0"
+serial_test = "0.8.0"
 
 [build-dependencies]
 rustc_version = "0.4.0"
