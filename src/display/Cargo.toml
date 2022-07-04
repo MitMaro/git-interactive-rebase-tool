@@ -20,7 +20,7 @@ crossterm = "0.23.2"
 girt-config = {version = "2.2.0", path = "../config"}
 
 [dev-dependencies]
-rstest = "0.13.0"
+rstest = "0.15.0"
 serial_test = "0.7.0"
 
 [build-dependencies]
