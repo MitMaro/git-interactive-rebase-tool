@@ -12,7 +12,6 @@ lazy_static! {
 
 /// Options for creating a new commit.
 #[derive(Debug)]
-#[allow(clippy::module_name_repetitions)]
 pub struct CreateCommitOptions {
 	author_name: String,
 	author_email: String,

@@ -122,7 +122,7 @@ impl LineSegment {
 
 			let skip_length = RefCell::new(0);
 			let graphemes_itr = graphemes.skip_while(|v| {
-				let len = grapheme_column_width(*v);
+				let len = grapheme_column_width(v);
 				let value = *skip_length.borrow();
 				if value + len > left {
 					false

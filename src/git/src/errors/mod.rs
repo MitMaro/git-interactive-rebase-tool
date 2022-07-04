@@ -30,7 +30,6 @@ impl Display for RepositoryLoadKind {
 /// Git errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
-#[allow(clippy::module_name_repetitions)]
 pub enum GitError {
 	/// The repository could not be loaded
 	#[error("Could not open repository from {kind}")]

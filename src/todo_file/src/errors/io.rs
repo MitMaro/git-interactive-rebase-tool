@@ -31,7 +31,6 @@ impl PartialEq for FileReadErrorCause {
 /// IO baser errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
-#[allow(clippy::module_name_repetitions)]
 pub enum IoError {
 	/// The file could not be read
 	#[error("Unable to read file `{file}`")]

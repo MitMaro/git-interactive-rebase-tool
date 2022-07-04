@@ -57,7 +57,9 @@
 	clippy::integer_arithmetic,
 	clippy::missing_docs_in_private_items,
 	clippy::mod_module_files,
+	clippy::module_name_repetitions,
 	clippy::option_if_let_else,
+	clippy::pub_use,
 	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments,
 	clippy::too_many_lines
@@ -71,9 +73,8 @@
 	rustdoc::private_doc_tests,
 	rustdoc::private_intra_doc_links
 )]
-#![cfg_attr(include_nightly_lints, allow(clippy::pub_use))]
 // LINT-REPLACE-END
-#![allow(clippy::as_conversions, clippy::integer_division, clippy::module_name_repetitions)]
+#![allow(clippy::as_conversions, clippy::integer_division)]
 
 //! Git Interactive Rebase Tool - View Module
 //!
