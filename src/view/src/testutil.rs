@@ -19,7 +19,7 @@ macro_rules! render_line {
 	(AnyLine) => {{
 		concat!("{{Any}}")
 	}};
-	(AnyLine  $count:expr) => {{
+	(AnyLine $count:expr) => {{
 		concat!("{{Any(", $count, ")}}")
 	}};
 	(StartsWith $line:expr) => {{

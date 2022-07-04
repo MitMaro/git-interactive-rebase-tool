@@ -1,30 +1,38 @@
+#array_width - allow use_small_heuristics
+#attr_fn_like_width - allow use_small_heuristics
 binop_separator = "Front"
 blank_lines_lower_bound = 0
 blank_lines_upper_bound = 1
 brace_style = "SameLineWhere"
+#chain_width - allow use_small_heuristics
 color = "Auto"
 combine_control_expr = false
 comment_width = 120
 condense_wildcard_suffixes = true
 control_brace_style = "ClosingNextLine"
 disable_all_formatting = false
+# edition - allow default
 empty_item_single_line = true
 enum_discrim_align_threshold = 0
 error_on_line_overflow = true
 error_on_unformatted = true
 fn_args_layout = "Tall"
+#fn_call_width - allow use_small_heuristics
 fn_single_line = false
 force_explicit_abi = true
 force_multiline_blocks = true
 format_code_in_doc_comments = true
+doc_comment_code_block_width = 120
+format_generated_files = false
+format_macro_matchers = true
 format_macro_bodies = true
-format_macro_matchers = false
 format_strings = true
 hard_tabs = true
+hex_literal_case = "Upper"
 hide_parse_errors = false
+ignore = []
 imports_indent = "Block"
 imports_layout = "HorizontalVertical"
-imports_granularity = "Crate"
 indent_style = "block"
 inline_attribute_width = 0
 match_arm_blocks = true
@@ -32,8 +40,10 @@ match_arm_leading_pipes = "Never"
 match_block_trailing_comma = true
 max_width = 120
 merge_derives = true
+imports_granularity = "Crate"
+# merge_imports - deprecated
 newline_style = "Unix"
-normalize_comments = false
+normalize_comments = true
 normalize_doc_attributes = true
 overflow_delimited_expr = true
 remove_nested_parens = true
@@ -41,14 +51,17 @@ reorder_impl_items = true
 reorder_imports = true
 group_imports = "StdExternalCrate"
 reorder_modules = true
-report_fixme = "Never"
-report_todo = "Never"
+# required_version - allow default
+short_array_element_width_threshold = 8
 skip_children = false
+# single_line_if_else_max_width - allow use_small_heuristics
 space_after_colon = true
 space_before_colon = false
 spaces_around_ranges = false
 struct_field_align_threshold = 0
 struct_lit_single_line = true
+# struct_lit_width - allow use_small_heuristics
+# struct_variant_width - allow use_small_heuristics
 tab_spaces = 4
 trailing_comma = "Vertical"
 trailing_semicolon = true
@@ -57,5 +70,6 @@ unstable_features = true
 use_field_init_shorthand = true
 use_small_heuristics = "Default"
 use_try_shorthand = true
+version = "One" # Would like to start using Two
 where_single_line = true
 wrap_comments = true
