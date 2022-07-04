@@ -8,8 +8,7 @@ use view::testutil::{with_view_state, TestContext as ViewContext};
 
 use crate::{
 	events::Event,
-	module,
-	module::ModuleHandler,
+	module::{self, ModuleHandler},
 	process::Process,
 	testutil::{with_event_handler, EventHandlerTestContext},
 };

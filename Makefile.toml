@@ -127,6 +127,18 @@ args = [
 	"${@}"
 ]
 
+[tasks.format-apply]
+dependencies = ["update-rust-nightly"]
+toolchain = "nightly"
+command = "cargo"
+args = [
+	"fmt",
+	"--all",
+	"--",
+	"--emit", "files",
+	"${@}"
+]
+
 [tasks.licenses]
 dependencies = ["update-rust-nightly"]
 toolchain = "nightly"

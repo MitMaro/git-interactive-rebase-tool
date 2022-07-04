@@ -11,10 +11,8 @@ use crate::{
 	events,
 	events::KeyBindings,
 	help::build_help,
-	module,
-	module::{ExitStatus, ModuleHandler},
-	process,
-	process::Process,
+	module::{self, ExitStatus, ModuleHandler},
+	process::{self, Process},
 	Args,
 	Exit,
 };
@@ -183,7 +181,7 @@ mod tests {
 	}
 
 	macro_rules! application_error {
-		($app: expr) => {
+		($app:expr) => {
 			if let Err(e) = $app {
 				e
 			}

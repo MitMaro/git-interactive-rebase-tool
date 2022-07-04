@@ -25,8 +25,7 @@ pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
 	events,
 	events::{Event, MetaEvent},
-	module,
-	module::{ExitStatus, ModuleHandler, State},
+	module::{self, ExitStatus, ModuleHandler, State},
 };
 
 pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
