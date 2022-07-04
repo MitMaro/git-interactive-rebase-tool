@@ -15,7 +15,7 @@ readme = "../../README.md"
 name = "runtime"
 
 [dependencies]
-anyhow = "1.0.53"
+anyhow = "1.0.58"
 crossbeam-channel = "0.5.2"
 parking_lot = "0.12.1"
 
