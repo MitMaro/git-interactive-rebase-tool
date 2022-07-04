@@ -613,9 +613,11 @@ mod tests {
 	) {
 		let mut display = Display::new(CrossTerm::new(), &Theme::new());
 		display.color(display_color, selected).unwrap();
-		assert!(display
-			.tui
-			.is_colors_enabled(Colors::new(expected_foreground, expected_background)));
+		assert!(
+			display
+				.tui
+				.is_colors_enabled(Colors::new(expected_foreground, expected_background))
+		);
 	}
 
 	#[rstest]

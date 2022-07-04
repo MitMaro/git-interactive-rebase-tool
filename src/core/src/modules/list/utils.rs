@@ -214,12 +214,7 @@ pub(super) fn get_todo_line_segments(
 	let action = line.get_action();
 
 	let indicator = if is_cursor_line || selected {
-		if is_full_width {
-			" > "
-		}
-		else {
-			">"
-		}
+		if is_full_width { " > " } else { ">" }
 	}
 	else if is_full_width {
 		"   "

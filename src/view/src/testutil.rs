@@ -16,18 +16,10 @@ const VISIBLE_TAB_REPLACEMENT: &str = "   \u{2192}"; // "   →"
 /// Assert the rendered output from a `ViewData`.
 #[macro_export]
 macro_rules! render_line {
-	(AnyLine) => {{
-		concat!("{{Any}}")
-	}};
-	(AnyLine $count:expr) => {{
-		concat!("{{Any(", $count, ")}}")
-	}};
-	(StartsWith $line:expr) => {{
-		concat!("{{StartsWith}}", $line)
-	}};
-	(EndsWith $line:expr) => {{
-		concat!("{{EndsWith}}", $line)
-	}};
+	(AnyLine) => {{ concat!("{{Any}}") }};
+	(AnyLine $count:expr) => {{ concat!("{{Any(", $count, ")}}") }};
+	(StartsWith $line:expr) => {{ concat!("{{StartsWith}}", $line) }};
+	(EndsWith $line:expr) => {{ concat!("{{EndsWith}}", $line) }};
 }
 
 bitflags! {

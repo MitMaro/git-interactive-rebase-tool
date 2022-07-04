@@ -344,12 +344,7 @@ impl TodoFile {
 	#[inline]
 	pub fn get_max_selected_line_index(&self) -> usize {
 		let len = self.lines.len();
-		if len == 0 {
-			0
-		}
-		else {
-			len - 1
-		}
+		if len == 0 { 0 } else { len - 1 }
 	}
 
 	/// Get the selected line index

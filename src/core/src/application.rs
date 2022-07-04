@@ -199,11 +199,12 @@ mod tests {
 			Application::new(&args(&[]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
-		assert!(exit
-			.get_message()
-			.as_ref()
-			.unwrap()
-			.contains("A todo file path must be provided"));
+		assert!(
+			exit.get_message()
+				.as_ref()
+				.unwrap()
+				.contains("A todo file path must be provided")
+		);
 	}
 
 	#[test]
@@ -215,11 +216,12 @@ mod tests {
 			Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
-		assert!(exit
-			.get_message()
-			.as_ref()
-			.unwrap()
-			.contains("Unable to load Git repository: "));
+		assert!(
+			exit.get_message()
+				.as_ref()
+				.unwrap()
+				.contains("Unable to load Git repository: ")
+		);
 	}
 
 	#[test]
@@ -272,11 +274,12 @@ mod tests {
 		);
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::Good);
-		assert!(exit
-			.get_message()
-			.as_ref()
-			.unwrap()
-			.contains("An empty rebase was provided, nothing to edit"));
+		assert!(
+			exit.get_message()
+				.as_ref()
+				.unwrap()
+				.contains("An empty rebase was provided, nothing to edit")
+		);
 	}
 
 	#[test]

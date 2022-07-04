@@ -32,10 +32,12 @@ mod tests {
 
 	#[test]
 	fn test_run() {
-		assert!(run()
-			.get_message()
-			.as_ref()
-			.unwrap()
-			.contains("Sequence Editor for Git Interactive Rebase"));
+		assert!(
+			run()
+				.get_message()
+				.as_ref()
+				.unwrap()
+				.contains("Sequence Editor for Git Interactive Rebase")
+		);
 	}
 }

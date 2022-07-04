@@ -13,10 +13,12 @@ impl Module for TestModule {}
 fn default_trait_method_activate() {
 	module_test(&[], &[], |context| {
 		let mut module = TestModule {};
-		assert!(module
-			.activate(&context.rebase_todo_file, State::List)
-			.artifact()
-			.is_none());
+		assert!(
+			module
+				.activate(&context.rebase_todo_file, State::List)
+				.artifact()
+				.is_none()
+		);
 	})
 }
 
