@@ -16,7 +16,7 @@ name = "runtime"
 
 [dependencies]
 anyhow = "1.0.58"
-crossbeam-channel = "0.5.2"
+crossbeam-channel = "0.5.5"
 parking_lot = "0.12.1"
 
 [dev-dependencies]
