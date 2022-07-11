@@ -1,7 +1,15 @@
 use git::Config;
 
-use super::utils::get_input;
-use crate::{errors::ConfigError, utils::map_single_ascii_to_lower};
+use crate::{errors::ConfigError, utils::get_input};
+
+fn map_single_ascii_to_lower(s: &str) -> String {
+	if s.is_ascii() && s.len() == 1 {
+		s.to_lowercase()
+	}
+	else {
+		String::from(s)
+	}
+}
 
 /// Represents the key binding configuration options.
 #[derive(Clone, Debug)]
@@ -175,18 +183,36 @@ impl TryFrom<&Config> for KeyBindings {
 
 #[cfg(test)]
 mod tests {
-	use rstest::rstest;
-	use testutils::assert_err_eq;
-
 	use super::*;
-	use crate::{testutils::with_git_config, ConfigErrorCause};
+	use crate::testutils::with_git_config;
 
-	pub(crate) fn with_keybindings<F>(lines: &[&str], callback: F)
-	where F: FnOnce(KeyBindings) {
-		with_git_config(lines, |config| {
-			let key_bindings = KeyBindings::new_with_config(Some(&config)).unwrap();
-			callback(key_bindings);
-		});
+	macro_rules! config_test {
+		($key:ident, $config_name:literal, $default:literal) => {
+			let config = KeyBindings::new();
+			let value = config.$key[0].as_str();
+			assert_eq!(
+				value,
+				String::from($default),
+				"Default value for key binding '{}' was expected to be '{}' but '{}' was found",
+				stringify!($key),
+				$default,
+				value
+			);
+
+			let config_value = format!("{} = \"f255\"", $config_name);
+			with_git_config(
+				&["[interactive-rebase-tool]", config_value.as_str()],
+				|git_config| {
+					let config = KeyBindings::new_with_config(Some(&git_config)).unwrap();
+					assert_eq!(
+						config.$key[0].as_str(),
+						"F255",
+						"Value for key binding '{}' was expected to be changed but was not",
+						stringify!($key)
+					);
+				},
+			);
+		};
 	}
 
 	#[test]
@@ -213,132 +239,48 @@ mod tests {
 		});
 	}
 
-	#[rstest]
-	#[case::backspace("backspace", "Backspace")]
-	#[case::backtab("backtab", "BackTab")]
-	#[case::delete("delete", "Delete")]
-	#[case::down("down", "Down")]
-	#[case::end("end", "End")]
-	#[case::end("enter", "Enter")]
-	#[case::end("esc", "Esc")]
-	#[case::home("home", "Home")]
-	#[case::insert("insert", "Insert")]
-	#[case::left("left", "Left")]
-	#[case::pagedown("pagedown", "PageDown")]
-	#[case::pageup("pageup", "PageUp")]
-	#[case::right("right", "Right")]
-	#[case::tab("tab", "Tab")]
-	#[case::up("up", "Up")]
-	#[case::f1("f1", "F1")]
-	#[case::f255("f255", "F255")]
-	#[case::modifier_character_lowercase("Control+a", "Controla")]
-	#[case::modifier_character_uppercase("Control+A", "ControlA")]
-	#[case::modifier_character_number("Control+1", "Control1")]
-	#[case::modifier_character_special("Control++", "Control+")]
-	#[case::modifier_character("Control+a", "Controla")]
-	#[case::modifier_special("Control+End", "ControlEnd")]
-	#[case::modifier_function("Control+F32", "ControlF32")]
-	#[case::modifier_control_alt_shift_out_of_order_1("Alt+Shift+Control+End", "ShiftControlAltEnd")]
-	#[case::modifier_control_alt_shift_out_of_order_2("Shift+Control+Alt+End", "ShiftControlAltEnd")]
-	#[case::modifier_only_shift("Shift+End", "ShiftEnd")]
-	#[case::modifier_only_control("Control+End", "ControlEnd")]
-	#[case::modifier_only_control("a b c d", "a,b,c,d")]
-	#[case::modifier_only_control("Control+End Control+A", "ControlEnd,ControlA")]
-	fn value_parsing(#[case] binding: &str, #[case] expected: &str) {
-		with_keybindings(
-			&[
-				"[interactive-rebase-tool]",
-				format!("inputAbort = \"{}\"", binding).as_str(),
-			],
-			|key_bindings| {
-				assert_eq!(
-					key_bindings.abort,
-					expected.split(',').map(String::from).collect::<Vec<String>>()
-				);
-			},
-		);
-	}
-
-	#[rstest]
-	#[case::multiple_characters("abcd")]
-	#[case::function_key_index("F256")]
-	#[case::multiple_bindings_one_invalid("f foo")]
-	fn value_parsing_invalid(#[case] binding: &str) {
-		with_git_config(
-			&[
-				"[interactive-rebase-tool]",
-				format!("inputAbort = {}", binding).as_str(),
-			],
-			|git_config| {
-				assert_err_eq!(
-					KeyBindings::new_with_config(Some(&git_config)),
-					ConfigError::new(
-						"interactive-rebase-tool.inputAbort",
-						binding,
-						ConfigErrorCause::InvalidKeyBinding
-					)
-				);
-			},
-		);
-	}
-
-	#[rstest]
-	#[case::abort("inputAbort", "q", |bindings: KeyBindings| bindings.abort)]
-	#[case::action_break("inputActionBreak", "b", |bindings: KeyBindings| bindings.action_break)]
-	#[case::action_drop("inputActionDrop", "d", |bindings: KeyBindings| bindings.action_drop)]
-	#[case::action_edit("inputActionEdit", "e", |bindings: KeyBindings| bindings.action_edit)]
-	#[case::action_fixup("inputActionFixup", "f", |bindings: KeyBindings| bindings.action_fixup)]
-	#[case::action_pick("inputActionPick", "p", |bindings: KeyBindings| bindings.action_pick)]
-	#[case::action_reword("inputActionReword", "r", |bindings: KeyBindings| bindings.action_reword)]
-	#[case::action_squash("inputActionSquash", "s", |bindings: KeyBindings| bindings.action_squash)]
-	#[case::confirm_no("inputConfirmNo", "n", |bindings: KeyBindings| bindings.confirm_no)]
-	#[case::confirm_yes("inputConfirmYes", "y", |bindings: KeyBindings| bindings.confirm_yes)]
-	#[case::edit("inputEdit", "E", |bindings: KeyBindings| bindings.edit)]
-	#[case::force_abort("inputForceAbort", "Q", |bindings: KeyBindings| bindings.force_abort)]
-	#[case::force_rebase("inputForceRebase", "W", |bindings: KeyBindings| bindings.force_rebase)]
-	#[case::help("inputHelp", "?", |bindings: KeyBindings| bindings.help)]
-	#[case::insert_line("insertLine", "I", |bindings: KeyBindings| bindings.insert_line)]
-	#[case::move_down("inputMoveDown", "Down", |bindings: KeyBindings| bindings.move_down)]
-	#[case::move_end("inputMoveEnd", "End", |bindings: KeyBindings| bindings.move_end)]
-	#[case::move_home("inputMoveHome", "Home", |bindings: KeyBindings| bindings.move_home)]
-	#[case::move_left("inputMoveLeft", "Left", |bindings: KeyBindings| bindings.move_left)]
-	#[case::move_right("inputMoveRight", "Right", |bindings: KeyBindings| bindings.move_right)]
-	#[case::move_up("inputMoveUp", "Up", |bindings: KeyBindings| bindings.move_up)]
-	#[case::move_down_step("inputMoveStepDown", "PageDown", |bindings: KeyBindings| bindings.move_down_step)]
-	#[case::move_up_step("inputMoveStepUp", "PageUp", |bindings: KeyBindings| bindings.move_up_step)]
-	#[case::move_selection_down("inputMoveSelectionDown", "j", |bindings: KeyBindings| bindings.move_selection_down)]
-	#[case::move_selection_up("inputMoveSelectionUp", "k", |bindings: KeyBindings| bindings.move_selection_up)]
-	#[case::scroll_down("inputScrollDown", "Down", |bindings: KeyBindings| bindings.scroll_down)]
-	#[case::scroll_end("inputScrollEnd", "End", |bindings: KeyBindings| bindings.scroll_end)]
-	#[case::scroll_home("inputScrollHome", "Home", |bindings: KeyBindings| bindings.scroll_home)]
-	#[case::scroll_left("inputScrollLeft", "Left", |bindings: KeyBindings| bindings.scroll_left)]
-	#[case::scroll_right("inputScrollRight", "Right", |bindings: KeyBindings| bindings.scroll_right)]
-	#[case::scroll_up("inputScrollUp", "Up", |bindings: KeyBindings| bindings.scroll_up)]
-	#[case::scroll_page_down("inputScrollStepDown", "PageDown", |bindings: KeyBindings| bindings.scroll_step_down)]
-	#[case::scroll_page_up("inputScrollStepUp", "PageUp", |bindings: KeyBindings| bindings.scroll_step_up)]
-	#[case::open_in_external_editor(
-		"inputOpenInExternalEditor",
-		"!",
-		|bindings: KeyBindings| bindings.open_in_external_editor)
-	]
-	#[case::rebase("inputRebase", "w", |bindings: KeyBindings| bindings.rebase)]
-	#[case::redo("inputRedo", "Controly", |bindings: KeyBindings| bindings.redo)]
-	#[case::remove_line("removeLine", "Delete", |bindings: KeyBindings| bindings.remove_line)]
-	#[case::show_commit("inputShowCommit", "c", |bindings: KeyBindings| bindings.show_commit)]
-	#[case::show_diff("inputShowDiff", "d", |bindings: KeyBindings| bindings.show_diff)]
-	#[case::toggle_visual_mode("inputToggleVisualMode", "v", |bindings: KeyBindings| bindings.toggle_visual_mode)]
-	#[case::undo("inputUndo", "Controlz", |bindings: KeyBindings| bindings.undo)]
-	pub(crate) fn test_binding<F: 'static>(#[case] config_name: &str, #[case] default: &str, #[case] access: F)
-	where F: Fn(KeyBindings) -> Vec<String> {
-		let default_keybindings = KeyBindings::new();
-		let binding = access(default_keybindings);
-		assert_eq!(binding, vec![String::from(default)]);
-
-		let config_value = format!("{} = \"f255\"", config_name);
-		with_git_config(&["[interactive-rebase-tool]", config_value.as_str()], |config| {
-			let key_bindings = KeyBindings::new_with_config(Some(&config)).unwrap();
-			let binding = access(key_bindings);
-			assert_eq!(binding, vec![String::from("F255")]);
-		});
+	#[test]
+	fn key_bindings() {
+		config_test!(abort, "inputAbort", "q");
+		config_test!(action_break, "inputActionBreak", "b");
+		config_test!(action_drop, "inputActionDrop", "d");
+		config_test!(action_edit, "inputActionEdit", "e");
+		config_test!(action_fixup, "inputActionFixup", "f");
+		config_test!(action_pick, "inputActionPick", "p");
+		config_test!(action_reword, "inputActionReword", "r");
+		config_test!(action_squash, "inputActionSquash", "s");
+		config_test!(confirm_no, "inputConfirmNo", "n");
+		config_test!(confirm_yes, "inputConfirmYes", "y");
+		config_test!(edit, "inputEdit", "E");
+		config_test!(force_abort, "inputForceAbort", "Q");
+		config_test!(force_rebase, "inputForceRebase", "W");
+		config_test!(help, "inputHelp", "?");
+		config_test!(insert_line, "insertLine", "I");
+		config_test!(move_down, "inputMoveDown", "Down");
+		config_test!(move_end, "inputMoveEnd", "End");
+		config_test!(move_home, "inputMoveHome", "Home");
+		config_test!(move_left, "inputMoveLeft", "Left");
+		config_test!(move_right, "inputMoveRight", "Right");
+		config_test!(move_up, "inputMoveUp", "Up");
+		config_test!(move_down_step, "inputMoveStepDown", "PageDown");
+		config_test!(move_up_step, "inputMoveStepUp", "PageUp");
+		config_test!(move_selection_down, "inputMoveSelectionDown", "j");
+		config_test!(move_selection_up, "inputMoveSelectionUp", "k");
+		config_test!(scroll_down, "inputScrollDown", "Down");
+		config_test!(scroll_end, "inputScrollEnd", "End");
+		config_test!(scroll_home, "inputScrollHome", "Home");
+		config_test!(scroll_left, "inputScrollLeft", "Left");
+		config_test!(scroll_right, "inputScrollRight", "Right");
+		config_test!(scroll_up, "inputScrollUp", "Up");
+		config_test!(scroll_step_down, "inputScrollStepDown", "PageDown");
+		config_test!(scroll_step_up, "inputScrollStepUp", "PageUp");
+		config_test!(open_in_external_editor, "inputOpenInExternalEditor", "!");
+		config_test!(rebase, "inputRebase", "w");
+		config_test!(redo, "inputRedo", "Controly");
+		config_test!(remove_line, "removeLine", "Delete");
+		config_test!(show_commit, "inputShowCommit", "c");
+		config_test!(show_diff, "inputShowDiff", "d");
+		config_test!(toggle_visual_mode, "inputToggleVisualMode", "v");
+		config_test!(undo, "inputUndo", "Controlz");
 	}
 }

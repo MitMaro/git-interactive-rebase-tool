@@ -1,10 +1,26 @@
 use git::Config;
 
-use super::{
-	utils::{get_color, get_string},
+use crate::{
+	errors::ConfigError,
+	utils::{_get_string, get_string},
 	Color,
+	ConfigErrorCause,
 };
-use crate::errors::ConfigError;
+
+fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Color, ConfigError> {
+	if let Some(value) = _get_string(config, name)? {
+		Color::try_from(value.to_lowercase().as_str()).map_err(|invalid_color_error| {
+			ConfigError::new(
+				name,
+				value.as_str(),
+				ConfigErrorCause::InvalidColor(invalid_color_error),
+			)
+		})
+	}
+	else {
+		Ok(default)
+	}
+}
 
 /// Represents the theme configuration options.
 #[derive(Clone, Debug)]
@@ -135,6 +151,35 @@ mod tests {
 		ConfigErrorCause,
 	};
 
+	macro_rules! config_test {
+		($key:ident, $config_name:literal, $default:expr) => {
+			let config = Theme::new();
+			let value = config.$key;
+			assert_eq!(
+				value,
+				$default,
+				"Default for theme configuration '{}' was expected to be '{:?}' but '{:?}' was found",
+				stringify!($key),
+				$default,
+				value
+			);
+
+			let config_value = format!("{} = \"42\"", $config_name);
+			with_git_config(
+				&["[interactive-rebase-tool]", config_value.as_str()],
+				|git_config| {
+					let config = Theme::new_with_config(Some(&git_config)).unwrap();
+					assert_eq!(
+						config.$key,
+						Color::Index(42),
+						"Value for theme configuration '{}' was expected to be changed but was not",
+						stringify!($key)
+					);
+				},
+			);
+		};
+	}
+
 	#[test]
 	fn new() {
 		let _config = Theme::new();
@@ -171,62 +216,42 @@ mod tests {
 		);
 	}
 
-	#[rstest]
-	#[case::color_action_break("breakColor", Color::LightWhite, |theme: Theme| theme.color_action_break)]
-	#[case::color_action_drop("dropColor", Color::LightRed, |theme: Theme| theme.color_action_drop)]
-	#[case::color_action_edit("editColor", Color::LightBlue, |theme: Theme| theme.color_action_edit)]
-	#[case::color_action_exec("execColor", Color::LightWhite, |theme: Theme| theme.color_action_exec)]
-	#[case::color_action_fixup("fixupColor", Color::LightMagenta, |theme: Theme| theme.color_action_fixup)]
-	#[case::color_action_pick("pickColor", Color::LightGreen, |theme: Theme| theme.color_action_pick)]
-	#[case::color_action_reword("rewordColor", Color::LightYellow, |theme: Theme| theme.color_action_reword)]
-	#[case::color_action_squash("squashColor", Color::LightCyan, |theme: Theme| theme.color_action_squash)]
-	#[case::color_action_label("labelColor", Color::DarkYellow, |theme: Theme| theme.color_action_label)]
-	#[case::color_action_reset("resetColor", Color::DarkYellow, |theme: Theme| theme.color_action_reset)]
-	#[case::color_action_merge("mergeColor", Color::DarkYellow, |theme: Theme| theme.color_action_merge)]
-	#[case::color_background("backgroundColor", Color::Default, |theme: Theme| theme.color_background)]
-	#[case::color_diff_add("diffAddColor", Color::LightGreen, |theme: Theme| theme.color_diff_add)]
-	#[case::color_diff_change("diffChangeColor", Color::LightYellow, |theme: Theme| theme.color_diff_change)]
-	#[case::color_diff_context("diffContextColor", Color::LightWhite, |theme: Theme| theme.color_diff_context)]
-	#[case::color_diff_remove("diffRemoveColor", Color::LightRed, |theme: Theme| theme.color_diff_remove)]
-	#[case::color_diff_whitespace("diffWhitespace", Color::LightBlack, |theme: Theme| theme.color_diff_whitespace)]
-	#[case::color_foreground("foregroundColor", Color::Default, |theme: Theme| theme.color_foreground)]
-	#[case::color_indicator("indicatorColor", Color::LightCyan, |theme: Theme| theme.color_indicator)]
-	#[case::color_selected_background(
-		"selectedBackgroundColor",
-		Color::Index(237),
-		|theme: Theme| theme.color_selected_background)
-	]
-	pub(crate) fn theme_color<F: 'static>(#[case] config_name: &str, #[case] default: Color, #[case] access: F)
-	where F: Fn(Theme) -> Color {
-		let default_theme = Theme::new();
-		let color = access(default_theme);
-		assert_eq!(color, default);
-
-		let config_value = format!("{} = \"42\"", config_name);
-		with_git_config(&["[interactive-rebase-tool]", config_value.as_str()], |config| {
-			let theme = Theme::new_with_config(Some(&config)).unwrap();
-			let color = access(theme);
-			assert_eq!(color, Color::Index(42));
-		});
+	#[test]
+	fn theme_color() {
+		config_test!(color_action_break, "breakColor", Color::LightWhite);
+		config_test!(color_action_drop, "dropColor", Color::LightRed);
+		config_test!(color_action_edit, "editColor", Color::LightBlue);
+		config_test!(color_action_exec, "execColor", Color::LightWhite);
+		config_test!(color_action_fixup, "fixupColor", Color::LightMagenta);
+		config_test!(color_action_pick, "pickColor", Color::LightGreen);
+		config_test!(color_action_reword, "rewordColor", Color::LightYellow);
+		config_test!(color_action_squash, "squashColor", Color::LightCyan);
+		config_test!(color_action_label, "labelColor", Color::DarkYellow);
+		config_test!(color_action_reset, "resetColor", Color::DarkYellow);
+		config_test!(color_action_merge, "mergeColor", Color::DarkYellow);
+		config_test!(color_background, "backgroundColor", Color::Default);
+		config_test!(color_diff_add, "diffAddColor", Color::LightGreen);
+		config_test!(color_diff_change, "diffChangeColor", Color::LightYellow);
+		config_test!(color_diff_context, "diffContextColor", Color::LightWhite);
+		config_test!(color_diff_remove, "diffRemoveColor", Color::LightRed);
+		config_test!(color_diff_whitespace, "diffWhitespace", Color::LightBlack);
+		config_test!(color_foreground, "foregroundColor", Color::Default);
+		config_test!(color_indicator, "indicatorColor", Color::LightCyan);
+		config_test!(color_selected_background, "selectedBackgroundColor", Color::Index(237));
 	}
 
-	#[rstest]
-	#[case::color_invalid_range_under("-2")]
-	#[case::color_invalid_range_above("256")]
-	fn value_parsing_invalid_color(#[case] value: &str) {
-		with_git_config(
-			&["[interactive-rebase-tool]", format!("breakColor = {}", value).as_str()],
-			|git_config| {
-				assert_err_eq!(
-					Theme::new_with_config(Some(&git_config)),
-					ConfigError::new(
-						"interactive-rebase-tool.breakColor",
-						value,
-						ConfigErrorCause::InvalidColor(InvalidColorError::Indexed)
-					)
-				);
-			},
-		);
+	#[test]
+	fn value_parsing_invalid_color() {
+		with_git_config(&["[interactive-rebase-tool]", "breakColor = -2"], |git_config| {
+			assert_err_eq!(
+				Theme::new_with_config(Some(&git_config)),
+				ConfigError::new(
+					"interactive-rebase-tool.breakColor",
+					"-2",
+					ConfigErrorCause::InvalidColor(InvalidColorError::Indexed)
+				)
+			);
+		});
 	}
 
 	#[rstest]
