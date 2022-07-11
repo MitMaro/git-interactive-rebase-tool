@@ -207,6 +207,7 @@ impl TryFrom<&git::Config> for Config {
 		Self::new_with_config(Some(config))
 	}
 }
+
 #[cfg(test)]
 mod tests {
 	use std::fmt::Debug;
@@ -431,6 +432,7 @@ mod tests {
 			},
 		);
 	}
+
 	#[rstest]
 	#[case::diff_tab_symbol("diffIgnoreWhitespace")]
 	#[case::diff_tab_symbol("diffShowWhitespace")]

@@ -1,7 +1,18 @@
+use std::env;
+
 use git::Config;
 
-use super::utils::{editor_from_env, get_string, get_unsigned_integer};
-use crate::{errors::ConfigError, utils::git_diff_renames};
+use crate::{
+	errors::ConfigError,
+	get_string,
+	utils::{get_unsigned_integer, git_diff_renames},
+};
+
+fn editor_from_env() -> String {
+	env::var("VISUAL")
+		.or_else(|_| env::var("EDITOR"))
+		.unwrap_or_else(|_| String::from("vi"))
+}
 
 /// Represents the git configuration options.
 #[derive(Clone, Debug)]
@@ -85,6 +96,7 @@ impl TryFrom<&Config> for GitConfig {
 mod tests {
 	use std::env::{remove_var, set_var};
 
+	use rstest::rstest;
 	use testutils::assert_err_eq;
 
 	use super::*;
@@ -92,6 +104,43 @@ mod tests {
 		testutils::{invalid_utf, with_git_config},
 		ConfigErrorCause,
 	};
+
+	macro_rules! config_test {
+		(
+			$key:ident,
+			$config_parent:literal,
+			$config_name:literal,
+			default $default:literal,
+			$($value: literal => $expected: literal),*
+		) => {
+			let config = GitConfig::new();
+			let value = config.$key;
+			assert_eq!(
+				value,
+				$default,
+				"Default value for '{}' was expected to be '{}' but '{}' was found",
+				stringify!($key),
+				$default,
+				value
+			);
+
+			for (value, expected) in vec![$( ($value, $expected), )*] {
+				let config_parent = format!("[{}]", $config_parent);
+				let config_value = format!("{} = \"{}\"", $config_name, value);
+				with_git_config(&[config_parent.as_str(), config_value.as_str()], |git_config| {
+					let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
+					assert_eq!(
+						config.$key,
+						expected,
+						"Value for '{}' was expected to be '{}' but '{}' was found",
+						stringify!($key),
+						$default,
+						value
+					);
+				});
+			}
+		};
+	}
 
 	#[test]
 	fn new() {
@@ -117,211 +166,15 @@ mod tests {
 		});
 	}
 
-	#[test]
-	fn comment_char_default() {
-		let config = GitConfig::new();
-		assert_eq!(config.comment_char, "#");
-	}
-
-	#[test]
-	fn comment_char_auto() {
-		with_git_config(&["[core]", "commentChar = auto"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert_eq!(config.comment_char, "#");
-		});
-	}
-
-	#[test]
-	fn comment_char() {
-		with_git_config(&["[core]", "commentChar = \";\""], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert_eq!(config.comment_char, ";");
-		});
-	}
-
-	#[test]
-	fn comment_char_invalid() {
-		with_git_config(
-			&["[core]", format!("commentChar = {}", invalid_utf()).as_str()],
-			|git_config| {
-				assert_err_eq!(
-					GitConfig::new_with_config(Some(&git_config)),
-					ConfigError::new_read_error("core.commentChar", ConfigErrorCause::InvalidUtf),
-				);
-			},
-		);
-	}
-
-	#[test]
-	fn diff_context_default() {
-		let config = GitConfig::new();
-		assert_eq!(config.diff_context, 3);
-	}
-
-	#[test]
-	fn diff_context() {
-		with_git_config(&["[diff]", "context = 5"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert_eq!(config.diff_context, 5);
-		});
-	}
-
-	#[test]
-	fn diff_context_invalid() {
-		with_git_config(&["[diff]", "context = invalid"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new("diff.context", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
-			);
-		});
-	}
-
-	#[test]
-	fn diff_context_invalid_range() {
-		with_git_config(&["[diff]", "context = -100"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new("diff.context", "-100", ConfigErrorCause::InvalidUnsignedInteger),
-			);
-		});
-	}
-
-	#[test]
-	fn diff_interhunk_lines_default() {
-		let config = GitConfig::new();
-		assert_eq!(config.diff_interhunk_lines, 0);
-	}
-
-	#[test]
-	fn diff_interhunk_lines() {
-		with_git_config(&["[diff]", "interHunkContext = 5"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert_eq!(config.diff_interhunk_lines, 5);
-		});
-	}
-
-	#[test]
-	fn diff_interhunk_lines_invalid() {
-		with_git_config(&["[diff]", "interHunkContext = invalid"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new(
-					"diff.interHunkContext",
-					"invalid",
-					ConfigErrorCause::InvalidUnsignedInteger
-				),
-			);
-		});
-	}
-
-	#[test]
-	fn diff_interhunk_lines_invalid_range() {
-		with_git_config(&["[diff]", "interHunkContext = -100"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new(
-					"diff.interHunkContext",
-					"-100",
-					ConfigErrorCause::InvalidUnsignedInteger
-				),
-			);
-		});
-	}
-
-	#[test]
-	fn diff_rename_limit_default() {
-		let config = GitConfig::new();
-		assert_eq!(config.diff_rename_limit, 200);
-	}
-
-	#[test]
-	fn diff_rename_limit() {
-		with_git_config(&["[diff]", "renameLimit = 5"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert_eq!(config.diff_rename_limit, 5);
-		});
-	}
-
-	#[test]
-	fn diff_rename_limit_invalid() {
-		with_git_config(&["[diff]", "renameLimit = invalid"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new("diff.renameLimit", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
-			);
-		});
-	}
-
-	#[test]
-	fn diff_rename_limit_invalid_range() {
-		with_git_config(&["[diff]", "renameLimit = -100"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new("diff.renameLimit", "-100", ConfigErrorCause::InvalidUnsignedInteger),
-			);
-		});
-	}
-
-	#[test]
-	fn diff_renames_default() {
-		let config = GitConfig::new();
-		assert!(config.diff_renames);
-		assert!(!config.diff_copies);
-	}
-
-	#[test]
-	fn diff_renames_true() {
-		with_git_config(&["[diff]", "renames = true"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert!(config.diff_renames);
-			assert!(!config.diff_copies);
-		});
-	}
-
-	#[test]
-	fn diff_renames_false() {
-		with_git_config(&["[diff]", "renames = false"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert!(!config.diff_renames);
-			assert!(!config.diff_copies);
-		});
-	}
-
-	#[test]
-	fn diff_renames_copy() {
-		with_git_config(&["[diff]", "renames = copy"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert!(config.diff_renames);
-			assert!(config.diff_copies);
-		});
-	}
-
-	#[test]
-	fn diff_renames_copies() {
-		with_git_config(&["[diff]", "renames = copies"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert!(config.diff_renames);
-			assert!(config.diff_copies);
-		});
-	}
-
-	#[test]
-	fn diff_renames_mixed_case() {
-		with_git_config(&["[diff]", "renames = cOpIeS"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert!(config.diff_renames);
-			assert!(config.diff_copies);
-		});
-	}
-
-	#[test]
-	fn diff_renames_invalid() {
-		with_git_config(&["[diff]", "renames = invalid"], |git_config| {
-			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
-				ConfigError::new("diff.renames", "invalid", ConfigErrorCause::InvalidDiffRenames),
-			);
-		});
+	#[rstest]
+	fn config_values() {
+		config_test!(comment_char, "core", "commentChar", default "#", ";" => ";", "auto" => "#");
+		config_test!(diff_context, "diff", "context", default 3, "5" => 5);
+		config_test!(diff_interhunk_lines, "diff", "interHunkContext", default 0, "5" => 5);
+		config_test!(diff_interhunk_lines, "diff", "interHunkContext", default 0, "5" => 5);
+		config_test!(diff_rename_limit, "diff", "renameLimit", default 200, "5" => 5);
+		config_test!(diff_renames, "diff", "renames", default true, "true" => true, "false" => false, "copy" => true);
+		config_test!(diff_copies, "diff", "renames",default false, "true" => false, "false" => false, "copy" => true);
 	}
 
 	#[test]
@@ -364,6 +217,36 @@ mod tests {
 	}
 
 	#[test]
+	fn diff_rename_limit_invalid() {
+		with_git_config(&["[diff]", "renameLimit = invalid"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new("diff.renameLimit", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
+			);
+		});
+	}
+
+	#[test]
+	fn diff_rename_limit_invalid_range() {
+		with_git_config(&["[diff]", "renameLimit = -100"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new("diff.renameLimit", "-100", ConfigErrorCause::InvalidUnsignedInteger),
+			);
+		});
+	}
+
+	#[test]
+	fn diff_renames_invalid() {
+		with_git_config(&["[diff]", "renames = invalid"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new("diff.renames", "invalid", ConfigErrorCause::InvalidDiffRenames),
+			);
+		});
+	}
+
+	#[test]
 	#[serial_test::serial]
 	fn git_editor_invalid() {
 		remove_var("VISUAL");
@@ -377,5 +260,66 @@ mod tests {
 				);
 			},
 		);
+	}
+
+	#[test]
+	fn comment_char_invalid() {
+		with_git_config(
+			&["[core]", format!("commentChar = {}", invalid_utf()).as_str()],
+			|git_config| {
+				assert_err_eq!(
+					GitConfig::new_with_config(Some(&git_config)),
+					ConfigError::new_read_error("core.commentChar", ConfigErrorCause::InvalidUtf),
+				);
+			},
+		);
+	}
+
+	#[test]
+	fn diff_context_invalid() {
+		with_git_config(&["[diff]", "context = invalid"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new("diff.context", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
+			);
+		});
+	}
+
+	#[test]
+	fn diff_context_invalid_range() {
+		with_git_config(&["[diff]", "context = -100"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new("diff.context", "-100", ConfigErrorCause::InvalidUnsignedInteger),
+			);
+		});
+	}
+
+	#[test]
+	fn diff_interhunk_lines_invalid() {
+		with_git_config(&["[diff]", "interHunkContext = invalid"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new(
+					"diff.interHunkContext",
+					"invalid",
+					ConfigErrorCause::InvalidUnsignedInteger
+				),
+			);
+		});
+	}
+
+	#[test]
+	fn diff_interhunk_lines_invalid_range() {
+		with_git_config(&["[diff]", "interHunkContext = -100"], |git_config| {
+			assert_err_eq!(
+				GitConfig::new_with_config(Some(&git_config)),
+				ConfigError::new(
+					"diff.interHunkContext",
+					"-100",
+					ConfigErrorCause::InvalidUnsignedInteger
+				),
+			);
+		});
 	}
 }
