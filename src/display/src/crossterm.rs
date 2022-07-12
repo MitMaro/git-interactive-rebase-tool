@@ -1,10 +1,8 @@
 use std::{
-	io,
 	io::{stdout, BufWriter, Stdout, Write},
 	time::Duration,
 };
 
-use anyhow::{anyhow, Error, Result};
 use crossterm::{
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
 	event::{poll, read, DisableMouseCapture, EnableMouseCapture, Event},
@@ -25,6 +23,7 @@ use crossterm::{
 };
 
 use super::{color_mode::ColorMode, size::Size, tui::Tui, utils::detect_color_mode};
+use crate::error::DisplayError;
 
 /// A thin wrapper over the [Crossterm library](https://github.com/crossterm-rs/crossterm).
 #[derive(Debug)]
@@ -40,7 +39,7 @@ impl Tui for CrossTerm {
 	}
 
 	#[inline]
-	fn reset(&mut self) -> Result<()> {
+	fn reset(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(ResetColor)?;
 		self.queue_command(SetAttribute(Attribute::Reset))?;
 		self.queue_command(Clear(ClearType::All))?;
@@ -48,24 +47,22 @@ impl Tui for CrossTerm {
 	}
 
 	#[inline]
-	fn flush(&mut self) -> Result<()> {
-		self.window
-			.flush()
-			.map_err(|err| anyhow!("{:#}", err).context("Unexpected Error"))
+	fn flush(&mut self) -> Result<(), DisplayError> {
+		self.window.flush().map_err(DisplayError::Unexpected)
 	}
 
 	#[inline]
-	fn print(&mut self, s: &str) -> Result<()> {
+	fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 		self.queue_command(Print(s))
 	}
 
 	#[inline]
-	fn set_color(&mut self, colors: Colors) -> Result<()> {
+	fn set_color(&mut self, colors: Colors) -> Result<(), DisplayError> {
 		self.queue_command(SetColors(colors))
 	}
 
 	#[inline]
-	fn set_dim(&mut self, dim: bool) -> Result<()> {
+	fn set_dim(&mut self, dim: bool) -> Result<(), DisplayError> {
 		self.queue_command(SetAttribute(
 			if dim {
 				Attribute::Dim
@@ -77,7 +74,7 @@ impl Tui for CrossTerm {
 	}
 
 	#[inline]
-	fn set_underline(&mut self, underline: bool) -> Result<()> {
+	fn set_underline(&mut self, underline: bool) -> Result<(), DisplayError> {
 		self.queue_command(SetAttribute(
 			if underline {
 				Attribute::Underlined
@@ -89,7 +86,7 @@ impl Tui for CrossTerm {
 	}
 
 	#[inline]
-	fn set_reverse(&mut self, reverse: bool) -> Result<()> {
+	fn set_reverse(&mut self, reverse: bool) -> Result<(), DisplayError> {
 		self.queue_command(SetAttribute(
 			if reverse {
 				Attribute::Reverse
@@ -101,9 +98,9 @@ impl Tui for CrossTerm {
 	}
 
 	#[inline]
-	fn read_event() -> Result<Option<Event>> {
+	fn read_event() -> Result<Option<Event>, DisplayError> {
 		if poll(Duration::from_millis(20)).unwrap_or(false) {
-			read().map(Some).map_err(Self::map_err)
+			read().map(Some).map_err(DisplayError::Unexpected)
 		}
 		else {
 			Ok(None)
@@ -119,32 +116,32 @@ impl Tui for CrossTerm {
 	}
 
 	#[inline]
-	fn move_to_column(&mut self, x: u16) -> Result<()> {
+	fn move_to_column(&mut self, x: u16) -> Result<(), DisplayError> {
 		self.queue_command(MoveToColumn(x))
 	}
 
 	#[inline]
-	fn move_next_line(&mut self) -> Result<()> {
+	fn move_next_line(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(MoveToNextLine(1))
 	}
 
 	#[inline]
-	fn start(&mut self) -> Result<()> {
+	fn start(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(EnterAlternateScreen)?;
 		self.queue_command(DisableLineWrap)?;
 		self.queue_command(Hide)?;
 		self.queue_command(EnableMouseCapture)?;
-		enable_raw_mode().map_err(Self::map_err)?;
+		enable_raw_mode().map_err(DisplayError::Unexpected)?;
 		self.flush()
 	}
 
 	#[inline]
-	fn end(&mut self) -> Result<()> {
+	fn end(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(DisableMouseCapture)?;
 		self.queue_command(Show)?;
 		self.queue_command(EnableLineWrap)?;
 		self.queue_command(LeaveAlternateScreen)?;
-		disable_raw_mode().map_err(Self::map_err)?;
+		disable_raw_mode().map_err(DisplayError::Unexpected)?;
 		self.flush()
 	}
 }
@@ -161,13 +158,8 @@ impl CrossTerm {
 		}
 	}
 
-	#[allow(clippy::needless_pass_by_value)]
-	fn map_err(err: io::Error) -> Error {
-		anyhow!("{:#}", err).context("Unexpected Error")
-	}
-
-	fn queue_command(&mut self, command: impl Command) -> Result<()> {
-		let _result = self.window.queue(command).map_err(Self::map_err)?;
+	fn queue_command(&mut self, command: impl Command) -> Result<(), DisplayError> {
+		let _result = self.window.queue(command).map_err(DisplayError::Unexpected)?;
 		Ok(())
 	}
 }
