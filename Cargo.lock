@@ -311,12 +311,12 @@ dependencies = [
 name = "girt-display"
 version = "2.2.0"
 dependencies = [
- "anyhow",
  "crossterm",
  "girt-config",
  "rstest",
  "rustc_version",
  "serial_test",
+ "thiserror",
 ]
 
 [[package]]

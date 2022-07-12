@@ -100,7 +100,7 @@ mod view_line;
 #[cfg(test)]
 mod tests;
 
-use anyhow::Result;
+use anyhow::{Error, Result};
 use display::{Display, DisplayColor, Tui};
 
 pub use self::{
@@ -145,7 +145,7 @@ impl<C: Tui> View<C> {
 	/// Results in an error if the terminal cannot be started.
 	#[inline]
 	pub(crate) fn start(&mut self) -> Result<()> {
-		self.display.start()
+		self.display.start().map_err(Error::from)
 	}
 
 	/// End the view processing.
@@ -154,7 +154,7 @@ impl<C: Tui> View<C> {
 	/// Results in an error if the terminal cannot be ended.
 	#[inline]
 	pub(crate) fn end(&mut self) -> Result<()> {
-		self.display.end()
+		self.display.end().map_err(Error::from)
 	}
 
 	/// Render a slice.

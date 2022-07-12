@@ -1,4 +1,3 @@
-use anyhow::Result;
 use crossterm::{
 	event::Event,
 	style::{Attribute, Attributes, Color, Colors},
@@ -7,6 +6,7 @@ use crossterm::{
 use crate::{
 	testutil::{MockableTui, State},
 	ColorMode,
+	DisplayError,
 	Size,
 };
 
@@ -30,7 +30,7 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn reset(&mut self) -> Result<()> {
+	fn reset(&mut self) -> Result<(), DisplayError> {
 		self.attributes = Attributes::from(Attribute::Reset);
 		self.colors = Colors::new(Color::Reset, Color::Reset);
 		self.output.clear();
@@ -39,25 +39,25 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn flush(&mut self) -> Result<()> {
+	fn flush(&mut self) -> Result<(), DisplayError> {
 		self.dirty = false;
 		Ok(())
 	}
 
 	#[inline]
-	fn print(&mut self, s: &str) -> Result<()> {
+	fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 		self.output.push(String::from(s));
 		Ok(())
 	}
 
 	#[inline]
-	fn set_color(&mut self, colors: Colors) -> Result<()> {
+	fn set_color(&mut self, colors: Colors) -> Result<(), DisplayError> {
 		self.colors = colors;
 		Ok(())
 	}
 
 	#[inline]
-	fn set_dim(&mut self, dim: bool) -> Result<()> {
+	fn set_dim(&mut self, dim: bool) -> Result<(), DisplayError> {
 		if dim {
 			self.attributes.set(Attribute::Dim);
 		}
@@ -68,7 +68,7 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn set_underline(&mut self, dim: bool) -> Result<()> {
+	fn set_underline(&mut self, dim: bool) -> Result<(), DisplayError> {
 		if dim {
 			self.attributes.set(Attribute::Underlined);
 		}
@@ -79,7 +79,7 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn set_reverse(&mut self, dim: bool) -> Result<()> {
+	fn set_reverse(&mut self, dim: bool) -> Result<(), DisplayError> {
 		if dim {
 			self.attributes.set(Attribute::Reverse);
 		}
@@ -90,7 +90,7 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn read_event() -> Result<Option<Event>> {
+	fn read_event() -> Result<Option<Event>, DisplayError> {
 		Ok(None)
 	}
 
@@ -100,13 +100,13 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn move_to_column(&mut self, x: u16) -> Result<()> {
+	fn move_to_column(&mut self, x: u16) -> Result<(), DisplayError> {
 		self.position.0 = x;
 		Ok(())
 	}
 
 	#[inline]
-	fn move_next_line(&mut self) -> Result<()> {
+	fn move_next_line(&mut self) -> Result<(), DisplayError> {
 		self.output.push(String::from("\n"));
 		self.position.0 = 0;
 		self.position.1 += 1;
@@ -114,13 +114,13 @@ impl MockableTui for CrossTerm {
 	}
 
 	#[inline]
-	fn start(&mut self) -> Result<()> {
+	fn start(&mut self) -> Result<(), DisplayError> {
 		self.state = State::Normal;
 		Ok(())
 	}
 
 	#[inline]
-	fn end(&mut self) -> Result<()> {
+	fn end(&mut self) -> Result<(), DisplayError> {
 		self.state = State::Ended;
 		Ok(())
 	}

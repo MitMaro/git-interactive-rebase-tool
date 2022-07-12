@@ -106,6 +106,7 @@ mod color_mode;
 #[cfg(not(tarpaulin_include))]
 mod crossterm;
 mod display_color;
+mod error;
 mod size;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
@@ -113,11 +114,17 @@ mod tui;
 mod utils;
 
 use ::crossterm::style::{Color, Colors};
-use anyhow::Result;
 use config::Theme;
 
 use self::utils::register_selectable_color_pairs;
-pub use self::{color_mode::ColorMode, crossterm::CrossTerm, display_color::DisplayColor, size::Size, tui::Tui};
+pub use self::{
+	color_mode::ColorMode,
+	crossterm::CrossTerm,
+	display_color::DisplayColor,
+	error::DisplayError,
+	size::Size,
+	tui::Tui,
+};
 
 /// A high level interface to the terminal display.
 #[derive(Debug)]
@@ -285,7 +292,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn draw_str(&mut self, s: &str) -> Result<()> {
+	pub fn draw_str(&mut self, s: &str) -> Result<(), DisplayError> {
 		self.tui.print(s)
 	}
 
@@ -294,7 +301,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn clear(&mut self) -> Result<()> {
+	pub fn clear(&mut self) -> Result<(), DisplayError> {
 		self.color(DisplayColor::Normal, false)?;
 		self.set_style(false, false, false)?;
 		self.tui.reset()
@@ -307,7 +314,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn refresh(&mut self) -> Result<()> {
+	pub fn refresh(&mut self) -> Result<(), DisplayError> {
 		self.tui.flush()
 	}
 
@@ -317,7 +324,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn color(&mut self, color: DisplayColor, selected: bool) -> Result<()> {
+	pub fn color(&mut self, color: DisplayColor, selected: bool) -> Result<(), DisplayError> {
 		self.tui.set_color(
 			if selected {
 				match color {
@@ -372,7 +379,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<()> {
+	pub fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<(), DisplayError> {
 		self.set_dim(dim)?;
 		self.set_underline(underline)?;
 		self.set_reverse(reverse)
@@ -393,7 +400,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn ensure_at_line_start(&mut self) -> Result<()> {
+	pub fn ensure_at_line_start(&mut self) -> Result<(), DisplayError> {
 		self.tui.move_to_column(1)
 	}
 
@@ -402,7 +409,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<()> {
+	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<(), DisplayError> {
 		let width = self.get_window_size().width().try_into().unwrap_or(u16::MAX);
 		self.tui.move_to_column(width - right + 1)
 	}
@@ -412,7 +419,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn next_line(&mut self) -> Result<()> {
+	pub fn next_line(&mut self) -> Result<(), DisplayError> {
 		self.tui.move_next_line()
 	}
 
@@ -422,7 +429,7 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn start(&mut self) -> Result<()> {
+	pub fn start(&mut self) -> Result<(), DisplayError> {
 		self.tui.start()?;
 		self.tui.flush()
 	}
@@ -434,20 +441,20 @@ impl<T: Tui> Display<T> {
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
-	pub fn end(&mut self) -> Result<()> {
+	pub fn end(&mut self) -> Result<(), DisplayError> {
 		self.tui.end()?;
 		self.tui.flush()
 	}
 
-	fn set_dim(&mut self, on: bool) -> Result<()> {
+	fn set_dim(&mut self, on: bool) -> Result<(), DisplayError> {
 		self.tui.set_dim(on)
 	}
 
-	fn set_underline(&mut self, on: bool) -> Result<()> {
+	fn set_underline(&mut self, on: bool) -> Result<(), DisplayError> {
 		self.tui.set_underline(on)
 	}
 
-	fn set_reverse(&mut self, on: bool) -> Result<()> {
+	fn set_reverse(&mut self, on: bool) -> Result<(), DisplayError> {
 		self.tui.set_reverse(on)
 	}
 }

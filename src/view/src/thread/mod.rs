@@ -167,8 +167,9 @@ mod tests {
 	use anyhow::anyhow;
 	use config::Theme;
 	use display::{
-		testutil::{CrossTerm, MockableTui},
+		testutil::{create_unexpected_error, CrossTerm, MockableTui},
 		Display,
+		DisplayError,
 	};
 	use runtime::{testutils::ThreadableTester, Status};
 
@@ -240,8 +241,8 @@ mod tests {
 		struct TestCrossTerm {}
 
 		impl MockableTui for TestCrossTerm {
-			fn start(&mut self) -> Result<()> {
-				Err(anyhow!("error"))
+			fn start(&mut self) -> Result<(), DisplayError> {
+				Err(create_unexpected_error())
 			}
 		}
 
@@ -275,8 +276,8 @@ mod tests {
 		struct TestCrossTerm {}
 
 		impl MockableTui for TestCrossTerm {
-			fn end(&mut self) -> Result<()> {
-				Err(anyhow!("error"))
+			fn end(&mut self) -> Result<(), DisplayError> {
+				Err(create_unexpected_error())
 			}
 		}
 
@@ -307,7 +308,7 @@ mod tests {
 		}
 
 		impl MockableTui for TestCrossTerm {
-			fn print(&mut self, s: &str) -> Result<()> {
+			fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 				self.lines.lock().push(String::from(s));
 				Ok(())
 			}
@@ -346,8 +347,8 @@ mod tests {
 		struct TestCrossTerm {}
 
 		impl MockableTui for TestCrossTerm {
-			fn reset(&mut self) -> Result<()> {
-				Err(anyhow!("Error"))
+			fn reset(&mut self) -> Result<(), DisplayError> {
+				Err(create_unexpected_error())
 			}
 		}
 
@@ -374,7 +375,7 @@ mod tests {
 		}
 
 		impl MockableTui for TestCrossTerm {
-			fn print(&mut self, s: &str) -> Result<()> {
+			fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 				self.lines.lock().push(String::from(s));
 				Ok(())
 			}
