@@ -1,9 +1,8 @@
 use std::{collections::HashMap, sync::Arc, thread::sleep, time::Duration};
 
-use anyhow::{anyhow, Result};
 use parking_lot::Mutex;
 
-use crate::Status;
+use crate::{RuntimeError, Status};
 
 const WAIT_TIME: Duration = Duration::from_millis(100);
 
@@ -28,14 +27,14 @@ impl ThreadStatuses {
 	/// # Errors
 	/// Will error if the wait times out.
 	#[inline]
-	pub fn wait_for_status(&self, thread_name: &str, expected_status: &Status) -> Result<()> {
+	pub fn wait_for_status(&self, thread_name: &str, expected_status: &Status) -> Result<(), RuntimeError> {
 		let mut attempt = 0;
 
 		loop {
 			let lock = self.statuses.lock();
 			let current = lock
 				.get(thread_name)
-				.ok_or_else(|| anyhow!("Thread name not registered"))?;
+				.ok_or_else(|| RuntimeError::ThreadNotRegistered(String::from(thread_name)))?;
 
 			if current == expected_status {
 				return Ok(());
@@ -46,7 +45,7 @@ impl ThreadStatuses {
 			attempt += 1;
 
 			if attempt > 10 {
-				return Err(anyhow!("Timeout waited for thread {} to change status", thread_name));
+				return Err(RuntimeError::ThreadWaitTimeout(String::from(thread_name)));
 			}
 		}
 	}
@@ -83,13 +82,16 @@ impl ThreadStatuses {
 mod tests {
 	use std::{ops::Mul, thread};
 
+	use claim::{assert_err, assert_ok, assert_some_eq};
+	use testutils::assert_err_eq;
+
 	use super::*;
 
 	#[test]
 	fn wait_for_status_success_immediate() {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
-		assert!(!statuses.wait_for_status("name", &Status::New).is_err());
+		assert_ok!(statuses.wait_for_status("name", &Status::New));
 	}
 
 	#[test]
@@ -102,19 +104,16 @@ mod tests {
 			thread_statuses.update_thread("name", Status::Ended);
 		});
 
-		assert!(!statuses.wait_for_status("name", &Status::Ended).is_err());
+		assert_ok!(statuses.wait_for_status("name", &Status::Ended));
 	}
 
 	#[test]
 	fn wait_for_status_not_registered_error() {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
-		assert_eq!(
-			statuses
-				.wait_for_status("not-name", &Status::Ended)
-				.unwrap_err()
-				.to_string(),
-			"Thread name not registered"
+		assert_err_eq!(
+			statuses.wait_for_status("not-name", &Status::Ended),
+			RuntimeError::ThreadNotRegistered(String::from("not-name"))
 		);
 	}
 
@@ -122,14 +121,14 @@ mod tests {
 	fn wait_for_status_timeout_error() {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
-		assert!(statuses.wait_for_status("name", &Status::Ended).is_err());
+		assert_err!(statuses.wait_for_status("name", &Status::Ended));
 	}
 
 	#[test]
 	fn register_thread() {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
-		assert!(matches!(statuses.statuses.lock().get("name").unwrap(), Status::New));
+		assert_some_eq!(statuses.statuses.lock().get("name"), &Status::New);
 	}
 
 	#[test]
@@ -138,7 +137,7 @@ mod tests {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
 		statuses.register_thread("name", Status::New);
-		assert!(matches!(statuses.statuses.lock().get("name").unwrap(), Status::New));
+		assert_some_eq!(statuses.statuses.lock().get("name"), &Status::New);
 	}
 
 	#[test]
@@ -146,7 +145,7 @@ mod tests {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
 		statuses.update_thread("name", Status::Busy);
-		assert!(matches!(statuses.statuses.lock().get("name").unwrap(), Status::Busy));
+		assert_some_eq!(statuses.statuses.lock().get("name"), &Status::Busy);
 	}
 
 	#[test]
@@ -182,7 +181,7 @@ mod tests {
 	#[test]
 	fn all_ended_with_error_state() {
 		let statuses = ThreadStatuses::new();
-		statuses.register_thread("name", Status::Error(anyhow!("Error")));
+		statuses.register_thread("name", Status::Error(RuntimeError::ThreadError(String::from("error"))));
 		assert!(statuses.all_ended());
 	}
 }

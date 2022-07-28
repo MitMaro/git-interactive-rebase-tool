@@ -62,21 +62,18 @@ where
 	}
 
 	#[inline]
-	fn pause(&self) -> Result<()> {
+	fn pause(&self) {
 		self.state.pause();
-		Ok(())
 	}
 
 	#[inline]
-	fn resume(&self) -> Result<()> {
+	fn resume(&self) {
 		self.state.resume();
-		Ok(())
 	}
 
 	#[inline]
-	fn end(&self) -> Result<()> {
+	fn end(&self) {
 		self.state.end();
-		Ok(())
 	}
 }
 
@@ -115,9 +112,9 @@ mod tests {
 		let event_provider = || Ok(None);
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
-		thread.pause().unwrap();
+		thread.pause();
 		assert!(state.is_paused());
-		thread.resume().unwrap();
+		thread.resume();
 		assert!(!state.is_paused());
 	}
 
@@ -126,7 +123,7 @@ mod tests {
 		let event_provider = || Ok(None);
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
-		thread.end().unwrap();
+		thread.end();
 		assert!(state.is_ended());
 	}
 

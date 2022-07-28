@@ -1,10 +1,9 @@
 use std::{clone::Clone, sync::Arc, thread};
 
-use anyhow::{Error, Result};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use parking_lot::Mutex;
 
-use crate::{Installer, Status, ThreadStatuses, Threadable};
+use crate::{Installer, RuntimeError, Status, ThreadStatuses, Threadable};
 
 const RUNTIME_THREAD_NAME: &str = "runtime";
 
@@ -56,7 +55,7 @@ impl<'runtime> Runtime<'runtime> {
 	/// Returns and error if any of the threads registered to the runtime produce an error.
 	#[allow(clippy::indexing_slicing)]
 	#[inline]
-	pub fn join(&self) -> Result<()> {
+	pub fn join(&self) -> Result<(), RuntimeError> {
 		let installer = Installer::new(self.sender.clone());
 		{
 			let threadables = self.threadables.lock();
@@ -67,7 +66,12 @@ impl<'runtime> Runtime<'runtime> {
 		let mut handles = vec![];
 
 		for (name, op) in installer.into_ops().drain() {
-			handles.push(thread::Builder::new().name(name).spawn(op)?);
+			handles.push(
+				thread::Builder::new()
+					.name(String::from(name.as_str()))
+					.spawn(op)
+					.map_err(|_err| RuntimeError::ThreadSpawnError(name))?,
+			);
 		}
 
 		let mut result = Ok(());
@@ -84,18 +88,18 @@ impl<'runtime> Runtime<'runtime> {
 				},
 				Status::RequestPause => {
 					for threadable in self.threadables.lock().iter() {
-						threadable.pause()?;
+						threadable.pause();
 					}
 				},
 				Status::RequestResume => {
 					for threadable in self.threadables.lock().iter() {
-						threadable.resume()?;
+						threadable.resume();
 					}
 				},
 				Status::RequestEnd => {
 					self.thread_statuses.update_thread(RUNTIME_THREAD_NAME, Status::Ended);
 					for threadable in self.threadables.lock().iter() {
-						threadable.end()?;
+						threadable.end();
 					}
 				},
 				Status::New | Status::Busy | Status::Waiting | Status::Ended => {},
@@ -117,17 +121,17 @@ impl<'runtime> Runtime<'runtime> {
 	}
 
 	#[inline]
-	fn shutdown(&self) -> Result<()> {
+	fn shutdown(&self) -> Result<(), RuntimeError> {
 		if self.thread_statuses.all_ended() {
 			return Ok(());
 		}
 
 		for threadable in self.threadables.lock().iter() {
-			threadable.end()?;
+			threadable.end();
 		}
 		self.sender
 			.send((String::from(RUNTIME_THREAD_NAME), Status::Ended))
-			.map_err(Error::from)
+			.map_err(|_err| RuntimeError::SendError)
 	}
 }
 
@@ -139,7 +143,7 @@ mod tests {
 		time::Duration,
 	};
 
-	use anyhow::anyhow;
+	use claim::assert_err;
 
 	use super::*;
 
@@ -162,64 +166,12 @@ mod tests {
 					}
 				});
 			}
-
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
-			}
 		}
 
 		let runtime = Runtime::new();
 		let mut thread = Thread::new();
 		runtime.register(&mut thread);
 		runtime.join().unwrap();
-		assert!(runtime.statuses().all_ended());
-	}
-
-	#[test]
-	fn run_thread_shutdown_error() {
-		struct Thread {}
-
-		impl Thread {
-			fn new() -> Self {
-				Self {}
-			}
-		}
-
-		impl Threadable for Thread {
-			fn install(&self, installer: &Installer) {
-				installer.spawn("name", |notifier| {
-					move || {
-						notifier.end();
-						notifier.request_end();
-					}
-				});
-			}
-
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Err(anyhow!("Error"))
-			}
-		}
-
-		let runtime = Runtime::new();
-		let mut thread = Thread::new();
-		runtime.register(&mut thread);
-		assert!(runtime.join().is_err());
 		assert!(runtime.statuses().all_ended());
 	}
 
@@ -237,21 +189,9 @@ mod tests {
 			fn install(&self, installer: &Installer) {
 				installer.spawn("name0", |notifier| {
 					move || {
-						notifier.error(anyhow!("Error"));
+						notifier.error(RuntimeError::ThreadError(String::from("error")));
 					}
 				});
-			}
-
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
 			}
 		}
 
@@ -280,17 +220,8 @@ mod tests {
 				});
 			}
 
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
+			fn end(&self) {
 				self.ended.store(true, Ordering::Release);
-				Ok(())
 			}
 		}
 
@@ -299,7 +230,7 @@ mod tests {
 		let mut thread2 = Thread2::new();
 		runtime.register(&mut thread1);
 		runtime.register(&mut thread2);
-		assert!(runtime.join().is_err());
+		assert_err!(runtime.join());
 	}
 
 	#[test]
@@ -320,18 +251,6 @@ mod tests {
 						notifier.end();
 					}
 				});
-			}
-
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
 			}
 		}
 
@@ -361,17 +280,8 @@ mod tests {
 				});
 			}
 
-			fn pause(&self) -> Result<()> {
+			fn pause(&self) {
 				self.paused.store(true, Ordering::Release);
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
 			}
 		}
 
@@ -403,18 +313,6 @@ mod tests {
 					}
 				});
 			}
-
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
-			}
 		}
 
 		struct Thread2 {
@@ -443,17 +341,8 @@ mod tests {
 				});
 			}
 
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
+			fn resume(&self) {
 				self.resumed.store(true, Ordering::Release);
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
 			}
 		}
 
@@ -485,18 +374,6 @@ mod tests {
 					}
 				});
 			}
-
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
-				Ok(())
-			}
 		}
 
 		struct Thread2 {
@@ -524,17 +401,8 @@ mod tests {
 				});
 			}
 
-			fn pause(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn resume(&self) -> Result<()> {
-				Ok(())
-			}
-
-			fn end(&self) -> Result<()> {
+			fn end(&self) {
 				self.ended.store(true, Ordering::Release);
-				Ok(())
 			}
 		}
 

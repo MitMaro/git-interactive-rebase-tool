@@ -1,7 +1,6 @@
-use anyhow::Error;
 use crossbeam_channel::Sender;
 
-use crate::status::Status;
+use crate::{status::Status, RuntimeError};
 
 /// A thread status notifier, that allows a thread to notify the `Runtime` of the current status of the thread.
 #[derive(Debug)]
@@ -60,7 +59,7 @@ impl Notifier {
 
 	/// Notify the `Runtime` that the thread is in a permanent error state.
 	#[inline]
-	pub fn error(&self, err: Error) {
+	pub fn error(&self, err: RuntimeError) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Error(err)))
 			.expect("Failed to send error");
@@ -77,7 +76,7 @@ impl Notifier {
 
 #[cfg(test)]
 mod tests {
-	use anyhow::anyhow;
+	use claim::assert_ok_eq;
 	use crossbeam_channel::unbounded;
 
 	use super::*;
@@ -87,9 +86,7 @@ mod tests {
 		let (sender, receiver) = unbounded();
 		let notifier = Notifier::new("name", sender);
 		notifier.busy();
-		let (name, status) = receiver.recv().unwrap();
-		assert_eq!(name, "name");
-		assert_eq!(status, Status::Busy);
+		assert_ok_eq!(receiver.recv(), (String::from("name"), Status::Busy));
 	}
 
 	#[test]
@@ -97,9 +94,7 @@ mod tests {
 		let (sender, receiver) = unbounded();
 		let notifier = Notifier::new("name", sender);
 		notifier.request_pause();
-		let (name, status) = receiver.recv().unwrap();
-		assert_eq!(name, "name");
-		assert_eq!(status, Status::RequestPause);
+		assert_ok_eq!(receiver.recv(), (String::from("name"), Status::RequestPause));
 	}
 
 	#[test]
@@ -107,9 +102,7 @@ mod tests {
 		let (sender, receiver) = unbounded();
 		let notifier = Notifier::new("name", sender);
 		notifier.request_resume();
-		let (name, status) = receiver.recv().unwrap();
-		assert_eq!(name, "name");
-		assert_eq!(status, Status::RequestResume);
+		assert_ok_eq!(receiver.recv(), (String::from("name"), Status::RequestResume));
 	}
 
 	#[test]
@@ -117,19 +110,21 @@ mod tests {
 		let (sender, receiver) = unbounded();
 		let notifier = Notifier::new("name", sender);
 		notifier.request_end();
-		let (name, status) = receiver.recv().unwrap();
-		assert_eq!(name, "name");
-		assert_eq!(status, Status::RequestEnd);
+		assert_ok_eq!(receiver.recv(), (String::from("name"), Status::RequestEnd));
 	}
 
 	#[test]
 	fn error() {
 		let (sender, receiver) = unbounded();
 		let notifier = Notifier::new("name", sender);
-		notifier.error(anyhow!("Error"));
-		let (name, status) = receiver.recv().unwrap();
-		assert_eq!(name, "name");
-		assert_eq!(status, Status::Error(anyhow!("Error")));
+		notifier.error(RuntimeError::ThreadError(String::from("error")));
+		assert_ok_eq!(
+			receiver.recv(),
+			(
+				String::from("name"),
+				Status::Error(RuntimeError::ThreadError(String::from("error")))
+			)
+		);
 	}
 
 	#[test]
@@ -137,8 +132,6 @@ mod tests {
 		let (sender, receiver) = unbounded();
 		let notifier = Notifier::new("name", sender);
 		notifier.end();
-		let (name, status) = receiver.recv().unwrap();
-		assert_eq!(name, "name");
-		assert_eq!(status, Status::Ended);
+		assert_ok_eq!(receiver.recv(), (String::from("name"), Status::Ended));
 	}
 }

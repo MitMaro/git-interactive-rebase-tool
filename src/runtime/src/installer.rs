@@ -50,7 +50,6 @@ mod tests {
 		Arc,
 	};
 
-	use anyhow::Result;
 	use crossbeam_channel::unbounded;
 
 	use super::*;
@@ -76,18 +75,6 @@ mod tests {
 					called.store(true, Ordering::Relaxed);
 				}
 			});
-		}
-
-		fn pause(&self) -> Result<()> {
-			Ok(())
-		}
-
-		fn resume(&self) -> Result<()> {
-			Ok(())
-		}
-
-		fn end(&self) -> Result<()> {
-			Ok(())
 		}
 	}
 

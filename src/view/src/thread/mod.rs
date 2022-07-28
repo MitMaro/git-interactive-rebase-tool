@@ -8,11 +8,10 @@ use std::{
 	time::{Duration, Instant},
 };
 
-use anyhow::Result;
 use captur::capture;
 use display::Tui;
 use parking_lot::Mutex;
-use runtime::{Installer, Threadable};
+use runtime::{Installer, RuntimeError, Threadable};
 
 pub(crate) use self::action::ViewAction;
 pub use self::state::State;
@@ -41,21 +40,18 @@ impl<ViewTui: Tui + Send + 'static> Threadable for Thread<ViewTui> {
 	}
 
 	#[inline]
-	fn pause(&self) -> Result<()> {
+	fn pause(&self) {
 		self.state.stop();
-		Ok(())
 	}
 
 	#[inline]
-	fn resume(&self) -> Result<()> {
+	fn resume(&self) {
 		self.state.start();
-		Ok(())
 	}
 
 	#[inline]
-	fn end(&self) -> Result<()> {
+	fn end(&self) {
 		self.state.end();
-		Ok(())
 	}
 }
 
@@ -98,13 +94,13 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 						ViewAction::Render => should_render = true,
 						ViewAction::Start => {
 							if let Err(err) = view.lock().start() {
-								notifier.error(err);
+								notifier.error(RuntimeError::ThreadError(err.to_string()));
 								break;
 							}
 						},
 						ViewAction::Stop => {
 							if let Err(err) = view.lock().end() {
-								notifier.error(err);
+								notifier.error(RuntimeError::ThreadError(err.to_string()));
 								break;
 							}
 						},
@@ -117,7 +113,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 						should_render = false;
 						let render_slice_mutex = render_slice.lock();
 						if let Err(err) = view.lock().render(render_slice_mutex.borrow()) {
-							notifier.error(err);
+							notifier.error(RuntimeError::ThreadError(err.to_string()));
 							break;
 						}
 					}
@@ -164,7 +160,6 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 mod tests {
 	use std::borrow::BorrowMut;
 
-	use anyhow::anyhow;
 	use config::Theme;
 	use display::{
 		testutil::{create_unexpected_error, CrossTerm, MockableTui},
@@ -190,9 +185,9 @@ mod tests {
 		with_view(CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
-			thread.pause().unwrap();
+			thread.pause();
 			assert!(state.is_paused());
-			thread.resume().unwrap();
+			thread.resume();
 			assert!(!state.is_paused());
 		});
 	}
@@ -202,7 +197,7 @@ mod tests {
 		with_view(CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
-			thread.end().unwrap();
+			thread.end();
 			assert!(state.is_ended());
 		});
 	}
@@ -251,7 +246,7 @@ mod tests {
 
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
-			tester.wait_for_status(&Status::Error(anyhow!("error")));
+			tester.wait_for_error_status();
 		});
 	}
 
@@ -289,7 +284,7 @@ mod tests {
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
 			let _ = state.stop();
-			tester.wait_for_status(&Status::Error(anyhow!("error")));
+			tester.wait_for_error_status();
 		});
 	}
 
@@ -356,7 +351,7 @@ mod tests {
 			let thread = Thread::new(view);
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
-			tester.wait_for_status(&Status::Error(anyhow!("Error")));
+			tester.wait_for_error_status();
 		});
 	}
 

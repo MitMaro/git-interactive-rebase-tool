@@ -90,6 +90,7 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance should only be used in test code.
 
+mod errors;
 mod installer;
 mod notifier;
 mod runtime;
@@ -100,6 +101,7 @@ mod thread_statuses;
 mod threadable;
 
 pub use crate::{
+	errors::RuntimeError,
 	installer::Installer,
 	notifier::Notifier,
 	runtime::Runtime,

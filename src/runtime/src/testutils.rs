@@ -124,6 +124,33 @@ impl ThreadableTester {
 		}
 	}
 
+	/// Wait for an error status to be reached.
+	///
+	/// # Panics
+	///
+	/// Will panic if the wait takes too long and times out.
+	#[inline]
+	pub fn wait_for_error_status(&self) {
+		let mut attempt = 0;
+
+		loop {
+			let statuses_lock = self.statuses.lock();
+			let current_status = statuses_lock.last().expect("Expected to lock");
+
+			if matches!(current_status, &Status::Error(_)) {
+				break;
+			}
+			assert!(
+				attempt <= 100,
+				"Timeout waited for status change to 'Status::Error(_)' on thread.\n Status is: {:?}",
+				current_status,
+			);
+
+			sleep(WAIT_TIME);
+			attempt += 1;
+		}
+	}
+
 	/// Wait for the thread started in `start_threadable` to finish.
 	///
 	/// # Panics
