@@ -357,10 +357,12 @@ dependencies = [
 name = "girt-runtime"
 version = "0.1.0"
 dependencies = [
- "anyhow",
+ "claim",
  "crossbeam-channel",
+ "girt-testutils",
  "parking_lot",
  "rustc_version",
+ "thiserror",
 ]
 
 [[package]]

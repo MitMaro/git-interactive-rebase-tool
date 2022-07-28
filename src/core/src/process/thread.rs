@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
-use anyhow::Result;
 use captur::capture;
-use runtime::{Installer, Threadable};
+use runtime::{Installer, RuntimeError, Threadable};
 
 use crate::{
 	module,
@@ -44,7 +43,7 @@ impl<ModuleProvider: module::ModuleProvider + Send + 'static> Threadable for Thr
 				if !process.is_exit_status_kill() {
 					if let Err(err) = process.write_todo_file() {
 						process.handle_results(Results::from(ExitStatus::FileWriteError));
-						notifier.error(err);
+						notifier.error(RuntimeError::ThreadError(err.to_string()));
 						return;
 					}
 				}
@@ -55,17 +54,8 @@ impl<ModuleProvider: module::ModuleProvider + Send + 'static> Threadable for Thr
 		});
 	}
 
-	fn pause(&self) -> Result<()> {
-		Ok(())
-	}
-
-	fn resume(&self) -> Result<()> {
-		Ok(())
-	}
-
-	fn end(&self) -> Result<()> {
+	fn end(&self) {
 		self.process.end();
-		Ok(())
 	}
 }
 
@@ -81,7 +71,6 @@ impl<ModuleProvider: module::ModuleProvider + Send + 'static> Thread<ModuleProvi
 mod tests {
 	use std::fs::File;
 
-	use anyhow::anyhow;
 	use input::StandardEvent;
 	use runtime::{testutils::ThreadableTester, Status};
 	use todo_file::{Line, TodoFile};
@@ -94,34 +83,12 @@ mod tests {
 	};
 
 	#[test]
-	fn pause() {
-		process_test(
-			create_default_test_module_handler(),
-			|ProcessTestContext { process, .. }| {
-				let thread = Thread::new(process);
-				assert!(thread.pause().is_ok());
-			},
-		);
-	}
-
-	#[test]
-	fn resume() {
-		process_test(
-			create_default_test_module_handler(),
-			|ProcessTestContext { process, .. }| {
-				let thread = Thread::new(process);
-				assert!(thread.resume().is_ok());
-			},
-		);
-	}
-
-	#[test]
 	fn end() {
 		process_test(
 			create_default_test_module_handler(),
 			|ProcessTestContext { process, .. }| {
 				let thread = Thread::new(process);
-				assert!(thread.end().is_ok());
+				thread.end();
 				assert!(thread.process.is_ended());
 			},
 		);
@@ -133,7 +100,7 @@ mod tests {
 			create_default_test_module_handler(),
 			|ProcessTestContext { process, .. }| {
 				let thread = Thread::new(process);
-				let _ = thread.end().unwrap();
+				thread.end();
 				let tester = ThreadableTester::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
@@ -222,7 +189,7 @@ mod tests {
 				let thread = Thread::new(process.clone());
 				let tester = ThreadableTester::new();
 				tester.start_threadable(&thread, THEAD_NAME);
-				tester.wait_for_status(&Status::Error(anyhow!("Error")));
+				tester.wait_for_error_status();
 				assert_eq!(process.exit_status(), ExitStatus::FileWriteError);
 			},
 		);
