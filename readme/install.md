@@ -2,6 +2,7 @@
 
 ## Table of Contents
 
+* [Alpine Linux](./install.md#alpine-linux)
 * [Arch Linux](./install.md#arch-linux)
 * [Cargo Package Manager](./install.md#cargo-package-manager)
 * [Debian and derivatives](./install.md#debian-and-derivatives)
@@ -9,6 +10,12 @@
 * [FreeBSD](./install.md#freebsd)
 * [macOS](./install.md#macos)
 * [Windows](./install.md#windows)
+
+## Alpine Linux
+
+Install the [git-interactive-rebase-tool](https://pkgs.alpinelinux.org/packages?name=git-interactive-rebase-tool) package from the community repository (since Alpine v3.14):
+
+    apk add git-interactive-rebase-tool
 
 ## Arch Linux
 
