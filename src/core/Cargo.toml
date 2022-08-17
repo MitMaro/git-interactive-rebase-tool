@@ -37,5 +37,5 @@ serial_test = "0.8.0"
 tempfile = "3.3.0"
 
 [build-dependencies]
-chrono = "0.4.19"
+chrono = "0.4.22"
 rustc_version = "0.4.0"
