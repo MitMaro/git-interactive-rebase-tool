@@ -6,7 +6,7 @@
 use thiserror::Error;
 
 /// The kind of config error that occurred.
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RuntimeError {
 	/// An error occurred while attempting to spawn a thread

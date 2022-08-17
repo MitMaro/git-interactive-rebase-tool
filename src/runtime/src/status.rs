@@ -1,7 +1,7 @@
 use crate::RuntimeError;
 
 /// The threads status.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 #[allow(variant_size_differences)]
 #[allow(clippy::exhaustive_enums)]
 pub enum Status {
