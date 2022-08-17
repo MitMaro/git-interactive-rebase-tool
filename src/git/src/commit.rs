@@ -80,7 +80,7 @@ impl Commit {
 		let committed_date = Local.timestamp(commit.time().seconds(), 0);
 
 		let try_committer = User::new(commit.committer().name(), commit.committer().email());
-		let committer = (try_committer.is_some() && try_committer != author).then(|| try_committer);
+		let committer = (try_committer.is_some() && try_committer != author).then_some(try_committer);
 
 		Self {
 			hash: format!("{}", commit.id()),
