@@ -4,7 +4,7 @@ mod tests;
 
 use captur::capture;
 pub(crate) use confirmed::Confirmed;
-use input::{InputOptions, KeyCode, KeyEvent};
+use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 use view::{ViewData, ViewLine};
 
@@ -41,7 +41,12 @@ impl Confirm {
 	pub(crate) fn read_event(event: Event, key_bindings: &KeyBindings) -> Event {
 		if let Event::Key(key) = event {
 			if let KeyCode::Char(c) = key.code {
-				let event_lower = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_lowercase()), key.modifiers));
+				let mut event_lower_modifiers = key.modifiers;
+				event_lower_modifiers.remove(KeyModifiers::SHIFT);
+				let event_lower = Event::Key(KeyEvent::new(
+					KeyCode::Char(c.to_ascii_lowercase()),
+					event_lower_modifiers,
+				));
 				let event_upper = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_uppercase()), key.modifiers));
 
 				return if key_bindings.custom.confirm_yes.contains(&event_lower)
