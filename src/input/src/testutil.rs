@@ -55,18 +55,8 @@ pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEv
 	custom_key_bindings: TestKeybinding,
 ) -> KeyBindings<TestKeybinding, CustomEvent> {
 	KeyBindings {
-		redo: vec![Event::Key({
-			KeyEvent {
-				code: KeyCode::Char('y'),
-				modifiers: KeyModifiers::CONTROL,
-			}
-		})],
-		undo: vec![Event::Key({
-			KeyEvent {
-				code: KeyCode::Char('z'),
-				modifiers: KeyModifiers::CONTROL,
-			}
-		})],
+		redo: vec![Event::from(KeyEvent::new(KeyCode::Char('y'), KeyModifiers::CONTROL))],
+		undo: vec![Event::from(KeyEvent::new(KeyCode::Char('z'), KeyModifiers::CONTROL))],
 		scroll_down: map_keybindings(&[String::from("Down")]),
 		scroll_end: map_keybindings(&[String::from("End")]),
 		scroll_home: map_keybindings(&[String::from("Home")]),
@@ -139,7 +129,12 @@ where
 			None => Ok(None),
 			Some(event) => {
 				match event {
-					Event::Key(key) => Ok(Some(c_event::Event::Key(key))),
+					Event::Key(key) => {
+						Ok(Some(c_event::Event::Key(c_event::KeyEvent::new(
+							key.code,
+							key.modifiers,
+						))))
+					},
 					Event::Mouse(mouse_event) => Ok(Some(c_event::Event::Mouse(mouse_event))),
 					Event::None => Ok(None),
 					Event::Resize(width, height) => Ok(Some(c_event::Event::Resize(width, height))),

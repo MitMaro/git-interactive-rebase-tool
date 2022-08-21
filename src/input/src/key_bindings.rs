@@ -1,4 +1,4 @@
-use super::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crate::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 /// Represents a mapping between an input event and an action.
 #[derive(Debug)]
@@ -76,7 +76,6 @@ pub fn map_keybindings<CustomEvent: crate::CustomEvent>(bindings: &[String]) -> 
 				},
 				k => {
 					// printable characters cannot use shift
-					modifiers.remove(KeyModifiers::SHIFT);
 					KeyCode::Char(k.chars().next().expect("Expected only one character from Char KeyCode"))
 				},
 			};
@@ -124,10 +123,10 @@ mod tests {
 	fn map_keybindings_with_modifiers() {
 		assert_eq!(
 			map_keybindings::<TestEvent>(&[String::from("ControlAltShiftUp")]),
-			vec![Event::Key(KeyEvent {
-				code: KeyCode::Up,
-				modifiers: KeyModifiers::all()
-			})]
+			vec![Event::Key(KeyEvent::new(
+				KeyCode::Up,
+				KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+			))]
 		);
 	}
 

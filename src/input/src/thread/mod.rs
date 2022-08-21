@@ -101,11 +101,14 @@ where
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
-	use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+	use crossterm::event::{KeyCode, KeyModifiers};
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
-	use crate::testutil::local::{create_event_reader, TestEvent};
+	use crate::{
+		testutil::local::{create_event_reader, TestEvent},
+		KeyEvent,
+	};
 
 	#[test]
 	fn set_pause_resume() {
