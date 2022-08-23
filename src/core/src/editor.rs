@@ -1,9 +1,8 @@
-use anyhow::Error;
 #[cfg(test)]
 use display::testutil::CrossTerm;
 #[cfg(not(test))]
 use display::CrossTerm;
-use display::Tui;
+use input::read_event;
 
 use crate::{
 	application::Application,
@@ -14,11 +13,10 @@ use crate::{
 
 #[cfg(not(tarpaulin_include))]
 pub(crate) fn run(args: &Args) -> Exit {
-	let application: Application<Modules, _, _> =
-		match Application::new(args, || CrossTerm::read_event().map_err(Error::from), CrossTerm::new()) {
-			Ok(app) => app,
-			Err(exit) => return exit,
-		};
+	let application: Application<Modules, _, _> = match Application::new(args, read_event, CrossTerm::new()) {
+		Ok(app) => app,
+		Err(exit) => return exit,
+	};
 
 	match application.run_until_finished() {
 		Ok(..) => Exit::from(ExitStatus::Good),

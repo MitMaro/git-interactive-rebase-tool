@@ -382,9 +382,11 @@ dependencies = [
  "crossterm",
  "girt-config",
  "girt-runtime",
+ "lazy_static",
  "parking_lot",
  "rstest",
  "rustc_version",
+ "serial_test",
 ]
 
 [[package]]

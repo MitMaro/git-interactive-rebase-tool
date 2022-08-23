@@ -1,4 +1,5 @@
 mod assert_results;
+mod create_event_reader;
 mod create_test_keybindings;
 mod module_test;
 mod process_test;
@@ -8,6 +9,7 @@ mod with_event_handler;
 
 pub(crate) use self::{
 	assert_results::_assert_results,
+	create_event_reader::create_event_reader,
 	create_test_keybindings::{create_test_custom_keybindings, create_test_keybindings},
 	module_test::module_test,
 	process_test::{process_test, TestContext as ProcessTestContext},

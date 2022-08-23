@@ -1,10 +1,25 @@
 //! Utilities for writing tests that interact with input events.
 
-use crate::{map_keybindings, thread::State, Event, EventHandler, KeyBindings, KeyCode, KeyEvent, KeyModifiers};
+use anyhow::Result;
+use crossterm::event as c_event;
+
+use crate::{
+	map_keybindings,
+	thread::State,
+	Event,
+	EventHandler,
+	EventReaderFn,
+	KeyBindings,
+	KeyCode,
+	KeyEvent,
+	KeyModifiers,
+};
 
 #[cfg(test)]
 pub(crate) mod local {
-	use crate::{CustomEvent, CustomKeybinding};
+	use anyhow::Result;
+
+	use crate::{CustomEvent, CustomKeybinding, EventReaderFn};
 
 	#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 	pub(crate) enum TestEvent {}
@@ -23,6 +38,13 @@ pub(crate) mod local {
 
 	pub(crate) fn create_test_keybindings() -> KeyBindings {
 		super::create_test_keybindings::<TestKeybinding, TestEvent>(TestKeybinding {})
+	}
+
+	pub(crate) fn create_event_reader<EventGeneratorFunction>(
+		event_generator: EventGeneratorFunction,
+	) -> impl EventReaderFn
+	where EventGeneratorFunction: Fn() -> Result<Option<Event>> + Sync + Send + 'static {
+		super::create_event_reader(event_generator)
 	}
 }
 
@@ -91,4 +113,41 @@ pub fn with_event_handler<C, TestKeybinding: crate::CustomKeybinding, CustomEven
 		state,
 		number_events: events.len(),
 	});
+}
+
+/// Create an event reader that will map the provided events to the internal representation of the
+/// events. This allows for mocking of event input when testing at the highest level of the application.
+///
+/// This function does not accept any `Event::MetaEvent` or `Event::StandardEvent` event types, instead
+/// use other event types that will map to the expected value using the keybindings.
+///
+/// This function should be used sparingly, and instead `with_event_handler` should be used where possible.
+///
+/// # Panics
+/// If provided an event generator that returns a `Event::MetaEvent` or `Event::StandardEvent` event type.
+#[allow(clippy::panic)]
+#[inline]
+pub fn create_event_reader<EventGeneratorFunction, CustomEvent>(
+	event_generator: EventGeneratorFunction,
+) -> impl EventReaderFn
+where
+	EventGeneratorFunction: Fn() -> Result<Option<Event<CustomEvent>>> + Sync + Send + 'static,
+	CustomEvent: crate::CustomEvent,
+{
+	move || {
+		match event_generator()? {
+			None => Ok(None),
+			Some(event) => {
+				match event {
+					Event::Key(key) => Ok(Some(c_event::Event::Key(key))),
+					Event::Mouse(mouse_event) => Ok(Some(c_event::Event::Mouse(mouse_event))),
+					Event::None => Ok(None),
+					Event::Resize(width, height) => Ok(Some(c_event::Event::Resize(width, height))),
+					Event::MetaEvent(_) | Event::Standard(_) => {
+						panic!("MetaEvent and Standard are not supported, please use other event types")
+					},
+				}
+			},
+		}
+	}
 }

@@ -6,12 +6,11 @@ use std::{
 	time::{Duration, Instant},
 };
 
-use anyhow::Result;
 use captur::capture;
 use runtime::{Installer, Threadable};
 pub use state::State;
 
-use crate::event::Event;
+use crate::{event::Event, event_provider::EventReaderFn};
 
 /// The name of the input thread.
 pub const THREAD_NAME: &str = "input";
@@ -21,7 +20,7 @@ const MINIMUM_PAUSE_RATE: Duration = Duration::from_millis(250);
 #[derive(Debug)]
 pub struct Thread<EventProvider, CustomEvent>
 where
-	EventProvider: Fn() -> Result<Option<crossterm::event::Event>> + 'static,
+	EventProvider: EventReaderFn,
 	CustomEvent: crate::CustomEvent + 'static,
 {
 	event_provider: Arc<EventProvider>,
@@ -30,7 +29,7 @@ where
 
 impl<EventProvider, CustomEvent> Threadable for Thread<EventProvider, CustomEvent>
 where
-	EventProvider: Fn() -> Result<Option<crossterm::event::Event>> + Send + Sync + 'static,
+	EventProvider: EventReaderFn,
 	CustomEvent: crate::CustomEvent + Send + Sync + 'static,
 {
 	#[inline]
@@ -79,7 +78,7 @@ where
 
 impl<EventProvider, CustomEvent> Thread<EventProvider, CustomEvent>
 where
-	EventProvider: Fn() -> Result<Option<crossterm::event::Event>> + 'static,
+	EventProvider: EventReaderFn,
 	CustomEvent: crate::CustomEvent + 'static,
 {
 	/// Create a new instance of a thread.
@@ -102,14 +101,15 @@ where
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
+	use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
-	use crate::testutil::local::TestEvent;
+	use crate::testutil::local::{create_event_reader, TestEvent};
 
 	#[test]
 	fn set_pause_resume() {
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
 		thread.pause();
@@ -120,7 +120,7 @@ mod tests {
 
 	#[test]
 	fn set_end() {
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
 		thread.end();
@@ -129,12 +129,12 @@ mod tests {
 
 	#[test]
 	fn read_event_from_event_provider() {
-		let event_provider = || {
-			Ok(Some(crossterm::event::Event::Key(crossterm::event::KeyEvent::new(
-				crossterm::event::KeyCode::Char('a'),
-				crossterm::event::KeyModifiers::empty(),
+		let event_provider = create_event_reader(|| {
+			Ok(Some(Event::Key(KeyEvent::new(
+				KeyCode::Char('a'),
+				KeyModifiers::empty(),
 			))))
-		};
+		});
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
 
@@ -156,7 +156,7 @@ mod tests {
 
 	#[test]
 	fn read_none_event() {
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
 
@@ -171,7 +171,7 @@ mod tests {
 
 	#[test]
 	fn read_error() {
-		let event_provider = || Err(anyhow!("Err"));
+		let event_provider = create_event_reader(|| Err(anyhow!("Err")));
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
 
@@ -186,7 +186,7 @@ mod tests {
 
 	#[test]
 	fn pause_resume() {
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
 		let state = thread.state();
 

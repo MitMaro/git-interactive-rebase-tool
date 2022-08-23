@@ -26,6 +26,8 @@ girt-runtime = {version = "0.1.0", path = "../runtime"}
 
 [dev-dependencies]
 rstest = "0.15.0"
+lazy_static = "1.4.0"
+serial_test = "0.9.0"
 
 [build-dependencies]
 rustc_version = "0.4.0"

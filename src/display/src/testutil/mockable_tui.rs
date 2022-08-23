@@ -1,9 +1,6 @@
 use std::io;
 
-use crossterm::{
-	event::{Event, KeyCode, KeyEvent},
-	style::Colors,
-};
+use crossterm::style::Colors;
 
 use crate::{ColorMode, DisplayError, Size, Tui};
 
@@ -57,12 +54,6 @@ pub trait MockableTui: Tui {
 	#[inline]
 	fn set_reverse(&mut self, _reverse: bool) -> Result<(), DisplayError> {
 		Ok(())
-	}
-
-	#[inline]
-	fn read_event() -> Result<Option<Event>, DisplayError>
-	where Self: Sized {
-		Ok(Some(Event::Key(KeyEvent::from(KeyCode::Null))))
 	}
 
 	#[inline]
@@ -130,12 +121,6 @@ impl<T: MockableTui> Tui for T {
 	#[inline]
 	fn set_reverse(&mut self, reverse: bool) -> Result<(), DisplayError> {
 		<T as MockableTui>::set_reverse(self, reverse)
-	}
-
-	#[inline]
-	fn read_event() -> Result<Option<Event>, DisplayError>
-	where Self: Sized {
-		<T as MockableTui>::read_event()
 	}
 
 	#[inline]
