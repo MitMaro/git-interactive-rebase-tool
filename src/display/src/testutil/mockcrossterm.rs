@@ -1,7 +1,4 @@
-use crossterm::{
-	event::Event,
-	style::{Attribute, Attributes, Color, Colors},
-};
+use crossterm::style::{Attribute, Attributes, Color, Colors};
 
 use crate::{
 	testutil::{MockableTui, State},
@@ -87,11 +84,6 @@ impl MockableTui for CrossTerm {
 			self.attributes.set(Attribute::NoReverse);
 		}
 		Ok(())
-	}
-
-	#[inline]
-	fn read_event() -> Result<Option<Event>, DisplayError> {
-		Ok(None)
 	}
 
 	#[inline]

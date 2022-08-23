@@ -1,4 +1,4 @@
-use crossterm::{event::Event, style::Colors};
+use crossterm::style::Colors;
 
 use super::{color_mode::ColorMode, Size};
 use crate::DisplayError;
@@ -68,16 +68,6 @@ pub trait Tui {
 	/// error, and if this does generate an error, the Tui should be considered to be in a
 	/// non-recoverable state.
 	fn set_reverse(&mut self, reverse: bool) -> Result<(), DisplayError>;
-
-	/// Read the next input event from the terminal interface.
-	///
-	/// # Errors
-	///
-	/// Errors if the Tui cannot read an event for any reason. In general this should not error, and
-	/// if this does generate an error, the Tui should be considered to be in a non-recoverable
-	/// state.
-	fn read_event() -> Result<Option<Event>, DisplayError>
-	where Self: Sized;
 
 	/// Get the number of columns and rows of the terminal interface.
 	fn get_size(&self) -> Size;

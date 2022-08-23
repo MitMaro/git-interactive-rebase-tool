@@ -89,6 +89,7 @@ mod custom_event;
 mod custom_key_binding;
 mod event;
 mod event_handler;
+mod event_provider;
 mod input_options;
 mod key_bindings;
 mod standard_event;
@@ -96,13 +97,14 @@ mod standard_event;
 pub mod testutil;
 mod thread;
 
-pub use crossterm::event::{Event as RawEvent, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
+pub use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 
 pub use self::{
 	custom_event::CustomEvent,
 	custom_key_binding::CustomKeybinding,
 	event::Event,
 	event_handler::EventHandler,
+	event_provider::{read_event, EventReaderFn},
 	input_options::InputOptions,
 	key_bindings::{map_keybindings, KeyBindings},
 	standard_event::StandardEvent,

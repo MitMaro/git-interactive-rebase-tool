@@ -2,7 +2,7 @@ use anyhow::Result;
 use config::Config;
 use display::{Display, Size};
 use git::Repository;
-use input::{EventHandler, RawEvent};
+use input::{EventHandler, EventReaderFn};
 use runtime::Runtime;
 use todo_file::TodoFile;
 use view::View;
@@ -20,7 +20,7 @@ use crate::{
 pub(crate) struct Application<ModuleProvider, EventProvider, Tui>
 where
 	ModuleProvider: module::ModuleProvider + Send + 'static,
-	EventProvider: Fn() -> Result<Option<RawEvent>> + Send + Sync + 'static,
+	EventProvider: EventReaderFn,
 	Tui: display::Tui + 'static,
 {
 	_config: Config,
@@ -35,7 +35,7 @@ where
 impl<ModuleProvider, EventProvider, Tui> Application<ModuleProvider, EventProvider, Tui>
 where
 	ModuleProvider: module::ModuleProvider + Send + 'static,
-	EventProvider: Fn() -> Result<Option<RawEvent>> + Send + Sync + 'static,
+	EventProvider: EventReaderFn,
 	Tui: display::Tui + Send + 'static,
 {
 	pub(crate) fn new(args: &Args, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit> {
@@ -166,8 +166,9 @@ mod tests {
 
 	use super::*;
 	use crate::{
+		events::Event,
 		module::Modules,
-		testutil::{set_git_directory, DefaultTestModule, TestModuleProvider},
+		testutil::{create_event_reader, set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 
 	fn args(args: &[&str]) -> Args {
@@ -194,7 +195,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn load_filepath_from_args_failure() {
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
 			Application::new(&args(&[]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
@@ -211,7 +212,7 @@ mod tests {
 	#[serial_test::serial]
 	fn load_repository_failure() {
 		let _ = set_git_directory("fixtures/not-a-repository");
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
 			Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
@@ -228,7 +229,7 @@ mod tests {
 	#[serial_test::serial]
 	fn load_config_failure() {
 		let _ = set_git_directory("fixtures/invalid-config");
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
 			Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
@@ -239,7 +240,7 @@ mod tests {
 	#[serial_test::serial]
 	fn load_todo_file_load_error() {
 		let _ = set_git_directory("fixtures/simple");
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
 			Application::new(&args(&["does-not-exist"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
@@ -251,7 +252,7 @@ mod tests {
 	fn load_todo_file_noop() {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{}/rebase-todo-noop", git_dir);
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
@@ -266,7 +267,7 @@ mod tests {
 	fn load_todo_file_empty() {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{}/rebase-todo-empty", git_dir);
-		let event_provider = || Ok(None);
+		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
@@ -287,7 +288,7 @@ mod tests {
 	fn run_until_finished_success() {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{}/rebase-todo", git_dir);
-		let event_provider = || Ok(Some(RawEvent::Key(KeyEvent::from(KeyCode::Char('W')))));
+		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 		let application: Application<Modules, _, _> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
@@ -302,12 +303,12 @@ mod tests {
 	fn run_until_finished_kill() {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{}/rebase-todo", git_dir);
-		let event_provider = || {
-			Ok(Some(RawEvent::Key(KeyEvent::new(
+		let event_provider = create_event_reader(|| {
+			Ok(Some(Event::Key(KeyEvent::new(
 				KeyCode::Char('c'),
 				KeyModifiers::CONTROL,
 			))))
-		};
+		});
 		let application: Application<Modules, _, _> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,

@@ -1,11 +1,8 @@
-use std::{
-	io::{stdout, BufWriter, Stdout, Write},
-	time::Duration,
-};
+use std::io::{stdout, BufWriter, Stdout, Write};
 
 use crossterm::{
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
-	event::{poll, read, DisableMouseCapture, EnableMouseCapture, Event},
+	event::{DisableMouseCapture, EnableMouseCapture},
 	style::{available_color_count, Attribute, Colors, Print, ResetColor, SetAttribute, SetColors},
 	terminal::{
 		disable_raw_mode,
@@ -95,16 +92,6 @@ impl Tui for CrossTerm {
 				Attribute::NoReverse
 			},
 		))
-	}
-
-	#[inline]
-	fn read_event() -> Result<Option<Event>, DisplayError> {
-		if poll(Duration::from_millis(20)).unwrap_or(false) {
-			read().map(Some).map_err(DisplayError::Unexpected)
-		}
-		else {
-			Ok(None)
-		}
 	}
 
 	#[inline]
