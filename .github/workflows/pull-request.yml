@@ -4,88 +4,55 @@ on: [pull_request]
 
 jobs:
   linux:
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-make
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-make
       - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: make
-          args: test
+        run: cargo make test
       - name: Build Release
-        uses: actions-rs/cargo@v1
-        with:
-          command: make
-          args: "build --release"
+        run: cargo make build --release
       - name: Run
-        uses: actions-rs/cargo@v1
-        with:
-          command: run
-          args: "--release -- --version"
+        run: cargo run --release -- --version
   lint:
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: clippy
-          override: true
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-targets --all-features
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-make
+      - run: cargo make lint-stable
   docs:
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: default
-          override: true
-      - name: Run
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: "--all-features --workspace"
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo doc --all-features --workspace
   format:
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: nightly
-          profile: default
-          override: true
-      - name: Run
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: " --all -- --check"
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-make
+      - run: cargo make format
   coverage:
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "nightly"
-          profile: minimal
-          override: true
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
@@ -99,70 +66,36 @@ jobs:
           path-to-lcov: "coverage/lcov.info"
   macos:
     name: macos
-    runs-on: [ macos-latest ]
+    runs-on: macos-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-make
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-make
       - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: make
-          args: test
+        run: cargo make test
       - name: Build Release
-        uses: actions-rs/cargo@v1
-        with:
-          command: make
-          args: "build --release"
+        run: cargo make build --release
       - name: Run
-        uses: actions-rs/cargo@v1
-        with:
-          command: run
-          args: "--release -- --version"
+        run: cargo run --release -- --version
   windows:
     name: windows
-    runs-on: [ windows-latest ]
+    runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - name: Run
-        uses: actions-rs/cargo@v1
-        env:
-          RUSTFLAGS: '--cap-lints warn'
-        with:
-          command: run
-          args: "--target x86_64-pc-windows-msvc --release -- --version"
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - name: Test
-        uses: actions-rs/cargo@v1
         env:
           RUSTFLAGS: '--cap-lints warn'
-        with:
-          command: test
-          args: "--target x86_64-pc-windows-msvc --release --workspace"
+        run: cargo test --target x86_64-pc-windows-msvc --release --workspace
       - name: Build
-        uses: actions-rs/cargo@v1
         env:
           RUSTFLAGS: '--cap-lints warn'
-        with:
-          command: build
-          args: "--target x86_64-pc-windows-msvc --release"
+        run: cargo build --target x86_64-pc-windows-msvc --release
       - name: Run
-        uses: actions-rs/cargo@v1
         env:
           RUSTFLAGS: '--cap-lints warn'
-        with:
-          command: run
-          args: "--target x86_64-pc-windows-msvc --release -- --version"
+        run: cargo run --target x86_64-pc-windows-msvc --release -- --version

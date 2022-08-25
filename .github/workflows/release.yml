@@ -24,8 +24,7 @@ jobs:
                   ref="${ref//master/dev}";
                   echo "$ref";
                   echo "::set-output name=name::$ref"
-            - name: "Checkout project"
-              uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: "System Setup"
               run: |
                   apt-get update;
@@ -63,8 +62,7 @@ jobs:
                   ref="${ref//master/dev}";
                   echo "$ref";
                   echo "::set-output name=name::$ref"
-            - name: "Checkout project"
-              uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: "System Setup"
               run: |
                   apt-get update;
@@ -103,8 +101,7 @@ jobs:
                   ref="${ref//master/dev}";
                   echo "$ref";
                   echo "::set-output name=name::$ref"
-            - name: "Checkout project"
-              uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: "System Setup"
               run: |
                   apt-get update;
@@ -142,8 +139,7 @@ jobs:
                   ref="${ref//master/dev}";
                   echo "$ref";
                   echo "::set-output name=name::$ref"
-            - name: "Checkout project"
-              uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: "System Setup"
               run: |
                   apt-get update;
@@ -163,11 +159,10 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     build-macos:
-        runs-on: [macos-latest]
+        runs-on: macos-latest
         timeout-minutes: 5
         steps:
-            - name: "Checkout project"
-              uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: "Build"
               run: "cargo build --release"
             - name: "Rename"
@@ -180,11 +175,10 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     build-windows:
-        runs-on: [windows-latest]
+        runs-on: windows-latest
         timeout-minutes: 10
         steps:
-            - name: "Checkout project"
-              uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: "Build"
               run: "cargo rustc --target x86_64-pc-windows-msvc --release --bin interactive-rebase-tool"
             - name: "Upload Release"
