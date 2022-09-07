@@ -22,7 +22,9 @@ use crate::{
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
-const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO.union(InputOptions::RESIZE);
+const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
+	.union(InputOptions::RESIZE)
+	.union(InputOptions::HELP);
 
 #[derive(Debug, PartialEq, Eq)]
 enum ListState {
@@ -94,8 +96,7 @@ impl Module for List {
 		select!(
 			default || Self::read_event_default(event, key_bindings),
 			|| (self.state == ListState::Edit).then(|| event),
-			|| self.normal_mode_help.read_event(event, key_bindings),
-			|| self.visual_mode_help.read_event(event, key_bindings)
+			|| Help::read_event(event)
 		)
 	}
 }
@@ -459,7 +460,6 @@ impl List {
 					MetaEvent::Delete => self.delete(rebase_todo),
 					MetaEvent::ForceAbort => self.force_abort(&mut results, rebase_todo),
 					MetaEvent::ForceRebase => self.force_rebase(&mut results),
-					MetaEvent::Help => self.help(),
 					MetaEvent::MoveCursorDown => self.move_cursor_down(rebase_todo, 1),
 					MetaEvent::MoveCursorEnd => self.move_cursor_end(rebase_todo),
 					MetaEvent::MoveCursorHome => self.move_cursor_home(rebase_todo),
@@ -478,6 +478,7 @@ impl List {
 			},
 			Event::Standard(standard_event) => {
 				match standard_event {
+					StandardEvent::Help => self.help(),
 					StandardEvent::Redo => self.redo(rebase_todo),
 					StandardEvent::Undo => self.undo(rebase_todo),
 					_ => return None,

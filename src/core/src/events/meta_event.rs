@@ -56,8 +56,6 @@ pub(crate) enum MetaEvent {
 	SwapSelectedUp,
 	/// The toggle visual mode meta event.
 	ToggleVisualMode,
-	/// The help meta event.
-	Help,
 	/// The insert line meta event.
 	InsertLine,
 	/// The no meta event.

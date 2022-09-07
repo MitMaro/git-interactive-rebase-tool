@@ -9,7 +9,7 @@ use anyhow::{anyhow, Error};
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
-use input::InputOptions;
+use input::{InputOptions, StandardEvent};
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData};
 
@@ -28,7 +28,9 @@ use crate::{
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
-const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO.union(InputOptions::MOVEMENT);
+const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
+	.union(InputOptions::MOVEMENT)
+	.union(InputOptions::HELP);
 
 pub(crate) struct ShowCommit {
 	commit_diff_loader_options: CommitDiffLoaderOptions,
@@ -127,7 +129,7 @@ impl Module for ShowCommit {
 					.then(|| Event::from(MetaEvent::ShowDiff))
 					.unwrap_or(event)
 			},
-			|| { self.help.read_event(event, key_bindings) }
+			|| { Help::read_event(event) }
 		)
 	}
 
@@ -153,7 +155,7 @@ impl Module for ShowCommit {
 						ShowCommitState::Diff => ShowCommitState::Overview,
 					}
 				},
-				Event::MetaEvent(meta_event) if meta_event == MetaEvent::Help => self.help.set_active(),
+				Event::Standard(standard_event) if standard_event == StandardEvent::Help => self.help.set_active(),
 				Event::Key(_) => {
 					active_view_data.update_view_data(|updater| updater.clear());
 					if self.state == ShowCommitState::Diff {

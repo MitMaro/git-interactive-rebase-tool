@@ -20,7 +20,6 @@ pub(crate) fn create_test_custom_keybindings() -> AppKeyBindings {
 		edit: vec![Event::from(KeyCode::Char('E'))],
 		force_abort: vec![Event::from(KeyCode::Char('Q'))],
 		force_rebase: vec![Event::from(KeyCode::Char('W'))],
-		help: vec![Event::from(KeyCode::Char('?'))],
 		insert_line: vec![Event::from(KeyCode::Char('I'))],
 		move_down: vec![Event::from(KeyCode::Down)],
 		move_down_step: vec![Event::from(KeyCode::PageDown)],

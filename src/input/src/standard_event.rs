@@ -26,4 +26,6 @@ pub enum StandardEvent {
 	ScrollTop,
 	/// The scroll to top meta event.
 	ScrollUp,
+	/// The help meta event.
+	Help,
 }
