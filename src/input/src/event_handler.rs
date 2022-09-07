@@ -49,6 +49,10 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 			}
 		}
 
+		if input_options.contains(InputOptions::HELP) && self.key_bindings.help.contains(&event) {
+			return Event::from(StandardEvent::Help);
+		}
+
 		if input_options.contains(InputOptions::UNDO_REDO) {
 			if let Some(evt) = Self::handle_undo_redo(&self.key_bindings, event) {
 				return evt;
@@ -252,6 +256,13 @@ mod tests {
 		let event_handler = EventHandler::new(bindings);
 		let result = event_handler.read_event(event, &InputOptions::MOVEMENT, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
+	}
+
+	#[test]
+	fn help_event() {
+		let event_handler = EventHandler::new(create_test_keybindings());
+		let result = event_handler.read_event(Event::from('?'), &InputOptions::HELP, |_, _| Event::from(KeyCode::Null));
+		assert_eq!(result, Event::from(StandardEvent::Help));
 	}
 
 	#[rstest]

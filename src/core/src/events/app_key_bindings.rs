@@ -35,8 +35,6 @@ pub(crate) struct AppKeyBindings {
 	pub(crate) force_abort: Vec<Event>,
 	/// Key bindings for forcing a rebase.
 	pub(crate) force_rebase: Vec<Event>,
-	/// Key bindings for showing help.
-	pub(crate) help: Vec<Event>,
 	/// Key bindings for inserting a line.
 	pub(crate) insert_line: Vec<Event>,
 	/// Key bindings for moving down.
@@ -88,7 +86,6 @@ impl CustomKeybinding for AppKeyBindings {
 			edit: map_keybindings(&key_bindings.edit),
 			force_abort: map_keybindings(&key_bindings.force_abort),
 			force_rebase: map_keybindings(&key_bindings.force_rebase),
-			help: map_keybindings(&key_bindings.help),
 			insert_line: map_keybindings(&key_bindings.insert_line),
 			move_down: map_keybindings(&key_bindings.move_down),
 			move_down_step: map_keybindings(&key_bindings.move_down_step),

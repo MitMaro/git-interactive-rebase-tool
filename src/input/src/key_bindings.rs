@@ -26,6 +26,9 @@ pub struct KeyBindings<CustomKeybinding: crate::CustomKeybinding, CustomEvent: c
 	/// Key bindings for scrolling up a step.
 	pub scroll_step_up: Vec<Event<CustomEvent>>,
 
+	/// Key bindings for help.
+	pub help: Vec<Event<CustomEvent>>,
+
 	/// Custom keybindings
 	pub custom: CustomKeybinding,
 }
@@ -102,6 +105,7 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 			scroll_up: map_keybindings(&key_bindings.scroll_up),
 			scroll_step_down: map_keybindings(&key_bindings.scroll_step_down),
 			scroll_step_up: map_keybindings(&key_bindings.scroll_step_up),
+			help: map_keybindings(&key_bindings.help),
 			custom: CustomKeybinding::new(key_bindings),
 		}
 	}

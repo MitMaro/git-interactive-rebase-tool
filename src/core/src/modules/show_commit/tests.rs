@@ -1157,40 +1157,48 @@ fn handle_event_resize() {
 #[test]
 fn render_help() {
 	with_temp_repository(|repo| {
-		module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
-			let _ = test_context.handle_all_events(&mut module);
-			assert_rendered_output!(
-				test_context.build_view_data(&mut module),
-				"{TITLE}",
-				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
-				"{BODY}",
-				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
-				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
-				"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
-				"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
-				"{IndicatorColor} Home    {Normal,Dimmed}|{Normal}Scroll to the top",
-				"{IndicatorColor} End     {Normal,Dimmed}|{Normal}Scroll to the bottom",
-				"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
-				"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
-				"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
-				"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
-				"{TRAILING}",
-				"{IndicatorColor}Press any key to close"
-			);
-		});
+		module_test(
+			&["pick aaa c1"],
+			&[Event::from(StandardEvent::Help)],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), repo);
+				let _ = test_context.handle_all_events(&mut module);
+				assert_rendered_output!(
+					test_context.build_view_data(&mut module),
+					"{TITLE}",
+					"{LEADING}",
+					"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
+					"{BODY}",
+					"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
+					"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
+					"{IndicatorColor} PageUp  {Normal,Dimmed}|{Normal}Scroll up half a page",
+					"{IndicatorColor} PageDown{Normal,Dimmed}|{Normal}Scroll down half a page",
+					"{IndicatorColor} Home    {Normal,Dimmed}|{Normal}Scroll to the top",
+					"{IndicatorColor} End     {Normal,Dimmed}|{Normal}Scroll to the bottom",
+					"{IndicatorColor} Right   {Normal,Dimmed}|{Normal}Scroll right",
+					"{IndicatorColor} Left    {Normal,Dimmed}|{Normal}Scroll left",
+					"{IndicatorColor} d       {Normal,Dimmed}|{Normal}Show full diff",
+					"{IndicatorColor} ?       {Normal,Dimmed}|{Normal}Show help",
+					"{TRAILING}",
+					"{IndicatorColor}Press any key to close"
+				);
+			},
+		);
 	});
 }
 
 #[test]
 fn handle_help_event_show() {
 	with_temp_repository(|repo| {
-		module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Help)], |mut test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
-			let _ = test_context.handle_all_events(&mut module);
-			assert!(module.help.is_active());
-		});
+		module_test(
+			&["pick aaa c1"],
+			&[Event::from(StandardEvent::Help)],
+			|mut test_context| {
+				let mut module = ShowCommit::new(&Config::new(), repo);
+				let _ = test_context.handle_all_events(&mut module);
+				assert!(module.help.is_active());
+			},
+		);
 	});
 }
 #[test]
@@ -1198,7 +1206,7 @@ fn handle_help_event_hide() {
 	with_temp_repository(|repo| {
 		module_test(
 			&["pick aaa c1"],
-			&[Event::from(MetaEvent::Help), Event::from('?')],
+			&[Event::from(StandardEvent::Help), Event::from('?')],
 			|mut test_context| {
 				let mut module = ShowCommit::new(&Config::new(), repo);
 				let _ = test_context.handle_all_events(&mut module);
