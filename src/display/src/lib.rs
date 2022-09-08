@@ -401,7 +401,7 @@ impl<T: Tui> Display<T> {
 	/// Will error if the underlying terminal interface is in an error state.
 	#[inline]
 	pub fn ensure_at_line_start(&mut self) -> Result<(), DisplayError> {
-		self.tui.move_to_column(1)
+		self.tui.move_to_column(0)
 	}
 
 	/// Move the cursor position `right` characters from the end of the line.
@@ -411,7 +411,7 @@ impl<T: Tui> Display<T> {
 	#[inline]
 	pub fn move_from_end_of_line(&mut self, right: u16) -> Result<(), DisplayError> {
 		let width = self.get_window_size().width().try_into().unwrap_or(u16::MAX);
-		self.tui.move_to_column(width - right + 1)
+		self.tui.move_to_column(width - right)
 	}
 
 	/// Move the cursor to the next line.
@@ -655,7 +655,7 @@ mod tests {
 	fn ensure_at_line_start() {
 		let mut display = Display::new(CrossTerm::new(), &Theme::new());
 		display.ensure_at_line_start().unwrap();
-		assert_eq!(display.tui.get_position(), (1, 0));
+		assert_eq!(display.tui.get_position(), (0, 0));
 	}
 
 	#[test]
@@ -663,8 +663,8 @@ mod tests {
 		let mut display = Display::new(CrossTerm::new(), &Theme::new());
 		display.tui.set_size(Size::new(20, 10));
 		display.move_from_end_of_line(5).unwrap();
-		// character after the 15th character (16th)
-		assert_eq!(display.tui.get_position(), (16, 0));
+		// character after the 15th character (0-indexed)
+		assert_eq!(display.tui.get_position(), (15, 0));
 	}
 
 	#[test]
