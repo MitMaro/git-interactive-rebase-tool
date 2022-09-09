@@ -64,7 +64,7 @@ impl ToString for User {
 			format!("<{}>", email)
 		}
 		else {
-			String::from("")
+			String::new()
 		}
 	}
 }

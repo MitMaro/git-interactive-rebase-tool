@@ -12,9 +12,9 @@ pub(crate) struct EditableLine {
 }
 
 impl EditableLine {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
-			content: String::from(""),
+			content: String::new(),
 			cursor_position: 0,
 			label: None,
 		}

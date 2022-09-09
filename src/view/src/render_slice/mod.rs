@@ -49,7 +49,7 @@ impl RenderSlice {
 			show_help: false,
 			show_title: false,
 			version: 0,
-			view_data_name: String::from(""),
+			view_data_name: String::new(),
 			view_data_version: 0,
 			width: 0,
 		}

@@ -12,11 +12,11 @@ pub struct Line {
 impl Line {
 	/// Create a new noop line.
 	#[must_use]
-	fn new_noop() -> Self {
+	const fn new_noop() -> Self {
 		Self {
 			action: Action::Noop,
-			content: String::from(""),
-			hash: String::from(""),
+			content: String::new(),
+			hash: String::new(),
 			mutated: false,
 		}
 	}
@@ -27,7 +27,7 @@ impl Line {
 	pub fn new_pick(hash: &str) -> Self {
 		Self {
 			action: Action::Pick,
-			content: String::from(""),
+			content: String::new(),
 			hash: String::from(hash),
 			mutated: false,
 		}
@@ -36,11 +36,11 @@ impl Line {
 	/// Create a new break line.
 	#[must_use]
 	#[inline]
-	pub fn new_break() -> Self {
+	pub const fn new_break() -> Self {
 		Self {
 			action: Action::Break,
-			content: String::from(""),
-			hash: String::from(""),
+			content: String::new(),
+			hash: String::new(),
 			mutated: false,
 		}
 	}
@@ -52,7 +52,7 @@ impl Line {
 		Self {
 			action: Action::Exec,
 			content: String::from(command),
-			hash: String::from(""),
+			hash: String::new(),
 			mutated: false,
 		}
 	}
@@ -64,7 +64,7 @@ impl Line {
 		Self {
 			action: Action::Merge,
 			content: String::from(command),
-			hash: String::from(""),
+			hash: String::new(),
 			mutated: false,
 		}
 	}
@@ -76,7 +76,7 @@ impl Line {
 		Self {
 			action: Action::Label,
 			content: String::from(label),
-			hash: String::from(""),
+			hash: String::new(),
 			mutated: false,
 		}
 	}
@@ -88,7 +88,7 @@ impl Line {
 		Self {
 			action: Action::Reset,
 			content: String::from(label),
-			hash: String::from(""),
+			hash: String::new(),
 			mutated: false,
 		}
 	}
@@ -119,7 +119,7 @@ impl Line {
 			if input.len() == 2 {
 				return Ok(Self {
 					action: Action::try_from(input[0])?,
-					hash: String::from(""),
+					hash: String::new(),
 					content: String::from(input[1]),
 					mutated: false,
 				});
@@ -135,7 +135,7 @@ impl Line {
 						String::from(input[2])
 					}
 					else {
-						String::from("")
+						String::new()
 					},
 					mutated: false,
 				});
@@ -271,43 +271,43 @@ mod tests {
 	#[case::action_without_comment("pick aaa", &Line {
 		action: Action::Pick,
 		hash: String::from("aaa"),
-		content: String::from(""),
+		content: String::new(),
 		mutated: false,
 	})]
 	#[case::exec_action("exec command", &Line {
 		action: Action::Exec,
-		hash: String::from(""),
+		hash: String::new(),
 		content: String::from("command"),
 		mutated: false,
 	})]
 	#[case::label_action("label ref", &Line {
 		action: Action::Label,
-		hash: String::from(""),
+		hash: String::new(),
 		content: String::from("ref"),
 		mutated: false,
 	})]
 	#[case::reset_action("reset ref", &Line {
 		action: Action::Reset,
-		hash: String::from(""),
+		hash: String::new(),
 		content: String::from("ref"),
 		mutated: false,
 	})]
 	#[case::reset_action("merge command", &Line {
 		action: Action::Merge,
-		hash: String::from(""),
+		hash: String::new(),
 		content: String::from("command"),
 		mutated: false,
 	})]
 	#[case::break_action("break", &Line {
 		action: Action::Break,
-		hash: String::from(""),
-		content: String::from(""),
+		hash: String::new(),
+		content: String::new(),
 		mutated: false,
 	})]
 	#[case::nnop( "noop", &Line {
 		action: Action::Noop,
-		hash: String::from(""),
-		content: String::from(""),
+		hash: String::new(),
+		content: String::new(),
 		mutated: false,
 	})]
 	fn new(#[case] line: &str, #[case] expected: &Line) {
@@ -319,7 +319,7 @@ mod tests {
 		assert_eq!(Line::new_pick("abc123"), Line {
 			action: Action::Pick,
 			hash: String::from("abc123"),
-			content: String::from(""),
+			content: String::new(),
 			mutated: false,
 		});
 	}
@@ -328,8 +328,8 @@ mod tests {
 	fn line_new_break() {
 		assert_eq!(Line::new_break(), Line {
 			action: Action::Break,
-			hash: String::from(""),
-			content: String::from(""),
+			hash: String::new(),
+			content: String::new(),
 			mutated: false,
 		});
 	}
@@ -338,7 +338,7 @@ mod tests {
 	fn line_new_exec() {
 		assert_eq!(Line::new_exec("command"), Line {
 			action: Action::Exec,
-			hash: String::from(""),
+			hash: String::new(),
 			content: String::from("command"),
 			mutated: false,
 		});
@@ -348,7 +348,7 @@ mod tests {
 	fn line_new_merge() {
 		assert_eq!(Line::new_merge("command"), Line {
 			action: Action::Merge,
-			hash: String::from(""),
+			hash: String::new(),
 			content: String::from("command"),
 			mutated: false,
 		});
@@ -358,7 +358,7 @@ mod tests {
 	fn line_new_label() {
 		assert_eq!(Line::new_label("label"), Line {
 			action: Action::Label,
-			hash: String::from(""),
+			hash: String::new(),
 			content: String::from("label"),
 			mutated: false,
 		});
@@ -368,7 +368,7 @@ mod tests {
 	fn line_new_reset() {
 		assert_eq!(Line::new_reset("label"), Line {
 			action: Action::Reset,
-			hash: String::from(""),
+			hash: String::new(),
 			content: String::from("label"),
 			mutated: false,
 		});

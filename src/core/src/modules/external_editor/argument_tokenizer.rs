@@ -15,7 +15,7 @@ pub(super) fn tokenize(input: &str) -> Option<Vec<String>> {
 	let mut previous_state = State::Normal;
 	let mut state = State::Normal;
 	let mut token_start: usize = 0;
-	let mut value = String::from("");
+	let mut value = String::new();
 	let mut force_value = false;
 
 	let mut tokens = vec![];

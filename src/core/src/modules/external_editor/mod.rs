@@ -192,7 +192,7 @@ impl ExternalEditor {
 			editor: String::from(editor),
 			empty_choice,
 			error_choice,
-			external_command: (String::from(""), vec![]),
+			external_command: (String::new(), vec![]),
 			lines: vec![],
 			state: ExternalEditorState::Active,
 			view_data,
