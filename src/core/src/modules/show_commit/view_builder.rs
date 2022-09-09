@@ -189,8 +189,8 @@ impl ViewBuilder {
 			let (leading, content, trailing) = if line.trim().is_empty() {
 				(
 					self.replace_whitespace(line, self.show_leading_whitespace || self.show_trailing_whitespace),
-					String::from(""),
-					String::from(""),
+					String::new(),
+					String::new(),
 				)
 			}
 			else {
