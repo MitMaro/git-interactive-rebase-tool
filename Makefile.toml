@@ -5,6 +5,7 @@ default_to_workspace = false
 [tasks.dev]
 dependencies = [
 	"build",
+	"build-nightly",
 	"test",
 	"docs",
 	"lint",
@@ -14,6 +15,13 @@ dependencies = [
 [tasks.build]
 dependencies = ["update-rust-stable"]
 toolchain = "stable"
+install_crate = false
+command = "cargo"
+args = ["build", "${@}"]
+
+[tasks.build-nightly]
+dependencies = ["update-rust-nightly"]
+toolchain = "nightly"
 install_crate = false
 command = "cargo"
 args = ["build", "${@}"]
@@ -39,6 +47,7 @@ command = "cargo"
 args = ["clean"]
 
 [tasks.coverage]
+dependencies = ["update-rust-nightly"]
 toolchain = "nightly"
 command = "cargo"
 condition = { platforms = ["linux"] }
