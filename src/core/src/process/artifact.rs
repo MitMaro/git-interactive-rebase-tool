@@ -6,6 +6,7 @@ use crate::{
 };
 
 #[derive(Debug)]
+#[allow(variant_size_differences)]
 pub(crate) enum Artifact {
 	Event(Event),
 	ChangeState(State),
