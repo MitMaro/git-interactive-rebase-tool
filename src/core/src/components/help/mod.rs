@@ -76,7 +76,7 @@ impl Help {
 	}
 
 	pub(crate) fn input_options(&self) -> Option<&InputOptions> {
-		self.active.then(|| &INPUT_OPTIONS)
+		self.active.then_some(&INPUT_OPTIONS)
 	}
 
 	pub(crate) fn read_event(event: Event) -> Option<Event> {

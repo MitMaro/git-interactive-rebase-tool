@@ -95,7 +95,7 @@ impl Module for List {
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
 		select!(
 			default || Self::read_event_default(event, key_bindings),
-			|| (self.state == ListState::Edit).then(|| event),
+			|| (self.state == ListState::Edit).then_some(event),
 			|| Help::read_event(event)
 		)
 	}
