@@ -156,10 +156,10 @@ cargo +nightly about generate "docs/licenses.hbs" > "docs/licenses.html"
 ''']
 
 [tasks.add-lints]
-command = "scripts/add-lints.bash"
+command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/scripts/add-lints.bash"
 
 [tasks.publish]
-command = "scripts/publish.bash"
+command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/scripts/publish.bash"
 
 [tasks.test]
 dependencies = ["update-rust-stable"]

@@ -47,7 +47,8 @@
 	variant_size_differences
 )]
 // enable all of Clippy's lints
-#![deny(clippy::all, clippy::cargo, clippy::nursery, clippy::pedantic, clippy::restriction)]
+#![deny(clippy::all, clippy::cargo, clippy::pedantic, clippy::restriction)]
+#![cfg_attr(include_nightly_lints, deny(clippy::nursery))]
 #![allow(
 	clippy::blanket_clippy_restriction_lints,
 	clippy::default_numeric_fallback,

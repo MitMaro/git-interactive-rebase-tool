@@ -2,10 +2,15 @@
 
 if [[ -z "$PUBLISH" ]]; then
 	1>&2 echo "Set PUBLISH environment variable to publish"
-	exit 1;
+	exit 1
 fi
 
 set -euo pipefail
+
+if [[ ! -f "$PWD/Cargo.lock" ]]; then
+	1>&2 echo "This script must be run from the project root directory"
+	exit 1
+fi
 
 # order is based on dependency graph
 crates=(
