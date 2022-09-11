@@ -9,6 +9,7 @@
 	nonstandard_style,
 	rust_2018_compatibility,
 	rust_2018_idioms,
+	rust_2021_compatibility,
 	unused,
 	warnings
 )]
@@ -30,7 +31,8 @@
 	pointer_structural_match,
 	rust_2021_incompatible_closure_captures,
 	rust_2021_incompatible_or_patterns,
-	semicolon_in_expressions_from_macros,
+	rust_2021_prefixes_incompatible_syntax,
+	rust_2021_prelude_collisions,
 	single_use_lifetimes,
 	trivial_casts,
 	trivial_numeric_casts,
@@ -42,6 +44,7 @@
 	unused_extern_crates,
 	unused_import_braces,
 	unused_lifetimes,
+	unused_macro_rules,
 	unused_qualifications,
 	unused_results,
 	variant_size_differences
