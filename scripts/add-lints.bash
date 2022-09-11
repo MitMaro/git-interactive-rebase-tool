@@ -92,6 +92,15 @@ content="\
 	rustdoc::missing_crate_level_docs,
 	rustdoc::private_doc_tests,
 	rustdoc::private_intra_doc_links
+)]
+#![cfg_attr(
+	include_nightly_lints,
+	allow(
+		clippy::arithmetic_side_effects,
+		clippy::bool_to_int_with_if,
+		clippy::std_instead_of_alloc,
+		clippy::std_instead_of_core
+	)
 )]\
 "
 content="${content//$'\n'/\\n}"
