@@ -31,7 +31,7 @@ girt-todo-file = {version = "2.2.0", path = "../../src/todo_file"}
 girt-view = {version = "2.2.0", path = "../../src/view"}
 
 [dev-dependencies]
-pretty_assertions = "1.2.1"
+pretty_assertions = "1.3.0"
 rstest = "0.15.0"
 serial_test = "0.9.0"
 tempfile = "3.3.0"
