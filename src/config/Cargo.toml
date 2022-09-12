@@ -15,7 +15,7 @@ readme = "README.md"
 name = "config"
 
 [dependencies]
-thiserror = "1.0.32"
+thiserror = "1.0.34"
 girt-git = {version = "2.2.0", path = "../../src/git"}
 
 [dev-dependencies]
