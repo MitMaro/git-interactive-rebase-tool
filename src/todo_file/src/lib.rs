@@ -67,7 +67,8 @@
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments,
-	clippy::too_many_lines
+	clippy::too_many_lines,
+	clippy::unwrap_used
 )]
 #![deny(
 	rustdoc::bare_urls,
@@ -418,7 +419,7 @@ mod tests {
 	use super::*;
 
 	fn create_line(line: &str) -> Line {
-		Line::new(line).expect("Invalid line")
+		Line::new(line).unwrap()
 	}
 
 	fn create_and_load_todo_file(file_contents: &[&str]) -> (TodoFile, NamedTempFile) {

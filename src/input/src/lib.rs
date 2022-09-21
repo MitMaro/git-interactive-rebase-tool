@@ -67,7 +67,8 @@
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments,
-	clippy::too_many_lines
+	clippy::too_many_lines,
+	clippy::unwrap_used
 )]
 #![deny(
 	rustdoc::bare_urls,

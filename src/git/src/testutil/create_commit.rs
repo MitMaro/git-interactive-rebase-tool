@@ -121,21 +121,29 @@ impl Default for CreateCommitOptions {
 }
 
 /// Add a path to the working index.
+///
+/// # Panics
+/// If the path cannot be added to the index.
 #[inline]
 pub fn add_path_to_index(repo: &Repository, path: &Path) {
-	repo.add_path_to_index(path).expect("Unable to add path to index");
+	repo.add_path_to_index(path).unwrap();
 }
 
 /// Remove a path to the working index.
+///
+/// # Panics
+/// If the path cannot be removed from the index.
 #[inline]
 pub fn remove_path_from_index(repo: &Repository, path: &Path) {
-	repo.remove_path_from_index(path)
-		.expect("Unable to remove path from index");
+	repo.remove_path_from_index(path).unwrap();
 }
 
 /// Create a commit based on the provided options. If `options` is not provided, will create a
 /// commit using the default options. This function does not add modified or new files to the stage
 /// before creating a commit.
+///
+/// # Panics
+/// If any Git operation cannot be performed.
 #[inline]
 pub fn create_commit(repository: &Repository, options: Option<&CreateCommitOptions>) {
 	let opts = options.unwrap_or(&DEFAULT_COMMIT_OPTIONS);
@@ -144,16 +152,16 @@ pub fn create_commit(repository: &Repository, options: Option<&CreateCommitOptio
 		opts.author_email.as_str(),
 		&git2::Time::new(opts.author_time.unwrap_or(opts.committer_time), 0),
 	)
-	.expect("Unable to create author signature");
+	.unwrap();
 	let committer_sig = git2::Signature::new(
 		opts.committer_name.as_ref().unwrap_or(&opts.author_name).as_str(),
 		opts.committer_email.as_ref().unwrap_or(&opts.author_email).as_str(),
 		&git2::Time::new(opts.committer_time, 0),
 	)
-	.expect("Unable to create comitter signature");
+	.unwrap();
 	let ref_name = format!("refs/heads/{}", opts.head_name);
 
 	repository
 		.create_commit_on_index(ref_name.as_str(), &author_sig, &committer_sig, opts.message.as_str())
-		.expect("Unable to create commit");
+		.unwrap();
 }

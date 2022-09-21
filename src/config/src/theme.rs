@@ -74,8 +74,9 @@ impl Theme {
 	/// Create a new configuration with default values.
 	#[must_use]
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn new() -> Self {
-		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
+		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
 	/// Create a new theme from a Git Config reference.

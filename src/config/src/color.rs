@@ -110,9 +110,9 @@ impl TryFrom<&str> for Color {
 						}
 
 						Ok(Self::Rgb {
-							red: red.try_into().expect("Invalid into"),
-							green: green.try_into().expect("Invalid into"),
-							blue: blue.try_into().expect("Invalid into"),
+							red: red.try_into().unwrap(),
+							green: green.try_into().unwrap(),
+							blue: blue.try_into().unwrap(),
 						})
 					},
 					_ => Err(InvalidColorError::Invalid {}),

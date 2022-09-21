@@ -32,16 +32,21 @@ pub fn repo_path(repo: &Repository) -> PathBuf {
 }
 
 /// Get the Oid of provided head reference name.
+///
+/// # Panics
+/// If the head id cannot be queried.
 #[inline]
 #[must_use]
 pub fn head_id(repo: &Repository, head_name: &str) -> Oid {
-	repo.head_id(head_name).expect("head does not exist")
+	repo.head_id(head_name).unwrap()
 }
 
 /// Get the Commit Oid from a reference name.
+///
+/// # Panics
+/// If the head id cannot be queried.
 #[inline]
 #[must_use]
 pub fn commit_id_from_ref(repo: &Repository, reference: &str) -> Oid {
-	repo.commit_id_from_ref(reference)
-		.expect("reference does not exist, or is not a commit")
+	repo.commit_id_from_ref(reference).unwrap()
 }

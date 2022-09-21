@@ -19,58 +19,65 @@ impl Notifier {
 
 	/// Notify the `Runtime` that the thread is busy processing.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn busy(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Busy))
-			.expect("Failed to send busy");
+			.unwrap();
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread pause processing.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn request_pause(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestPause))
-			.expect("Failed to send request for pause");
+			.unwrap();
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread resume processing.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn request_resume(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestResume))
-			.expect("Failed to send request for pause");
+			.unwrap();
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread end processing.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn request_end(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestEnd))
-			.expect("Failed to send request for end");
+			.unwrap();
 	}
 
 	/// Notify the `Runtime` that the thread is waiting for new data or messages to process.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn wait(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Waiting))
-			.expect("Failed to send wait");
+			.unwrap();
 	}
 
 	/// Notify the `Runtime` that the thread is in a permanent error state.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn error(&self, err: RuntimeError) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Error(err)))
-			.expect("Failed to send error");
+			.unwrap();
 	}
 
 	/// Notify the `Runtime` that the thread has ended processing.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn end(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Ended))
-			.expect("Failed to send end");
+			.unwrap();
 	}
 }
 

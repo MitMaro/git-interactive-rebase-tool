@@ -67,7 +67,8 @@
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
 	clippy::tabs_in_doc_comments,
-	clippy::too_many_lines
+	clippy::too_many_lines,
+	clippy::unwrap_used
 )]
 #![deny(
 	rustdoc::bare_urls,
@@ -162,8 +163,9 @@ impl Config {
 	/// Create a new configuration with default values.
 	#[inline]
 	#[must_use]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn new() -> Self {
-		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
+		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
 	fn new_with_config(git_config: Option<&git::Config>) -> Result<Self, ConfigError> {
