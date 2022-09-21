@@ -61,6 +61,7 @@
 	clippy::implicit_return,
 	clippy::indexing_slicing,
 	clippy::integer_arithmetic,
+	clippy::map_err_ignore,
 	clippy::missing_docs_in_private_items,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
