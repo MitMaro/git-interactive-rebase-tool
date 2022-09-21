@@ -124,8 +124,7 @@ impl RenderSlice {
 	#[allow(
 		clippy::cast_precision_loss,
 		clippy::cast_possible_truncation,
-		clippy::cast_sign_loss,
-		clippy::float_arithmetic
+		clippy::cast_sign_loss
 	)]
 	pub(crate) fn get_scroll_index(&self) -> usize {
 		if self.lines_count == 0 || self.scroll_position.get_top_position() == 0 {
