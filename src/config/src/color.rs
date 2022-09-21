@@ -58,7 +58,7 @@ pub enum Color {
 impl TryFrom<&str> for Color {
 	type Error = InvalidColorError;
 
-	#[allow(clippy::indexing_slicing, clippy::unwrap_in_result)]
+	#[allow(clippy::unwrap_in_result)]
 	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {

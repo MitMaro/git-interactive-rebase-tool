@@ -2,7 +2,7 @@ use git::Config;
 
 use crate::{utils::get_string, ConfigError, ConfigErrorCause};
 
-#[allow(clippy::string_slice, clippy::indexing_slicing)]
+#[allow(clippy::string_slice)]
 pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
 	let mut values = vec![];
 	let input = get_string(config, name, default)?;

@@ -57,6 +57,7 @@
 	clippy::else_if_without_else,
 	clippy::expect_used,
 	clippy::implicit_return,
+	clippy::indexing_slicing,
 	clippy::integer_arithmetic,
 	clippy::missing_docs_in_private_items,
 	clippy::mod_module_files,

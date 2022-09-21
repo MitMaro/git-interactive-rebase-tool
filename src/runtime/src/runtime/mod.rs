@@ -53,7 +53,6 @@ impl<'runtime> Runtime<'runtime> {
 	///
 	/// # Errors
 	/// Returns and error if any of the threads registered to the runtime produce an error.
-	#[allow(clippy::indexing_slicing)]
 	#[inline]
 	pub fn join(&self) -> Result<(), RuntimeError> {
 		let installer = Installer::new(self.sender.clone());

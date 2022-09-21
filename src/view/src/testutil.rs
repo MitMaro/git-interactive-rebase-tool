@@ -177,7 +177,7 @@ fn expand_expected(expected: &[String]) -> Vec<String> {
 		.collect::<Vec<String>>()
 }
 
-#[allow(clippy::indexing_slicing, clippy::string_slice, clippy::panic)]
+#[allow(clippy::string_slice, clippy::panic)]
 pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[String], expected: &[String]) {
 	let mut mismatch = false;
 	let mut error_output = vec![
