@@ -71,7 +71,7 @@ pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEv
 }
 
 /// Context for a `EventHandler` based test.
-#[allow(missing_debug_implementations)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub struct TestContext<TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
 	/// The `EventHandler` instance.
