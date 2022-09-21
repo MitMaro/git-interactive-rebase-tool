@@ -56,6 +56,7 @@
 	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
 	clippy::expect_used,
+	clippy::float_arithmetic,
 	clippy::implicit_return,
 	clippy::indexing_slicing,
 	clippy::integer_arithmetic,
