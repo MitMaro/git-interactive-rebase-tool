@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use crate::{testutil::JAN_2021_EPOCH, Repository};
 
 lazy_static! {
-	static ref DEFAULT_COMMIT_OPTIONS: CreateCommitOptions = CreateCommitOptions::default();
+	static ref DEFAULT_COMMIT_OPTIONS: CreateCommitOptions = CreateCommitOptions::new();
 }
 
 /// Options for creating a new commit.
@@ -28,7 +28,16 @@ impl CreateCommitOptions {
 	#[inline]
 	#[must_use]
 	pub fn new() -> Self {
-		Self::default()
+		Self {
+			author_name: String::from("Author"),
+			author_email: String::from("author@example.com"),
+			author_time: None,
+			committer_name: None,
+			committer_email: None,
+			committer_time: JAN_2021_EPOCH,
+			head_name: String::from("main"),
+			message: String::from("title\n\nbody"),
+		}
 	}
 
 	/// Set the author name and related email address.
@@ -101,22 +110,6 @@ impl CreateCommitOptions {
 	pub fn message(&mut self, message: &str) -> &mut Self {
 		self.message = String::from(message);
 		self
-	}
-}
-
-impl Default for CreateCommitOptions {
-	#[inline]
-	fn default() -> Self {
-		Self {
-			author_name: String::from("Author"),
-			author_email: String::from("author@example.com"),
-			author_time: None,
-			committer_name: None,
-			committer_email: None,
-			committer_time: JAN_2021_EPOCH,
-			head_name: String::from("main"),
-			message: String::from("title\n\nbody"),
-		}
 	}
 }
 

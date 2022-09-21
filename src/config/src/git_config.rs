@@ -77,13 +77,6 @@ impl GitConfig {
 	}
 }
 
-impl Default for GitConfig {
-	#[inline]
-	fn default() -> Self {
-		Self::new()
-	}
-}
-
 impl TryFrom<&Config> for GitConfig {
 	type Error = ConfigError;
 
@@ -146,11 +139,6 @@ mod tests {
 	#[test]
 	fn new() {
 		let _config = GitConfig::new();
-	}
-
-	#[test]
-	fn default() {
-		let _config = GitConfig::default();
 	}
 
 	#[test]

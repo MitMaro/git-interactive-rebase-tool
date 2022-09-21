@@ -137,7 +137,6 @@ impl CrossTerm {
 	/// Create a new instance.
 	#[inline]
 	#[must_use]
-	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self {
 			window: BufWriter::new(stdout()),

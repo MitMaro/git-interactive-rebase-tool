@@ -166,13 +166,6 @@ impl KeyBindings {
 	}
 }
 
-impl Default for KeyBindings {
-	#[inline]
-	fn default() -> Self {
-		Self::new()
-	}
-}
-
 impl TryFrom<&Config> for KeyBindings {
 	type Error = ConfigError;
 
@@ -219,11 +212,6 @@ mod tests {
 	#[test]
 	fn new() {
 		let _config = KeyBindings::new();
-	}
-
-	#[test]
-	fn default() {
-		let _config = KeyBindings::default();
 	}
 
 	#[test]

@@ -33,7 +33,6 @@ pub struct RenderSlice {
 }
 
 impl RenderSlice {
-	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self {
 			actions: VecDeque::new(),

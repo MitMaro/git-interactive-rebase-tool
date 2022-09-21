@@ -122,7 +122,6 @@ impl CrossTerm {
 	/// Create a new mocked version of `CrossTerm`.
 	#[inline]
 	#[must_use]
-	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
 		Self {
 			attributes: Attributes::from(Attribute::Reset),
