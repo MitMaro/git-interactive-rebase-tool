@@ -2,7 +2,6 @@ use git::{Config, ErrorCode};
 
 use crate::{utils::_get_string, ConfigError, ConfigErrorCause};
 
-#[allow(clippy::map_err_ignore)]
 pub(crate) fn get_unsigned_integer(config: Option<&Config>, name: &str, default: u32) -> Result<u32, ConfigError> {
 	if let Some(cfg) = config {
 		match cfg.get_i32(name) {
