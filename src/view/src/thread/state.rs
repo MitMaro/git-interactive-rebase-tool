@@ -38,7 +38,7 @@ impl State {
 	}
 
 	fn send_update(&self, action: ViewAction) {
-		self.update_sender.send(action).expect("Sender unable to send message");
+		self.update_sender.send(action).unwrap();
 	}
 
 	pub(crate) fn update_receiver(&self) -> crossbeam_channel::Receiver<ViewAction> {

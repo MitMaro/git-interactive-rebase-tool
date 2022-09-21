@@ -72,6 +72,7 @@ impl ThreadableTester {
 
 	/// Start a `Threadable` running the thread specified by the name, to completion in a separate thread.
 	#[inline]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn start_threadable<Threadable: crate::Threadable>(&self, theadable: &Threadable, thread_name: &str) {
 		self.ended.store(false, Ordering::Release);
 		let installer = Installer::new(self.sender.clone());
@@ -83,10 +84,9 @@ impl ThreadableTester {
 		let receiver = self.receiver.clone();
 
 		let _status_thread_id = spawn(move || {
-			// capture!(receiver, statuses);
 			for (_, status) in &receiver {
 				let mut statuses_lock = statuses.lock();
-				let last_status = statuses_lock.last().expect("Last status always exists");
+				let last_status = statuses_lock.last().unwrap();
 				if !matches!(*last_status, Status::Error(_)) && last_status != &status {
 					statuses_lock.push(status);
 				}
@@ -107,7 +107,7 @@ impl ThreadableTester {
 
 		loop {
 			let statuses_lock = self.statuses.lock();
-			let current_status = statuses_lock.last().expect("Expected to lock");
+			let current_status = statuses_lock.last().unwrap();
 
 			if current_status == status {
 				break;
@@ -135,7 +135,7 @@ impl ThreadableTester {
 
 		loop {
 			let statuses_lock = self.statuses.lock();
-			let current_status = statuses_lock.last().expect("Expected to lock");
+			let current_status = statuses_lock.last().unwrap();
 
 			if matches!(current_status, &Status::Error(_)) {
 				break;

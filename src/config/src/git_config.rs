@@ -52,8 +52,9 @@ impl GitConfig {
 	/// Create a new configuration with default values.
 	#[inline]
 	#[must_use]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn new() -> Self {
-		Self::new_with_config(None).expect("Panic without git config instance") // should never error with None config
+		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
 	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {

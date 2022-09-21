@@ -282,49 +282,36 @@ mod tests {
 	}
 
 	fn write_normal_file(repository: &crate::Repository, name: &str, contents: &[&str]) {
-		let root = repository
-			.repo_path()
-			.parent()
-			.expect("Repo has no parent")
-			.to_path_buf();
+		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
 		let file_path = root.join(name);
-		let mut file = File::create(file_path.as_path()).expect("Unable to write file");
+		let mut file = File::create(file_path.as_path()).unwrap();
 		if !contents.is_empty() {
-			writeln!(file, "{}", contents.join("\n")).expect("Unable to write file")
+			writeln!(file, "{}", contents.join("\n")).unwrap()
 		}
-		repository
-			.add_path_to_index(PathBuf::from(name).as_path())
-			.expect("Unable to add path to index")
+		repository.add_path_to_index(PathBuf::from(name).as_path()).unwrap()
 	}
 
 	fn remove_path(repository: &crate::Repository, name: &str) {
-		let root = repository
-			.repo_path()
-			.parent()
-			.expect("Repo has no parent")
-			.to_path_buf();
+		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
 		let file_path = root.join(name);
 		let _ = remove_file(file_path);
 
 		repository
 			.remove_path_from_index(PathBuf::from(name).as_path())
-			.expect("Unable to remove path from index");
+			.unwrap();
 	}
 
 	fn create_commit(repository: &crate::Repository) {
-		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0))
-			.expect("Unable to create signature");
+		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0)).unwrap();
 		repository
 			.create_commit_on_index("refs/heads/main", &sig, &sig, "title")
-			.expect("Unable to create commit on index");
+			.unwrap();
 	}
 
 	fn diff_from_head(repository: &crate::Repository, options: &CommitDiffLoaderOptions) -> CommitDiff {
-		let id = repository
-			.commit_id_from_ref("refs/heads/main")
-			.expect("Unable to load commit from ref");
+		let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
 		let loader = CommitDiffLoader::new(repository.repository(), options);
 		loader.load_from_hash(id).unwrap().remove(0)
 	}
