@@ -65,6 +65,7 @@
 	clippy::missing_docs_in_private_items,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
+	clippy::new_without_default,
 	clippy::option_if_let_else,
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
@@ -193,13 +194,6 @@ impl Config {
 	}
 }
 
-impl Default for Config {
-	#[inline]
-	fn default() -> Self {
-		Self::new()
-	}
-}
-
 impl TryFrom<&Repository> for Config {
 	type Error = ConfigError;
 
@@ -240,11 +234,6 @@ mod tests {
 	#[test]
 	fn new() {
 		let _config = Config::new();
-	}
-
-	#[test]
-	fn default() {
-		let _config = Config::default();
 	}
 
 	#[test]

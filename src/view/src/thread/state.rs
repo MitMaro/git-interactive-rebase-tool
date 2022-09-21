@@ -21,7 +21,6 @@ pub struct State {
 	update_sender: crossbeam_channel::Sender<ViewAction>,
 }
 
-#[allow(clippy::new_without_default)]
 impl State {
 	/// Create a new instance.
 	#[inline]

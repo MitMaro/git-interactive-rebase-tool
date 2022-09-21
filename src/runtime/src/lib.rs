@@ -65,6 +65,7 @@
 	clippy::missing_docs_in_private_items,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
+	clippy::new_without_default,
 	clippy::option_if_let_else,
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
@@ -91,11 +92,7 @@
 	)
 )]
 // LINT-REPLACE-END
-#![allow(
-	clippy::as_conversions,
-	clippy::cast_possible_truncation,
-	clippy::new_without_default
-)]
+#![allow(clippy::as_conversions, clippy::cast_possible_truncation)]
 
 //! Git Interactive Rebase Tool - Runtime
 //!

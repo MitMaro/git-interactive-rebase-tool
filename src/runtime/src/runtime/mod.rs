@@ -19,7 +19,6 @@ pub struct Runtime<'runtime> {
 
 impl<'runtime> Runtime<'runtime> {
 	/// Create a new instances of the `Runtime`.
-	#[allow(clippy::new_without_default)]
 	#[inline]
 	#[must_use]
 	pub fn new() -> Self {

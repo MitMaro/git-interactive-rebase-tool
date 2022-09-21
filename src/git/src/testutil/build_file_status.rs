@@ -117,11 +117,3 @@ impl FileStatusBuilder {
 		self.file_status
 	}
 }
-
-impl Default for FileStatusBuilder {
-	#[inline]
-	#[must_use]
-	fn default() -> Self {
-		Self::new()
-	}
-}

@@ -123,13 +123,6 @@ impl Theme {
 	}
 }
 
-impl Default for Theme {
-	#[inline]
-	fn default() -> Self {
-		Self::new()
-	}
-}
-
 impl TryFrom<&Config> for Theme {
 	type Error = ConfigError;
 
@@ -184,11 +177,6 @@ mod tests {
 	#[test]
 	fn new() {
 		let _config = Theme::new();
-	}
-
-	#[test]
-	fn default() {
-		let _config = Theme::default();
 	}
 
 	#[test]
