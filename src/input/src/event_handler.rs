@@ -2,7 +2,7 @@ use super::{Event, KeyCode, KeyModifiers};
 use crate::{key_bindings::KeyBindings, InputOptions, KeyEvent, StandardEvent};
 
 /// A handler for reading and processing events.
-#[allow(missing_debug_implementations)]
+#[derive(Debug)]
 pub struct EventHandler<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
 	key_bindings: KeyBindings<CustomKeybinding, CustomEvent>,
 }

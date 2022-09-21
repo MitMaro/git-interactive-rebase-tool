@@ -1,11 +1,14 @@
-use std::{cell::RefCell, collections::HashMap};
+use std::{
+	cell::RefCell,
+	collections::HashMap,
+	fmt::{Debug, Formatter},
+};
 
 use crossbeam_channel::Sender;
 
 use crate::{Notifier, Status, ThreadStatuses};
 
 /// A thread installer that is passed to a `Threadable` when installing the threads into the `Runtime`
-#[allow(missing_debug_implementations)]
 pub struct Installer {
 	sender: Sender<(String, Status)>,
 	thread_statuses: ThreadStatuses,
@@ -40,6 +43,16 @@ impl Installer {
 			.ops
 			.borrow_mut()
 			.insert(String::from(name), Box::new(install(notifier)));
+	}
+}
+
+impl Debug for Installer {
+	#[inline]
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("Installer")
+			.field("sender", &self.sender)
+			.field("thread_statuses", &self.thread_statuses)
+			.finish()
 	}
 }
 
@@ -91,5 +104,15 @@ mod tests {
 		func();
 
 		assert!(thread.called.load(Ordering::Acquire));
+	}
+
+	#[test]
+	fn debug() {
+		let (sender, _receiver) = unbounded();
+		let installer = Installer::new(sender);
+		assert_eq!(
+			format!("{:?}", installer),
+			"Installer { sender: Sender { .. }, thread_statuses: ThreadStatuses { statuses: Mutex { data: {} } } }"
+		);
 	}
 }
