@@ -19,7 +19,6 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 
 	/// Read and handle an event.
 	#[inline]
-	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn read_event<F>(
 		&self,
 		event: Event<CustomEvent>,

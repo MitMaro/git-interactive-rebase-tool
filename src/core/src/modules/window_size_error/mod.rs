@@ -109,7 +109,6 @@ mod tests {
 		MINIMUM_WINDOW_HEIGHT,
 		"Window too small"
 	)]
-	#[allow(clippy::cast_possible_wrap)]
 	fn build_view_data(#[case] width: usize, #[case] height: usize, #[case] expected: &str) {
 		module_test(&[], &[], |mut test_context| {
 			test_context.render_context.update(width as u16, height as u16);

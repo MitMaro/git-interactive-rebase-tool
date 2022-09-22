@@ -38,7 +38,6 @@ macro_rules! first {
 /// Utility function to handle scroll events.
 #[inline]
 #[must_use]
-#[allow(clippy::wildcard_enum_match_arm)]
 pub(crate) fn handle_view_data_scroll(event: Event, view_state: &view::State) -> Option<Event> {
 	match event {
 		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollLeft => view_state.scroll_left(),
