@@ -64,6 +64,7 @@ impl<'options> CommitDiffLoader<'options> {
 			.ignore_filemode(false)
 			.ignore_whitespace(self.config.ignore_whitespace)
 			.ignore_whitespace_change(self.config.ignore_whitespace_change)
+			.ignore_blank_lines(self.config.ignore_blank_lines)
 			.include_typechange(true)
 			.include_typechange_trees(true)
 			.include_unmodified(self.config.copies)

@@ -198,6 +198,7 @@ impl ShowCommit {
 			.copies(config.git.diff_copies)
 			.ignore_whitespace(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All)
 			.ignore_whitespace_change(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change)
+			.ignore_blank_lines(config.diff_ignore_blank_lines)
 			.interhunk_context(config.git.diff_interhunk_lines)
 			.renames(config.git.diff_renames, config.git.diff_rename_limit);
 

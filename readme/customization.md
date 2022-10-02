@@ -43,6 +43,7 @@ Some values from your Git Config are directly used by this application.
 | -------------------------- | ------- | ------- |---------------------------------------------------------------------------------------------|
 | `autoSelectNext`           | false   | bool    | If true, auto select the next line after action modification                                |
 | `diffIgnoreWhitespace`     | none    | String¹ | If and how to ignore whitespace during diff.                                                |
+| `diffIgnoreBlankLines`     | none    | String¹ | If to ignore blank lines during diff.                                                       |
 | `diffShowWhitespace`       | both    | String² | If and how to show whitespace during diff.                                                  |
 | `diffSpaceSymbol`          | ·       | String  | The visible symbol for the space character. Only used when `diffShowWhitespace` is enabled. |
 | `diffTabSymbol`            | →       | String  | The visible symbol for the tab character. Only used when `diffShowWhitespace` is enabled.   |
