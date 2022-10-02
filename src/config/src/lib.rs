@@ -142,6 +142,8 @@ pub struct Config {
 	pub auto_select_next: bool,
 	/// How to handle whitespace when calculating diffs.
 	pub diff_ignore_whitespace: DiffIgnoreWhitespaceSetting,
+	/// If to ignore blank lines when calculating diffs.
+	pub diff_ignore_blank_lines: bool,
 	/// How to show whitespace in diffs.
 	pub diff_show_whitespace: DiffShowWhitespaceSetting,
 	/// The symbol used to replace space characters.
@@ -176,6 +178,7 @@ impl Config {
 				git_config,
 				"interactive-rebase-tool.diffIgnoreWhitespace",
 			)?,
+			diff_ignore_blank_lines: get_bool(git_config, "interactive-rebase-tool.diffIgnoreBlankLines", false)?,
 			diff_show_whitespace: get_diff_show_whitespace(git_config, "interactive-rebase-tool.diffShowWhitespace")?,
 			diff_space_symbol: get_string(
 				git_config,
@@ -316,6 +319,24 @@ mod tests {
 		DiffIgnoreWhitespaceSetting::Change,
 		|config: Config| config.diff_ignore_whitespace)
 	]
+	#[case::diff_ignore_blank_lines_default(
+		"diffIgnoreBlankLines",
+		"",
+		false,
+		|config: Config| config.diff_ignore_blank_lines
+	)]
+	#[case::diff_ignore_blank_lines_false(
+		"diffIgnoreBlankLines",
+		"false",
+		false,
+		|config: Config| config.diff_ignore_blank_lines
+	)]
+	#[case::diff_ignore_blank_lines_true(
+		"diffIgnoreBlankLines",
+		"true",
+		true,
+		|config: Config| config.diff_ignore_blank_lines
+	)]
 	#[case::diff_show_whitespace_default(
 		"diffShowWhitespace",
 		"",
@@ -414,6 +435,7 @@ mod tests {
 	#[rstest]
 	#[case::auto_select_next("autoSelectNext", "invalid", ConfigErrorCause::InvalidBoolean)]
 	#[case::diff_ignore_whitespace("diffIgnoreWhitespace", "invalid", ConfigErrorCause::InvalidDiffIgnoreWhitespace)]
+	#[case::diff_ignore_blank_lines("diffIgnoreBlankLines", "invalid", ConfigErrorCause::InvalidBoolean)]
 	#[case::diff_show_whitespace("diffShowWhitespace", "invalid", ConfigErrorCause::InvalidShowWhitespace)]
 	#[case::diff_tab_width_non_integer("diffTabWidth", "invalid", ConfigErrorCause::InvalidUnsignedInteger)]
 	#[case::diff_tab_width_non_poitive_integer("diffTabWidth", "-100", ConfigErrorCause::InvalidUnsignedInteger)]

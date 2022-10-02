@@ -6,6 +6,7 @@ pub struct CommitDiffLoaderOptions {
 	pub(crate) copies: bool,
 	pub(crate) ignore_whitespace: bool,
 	pub(crate) ignore_whitespace_change: bool,
+	pub(crate) ignore_blank_lines: bool,
 	pub(crate) interhunk_context: u32,
 	pub(crate) rename_limit: u32,
 	pub(crate) renames: bool,
@@ -21,6 +22,7 @@ impl CommitDiffLoaderOptions {
 			copies: false,
 			ignore_whitespace: false,
 			ignore_whitespace_change: false,
+			ignore_blank_lines: false,
 			interhunk_context: 0,
 			rename_limit: 0,
 			renames: false,
@@ -67,6 +69,14 @@ impl CommitDiffLoaderOptions {
 		self
 	}
 
+	/// Set if to ignore blank lines.
+	#[inline]
+	#[must_use]
+	pub const fn ignore_blank_lines(mut self, ignore_blank_lines: bool) -> Self {
+		self.ignore_blank_lines = ignore_blank_lines;
+		self
+	}
+
 	/// Set if to detect renames, as well as the file rename limit.
 	#[inline]
 	#[must_use]
@@ -110,6 +120,15 @@ mod tests {
 			CommitDiffLoaderOptions::new()
 				.ignore_whitespace_change(true)
 				.ignore_whitespace_change
+		);
+	}
+
+	#[test]
+	fn ignore_blank_lines() {
+		assert!(
+			CommitDiffLoaderOptions::new()
+				.ignore_blank_lines(true)
+				.ignore_blank_lines
 		);
 	}
 
