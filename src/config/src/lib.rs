@@ -53,6 +53,7 @@
 #![deny(clippy::all, clippy::cargo, clippy::pedantic, clippy::restriction)]
 #![cfg_attr(include_nightly_lints, deny(clippy::nursery))]
 #![allow(
+	clippy::arithmetic,
 	clippy::blanket_clippy_restriction_lints,
 	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
@@ -69,6 +70,8 @@
 	clippy::option_if_let_else,
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
+	clippy::std_instead_of_alloc,
+	clippy::std_instead_of_core,
 	clippy::tabs_in_doc_comments,
 	clippy::too_many_lines,
 	clippy::unwrap_used
@@ -84,12 +87,7 @@
 )]
 #![cfg_attr(
 	include_nightly_lints,
-	allow(
-		clippy::arithmetic_side_effects,
-		clippy::bool_to_int_with_if,
-		clippy::std_instead_of_alloc,
-		clippy::std_instead_of_core
-	)
+	allow(clippy::arithmetic_side_effects, clippy::bool_to_int_with_if)
 )]
 // LINT-REPLACE-END
 
