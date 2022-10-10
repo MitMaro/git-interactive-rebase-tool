@@ -285,7 +285,7 @@ impl<C: Tui> View<C> {
 				}
 				if show_help {
 					self.display
-						.draw_str(format!("{}{}", TITLE_HELP_INDICATOR_LABEL, self.help_indicator_key).as_str())?;
+						.draw_str(format!("{TITLE_HELP_INDICATOR_LABEL}{}", self.help_indicator_key).as_str())?;
 				}
 				else {
 					let padding = " ".repeat(title_help_indicator_total_length);

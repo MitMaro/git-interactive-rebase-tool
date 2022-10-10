@@ -406,7 +406,7 @@ mod tests {
 	#[case::reword(Action::Reword, Action::Fixup)]
 	#[case::squash(Action::Squash, Action::Fixup)]
 	fn set_action_non_static(#[case] from: Action, #[case] to: Action) {
-		let mut line = Line::new(format!("{} aaa bbb", from).as_str()).unwrap();
+		let mut line = Line::new(format!("{from} aaa bbb").as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, to);
 		assert!(line.mutated);
@@ -420,7 +420,7 @@ mod tests {
 	#[case::exec(Action::Exec, Action::Fixup)]
 	#[case::noop(Action::Noop, Action::Fixup)]
 	fn set_action_static(#[case] from: Action, #[case] to: Action) {
-		let mut line = Line::new(format!("{} comment", from).as_str()).unwrap();
+		let mut line = Line::new(format!("{from} comment").as_str()).unwrap();
 		line.set_action(to);
 		assert_eq!(line.action, from);
 		assert!(!line.mutated);
@@ -529,7 +529,7 @@ mod tests {
 	#[case::squash(Action::Reset, true)]
 	#[case::squash(Action::Merge, true)]
 	fn is_editable(#[case] from: Action, #[case] editable: bool) {
-		let line = Line::new(format!("{} aaa bbb", from).as_str()).unwrap();
+		let line = Line::new(format!("{from} aaa bbb").as_str()).unwrap();
 		assert_eq!(line.is_editable(), editable);
 	}
 

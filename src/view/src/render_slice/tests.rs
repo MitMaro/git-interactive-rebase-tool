@@ -58,15 +58,15 @@ fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 fn create_view_data(leading_lines: u16, body_lines: u16, trailing_lines: u16) -> ViewData {
 	ViewData::new(|updater| {
 		for index in 1..=leading_lines {
-			updater.push_leading_line(ViewLine::from(format!("L({})", index)));
+			updater.push_leading_line(ViewLine::from(format!("L({index})")));
 		}
 
 		for index in 1..=body_lines {
-			updater.push_line(ViewLine::from(format!("B({})", index)));
+			updater.push_line(ViewLine::from(format!("B({index})")));
 		}
 
 		for index in 1..=trailing_lines {
-			updater.push_trailing_line(ViewLine::from(format!("T({})", index)));
+			updater.push_trailing_line(ViewLine::from(format!("T({index})")));
 		}
 	})
 }

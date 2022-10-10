@@ -99,7 +99,7 @@ where
 		runtime.join().map_err(|err| {
 			Exit::new(
 				ExitStatus::StateError,
-				format!("Failed to join runtime: {}", err).as_str(),
+				format!("Failed to join runtime: {err}").as_str(),
 			)
 		})?;
 
@@ -124,13 +124,13 @@ where
 		Repository::open_from_env().map_err(|err| {
 			return Exit::new(
 				ExitStatus::StateError,
-				format!("Unable to load Git repository: {}", err).as_str(),
+				format!("Unable to load Git repository: {err}").as_str(),
 			);
 		})
 	}
 
 	fn load_config(repo: &Repository) -> Result<Config, Exit> {
-		Config::try_from(repo).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{:#}", err).as_str()))
+		Config::try_from(repo).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
 	}
 
 	fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile, Exit> {
@@ -251,7 +251,7 @@ mod tests {
 	#[serial_test::serial]
 	fn load_todo_file_noop() {
 		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{}/rebase-todo-noop", git_dir);
+		let rebase_todo = format!("{git_dir}/rebase-todo-noop");
 		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> = Application::new(
 			&args(&[rebase_todo.as_str()]),
@@ -266,7 +266,7 @@ mod tests {
 	#[serial_test::serial]
 	fn load_todo_file_empty() {
 		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{}/rebase-todo-empty", git_dir);
+		let rebase_todo = format!("{git_dir}/rebase-todo-empty");
 		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> = Application::new(
 			&args(&[rebase_todo.as_str()]),
@@ -287,7 +287,7 @@ mod tests {
 	#[serial_test::serial]
 	fn run_until_finished_success() {
 		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{}/rebase-todo", git_dir);
+		let rebase_todo = format!("{git_dir}/rebase-todo");
 		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 		let application: Application<Modules, _, _> = Application::new(
 			&args(&[rebase_todo.as_str()]),
@@ -302,7 +302,7 @@ mod tests {
 	#[serial_test::serial]
 	fn run_until_finished_kill() {
 		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{}/rebase-todo", git_dir);
+		let rebase_todo = format!("{git_dir}/rebase-todo");
 		let event_provider = create_event_reader(|| {
 			Ok(Some(Event::Key(KeyEvent::new(
 				KeyCode::Char('c'),

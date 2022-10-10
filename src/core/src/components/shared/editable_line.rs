@@ -87,7 +87,7 @@ impl EditableLine {
 					let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 						.skip(self.cursor_position)
 						.collect::<String>();
-					self.content = format!("{}{}", start, end);
+					self.content = format!("{start}{end}");
 					self.cursor_position -= 1;
 				}
 			},
@@ -103,7 +103,7 @@ impl EditableLine {
 					let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 						.skip(self.cursor_position + 1)
 						.collect::<String>();
-					self.content = format!("{}{}", start, end);
+					self.content = format!("{start}{end}");
 				}
 			},
 			Event::Key(KeyEvent {
@@ -141,7 +141,7 @@ impl EditableLine {
 				let end = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 					.skip(self.cursor_position)
 					.collect::<String>();
-				self.content = format!("{}{}{}", start, c, end);
+				self.content = format!("{start}{c}{end}");
 				self.cursor_position += 1;
 			},
 			_ => {},

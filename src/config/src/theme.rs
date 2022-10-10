@@ -250,13 +250,13 @@ mod tests {
 		with_git_config(
 			&[
 				"[interactive-rebase-tool]",
-				format!("{} = {}", key, invalid_utf()).as_str(),
+				format!("{key} = {}", invalid_utf()).as_str(),
 			],
 			|git_config| {
 				assert_err_eq!(
 					Theme::new_with_config(Some(&git_config)),
 					ConfigError::new_read_error(
-						format!("interactive-rebase-tool.{}", key).as_str(),
+						format!("interactive-rebase-tool.{key}").as_str(),
 						ConfigErrorCause::InvalidUtf
 					)
 				);

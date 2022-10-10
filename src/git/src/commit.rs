@@ -257,8 +257,7 @@ mod tests {
 					git2::ErrorCode::InvalidSpec,
 					git2::ErrorClass::Object,
 					format!(
-						"the git_object of id '{}' can not be successfully peeled into a commit (git_object_t=1).",
-						blob
+						"the git_object of id '{blob}' can not be successfully peeled into a commit (git_object_t=1).",
 					)
 				)
 			});

@@ -111,7 +111,7 @@ mod tests {
 		let (sender, _receiver) = unbounded();
 		let installer = Installer::new(sender);
 		assert_eq!(
-			format!("{:?}", installer),
+			format!("{installer:?}"),
 			"Installer { sender: Sender { .. }, thread_statuses: ThreadStatuses { statuses: Mutex { data: {} } } }"
 		);
 	}

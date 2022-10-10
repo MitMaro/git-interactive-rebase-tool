@@ -8,13 +8,13 @@ fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &Exte
 	let actual_state = match *actual {
 		ExternalEditorState::Active => String::from("Active"),
 		ExternalEditorState::Empty => String::from("Empty"),
-		ExternalEditorState::Error(ref err) => format!("Error({:#})", err),
+		ExternalEditorState::Error(ref err) => format!("Error({err:#})"),
 	};
 
 	let expected_state = match *expected {
 		ExternalEditorState::Active => String::from("Active"),
 		ExternalEditorState::Empty => String::from("Empty"),
-		ExternalEditorState::Error(ref err) => format!("Error({:#})", err),
+		ExternalEditorState::Error(ref err) => format!("Error({err:#})"),
 	};
 
 	if actual_state != expected_state {
@@ -311,7 +311,7 @@ fn editor_reload_error() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				format!("{{Normal}}Unable to read file `{}`", todo_path),
+				format!("{{Normal}}Unable to read file `{todo_path}`"),
 				"",
 				"{BODY}",
 				"{Normal}1) Abort rebase",

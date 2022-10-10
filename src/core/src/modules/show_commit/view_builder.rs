@@ -166,18 +166,14 @@ impl ViewBuilder {
 		let mut line_segments = vec![
 			match diff_line.old_line_number() {
 				Some(line_number) => {
-					LineSegment::new(
-						format!("{:<width$}", line_number, width = old_largest_line_number_length).as_str(),
-					)
+					LineSegment::new(format!("{line_number:<old_largest_line_number_length$}").as_str())
 				},
 				None => LineSegment::new(" ".repeat(old_largest_line_number_length).as_str()),
 			},
 			LineSegment::new(" "),
 			match diff_line.new_line_number() {
 				Some(line_number) => {
-					LineSegment::new(
-						format!("{:<width$}", line_number, width = new_largest_line_number_length).as_str(),
-					)
+					LineSegment::new(format!("{line_number:<new_largest_line_number_length$}").as_str())
 				},
 				None => LineSegment::new(" ".repeat(new_largest_line_number_length).as_str()),
 			},

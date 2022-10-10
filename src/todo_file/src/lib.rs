@@ -210,7 +210,7 @@ impl TodoFile {
 		else {
 			self.lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
 		};
-		writeln!(file, "{}", file_contents).map_err(|err| {
+		writeln!(file, "{file_contents}").map_err(|err| {
 			IoError::FileRead {
 				file: self.filepath.clone(),
 				cause: FileReadErrorCause::from(err),

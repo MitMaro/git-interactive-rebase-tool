@@ -120,7 +120,7 @@ mod tests {
 
 			for (value, expected) in vec![$( ($value, $expected), )*] {
 				let config_parent = format!("[{}]", $config_parent);
-				let config_value = format!("{} = \"{}\"", $config_name, value);
+				let config_value = format!("{} = \"{value}\"", $config_name);
 				with_git_config(&[config_parent.as_str(), config_value.as_str()], |git_config| {
 					let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
 					assert_eq!(

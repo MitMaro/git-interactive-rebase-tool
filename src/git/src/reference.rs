@@ -52,7 +52,7 @@ impl Reference {
 		let shorthand = String::from(reference.shorthand().unwrap_or("InvalidRef"));
 
 		Self {
-			hash: format!("{}", oid),
+			hash: format!("{oid}"),
 			name,
 			shorthand,
 			kind,
@@ -70,7 +70,7 @@ mod tests {
 		with_temp_repository(|repository| {
 			let oid = head_id(&repository, "main");
 			let reference = repository.find_reference("refs/heads/main").unwrap();
-			assert_eq!(reference.hash(), format!("{}", oid));
+			assert_eq!(reference.hash(), format!("{oid}"));
 			assert_eq!(reference.name(), "refs/heads/main");
 			assert_eq!(reference.shortname(), "main");
 			assert_eq!(reference.kind(), ReferenceKind::Branch);

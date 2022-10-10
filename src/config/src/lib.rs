@@ -419,7 +419,7 @@ mod tests {
 	) where
 		F: Fn(Config) -> T,
 	{
-		let value = format!("{} = \"{}\"", config_name, config_value);
+		let value = format!("{config_name} = \"{config_value}\"");
 		let lines = if config_value.is_empty() {
 			vec![]
 		}
@@ -445,13 +445,13 @@ mod tests {
 		with_git_config(
 			&[
 				"[interactive-rebase-tool]",
-				format!("{} = {}", config_name, config_value).as_str(),
+				format!("{config_name} = {config_value}").as_str(),
 			],
 			|git_config| {
 				assert_err_eq!(
 					Config::new_with_config(Some(&git_config)),
 					ConfigError::new(
-						format!("interactive-rebase-tool.{}", config_name).as_str(),
+						format!("interactive-rebase-tool.{config_name}").as_str(),
 						config_value,
 						cause
 					)
@@ -469,13 +469,13 @@ mod tests {
 		with_git_config(
 			&[
 				"[interactive-rebase-tool]",
-				format!("{} = {}", config_name, invalid_utf()).as_str(),
+				format!("{config_name} = {}", invalid_utf()).as_str(),
 			],
 			|git_config| {
 				assert_err_eq!(
 					Config::new_with_config(Some(&git_config)),
 					ConfigError::new_read_error(
-						format!("interactive-rebase-tool.{}", config_name).as_str(),
+						format!("interactive-rebase-tool.{config_name}").as_str(),
 						ConfigErrorCause::InvalidUtf
 					)
 				);

@@ -19,7 +19,7 @@ ARGS:
 pub(crate) fn build_help(message: Option<String>) -> String {
 	let help = HELP_MESSAGE.replace("{{VERSION}}", VERSION);
 	if let Some(msg) = message {
-		format!("{}\n\n{}", msg, help)
+		format!("{msg}\n\n{help}")
 	}
 	else {
 		help

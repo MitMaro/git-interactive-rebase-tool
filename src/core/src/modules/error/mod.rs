@@ -50,7 +50,7 @@ impl Module for Error {
 			capture!(error);
 			updater.clear();
 			for cause in error.chain() {
-				let error_text = format!("{:#}", cause);
+				let error_text = format!("{cause:#}");
 				for err in error_text.split('\n') {
 					updater.push_line(ViewLine::from(err));
 				}

@@ -39,7 +39,7 @@ pub(super) fn tokenize(input: &str) -> Option<Vec<String>> {
 				else if c.is_ascii_whitespace() {
 					state = State::WhiteSpace;
 					if token_start != i || !value.is_empty() || force_value {
-						tokens.push(format!("{}{}", value, &input[token_start..i]));
+						tokens.push(format!("{value}{}", &input[token_start..i]));
 						value.clear();
 					}
 				}

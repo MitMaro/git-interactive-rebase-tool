@@ -7,20 +7,19 @@ fn _assert_results_format(artifacts: &[Artifact]) -> String {
 		.iter()
 		.map(|artifact| {
 			match artifact {
-				Artifact::Event(event) => format!("Event({:?})", event),
-				Artifact::ChangeState(state) => format!("ChangeState({:?})", state),
+				Artifact::Event(event) => format!("Event({event:?})"),
+				Artifact::ChangeState(state) => format!("ChangeState({state:?})"),
 				Artifact::Error(err, state) => {
 					format!(
-						"Error({:#}) State({})",
-						err,
-						state.map(|s| format!("{:?}", s)).unwrap_or(String::from("None"))
+						"Error({err:#}) State({})",
+						state.map(|s| format!("{s:?}")).unwrap_or(String::from("None"))
 					)
 				},
-				Artifact::ExitStatus(status) => format!("ExitStatus({:?})", status),
+				Artifact::ExitStatus(status) => format!("ExitStatus({status:?})"),
 				Artifact::ExternalCommand(command) => {
 					format!("ExternalCommand({:?} {:?})", command.0, command.1.join(","))
 				},
-				Artifact::EnqueueResize => format!("EnqueueResize"),
+				Artifact::EnqueueResize => String::from("EnqueueResize"),
 			}
 		})
 		.collect::<Vec<String>>()

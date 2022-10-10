@@ -14,7 +14,7 @@ fn build_version() -> String {
 
 	parts.push(String::from(env!("GIRT_BUILD_DATE")));
 
-	format!("interactive-rebase-tool {} ({})", VERSION, parts.join(" "))
+	format!("interactive-rebase-tool {VERSION} ({})", parts.join(" "))
 }
 
 pub(crate) fn run() -> Exit {

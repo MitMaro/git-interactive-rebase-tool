@@ -71,10 +71,10 @@ fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bo
 	}
 
 	if style.is_empty() {
-		format!("{{{}}}", color_string)
+		format!("{{{color_string}}}")
 	}
 	else {
-		format!("{{{},{}}}", color_string, style.join(","))
+		format!("{{{color_string},{}}}", style.join(","))
 	}
 }
 
@@ -167,7 +167,7 @@ fn expand_expected(expected: &[String]) -> Vec<String> {
 					.replace(")}}", "")
 					.as_str()
 					.parse::<u32>()
-					.unwrap_or_else(|_| panic!("Expected {} to have integer line count", f));
+					.unwrap_or_else(|_| panic!("Expected {f} to have integer line count"));
 				vec![String::from(ANY_LINE); lines as usize]
 			}
 			else {
@@ -199,18 +199,18 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 		let o = replace_invisibles(output);
 
 		if expected_line == ANY_LINE {
-			error_output.push(format!(" {}", o));
+			error_output.push(format!(" {o}"));
 			continue;
 		}
 
 		if expected_line.starts_with(ENDS_WITH) {
 			e = e.replace(ENDS_WITH, "");
 			if output.ends_with(&expected_line.replace(ENDS_WITH, "")) {
-				error_output.push(format!(" {}", o));
+				error_output.push(format!(" {o}"));
 			}
 			else {
 				mismatch = true;
-				error_output.push(format!("-EndsWith {}", e));
+				error_output.push(format!("-EndsWith {e}"));
 				error_output.push(format!("+         {}", &o[o.len() - e.len() + 2..]));
 			}
 			continue;
@@ -219,23 +219,23 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 		if expected_line.starts_with(STARTS_WITH) {
 			e = e.replace(STARTS_WITH, "");
 			if output.starts_with(&expected_line.replace(STARTS_WITH, "")) {
-				error_output.push(format!(" {}", o));
+				error_output.push(format!(" {o}"));
 			}
 			else {
 				mismatch = true;
-				error_output.push(format!("-StartsWith {}", e));
+				error_output.push(format!("-StartsWith {e}"));
 				error_output.push(format!("+           {}", &o.chars().take(e.len()).collect::<String>()));
 			}
 			continue;
 		}
 
 		if expected_line == output {
-			error_output.push(format!(" {}", e));
+			error_output.push(format!(" {e}"));
 		}
 		else {
 			mismatch = true;
-			error_output.push(format!("-{}", e));
-			error_output.push(format!("+{}", o));
+			error_output.push(format!("-{e}"));
+			error_output.push(format!("+{o}"));
 		}
 	}
 
@@ -307,7 +307,7 @@ fn assert_view_state_actions(state: &State, expected_actions: &[String]) {
 				RenderAction::ScrollBottom => String::from("ScrollBottom"),
 				RenderAction::PageUp => String::from("PageUp"),
 				RenderAction::PageDown => String::from("PageDown"),
-				RenderAction::Resize(width, height) => format!("Resize({}, {})", width, height),
+				RenderAction::Resize(width, height) => format!("Resize({width}, {height})"),
 			}
 		})
 		.collect::<Vec<String>>();
@@ -322,12 +322,12 @@ fn assert_view_state_actions(state: &State, expected_actions: &[String]) {
 
 	for (expected_action, actual_action) in expected_actions.iter().zip(actions.iter()) {
 		if expected_action == actual_action {
-			error_output.push(format!(" {}", expected_action));
+			error_output.push(format!(" {expected_action}"));
 		}
 		else {
 			mismatch = true;
-			error_output.push(format!("-{}", expected_action));
-			error_output.push(format!("+{}", actual_action));
+			error_output.push(format!("-{expected_action}"));
+			error_output.push(format!("+{actual_action}"));
 		}
 	}
 
@@ -335,13 +335,13 @@ fn assert_view_state_actions(state: &State, expected_actions: &[String]) {
 		a if a > actions.len() => {
 			mismatch = true;
 			for action in expected_actions.iter().skip(actions.len()) {
-				error_output.push(format!("-{}", action));
+				error_output.push(format!("-{action}"));
 			}
 		},
 		a if a < actions.len() => {
 			mismatch = true;
 			for action in actions.iter().skip(expected_actions.len()) {
-				error_output.push(format!("+{}", action));
+				error_output.push(format!("+{action}"));
 			}
 		},
 		_ => {},
@@ -402,16 +402,16 @@ impl TestContext {
 			if let Ok(action) = update_receiver.recv_timeout(Duration::new(1, 0)) {
 				let action_name = action_to_string(action);
 				if message == action_name {
-					error_output.push(format!(" {}", message));
+					error_output.push(format!(" {message}"));
 				}
 				else {
 					mismatch = true;
-					error_output.push(format!("-{}", message));
-					error_output.push(format!("+{}", action_name));
+					error_output.push(format!("-{message}"));
+					error_output.push(format!("+{action_name}"));
 				}
 			}
 			else {
-				error_output.push(format!("-{}", message));
+				error_output.push(format!("-{message}"));
 			}
 		}
 

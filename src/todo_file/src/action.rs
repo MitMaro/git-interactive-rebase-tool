@@ -129,7 +129,7 @@ mod tests {
 	#[case::reset(Action::Reset, "reset")]
 	#[case::merge(Action::Merge, "merge")]
 	fn to_string(#[case] action: Action, #[case] expected: &str) {
-		assert_eq!(format!("{}", action), expected);
+		assert_eq!(format!("{action}"), expected);
 	}
 
 	#[rstest]

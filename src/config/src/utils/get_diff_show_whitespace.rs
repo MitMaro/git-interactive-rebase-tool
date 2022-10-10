@@ -35,7 +35,7 @@ mod tests {
 	#[case::none("none", DiffShowWhitespaceSetting::None)]
 	#[case::mixed_case("lEaDiNg", DiffShowWhitespaceSetting::Leading)]
 	fn read_ok(#[case] value: &str, #[case] expected: DiffShowWhitespaceSetting) {
-		with_git_config(&["[test]", format!("value = \"{}\"", value).as_str()], |git_config| {
+		with_git_config(&["[test]", format!("value = \"{value}\"").as_str()], |git_config| {
 			assert_ok_eq!(get_diff_show_whitespace(Some(&git_config), "test.value"), expected);
 		});
 	}
