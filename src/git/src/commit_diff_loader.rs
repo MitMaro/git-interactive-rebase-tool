@@ -234,7 +234,7 @@ mod tests {
 				line.new_line_number()
 					.map(|v| v.to_string())
 					.unwrap_or_else(|| String::from(" ")),
-				if line.line().ends_with("\n") {
+				if line.line().ends_with('\n') {
 					&line.line()[..line.line().len() - 1]
 				}
 				else {
