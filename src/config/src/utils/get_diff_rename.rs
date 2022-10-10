@@ -27,7 +27,7 @@ mod tests {
 	#[case::none("copies", (true, true))]
 	#[case::mixed_case("CoPiEs", (true, true))]
 	fn read_ok(#[case] value: &str, #[case] expected: (bool, bool)) {
-		with_git_config(&["[test]", format!("value = \"{}\"", value).as_str()], |git_config| {
+		with_git_config(&["[test]", format!("value = \"{value}\"").as_str()], |git_config| {
 			assert_ok_eq!(git_diff_renames(Some(&git_config), "test.value"), expected);
 		});
 	}

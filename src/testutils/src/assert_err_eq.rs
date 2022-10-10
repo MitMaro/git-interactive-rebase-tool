@@ -65,7 +65,7 @@ macro_rules! assert_err_eq {
                 t
             },
             ok @ Ok(..) => {
-                panic!("assertion failed, expected Err(..), got {:?}", ok);
+                panic!("assertion failed, expected Err(..), got {ok:?}");
             }
         }
     };
@@ -76,7 +76,7 @@ macro_rules! assert_err_eq {
                 t
             },
             ok @ Ok(..) => {
-                panic!("assertion failed, expected Err(..), got {:?}: {}", ok, format_args!($($arg)+));
+                panic!("assertion failed, expected Err(..), got {ok:?}: {}", format_args!($($arg)+));
             }
         }
     };

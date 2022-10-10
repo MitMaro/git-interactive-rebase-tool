@@ -54,14 +54,14 @@ impl ToString for User {
 	fn to_string(&self) -> String {
 		if let Some(name) = self.name.as_ref() {
 			if let Some(email) = self.email.as_ref() {
-				format!("{} <{}>", name, email)
+				format!("{name} <{email}>")
 			}
 			else {
 				String::from(name)
 			}
 		}
 		else if let Some(email) = self.email.as_ref() {
-			format!("<{}>", email)
+			format!("<{email}>")
 		}
 		else {
 			String::new()

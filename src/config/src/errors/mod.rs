@@ -55,8 +55,8 @@ impl Display for ConfigError {
 		if let Some(input) = self.input.as_deref() {
 			write!(
 				f,
-				"Provided value '{}' is invalid for '{}': {}.",
-				input, self.name, self.cause
+				"Provided value '{input}' is invalid for '{}': {}.",
+				self.name, self.cause
 			)
 		}
 		else {

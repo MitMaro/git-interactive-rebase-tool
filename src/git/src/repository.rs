@@ -124,7 +124,7 @@ impl Repository {
 
 	pub(crate) fn head_id(&self, head_name: &str) -> Result<Oid, git2::Error> {
 		let repo = self.repository.lock();
-		let ref_name = format!("refs/heads/{}", head_name);
+		let ref_name = format!("refs/heads/{head_name}");
 		let revision = repo.revparse_single(ref_name.as_str())?;
 		Ok(revision.id())
 	}
@@ -346,7 +346,7 @@ mod tests {
 	#[test]
 	fn fmt() {
 		with_temp_bare_repository(|repository| {
-			let formatted = format!("{:?}", repository);
+			let formatted = format!("{repository:?}");
 			let path = repository.repo_path().canonicalize().unwrap();
 			assert_eq!(
 				formatted,

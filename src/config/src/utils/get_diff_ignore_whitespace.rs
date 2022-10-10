@@ -39,7 +39,7 @@ mod tests {
 	#[case::none("none", DiffIgnoreWhitespaceSetting::None)]
 	#[case::mixed_case("ChAnGe", DiffIgnoreWhitespaceSetting::Change)]
 	fn read_ok(#[case] value: &str, #[case] expected: DiffIgnoreWhitespaceSetting) {
-		with_git_config(&["[test]", format!("value = \"{}\"", value).as_str()], |git_config| {
+		with_git_config(&["[test]", format!("value = \"{value}\"").as_str()], |git_config| {
 			assert_ok_eq!(get_diff_ignore_whitespace(Some(&git_config), "test.value"), expected);
 		});
 	}

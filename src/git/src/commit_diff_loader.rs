@@ -181,7 +181,7 @@ mod tests {
 			Status::Other => "Other",
 		};
 
-		format!("Status {}", s)
+		format!("Status {s}")
 	}
 
 	fn _format_file_mode(mode: FileMode) -> String {
@@ -201,18 +201,15 @@ mod tests {
 			&& status.source_mode() == status.destination_mode()
 			&& status.source_is_binary() == status.destination_is_binary()
 		{
-			format!("{} ({}{})", status.source_path().display(), source_mode, source_binary)
+			format!("{} ({source_mode}{source_binary})", status.source_path().display())
 		}
 		else {
 			let destination_binary = if status.destination_is_binary() { ",b" } else { "" };
 			format!(
-				"{} ({}{}) > {} ({}{})",
+				"{} ({source_mode}{source_binary}) > {} ({}{destination_binary})",
 				status.source_path().display(),
-				source_mode,
-				source_binary,
 				status.destination_path().display(),
 				_format_file_mode(status.destination_mode()),
-				destination_binary
 			)
 		}
 	}
@@ -230,8 +227,7 @@ mod tests {
 		}
 		else {
 			format!(
-				"{}{} {}| {}",
-				origin,
+				"{origin}{} {}| {}",
 				line.old_line_number()
 					.map(|v| v.to_string())
 					.unwrap_or_else(|| String::from(" ")),

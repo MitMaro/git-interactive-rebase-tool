@@ -60,7 +60,7 @@ where T: Clone
 		self.view_data.update_view_data(|updater| {
 			updater.clear_body();
 			for &(_, ref key, ref description) in options {
-				updater.push_line(ViewLine::from(format!("{}) {}", key, description)));
+				updater.push_line(ViewLine::from(format!("{key}) {description}")));
 			}
 			updater.push_line(ViewLine::new_empty_line());
 			if invalid_selection {

@@ -25,8 +25,7 @@ impl Confirm {
 			updater.set_show_title(true);
 			updater.set_retain_scroll_position(false);
 			updater.push_line(ViewLine::from(format!(
-				"{} ({}/{})? ",
-				prompt,
+				"{prompt} ({}/{})? ",
 				confirm_yes.join(","),
 				confirm_no.join(",")
 			)));

@@ -11,9 +11,8 @@ fn history_item_to_string(item: &HistoryItem) -> String {
 		format!("{}-{}", item.start_index, item.end_index)
 	};
 	format!(
-		"{:?}[{}] {}",
+		"{:?}[{range}] {}",
 		item.operation,
-		range,
 		item.lines.iter().map(Line::to_text).collect::<Vec<String>>().join(", ")
 	)
 }

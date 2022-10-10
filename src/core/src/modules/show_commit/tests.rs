@@ -19,7 +19,7 @@ use crate::{assert_results, process::Artifact, testutil::module_test};
 fn load_commit_during_activate() {
 	with_temp_repository(|repo| {
 		let oid = head_id(&repo, "main");
-		let line = format!("pick {} comment1", oid.to_string());
+		let line = format!("pick {oid} comment1");
 		module_test(&[line.as_str()], &[], |test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
 			assert_results!(test_context.activate(&mut module, State::List));
@@ -32,7 +32,7 @@ fn load_commit_during_activate() {
 fn cached_commit_in_activate() {
 	with_temp_repository(|repo| {
 		let oid = head_id(&repo, "main");
-		let line = format!("pick {} comment1", oid.to_string());
+		let line = format!("pick {oid} comment1");
 		module_test(&[line.as_str()], &[], |test_context| {
 			let mut module = ShowCommit::new(&Config::new(), repo);
 			// would be nice to be able to test that a second call to load_commit_diff did not happen here
@@ -92,7 +92,7 @@ fn render_overview_minimal_commit() {
 					"{LEADING}",
 					"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 					"{BODY}",
-					format!("{{IndicatorColor}}Date: {{Normal}}{}", commit_date).as_str(),
+					format!("{{IndicatorColor}}Date: {{Normal}}{commit_date}").as_str(),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
 					 {DiffRemoveColor}0{Normal} deletions"
@@ -121,7 +121,7 @@ fn render_overview_minimal_commit_compact() {
 					"{LEADING}",
 					"{Normal}01234567",
 					"{BODY}",
-					format!("{{IndicatorColor}}D: {{Normal}}{}", commit_date).as_str(),
+					format!("{{IndicatorColor}}D: {{Normal}}{commit_date}").as_str(),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
 				);

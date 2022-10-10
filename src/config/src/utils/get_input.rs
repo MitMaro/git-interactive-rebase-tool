@@ -109,7 +109,7 @@ mod tests {
 	#[case::multiple("a b c d", "a,b,c,d")]
 	#[case::multiple_with_modifiers("Control+End Control+A", "ControlEnd,ControlA")]
 	fn read_value(#[case] binding: &str, #[case] expected: &str) {
-		with_git_config(&["[test]", format!("value = {}", binding).as_str()], |git_config| {
+		with_git_config(&["[test]", format!("value = {binding}").as_str()], |git_config| {
 			assert_ok_eq!(
 				get_input(Some(&git_config), "test.value", "x"),
 				expected.split(',').map(String::from).collect::<Vec<_>>()
@@ -129,7 +129,7 @@ mod tests {
 	#[case::function_key_index("F256")]
 	#[case::multiple_bindings_one_invalid("f foo")]
 	fn read_value_invalid(#[case] binding: &str) {
-		with_git_config(&["[test]", format!("value = {}", binding).as_str()], |git_config| {
+		with_git_config(&["[test]", format!("value = {binding}").as_str()], |git_config| {
 			assert_err_eq!(
 				get_input(Some(&git_config), "test.value", "x"),
 				ConfigError::new("test.value", binding, ConfigErrorCause::InvalidKeyBinding)

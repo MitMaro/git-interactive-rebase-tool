@@ -100,7 +100,7 @@ use std::env::args_os;
 fn main() {
 	let exit = core::run(args_os().skip(1).collect());
 	if let Some(message) = exit.get_message().as_ref() {
-		eprintln!("{}", message);
+		eprintln!("{message}");
 	}
 	std::process::exit(exit.get_status().to_code());
 }

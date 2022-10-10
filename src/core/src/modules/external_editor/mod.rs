@@ -74,7 +74,7 @@ impl Module for ExternalEditor {
 			ExternalEditorState::Empty => self.empty_choice.get_view_data(),
 			ExternalEditorState::Error(ref error) => {
 				self.error_choice
-					.set_prompt(error.chain().map(|c| ViewLine::from(format!("{:#}", c))).collect());
+					.set_prompt(error.chain().map(|c| ViewLine::from(format!("{c:#}"))).collect());
 				self.error_choice.get_view_data()
 			},
 		}
