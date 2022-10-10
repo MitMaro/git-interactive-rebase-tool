@@ -70,16 +70,6 @@ impl Module for TestModule {
 }
 
 #[test]
-fn cloneable() {
-	process_test(
-		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
-			let _ = process.clone();
-		},
-	);
-}
-
-#[test]
 fn ended() {
 	process_test(
 		create_default_test_module_handler(),
@@ -410,7 +400,7 @@ fn handle_enqueue_resize() {
 fn handle_external_command_success() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let _ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
@@ -429,7 +419,7 @@ fn handle_external_command_success() {
 fn handle_external_command_failure() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let _ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
@@ -458,7 +448,7 @@ fn handle_external_command_not_executable() {
 	);
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let _ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
@@ -487,7 +477,7 @@ fn handle_external_command_not_found() {
 	);
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let _ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
@@ -508,7 +498,7 @@ fn handle_external_command_not_found() {
 fn handle_results_change_state() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			let results = Results::from(State::ShowCommit);
@@ -537,7 +527,7 @@ fn handle_results_enqueue_resize() {
 fn handle_results_error() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			let results = Results::from(anyhow!("Error"));
@@ -551,7 +541,7 @@ fn handle_results_error() {
 fn handle_results_event() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let results = Results::from(Event::from(StandardEvent::Kill));
 			process.handle_results(results);
@@ -564,7 +554,7 @@ fn handle_results_event() {
 fn handle_results_exit_status() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let results = Results::from(ExitStatus::Abort);
 			process.handle_results(results);
@@ -577,7 +567,7 @@ fn handle_results_exit_status() {
 fn handle_results_external_command_success() {
 	let module = TestModule::new();
 	process_test(
-		create_test_module_handler(module.clone()),
+		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			let _ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
