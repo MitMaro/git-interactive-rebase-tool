@@ -107,6 +107,7 @@ toolchain = "stable"
 command = "cargo"
 args = [
 	"clippy",
+	"--workspace",
 	"--all-targets",
 	"--all-features",
 	"${@}"
@@ -119,6 +120,7 @@ ignore_errors = true
 command = "cargo"
 args = [
 	"clippy",
+	"--workspace",
 	"--all-targets",
 	"--all-features",
 	"${@}"

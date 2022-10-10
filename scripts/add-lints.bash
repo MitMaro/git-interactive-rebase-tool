@@ -14,6 +14,7 @@ files=(
 	'src/git/src/lib.rs'
 	'src/input/src/lib.rs'
 	'src/runtime/src/lib.rs'
+	'src/testutils/src/lib.rs'
 	'src/todo_file/src/lib.rs'
 	'src/view/src/lib.rs'
 )
