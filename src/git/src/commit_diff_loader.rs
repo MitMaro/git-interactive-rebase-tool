@@ -301,7 +301,7 @@ mod tests {
 	}
 
 	fn create_commit(repository: &crate::Repository) {
-		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1609459200, 0)).unwrap();
+		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1_609_459_200, 0)).unwrap();
 		repository
 			.create_commit_on_index("refs/heads/main", &sig, &sig, "title")
 			.unwrap();
