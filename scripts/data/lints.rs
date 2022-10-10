@@ -66,6 +66,7 @@
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
 	clippy::new_without_default,
+	clippy::non_ascii_literal,
 	clippy::option_if_let_else,
 	clippy::pub_use,
 	clippy::redundant_pub_crate,
@@ -84,6 +85,23 @@
 	rustdoc::private_doc_tests,
 	rustdoc::private_intra_doc_links
 )]
+// allow some things in tests
+#![cfg_attr(
+	test,
+	allow(
+		clippy::cognitive_complexity,
+		clippy::let_underscore_drop,
+		clippy::let_underscore_must_use,
+		clippy::needless_pass_by_value,
+		clippy::panic,
+		clippy::shadow_reuse,
+		clippy::shadow_unrelated,
+		clippy::undocumented_unsafe_blocks,
+		clippy::unimplemented,
+		clippy::unreachable
+	)
+)]
+// allowable upcoming nightly lints
 #![cfg_attr(
 	include_nightly_lints,
 	allow(clippy::arithmetic_side_effects, clippy::bool_to_int_with_if)
