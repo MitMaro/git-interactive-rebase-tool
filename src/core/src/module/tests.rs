@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 
 use crate::{
-	module::*,
+	module::{Event, InputOptions, Module, State},
 	testutil::{create_test_keybindings, module_test},
 };
 
