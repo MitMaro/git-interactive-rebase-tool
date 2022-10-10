@@ -148,7 +148,7 @@ mod tests {
 			     todo_file_path,
 			     ..
 			 }| {
-				let thread = Thread::new(process.clone());
+				let thread = Thread::new(process);
 				let tester = ThreadableTester::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
@@ -213,7 +213,7 @@ mod tests {
 			     todo_file_path,
 			     ..
 			 }| {
-				let thread = Thread::new(process.clone());
+				let thread = Thread::new(process);
 				let tester = ThreadableTester::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
