@@ -165,7 +165,7 @@ mod tests {
 
 	#[test]
 	fn destination_is_binary() {
-		assert_eq!(create_file_stat().destination_is_binary(), false);
+		assert!(!create_file_stat().destination_is_binary());
 	}
 
 	#[test]
@@ -180,7 +180,7 @@ mod tests {
 
 	#[test]
 	fn source_is_binary() {
-		assert_eq!(create_file_stat().source_is_binary(), false);
+		assert!(!create_file_stat().source_is_binary());
 	}
 
 	#[test]
