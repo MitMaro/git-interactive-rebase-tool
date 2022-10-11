@@ -212,7 +212,7 @@ mod tests {
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
 	}
@@ -226,7 +226,7 @@ mod tests {
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
 	}
@@ -259,9 +259,9 @@ mod tests {
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.stop();
+			state.stop();
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
 	}
@@ -283,7 +283,7 @@ mod tests {
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.stop();
+			state.stop();
 			tester.wait_for_error_status();
 		});
 	}
@@ -322,9 +322,9 @@ mod tests {
 
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
-			let _ = state.render(&view_data);
+			state.render(&view_data);
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 			for _ in 0..10 {
 				let lines_lock = lines.lock();
@@ -393,9 +393,9 @@ mod tests {
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
 			sleep(MINIMUM_TICK_RATE); // give the refresh a chance to occur
-			let _ = state.refresh();
+			state.refresh();
 			tester.wait_for_status(&Status::Waiting);
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 			for _ in 0..10 {
 				let lines_lock = lines.lock();
@@ -423,7 +423,7 @@ mod tests {
 				ViewAction::Refresh
 			));
 
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
 	}
@@ -438,13 +438,13 @@ mod tests {
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
 			let _ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
-			let _ = state.stop();
+			state.stop();
 			tester.wait_for_status(&Status::Waiting);
 			while receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok() {}
 			assert!(receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_err());
-			let _ = state.start();
+			state.start();
 			assert!(receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok());
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
 	}
@@ -459,9 +459,9 @@ mod tests {
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
 			let _ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
-			let _ = state.stop();
+			state.stop();
 			while receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok() {}
-			let _ = state.end();
+			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
 	}

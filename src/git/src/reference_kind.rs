@@ -76,7 +76,7 @@ mod tests {
 			let git2_repository = repository.repository();
 			let git2_lock = git2_repository.lock();
 			let mut remote = git2_lock.remote("origin", git2_lock.path().to_str().unwrap()).unwrap();
-			let _ = remote.fetch(&["main"], None, None).unwrap();
+			remote.fetch(&["main"], None, None).unwrap();
 			assert_eq!(
 				ReferenceKind::from(&git2_lock.find_reference("refs/remotes/origin/main").unwrap()),
 				ReferenceKind::Remote
