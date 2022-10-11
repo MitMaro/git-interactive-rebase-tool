@@ -12,7 +12,7 @@ fn _assert_results_format(artifacts: &[Artifact]) -> String {
 				Artifact::Error(err, state) => {
 					format!(
 						"Error({err:#}) State({})",
-						state.map(|s| format!("{s:?}")).unwrap_or(String::from("None"))
+						state.map(|s| format!("{s:?}")).unwrap_or_else(|| String::from("None"))
 					)
 				},
 				Artifact::ExitStatus(status) => format!("ExitStatus({status:?})"),
