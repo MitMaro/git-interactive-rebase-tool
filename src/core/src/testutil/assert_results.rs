@@ -29,7 +29,7 @@ fn _assert_results_format(artifacts: &[Artifact]) -> String {
 pub(crate) fn _assert_results(results: Results, expected_artifacts: &[Artifact]) {
 	assert_eq!(
 		_assert_results_format(expected_artifacts),
-		_assert_results_format(Vec::from_iter(results.artifacts.into_iter()).as_slice())
+		_assert_results_format(results.artifacts.into_iter().collect::<Vec<_>>().as_slice())
 	);
 }
 
