@@ -6,17 +6,17 @@ fn _assert_results_format(artifacts: &[Artifact]) -> String {
 	artifacts
 		.iter()
 		.map(|artifact| {
-			match artifact {
+			match *artifact {
 				Artifact::Event(event) => format!("Event({event:?})"),
 				Artifact::ChangeState(state) => format!("ChangeState({state:?})"),
-				Artifact::Error(err, state) => {
+				Artifact::Error(ref err, state) => {
 					format!(
 						"Error({err:#}) State({})",
 						state.map_or_else(|| String::from("None"), |s| format!("{s:?}"))
 					)
 				},
 				Artifact::ExitStatus(status) => format!("ExitStatus({status:?})"),
-				Artifact::ExternalCommand(command) => {
+				Artifact::ExternalCommand(ref command) => {
 					format!("ExternalCommand({:?} {:?})", command.0, command.1.join(","))
 				},
 				Artifact::EnqueueResize => String::from("EnqueueResize"),
