@@ -502,7 +502,7 @@ fn handle_results_change_state() {
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			let results = Results::from(State::ShowCommit);
-			let _ = process.handle_results(results);
+			process.handle_results(results);
 			assert_eq!(process.state(), State::ShowCommit);
 		},
 	);
@@ -517,7 +517,7 @@ fn handle_results_enqueue_resize() {
 			process.render_context.lock().update(120, 130);
 			let mut results = Results::new();
 			results.enqueue_resize();
-			let _ = process.handle_results(results);
+			process.handle_results(results);
 			assert_eq!(process.input_state.read_event(), Event::Resize(120, 130));
 		},
 	);
