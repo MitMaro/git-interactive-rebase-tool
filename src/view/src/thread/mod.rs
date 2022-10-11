@@ -310,7 +310,7 @@ mod tests {
 		}
 
 		let crossterm = TestCrossTerm::new();
-		let lines = crossterm.lines.clone();
+		let lines = Arc::clone(&crossterm.lines);
 
 		with_view(crossterm, |view| {
 			let thread = Thread::new(view);
@@ -377,7 +377,7 @@ mod tests {
 		}
 
 		let crossterm = TestCrossTerm::new();
-		let lines = crossterm.lines.clone();
+		let lines = Arc::clone(&crossterm.lines);
 
 		with_view(crossterm, |view| {
 			let thread = Thread::new(view);

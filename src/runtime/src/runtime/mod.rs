@@ -207,7 +207,7 @@ mod tests {
 
 		impl Threadable for Thread2 {
 			fn install(&self, installer: &Installer) {
-				let ended = self.ended.clone();
+				let ended = Arc::clone(&self.ended);
 				installer.spawn("name1", |notifier| {
 					move || {
 						while !ended.load(Ordering::Acquire) {
@@ -266,7 +266,7 @@ mod tests {
 
 		impl Threadable for Thread2 {
 			fn install(&self, installer: &Installer) {
-				let paused = self.paused.clone();
+				let paused = Arc::clone(&self.paused);
 				installer.spawn("name1", |notifier| {
 					move || {
 						while !paused.load(Ordering::Acquire) {
@@ -327,7 +327,7 @@ mod tests {
 
 		impl Threadable for Thread2 {
 			fn install(&self, installer: &Installer) {
-				let resumed = self.resumed.clone();
+				let resumed = Arc::clone(&self.resumed);
 				installer.spawn("name1", |notifier| {
 					move || {
 						while !resumed.load(Ordering::Acquire) {
@@ -388,7 +388,7 @@ mod tests {
 
 		impl Threadable for Thread2 {
 			fn install(&self, installer: &Installer) {
-				let ended = self.ended.clone();
+				let ended = Arc::clone(&self.ended);
 				installer.spawn("name1", |notifier| {
 					move || {
 						while !ended.load(Ordering::Acquire) {

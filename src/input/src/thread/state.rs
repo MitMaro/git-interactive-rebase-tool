@@ -261,8 +261,8 @@ mod tests {
 		let events_read: Arc<Mutex<Vec<Event>>> = Arc::new(Mutex::new(vec![]));
 
 		let thread_state = state.clone();
-		let thread_step = step.clone();
-		let thread_events_read = events_read.clone();
+		let thread_step = Arc::clone(&step);
+		let thread_events_read = Arc::clone(&events_read);
 		let _ = spawn(move || {
 			loop {
 				let mut thread_events_read_lock = thread_events_read.lock();
