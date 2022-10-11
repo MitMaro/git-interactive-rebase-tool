@@ -4,7 +4,7 @@ use pico_args::Arguments;
 
 use crate::{exit::Exit, module::ExitStatus};
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub(crate) enum Mode {
 	Editor,
 	Help,
@@ -65,47 +65,38 @@ mod tests {
 
 	#[test]
 	fn mode_help() {
-		assert!(matches!(
-			Args::try_from(create_args(&["-h"])).unwrap().mode(),
-			Mode::Help
-		));
-		assert!(matches!(
-			Args::try_from(create_args(&["--help"])).unwrap().mode(),
-			Mode::Help
-		));
+		assert_eq!(Args::try_from(create_args(&["-h"])).unwrap().mode(), &Mode::Help);
+		assert_eq!(Args::try_from(create_args(&["--help"])).unwrap().mode(), &Mode::Help);
 	}
 
 	#[test]
 	fn mode_version() {
-		assert!(matches!(
-			Args::try_from(create_args(&["-v"])).unwrap().mode(),
-			Mode::Version
-		));
-		assert!(matches!(
+		assert_eq!(Args::try_from(create_args(&["-v"])).unwrap().mode(), &Mode::Version);
+		assert_eq!(
 			Args::try_from(create_args(&["--version"])).unwrap().mode(),
-			Mode::Version
-		));
+			&Mode::Version
+		);
 	}
 
 	#[test]
 	fn mode_license() {
-		assert!(matches!(
+		assert_eq!(
 			Args::try_from(create_args(&["--license"])).unwrap().mode(),
-			Mode::License
-		));
+			&Mode::License
+		);
 	}
 
 	#[test]
 	fn todo_file_ok() {
 		let args = Args::try_from(create_args(&["todofile"])).unwrap();
-		assert!(matches!(args.mode(), Mode::Editor));
+		assert_eq!(args.mode(), &Mode::Editor);
 		assert_eq!(args.todo_file_path(), &Some(String::from("todofile")));
 	}
 
 	#[test]
 	fn todo_file_missing() {
 		let args = Args::try_from(create_args(&[])).unwrap();
-		assert!(matches!(args.mode(), Mode::Editor));
+		assert_eq!(args.mode(), &Mode::Editor);
 		assert!(args.todo_file_path().is_none());
 	}
 
