@@ -233,7 +233,7 @@ mod tests {
 
 	#[test]
 	fn main_thread_start_error() {
-		struct TestCrossTerm {}
+		struct TestCrossTerm;
 
 		impl MockableTui for TestCrossTerm {
 			fn start(&mut self) -> Result<(), DisplayError> {
@@ -268,7 +268,7 @@ mod tests {
 
 	#[test]
 	fn main_thread_stop_error() {
-		struct TestCrossTerm {}
+		struct TestCrossTerm;
 
 		impl MockableTui for TestCrossTerm {
 			fn end(&mut self) -> Result<(), DisplayError> {
@@ -339,7 +339,7 @@ mod tests {
 
 	#[test]
 	fn main_thread_render_with_should_render_error() {
-		struct TestCrossTerm {}
+		struct TestCrossTerm;
 
 		impl MockableTui for TestCrossTerm {
 			fn reset(&mut self) -> Result<(), DisplayError> {

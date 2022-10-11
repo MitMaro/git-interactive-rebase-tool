@@ -5,7 +5,7 @@ use crate::{
 	testutil::{create_test_keybindings, module_test},
 };
 
-struct TestModule {}
+struct TestModule;
 
 impl Module for TestModule {}
 

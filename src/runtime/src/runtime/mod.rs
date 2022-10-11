@@ -147,7 +147,7 @@ mod tests {
 
 	#[test]
 	fn run_thread_finish() {
-		struct Thread {}
+		struct Thread;
 
 		impl Thread {
 			fn new() -> Self {
@@ -175,7 +175,7 @@ mod tests {
 
 	#[test]
 	fn run_thread_error() {
-		struct Thread1 {}
+		struct Thread1;
 
 		impl Thread1 {
 			fn new() -> Self {
@@ -233,7 +233,7 @@ mod tests {
 
 	#[test]
 	fn run_thread_request_pause() {
-		struct Thread1 {}
+		struct Thread1;
 
 		impl Thread1 {
 			fn new() -> Self {
@@ -294,7 +294,7 @@ mod tests {
 
 	#[test]
 	fn run_thread_request_resume() {
-		struct Thread1 {}
+		struct Thread1;
 
 		impl Thread1 {
 			fn new() -> Self {
@@ -355,7 +355,7 @@ mod tests {
 
 	#[test]
 	fn run_thread_request_end() {
-		struct Thread1 {}
+		struct Thread1;
 
 		impl Thread1 {
 			fn new() -> Self {
