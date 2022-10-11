@@ -229,11 +229,9 @@ mod tests {
 			format!(
 				"{origin}{} {}| {}",
 				line.old_line_number()
-					.map(|v| v.to_string())
-					.unwrap_or_else(|| String::from(" ")),
+					.map_or_else(|| String::from(" "), |v| v.to_string()),
 				line.new_line_number()
-					.map(|v| v.to_string())
-					.unwrap_or_else(|| String::from(" ")),
+					.map_or_else(|| String::from(" "), |v| v.to_string()),
 				if line.line().ends_with('\n') {
 					&line.line()[..line.line().len() - 1]
 				}
