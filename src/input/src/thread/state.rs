@@ -138,21 +138,21 @@ mod tests {
 	fn paused() {
 		let state = create_state();
 		state.pause();
-		assert!(state.is_paused())
+		assert!(state.is_paused());
 	}
 
 	#[test]
 	fn resumed() {
 		let state = create_state();
 		state.resume();
-		assert!(!state.is_paused())
+		assert!(!state.is_paused());
 	}
 
 	#[test]
 	fn ended() {
 		let state = create_state();
 		state.end();
-		assert!(state.is_ended())
+		assert!(state.is_ended());
 	}
 
 	#[test]

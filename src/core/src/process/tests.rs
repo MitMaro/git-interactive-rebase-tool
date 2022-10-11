@@ -178,7 +178,7 @@ fn render() {
 		     process, view_context, ..
 		 }| {
 			process.render();
-			view_context.assert_sent_messages(vec!["Render"])
+			view_context.assert_sent_messages(vec!["Render"]);
 		},
 	);
 }
@@ -545,7 +545,7 @@ fn handle_results_event() {
 		|ProcessTestContext { process, .. }| {
 			let results = Results::from(Event::from(StandardEvent::Kill));
 			process.handle_results(results);
-			assert_eq!(process.exit_status(), ExitStatus::Kill)
+			assert_eq!(process.exit_status(), ExitStatus::Kill);
 		},
 	);
 }
@@ -558,7 +558,7 @@ fn handle_results_exit_status() {
 		|ProcessTestContext { process, .. }| {
 			let results = Results::from(ExitStatus::Abort);
 			process.handle_results(results);
-			assert_eq!(process.exit_status(), ExitStatus::Abort)
+			assert_eq!(process.exit_status(), ExitStatus::Abort);
 		},
 	);
 }
