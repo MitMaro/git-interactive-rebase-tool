@@ -57,12 +57,14 @@ mod tests {
 			assert_ok_eq!(get_unsigned_integer(Some(&git_config), "test.value", 24), 0);
 		});
 	}
+
 	#[test]
+	#[allow(clippy::as_conversions)]
 	fn read_value_max() {
 		with_git_config(&["[test]", format!("value = {}", i32::MAX).as_str()], |git_config| {
 			assert_ok_eq!(
 				get_unsigned_integer(Some(&git_config), "test.value", 24),
-				i32::MAX as u32
+				i32::MAX as u32 // git only supports i32s, so use i32 max
 			);
 		});
 	}
