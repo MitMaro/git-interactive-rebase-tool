@@ -19,7 +19,7 @@ fn default_trait_method_activate() {
 				.artifact()
 				.is_none()
 		);
-	})
+	});
 }
 
 #[test]
@@ -34,7 +34,7 @@ fn default_trait_method_build_view_data() {
 		let mut module = TestModule {};
 		let view_data = module.build_view_data(&context.render_context, &context.rebase_todo_file);
 		assert!(view_data.is_empty());
-	})
+	});
 }
 
 #[test]
@@ -60,7 +60,7 @@ fn default_trait_method_handle_event() {
 			&mut context.rebase_todo_file,
 		);
 		assert!(result.artifact().is_none());
-	})
+	});
 }
 
 #[test]

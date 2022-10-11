@@ -34,7 +34,7 @@ mod tests {
 				.as_ref()
 				.unwrap()
 				.starts_with("interactive-rebase-tool")
-		)
+		);
 	}
 
 	#[test]

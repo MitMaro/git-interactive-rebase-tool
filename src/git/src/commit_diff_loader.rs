@@ -284,9 +284,9 @@ mod tests {
 		let file_path = root.join(name);
 		let mut file = File::create(file_path.as_path()).unwrap();
 		if !contents.is_empty() {
-			writeln!(file, "{}", contents.join("\n")).unwrap()
+			writeln!(file, "{}", contents.join("\n")).unwrap();
 		}
-		repository.add_path_to_index(PathBuf::from(name).as_path()).unwrap()
+		repository.add_path_to_index(PathBuf::from(name).as_path()).unwrap();
 	}
 
 	fn remove_path(repository: &crate::Repository, name: &str) {
