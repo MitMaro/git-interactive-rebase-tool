@@ -82,7 +82,7 @@ mod tests {
 
 	impl Threadable for Thread {
 		fn install(&self, installer: &Installer) {
-			let called = self.called.clone();
+			let called = Arc::clone(&self.called);
 			installer.spawn("name", |_| {
 				move || {
 					called.store(true, Ordering::Relaxed);

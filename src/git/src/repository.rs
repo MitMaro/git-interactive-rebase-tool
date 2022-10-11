@@ -163,7 +163,7 @@ impl Repository {
 
 	#[cfg(test)]
 	pub(crate) fn repository(&self) -> Arc<Mutex<git2::Repository>> {
-		self.repository.clone()
+		Arc::clone(&self.repository)
 	}
 }
 
