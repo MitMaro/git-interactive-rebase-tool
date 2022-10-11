@@ -118,7 +118,7 @@ mod tests {
 				value
 			);
 
-			for (value, expected) in vec![$( ($value, $expected), )*] {
+			for (value, expected) in [$( ($value, $expected), )*] {
 				let config_parent = format!("[{}]", $config_parent);
 				let config_value = format!("{} = \"{value}\"", $config_name);
 				with_git_config(&[config_parent.as_str(), config_value.as_str()], |git_config| {
