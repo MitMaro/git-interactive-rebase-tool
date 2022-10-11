@@ -214,6 +214,7 @@ mod tests {
 		}
 	}
 
+	#[allow(clippy::string_slice)]
 	fn _format_diff_line(line: &DiffLine) -> String {
 		let origin = match line.origin() {
 			Origin::Addition => "+",
