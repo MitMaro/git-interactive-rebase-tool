@@ -36,11 +36,11 @@ pub(crate) fn _assert_results(results: Results, expected_artifacts: &[Artifact])
 #[macro_export]
 macro_rules! assert_results {
 		($actual:expr) => {{
-			use crate::testutil::_assert_results;
+			use $crate::testutil::_assert_results;
 			_assert_results($actual, &[]);
 		}};
 		($actual:expr, $($arg:expr),*) => {{
-			use crate::testutil::_assert_results;
+			use $crate::testutil::_assert_results;
 			let expected = vec![$( $arg, )*];
 			_assert_results($actual, &expected);
 		}};
