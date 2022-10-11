@@ -411,13 +411,14 @@ mod tests {
 	#[case::diff_space_symbol("diffSpaceSymbol", "-", String::from("-"), |config: Config| config.diff_space_symbol)]
 	#[case::undo_limit_default("undoLimit", "", 5000, |config: Config| config.undo_limit)]
 	#[case::undo_limit_default("undoLimit", "42", 42, |config: Config| config.undo_limit)]
-	pub(crate) fn theme_color<F: 'static, T: Debug + PartialEq>(
+	pub(crate) fn theme_color<F, T>(
 		#[case] config_name: &str,
 		#[case] config_value: &str,
 		#[case] expected: T,
 		#[case] access: F,
 	) where
-		F: Fn(Config) -> T,
+		F: Fn(Config) -> T + 'static,
+		T: Debug + PartialEq,
 	{
 		let value = format!("{config_name} = \"{config_value}\"");
 		let lines = if config_value.is_empty() {
