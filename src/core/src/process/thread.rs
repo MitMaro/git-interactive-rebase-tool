@@ -132,7 +132,7 @@ mod tests {
 
 	#[test]
 	fn run_success() {
-		struct TestModule {}
+		struct TestModule;
 
 		impl Module for TestModule {
 			fn handle_event(&mut self, _: Event, _: &view::State, rebase_todo: &mut TodoFile) -> Results {
@@ -165,7 +165,7 @@ mod tests {
 	#[cfg(unix)]
 	#[test]
 	fn run_write_error() {
-		struct TestModule {}
+		struct TestModule;
 
 		impl Module for TestModule {
 			fn handle_event(&mut self, _: Event, _: &view::State, rebase_todo: &mut TodoFile) -> Results {
@@ -197,7 +197,7 @@ mod tests {
 
 	#[test]
 	fn run_kill() {
-		struct TestModule {}
+		struct TestModule;
 
 		impl Module for TestModule {
 			fn handle_event(&mut self, _: Event, _: &view::State, rebase_todo: &mut TodoFile) -> Results {

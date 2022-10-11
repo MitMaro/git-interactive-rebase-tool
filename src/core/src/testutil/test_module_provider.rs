@@ -31,7 +31,7 @@ impl<M: Module> ModuleProvider for TestModuleProvider<M> {
 	}
 }
 
-pub(crate) struct DefaultTestModule {}
+pub(crate) struct DefaultTestModule;
 
 impl Module for DefaultTestModule {}
 

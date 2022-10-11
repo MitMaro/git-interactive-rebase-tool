@@ -25,7 +25,7 @@ pub(crate) mod local {
 	pub(crate) enum TestEvent {}
 	impl CustomEvent for TestEvent {}
 
-	pub(crate) struct TestKeybinding {}
+	pub(crate) struct TestKeybinding;
 	impl CustomKeybinding for TestKeybinding {
 		fn new(_: &config::KeyBindings) -> Self {
 			Self {}
