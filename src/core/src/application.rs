@@ -161,6 +161,7 @@ where
 mod tests {
 	use std::ffi::OsString;
 
+	use claim::assert_ok;
 	use display::testutil::CrossTerm;
 	use input::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -295,7 +296,7 @@ mod tests {
 			create_mocked_crossterm(),
 		)
 		.unwrap();
-		assert!(application.run_until_finished().is_ok());
+		assert_ok!(application.run_until_finished());
 	}
 
 	#[test]

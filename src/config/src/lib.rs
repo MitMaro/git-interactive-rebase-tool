@@ -226,6 +226,7 @@ mod tests {
 	use std::fmt::Debug;
 
 	use ::testutils::assert_err_eq;
+	use claim::assert_ok;
 	use git::testutil::with_temp_bare_repository;
 	use rstest::rstest;
 
@@ -240,14 +241,14 @@ mod tests {
 	#[test]
 	fn try_from_repository() {
 		with_temp_bare_repository(|repository| {
-			assert!(Config::try_from(&repository).is_ok());
+			assert_ok!(Config::try_from(&repository));
 		});
 	}
 
 	#[test]
 	fn try_from_git_config() {
 		with_git_config(&[], |git_config| {
-			assert!(Config::try_from(&git_config).is_ok());
+			assert_ok!(Config::try_from(&git_config));
 		});
 	}
 
@@ -256,7 +257,7 @@ mod tests {
 		with_git_config(
 			&["[interactive-rebase-tool]", "autoSelectNext = invalid"],
 			|git_config| {
-				assert!(Config::try_from(&git_config).is_err());
+				let _ = Config::try_from(&git_config).unwrap_err();
 			},
 		);
 	}

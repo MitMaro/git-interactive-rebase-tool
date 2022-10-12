@@ -90,6 +90,7 @@ impl TryFrom<&Config> for GitConfig {
 mod tests {
 	use std::env::{remove_var, set_var};
 
+	use claim::assert_ok;
 	use rstest::rstest;
 	use testutils::assert_err_eq;
 
@@ -144,14 +145,14 @@ mod tests {
 	#[test]
 	fn try_from_git_config() {
 		with_git_config(&[], |git_config| {
-			assert!(GitConfig::try_from(&git_config).is_ok());
+			assert_ok!(GitConfig::try_from(&git_config));
 		});
 	}
 
 	#[test]
 	fn try_from_git_config_error() {
 		with_git_config(&["[diff]", "renames = invalid"], |git_config| {
-			assert!(GitConfig::try_from(&git_config).is_err());
+			let _ = GitConfig::try_from(&git_config).unwrap_err();
 		});
 	}
 
