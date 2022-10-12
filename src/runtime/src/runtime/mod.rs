@@ -150,7 +150,7 @@ mod tests {
 		struct Thread;
 
 		impl Thread {
-			fn new() -> Self {
+			const fn new() -> Self {
 				Self {}
 			}
 		}
@@ -178,7 +178,7 @@ mod tests {
 		struct Thread1;
 
 		impl Thread1 {
-			fn new() -> Self {
+			const fn new() -> Self {
 				Self {}
 			}
 		}
@@ -236,7 +236,7 @@ mod tests {
 		struct Thread1;
 
 		impl Thread1 {
-			fn new() -> Self {
+			const fn new() -> Self {
 				Self {}
 			}
 		}
@@ -297,7 +297,7 @@ mod tests {
 		struct Thread1;
 
 		impl Thread1 {
-			fn new() -> Self {
+			const fn new() -> Self {
 				Self {}
 			}
 		}
@@ -358,7 +358,7 @@ mod tests {
 		struct Thread1;
 
 		impl Thread1 {
-			fn new() -> Self {
+			const fn new() -> Self {
 				Self {}
 			}
 		}
