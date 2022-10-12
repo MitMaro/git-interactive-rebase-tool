@@ -248,7 +248,7 @@ mod tests {
 		with_temp_repository(|repository| {
 			let repo = repository.repository();
 			let repo_lock = repo.lock();
-			let blob = repo_lock.blob("foo".as_bytes()).unwrap();
+			let blob = repo_lock.blob(b"foo").unwrap();
 			let _ = repo_lock.reference("refs/blob", blob, false, "blob").unwrap();
 
 			let reference = repo_lock.find_reference("refs/blob").unwrap();
