@@ -279,7 +279,7 @@ mod tests {
 			let blob_ref = {
 				let git2_repository = repository.repository();
 				let git2_lock = git2_repository.lock();
-				let blob = git2_lock.blob("foo".as_bytes()).unwrap();
+				let blob = git2_lock.blob(b"foo").unwrap();
 				let _ = git2_lock.reference("refs/blob", blob, false, "blob").unwrap();
 				blob.to_string()
 			};
