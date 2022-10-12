@@ -177,6 +177,8 @@ impl TryFrom<&Config> for KeyBindings {
 
 #[cfg(test)]
 mod tests {
+	use claim::assert_ok;
+
 	use super::*;
 	use crate::testutils::with_git_config;
 
@@ -217,14 +219,14 @@ mod tests {
 	#[test]
 	fn try_from_git_config() {
 		with_git_config(&[], |git_config| {
-			assert!(KeyBindings::try_from(&git_config).is_ok());
+			assert_ok!(KeyBindings::try_from(&git_config));
 		});
 	}
 
 	#[test]
 	fn try_from_git_config_error() {
 		with_git_config(&["[interactive-rebase-tool]", "inputAbort = invalid"], |git_config| {
-			assert!(KeyBindings::try_from(&git_config).is_err());
+			let _ = KeyBindings::try_from(&git_config).unwrap_err();
 		});
 	}
 

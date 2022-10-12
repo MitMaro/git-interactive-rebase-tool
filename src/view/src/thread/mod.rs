@@ -160,6 +160,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 mod tests {
 	use std::borrow::BorrowMut;
 
+	use claim::assert_ok;
 	use config::Theme;
 	use display::{
 		testutil::{create_unexpected_error, CrossTerm, MockableTui},
@@ -441,9 +442,9 @@ mod tests {
 			state.stop();
 			tester.wait_for_status(&Status::Waiting);
 			while receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok() {}
-			assert!(receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_err());
+			let _ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap_err();
 			state.start();
-			assert!(receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok());
+			assert_ok!(receiver.recv_timeout(READ_MESSAGE_TIMEOUT));
 			state.end();
 			tester.wait_for_status(&Status::Ended);
 		});
