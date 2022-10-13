@@ -151,23 +151,52 @@ pub(super) fn get_files_changed_summary(diff: &CommitDiff, is_full_width: bool) 
 
 pub(super) fn get_partition_index_on_whitespace_for_line(line: &str) -> (usize, usize) {
 	let graphemes = UnicodeSegmentation::graphemes(line, true);
-	let length = graphemes.clone().count();
+	let length = graphemes.clone().map(|c| c.len()).sum();
 	let mut start_partition_index = 0;
 	let mut end_partition_index = length;
 
-	for (index, c) in graphemes.clone().enumerate() {
+	let mut index = 0;
+	for c in graphemes.clone() {
 		if c != " " && c != "\t" && c != "\n" {
 			start_partition_index = index;
 			break;
 		}
+		index += c.len();
 	}
 
-	for (index, c) in graphemes.rev().enumerate() {
+	index = length;
+	for c in graphemes.rev() {
 		if c != " " && c != "\t" && c != "\n" {
-			end_partition_index = length - index;
+			end_partition_index = index;
 			break;
 		}
+		index -= c.len();
 	}
 
 	(start_partition_index, end_partition_index)
+}
+
+#[cfg(test)]
+mod tests {
+	use rstest::rstest;
+
+	use super::*;
+
+	#[rstest]
+	#[case::empty_string("", 0, 0)]
+	#[case::single_character("a", 0, 1)]
+	#[case::multiple_characters("abc", 0, 3)]
+	#[case::internal_spaces(" a b c ", 1, 6)]
+	#[case::leading_whitespace(" a", 1, 2)]
+	#[case::trailing_whitespace("a ", 0, 1)]
+	#[case::leading_trailing_whitespace(" a ", 1, 2)]
+	#[case::all_supported_whitespace_characters(" \ta \t\n", 2, 3)]
+	#[case::multi_byte_character("…", 0, 3)]
+	#[case::multi_byte_character_leading_whitespace(" …", 1, 4)]
+	#[case::multi_byte_character_trailing_whitespace("… ", 0, 3)]
+	#[case::multi_byte_character_leading_trailing_whitespace(" … ", 1, 4)]
+	#[case::multi_byte_character_in_middle(" a…b ", 1, 6)]
+	fn get_partition_index_on_whitespace_for_line_cases(#[case] s: &str, #[case] start: usize, #[case] end: usize) {
+		assert_eq!(get_partition_index_on_whitespace_for_line(s), (start, end));
+	}
 }
