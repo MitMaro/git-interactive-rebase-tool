@@ -308,7 +308,7 @@ dependencies = [
 
 [[package]]
 name = "girt-core"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "anyhow",
  "captur",
@@ -433,7 +433,7 @@ dependencies = [
 
 [[package]]
 name = "git-interactive-rebase-tool"
-version = "2.2.0"
+version = "2.2.1"
 dependencies = [
  "girt-core",
  "rustc_version",

@@ -1,6 +1,6 @@
 [package]
 name = "girt-core"
-version = "2.2.0"
+version = "2.2.1"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Core modules for git-interactive-rebase-tool"
