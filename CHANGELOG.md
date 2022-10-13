@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [2.2.1] - 2022-10-13
+### Fixed
+- Crash on multibyte strings in commit diff view ([#755](https://github.com/MitMaro/git-interactive-rebase-tool/pull/755))
+
 ## [2.2.0] - 2022-04-21
 ### Added
 - Added mew keybindings for customizing the scrolling the view. ([#647](https://github.com/MitMaro/git-interactive-rebase-tool/pull/647))
@@ -161,7 +165,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.1...HEAD
+[2.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.1...2.2.0
 [2.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.0...2.1.0
 [2.1.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.1...2.0.0
