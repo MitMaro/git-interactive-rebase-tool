@@ -37,7 +37,7 @@ jobs:
   macos:
     name: MacOS
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
         TARGET_RELEASE_ID: 18843342
         GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
