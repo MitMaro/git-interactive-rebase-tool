@@ -10,7 +10,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo install cargo-make
+      - uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-make
       - name: Test
         run: cargo make test
       - name: Build Release
@@ -26,7 +28,9 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo install cargo-make
+      - uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-make
       - run: cargo make lint-stable
   docs:
     runs-on: ubuntu-latest
@@ -44,7 +48,9 @@ jobs:
         with:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
-      - run: cargo install cargo-make
+      - uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-make
       - run: cargo make format
   coverage:
     runs-on: ubuntu-latest
@@ -72,7 +78,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo install cargo-make
+      - uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-make
       - name: Test
         run: cargo make test
       - name: Build Release
