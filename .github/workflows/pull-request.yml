@@ -103,12 +103,8 @@ jobs:
       - name: Test
         env:
           RUSTFLAGS: '--cap-lints warn'
-        run: cargo test --target x86_64-pc-windows-msvc --release --workspace
-      - name: Build
-        env:
-          RUSTFLAGS: '--cap-lints warn'
-        run: cargo build --target x86_64-pc-windows-msvc --release
-      - name: Run
+        run: cargo test --target x86_64-pc-windows-msvc --workspace
+      - name: Build and Run
         env:
           RUSTFLAGS: '--cap-lints warn'
         run: cargo run --target x86_64-pc-windows-msvc --release -- --version
