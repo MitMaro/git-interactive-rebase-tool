@@ -12,7 +12,12 @@ use input::{InputOptions, MouseEventKind, StandardEvent};
 use todo_file::{Action, EditContext, Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
-use self::utils::{get_list_normal_mode_help_lines, get_list_visual_mode_help_lines, get_todo_line_segments};
+use self::utils::{
+	get_list_normal_mode_help_lines,
+	get_list_visual_mode_help_lines,
+	get_todo_line_segments,
+	TodoLineSegmentsOptions,
+};
 use crate::{
 	components::{edit::Edit, help::Help},
 	events::{Event, KeyBindings, MetaEvent},
@@ -346,8 +351,18 @@ impl List {
 					let selected_line = is_visual_mode
 						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
 							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
+					let mut todo_line_segment_options = TodoLineSegmentsOptions::empty();
+					if selected_index == index {
+						todo_line_segment_options.insert(TodoLineSegmentsOptions::CURSOR_LINE);
+					}
+					if selected_line {
+						todo_line_segment_options.insert(TodoLineSegmentsOptions::SELECTED);
+					}
+					if context.is_full_width() {
+						todo_line_segment_options.insert(TodoLineSegmentsOptions::FULL_WIDTH);
+					}
 					let mut view_line = ViewLine::new_with_pinned_segments(
-						get_todo_line_segments(line, selected_index == index, selected_line, context.is_full_width()),
+						get_todo_line_segments(line, todo_line_segment_options),
 						if *line.get_action() == Action::Exec { 2 } else { 3 },
 					)
 					.set_selected(selected_index == index || selected_line);
