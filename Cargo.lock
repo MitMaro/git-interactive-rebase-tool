@@ -308,6 +308,7 @@ name = "girt-core"
 version = "2.2.1"
 dependencies = [
  "anyhow",
+ "bitflags",
  "captur",
  "chrono",
  "claim",

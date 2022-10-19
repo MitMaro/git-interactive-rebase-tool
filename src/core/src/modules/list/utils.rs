@@ -1,5 +1,6 @@
 use std::cmp;
 
+use bitflags::bitflags;
 use config::KeyBindings;
 use display::DisplayColor;
 use todo_file::{Action, Line};
@@ -194,15 +195,23 @@ const fn get_action_color(action: Action) -> DisplayColor {
 	}
 }
 
+bitflags! {
+	pub(crate) struct TodoLineSegmentsOptions: u8 {
+		const DEFAULT = 0b0000_0000;
+		const CURSOR_LINE = 0b0000_0001;
+		const SELECTED = 0b0000_0010;
+		const FULL_WIDTH = 0b0000_0100;
+	}
+}
+
 // safe slice, as it is only on the hash, which is hexadecimal
 #[allow(clippy::string_slice)]
-pub(super) fn get_todo_line_segments(
-	line: &Line,
-	is_cursor_line: bool,
-	selected: bool,
-	is_full_width: bool,
-) -> Vec<LineSegment> {
+pub(super) fn get_todo_line_segments(line: &Line, options: TodoLineSegmentsOptions) -> Vec<LineSegment> {
 	let mut segments: Vec<LineSegment> = vec![];
+
+	let is_cursor_line = options.contains(TodoLineSegmentsOptions::CURSOR_LINE);
+	let selected = options.contains(TodoLineSegmentsOptions::SELECTED);
+	let is_full_width = options.contains(TodoLineSegmentsOptions::FULL_WIDTH);
 
 	let action = line.get_action();
 
