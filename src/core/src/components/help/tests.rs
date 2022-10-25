@@ -5,7 +5,7 @@ use view::{assert_rendered_output, testutil::with_view_state};
 use super::*;
 
 fn handle_event(help: &mut Help, event: Event) {
-	let evt = Help::read_event(event).unwrap_or(event);
+	let evt = help.read_event(event).unwrap_or(event);
 	with_view_state(|context| help.handle_event(evt, &context.state));
 }
 

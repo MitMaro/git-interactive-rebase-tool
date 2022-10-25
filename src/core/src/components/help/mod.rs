@@ -79,8 +79,8 @@ impl Help {
 		self.active.then_some(&INPUT_OPTIONS)
 	}
 
-	pub(crate) fn read_event(event: Event) -> Option<Event> {
-		(event == Event::Standard(StandardEvent::Help)).then_some(event)
+	pub(crate) fn read_event(&self, event: Event) -> Option<Event> {
+		(self.is_active() || event == Event::Standard(StandardEvent::Help)).then_some(event)
 	}
 
 	pub(crate) fn handle_event(&mut self, event: Event, view_state: &view::State) {

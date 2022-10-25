@@ -129,7 +129,7 @@ impl Module for ShowCommit {
 					.then(|| Event::from(MetaEvent::ShowDiff))
 					.unwrap_or(event)
 			},
-			|| { Help::read_event(event) }
+			|| { self.help.read_event(event) }
 		)
 	}
 

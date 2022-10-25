@@ -96,7 +96,8 @@ impl Module for List {
 		select!(
 			default || Self::read_event_default(event, key_bindings),
 			|| (self.state == ListState::Edit).then_some(event),
-			|| Help::read_event(event)
+			|| self.normal_mode_help.read_event(event),
+			|| self.visual_mode_help.read_event(event)
 		)
 	}
 }
