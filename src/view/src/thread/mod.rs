@@ -87,18 +87,21 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 				let update_receiver = state.update_receiver();
 				let mut last_render_time = Instant::now();
 				let mut should_render = true;
+				let mut is_started = false;
 
 				for msg in update_receiver {
 					notifier.busy();
 					match msg {
 						ViewAction::Render => should_render = true,
 						ViewAction::Start => {
+							is_started = true;
 							if let Err(err) = view.lock().start() {
 								notifier.error(RuntimeError::ThreadError(err.to_string()));
 								break;
 							}
 						},
 						ViewAction::Stop => {
+							is_started = false;
 							if let Err(err) = view.lock().end() {
 								notifier.error(RuntimeError::ThreadError(err.to_string()));
 								break;
@@ -108,7 +111,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 						ViewAction::End => break,
 					}
 
-					if should_render && Instant::now() >= last_render_time {
+					if is_started && should_render && Instant::now() >= last_render_time {
 						last_render_time += MINIMUM_TICK_RATE;
 						should_render = false;
 						let render_slice_mutex = render_slice.lock();
