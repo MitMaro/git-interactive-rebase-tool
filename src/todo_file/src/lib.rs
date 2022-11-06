@@ -53,8 +53,9 @@
 #![deny(clippy::all, clippy::cargo, clippy::pedantic, clippy::restriction)]
 #![cfg_attr(include_nightly_lints, deny(clippy::nursery))]
 #![allow(
-	clippy::arithmetic,
+	clippy::arithmetic_side_effects,
 	clippy::blanket_clippy_restriction_lints,
+	clippy::bool_to_int_with_if,
 	clippy::default_numeric_fallback,
 	clippy::else_if_without_else,
 	clippy::expect_used,
@@ -103,10 +104,7 @@
 	)
 )]
 // allowable upcoming nightly lints
-#![cfg_attr(
-	include_nightly_lints,
-	allow(clippy::arithmetic_side_effects, clippy::bool_to_int_with_if)
-)]
+#![cfg_attr(include_nightly_lints, allow(clippy::missing_trait_methods))]
 // LINT-REPLACE-END
 
 //! Git Interactive Rebase Tool - Todo File Module
