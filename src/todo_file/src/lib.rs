@@ -117,6 +117,8 @@ mod edit_content;
 pub mod errors;
 mod history;
 mod line;
+#[cfg(not(tarpaulin_include))]
+pub mod testutil;
 mod utils;
 
 use std::{
