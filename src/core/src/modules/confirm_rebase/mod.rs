@@ -89,7 +89,7 @@ mod tests {
 					Artifact::Event(Event::from(MetaEvent::Yes)),
 					Artifact::ExitStatus(ExitStatus::Good)
 				);
-				assert!(!test_context.rebase_todo_file.is_empty());
+				assert!(!test_context.todo_file_context.todo_file().is_empty());
 			},
 		);
 	}

@@ -148,18 +148,18 @@ mod tests {
 					context.event_handler_context.event_handler,
 					TestModuleProvider::from(test_module.clone()),
 				);
-				let _ = module_handler.activate(State::List, &context.rebase_todo_file, State::Insert);
+				let _ = module_handler.activate(State::List, context.todo_file_context.todo_file(), State::Insert);
 				let _ = module_handler.handle_event(
 					State::List,
 					&context.event_handler_context.state,
 					&context.view_context.state,
-					&mut context.rebase_todo_file,
+					context.todo_file_context.todo_file_mut(),
 				);
 
 				let _ = module_handler.build_view_data(
 					State::List,
 					&RenderContext::new(100, 100),
-					&context.rebase_todo_file,
+					context.todo_file_context.todo_file(),
 				);
 				let _ = module_handler.deactivate(State::List);
 				assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");

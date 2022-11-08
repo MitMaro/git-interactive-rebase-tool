@@ -327,7 +327,6 @@ dependencies = [
  "rstest",
  "rustc_version",
  "serial_test",
- "tempfile",
  "unicode-segmentation",
 ]
 

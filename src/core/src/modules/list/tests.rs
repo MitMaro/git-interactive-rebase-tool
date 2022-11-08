@@ -999,7 +999,7 @@ fn normal_mode_force_abort() {
 				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(test_context.rebase_todo_file.is_empty());
+			assert!(test_context.todo_file_context.todo_file().is_empty());
 		},
 	);
 }
@@ -1032,7 +1032,7 @@ fn normal_mode_force_rebase() {
 				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(!test_context.rebase_todo_file.is_noop());
+			assert!(!test_context.todo_file_context.todo_file().is_noop());
 		},
 	);
 }
@@ -1593,7 +1593,7 @@ fn visual_mode_force_abort() {
 				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(test_context.rebase_todo_file.is_empty());
+			assert!(test_context.todo_file_context.todo_file().is_empty());
 		},
 	);
 }
@@ -1631,7 +1631,7 @@ fn visual_mode_force_rebase() {
 				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(!test_context.rebase_todo_file.is_noop());
+			assert!(!test_context.todo_file_context.todo_file().is_noop());
 		},
 	);
 }
@@ -2105,7 +2105,7 @@ fn visual_mode_remove_lines_start_index_first() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.rebase_todo_file.get_selected_line_index()
+				test_context.todo_file_context.todo_file().get_selected_line_index()
 			);
 		},
 	);
@@ -2141,7 +2141,7 @@ fn visual_mode_remove_lines_end_index_first() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.rebase_todo_file.get_selected_line_index()
+				test_context.todo_file_context.todo_file().get_selected_line_index()
 			);
 		},
 	);
@@ -2179,7 +2179,7 @@ fn visual_mode_remove_lines_start_index_last() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.rebase_todo_file.get_selected_line_index()
+				test_context.todo_file_context.todo_file().get_selected_line_index()
 			);
 		},
 	);
@@ -2215,7 +2215,7 @@ fn visual_mode_remove_lines_end_index_last() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.rebase_todo_file.get_selected_line_index()
+				test_context.todo_file_context.todo_file().get_selected_line_index()
 			);
 		},
 	);
@@ -2265,7 +2265,15 @@ fn edit_mode_handle_event() {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.build_view_data(&mut module);
 			let _ = test_context.handle_all_events(&mut module);
-			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().get_content(), "fo");
+			assert_eq!(
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.get_content(),
+				"fo"
+			);
 			assert_eq!(module.state, ListState::Normal);
 		},
 	);
@@ -2432,8 +2440,11 @@ fn visual_mode_help_event() {
 fn render_noop_list() {
 	module_test(&["break"], &[], |mut test_context| {
 		let mut module = List::new(&Config::new());
-		test_context.rebase_todo_file.remove_lines(0, 0);
-		test_context.rebase_todo_file.add_line(0, Line::new("noop").unwrap());
+		test_context.todo_file_context.todo_file_mut().remove_lines(0, 0);
+		test_context
+			.todo_file_context
+			.todo_file_mut()
+			.add_line(0, Line::new("noop").unwrap());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,

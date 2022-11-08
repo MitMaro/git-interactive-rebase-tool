@@ -1,9 +1,8 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use display::Size;
 use runtime::ThreadStatuses;
-use tempfile::Builder;
-use todo_file::TodoFile;
+use todo_file::testutil::with_todo_file;
 use view::testutil::{with_view_state, TestContext as ViewContext};
 
 use crate::{
@@ -28,34 +27,25 @@ pub(crate) fn process_test<C, ModuleProvider: module::ModuleProvider + Send + 's
 {
 	with_event_handler(&[Event::from('a')], |event_handler_context| {
 		with_view_state(|view_context| {
-			let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-				.join("..")
-				.join("..")
-				.join("test")
-				.join("fixtures")
-				.join("simple");
-			let todo_file = Builder::new()
-				.prefix("git-rebase-todo-scratch")
-				.suffix("")
-				.tempfile_in(git_repo_dir.as_path())
-				.unwrap();
+			with_todo_file(&[], |todo_file_context| {
+				let (todo_file_tmp_path, todo_file) = todo_file_context.to_owned();
+				let view_state = view_context.state.clone();
+				let input_state = event_handler_context.state.clone();
+				let todo_file_path = PathBuf::from(todo_file_tmp_path.path());
 
-			let rebase_todo_file = TodoFile::new(todo_file.path().to_str().unwrap(), 1, "#");
-			let view_state = view_context.state.clone();
-			let input_state = event_handler_context.state.clone();
-
-			callback(TestContext {
-				event_handler_context,
-				process: Process::new(
-					Size::new(300, 120),
-					rebase_todo_file,
-					module_handler,
-					input_state,
-					view_state,
-					ThreadStatuses::new(),
-				),
-				todo_file_path: PathBuf::from(todo_file.path()),
-				view_context,
+				callback(TestContext {
+					event_handler_context,
+					process: Process::new(
+						Size::new(300, 120),
+						todo_file,
+						module_handler,
+						input_state,
+						view_state,
+						ThreadStatuses::new(),
+					),
+					todo_file_path,
+					view_context,
+				});
 			});
 		});
 	});

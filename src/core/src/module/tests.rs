@@ -15,7 +15,7 @@ fn default_trait_method_activate() {
 		let mut module = TestModule {};
 		assert!(
 			module
-				.activate(&context.rebase_todo_file, State::List)
+				.activate(context.todo_file_context.todo_file(), State::List)
 				.artifact()
 				.is_none()
 		);
@@ -32,7 +32,7 @@ fn default_trait_method_deactivate() {
 fn default_trait_method_build_view_data() {
 	module_test(&[], &[], |context| {
 		let mut module = TestModule {};
-		let view_data = module.build_view_data(&context.render_context, &context.rebase_todo_file);
+		let view_data = module.build_view_data(&context.render_context, context.todo_file_context.todo_file());
 		assert!(view_data.is_empty());
 	});
 }
@@ -57,7 +57,7 @@ fn default_trait_method_handle_event() {
 		let mut result = module.handle_event(
 			Event::from('a'),
 			&context.view_context.state,
-			&mut context.rebase_todo_file,
+			context.todo_file_context.todo_file_mut(),
 		);
 		assert!(result.artifact().is_none());
 	});

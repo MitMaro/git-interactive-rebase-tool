@@ -79,7 +79,15 @@ fn edit_render_exec() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(test_context.rebase_todo_file.get_line(0).unwrap().to_text(), "exec foo");
+			assert_eq!(
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.to_text(),
+				"exec foo"
+			);
 		},
 	);
 }
@@ -116,7 +124,12 @@ fn edit_render_pick() {
 				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
-				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.to_text(),
 				"pick abc "
 			);
 		},
@@ -155,7 +168,12 @@ fn edit_render_label() {
 				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
-				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.to_text(),
 				"label foo"
 			);
 		},
@@ -194,7 +212,12 @@ fn edit_render_reset() {
 				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
-				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.to_text(),
 				"reset foo"
 			);
 		},
@@ -233,7 +256,12 @@ fn edit_render_merge() {
 				Artifact::ChangeState(State::List)
 			);
 			assert_eq!(
-				test_context.rebase_todo_file.get_line(0).unwrap().to_text(),
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.to_text(),
 				"merge foo"
 			);
 		},
@@ -254,7 +282,7 @@ fn edit_select_next_index() {
 		|mut test_context| {
 			let mut module = Insert::new();
 			let _ = test_context.handle_all_events(&mut module);
-			assert_eq!(test_context.rebase_todo_file.get_selected_line_index(), 1);
+			assert_eq!(test_context.todo_file_context.todo_file().get_selected_line_index(), 1);
 		},
 	);
 }
@@ -267,7 +295,7 @@ fn cancel_edit() {
 		|mut test_context| {
 			let mut module = Insert::new();
 			let _ = test_context.handle_all_events(&mut module);
-			assert!(test_context.rebase_todo_file.is_empty());
+			assert!(test_context.todo_file_context.todo_file().is_empty());
 		},
 	);
 }
