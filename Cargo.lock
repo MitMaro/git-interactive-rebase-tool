@@ -408,6 +408,7 @@ dependencies = [
  "rustc_version",
  "tempfile",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
