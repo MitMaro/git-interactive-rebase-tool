@@ -120,6 +120,7 @@ mod line;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod utils;
+mod version;
 
 use std::{
 	fs::{read_to_string, File},
@@ -128,7 +129,7 @@ use std::{
 	slice::Iter,
 };
 
-pub use self::{action::Action, edit_content::EditContext, line::Line};
+pub use self::{action::Action, edit_content::EditContext, line::Line, version::Version};
 use self::{
 	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},
@@ -144,6 +145,7 @@ pub struct TodoFile {
 	is_noop: bool,
 	lines: Vec<Line>,
 	selected_line_index: usize,
+	version: Version,
 }
 
 impl TodoFile {
@@ -158,6 +160,7 @@ impl TodoFile {
 			lines: vec![],
 			is_noop: false,
 			selected_line_index: 0,
+			version: Version::new(),
 		}
 	}
 
@@ -174,6 +177,7 @@ impl TodoFile {
 		if self.selected_line_index >= self.lines.len() {
 			self.selected_line_index = if self.lines.is_empty() { 0 } else { self.lines.len() - 1 };
 		}
+		self.version.reset();
 		self.history.reset();
 	}
 
@@ -268,6 +272,7 @@ impl TodoFile {
 		};
 
 		swap_range_up(&mut self.lines, start, end);
+		self.version.increment();
 		self.history.record(HistoryItem::new_swap_up(start, end));
 		true
 	}
@@ -283,6 +288,7 @@ impl TodoFile {
 		}
 
 		swap_range_down(&mut self.lines, start_index, end_index);
+		self.version.increment();
 		self.history.record(HistoryItem::new_swap_down(start_index, end_index));
 		true
 	}
@@ -297,6 +303,7 @@ impl TodoFile {
 			index
 		};
 		self.lines.insert(i, line);
+		self.version.increment();
 		self.history.record(HistoryItem::new_add(i, i));
 	}
 
@@ -317,6 +324,7 @@ impl TodoFile {
 		};
 
 		let removed_lines = remove_range(&mut self.lines, start, end);
+		self.version.increment();
 		self.history.record(HistoryItem::new_remove(start, end, removed_lines));
 	}
 
@@ -350,19 +358,29 @@ impl TodoFile {
 				line.edit_content(content);
 			}
 		}
+		self.version.increment();
 		self.history.record(HistoryItem::new_modify(start, end, lines));
 	}
 
 	/// Undo the last modification.
 	#[inline]
 	pub fn undo(&mut self) -> Option<(usize, usize)> {
+		self.version.increment();
 		self.history.undo(&mut self.lines)
 	}
 
 	/// Redo the last undone modification.
 	#[inline]
 	pub fn redo(&mut self) -> Option<(usize, usize)> {
+		self.version.increment();
 		self.history.redo(&mut self.lines)
+	}
+
+	/// Get the current version
+	#[must_use]
+	#[inline]
+	pub const fn version(&self) -> &Version {
+		&self.version
 	}
 
 	/// Get the selected line.
@@ -477,6 +495,7 @@ mod tests {
 	fn load_file() {
 		let (todo_file, _) = create_and_load_todo_file(&["pick aaa foobar"]);
 		assert_todo_lines!(todo_file, "pick aaa foobar");
+		assert_ne!(todo_file.version(), &Version::new());
 	}
 
 	#[test]
@@ -501,8 +520,10 @@ mod tests {
 	#[test]
 	fn set_lines() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
+		let old_version = todo_file.version;
 		todo_file.set_lines(vec![create_line("pick bbb comment")]);
 		assert_todo_lines!(todo_file, "pick bbb comment");
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
@@ -563,6 +584,7 @@ mod tests {
 	fn add_line() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let old_version = *todo_file.version();
 		todo_file.add_line(1, create_line("fixup ddd comment"));
 		assert_todo_lines!(
 			todo_file,
@@ -571,6 +593,7 @@ mod tests {
 			"drop bbb comment",
 			"edit ccc comment"
 		);
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
@@ -609,8 +632,10 @@ mod tests {
 	fn remove_lines() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let old_version = *todo_file.version();
 		todo_file.remove_lines(1, 1);
 		assert_todo_lines!(todo_file, "pick aaa comment", "edit ccc comment");
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
@@ -631,6 +656,7 @@ mod tests {
 	fn update_range_full_set_action() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		let old_version = *todo_file.version();
 		todo_file.update_range(0, 2, &EditContext::new().action(Action::Reword));
 		assert_todo_lines!(
 			todo_file,
@@ -638,6 +664,7 @@ mod tests {
 			"reword bbb comment",
 			"reword ccc comment"
 		);
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
@@ -693,18 +720,24 @@ mod tests {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		todo_file.update_range(0, 0, &EditContext::new().action(Action::Drop));
+		let old_version = *todo_file.version();
 		let _undo_result = todo_file.undo();
 		assert_todo_lines!(todo_file, "pick aaa comment", "drop bbb comment", "edit ccc comment");
+		assert_ne!(todo_file.version(), &old_version);
+		let old_version = *todo_file.version();
 		let _ = todo_file.redo();
 		assert_todo_lines!(todo_file, "drop aaa comment", "drop bbb comment", "edit ccc comment");
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
 	fn swap_up() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let old_version = *todo_file.version();
 		assert!(todo_file.swap_range_up(1, 2));
 		assert_todo_lines!(todo_file, "pick bbb comment", "pick ccc comment", "pick aaa comment");
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
@@ -774,8 +807,10 @@ mod tests {
 	fn swap_down() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "pick bbb comment", "pick ccc comment"]);
+		let old_version = *todo_file.version();
 		assert!(todo_file.swap_range_down(0, 1));
 		assert_todo_lines!(todo_file, "pick ccc comment", "pick aaa comment", "pick bbb comment");
+		assert_ne!(todo_file.version(), &old_version);
 	}
 
 	#[test]
