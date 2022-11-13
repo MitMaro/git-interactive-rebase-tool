@@ -4,8 +4,14 @@ use std::time::Duration;
 use bitflags::bitflags;
 use display::DisplayColor;
 
-use super::{render_slice::RenderAction, view_data::ViewData, view_line::ViewLine, State};
-use crate::thread::ViewAction;
+use crate::{
+	render_slice::RenderAction,
+	thread::ViewAction,
+	view_data::ViewData,
+	view_line::ViewLine,
+	LineSegment,
+	State,
+};
 
 const STARTS_WITH: &str = "{{StartsWith}}";
 const ENDS_WITH: &str = "{{EndsWith}}";
@@ -37,8 +43,8 @@ fn replace_invisibles(line: &str) -> String {
 		.replace('\t', VISIBLE_TAB_REPLACEMENT)
 }
 
-fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bool) -> String {
-	let color_string = match color {
+fn render_style(line_segment: &LineSegment) -> String {
+	let color_string = match line_segment.get_color() {
 		DisplayColor::ActionBreak => String::from("ActionBreak"),
 		DisplayColor::ActionDrop => String::from("ActionDrop"),
 		DisplayColor::ActionEdit => String::from("ActionEdit"),
@@ -60,13 +66,13 @@ fn render_style(color: DisplayColor, dimmed: bool, underline: bool, reversed: bo
 	};
 
 	let mut style = vec![];
-	if dimmed {
+	if line_segment.is_dimmed() {
 		style.push("Dimmed");
 	}
-	if underline {
+	if line_segment.is_underlined() {
 		style.push("Underline");
 	}
-	if reversed {
+	if line_segment.is_reversed() {
 		style.push("Reversed");
 	}
 
@@ -88,28 +94,20 @@ pub fn render_view_line(view_line: &ViewLine) -> String {
 		line.push_str("{Selected}");
 	}
 
+	let mut last_style = String::new();
 	for segment in view_line.get_segments() {
-		line.push_str(
-			render_style(
-				segment.get_color(),
-				segment.is_dimmed(),
-				segment.is_underlined(),
-				segment.is_reversed(),
-			)
-			.as_str(),
-		);
+		let style = render_style(segment);
+		if style != last_style {
+			line.push_str(style.as_str());
+			last_style = style;
+		}
 		line.push_str(segment.get_content());
 	}
 	if let Some(padding) = view_line.get_padding().as_ref() {
-		line.push_str(
-			render_style(
-				padding.get_color(),
-				padding.is_dimmed(),
-				padding.is_underlined(),
-				padding.is_reversed(),
-			)
-			.as_str(),
-		);
+		let style = render_style(padding);
+		if style != last_style {
+			line.push_str(style.as_str());
+		}
 		line.push_str(format!("{{Pad({})}}", padding.get_content()).as_str());
 	}
 	line
@@ -274,17 +272,17 @@ pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[
 #[macro_export]
 macro_rules! assert_rendered_output {
 	($view_data:expr) => {
-		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
+		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected: Vec<String> = vec![];
 		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::DEFAULT);
 	};
 	($view_data:expr, $($arg:expr),*) => {
-		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
+		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected = vec![$( String::from($arg), )*];
 		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::DEFAULT);
 	};
 	(Options $options:expr, $view_data:expr, $($arg:expr),*) => {
-		use view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
+		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected = vec![$( String::from($arg), )*];
 		_assert_rendered_output_from_view_data($view_data, &expected, $options);
 	};

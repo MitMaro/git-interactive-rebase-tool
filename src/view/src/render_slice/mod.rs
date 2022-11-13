@@ -195,6 +195,7 @@ impl RenderSlice {
 		self.version
 	}
 
+	#[cfg(feature = "testutils")]
 	pub(super) const fn get_actions(&self) -> &VecDeque<RenderAction> {
 		&self.actions
 	}

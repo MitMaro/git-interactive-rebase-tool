@@ -43,15 +43,15 @@ fn render_full() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa {Normal}comment 1{Normal}{Pad( )}",
-				"{Normal}   {ActionDrop}drop   {Normal}bbbbbbbb {Normal}comment 2",
-				"{Normal}   {ActionFixup}fixup  {Normal}cccccccc {Normal}comment 3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa comment 1{Pad( )}",
+				"{Normal}   {ActionDrop}drop   {Normal}bbbbbbbb comment 2",
+				"{Normal}   {ActionFixup}fixup  {Normal}cccccccc comment 3",
 				"{Normal}   {ActionExec}exec   {Normal}echo 'foo'",
-				"{Normal}   {ActionPick}pick   {Normal}dddddddd {Normal}comment 4",
-				"{Normal}   {ActionReword}reword {Normal}eeeeeeee {Normal}comment 5",
+				"{Normal}   {ActionPick}pick   {Normal}dddddddd comment 4",
+				"{Normal}   {ActionReword}reword {Normal}eeeeeeee comment 5",
 				"{Normal}   {ActionBreak}break",
-				"{Normal}   {ActionSquash}squash {Normal}ffffffff {Normal}comment 6",
-				"{Normal}   {ActionEdit}edit   {Normal}11111111 {Normal}comment 7",
+				"{Normal}   {ActionSquash}squash {Normal}ffffffff comment 6",
+				"{Normal}   {ActionEdit}edit   {Normal}11111111 comment 7",
 				"{Normal}   {ActionLabel}label  {Normal}ref",
 				"{Normal}   {ActionReset}reset  {Normal}ref",
 				"{Normal}   {ActionMerge}merge  {Normal}command"
@@ -86,15 +86,15 @@ fn render_compact() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal}>{ActionPick}p {Normal}aaa {Normal}comment 1{Normal}{Pad( )}",
-				"{Normal} {ActionDrop}d {Normal}bbb {Normal}comment 2",
-				"{Normal} {ActionFixup}f {Normal}ccc {Normal}comment 3",
+				"{Selected}{Normal}>{ActionPick}p {Normal}aaa comment 1{Pad( )}",
+				"{Normal} {ActionDrop}d {Normal}bbb comment 2",
+				"{Normal} {ActionFixup}f {Normal}ccc comment 3",
 				"{Normal} {ActionExec}x {Normal}echo 'foo'",
-				"{Normal} {ActionPick}p {Normal}ddd {Normal}comment 4",
-				"{Normal} {ActionReword}r {Normal}eee {Normal}comment 5",
+				"{Normal} {ActionPick}p {Normal}ddd comment 4",
+				"{Normal} {ActionReword}r {Normal}eee comment 5",
 				"{Normal} {ActionBreak}b",
-				"{Normal} {ActionSquash}s {Normal}fff {Normal}comment 6",
-				"{Normal} {ActionEdit}e {Normal}111 {Normal}comment 7",
+				"{Normal} {ActionSquash}s {Normal}fff comment 6",
+				"{Normal} {ActionEdit}e {Normal}111 comment 7",
 				"{Normal} {ActionLabel}l {Normal}ref",
 				"{Normal} {ActionReset}t {Normal}ref",
 				"{Normal} {ActionMerge}m {Normal}command"
@@ -116,9 +116,9 @@ fn move_cursor_down_1() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -137,9 +137,9 @@ fn move_cursor_down_view_end() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}"
 			);
 		},
 	);
@@ -158,9 +158,9 @@ fn move_cursor_down_past_end() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}"
 			);
 		},
 	);
@@ -183,9 +183,9 @@ fn move_cursor_down_scroll_bottom_move_up_one() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -208,9 +208,9 @@ fn move_cursor_down_scroll_bottom_move_up_top() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -232,10 +232,10 @@ fn move_cursor_up_attempt_above_top() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
 			);
 		},
 	);
@@ -254,10 +254,10 @@ fn move_cursor_down_attempt_below_bottom() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -277,10 +277,10 @@ fn move_cursor_page_up_from_top() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
 			);
 		},
 	);
@@ -304,10 +304,10 @@ fn move_cursor_page_up_from_one_page_down() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
 			);
 		},
 	);
@@ -331,10 +331,10 @@ fn move_cursor_page_up_from_one_page_down_minus_1() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
 			);
 		},
 	);
@@ -359,10 +359,10 @@ fn move_cursor_page_up_from_bottom() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
 			);
 		},
 	);
@@ -385,10 +385,10 @@ fn move_cursor_home() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
 			);
 		},
 	);
@@ -407,10 +407,10 @@ fn move_cursor_end() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -430,10 +430,10 @@ fn move_cursor_page_down_past_bottom() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -457,10 +457,10 @@ fn move_cursor_page_down_one_from_bottom() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -483,10 +483,10 @@ fn move_cursor_page_down_one_page_from_bottom() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -524,9 +524,9 @@ fn mouse_scroll() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -545,9 +545,9 @@ fn visual_mode_start() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -569,9 +569,9 @@ fn visual_mode_start_cursor_down_one() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -600,11 +600,11 @@ fn visual_mode_start_cursor_page_down() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c4",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c4",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -636,11 +636,11 @@ fn visual_mode_start_cursor_from_bottom_move_up() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c5{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c5{Pad( )}"
 			);
 		},
 	);
@@ -675,11 +675,11 @@ fn visual_mode_start_cursor_from_bottom_to_top() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c5{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c5{Pad( )}"
 			);
 		},
 	);
@@ -698,7 +698,7 @@ fn change_selected_line_to_drop() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionDrop}drop   {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionDrop}drop   {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -717,7 +717,7 @@ fn change_selected_line_to_edit() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionEdit}edit   {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionEdit}edit   {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -736,7 +736,7 @@ fn change_selected_line_to_fixup() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionFixup}fixup  {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionFixup}fixup  {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -755,7 +755,7 @@ fn change_selected_line_to_pick() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -774,7 +774,7 @@ fn change_selected_line_to_reword() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -793,7 +793,7 @@ fn change_selected_line_to_squash() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionSquash}squash {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionSquash}squash {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -812,7 +812,7 @@ fn change_selected_line_toggle_break_add() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
 				"{Selected}{Normal} > {ActionBreak}break  {Normal}{Pad( )}"
 			);
 		},
@@ -835,7 +835,7 @@ fn change_selected_line_toggle_break_remove() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -854,7 +854,7 @@ fn change_selected_line_toggle_break_above_existing() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
 				"{Normal}   {ActionBreak}break"
 			);
 		},
@@ -876,8 +876,8 @@ fn change_selected_line_auto_select_next_with_next_line() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionSquash}squash {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}"
+				"{Normal}   {ActionSquash}squash {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}"
 			);
 		},
 	);
@@ -896,9 +896,9 @@ fn change_selected_line_swap_down() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c3"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
 			);
 		},
 	);
@@ -921,9 +921,9 @@ fn change_selected_line_swap_up() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c2"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c2"
 			);
 		},
 	);
@@ -1121,7 +1121,7 @@ fn normal_mode_undo() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -1146,8 +1146,8 @@ fn normal_mode_undo_visual_mode_change() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -1175,7 +1175,7 @@ fn normal_mode_redo() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -1200,8 +1200,8 @@ fn normal_mode_redo_visual_mode_change() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -1226,10 +1226,10 @@ fn normal_mode_remove_line_first() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}ccc      {Normal}c3",
-				"{Normal}   {ActionPick}pick   {Normal}ddd      {Normal}c4",
-				"{Normal}   {ActionPick}pick   {Normal}eee      {Normal}c5"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}ccc      c3",
+				"{Normal}   {ActionPick}pick   {Normal}ddd      c4",
+				"{Normal}   {ActionPick}pick   {Normal}eee      c5"
 			);
 		},
 	);
@@ -1259,10 +1259,10 @@ fn normal_mode_remove_line_end() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}bbb      {Normal}c2",
-				"{Normal}   {ActionPick}pick   {Normal}ccc      {Normal}c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}ddd      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}bbb      c2",
+				"{Normal}   {ActionPick}pick   {Normal}ccc      c3",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}ddd      c4{Pad( )}"
 			);
 		},
 	);
@@ -1314,9 +1314,9 @@ fn visual_mode_action_change_top_bottom() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      {Normal}c3{Normal}{Pad( )}"
+				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c3{Pad( )}"
 			);
 		},
 	);
@@ -1342,9 +1342,9 @@ fn visual_mode_action_change_bottom_top() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      {Normal}c3{Normal}{Pad( )}"
+				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c3{Pad( )}"
 			);
 		},
 	);
@@ -1375,11 +1375,11 @@ fn visual_mode_action_change_drop() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal,Dimmed} > {ActionDrop}drop   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionDrop}drop   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionDrop}drop   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal,Dimmed} > {ActionDrop}drop   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionDrop}drop   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionDrop}drop   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1410,11 +1410,11 @@ fn visual_mode_action_change_edit() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal,Dimmed} > {ActionEdit}edit   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionEdit}edit   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionEdit}edit   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal,Dimmed} > {ActionEdit}edit   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionEdit}edit   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionEdit}edit   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1445,11 +1445,11 @@ fn visual_mode_action_change_fixup() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal,Dimmed} > {ActionFixup}fixup  {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionFixup}fixup  {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionFixup}fixup  {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal,Dimmed} > {ActionFixup}fixup  {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionFixup}fixup  {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionFixup}fixup  {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1480,11 +1480,11 @@ fn visual_mode_action_change_pick() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionDrop}drop   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionDrop}drop   {Normal}aaa      {Normal}c5"
+				"{Normal}   {ActionDrop}drop   {Normal}aaa      c1",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionDrop}drop   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1515,11 +1515,11 @@ fn visual_mode_action_change_reword() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1550,11 +1550,11 @@ fn visual_mode_action_change_squash() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal,Dimmed} > {ActionSquash}squash {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionSquash}squash {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionSquash}squash {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal,Dimmed} > {ActionSquash}squash {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionSquash}squash {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionSquash}squash {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1661,11 +1661,11 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -1698,11 +1698,11 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -1733,11 +1733,11 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1770,11 +1770,11 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1808,11 +1808,11 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -1844,11 +1844,11 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -1880,11 +1880,11 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1918,11 +1918,11 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c2{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c3{Normal}{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c5"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
 			);
 		},
 	);
@@ -1990,8 +1990,8 @@ fn visual_mode_undo() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
 			);
 		},
 	);
@@ -2018,8 +2018,8 @@ fn visual_mode_undo_normal_mode_change() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}bbb      {Normal}c2"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}bbb      c2"
 			);
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -2044,8 +2044,8 @@ fn visual_mode_redo() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -2069,8 +2069,8 @@ fn visual_mode_redo_normal_mode_change() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      {Normal}c1{Normal}{Pad( )}",
-				"{Normal}   {ActionDrop}drop   {Normal}bbb      {Normal}c2"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionDrop}drop   {Normal}bbb      c2"
 			);
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -2100,8 +2100,8 @@ fn visual_mode_remove_lines_start_index_first() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}ddd      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}eee      {Normal}c5"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}ddd      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}eee      c5"
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
@@ -2136,8 +2136,8 @@ fn visual_mode_remove_lines_end_index_first() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}ddd      {Normal}c4{Normal}{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}eee      {Normal}c5"
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}ddd      c4{Pad( )}",
+				"{Normal}   {ActionPick}pick   {Normal}eee      c5"
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
@@ -2174,8 +2174,8 @@ fn visual_mode_remove_lines_start_index_last() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
@@ -2210,8 +2210,8 @@ fn visual_mode_remove_lines_end_index_last() {
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      {Normal}c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      {Normal}c2{Normal}{Pad( )}"
+				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
@@ -2319,7 +2319,7 @@ fn normal_mode_help() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
+				"{Normal,Underline} Key      Action{Pad( )}",
 				"{BODY}",
 				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Move selection up",
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
@@ -2386,7 +2386,7 @@ fn visual_mode_help() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
+				"{Normal,Underline} Key      Action{Pad( )}",
 				"{BODY}",
 				"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Move selection up",
 				"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Move selection down",
@@ -2450,7 +2450,7 @@ fn render_noop_list() {
 			view_data,
 			"{TITLE}{HELP}",
 			"{BODY}",
-			"{Selected}{Normal} > {Normal}noop   {Normal}{Pad( )}"
+			"{Selected}{Normal} > noop   {Pad( )}"
 		);
 	});
 }
