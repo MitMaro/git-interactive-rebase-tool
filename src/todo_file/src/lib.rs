@@ -117,6 +117,7 @@ mod edit_content;
 pub mod errors;
 mod history;
 mod line;
+mod search;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod utils;
@@ -129,7 +130,7 @@ use std::{
 	slice::Iter,
 };
 
-pub use self::{action::Action, edit_content::EditContext, line::Line, version::Version};
+pub use self::{action::Action, edit_content::EditContext, line::Line, search::Search, version::Version};
 use self::{
 	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},

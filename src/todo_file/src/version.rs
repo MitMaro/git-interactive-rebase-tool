@@ -8,6 +8,16 @@ pub struct Version {
 }
 
 impl Version {
+	/// Create an empty version, useful as an initial version for caching
+	#[inline]
+	#[must_use]
+	pub const fn empty() -> Self {
+		Self {
+			id: Uuid::nil(),
+			counter: 0,
+		}
+	}
+
 	pub(crate) fn new() -> Self {
 		Self {
 			id: Uuid::new_v4(),
@@ -28,6 +38,13 @@ impl Version {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn empty() {
+		let version = Version::empty();
+		assert_eq!(version.id.as_u128(), 0);
+		assert_eq!(version.counter, 0);
+	}
 
 	#[test]
 	fn reset() {
