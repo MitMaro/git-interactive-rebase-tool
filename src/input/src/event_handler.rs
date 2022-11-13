@@ -48,6 +48,12 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 			}
 		}
 
+		if input_options.contains(InputOptions::SEARCH) {
+			if let Some(evt) = Self::handle_search(&self.key_bindings, event) {
+				return evt;
+			}
+		}
+
 		if input_options.contains(InputOptions::HELP) && self.key_bindings.help.contains(&event) {
 			return Event::from(StandardEvent::Help);
 		}
@@ -121,6 +127,18 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 			}) => Event::from(StandardEvent::ScrollBottom),
 			_ => return None,
 		})
+	}
+
+	fn handle_search(
+		key_bindings: &KeyBindings<CustomKeybinding, CustomEvent>,
+		event: Event<CustomEvent>,
+	) -> Option<Event<CustomEvent>> {
+		match event {
+			e if key_bindings.search_next.contains(&e) => Some(Event::from(StandardEvent::SearchNext)),
+			e if key_bindings.search_previous.contains(&e) => Some(Event::from(StandardEvent::SearchPrevious)),
+			e if key_bindings.search_start.contains(&e) => Some(Event::from(StandardEvent::SearchStart)),
+			_ => None,
+		}
 	}
 
 	fn handle_undo_redo(
@@ -254,6 +272,17 @@ mod tests {
 		bindings.scroll_step_up = map_keybindings(&[String::from("x")]);
 		let event_handler = EventHandler::new(bindings);
 		let result = event_handler.read_event(event, &InputOptions::MOVEMENT, |_, _| Event::from(KeyCode::Null));
+		assert_eq!(result, expected);
+	}
+
+	#[rstest]
+	#[case::search_next(Event::from('n'), Event::from(StandardEvent::SearchNext))]
+	#[case::search_previous(Event::from('N'), Event::from(StandardEvent::SearchPrevious))]
+	#[case::search_start(Event::from('/'), Event::from(StandardEvent::SearchStart))]
+	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
+	fn search_inputs(#[case] event: Event, #[case] expected: Event) {
+		let event_handler = EventHandler::new(create_test_keybindings());
+		let result = event_handler.read_event(event, &InputOptions::SEARCH, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}
 

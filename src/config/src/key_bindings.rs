@@ -92,6 +92,12 @@ pub struct KeyBindings {
 	pub redo: Vec<String>,
 	/// Key bindings for removing a line.
 	pub remove_line: Vec<String>,
+	/// Key bindings for starting search.
+	pub search_start: Vec<String>,
+	/// Key bindings for next search match.
+	pub search_next: Vec<String>,
+	/// Key bindings for previous search match.
+	pub search_previous: Vec<String>,
 	/// Key bindings for showing a commit.
 	pub show_commit: Vec<String>,
 	/// Key bindings for showing a diff.
@@ -158,6 +164,9 @@ impl KeyBindings {
 			rebase: get_input(git_config, "interactive-rebase-tool.inputRebase", "w")?,
 			redo: get_input(git_config, "interactive-rebase-tool.inputRedo", "control+y")?,
 			remove_line: get_input(git_config, "interactive-rebase-tool.removeLine", "delete")?,
+			search_start: get_input(git_config, "interactive-rebase-tool.searchStart", "/")?,
+			search_next: get_input(git_config, "interactive-rebase-tool.searchNext", "n")?,
+			search_previous: get_input(git_config, "interactive-rebase-tool.searchPrevious", "N")?,
 			show_commit: get_input(git_config, "interactive-rebase-tool.inputShowCommit", "c")?,
 			show_diff: get_input(git_config, "interactive-rebase-tool.inputShowDiff", "d")?,
 			toggle_visual_mode: get_input(git_config, "interactive-rebase-tool.inputToggleVisualMode", "v")?,
@@ -269,6 +278,9 @@ mod tests {
 		config_test!(rebase, "inputRebase", "w");
 		config_test!(redo, "inputRedo", "Controly");
 		config_test!(remove_line, "removeLine", "Delete");
+		config_test!(search_start, "searchStart", "/");
+		config_test!(search_next, "searchNext", "n");
+		config_test!(search_previous, "searchPrevious", "N");
 		config_test!(show_commit, "inputShowCommit", "c");
 		config_test!(show_diff, "inputShowDiff", "d");
 		config_test!(toggle_visual_mode, "inputToggleVisualMode", "v");

@@ -28,4 +28,12 @@ pub enum StandardEvent {
 	ScrollUp,
 	/// The help meta event.
 	Help,
+	/// Start a search meta event.
+	SearchStart,
+	/// Next search result meta event.
+	SearchNext,
+	/// Previous search result meta event.
+	SearchPrevious,
+	/// Finish search mode meta event.
+	SearchFinish,
 }
