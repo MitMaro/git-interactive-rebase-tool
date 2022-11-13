@@ -177,7 +177,7 @@ mod tests {
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
 			"{BODY}",
-			"{Normal}Label: {Normal}foobar{Normal,Underline} "
+			"{Normal}Label: foobar{Normal,Underline} "
 		);
 	}
 

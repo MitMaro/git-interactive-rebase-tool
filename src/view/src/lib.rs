@@ -122,7 +122,7 @@ mod line_segment;
 mod render_context;
 mod render_slice;
 mod scroll_position;
-#[cfg(not(tarpaulin_include))]
+#[cfg(all(feature = "testutils", not(tarpaulin_include)))]
 pub mod testutil;
 mod thread;
 mod view_data;

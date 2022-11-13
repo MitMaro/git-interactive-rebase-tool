@@ -94,7 +94,7 @@ fn render_overview_minimal_commit() {
 					"{BODY}",
 					format!("{{IndicatorColor}}Date: {{Normal}}{commit_date}").as_str(),
 					"{Normal}",
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
 				);
 			},
@@ -369,15 +369,15 @@ fn render_overview_with_file_stats() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 6),
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
-					"{DiffAddColor}   added: {DiffAddColor}file.2a",
-					"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
-					"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
-					"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
-					"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
-					"{Normal} unknown: {Normal}file.7a"
+					"{DiffAddColor}   added: file.2a",
+					"{DiffRemoveColor} deleted: file.3a",
+					"{DiffAddColor}  copied: {Normal}file.4b → {DiffAddColor}file.4a",
+					"{DiffChangeColor}modified: file.5a",
+					"{DiffChangeColor} changed: file.6a",
+					"{Normal} unknown: file.7a"
 				);
 			},
 		);
@@ -416,6 +416,7 @@ fn render_overview_with_file_stats_compact() {
 							.build(),
 						FileStatusBuilder::new()
 							.source_path("file.5a")
+							.source_path("file.5a")
 							.destination_path("file.5a")
 							.status(Status::Modified)
 							.build(),
@@ -439,12 +440,12 @@ fn render_overview_with_file_stats_compact() {
 					render_line!(AnyLine 6),
 					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
 					"{DiffChangeColor}R {DiffRemoveColor}file.1b{Normal}→{DiffAddColor}file.1a",
-					"{DiffAddColor}A {DiffAddColor}file.2a",
-					"{DiffRemoveColor}D {DiffRemoveColor}file.3a",
-					"{DiffAddColor}C {Normal}file.4b{Normal}→{DiffAddColor}file.4a",
-					"{DiffChangeColor}M {DiffChangeColor}file.5a",
-					"{DiffChangeColor}T {DiffChangeColor}file.6a",
-					"{Normal}X {Normal}file.7a"
+					"{DiffAddColor}A file.2a",
+					"{DiffRemoveColor}D file.3a",
+					"{DiffAddColor}C {Normal}file.4b→{DiffAddColor}file.4a",
+					"{DiffChangeColor}M file.5a",
+					"{DiffChangeColor}T file.6a",
+					"{Normal}X file.7a"
 				);
 			},
 		);
@@ -466,7 +467,7 @@ fn render_overview_single_file_changed() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 6),
-					"{IndicatorColor}1{Normal} file{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}1{Normal} file with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
 				);
 			},
@@ -490,7 +491,7 @@ fn render_overview_more_than_one_file_changed() {
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 5),
 					"{Normal}",
-					"{IndicatorColor}2{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}2{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
 				);
 			},
@@ -514,7 +515,7 @@ fn render_overview_single_insertion() {
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 5),
 					"{Normal}",
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}1{Normal} insertion{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}1{Normal} insertion and \
 					 {DiffRemoveColor}0{Normal} deletions"
 				);
 			},
@@ -538,7 +539,7 @@ fn render_overview_more_than_one_insertion() {
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 5),
 					"{Normal}",
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}2{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}2{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
 				);
 			},
@@ -562,7 +563,7 @@ fn render_overview_single_deletion() {
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 5),
 					"{Normal}",
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}1{Normal} deletion"
 				);
 			},
@@ -586,7 +587,7 @@ fn render_overview_more_than_one_deletion() {
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 5),
 					"{Normal}",
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}2{Normal} deletions"
 				);
 			},
@@ -613,7 +614,7 @@ fn render_diff_minimal_commit() {
 					"{TITLE}{HELP}",
 					"{LEADING}",
 					"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
 					"{Normal}{Pad(―)}"
@@ -705,23 +706,23 @@ fn render_diff_basic_file_stats() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 3),
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
 					"{Normal}{Pad(―)}",
 					"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
 					"{Normal}{Pad(―)}",
-					"{DiffAddColor}   added: {DiffAddColor}file.2a",
+					"{DiffAddColor}   added: file.2a",
 					"{Normal}{Pad(―)}",
-					"{DiffRemoveColor} deleted: {DiffRemoveColor}file.3a",
+					"{DiffRemoveColor} deleted: file.3a",
 					"{Normal}{Pad(―)}",
-					"{DiffAddColor}  copied: {Normal}file.4b{Normal} → {DiffAddColor}file.4a",
+					"{DiffAddColor}  copied: {Normal}file.4b → {DiffAddColor}file.4a",
 					"{Normal}{Pad(―)}",
-					"{DiffChangeColor}modified: {DiffChangeColor}file.5a",
+					"{DiffChangeColor}modified: file.5a",
 					"{Normal}{Pad(―)}",
-					"{DiffChangeColor} changed: {DiffChangeColor}file.6a",
+					"{DiffChangeColor} changed: file.6a",
 					"{Normal}{Pad(―)}",
-					"{Normal} unknown: {Normal}file.7a"
+					"{Normal} unknown: file.7a"
 				);
 			},
 		);
@@ -757,15 +758,15 @@ fn render_diff_end_new_line_missing() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 3),
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
 					"{Normal}{Pad(―)}",
-					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"{DiffChangeColor}modified: file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
 					"{Normal,Dimmed}{Pad(―)}",
-					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
+					"{Normal}   14| {DiffAddColor}new line",
 					"{Normal}       {DiffContextColor}\\ No newline at end of file"
 				);
 			},
@@ -801,15 +802,15 @@ fn render_diff_add_line() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 3),
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
 					"{Normal}{Pad(―)}",
-					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"{DiffChangeColor}modified: file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
 					"{Normal,Dimmed}{Pad(―)}",
-					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line"
+					"{Normal}   14| {DiffAddColor}new line"
 				);
 			},
 		);
@@ -844,15 +845,15 @@ fn render_diff_delete_line() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 3),
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
 					"{Normal}{Pad(―)}",
-					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"{DiffChangeColor}modified: file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
 					"{Normal,Dimmed}{Pad(―)}",
-					"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line"
+					"{Normal}14   | {DiffRemoveColor}old line"
 				);
 			},
 		);
@@ -890,18 +891,18 @@ fn render_diff_context_add_remove_lines() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 3),
-					"{IndicatorColor}0{Normal} files{Normal} with {DiffAddColor}0{Normal} insertions{Normal} and \
+					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
 					"{Normal}{Pad(―)}",
-					"{DiffChangeColor}modified: {DiffChangeColor}file.txt",
+					"{DiffChangeColor}modified: file.txt",
 					"",
 					"{Normal,Dimmed}@@{DiffContextColor} -14,0 +14,1 {Normal,Dimmed}@@{DiffContextColor} context",
 					"{Normal,Dimmed}{Pad(―)}",
-					"{Normal}13{Normal} {Normal}13{Normal}| {DiffContextColor}context 1",
-					"{Normal}14{Normal} {Normal}  {Normal}| {DiffRemoveColor}old line",
-					"{Normal}  {Normal} {Normal}14{Normal}| {DiffAddColor}new line",
-					"{Normal}15{Normal} {Normal}15{Normal}| {DiffContextColor}context 2"
+					"{Normal}13 13| {DiffContextColor}context 1",
+					"{Normal}14   | {DiffRemoveColor}old line",
+					"{Normal}   14| {DiffAddColor}new line",
+					"{Normal}15 15| {DiffContextColor}context 2"
 				);
 			},
 		);
@@ -1084,7 +1085,7 @@ fn render_diff_show_whitespace_all_spaces() {
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					render_line!(AnyLine 10),
-					"{Normal} {Normal} {Normal}1{Normal}| {DiffWhitespaceColor}%%%%"
+					"{Normal}  1| {DiffWhitespaceColor}%%%%"
 				);
 			},
 		);
@@ -1167,7 +1168,7 @@ fn render_help() {
 					test_context.build_view_data(&mut module),
 					"{TITLE}",
 					"{LEADING}",
-					"{Normal,Underline} Key      Action{Normal,Underline}{Pad( )}",
+					"{Normal,Underline} Key      Action{Pad( )}",
 					"{BODY}",
 					"{IndicatorColor} Up      {Normal,Dimmed}|{Normal}Scroll up",
 					"{IndicatorColor} Down    {Normal,Dimmed}|{Normal}Scroll down",
