@@ -29,6 +29,13 @@ pub struct KeyBindings<CustomKeybinding: crate::CustomKeybinding, CustomEvent: c
 	/// Key bindings for help.
 	pub help: Vec<Event<CustomEvent>>,
 
+	/// Key bindings for starting search.
+	pub search_start: Vec<Event<CustomEvent>>,
+	/// Key bindings for next search match.
+	pub search_next: Vec<Event<CustomEvent>>,
+	/// Key bindings for previous search match.
+	pub search_previous: Vec<Event<CustomEvent>>,
+
 	/// Custom keybindings
 	pub custom: CustomKeybinding,
 }
@@ -106,6 +113,9 @@ impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
 			scroll_step_down: map_keybindings(&key_bindings.scroll_step_down),
 			scroll_step_up: map_keybindings(&key_bindings.scroll_step_up),
 			help: map_keybindings(&key_bindings.help),
+			search_start: map_keybindings(&key_bindings.search_start),
+			search_next: map_keybindings(&key_bindings.search_next),
+			search_previous: map_keybindings(&key_bindings.search_previous),
 			custom: CustomKeybinding::new(key_bindings),
 		}
 	}

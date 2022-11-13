@@ -66,6 +66,9 @@ pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEv
 		scroll_step_down: map_keybindings(&[String::from("PageDown")]),
 		scroll_step_up: map_keybindings(&[String::from("PageUp")]),
 		help: map_keybindings(&[String::from("?")]),
+		search_start: map_keybindings(&[String::from("/")]),
+		search_next: map_keybindings(&[String::from("n")]),
+		search_previous: map_keybindings(&[String::from("N")]),
 		custom: custom_key_bindings,
 	}
 }
