@@ -9,6 +9,7 @@ pub(crate) struct EditableLine {
 	content: String,
 	cursor_position: usize,
 	label: Option<LineSegment>,
+	read_only: bool,
 }
 
 impl EditableLine {
@@ -17,6 +18,7 @@ impl EditableLine {
 			content: String::new(),
 			cursor_position: 0,
 			label: None,
+			read_only: false,
 		}
 	}
 
@@ -27,6 +29,10 @@ impl EditableLine {
 	pub(crate) fn set_content(&mut self, content: &str) {
 		self.content = String::from(content);
 		self.cursor_position = UnicodeSegmentation::graphemes(content, true).count();
+	}
+
+	pub(crate) fn set_read_only(&mut self, read_only: bool) {
+		self.read_only = read_only;
 	}
 
 	pub(crate) fn clear(&mut self) {
@@ -43,6 +49,10 @@ impl EditableLine {
 	}
 
 	pub(crate) fn line_segments(&self) -> Vec<LineSegment> {
+		if self.read_only {
+			return vec![LineSegment::new(self.get_content())];
+		}
+
 		let line = self.content.as_str();
 		let pointer = self.cursor_position;
 
@@ -75,6 +85,9 @@ impl EditableLine {
 	}
 
 	pub(crate) fn handle_event(&mut self, event: Event) {
+		if self.read_only {
+			return;
+		}
 		match event {
 			Event::Key(KeyEvent {
 				code: KeyCode::Backspace,
@@ -432,8 +445,8 @@ mod tests {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
 		editable_line.handle_event(Event::Key(KeyEvent {
-			code: input::KeyCode::Char('X'),
-			modifiers: input::KeyModifiers::SHIFT,
+			code: KeyCode::Char('X'),
+			modifiers: KeyModifiers::SHIFT,
 		}));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
@@ -582,11 +595,28 @@ mod tests {
 	}
 
 	#[test]
+	fn ignore_input_on_readonly() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.set_read_only(true);
+		editable_line.handle_event(Event::from(KeyCode::Home));
+		assert_eq!(editable_line.cursor_position(), 4);
+	}
+
+	#[test]
 	fn set_get_content() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
 		assert_eq!(editable_line.cursor_position(), 4);
 		assert_eq!(editable_line.get_content(), "abcd");
+	}
+
+	#[test]
+	fn set_readonly() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.set_read_only(true);
+		assert_eq!(editable_line.line_segments().len(), 1);
 	}
 
 	#[test]
