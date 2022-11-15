@@ -36,3 +36,21 @@ fn visual_mode_open_external_editor() {
 		},
 	);
 }
+
+#[test]
+fn cancels_search() {
+	module_test(
+		&["pick aaa c1"],
+		&[
+			Event::from(StandardEvent::SearchStart),
+			Event::from('x'),
+			Event::from(StandardEvent::SearchFinish),
+			Event::from(MetaEvent::OpenInEditor),
+		],
+		|mut test_context| {
+			let mut module = List::new(&Config::new());
+			let _ = test_context.handle_all_events(&mut module);
+			assert!(!module.search_bar.is_searching());
+		},
+	);
+}

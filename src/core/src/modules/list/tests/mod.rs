@@ -8,6 +8,7 @@ mod movement;
 mod normal_mode;
 mod remove_lines;
 mod render;
+mod search;
 mod show_commit;
 mod swap_lines;
 mod toggle_break;
