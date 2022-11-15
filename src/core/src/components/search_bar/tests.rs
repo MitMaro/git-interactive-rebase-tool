@@ -36,6 +36,18 @@ fn start_search_with_initial_value() {
 }
 
 #[test]
+fn start_search_with_previous_value_and_without_initial_value() {
+	let mut search_bar = SearchBar::new();
+	search_bar.start_search(Some("foo"));
+	search_bar.start_search(None);
+	assert_rendered_output!(
+		&create_view_data(&search_bar),
+		"{BODY}",
+		"{Normal}/foo{Normal,Underline}"
+	);
+}
+
+#[test]
 fn reset() {
 	let mut search_bar = SearchBar::new();
 	search_bar.start_search(None);

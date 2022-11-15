@@ -1,15 +1,15 @@
-mod utils;
-
 #[cfg(all(unix, test))]
 mod tests;
+mod utils;
 
 use std::cmp::min;
 
 use captur::capture;
 use config::Config;
 use display::DisplayColor;
+use if_chain::if_chain;
 use input::{InputOptions, MouseEventKind, StandardEvent};
-use todo_file::{Action, EditContext, Line, TodoFile};
+use todo_file::{Action, EditContext, Line, Search, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
 use self::utils::{
@@ -19,7 +19,11 @@ use self::utils::{
 	TodoLineSegmentsOptions,
 };
 use crate::{
-	components::{edit::Edit, help::Help},
+	components::{
+		edit::Edit,
+		help::Help,
+		search_bar::{SearchBar, SearchBarAction},
+	},
 	events::{Event, KeyBindings, MetaEvent},
 	module::{ExitStatus, Module, State},
 	process::Results,
@@ -29,7 +33,8 @@ use crate::{
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
 const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
 	.union(InputOptions::RESIZE)
-	.union(InputOptions::HELP);
+	.union(InputOptions::HELP)
+	.union(InputOptions::SEARCH);
 
 #[derive(Debug, PartialEq, Eq)]
 enum ListState {
@@ -43,6 +48,8 @@ pub(crate) struct List {
 	edit: Edit,
 	height: usize,
 	normal_mode_help: Help,
+	search: Search,
+	search_bar: SearchBar,
 	state: ListState,
 	view_data: ViewData,
 	visual_index_start: Option<usize>,
@@ -84,7 +91,8 @@ impl Module for List {
 				}
 			},
 			|| self.handle_normal_help_input(event, view_state),
-			|| self.handle_visual_help_input(event, view_state)
+			|| self.handle_visual_help_input(event, view_state),
+			|| self.handle_search_input(event, todo_file)
 		)
 	}
 
@@ -93,6 +101,7 @@ impl Module for List {
 			default || &INPUT_OPTIONS,
 			|| self.normal_mode_help.input_options(),
 			|| self.visual_mode_help.input_options(),
+			|| self.search_bar.input_options(),
 			|| (self.state == ListState::Edit).then(|| self.edit.input_options())
 		)
 	}
@@ -102,7 +111,8 @@ impl Module for List {
 			default || Self::read_event_default(event, key_bindings),
 			|| (self.state == ListState::Edit).then_some(event),
 			|| self.normal_mode_help.read_event(event),
-			|| self.visual_mode_help.read_event(event)
+			|| self.visual_mode_help.read_event(event),
+			|| self.search_bar.read_event(event)
 		)
 	}
 }
@@ -119,6 +129,8 @@ impl List {
 			edit: Edit::new(),
 			height: 0,
 			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
+			search: Search::new(),
+			search_bar: SearchBar::new(),
 			state: ListState::Normal,
 			view_data,
 			visual_index_start: None,
@@ -126,9 +138,9 @@ impl List {
 		}
 	}
 
-	#[allow(clippy::unused_self)]
-	fn set_cursor(&self, todo_file: &mut TodoFile, cursor: usize) {
+	fn set_cursor(&mut self, todo_file: &mut TodoFile, cursor: usize) {
 		todo_file.set_selected_line_index(cursor);
+		self.search.set_search_start_hint(cursor);
 	}
 
 	#[allow(clippy::unused_self)]
@@ -261,6 +273,7 @@ impl List {
 
 	#[allow(clippy::unused_self)]
 	fn open_in_editor(&mut self, results: &mut Results) {
+		self.search_bar.reset();
 		results.state(State::ExternalEditor);
 	}
 
@@ -273,6 +286,10 @@ impl List {
 			self.state = ListState::Visual;
 			self.visual_index_start = Some(todo_file.get_selected_line_index());
 		}
+	}
+
+	fn search_start(&mut self) {
+		self.search_bar.start_search(None);
 	}
 
 	fn help(&mut self) {
@@ -336,6 +353,11 @@ impl List {
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
+		let search_view_line = self.search_bar.is_editing().then(|| self.search_bar.build_view_line());
+		let search_results_total = self.search_bar.is_searching().then(|| self.search.total_results());
+		let search_results_current = self.search.current_result_selected();
+		let search_term = self.search_bar.search_value();
+		let search_index = self.search.current_match();
 
 		self.view_data.update_view_data(|updater| {
 			capture!(todo_file);
@@ -361,8 +383,11 @@ impl List {
 					if context.is_full_width() {
 						todo_line_segment_options.insert(TodoLineSegmentsOptions::FULL_WIDTH);
 					}
+					if search_index.map_or(false, |v| v == index) {
+						todo_line_segment_options.insert(TodoLineSegmentsOptions::SEARCH_LINE);
+					}
 					let mut view_line = ViewLine::new_with_pinned_segments(
-						get_todo_line_segments(line, todo_line_segment_options),
+						get_todo_line_segments(line, search_term, todo_line_segment_options),
 						if *line.get_action() == Action::Exec { 2 } else { 3 },
 					)
 					.set_selected(selected_index == index || selected_line);
@@ -372,6 +397,25 @@ impl List {
 					}
 
 					updater.push_line(view_line);
+				}
+				if let Some(search) = search_view_line {
+					updater.push_trailing_line(search);
+				}
+				else if let Some(s_term) = search_term {
+					let mut search_line_segments = vec![];
+					search_line_segments.push(LineSegment::new(format!("[{s_term}]: ").as_str()));
+					if_chain! {
+						if let Some(s_total) = search_results_total;
+						if let Some(s_index) = search_results_current;
+						if s_total != 0;
+						then {
+							search_line_segments.push(LineSegment::new(format!("{}/{s_total}", s_index + 1).as_str()));
+						}
+						else {
+							search_line_segments.push(LineSegment::new("No Results"));
+						}
+					}
+					updater.push_trailing_line(ViewLine::from(search_line_segments));
 				}
 			}
 			if visual_index != selected_index {
@@ -455,6 +499,35 @@ impl List {
 		})
 	}
 
+	fn handle_search_input(&mut self, event: Event, todo_file: &mut TodoFile) -> Option<Results> {
+		if self.search_bar.is_active() {
+			match self.search_bar.handle_event(event) {
+				SearchBarAction::Start(term) => {
+					if term.is_empty() {
+						self.search.cancel();
+						self.search_bar.reset();
+					}
+					else {
+						self.search.next(todo_file, term.as_str());
+					}
+				},
+				SearchBarAction::Next(term) => self.search.next(todo_file, term.as_str()),
+				SearchBarAction::Previous(term) => self.search.previous(todo_file, term.as_str()),
+				SearchBarAction::Cancel => {
+					self.search.cancel();
+					return Some(Results::from(event));
+				},
+				SearchBarAction::None => return None,
+			}
+
+			if let Some(selected) = self.search.current_match() {
+				self.set_cursor(todo_file, selected);
+			}
+			return Some(Results::from(event));
+		}
+		None
+	}
+
 	#[allow(clippy::integer_division)]
 	fn handle_common_list_input(
 		&mut self,
@@ -497,6 +570,7 @@ impl List {
 					StandardEvent::Help => self.help(),
 					StandardEvent::Redo => self.redo(rebase_todo),
 					StandardEvent::Undo => self.undo(rebase_todo),
+					StandardEvent::SearchStart => self.search_start(),
 					_ => return None,
 				}
 			},

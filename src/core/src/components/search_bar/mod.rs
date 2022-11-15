@@ -38,9 +38,6 @@ impl SearchBar {
 		if let Some(value) = initial_value {
 			self.editable_line.set_content(value);
 		}
-		else {
-			self.editable_line.clear();
-		}
 		self.editable_line.set_read_only(false);
 		self.state = State::Editing;
 	}
