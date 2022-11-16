@@ -74,10 +74,14 @@ impl Commit {
 
 	fn new(commit: &git2::Commit<'_>, reference: Option<&git2::Reference<'_>>) -> Self {
 		let author = User::new(commit.author().name(), commit.author().email());
-		let authored_date = Local.timestamp(commit.author().when().seconds(), 0);
 		let message = commit.message().map(String::from);
 		let summary = commit.summary().map(String::from);
-		let committed_date = Local.timestamp(commit.time().seconds(), 0);
+		// this should never panic, since msecs is always zero
+		let committed_date = Local.timestamp_opt(commit.time().seconds(), 0).unwrap();
+		let authored_date = Local
+			.timestamp_opt(commit.author().when().seconds(), 0)
+			.single()
+			.unwrap_or(committed_date);
 
 		let try_committer = User::new(commit.committer().name(), commit.committer().email());
 		let committer = (try_committer.is_some() && try_committer != author).then_some(try_committer);
