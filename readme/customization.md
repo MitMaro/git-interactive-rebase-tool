@@ -21,14 +21,14 @@ The tool can be customized using the [git config](https://git-scm.com/docs/git-c
 
 Some values from your Git Config are directly used by this application.
 
-| Key                                          | Description                                                             |
-| -------------------------------------------- |-------------------------------------------------------------------------|
-| [`core.commentChar`][coreCommentChar]        | Used when reading the TODO file to excluded commented lines             |
-| [`core.editor`][coreEditor]                  | Used when deciding what editor to open when trigger the external editor |
-| [`diff.context`][diffContext]                | Used by show commit when generating a diff                              |
-| [`diff.interHunkContext`][diffInterhunkLines] | Used by show commit when generating a diff                             |
-| [`diff.renameLimit`][diffRenameLimit]        | Used by show commit when generating a diff                              |
-| [`diff.renames`][diffRenames]                | Used by show commit when generating a diff                              |
+| Key                                           | Description                                                             |
+|-----------------------------------------------|-------------------------------------------------------------------------|
+| [`core.commentChar`][coreCommentChar]         | Used when reading the TODO file to excluded commented lines             |
+| [`core.editor`][coreEditor]                   | Used when deciding what editor to open when trigger the external editor |
+| [`diff.context`][diffContext]                 | Used by show commit when generating a diff                              |
+| [`diff.interHunkContext`][diffInterhunkLines] | Used by show commit when generating a diff                              |
+| [`diff.renameLimit`][diffRenameLimit]         | Used by show commit when generating a diff                              |
+| [`diff.renames`][diffRenames]                 | Used by show commit when generating a diff                              |
 
 [coreCommentChar]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar
 [coreEditor]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreeditor
@@ -40,10 +40,10 @@ Some values from your Git Config are directly used by this application.
 ## General
 
 | Key                        | Default | Type    | Description                                                                                 |
-| -------------------------- | ------- | ------- |---------------------------------------------------------------------------------------------|
+|----------------------------|---------|---------|---------------------------------------------------------------------------------------------|
 | `autoSelectNext`           | false   | bool    | If true, auto select the next line after action modification                                |
-| `diffIgnoreWhitespace`     | none    | String¹ | If and how to ignore whitespace during diff.                                                |
 | `diffIgnoreBlankLines`     | none    | String¹ | If to ignore blank lines during diff.                                                       |
+| `diffIgnoreWhitespace`     | none    | String¹ | If and how to ignore whitespace during diff.                                                |
 | `diffShowWhitespace`       | both    | String² | If and how to show whitespace during diff.                                                  |
 | `diffSpaceSymbol`          | ·       | String  | The visible symbol for the space character. Only used when `diffShowWhitespace` is enabled. |
 | `diffTabSymbol`            | →       | String  | The visible symbol for the tab character. Only used when `diffShowWhitespace` is enabled.   |
@@ -67,30 +67,34 @@ Some values from your Git Config are directly used by this application.
 
 ## Colors
 
-The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `black`, `blue`, `cyan`, `green`, `magenta`, `red`, `white` and `yellow`. Dimmed versions of the 8 ANSI colors colors can be used by prefixing the color  with `dark`, for example `dark red`. Each terminal controls the exact color for these color names. On terminals that support 256 colors, a color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to 255 with `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use the default terminal color.
+The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `black`, `blue`, `cyan`, `green`, `magenta`, `red`, `white` and `yellow`. Dimmed versions of the 8 ANSI colors can be used by prefixing the color  with `dark`, for example `dark red`. Each terminal controls the exact color for these color names. On terminals that support 256 colors, a color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to 255 with `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use the default terminal color.
 
 [ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
 | Key                       | Default     | Type  | Description                                              |
-| ------------------------- | ----------- | ----- |----------------------------------------------------------|
+|---------------------------|-------------|-------|----------------------------------------------------------|
+| `backgroundColor`         | Default¹    | Color | Color used for the background                            |
 | `breakColor`              | white       | Color | Color used for the break action                          |
 | `diffAddColor`            | green       | Color | Color used for lines and files added in a diff           |
 | `diffChangeColor`         | yellow      | Color | Color used for lines and files changed in a diff         |
+| `diffContextColor`        | white       | Color | Color used for context in a diff                         |
 | `diffRemoveColor`         | red         | Color | Color used for lines and files removed in a diff         |
-| `diffContextColor`        | white       | Color | Color used for lines and files removed in a diff         |
-| `diffWhitespace`          | black       | Color | Color used for lines and files removed in a diff         |
+| `diffWhitespace`          | black       | Color | Color used for whitespace in a diff                      |
 | `dropColor`               | red         | Color | Color used for the drop action                           |
 | `editColor`               | blue        | Color | Color used for the edit action                           |
+| `execColor`               | blue        | Color | Color used for the exec action                           |
 | `fixupColor`              | magenta     | Color | Color used for the fixup action                          |
-| `foregroundColor`         | white       | Color | Color used for most text and the UI                      |
+| `foregroundColor`         | Default¹    | Color | Color used for most text and the UI                      |
 | `indicatorColor`          | cyan        | Color | Color used for text the indicates or needs to standout   |
+| `labelColor`              | dark yellow | Color | Color used for the label action                          |
+| `mergeColor`              | dark yellow | Color | Color used for the merge action                          |
 | `pickColor`               | green       | Color | Color used for the pick action                           |
+| `resetColor`              | dark yellow | Color | Color used for the reset action                          |
 | `rewordColor`             | yellow      | Color | Color used for the reword action                         |
 | `selectedBackgroundColor` | 35,35,40    | Color | Color used as the background color for the selected line |
 | `squashColor`             | cyan        | Color | Color used for the squash action                         |
-| `labelColor`              | dark yellow | Color | Color used for the squash action                         |
-| `resetColor`              | dark yellow | Color | Color used for the squash action                         |
-| `mergeColor`              | dark yellow | Color | Color used for the squash action                         |
+
+¹ By default the foreground and background colors use the terminal defined colors
 
 ## Key Bindings
 
@@ -126,15 +130,15 @@ Most keys can be changed to any printable character or supported special charact
 | `inputOpenInExternalEditor` | !         | String | Key for opening the external editor                 |
 | `inputRebase`               | w         | String | Key for rebasing with confirmation                  |
 | `inputRedo`                 | Control+y | String | Key for redoing the previous undone change          |
+| `inputRemoveLine`           | Delete    | String | Key for removing selected commits                   |
 | `inputScrollDown`           | Down      | String | Key for scrolling the view down                     |
 | `inputScrollEnd`            | End       | String | Key for scrolling the view to the bottom            |
 | `inputScrollHome`           | Home      | String | Key for scrolling the view to the top               |
 | `inputScrollLeft`           | Left      | String | Key for scrolling the view to the left              |
 | `inputScrollRight`          | Right     | String | Key for scrolling the view to the right             |
-| `inputScrollUp`             | Up        | String | Key for scrolling the view to the up                |
 | `inputScrollStepDown`       | PageDown  | String | Key for scrolling the view one step down            |
 | `inputScrollStepUp`         | PageUp    | String | Key for scrolling the view one step up              |
-| `inputRemoveLine`           | Delete    | String | Key for removing selected commits                   |
+| `inputScrollUp`             | Up        | String | Key for scrolling the view to the up                |
 | `inputShowCommit`           | c         | String | Key for showing the overview of the selected commit |
 | `inputShowDiff`             | d         | String | Key for showing the diff of the selected commit     |
 | `inputToggleVisualMode`     | v         | String | Key for toggling visual mode                        |
@@ -151,24 +155,24 @@ Most keys can be changed to any printable character or supported special charact
 
 Keys that do not have easily printable characters, such as the arrow keys, are set using the special values defined in the table below. Some special keys do not work correctly on some setups.
 
-| Key                | Description     |
-| ------------------ |-----------------|
-| `Backspace`        | Backspace key   |
-| `BackTab`          | Back tab key    |
-| `Delete`           | Delete key      |
-| `Down`             | Down arrow key  |
-| `End`              | End key         |
-| `Enter`            | Enter key       |
-| `Esc`              | Escape key      |
-| `F{1..255}`        | Function X key  |
-| `Home`             | Home key        |
-| `Insert`           | Insert key      |
-| `Left`             | Left arrow key  |
-| `PageDown`         | Page down key   |
-| `PageUp`           | Page up key     |
-| `Right`            | Right arrow key |
-| `Tab`              | Tab key         |
-| `Up`               | Up arrow key    |
+| Key         | Description     |
+|-------------|-----------------|
+| `BackTab`   | Back tab key    |
+| `Backspace` | Backspace key   |
+| `Delete`    | Delete key      |
+| `Down`      | Down arrow key  |
+| `End`       | End key         |
+| `Enter`     | Enter key       |
+| `Esc`       | Escape key      |
+| `F{1..255}` | Function X key  |
+| `Home`      | Home key        |
+| `Insert`    | Insert key      |
+| `Left`      | Left arrow key  |
+| `PageDown`  | Page down key   |
+| `PageUp`    | Page up key     |
+| `Right`     | Right arrow key |
+| `Tab`       | Tab key         |
+| `Up`        | Up arrow key    |
 
 ### Modifier Keys
 
@@ -182,9 +186,9 @@ A single action can have multiple bindings by providing a whitespace separate li
 
 Some key combinations are restricted as they have special meaning. They are:
 
-| Key                | Description                                                                 |
-| ------------------ |-----------------------------------------------------------------------------|
-| `Control+c`        | Immediately aborts the program without writing the rebase todo file to disk |
+| Key         | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `Control+c` | Immediately aborts the program without writing the rebase todo file to disk |
 
 
 ## External Editor
