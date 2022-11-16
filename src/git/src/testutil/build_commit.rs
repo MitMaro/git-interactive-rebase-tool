@@ -13,6 +13,7 @@ impl CommitBuilder {
 	/// to a committed date of Jan 1, 2021 UTC. All other fields are `None`.
 	#[inline]
 	#[must_use]
+	#[allow(clippy::missing_panics_doc)]
 	pub fn new(hash: &str) -> Self {
 		Self {
 			commit: Commit {
@@ -20,7 +21,7 @@ impl CommitBuilder {
 				reference: None,
 				author: User::new(None, None),
 				authored_date: None,
-				committed_date: Local.timestamp(JAN_2021_EPOCH, 0),
+				committed_date: Local.timestamp_opt(JAN_2021_EPOCH, 0).unwrap(),
 				committer: None,
 				message: None,
 				summary: None,
@@ -58,7 +59,7 @@ impl CommitBuilder {
 	#[inline]
 	#[must_use]
 	pub fn authored_time(mut self, time: i64) -> Self {
-		self.commit.authored_date = Some(Local.timestamp(time, 0));
+		self.commit.authored_date = Some(Local.timestamp_opt(time, 0).unwrap());
 		self
 	}
 
@@ -75,7 +76,7 @@ impl CommitBuilder {
 	#[inline]
 	#[must_use]
 	pub fn commit_time(mut self, time: i64) -> Self {
-		self.commit.committed_date = Local.timestamp(time, 0);
+		self.commit.committed_date = Local.timestamp_opt(time, 0).unwrap();
 		self
 	}
 
