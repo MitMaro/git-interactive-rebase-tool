@@ -194,9 +194,9 @@ mod tests {
 	#[case::pick(Action::Pick, false)]
 	#[case::reword(Action::Reword, false)]
 	#[case::squash(Action::Squash, false)]
-	#[case::squash(Action::Label, true)]
-	#[case::squash(Action::Reset, true)]
-	#[case::squash(Action::Merge, true)]
+	#[case::label(Action::Label, true)]
+	#[case::reset(Action::Reset, true)]
+	#[case::merge(Action::Merge, true)]
 	fn module_lifecycle(#[case] action: Action, #[case] expected: bool) {
 		assert_eq!(action.is_static(), expected);
 	}

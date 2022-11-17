@@ -469,6 +469,9 @@ mod tests {
 	#[case::pick("pick aaa comment", "comment")]
 	#[case::reword("reword aaa comment", "comment")]
 	#[case::squash("squash aaa comment", "comment")]
+	#[case::label("label reference", "reference")]
+	#[case::reset("reset reference", "reference")]
+	#[case::merge("merge command", "command")]
 	fn get_content(#[case] line: &str, #[case] expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_content(), expected);
 	}
@@ -482,6 +485,9 @@ mod tests {
 	#[case::pick("pick aaa comment", Action::Pick)]
 	#[case::reword("reword aaa comment", Action::Reword)]
 	#[case::squash("squash aaa comment", Action::Squash)]
+	#[case::label("label reference", Action::Label)]
+	#[case::reset("reset reference", Action::Reset)]
+	#[case::merge("merge command", Action::Merge)]
 	fn get_action(#[case] line: &str, #[case] expected: Action) {
 		assert_eq!(Line::new(line).unwrap().get_action(), &expected);
 	}
@@ -495,6 +501,9 @@ mod tests {
 	#[case::pick("pick aaa comment", "aaa")]
 	#[case::reword("reword aaa comment", "aaa")]
 	#[case::squash("squash aaa comment", "aaa")]
+	#[case::label("label reference", "")]
+	#[case::reset("reset reference", "")]
+	#[case::merge("merge command", "")]
 	fn get_hash(#[case] line: &str, #[case] expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_hash(), expected);
 	}
@@ -519,15 +528,15 @@ mod tests {
 	#[case::drop(Action::Break, false)]
 	#[case::drop(Action::Drop, false)]
 	#[case::edit(Action::Edit, false)]
+	#[case::exec(Action::Exec, true)]
 	#[case::fixup(Action::Fixup, false)]
 	#[case::pick(Action::Noop, false)]
 	#[case::pick(Action::Pick, false)]
 	#[case::reword(Action::Reword, false)]
 	#[case::squash(Action::Squash, false)]
-	#[case::squash(Action::Exec, true)]
-	#[case::squash(Action::Label, true)]
-	#[case::squash(Action::Reset, true)]
-	#[case::squash(Action::Merge, true)]
+	#[case::label(Action::Label, true)]
+	#[case::reset(Action::Reset, true)]
+	#[case::merge(Action::Merge, true)]
 	fn is_editable(#[case] from: Action, #[case] editable: bool) {
 		let line = Line::new(format!("{from} aaa bbb").as_str()).unwrap();
 		assert_eq!(line.is_editable(), editable);
@@ -542,6 +551,9 @@ mod tests {
 	#[case::pick("pick aaa comment")]
 	#[case::reword("reword aaa comment")]
 	#[case::squash("squash aaa comment")]
+	#[case::label("label reference")]
+	#[case::reset("reset reference")]
+	#[case::merge("merge command")]
 	fn to_text(#[case] line: &str) {
 		assert_eq!(Line::new(line).unwrap().to_text(), line);
 	}
