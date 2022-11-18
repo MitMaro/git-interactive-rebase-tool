@@ -289,7 +289,7 @@ mod tests {
 				.state
 				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))));
 			assert_eq!(
-				render_view_line(context.state.render_slice().lock().get_lines().first().unwrap()),
+				render_view_line(context.state.render_slice().lock().get_lines().first().unwrap(), None),
 				"{Normal}Foo"
 			);
 		});

@@ -30,11 +30,16 @@ macro_rules! render_line {
 
 bitflags! {
 	/// Options for the `assert_rendered_output!` macro
+	#[derive(Default)]
 	pub struct AssertRenderOptions: u8 {
 		/// The default assertion options
 		const DEFAULT = 0b0000_0000;
 		/// Ignore trailing whitespace
 		const INCLUDE_TRAILING_WHITESPACE = 0b0000_0001;
+		/// Ignore pinned indicator
+		const INCLUDE_PINNED = 0b0000_0010;
+		/// Don't include style information
+		const EXCLUDE_STYLE = 0b0000_0010;
 	}
 }
 
@@ -87,8 +92,17 @@ fn render_style(line_segment: &LineSegment) -> String {
 /// Render a `ViewLine` to a `String` using similar logic that is used in the `View`.
 #[must_use]
 #[inline]
-pub fn render_view_line(view_line: &ViewLine) -> String {
+pub fn render_view_line(view_line: &ViewLine, options: Option<AssertRenderOptions>) -> String {
 	let mut line = String::new();
+
+	let opts = options.unwrap_or_default();
+
+	if opts.contains(AssertRenderOptions::INCLUDE_PINNED) {
+		let pinned = view_line.get_number_of_pinned_segment();
+		if pinned > 0 {
+			line.push_str(format!("{{Pin({pinned})}}").as_str());
+		}
+	}
 
 	if view_line.get_selected() {
 		line.push_str("{Selected}");
@@ -96,24 +110,28 @@ pub fn render_view_line(view_line: &ViewLine) -> String {
 
 	let mut last_style = String::new();
 	for segment in view_line.get_segments() {
-		let style = render_style(segment);
-		if style != last_style {
-			line.push_str(style.as_str());
-			last_style = style;
+		if !opts.contains(AssertRenderOptions::EXCLUDE_STYLE) {
+			let style = render_style(segment);
+			if style != last_style {
+				line.push_str(style.as_str());
+				last_style = style;
+			}
 		}
 		line.push_str(segment.get_content());
 	}
 	if let Some(padding) = view_line.get_padding().as_ref() {
-		let style = render_style(padding);
-		if style != last_style {
-			line.push_str(style.as_str());
+		if !opts.contains(AssertRenderOptions::EXCLUDE_STYLE) {
+			let style = render_style(padding);
+			if style != last_style {
+				line.push_str(style.as_str());
+			}
 		}
 		line.push_str(format!("{{Pad({})}}", padding.get_content()).as_str());
 	}
 	line
 }
 
-fn render_view_data(view_data: &ViewData) -> Vec<String> {
+fn render_view_data(view_data: &ViewData, options: AssertRenderOptions) -> Vec<String> {
 	let mut lines = vec![];
 	if view_data.show_title() {
 		if view_data.show_help() {
@@ -132,7 +150,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	if !leading_lines.is_empty() {
 		lines.push(String::from("{LEADING}"));
 		for line in leading_lines {
-			lines.push(render_view_line(line));
+			lines.push(render_view_line(line, Some(options)));
 		}
 	}
 
@@ -140,7 +158,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	if !body_lines.is_empty() {
 		lines.push(String::from("{BODY}"));
 		for line in body_lines {
-			lines.push(render_view_line(line));
+			lines.push(render_view_line(line, Some(options)));
 		}
 	}
 
@@ -148,7 +166,7 @@ fn render_view_data(view_data: &ViewData) -> Vec<String> {
 	if !trailing_lines.is_empty() {
 		lines.push(String::from("{TRAILING}"));
 		for line in trailing_lines {
-			lines.push(render_view_line(line));
+			lines.push(render_view_line(line, Some(options)));
 		}
 	}
 	lines
@@ -263,7 +281,7 @@ pub(crate) fn _assert_rendered_output(options: AssertRenderOptions, actual: &[St
 /// instead use the `assert_rendered_output!` macro.
 #[inline]
 pub fn _assert_rendered_output_from_view_data(view_data: &ViewData, expected: &[String], options: AssertRenderOptions) {
-	let output = render_view_data(view_data);
+	let output = render_view_data(view_data, options);
 
 	_assert_rendered_output(options, &output, &expand_expected(expected));
 }
