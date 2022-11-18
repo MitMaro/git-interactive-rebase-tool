@@ -388,7 +388,7 @@ impl List {
 					}
 					let mut view_line = ViewLine::new_with_pinned_segments(
 						get_todo_line_segments(line, search_term, todo_line_segment_options),
-						if *line.get_action() == Action::Exec { 2 } else { 3 },
+						if line.has_reference() { 2 } else { 3 },
 					)
 					.set_selected(selected_index == index || selected_line);
 

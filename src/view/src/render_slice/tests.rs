@@ -30,21 +30,21 @@ fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 		if leading_line_count > 0 {
 			output.push(String::from("{LEADING}"));
 			for line in leading_lines {
-				output.push(render_view_line(line));
+				output.push(render_view_line(line, None));
 			}
 		}
 
 		if lines_count > 0 {
 			output.push(String::from("{BODY}"));
 			for line in body_lines {
-				output.push(render_view_line(line));
+				output.push(render_view_line(line, None));
 			}
 		}
 
 		if trailing_line_count > 0 {
 			output.push(String::from("{TRAILING}"));
 			for line in trailing_lines {
-				output.push(render_view_line(line));
+				output.push(render_view_line(line, None));
 			}
 		}
 	}
