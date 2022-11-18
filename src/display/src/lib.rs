@@ -172,6 +172,7 @@ pub struct Display<T: Tui> {
 	action_reset: (Colors, Colors),
 	action_reword: (Colors, Colors),
 	action_squash: (Colors, Colors),
+	action_update_ref: (Colors, Colors),
 	tui: T,
 	diff_add: (Colors, Colors),
 	diff_change: (Colors, Colors),
@@ -265,6 +266,12 @@ impl<T: Tui> Display<T> {
 			theme.color_background,
 			theme.color_selected_background,
 		);
+		let action_update_ref = register_selectable_color_pairs(
+			color_mode,
+			theme.color_action_update_ref,
+			theme.color_background,
+			theme.color_selected_background,
+		);
 		let diff_add = register_selectable_color_pairs(
 			color_mode,
 			theme.color_diff_add,
@@ -308,6 +315,7 @@ impl<T: Tui> Display<T> {
 			action_reset,
 			action_reword,
 			action_squash,
+			action_update_ref,
 			tui,
 			diff_add,
 			diff_change,
@@ -371,6 +379,7 @@ impl<T: Tui> Display<T> {
 					DisplayColor::ActionLabel => self.action_label.1,
 					DisplayColor::ActionReset => self.action_reset.1,
 					DisplayColor::ActionMerge => self.action_merge.1,
+					DisplayColor::ActionUpdateRef => self.action_update_ref.1,
 					DisplayColor::Normal => self.normal.1,
 					DisplayColor::IndicatorColor => self.indicator.1,
 					DisplayColor::DiffAddColor => self.diff_add.1,
@@ -393,6 +402,7 @@ impl<T: Tui> Display<T> {
 					DisplayColor::ActionLabel => self.action_label.0,
 					DisplayColor::ActionReset => self.action_reset.0,
 					DisplayColor::ActionMerge => self.action_merge.0,
+					DisplayColor::ActionUpdateRef => self.action_update_ref.0,
 					DisplayColor::Normal => self.normal.0,
 					DisplayColor::IndicatorColor => self.indicator.0,
 					DisplayColor::DiffAddColor => self.diff_add.0,
@@ -593,6 +603,18 @@ mod tests {
 		DisplayColor::ActionMerge,
 		true,
 		CrosstermColor::DarkYellow,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_update_ref(
+		DisplayColor::ActionUpdateRef,
+		false,
+		CrosstermColor::DarkMagenta,
+		CrosstermColor::Reset
+	)]
+	#[case::action_update_ref_selected(
+		DisplayColor::ActionUpdateRef,
+		true,
+		CrosstermColor::DarkMagenta,
 		CrosstermColor::AnsiValue(237)
 	)]
 	#[case::normal(DisplayColor::Normal, false, CrosstermColor::Reset, CrosstermColor::Reset)]

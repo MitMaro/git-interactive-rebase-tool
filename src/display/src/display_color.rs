@@ -24,6 +24,8 @@ pub enum DisplayColor {
 	ActionReset,
 	/// The color for the merge action.
 	ActionMerge,
+	/// The color for the merge action.
+	ActionUpdateRef,
 	/// The color for added lines in a diff.
 	DiffAddColor,
 	/// The color for changed lines in a diff.
