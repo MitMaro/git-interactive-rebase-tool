@@ -190,6 +190,7 @@ const fn get_action_color(action: Action) -> DisplayColor {
 		Action::Label => DisplayColor::ActionLabel,
 		Action::Reset => DisplayColor::ActionReset,
 		Action::Merge => DisplayColor::ActionMerge,
+		Action::UpdateRef => DisplayColor::ActionUpdateRef,
 		// this is technically impossible, since noops should never be rendered
 		Action::Noop => DisplayColor::Normal,
 	}
@@ -251,6 +252,7 @@ pub(super) fn get_todo_line_segments(
 		get_action_color(*action),
 	));
 
+	// render hash
 	match *action {
 		Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 			let action_width = if is_full_width { 8 } else { 3 };
@@ -276,7 +278,13 @@ pub(super) fn get_todo_line_segments(
 			));
 			segments.push(LineSegment::new(" "));
 		},
-		Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::Break | Action::Noop => {},
+		Action::Exec
+		| Action::Label
+		| Action::Reset
+		| Action::Merge
+		| Action::Break
+		| Action::Noop
+		| Action::UpdateRef => {},
 	}
 	let content = line.get_content();
 	if !content.is_empty() {

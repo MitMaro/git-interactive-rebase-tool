@@ -50,6 +50,8 @@ pub struct Theme {
 	pub color_action_reset: Color,
 	/// The color for the merge action.
 	pub color_action_merge: Color,
+	/// The color for the update-ref action.
+	pub color_action_update_ref: Color,
 	/// The color for the background.
 	pub color_background: Color,
 	/// The color for added lines in a diff.
@@ -98,6 +100,11 @@ impl Theme {
 			color_action_label: get_color(git_config, "interactive-rebase-tool.labelColor", Color::DarkYellow)?,
 			color_action_reset: get_color(git_config, "interactive-rebase-tool.resetColor", Color::DarkYellow)?,
 			color_action_merge: get_color(git_config, "interactive-rebase-tool.mergeColor", Color::DarkYellow)?,
+			color_action_update_ref: get_color(
+				git_config,
+				"interactive-rebase-tool.updateRefColor",
+				Color::DarkMagenta,
+			)?,
 			color_background: get_color(git_config, "interactive-rebase-tool.backgroundColor", Color::Default)?,
 			color_diff_add: get_color(git_config, "interactive-rebase-tool.diffAddColor", Color::LightGreen)?,
 			color_diff_change: get_color(
@@ -218,6 +225,7 @@ mod tests {
 		config_test!(color_action_label, "labelColor", Color::DarkYellow);
 		config_test!(color_action_reset, "resetColor", Color::DarkYellow);
 		config_test!(color_action_merge, "mergeColor", Color::DarkYellow);
+		config_test!(color_action_update_ref, "updateRefColor", Color::DarkMagenta);
 		config_test!(color_background, "backgroundColor", Color::Default);
 		config_test!(color_diff_add, "diffAddColor", Color::LightGreen);
 		config_test!(color_diff_change, "diffChangeColor", Color::LightYellow);

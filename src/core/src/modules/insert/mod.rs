@@ -88,6 +88,7 @@ impl Module for Insert {
 							LineType::Label => Line::new_label(content),
 							LineType::Reset => Line::new_reset(content),
 							LineType::Merge => Line::new_merge(content),
+							LineType::UpdateRef => Line::new_update_ref(content),
 							// this should exit in the prompt state and never get here
 							LineType::Cancel => unreachable!(),
 						};
@@ -114,6 +115,7 @@ impl Insert {
 				'm',
 				String::from("merge [-C <commit> | -c <commit>] <label> [# <oneline>]"),
 			),
+			(LineType::UpdateRef, 'u', String::from("update-ref <reference>")),
 			(LineType::Cancel, 'q', String::from("Cancel add line")),
 		]);
 		action_choices.set_prompt(vec![ViewLine::from("Select the type of line to insert:")]);

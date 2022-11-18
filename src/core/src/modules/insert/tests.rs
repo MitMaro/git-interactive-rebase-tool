@@ -29,6 +29,7 @@ fn render_prompt() {
 			"{Normal}l) label <label>",
 			"{Normal}r) reset <label>",
 			"{Normal}m) merge [-C <commit> | -c <commit>] <label> [# <oneline>]",
+			"{Normal}u) update-ref <reference>",
 			"{Normal}q) Cancel add line",
 			"",
 			"{IndicatorColor}Please choose an option."
@@ -263,6 +264,50 @@ fn edit_render_merge() {
 					.unwrap()
 					.to_text(),
 				"merge foo"
+			);
+		},
+	);
+}
+
+#[test]
+fn update_ref_render_merge() {
+	module_test(
+		&[],
+		&[
+			Event::from('u'),
+			Event::from('f'),
+			Event::from('o'),
+			Event::from('o'),
+			Event::from(KeyCode::Enter),
+		],
+		|mut test_context| {
+			let mut module = Insert::new();
+			let _ = test_context.handle_n_events(&mut module, 4);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				view_data,
+				"{TITLE}",
+				"{LEADING}",
+				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"",
+				"{BODY}",
+				"{Normal,Dimmed}update-ref {Normal}foo{Normal,Underline}",
+				"{TRAILING}",
+				"{IndicatorColor}Enter to finish"
+			);
+			assert_results!(
+				test_context.handle_event(&mut module),
+				Artifact::Event(Event::from(KeyCode::Enter)),
+				Artifact::ChangeState(State::List)
+			);
+			assert_eq!(
+				test_context
+					.todo_file_context
+					.todo_file()
+					.get_line(0)
+					.unwrap()
+					.to_text(),
+				"update-ref foo"
 			);
 		},
 	);

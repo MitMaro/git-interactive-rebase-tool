@@ -6,6 +6,7 @@ pub(crate) enum LineType {
 	Label,
 	Merge,
 	Reset,
+	UpdateRef,
 }
 
 impl ToString for LineType {
@@ -17,6 +18,7 @@ impl ToString for LineType {
 			Self::Label => String::from("label"),
 			Self::Merge => String::from("merge"),
 			Self::Reset => String::from("reset"),
+			Self::UpdateRef => String::from("update-ref"),
 		}
 	}
 }
@@ -34,6 +36,7 @@ mod tests {
 	#[case::label(&LineType::Label, "label")]
 	#[case::merge(&LineType::Merge, "merge")]
 	#[case::reset(&LineType::Reset, "reset")]
+	#[case::update_ref(&LineType::UpdateRef, "update-ref")]
 	fn to_string(#[case] line_type: &LineType, #[case] expected: &str) {
 		assert_eq!(line_type.to_string(), String::from(expected));
 	}

@@ -71,28 +71,29 @@ The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `b
 
 [ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
-| Key                       | Default     | Type  | Description                                              |
-|---------------------------|-------------|-------|----------------------------------------------------------|
-| `backgroundColor`         | Default¹    | Color | Color used for the background                            |
-| `breakColor`              | white       | Color | Color used for the break action                          |
-| `diffAddColor`            | green       | Color | Color used for lines and files added in a diff           |
-| `diffChangeColor`         | yellow      | Color | Color used for lines and files changed in a diff         |
-| `diffContextColor`        | white       | Color | Color used for context in a diff                         |
-| `diffRemoveColor`         | red         | Color | Color used for lines and files removed in a diff         |
-| `diffWhitespace`          | black       | Color | Color used for whitespace in a diff                      |
-| `dropColor`               | red         | Color | Color used for the drop action                           |
-| `editColor`               | blue        | Color | Color used for the edit action                           |
-| `execColor`               | blue        | Color | Color used for the exec action                           |
-| `fixupColor`              | magenta     | Color | Color used for the fixup action                          |
-| `foregroundColor`         | Default¹    | Color | Color used for most text and the UI                      |
-| `indicatorColor`          | cyan        | Color | Color used for text the indicates or needs to standout   |
-| `labelColor`              | dark yellow | Color | Color used for the label action                          |
-| `mergeColor`              | dark yellow | Color | Color used for the merge action                          |
-| `pickColor`               | green       | Color | Color used for the pick action                           |
-| `resetColor`              | dark yellow | Color | Color used for the reset action                          |
-| `rewordColor`             | yellow      | Color | Color used for the reword action                         |
-| `selectedBackgroundColor` | 35,35,40    | Color | Color used as the background color for the selected line |
-| `squashColor`             | cyan        | Color | Color used for the squash action                         |
+| Key                       | Default      | Type  | Description                                              |
+|---------------------------|--------------|-------|----------------------------------------------------------|
+| `backgroundColor`         | Default¹     | Color | Color used for the background                            |
+| `breakColor`              | white        | Color | Color used for the break action                          |
+| `diffAddColor`            | green        | Color | Color used for lines and files added in a diff           |
+| `diffChangeColor`         | yellow       | Color | Color used for lines and files changed in a diff         |
+| `diffContextColor`        | white        | Color | Color used for context in a diff                         |
+| `diffRemoveColor`         | red          | Color | Color used for lines and files removed in a diff         |
+| `diffWhitespace`          | black        | Color | Color used for whitespace in a diff                      |
+| `dropColor`               | red          | Color | Color used for the drop action                           |
+| `editColor`               | blue         | Color | Color used for the edit action                           |
+| `execColor`               | blue         | Color | Color used for the exec action                           |
+| `fixupColor`              | magenta      | Color | Color used for the fixup action                          |
+| `foregroundColor`         | Default¹     | Color | Color used for most text and the UI                      |
+| `indicatorColor`          | cyan         | Color | Color used for text the indicates or needs to standout   |
+| `labelColor`              | dark yellow  | Color | Color used for the label action                          |
+| `mergeColor`              | dark yellow  | Color | Color used for the merge action                          |
+| `pickColor`               | green        | Color | Color used for the pick action                           |
+| `resetColor`              | dark yellow  | Color | Color used for the reset action                          |
+| `rewordColor`             | yellow       | Color | Color used for the reword action                         |
+| `selectedBackgroundColor` | 35,35,40     | Color | Color used as the background color for the selected line |
+| `squashColor`             | cyan         | Color | Color used for the squash action                         |
+| `updateRefColor`          | dark magenta | Color | Color used for the update-ref action                     |
 
 ¹ By default the foreground and background colors use the terminal defined colors
 

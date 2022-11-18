@@ -93,6 +93,18 @@ impl Line {
 		}
 	}
 
+	/// Create a new update-ref line.
+	#[must_use]
+	#[inline]
+	pub fn new_update_ref(ref_name: &str) -> Self {
+		Self {
+			action: Action::UpdateRef,
+			content: String::from(ref_name),
+			hash: String::new(),
+			mutated: false,
+		}
+	}
+
 	/// Create a new line from a rebase file line.
 	///
 	/// # Errors
@@ -114,6 +126,8 @@ impl Line {
 			|| input_line.starts_with('l')
 			|| input_line.starts_with("reset")
 			|| input_line.starts_with('t')
+			|| input_line.starts_with("update-ref")
+			|| input_line.starts_with('u')
 		{
 			let input: Vec<&str> = input_line.splitn(2, ' ').collect();
 			if input.len() == 2 {
@@ -195,7 +209,7 @@ impl Line {
 	#[inline]
 	pub const fn is_editable(&self) -> bool {
 		match self.action {
-			Action::Exec | Action::Label | Action::Reset | Action::Merge => true,
+			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::UpdateRef => true,
 			Action::Break
 			| Action::Drop
 			| Action::Edit
@@ -215,7 +229,7 @@ impl Line {
 			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 				format!("{} {} {}", self.action, self.hash, self.content)
 			},
-			Action::Exec | Action::Label | Action::Reset | Action::Merge => {
+			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::UpdateRef => {
 				format!("{} {}", self.action, self.content)
 			},
 			Action::Noop | Action::Break => self.action.to_string(),
@@ -298,6 +312,12 @@ mod tests {
 		content: String::from("command"),
 		mutated: false,
 	})]
+	#[case::update_ref_action("update-ref reference", &Line {
+		action: Action::UpdateRef,
+		hash: String::new(),
+		content: String::from("reference"),
+		mutated: false,
+	})]
 	#[case::break_action("break", &Line {
 		action: Action::Break,
 		hash: String::new(),
@@ -375,6 +395,16 @@ mod tests {
 	}
 
 	#[test]
+	fn line_new_update_ref() {
+		assert_eq!(Line::new_update_ref("reference"), Line {
+			action: Action::UpdateRef,
+			hash: String::new(),
+			content: String::from("reference"),
+			mutated: false,
+		});
+	}
+
+	#[test]
 	fn new_err_invalid_action() {
 		assert_err_eq!(
 			Line::new("invalid aaa comment"),
@@ -394,6 +424,7 @@ mod tests {
 	#[case::label_line_only("label")]
 	#[case::reset_line_only("reset")]
 	#[case::merge_line_only("merge")]
+	#[case::update_ref_line_only("update-ref")]
 	fn new_err(#[case] line: &str) {
 		assert_err_eq!(Line::new(line), ParseError::InvalidLine(String::from(line)));
 	}
@@ -418,6 +449,7 @@ mod tests {
 	#[case::reset_action(Action::Reset, Action::Fixup)]
 	#[case::merge_action(Action::Merge, Action::Fixup)]
 	#[case::exec(Action::Exec, Action::Fixup)]
+	#[case::update_ref(Action::UpdateRef, Action::Fixup)]
 	#[case::noop(Action::Noop, Action::Fixup)]
 	fn set_action_static(#[case] from: Action, #[case] to: Action) {
 		let mut line = Line::new(format!("{from} comment").as_str()).unwrap();
@@ -454,6 +486,7 @@ mod tests {
 	#[case::label("label ref", "new")]
 	#[case::reset("reset ref", "new")]
 	#[case::merge("merge command", "new")]
+	#[case::update_ref("update-ref reference", "new")]
 	fn edit_content(#[case] line: &str, #[case] expected: &str) {
 		let mut line = Line::new(line).unwrap();
 		line.edit_content("new");
@@ -472,6 +505,7 @@ mod tests {
 	#[case::label("label reference", "reference")]
 	#[case::reset("reset reference", "reference")]
 	#[case::merge("merge command", "command")]
+	#[case::update_ref("update-ref reference", "reference")]
 	fn get_content(#[case] line: &str, #[case] expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_content(), expected);
 	}
@@ -488,6 +522,7 @@ mod tests {
 	#[case::label("label reference", Action::Label)]
 	#[case::reset("reset reference", Action::Reset)]
 	#[case::merge("merge command", Action::Merge)]
+	#[case::update_ref("update-ref reference", Action::UpdateRef)]
 	fn get_action(#[case] line: &str, #[case] expected: Action) {
 		assert_eq!(Line::new(line).unwrap().get_action(), &expected);
 	}
@@ -504,6 +539,7 @@ mod tests {
 	#[case::label("label reference", "")]
 	#[case::reset("reset reference", "")]
 	#[case::merge("merge command", "")]
+	#[case::update_ref("update-ref reference", "")]
 	fn get_hash(#[case] line: &str, #[case] expected: &str) {
 		assert_eq!(Line::new(line).unwrap().get_hash(), expected);
 	}
@@ -520,6 +556,7 @@ mod tests {
 	#[case::label("label ref", false)]
 	#[case::reset("reset ref", false)]
 	#[case::merge("merge command", false)]
+	#[case::update_ref("update-ref reference", false)]
 	fn has_reference(#[case] line: &str, #[case] expected: bool) {
 		assert_eq!(Line::new(line).unwrap().has_reference(), expected);
 	}
@@ -537,6 +574,7 @@ mod tests {
 	#[case::label(Action::Label, true)]
 	#[case::reset(Action::Reset, true)]
 	#[case::merge(Action::Merge, true)]
+	#[case::update_ref(Action::UpdateRef, true)]
 	fn is_editable(#[case] from: Action, #[case] editable: bool) {
 		let line = Line::new(format!("{from} aaa bbb").as_str()).unwrap();
 		assert_eq!(line.is_editable(), editable);
@@ -554,6 +592,7 @@ mod tests {
 	#[case::label("label reference")]
 	#[case::reset("reset reference")]
 	#[case::merge("merge command")]
+	#[case::update_ref("update-ref reference")]
 	fn to_text(#[case] line: &str) {
 		assert_eq!(Line::new(line).unwrap().to_text(), line);
 	}

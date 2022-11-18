@@ -33,6 +33,7 @@ fn full() {
 			"label ref",
 			"reset ref",
 			"merge command",
+			"update-ref reference",
 		],
 		&[],
 		|test_context| {
@@ -53,7 +54,8 @@ fn full() {
 				"{Normal}   {ActionEdit}edit   {Normal}11111111 comment 7",
 				"{Normal}   {ActionLabel}label  {Normal}ref",
 				"{Normal}   {ActionReset}reset  {Normal}ref",
-				"{Normal}   {ActionMerge}merge  {Normal}command"
+				"{Normal}   {ActionMerge}merge  {Normal}command",
+				"{Normal}   {ActionUpdateRef}update-ref {Normal}reference"
 			);
 		},
 	);
@@ -75,6 +77,7 @@ fn compact() {
 			"label ref",
 			"reset ref",
 			"merge command",
+			"update-ref reference",
 		],
 		&[],
 		|mut test_context| {
@@ -96,7 +99,8 @@ fn compact() {
 				"{Normal} {ActionEdit}e {Normal}111 comment 7",
 				"{Normal} {ActionLabel}l {Normal}ref",
 				"{Normal} {ActionReset}t {Normal}ref",
-				"{Normal} {ActionMerge}m {Normal}command"
+				"{Normal} {ActionMerge}m {Normal}command",
+				"{Normal} {ActionUpdateRef}u {Normal}reference"
 			);
 		},
 	);

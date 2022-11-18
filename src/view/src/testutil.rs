@@ -68,6 +68,7 @@ fn render_style(line_segment: &LineSegment) -> String {
 		DisplayColor::ActionLabel => String::from("ActionLabel"),
 		DisplayColor::ActionReset => String::from("ActionReset"),
 		DisplayColor::ActionMerge => String::from("ActionMerge"),
+		DisplayColor::ActionUpdateRef => String::from("ActionUpdateRef"),
 	};
 
 	let mut style = vec![];

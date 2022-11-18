@@ -30,6 +30,8 @@ pub enum Action {
 	Reset,
 	/// A merge action.
 	Merge,
+	/// Update a reference
+	UpdateRef,
 }
 
 impl Action {
@@ -50,6 +52,7 @@ impl Action {
 			Self::Reset => "t",
 			Self::Reword => "r",
 			Self::Squash => "s",
+			Self::UpdateRef => "u",
 		})
 	}
 
@@ -58,7 +61,7 @@ impl Action {
 	#[inline]
 	pub const fn is_static(self) -> bool {
 		match self {
-			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge => true,
+			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge | Self::UpdateRef => true,
 			Self::Drop | Self::Edit | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
 		}
 	}
@@ -80,6 +83,7 @@ impl Display for Action {
 			Self::Reset => "reset",
 			Self::Reword => "reword",
 			Self::Squash => "squash",
+			Self::UpdateRef => "update-ref",
 		})
 	}
 }
@@ -102,6 +106,7 @@ impl TryFrom<&str> for Action {
 			"label" | "l" => Ok(Self::Label),
 			"reset" | "t" => Ok(Self::Reset),
 			"merge" | "m" => Ok(Self::Merge),
+			"update-ref" | "u" => Ok(Self::UpdateRef),
 			_ => Err(ParseError::InvalidAction(String::from(s))),
 		}
 	}
@@ -128,6 +133,7 @@ mod tests {
 	#[case::label(Action::Label, "label")]
 	#[case::reset(Action::Reset, "reset")]
 	#[case::merge(Action::Merge, "merge")]
+	#[case::update_ref(Action::UpdateRef, "update-ref")]
 	fn to_string(#[case] action: Action, #[case] expected: &str) {
 		assert_eq!(format!("{action}"), expected);
 	}
@@ -157,6 +163,8 @@ mod tests {
 	#[case::reset("reset", Action::Reset)]
 	#[case::m("m", Action::Merge)]
 	#[case::merge("merge", Action::Merge)]
+	#[case::u("u", Action::UpdateRef)]
+	#[case::update_ref("update-ref", Action::UpdateRef)]
 	fn try_from(#[case] action_str: &str, #[case] expected: Action) {
 		assert_ok_eq!(Action::try_from(action_str), expected);
 	}
@@ -180,6 +188,7 @@ mod tests {
 	#[case::l(Action::Label, "l")]
 	#[case::t(Action::Reset, "t")]
 	#[case::m(Action::Merge, "m")]
+	#[case::u(Action::UpdateRef, "u")]
 	fn to_abbreviation(#[case] action: Action, #[case] expected: &str) {
 		assert_eq!(action.to_abbreviation(), expected);
 	}
@@ -197,6 +206,7 @@ mod tests {
 	#[case::label(Action::Label, true)]
 	#[case::reset(Action::Reset, true)]
 	#[case::merge(Action::Merge, true)]
+	#[case::update_ref(Action::UpdateRef, true)]
 	fn module_lifecycle(#[case] action: Action, #[case] expected: bool) {
 		assert_eq!(action.is_static(), expected);
 	}

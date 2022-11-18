@@ -35,7 +35,13 @@ impl Search {
 			for (i, line) in rebase_todo.lines_iter().enumerate() {
 				match *line.get_action() {
 					Action::Break | Action::Noop => continue,
-					Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
+					Action::Drop
+					| Action::Edit
+					| Action::Fixup
+					| Action::Pick
+					| Action::Reword
+					| Action::Squash
+					| Action::UpdateRef => {
 						if line.get_hash().starts_with(term) || line.get_content().contains(term) {
 							self.matches.push(i);
 						}
@@ -268,11 +274,12 @@ mod tests {
 				"reset foobar",
 				"merge foobar",
 				"exec foobar",
+				"update-ref foobar",
 			],
 			|context| {
 				let mut search = Search::new();
 				assert!(search.search(context.todo_file(), "ooba"));
-				assert_eq!(search.total_results(), 4);
+				assert_eq!(search.total_results(), 5);
 			},
 		);
 	}
