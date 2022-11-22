@@ -17,9 +17,9 @@ fn start() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c3"
 			);
 		},
 	);
@@ -41,9 +41,9 @@ fn start_cursor_down_one() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c2{Pad( )}",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c3"
 			);
 		},
 	);
@@ -72,11 +72,11 @@ fn start_cursor_page_down() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c3{Pad( )}",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c4",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c5"
 			);
 		},
 	);
@@ -108,11 +108,11 @@ fn start_cursor_from_bottom_move_up() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c5{Pad( )}"
+				"{Normal}   {ActionPick}pick {Normal}aaa      c1",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c2",
+				"{Normal}   {ActionPick}pick {Normal}aaa      c3",
+				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c4{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c5{Pad( )}"
 			);
 		},
 	);
@@ -147,11 +147,11 @@ fn start_cursor_from_bottom_to_top() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c5{Pad( )}"
+				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c2{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c3{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c4{Pad( )}",
+				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c5{Pad( )}"
 			);
 		},
 	);

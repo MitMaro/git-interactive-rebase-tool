@@ -121,7 +121,7 @@ fn noop_list() {
 			view_data,
 			"{TITLE}{HELP}",
 			"{BODY}",
-			"{Selected}{Normal} > noop   {Pad( )}"
+			"{Selected}{Normal} > noop {Pad( )}"
 		);
 	});
 }

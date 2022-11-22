@@ -39,7 +39,7 @@ bitflags! {
 		/// Ignore pinned indicator
 		const INCLUDE_PINNED = 0b0000_0010;
 		/// Don't include style information
-		const EXCLUDE_STYLE = 0b0000_0010;
+		const EXCLUDE_STYLE = 0b0000_0100;
 	}
 }
 

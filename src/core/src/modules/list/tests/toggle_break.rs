@@ -13,11 +13,12 @@ fn change_toggle_break_add() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionBreak}break  {Normal}{Pad( )}"
+				"   pick  aaa      c1",
+				"{Selected} > break {Pad( )}"
 			);
 		},
 	);
@@ -36,10 +37,11 @@ fn change_toggle_break_remove() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -55,11 +57,12 @@ fn change_toggle_break_above_existing() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionBreak}break"
+				"{Selected} > pick  aaa      c1{Pad( )}",
+				"   break"
 			);
 		},
 	);

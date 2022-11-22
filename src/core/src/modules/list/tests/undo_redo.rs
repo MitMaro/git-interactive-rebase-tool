@@ -16,10 +16,11 @@ fn normal_mode_undo() {
 				Artifact::Event(Event::from(StandardEvent::Undo))
 			);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -41,11 +42,12 @@ fn normal_mode_undo_visual_mode_change() {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"{Selected} > pick bbb      c2{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -70,10 +72,11 @@ fn normal_mode_redo() {
 				Artifact::Event(Event::from(StandardEvent::Redo))
 			);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -95,11 +98,12 @@ fn normal_mode_redo_visual_mode_change() {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"{Selected} > pick bbb      c2{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -124,11 +128,12 @@ fn visual_mode_undo() {
 				Artifact::Event(Event::from(StandardEvent::Undo))
 			);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"{Selected} > pick bbb      c2{Pad( )}"
 			);
 		},
 	);
@@ -152,11 +157,12 @@ fn visual_mode_undo_normal_mode_change() {
 				Artifact::Event(Event::from(StandardEvent::Undo))
 			);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}bbb      c2"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick bbb      c2"
 			);
 			assert_eq!(module.state, ListState::Normal);
 		},
@@ -178,11 +184,12 @@ fn visual_mode_redo() {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}bbb      c2{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"{Selected} > pick bbb      c2{Pad( )}"
 			);
 			assert_eq!(module.state, ListState::Visual);
 		},
@@ -203,11 +210,12 @@ fn visual_mode_redo_normal_mode_change() {
 			let mut module = List::new(&Config::new());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionDrop}drop   {Normal}bbb      c2"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   drop bbb      c2"
 			);
 			assert_eq!(module.state, ListState::Normal);
 		},

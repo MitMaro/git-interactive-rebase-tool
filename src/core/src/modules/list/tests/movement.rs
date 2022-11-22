@@ -14,12 +14,13 @@ fn move_down_1() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"   pick aaa      c1",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"   pick aaa      c3"
 			);
 		},
 	);
@@ -35,12 +36,13 @@ fn move_down_view_end() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"{Selected} > pick aaa      c3{Pad( )}"
 			);
 		},
 	);
@@ -56,12 +58,13 @@ fn move_down_past_end() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"{Selected} > pick aaa      c3{Pad( )}"
 			);
 		},
 	);
@@ -81,12 +84,13 @@ fn move_down_scroll_bottom_move_up_one() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"   pick aaa      c1",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"   pick aaa      c3"
 			);
 		},
 	);
@@ -106,12 +110,13 @@ fn move_down_scroll_bottom_move_up_top() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c2",
+				"   pick aaa      c3"
 			);
 		},
 	);
@@ -130,13 +135,14 @@ fn move_up_attempt_above_top() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"   pick aaa      c4"
 			);
 		},
 	);
@@ -152,13 +158,14 @@ fn move_down_attempt_below_bottom() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -175,13 +182,14 @@ fn move_page_up_from_top() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"   pick aaa      c4"
 			);
 		},
 	);
@@ -202,13 +210,14 @@ fn move_page_up_from_one_page_down() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"   pick aaa      c4"
 			);
 		},
 	);
@@ -229,13 +238,14 @@ fn move_page_up_from_one_page_down_minus_1() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"   pick aaa      c4"
 			);
 		},
 	);
@@ -257,13 +267,14 @@ fn move_page_up_from_bottom() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
+				"   pick aaa      c1",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"   pick aaa      c3",
+				"   pick aaa      c4"
 			);
 		},
 	);
@@ -283,13 +294,14 @@ fn move_home() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c4"
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"   pick aaa      c4"
 			);
 		},
 	);
@@ -305,13 +317,14 @@ fn move_end() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -328,13 +341,14 @@ fn move_page_down_past_bottom() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -355,13 +369,14 @@ fn move_page_down_one_from_bottom() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -381,13 +396,14 @@ fn move_page_down_one_page_from_bottom() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c2",
+				"   pick aaa      c3",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -422,12 +438,13 @@ fn mouse_scroll() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"   pick aaa      c1",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"   pick aaa      c3"
 			);
 		},
 	);
