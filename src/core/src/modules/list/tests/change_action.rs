@@ -55,10 +55,11 @@ fn normal_mode_action_change_to_drop() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionDrop}drop   {Normal}aaa      c1{Pad( )}"
+				"{Selected} > drop aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -86,14 +87,15 @@ fn visual_mode_action_change_to_drop() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal,Dimmed} > {ActionDrop}drop   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionDrop}drop   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionDrop}drop   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"   pick aaa      c1",
+				"{Selected} > drop aaa      c2{Pad( )}",
+				"{Selected} > drop aaa      c3{Pad( )}",
+				"{Selected} > drop aaa      c4{Pad( )}",
+				"   pick aaa      c5"
 			);
 		},
 	);
@@ -109,10 +111,11 @@ fn normal_mode_action_change_to_edit() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionEdit}edit   {Normal}aaa      c1{Pad( )}"
+				"{Selected} > edit aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -140,14 +143,15 @@ fn visual_mode_action_change_to_edit() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal,Dimmed} > {ActionEdit}edit   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionEdit}edit   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionEdit}edit   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"   pick aaa      c1",
+				"{Selected} > edit aaa      c2{Pad( )}",
+				"{Selected} > edit aaa      c3{Pad( )}",
+				"{Selected} > edit aaa      c4{Pad( )}",
+				"   pick aaa      c5"
 			);
 		},
 	);
@@ -163,10 +167,11 @@ fn normal_mode_action_change_to_fixup() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionFixup}fixup  {Normal}aaa      c1{Pad( )}"
+				"{Selected} > fixup aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -194,14 +199,15 @@ fn visual_mode_action_change_to_fixup() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal,Dimmed} > {ActionFixup}fixup  {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionFixup}fixup  {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionFixup}fixup  {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"   pick  aaa      c1",
+				"{Selected} > fixup aaa      c2{Pad( )}",
+				"{Selected} > fixup aaa      c3{Pad( )}",
+				"{Selected} > fixup aaa      c4{Pad( )}",
+				"   pick  aaa      c5"
 			);
 		},
 	);
@@ -217,10 +223,11 @@ fn normal_mode_action_change_to_pick() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}"
+				"{Selected} > pick aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -248,14 +255,15 @@ fn visual_mode_action_change_to_pick() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionDrop}drop   {Normal}aaa      c1",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionDrop}drop   {Normal}aaa      c5"
+				"   drop aaa      c1",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}",
+				"   drop aaa      c5"
 			);
 		},
 	);
@@ -271,10 +279,11 @@ fn normal_mode_action_change_to_reword() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c1{Pad( )}"
+				"{Selected} > reword aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -302,14 +311,15 @@ fn visual_mode_action_change_to_reword() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"   pick   aaa      c1",
+				"{Selected} > reword aaa      c2{Pad( )}",
+				"{Selected} > reword aaa      c3{Pad( )}",
+				"{Selected} > reword aaa      c4{Pad( )}",
+				"   pick   aaa      c5"
 			);
 		},
 	);
@@ -325,10 +335,11 @@ fn normal_mode_action_change_to_squash() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionSquash}squash {Normal}aaa      c1{Pad( )}"
+				"{Selected} > squash aaa      c1{Pad( )}"
 			);
 		},
 	);
@@ -356,14 +367,15 @@ fn visual_mode_action_change_to_squash() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal,Dimmed} > {ActionSquash}squash {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionSquash}squash {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionSquash}squash {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"   pick   aaa      c1",
+				"{Selected} > squash aaa      c2{Pad( )}",
+				"{Selected} > squash aaa      c3{Pad( )}",
+				"{Selected} > squash aaa      c4{Pad( )}",
+				"   pick   aaa      c5"
 			);
 		},
 	);

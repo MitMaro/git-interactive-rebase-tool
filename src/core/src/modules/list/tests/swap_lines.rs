@@ -13,12 +13,13 @@ fn normal_mode_change_swap_down() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c3"
+				"   pick aaa      c2",
+				"{Selected} > pick aaa      c1{Pad( )}",
+				"   pick aaa      c3"
 			);
 		},
 	);
@@ -46,14 +47,15 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c5",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -83,14 +85,15 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c5",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -121,14 +124,15 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c5",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -157,14 +161,15 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}"
+				"   pick aaa      c1",
+				"   pick aaa      c5",
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}"
 			);
 		},
 	);
@@ -184,12 +189,13 @@ fn normal_mode_change_swap_up() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c2"
+				"   pick aaa      c1",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"   pick aaa      c2"
 			);
 		},
 	);
@@ -217,14 +223,15 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}",
+				"   pick aaa      c1",
+				"   pick aaa      c5"
 			);
 		},
 	);
@@ -254,14 +261,15 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}",
+				"   pick aaa      c1",
+				"   pick aaa      c5"
 			);
 		},
 	);
@@ -290,14 +298,15 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}",
+				"   pick aaa      c1",
+				"   pick aaa      c5"
 			);
 		},
 	);
@@ -328,14 +337,15 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
+				Options AssertRenderOptions::EXCLUDE_STYLE,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick   {Normal}aaa      c4{Pad( )}",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick   {Normal}aaa      c5"
+				"{Selected} > pick aaa      c2{Pad( )}",
+				"{Selected} > pick aaa      c3{Pad( )}",
+				"{Selected} > pick aaa      c4{Pad( )}",
+				"   pick aaa      c1",
+				"   pick aaa      c5"
 			);
 		},
 	);

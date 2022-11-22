@@ -26,6 +26,7 @@ use crate::{
 	},
 	events::{Event, KeyBindings, MetaEvent},
 	module::{ExitStatus, Module, State},
+	modules::list::utils::get_line_action_maximum_width,
 	process::Results,
 	select,
 };
@@ -369,6 +370,7 @@ impl List {
 				)));
 			}
 			else {
+				let maximum_action_width = get_line_action_maximum_width(todo_file);
 				for (index, line) in todo_file.lines_iter().enumerate() {
 					let selected_line = is_visual_mode
 						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
@@ -387,7 +389,7 @@ impl List {
 						todo_line_segment_options.insert(TodoLineSegmentsOptions::SEARCH_LINE);
 					}
 					let mut view_line = ViewLine::new_with_pinned_segments(
-						get_todo_line_segments(line, search_term, todo_line_segment_options),
+						get_todo_line_segments(line, search_term, todo_line_segment_options, maximum_action_width),
 						if line.has_reference() { 2 } else { 3 },
 					)
 					.set_selected(selected_index == index || selected_line);

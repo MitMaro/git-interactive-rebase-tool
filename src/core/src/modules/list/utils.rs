@@ -3,7 +3,7 @@ use std::cmp;
 use bitflags::bitflags;
 use config::KeyBindings;
 use display::DisplayColor;
-use todo_file::{Action, Line};
+use todo_file::{Action, Line, TodoFile};
 use view::LineSegment;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -196,6 +196,25 @@ const fn get_action_color(action: Action) -> DisplayColor {
 	}
 }
 
+pub(super) fn get_line_action_maximum_width(todo_file: &TodoFile) -> usize {
+	let mut max_width = 0;
+
+	for line in todo_file.lines_iter() {
+		let action_length = match line.get_action() {
+			// allow these to overflow their bounds
+			&Action::Exec | &Action::UpdateRef => 0,
+			&Action::Drop | &Action::Edit | &Action::Noop | &Action::Pick => 4,
+			&Action::Fixup | &Action::Break | &Action::Label | &Action::Reset | &Action::Merge => 5,
+			&Action::Reword | &Action::Squash => 6,
+		};
+		if max_width < action_length {
+			max_width = action_length;
+		}
+	}
+
+	max_width
+}
+
 bitflags! {
 	pub(crate) struct TodoLineSegmentsOptions: u8 {
 		const DEFAULT = 0b0000_0000;
@@ -212,6 +231,7 @@ pub(super) fn get_todo_line_segments(
 	line: &Line,
 	search_term: Option<&str>,
 	options: TodoLineSegmentsOptions,
+	maximum_action_width: usize,
 ) -> Vec<LineSegment> {
 	let mut segments: Vec<LineSegment> = vec![];
 
@@ -241,7 +261,7 @@ pub(super) fn get_todo_line_segments(
 	));
 
 	let action_name = if is_full_width {
-		format!("{:6} ", action.to_string())
+		format!("{:maximum_action_width$} ", action.to_string())
 	}
 	else {
 		format!("{:1} ", action.to_abbreviation())
@@ -286,6 +306,7 @@ pub(super) fn get_todo_line_segments(
 		| Action::Noop
 		| Action::UpdateRef => {},
 	}
+
 	let content = line.get_content();
 	if !content.is_empty() {
 		if let Some(term) = search_term {
