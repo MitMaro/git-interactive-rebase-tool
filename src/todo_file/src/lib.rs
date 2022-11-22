@@ -117,6 +117,7 @@ mod edit_content;
 pub mod errors;
 mod history;
 mod line;
+mod line_parser;
 mod search;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
@@ -351,12 +352,16 @@ impl TodoFile {
 		for index in range {
 			let line = &mut self.lines[index];
 			lines.push(line.clone());
-			if let Some(action) = edit_context.get_action().as_ref() {
-				line.set_action(*action);
+			if let Some(action) = edit_context.get_action() {
+				line.set_action(action);
 			}
 
-			if let Some(content) = edit_context.get_content().as_ref() {
+			if let Some(content) = edit_context.get_content() {
 				line.edit_content(content);
+			}
+
+			if let Some(option) = edit_context.get_option() {
+				line.toggle_option(option);
 			}
 		}
 		self.version.increment();
@@ -676,7 +681,16 @@ mod tests {
 	}
 
 	#[test]
-	fn update_range_edit_action() {
+	fn update_range_set_option() {
+		let (mut todo_file, _) = create_and_load_todo_file(&["fixup aaa comment"]);
+		let old_version = *todo_file.version();
+		todo_file.update_range(0, 2, &EditContext::new().option("-c"));
+		assert_todo_lines!(todo_file, "fixup -c aaa comment");
+		assert_ne!(todo_file.version(), &old_version);
+	}
+
+	#[test]
+	fn update_range_reverse_indexes() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
 		todo_file.update_range(2, 0, &EditContext::new().action(Action::Reword));
