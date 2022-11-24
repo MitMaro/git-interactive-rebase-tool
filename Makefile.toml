@@ -1,3 +1,6 @@
+[env]
+RUST_NIGHTLY_VERSION_PREFIX = "-2022-11-21"
+
 [config]
 skip_core_tasks = true
 default_to_workspace = false
@@ -21,7 +24,7 @@ args = ["build", "${@}"]
 
 [tasks.build-nightly]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 install_crate = false
 command = "cargo"
 args = ["build", "${@}"]
@@ -48,7 +51,7 @@ args = ["clean"]
 
 [tasks.coverage]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 command = "cargo"
 condition = { platforms = ["linux"] }
 env = { "RUSTFLAGS" = "-C link-dead-code" }
@@ -85,7 +88,7 @@ args = [
 
 [tasks.docs-nightly]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 ignore_errors = true
 command = "cargo"
 args = [
@@ -115,7 +118,7 @@ args = [
 
 [tasks.lint-nightly]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 ignore_errors = true
 command = "cargo"
 args = [
@@ -128,7 +131,7 @@ args = [
 
 [tasks.format]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 command = "cargo"
 args = [
 	"fmt",
@@ -140,7 +143,7 @@ args = [
 
 [tasks.format-apply]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 command = "cargo"
 args = [
 	"fmt",
@@ -152,7 +155,7 @@ args = [
 
 [tasks.licenses]
 dependencies = ["update-rust-nightly"]
-toolchain = "nightly"
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 script = ['''
 cargo +nightly about generate "docs/licenses.hbs" > "docs/licenses.html"
 ''']
@@ -176,4 +179,4 @@ args = ["update", "stable"]
 
 [tasks.update-rust-nightly]
 command = "rustup"
-args = ["update", "nightly"]
+args = ["update", "nightly${RUST_NIGHTLY_VERSION_PREFIX}"]

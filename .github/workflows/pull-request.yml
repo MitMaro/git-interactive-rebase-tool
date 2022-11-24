@@ -49,8 +49,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2022-11-21
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
       - uses: baptiste0928/cargo-install@v1
@@ -62,7 +63,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2022-11-21
       - uses: Swatinem/rust-cache@v2
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
