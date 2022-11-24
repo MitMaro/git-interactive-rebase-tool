@@ -6,6 +6,7 @@ mod help;
 mod insert_line;
 mod movement;
 mod normal_mode;
+mod read_event;
 mod remove_lines;
 mod render;
 mod search;
