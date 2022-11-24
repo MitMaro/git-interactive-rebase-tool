@@ -42,6 +42,13 @@ impl<CustomEvent: crate::CustomEvent> From<KeyEvent> for Event<CustomEvent> {
 	}
 }
 
+impl<CustomEvent: crate::CustomEvent> From<MouseEvent> for Event<CustomEvent> {
+	#[inline]
+	fn from(mouse_event: MouseEvent) -> Self {
+		Self::Mouse(mouse_event)
+	}
+}
+
 impl<CustomEvent: crate::CustomEvent> From<StandardEvent> for Event<CustomEvent> {
 	#[inline]
 	fn from(event: StandardEvent) -> Self {
@@ -141,6 +148,25 @@ mod tests {
 	fn from_key_code() {
 		let event = Event::from(KeyCode::Null);
 		assert_eq!(event, Event::Key(KeyEvent::new(KeyCode::Null, KeyModifiers::empty())));
+	}
+
+	#[test]
+	fn from_mouse_event() {
+		let event = Event::from(MouseEvent {
+			kind: MouseEventKind::Moved,
+			column: 0,
+			row: 0,
+			modifiers: KeyModifiers::empty(),
+		});
+		assert_eq!(
+			event,
+			Event::Mouse(MouseEvent {
+				kind: MouseEventKind::Moved,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::empty(),
+			})
+		);
 	}
 
 	#[test]

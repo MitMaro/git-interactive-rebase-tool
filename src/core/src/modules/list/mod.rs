@@ -99,10 +99,10 @@ impl Module for List {
 	fn input_options(&self) -> &InputOptions {
 		select!(
 			default || &INPUT_OPTIONS,
+			|| (self.state == ListState::Edit).then(|| self.edit.input_options()),
 			|| self.normal_mode_help.input_options(),
 			|| self.visual_mode_help.input_options(),
-			|| self.search_bar.input_options(),
-			|| (self.state == ListState::Edit).then(|| self.edit.input_options())
+			|| self.search_bar.input_options()
 		)
 	}
 

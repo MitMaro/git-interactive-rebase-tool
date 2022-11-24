@@ -38,13 +38,17 @@ impl TestContext {
 		self.get_build_data(module)
 	}
 
-	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> Results {
+	pub(crate) fn read_event(&mut self, module: &'_ mut dyn Module) -> Event {
 		let input_options = module.input_options();
-		let event = self.event_handler_context.event_handler.read_event(
+		self.event_handler_context.event_handler.read_event(
 			self.event_handler_context.state.read_event(),
 			input_options,
 			|event, key_bindings| module.read_event(event, key_bindings),
-		);
+		)
+	}
+
+	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> Results {
+		let event = self.read_event(module);
 		let mut results = Results::new();
 		results.event(event);
 		results.append(module.handle_event(event, &self.view_context.state, self.todo_file_context.todo_file_mut()));
