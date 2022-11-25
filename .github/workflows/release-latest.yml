@@ -45,6 +45,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2022-11-21
       - name: "Build"
         run: cargo build --features dev --release
       - name: Upload
