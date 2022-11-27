@@ -70,8 +70,6 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: MetaEvent
 	});
 }
 
-// Move
-
 #[rstest]
 #[case::movecursordown(KeyCode::Down, MetaEvent::MoveCursorDown)]
 #[case::movecursorpagedown(KeyCode::PageDown, MetaEvent::MoveCursorPageDown)]
@@ -86,6 +84,29 @@ fn default_events_special(#[case] code: KeyCode, #[case] expected: MetaEvent) {
 	read_event_test(Event::from(code), |mut context| {
 		let mut module = create_list_module();
 		assert_eq!(context.read_event(&mut module), Event::from(expected));
+	});
+}
+
+#[rstest]
+#[case::abort('u', MetaEvent::FixupKeepMessage)]
+#[case::abort('U', MetaEvent::FixupKeepMessageWithEditor)]
+#[case::abort('p', MetaEvent::ActionPick)]
+fn fixup_events(#[case] binding: char, #[case] expected: MetaEvent) {
+	read_event_test(Event::from(binding), |mut context| {
+		let mut module = create_list_module();
+		module.selected_line_action = Some(Action::Fixup);
+		assert_eq!(context.read_event(&mut module), Event::from(expected));
+	});
+}
+
+#[rstest]
+#[case::abort('u')]
+#[case::abort('U')]
+fn fixup_events_with_non_fixpo_event(#[case] binding: char) {
+	read_event_test(Event::from(binding), |mut context| {
+		let mut module = create_list_module();
+		module.selected_line_action = Some(Action::Pick);
+		assert_eq!(context.read_event(&mut module), Event::from(binding));
 	});
 }
 

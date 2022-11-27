@@ -37,5 +37,7 @@ pub(crate) fn create_test_custom_keybindings() -> AppKeyBindings {
 		show_commit: vec![Event::from(KeyCode::Char('c'))],
 		show_diff: vec![Event::from(KeyCode::Char('d'))],
 		toggle_visual_mode: vec![Event::from(KeyCode::Char('v'))],
+		fixup_keep_message: vec![Event::from(KeyCode::Char('u'))],
+		fixup_keep_message_with_editor: vec![Event::from(KeyCode::Char('U'))],
 	}
 }

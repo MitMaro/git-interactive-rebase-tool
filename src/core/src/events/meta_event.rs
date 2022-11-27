@@ -58,6 +58,10 @@ pub(crate) enum MetaEvent {
 	ToggleVisualMode,
 	/// The insert line meta event.
 	InsertLine,
+	/// Fixup specific action to toggle the c option.
+	FixupKeepMessage,
+	/// Fixup specific action to toggle the C option.
+	FixupKeepMessageWithEditor,
 	/// The no meta event.
 	No,
 	/// The yes meta event.

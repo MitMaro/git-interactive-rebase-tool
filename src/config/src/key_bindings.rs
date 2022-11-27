@@ -106,6 +106,10 @@ pub struct KeyBindings {
 	pub toggle_visual_mode: Vec<String>,
 	/// Key bindings for undoing a change.
 	pub undo: Vec<String>,
+	/// Key bindings for the fixup specific action to toggle the c option.
+	pub fixup_keep_message_with_editor: Vec<String>,
+	/// Key bindings for the fixup specific action to toggle the c option.
+	pub fixup_keep_message: Vec<String>,
 }
 
 impl KeyBindings {
@@ -171,6 +175,12 @@ impl KeyBindings {
 			show_diff: get_input(git_config, "interactive-rebase-tool.inputShowDiff", "d")?,
 			toggle_visual_mode: get_input(git_config, "interactive-rebase-tool.inputToggleVisualMode", "v")?,
 			undo: get_input(git_config, "interactive-rebase-tool.inputUndo", "control+z")?,
+			fixup_keep_message_with_editor: get_input(
+				git_config,
+				"interactive-rebase-tool.fixupKeepMessageWithEditor",
+				"U",
+			)?,
+			fixup_keep_message: get_input(git_config, "interactive-rebase-tool.fixupKeepMessage", "u")?,
 		})
 	}
 }
@@ -285,5 +295,7 @@ mod tests {
 		config_test!(show_diff, "inputShowDiff", "d");
 		config_test!(toggle_visual_mode, "inputToggleVisualMode", "v");
 		config_test!(undo, "inputUndo", "Controlz");
+		config_test!(fixup_keep_message_with_editor, "fixupKeepMessageWithEditor", "U");
+		config_test!(fixup_keep_message, "fixupKeepMessage", "u");
 	}
 }
