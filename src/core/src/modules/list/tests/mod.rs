@@ -13,6 +13,7 @@ mod search;
 mod show_commit;
 mod swap_lines;
 mod toggle_break;
+mod toggle_option;
 mod undo_redo;
 mod visual_mode;
 

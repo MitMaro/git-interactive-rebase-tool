@@ -69,6 +69,10 @@ pub(crate) struct AppKeyBindings {
 	pub(crate) show_diff: Vec<Event>,
 	/// Key bindings for toggling visual mode.
 	pub(crate) toggle_visual_mode: Vec<Event>,
+	/// Key bindings for the fixup specific action to toggle the c option.
+	pub(crate) fixup_keep_message: Vec<Event>,
+	/// Key biding for the fixup specific action to toggle the C option.
+	pub(crate) fixup_keep_message_with_editor: Vec<Event>,
 }
 
 impl CustomKeybinding for AppKeyBindings {
@@ -104,6 +108,8 @@ impl CustomKeybinding for AppKeyBindings {
 			show_diff: map_keybindings(&key_bindings.show_diff),
 			toggle_visual_mode: map_keybindings(&key_bindings.toggle_visual_mode),
 			confirm_yes: map_keybindings(&key_bindings.confirm_yes),
+			fixup_keep_message: map_keybindings(&key_bindings.fixup_keep_message),
+			fixup_keep_message_with_editor: map_keybindings(&key_bindings.fixup_keep_message_with_editor),
 		}
 	}
 }

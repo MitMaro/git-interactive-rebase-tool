@@ -204,7 +204,15 @@ pub(super) fn get_line_action_maximum_width(todo_file: &TodoFile) -> usize {
 			// allow these to overflow their bounds
 			&Action::Exec | &Action::UpdateRef => 0,
 			&Action::Drop | &Action::Edit | &Action::Noop | &Action::Pick => 4,
-			&Action::Fixup | &Action::Break | &Action::Label | &Action::Reset | &Action::Merge => 5,
+			&Action::Break | &Action::Label | &Action::Reset | &Action::Merge => 5,
+			&Action::Fixup => {
+				if line.option().is_some() {
+					8 // "fixup -C" = 8
+				}
+				else {
+					5
+				}
+			},
 			&Action::Reword | &Action::Squash => 6,
 		};
 		if max_width < action_length {
@@ -261,10 +269,19 @@ pub(super) fn get_todo_line_segments(
 	));
 
 	let action_name = if is_full_width {
-		format!("{:maximum_action_width$} ", action.to_string())
+		if let Some(opt) = line.option() {
+			format!("{:maximum_action_width$} ", format!("{action} {opt}"))
+		}
+		else {
+			format!("{:maximum_action_width$} ", action.to_string())
+		}
 	}
 	else {
-		format!("{:1} ", action.to_abbreviation())
+		format!(
+			"{:1}{}",
+			action.to_abbreviation(),
+			if line.option().is_some() { "*" } else { " " }
+		)
 	};
 
 	segments.push(LineSegment::new_with_color(

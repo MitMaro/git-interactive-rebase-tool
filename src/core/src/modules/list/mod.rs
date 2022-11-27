@@ -51,6 +51,7 @@ pub(crate) struct List {
 	normal_mode_help: Help,
 	search: Search,
 	search_bar: SearchBar,
+	selected_line_action: Option<Action>,
 	state: ListState,
 	view_data: ViewData,
 	visual_index_start: Option<usize>,
@@ -58,6 +59,11 @@ pub(crate) struct List {
 }
 
 impl Module for List {
+	fn activate(&mut self, todo_file: &TodoFile, _: State) -> Results {
+		self.selected_line_action = todo_file.get_selected_line().map(|line| *line.get_action());
+		Results::new()
+	}
+
 	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
 		match self.state {
 			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
@@ -109,7 +115,7 @@ impl Module for List {
 
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
 		select!(
-			default || Self::read_event_default(event, key_bindings),
+			default || self.read_event_default(event, key_bindings),
 			|| (self.state == ListState::Edit).then_some(event),
 			|| self.normal_mode_help.read_event(event),
 			|| self.visual_mode_help.read_event(event),
@@ -132,6 +138,7 @@ impl List {
 			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
 			search: Search::new(),
 			search_bar: SearchBar::new(),
+			selected_line_action: None,
 			state: ListState::Normal,
 			view_data,
 			visual_index_start: None,
@@ -141,6 +148,7 @@ impl List {
 
 	fn set_cursor(&mut self, todo_file: &mut TodoFile, cursor: usize) {
 		todo_file.set_selected_line_index(cursor);
+		self.selected_line_action = todo_file.get_selected_line().map(|line| *line.get_action());
 		self.search.set_search_start_hint(cursor);
 	}
 
@@ -335,6 +343,15 @@ impl List {
 		}
 	}
 
+	#[allow(clippy::unused_self)]
+	fn toggle_option(&mut self, option: &str, todo_file: &mut TodoFile) {
+		todo_file.update_range(
+			todo_file.get_selected_line_index(),
+			todo_file.get_selected_line_index(),
+			&EditContext::new().option(option),
+		);
+	}
+
 	fn edit(&mut self, todo_file: &mut TodoFile) {
 		if let Some(selected_line) = todo_file.get_selected_line() {
 			if selected_line.is_editable() {
@@ -447,7 +464,22 @@ impl List {
 	}
 
 	#[allow(clippy::cognitive_complexity)]
-	fn read_event_default(event: Event, key_bindings: &KeyBindings) -> Event {
+	fn read_event_default(&self, event: Event, key_bindings: &KeyBindings) -> Event {
+		// handle action level events
+		if let Some(action) = self.selected_line_action {
+			if action == Action::Fixup {
+				match event {
+					e if key_bindings.custom.fixup_keep_message.contains(&e) => {
+						return Event::from(MetaEvent::FixupKeepMessage);
+					},
+					e if key_bindings.custom.fixup_keep_message_with_editor.contains(&e) => {
+						return Event::from(MetaEvent::FixupKeepMessageWithEditor);
+					},
+					_ => {},
+				}
+			}
+		}
+
 		match event {
 			e if key_bindings.custom.abort.contains(&e) => Event::from(MetaEvent::Abort),
 			e if key_bindings.custom.action_break.contains(&e) => Event::from(MetaEvent::ActionBreak),
@@ -600,6 +632,8 @@ impl List {
 					MetaEvent::Edit => self.edit(rebase_todo),
 					MetaEvent::InsertLine => self.insert_line(&mut results),
 					MetaEvent::ShowCommit => self.show_commit(&mut results, rebase_todo),
+					MetaEvent::FixupKeepMessage => self.toggle_option("-C", rebase_todo),
+					MetaEvent::FixupKeepMessageWithEditor => self.toggle_option("-c", rebase_todo),
 					_ => {},
 				}
 			}
