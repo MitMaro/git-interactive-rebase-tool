@@ -122,7 +122,6 @@ mod search;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
 mod utils;
-mod version;
 
 use std::{
 	fs::{read_to_string, File},
@@ -131,7 +130,9 @@ use std::{
 	slice::Iter,
 };
 
-pub use self::{action::Action, edit_content::EditContext, line::Line, search::Search, version::Version};
+pub use version_track::Version;
+
+pub use self::{action::Action, edit_content::EditContext, line::Line, search::Search};
 use self::{
 	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},

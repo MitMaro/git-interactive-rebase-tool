@@ -409,7 +409,7 @@ dependencies = [
  "rustc_version",
  "tempfile",
  "thiserror",
- "uuid",
+ "version-track",
 ]
 
 [[package]]
@@ -1072,6 +1072,15 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "version-track"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d9affed6b4e63b1f30ed8f0f2c401fa725f5f511eb00e52269f401c4d5ae12f"
+dependencies = [
+ "uuid",
+]
 
 [[package]]
 name = "version_check"
