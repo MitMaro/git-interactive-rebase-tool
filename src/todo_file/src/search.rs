@@ -1,4 +1,6 @@
-use crate::{Action, TodoFile, Version};
+use version_track::Version;
+
+use crate::{Action, TodoFile};
 
 /// Search handler for the todofile
 #[derive(Debug)]
@@ -18,7 +20,7 @@ impl Search {
 		Self {
 			match_start_hint: 0,
 			matches: vec![],
-			rebase_todo_version: Version::empty(),
+			rebase_todo_version: Version::sentinel(),
 			search_term: String::new(),
 			selected: None,
 		}
