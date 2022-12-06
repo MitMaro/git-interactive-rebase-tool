@@ -1,6 +1,7 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 use display::Size;
+use parking_lot::Mutex;
 use runtime::ThreadStatuses;
 use todo_file::testutil::with_todo_file;
 use view::testutil::{with_view_state, TestContext as ViewContext};
@@ -37,7 +38,7 @@ pub(crate) fn process_test<C, ModuleProvider: module::ModuleProvider + Send + 's
 					event_handler_context,
 					process: Process::new(
 						Size::new(300, 120),
-						todo_file,
+						Arc::new(Mutex::new(todo_file)),
 						module_handler,
 						input_state,
 						view_state,

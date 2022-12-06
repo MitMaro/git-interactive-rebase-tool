@@ -33,7 +33,7 @@ impl TestModule {
 }
 
 impl Module for TestModule {
-	fn activate(&mut self, _rebase_todo: &TodoFile, previous_state: State) -> Results {
+	fn activate(&mut self, previous_state: State) -> Results {
 		self.trace.lock().push(format!("activate(state = {previous_state:?})"));
 		Results::new()
 	}
@@ -43,7 +43,7 @@ impl Module for TestModule {
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, _render_context: &RenderContext) -> &ViewData {
 		self.trace.lock().push(String::from("build_view_data"));
 		&DEFAULT_VIEW_DATA
 	}
@@ -58,7 +58,7 @@ impl Module for TestModule {
 		event
 	}
 
-	fn handle_event(&mut self, event: Event, _view_state: &view::State, _rebase_todo: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, _view_state: &view::State) -> Results {
 		self.trace.lock().push(format!("handle_event(event = {event:?})"));
 		Results::new()
 	}
@@ -189,13 +189,13 @@ fn write_todo_file() {
 		create_default_test_module_handler(),
 		|ProcessTestContext { process, .. }| {
 			process
-				.rebase_todo
+				.todo_file
 				.lock()
 				.set_lines(vec![Line::new("fixup ddd comment").unwrap()]);
 			process.write_todo_file().unwrap();
-			process.rebase_todo.lock().load_file().unwrap();
+			process.todo_file.lock().load_file().unwrap();
 			assert_eq!(
-				process.rebase_todo.lock().get_line(0).unwrap(),
+				process.todo_file.lock().get_line(0).unwrap(),
 				&Line::new("fixup ddd comment").unwrap()
 			);
 		},

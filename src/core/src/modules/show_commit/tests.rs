@@ -15,13 +15,17 @@ use view::{assert_rendered_output, render_line, ViewLine};
 use super::*;
 use crate::{assert_results, process::Artifact, testutil::module_test};
 
+fn create_show_commit(config: &Config, repository: Repository, todo_file: TodoFile) -> ShowCommit {
+	ShowCommit::new(config, repository, Arc::new(Mutex::new(todo_file)))
+}
+
 #[test]
 fn load_commit_during_activate() {
 	with_temp_repository(|repo| {
 		let oid = head_id(&repo, "main");
 		let line = format!("pick {oid} comment1");
-		module_test(&[line.as_str()], &[], |test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
+		module_test(&[line.as_str()], &[], |mut test_context| {
+			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(test_context.activate(&mut module, State::List));
 			assert!(module.diff.is_some());
 		});
@@ -33,8 +37,8 @@ fn cached_commit_in_activate() {
 	with_temp_repository(|repo| {
 		let oid = head_id(&repo, "main");
 		let line = format!("pick {oid} comment1");
-		module_test(&[line.as_str()], &[], |test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
+		module_test(&[line.as_str()], &[], |mut test_context| {
+			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			// would be nice to be able to test that a second call to load_commit_diff did not happen here
 			assert_results!(test_context.activate(&mut module, State::List));
 			assert_results!(test_context.activate(&mut module, State::List));
@@ -45,8 +49,8 @@ fn cached_commit_in_activate() {
 #[test]
 fn no_selected_line_in_activate() {
 	with_temp_repository(|repo| {
-		module_test(&[], &[], |test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
+		module_test(&[], &[], |mut test_context| {
+			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(
 				test_context.activate(&mut module, State::List),
 				Artifact::Error(anyhow!("No valid commit to show"), Some(State::List))
@@ -58,8 +62,8 @@ fn no_selected_line_in_activate() {
 #[test]
 fn activate_error() {
 	with_temp_repository(|repo| {
-		module_test(&["pick aaaaaaaaaa comment1"], &[], |test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
+		module_test(&["pick aaaaaaaaaa comment1"], &[], |mut test_context| {
+			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(
 				test_context.activate(&mut module, State::List),
 				Artifact::Error(
@@ -80,11 +84,11 @@ fn render_overview_minimal_commit() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let commit = CommitBuilder::new("0123456789abcdef0123456789abcdef").build();
 				let commit_date = commit.committed_date().format("%c %z").to_string();
 				let diff = CommitDiffBuilder::new(commit).build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -113,7 +117,7 @@ fn render_overview_minimal_commit_compact() {
 				let commit = CommitBuilder::new("0123456789abcdef0123456789abcdef").build();
 				let commit_date = commit.committed_date().format("%c %z").to_string();
 				let diff = CommitDiffBuilder::new(commit).build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -136,14 +140,14 @@ fn render_overview_with_author() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(
 					CommitBuilder::new("0123456789abcdef0123456789abcdef")
 						.author(User::new(Some("John Doe"), Some("john.doe@example.com")))
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -170,7 +174,7 @@ fn render_overview_with_author_compact() {
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -189,14 +193,14 @@ fn render_overview_with_committer() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(
 					CommitBuilder::new("0123456789abcdef0123456789abcdef")
 						.committer(User::new(Some("John Doe"), Some("john.doe@example.com")))
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -223,7 +227,7 @@ fn render_overview_with_committer_compact() {
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -242,14 +246,14 @@ fn render_overview_with_commit_summary() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(
 					CommitBuilder::new("0123456789abcdef0123456789abcdef")
 						.summary("Commit title")
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -268,14 +272,14 @@ fn render_overview_with_commit_body() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(
 					CommitBuilder::new("0123456789abcdef0123456789abcdef")
 						.message("Commit body")
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -294,7 +298,7 @@ fn render_overview_with_commit_summary_and_body() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(
 					CommitBuilder::new("0123456789abcdef0123456789abcdef")
 						.summary("Commit title")
@@ -302,7 +306,7 @@ fn render_overview_with_commit_summary_and_body() {
 						.build(),
 				)
 				.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -323,7 +327,7 @@ fn render_overview_with_file_stats() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.file_statuses(vec![
 						FileStatusBuilder::new()
@@ -364,7 +368,7 @@ fn render_overview_with_file_stats() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -433,7 +437,7 @@ fn render_overview_with_file_stats_compact() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -458,11 +462,11 @@ fn render_overview_single_file_changed() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.number_files_changed(1)
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -481,11 +485,11 @@ fn render_overview_more_than_one_file_changed() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.number_files_changed(2)
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -505,11 +509,11 @@ fn render_overview_single_insertion() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.number_insertions(1)
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -529,11 +533,11 @@ fn render_overview_more_than_one_insertion() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.number_insertions(2)
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -553,11 +557,11 @@ fn render_overview_single_deletion() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.number_deletions(1)
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -577,11 +581,11 @@ fn render_overview_more_than_one_deletion() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.number_deletions(2)
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -601,12 +605,12 @@ fn render_diff_minimal_commit() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				let diff =
 					CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build()).build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -636,7 +640,7 @@ fn render_diff_minimal_commit_compact() {
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				let diff =
 					CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build()).build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -659,7 +663,7 @@ fn render_diff_basic_file_stats() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789abcdef0123456789abcdef").build())
 					.file_statuses(vec![
 						FileStatusBuilder::new()
@@ -700,7 +704,7 @@ fn render_diff_basic_file_stats() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -735,7 +739,7 @@ fn render_diff_end_new_line_missing() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
@@ -752,7 +756,7 @@ fn render_diff_end_new_line_missing() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -780,7 +784,7 @@ fn render_diff_add_line() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
@@ -796,7 +800,7 @@ fn render_diff_add_line() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -823,7 +827,7 @@ fn render_diff_delete_line() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
@@ -839,7 +843,7 @@ fn render_diff_delete_line() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -866,7 +870,7 @@ fn render_diff_context_add_remove_lines() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
@@ -885,7 +889,7 @@ fn render_diff_context_add_remove_lines() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -938,7 +942,7 @@ fn render_diff_show_both_whitespace() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 				config.diff_tab_symbol = String::from("#>");
@@ -954,7 +958,7 @@ fn render_diff_show_both_whitespace() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -979,7 +983,7 @@ fn render_diff_show_leading_whitespace() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::Leading;
 				config.diff_tab_symbol = String::from("#>");
@@ -995,7 +999,7 @@ fn render_diff_show_leading_whitespace() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -1020,7 +1024,7 @@ fn render_diff_show_no_whitespace() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 				config.diff_tab_symbol = String::from("#>");
@@ -1036,7 +1040,7 @@ fn render_diff_show_no_whitespace() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -1061,7 +1065,7 @@ fn render_diff_show_whitespace_all_spaces() {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
-			|test_context| {
+			|mut test_context| {
 				let mut config = Config::new();
 				config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 				config.diff_tab_symbol = String::from("#>");
@@ -1079,7 +1083,7 @@ fn render_diff_show_whitespace_all_spaces() {
 							.build(),
 					])
 					.build();
-				let mut module = ShowCommit::new(&config, repo);
+				let mut module = create_show_commit(&config, repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
@@ -1099,7 +1103,7 @@ fn handle_event_toggle_diff_to_overview() {
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from(MetaEvent::ShowDiff)],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module
 					.diff_view_data
 					.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
@@ -1122,7 +1126,7 @@ fn handle_event_toggle_overview_to_diff() {
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from('d')],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module
 					.overview_view_data
 					.update_view_data(|updater| updater.push_line(ViewLine::from("foo")));
@@ -1145,7 +1149,7 @@ fn handle_event_resize() {
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::Resize(100, 100)],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::Resize(100, 100))
@@ -1162,7 +1166,7 @@ fn render_help() {
 			&["pick aaa c1"],
 			&[Event::from(StandardEvent::Help)],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				let _ = test_context.handle_all_events(&mut module);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
@@ -1195,7 +1199,7 @@ fn handle_help_event_show() {
 			&["pick aaa c1"],
 			&[Event::from(StandardEvent::Help)],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				let _ = test_context.handle_all_events(&mut module);
 				assert!(module.help.is_active());
 			},
@@ -1209,7 +1213,7 @@ fn handle_help_event_hide() {
 			&["pick aaa c1"],
 			&[Event::from(StandardEvent::Help), Event::from('?')],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				let _ = test_context.handle_all_events(&mut module);
 				assert!(!module.help.is_active());
 			},
@@ -1224,7 +1228,7 @@ fn handle_event_other_key_from_diff() {
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from('a')],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.state = ShowCommitState::Diff;
 				assert_results!(
 					test_context.handle_event(&mut module),
@@ -1243,7 +1247,7 @@ fn handle_event_other_key_from_overview() {
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from('a')],
 			|mut test_context| {
-				let mut module = ShowCommit::new(&Config::new(), repo);
+				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.state = ShowCommitState::Overview;
 				assert_results!(
 					test_context.handle_event(&mut module),
@@ -1265,7 +1269,7 @@ fn handle_event_other_key_from_overview() {
 fn scroll_events(#[case] event: StandardEvent) {
 	with_temp_repository(|repo| {
 		module_test(&[], &[Event::from(event)], |mut test_context| {
-			let mut module = ShowCommit::new(&Config::new(), repo);
+			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(event))

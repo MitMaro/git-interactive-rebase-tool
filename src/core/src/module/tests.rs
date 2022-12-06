@@ -11,15 +11,8 @@ impl Module for TestModule {}
 
 #[test]
 fn default_trait_method_activate() {
-	module_test(&[], &[], |context| {
-		let mut module = TestModule {};
-		assert!(
-			module
-				.activate(context.todo_file_context.todo_file(), State::List)
-				.artifact()
-				.is_none()
-		);
-	});
+	let mut module = TestModule {};
+	assert!(module.activate(State::List).artifact().is_none());
 }
 
 #[test]
@@ -32,7 +25,7 @@ fn default_trait_method_deactivate() {
 fn default_trait_method_build_view_data() {
 	module_test(&[], &[], |context| {
 		let mut module = TestModule {};
-		let view_data = module.build_view_data(&context.render_context, context.todo_file_context.todo_file());
+		let view_data = module.build_view_data(&context.render_context);
 		assert!(view_data.is_empty());
 	});
 }
@@ -52,13 +45,9 @@ fn default_trait_method_read_event() {
 
 #[test]
 fn default_trait_method_handle_event() {
-	module_test(&[], &[], |mut context| {
+	module_test(&[], &[], |context| {
 		let mut module = TestModule {};
-		let mut result = module.handle_event(
-			Event::from('a'),
-			&context.view_context.state,
-			context.todo_file_context.todo_file_mut(),
-		);
+		let mut result = module.handle_event(Event::from('a'), &context.view_context.state);
 		assert!(result.artifact().is_none());
 	});
 }

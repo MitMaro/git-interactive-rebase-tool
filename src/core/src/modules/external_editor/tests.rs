@@ -1,3 +1,5 @@
+use std::{fs, fs::File};
+
 use input::KeyCode;
 use view::assert_rendered_output;
 
@@ -42,61 +44,63 @@ macro_rules! assert_external_editor_state_eq {
 	};
 }
 
+fn create_external_editor(editor: &str, todo_file: TodoFile) -> ExternalEditor {
+	ExternalEditor::new(editor, Arc::new(Mutex::new(todo_file)))
+}
+
 #[test]
 fn activate() {
-	module_test(&["pick aaa comment1", "drop bbb comment2"], &[], |test_context| {
-		let mut module = ExternalEditor::new("editor");
+	module_test(&["pick aaa comment1", "drop bbb comment2"], &[], |mut test_context| {
+		let todo_file = test_context.take_todo_file();
+		let todo_path = String::from(todo_file.get_filepath().to_str().unwrap());
+
+		let mut module = create_external_editor("editor", todo_file);
 		assert_results!(
 			test_context.activate(&mut module, State::List),
-			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_filepath()
-					.to_string_lossy()
-			)]))
+			Artifact::ExternalCommand((String::from("editor"), vec![String::from(todo_path.as_str())]))
 		);
-		assert_eq!(test_context.todo_file_context.todo_file().get_lines_owned(), vec![
+		assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
 			Line::new("pick aaa comment1").unwrap(),
 			Line::new("drop bbb comment2").unwrap()
 		]);
 		assert!(!module.lines.is_empty());
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-		assert_eq!(
-			module.external_command,
-			(String::from("editor"), vec![String::from(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_filepath()
-					.to_string_lossy()
-			)])
-		);
+		assert_eq!(module.external_command, (String::from("editor"), vec![todo_path]));
 	});
 }
 
 #[test]
 fn activate_write_file_fail() {
-	module_test(&["pick aaa comment"], &[], |test_context| {
-		let todo_path = test_context.todo_file_context.path();
-		let mut module = ExternalEditor::new("editor");
-		test_context.todo_file_context.set_file_readonly();
+	module_test(&["pick aaa comment"], &[], |mut test_context| {
+		let todo_file = test_context.take_todo_file();
+		let path = todo_file.get_filepath();
+		let todo_file_path = String::from(path.to_str().unwrap());
+		let file = File::open(path).unwrap();
+		let mut permissions = file.metadata().unwrap().permissions();
+		permissions.set_readonly(true);
+		file.set_permissions(permissions).unwrap();
+
+		let mut module = create_external_editor("editor", todo_file);
+
 		assert_results!(
 			test_context.activate(&mut module, State::List),
-			Artifact::Error(anyhow!("Unable to read file `{}`", todo_path), Some(State::List))
+			Artifact::Error(anyhow!("Unable to read file `{}`", todo_file_path), Some(State::List))
 		);
 	});
 }
 
 #[test]
 fn activate_file_placement_marker() {
-	module_test(&[], &[], |test_context| {
-		let mut module = ExternalEditor::new("editor a % b");
+	module_test(&[], &[], |mut test_context| {
+		let todo_file = test_context.take_todo_file();
+		let todo_path = String::from(todo_file.get_filepath().to_str().unwrap());
+
+		let mut module = create_external_editor("editor a % b", todo_file);
 		assert_results!(
 			test_context.activate(&mut module, State::List),
 			Artifact::ExternalCommand((String::from("editor"), vec![
 				String::from("a"),
-				test_context.todo_file_context.path(),
+				todo_path,
 				String::from("b")
 			]))
 		);
@@ -106,7 +110,7 @@ fn activate_file_placement_marker() {
 #[test]
 fn deactivate() {
 	module_test(&["pick aaa comment", "drop bbb comment2"], &[], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let mut module = create_external_editor("editor", test_context.take_todo_file());
 		let _ = test_context.deactivate(&mut module);
 		assert_eq!(module.lines, vec![]);
 	});
@@ -118,7 +122,7 @@ fn edit_success() {
 		&["pick aaa comment"],
 		&[Event::from(MetaEvent::ExternalCommandSuccess)],
 		|mut test_context| {
-			let mut module = ExternalEditor::new("editor");
+			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			let _ = test_context.activate(&mut module, State::List);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
@@ -138,10 +142,12 @@ fn empty_edit_error() {
 		&["pick aaa comment"],
 		&[Event::from('1'), Event::from(MetaEvent::ExternalCommandSuccess)],
 		|mut test_context| {
-			let mut module = ExternalEditor::new("editor");
+			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			let _ = test_context.activate(&mut module, State::List);
-			test_context.todo_file_context.todo_file_mut().set_lines(vec![]);
-			test_context.todo_file_context.todo_file_mut().write_file().unwrap();
+			let mut todo_file = module.todo_file.lock();
+			todo_file.set_lines(vec![]);
+			todo_file.write_file().unwrap();
+			drop(todo_file);
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -169,7 +175,7 @@ fn empty_edit_error() {
 #[test]
 fn empty_edit_abort_rebase() {
 	module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let mut module = create_external_editor("editor", test_context.take_todo_file());
 		let _ = test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Empty;
 		assert_results!(
@@ -183,19 +189,16 @@ fn empty_edit_abort_rebase() {
 #[test]
 fn empty_edit_re_edit_rebase_file() {
 	module_test(&["pick aaa comment"], &[Event::from('2')], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let todo_file = test_context.take_todo_file();
+		let todo_path = String::from(todo_file.get_filepath().to_str().unwrap());
+
+		let mut module = create_external_editor("editor", todo_file);
 		let _ = test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Empty;
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('2')),
-			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_filepath()
-					.to_string_lossy()
-			)]))
+			Artifact::ExternalCommand((String::from("editor"), vec![todo_path]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 	});
@@ -207,22 +210,19 @@ fn empty_edit_undo_and_edit() {
 		&["pick aaa comment", "drop bbb comment"],
 		&[Event::from('3')],
 		|mut test_context| {
-			let mut module = ExternalEditor::new("editor");
+			let todo_file = test_context.take_todo_file();
+			let todo_path = String::from(todo_file.get_filepath().to_str().unwrap());
+
+			let mut module = create_external_editor("editor", todo_file);
 			let _ = test_context.activate(&mut module, State::List);
 			module.state = ExternalEditorState::Empty;
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from('3')),
-				Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-					test_context
-						.todo_file_context
-						.todo_file()
-						.get_filepath()
-						.to_string_lossy()
-				)]))
+				Artifact::ExternalCommand((String::from("editor"), vec![todo_path]))
 			);
 			assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-			assert_eq!(test_context.todo_file_context.todo_file().get_lines_owned(), vec![
+			assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
 				Line::new("pick aaa comment").unwrap(),
 				Line::new("drop bbb comment").unwrap()
 			]);
@@ -233,10 +233,10 @@ fn empty_edit_undo_and_edit() {
 #[test]
 fn empty_edit_noop() {
 	module_test(&["pick aaa comment"], &[], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let mut module = create_external_editor("editor", test_context.take_todo_file());
 		let _ = test_context.activate(&mut module, State::List);
+		module.todo_file.lock().set_lines(vec![]);
 		module.state = ExternalEditorState::Empty;
-		test_context.todo_file_context.todo_file_mut().set_lines(vec![]);
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,
@@ -256,8 +256,8 @@ fn empty_edit_noop() {
 
 #[test]
 fn no_editor_set() {
-	module_test(&["pick aaa comment"], &[], |test_context| {
-		let mut module = ExternalEditor::new("");
+	module_test(&["pick aaa comment"], &[], |mut test_context| {
+		let mut module = create_external_editor("", test_context.take_todo_file());
 		assert_results!(
 			test_context.activate(&mut module, State::List),
 			Artifact::Error(
@@ -274,7 +274,7 @@ fn editor_non_zero_exit() {
 		&["pick aaa comment"],
 		&[Event::from(MetaEvent::ExternalCommandError)],
 		|mut test_context| {
-			let mut module = ExternalEditor::new("editor");
+			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			let _ = test_context.activate(&mut module, State::List);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -309,10 +309,12 @@ fn editor_reload_error() {
 		&["pick aaa comment"],
 		&[Event::from(KeyCode::Up), Event::from(MetaEvent::ExternalCommandSuccess)],
 		|mut test_context| {
-			let todo_path = test_context.todo_file_context.path();
-			let mut module = ExternalEditor::new("editor");
+			let todo_file = test_context.take_todo_file();
+			let path = todo_file.get_filepath().to_path_buf();
+			let todo_path = String::from(path.to_str().unwrap());
+			let mut module = create_external_editor("editor", todo_file);
 			let _ = test_context.activate(&mut module, State::List);
-			test_context.todo_file_context.delete_file();
+			fs::remove_file(path).unwrap();
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -344,7 +346,7 @@ fn editor_reload_error() {
 #[test]
 fn error_abort_rebase() {
 	module_test(&["pick aaa comment"], &[Event::from('1')], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let mut module = create_external_editor("editor", test_context.take_todo_file());
 		let _ = test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
 		assert_results!(
@@ -352,26 +354,22 @@ fn error_abort_rebase() {
 			Artifact::Event(Event::from('1')),
 			Artifact::ExitStatus(ExitStatus::Good)
 		);
-		assert!(test_context.todo_file_context.todo_file().is_empty());
+		assert!(module.todo_file.lock().is_empty());
 	});
 }
 
 #[test]
 fn error_edit_rebase() {
 	module_test(&["pick aaa comment"], &[Event::from('2')], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let todo_file = test_context.take_todo_file();
+		let todo_path = String::from(todo_file.get_filepath().to_str().unwrap());
+		let mut module = create_external_editor("editor", todo_file);
 		let _ = test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('2')),
-			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_filepath()
-					.to_string_lossy()
-			)]))
+			Artifact::ExternalCommand((String::from("editor"), vec![todo_path]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 	});
@@ -380,7 +378,7 @@ fn error_edit_rebase() {
 #[test]
 fn error_restore_and_abort() {
 	module_test(&["pick aaa comment"], &[Event::from('3')], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let mut module = create_external_editor("editor", test_context.take_todo_file());
 		let _ = test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
 		assert_results!(
@@ -388,7 +386,7 @@ fn error_restore_and_abort() {
 			Artifact::Event(Event::from('3')),
 			Artifact::ChangeState(State::List)
 		);
-		assert_eq!(test_context.todo_file_context.todo_file().get_lines_owned(), vec![
+		assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
 			Line::new("pick aaa comment").unwrap()
 		]);
 	});
@@ -397,22 +395,18 @@ fn error_restore_and_abort() {
 #[test]
 fn error_undo_modifications_and_reedit() {
 	module_test(&["pick aaa comment"], &[Event::from('4')], |mut test_context| {
-		let mut module = ExternalEditor::new("editor");
+		let todo_file = test_context.take_todo_file();
+		let todo_path = String::from(todo_file.get_filepath().to_str().unwrap());
+		let mut module = create_external_editor("editor", todo_file);
 		let _ = test_context.activate(&mut module, State::List);
 		module.state = ExternalEditorState::Error(anyhow!("Error!"));
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('4')),
-			Artifact::ExternalCommand((String::from("editor"), vec![String::from(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_filepath()
-					.to_string_lossy()
-			)]))
+			Artifact::ExternalCommand((String::from("editor"), vec![todo_path]))
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
-		assert_eq!(test_context.todo_file_context.todo_file().get_lines_owned(), vec![
+		assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
 			Line::new("pick aaa comment").unwrap()
 		]);
 	});

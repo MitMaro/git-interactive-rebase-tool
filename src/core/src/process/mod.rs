@@ -34,10 +34,10 @@ pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
 	input_state: events::State,
 	module_handler: Arc<Mutex<ModuleHandler<ModuleProvider>>>,
 	paused: Arc<AtomicBool>,
-	rebase_todo: Arc<Mutex<TodoFile>>,
 	render_context: Arc<Mutex<RenderContext>>,
 	state: Arc<Mutex<State>>,
 	thread_statuses: ThreadStatuses,
+	todo_file: Arc<Mutex<TodoFile>>,
 	view_state: view::State,
 }
 
@@ -49,10 +49,10 @@ impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
 			input_state: self.input_state.clone(),
 			module_handler: Arc::clone(&self.module_handler),
 			paused: Arc::clone(&self.paused),
-			rebase_todo: Arc::clone(&self.rebase_todo),
 			render_context: Arc::clone(&self.render_context),
 			state: Arc::clone(&self.state),
 			thread_statuses: self.thread_statuses.clone(),
+			todo_file: Arc::clone(&self.todo_file),
 			view_state: self.view_state.clone(),
 		}
 	}
@@ -61,7 +61,7 @@ impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
 impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 	pub(crate) fn new(
 		initial_display_size: Size,
-		rebase_todo: TodoFile,
+		todo_file: Arc<Mutex<TodoFile>>,
 		module_handler: ModuleHandler<ModuleProvider>,
 		input_state: events::State,
 		view_state: view::State,
@@ -73,13 +73,13 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 			input_state,
 			module_handler: Arc::new(Mutex::new(module_handler)),
 			paused: Arc::new(AtomicBool::from(false)),
-			rebase_todo: Arc::new(Mutex::new(rebase_todo)),
 			render_context: Arc::new(Mutex::new(RenderContext::new(
 				initial_display_size.width(),
 				initial_display_size.height(),
 			))),
 			state: Arc::new(Mutex::new(State::WindowSizeError)),
 			thread_statuses,
+			todo_file,
 			view_state,
 		}
 	}
@@ -119,23 +119,22 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 
 	fn activate(&self, previous_state: State) -> Results {
 		let mut module_handler = self.module_handler.lock();
-		let mut results = module_handler.activate(self.state(), &self.rebase_todo.lock(), previous_state);
+		let mut results = module_handler.activate(self.state(), previous_state);
 		// always trigger a resize on activate, for modules that track size
 		results.enqueue_resize();
 		results
 	}
 
 	pub(crate) fn render(&self) {
-		let rebase_todo = self.rebase_todo.lock();
 		let render_context = *self.render_context.lock();
 		let mut module_handler = self.module_handler.lock();
-		let view_data = module_handler.build_view_data(self.state(), &render_context, &rebase_todo);
+		let view_data = module_handler.build_view_data(self.state(), &render_context);
 		// TODO It is not possible for this to fail. view::State should be updated to not return an error
 		self.view_state.render(view_data);
 	}
 
 	pub(crate) fn write_todo_file(&self) -> Result<()> {
-		self.rebase_todo.lock().write_file().map_err(Error::from)
+		self.todo_file.lock().write_file().map_err(Error::from)
 	}
 
 	fn deactivate(&self, state: State) -> Results {
@@ -144,12 +143,9 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 	}
 
 	pub(crate) fn handle_event(&self) -> Option<Results> {
-		self.module_handler.lock().handle_event(
-			self.state(),
-			&self.input_state.clone(),
-			&self.view_state.clone(),
-			&mut self.rebase_todo.lock(),
-		)
+		self.module_handler
+			.lock()
+			.handle_event(self.state(), &self.input_state.clone(), &self.view_state.clone())
 	}
 
 	fn handle_event_artifact(&self, event: Event) -> Results {

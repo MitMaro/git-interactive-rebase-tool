@@ -10,7 +10,7 @@ fn move_down_1() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -32,7 +32,7 @@ fn move_down_view_end() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown); 2],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -54,7 +54,7 @@ fn move_down_past_end() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::MoveCursorDown); 3],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -80,7 +80,7 @@ fn move_down_scroll_bottom_move_up_one() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -106,7 +106,7 @@ fn move_down_scroll_bottom_move_up_top() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -131,7 +131,7 @@ fn move_up_attempt_above_top() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -154,7 +154,7 @@ fn move_down_attempt_below_bottom() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -177,7 +177,7 @@ fn move_page_up_from_top() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorPageUp)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -205,7 +205,7 @@ fn move_page_up_from_one_page_down() {
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -233,7 +233,7 @@ fn move_page_up_from_one_page_down_minus_1() {
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -262,7 +262,7 @@ fn move_page_up_from_bottom() {
 			Event::from(MetaEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -290,7 +290,7 @@ fn move_home() {
 			Event::from(MetaEvent::MoveCursorHome),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -313,7 +313,7 @@ fn move_end() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorEnd)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -336,7 +336,7 @@ fn move_page_down_past_bottom() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[Event::from(MetaEvent::MoveCursorPageDown); 3],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -365,7 +365,7 @@ fn move_page_down_one_from_bottom() {
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -391,7 +391,7 @@ fn move_page_down_one_page_from_bottom() {
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -434,7 +434,7 @@ fn mouse_scroll() {
 			}),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -456,7 +456,7 @@ fn scroll_right() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::MoveCursorRight)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			test_context.view_context.assert_render_action(&["ScrollRight"]);
 		},
@@ -469,7 +469,7 @@ fn scroll_left() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::MoveCursorLeft)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			test_context.view_context.assert_render_action(&["ScrollLeft"]);
 		},

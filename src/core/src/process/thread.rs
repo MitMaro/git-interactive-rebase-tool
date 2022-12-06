@@ -69,11 +69,13 @@ impl<ModuleProvider: module::ModuleProvider + Send + 'static> Thread<ModuleProvi
 
 #[cfg(test)]
 mod tests {
-	use std::fs::File;
+	use std::{
+		fs::File,
+		sync::atomic::{AtomicBool, Ordering},
+	};
 
 	use input::StandardEvent;
 	use runtime::{testutils::ThreadableTester, Status};
-	use todo_file::{Line, TodoFile};
 
 	use super::*;
 	use crate::{
@@ -132,32 +134,26 @@ mod tests {
 
 	#[test]
 	fn run_success() {
-		struct TestModule;
+		struct TestModule(Arc<AtomicBool>);
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &view::State, rebase_todo: &mut TodoFile) -> Results {
-				rebase_todo.add_line(0, Line::new("pick 123456789 comment").unwrap());
+			fn handle_event(&mut self, _: Event, _: &view::State) -> Results {
+				self.0.store(true, Ordering::Release);
 				Results::from(ExitStatus::Good)
 			}
 		}
 
+		let handle_called = Arc::new(AtomicBool::new(false));
+
 		process_test(
-			create_test_module_handler(TestModule {}),
-			|ProcessTestContext {
-			     process,
-			     todo_file_path,
-			     ..
-			 }| {
-				let thread = Thread::new(process);
+			create_test_module_handler(TestModule(Arc::clone(&handle_called))),
+			|ProcessTestContext { process, .. }| {
+				let thread = Thread::new(process.clone());
 				let tester = ThreadableTester::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
-				let mut todo_file = TodoFile::new(todo_file_path.to_str().unwrap(), 0, "#");
-				todo_file.load_file().unwrap();
-				assert_eq!(
-					todo_file.get_line(0).unwrap(),
-					&Line::new("pick 123456789 comment").unwrap()
-				);
+				assert!(handle_called.load(Ordering::Acquire));
+				assert_eq!(process.exit_status(), ExitStatus::Good);
 			},
 		);
 	}
@@ -168,8 +164,7 @@ mod tests {
 		struct TestModule;
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &view::State, rebase_todo: &mut TodoFile) -> Results {
-				rebase_todo.add_line(0, Line::new("pick 123456789 comment").unwrap());
+			fn handle_event(&mut self, _: Event, _: &view::State) -> Results {
 				Results::from(ExitStatus::Good)
 			}
 		}
@@ -200,26 +195,19 @@ mod tests {
 		struct TestModule;
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &view::State, rebase_todo: &mut TodoFile) -> Results {
-				rebase_todo.add_line(0, Line::new("pick 123456789 comment").unwrap());
+			fn handle_event(&mut self, _: Event, _: &view::State) -> Results {
 				Results::from(ExitStatus::Kill)
 			}
 		}
 
 		process_test(
 			create_test_module_handler(TestModule {}),
-			|ProcessTestContext {
-			     process,
-			     todo_file_path,
-			     ..
-			 }| {
-				let thread = Thread::new(process);
+			|ProcessTestContext { process, .. }| {
+				let thread = Thread::new(process.clone());
 				let tester = ThreadableTester::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
-				let mut todo_file = TodoFile::new(todo_file_path.to_str().unwrap(), 0, "#");
-				todo_file.load_file().unwrap();
-				assert!(todo_file.get_line(0).is_none());
+				assert_eq!(process.exit_status(), ExitStatus::Kill);
 			},
 		);
 	}

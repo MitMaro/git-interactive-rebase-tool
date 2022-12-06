@@ -9,7 +9,6 @@ mod tests;
 use anyhow::Error;
 use input::InputOptions;
 use lazy_static::lazy_static;
-use todo_file::TodoFile;
 use view::{RenderContext, ViewData};
 
 pub(crate) use self::{
@@ -30,7 +29,7 @@ lazy_static! {
 }
 
 pub(crate) trait Module: Send {
-	fn activate(&mut self, _rebase_todo: &TodoFile, _previous_state: State) -> Results {
+	fn activate(&mut self, _previous_state: State) -> Results {
 		Results::new()
 	}
 
@@ -38,7 +37,7 @@ pub(crate) trait Module: Send {
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, _render_context: &RenderContext, _rebase_todo: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, _render_context: &RenderContext) -> &ViewData {
 		&DEFAULT_VIEW_DATA
 	}
 
@@ -50,7 +49,7 @@ pub(crate) trait Module: Send {
 		event
 	}
 
-	fn handle_event(&mut self, _event: Event, _view_state: &view::State, _rebase_todo: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, _event: Event, _view_state: &view::State) -> Results {
 		Results::new()
 	}
 

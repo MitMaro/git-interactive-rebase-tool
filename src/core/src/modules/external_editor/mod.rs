@@ -5,9 +5,12 @@ mod external_editor_state;
 #[cfg(all(unix, test))]
 mod tests;
 
+use std::sync::Arc;
+
 use anyhow::{anyhow, Result};
 use input::InputOptions;
 use lazy_static::lazy_static;
+use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
 use view::{RenderContext, ViewData, ViewLine};
 
@@ -30,11 +33,13 @@ pub(crate) struct ExternalEditor {
 	external_command: (String, Vec<String>),
 	lines: Vec<Line>,
 	state: ExternalEditorState,
+	todo_file: Arc<Mutex<TodoFile>>,
 	view_data: ViewData,
 }
 
 impl Module for ExternalEditor {
-	fn activate(&mut self, todo_file: &TodoFile, _: State) -> Results {
+	fn activate(&mut self, _: State) -> Results {
+		let todo_file = self.todo_file.lock();
 		let mut results = Results::new();
 		if let Err(err) = todo_file.write_file() {
 			results.error_with_return(err.into(), State::List);
@@ -44,14 +49,15 @@ impl Module for ExternalEditor {
 		if self.lines.is_empty() {
 			self.lines = todo_file.get_lines_owned();
 		}
-
-		match self.get_command(todo_file) {
+		drop(todo_file);
+		match self.get_command() {
 			Ok(external_command) => self.external_command = external_command,
 			Err(err) => {
 				results.error_with_return(err, State::List);
 				return results;
 			},
 		}
+
 		self.set_state(&mut results, ExternalEditorState::Active);
 		results
 	}
@@ -62,7 +68,7 @@ impl Module for ExternalEditor {
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, _: &RenderContext) -> &ViewData {
 		match self.state {
 			ExternalEditorState::Active => {
 				self.view_data.update_view_data(|updater| {
@@ -87,22 +93,31 @@ impl Module for ExternalEditor {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State, todo_file: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			ExternalEditorState::Active => {
 				match event {
 					Event::MetaEvent(MetaEvent::ExternalCommandSuccess) => {
-						match todo_file.load_file() {
+						let mut todo_file = self.todo_file.lock();
+						let result = todo_file.load_file();
+						let state = match result {
 							Ok(_) => {
 								if todo_file.is_empty() || todo_file.is_noop() {
-									self.set_state(&mut results, ExternalEditorState::Empty);
+									Some(ExternalEditorState::Empty)
 								}
 								else {
 									results.state(State::List);
+									None
 								}
 							},
-							Err(e) => self.set_state(&mut results, ExternalEditorState::Error(e.into())),
+							Err(e) => Some(ExternalEditorState::Error(e.into())),
+						};
+
+						drop(todo_file);
+
+						if let Some(new_state) = state {
+							self.set_state(&mut results, new_state);
 						}
 					},
 					Event::MetaEvent(MetaEvent::ExternalCommandError) => {
@@ -121,8 +136,7 @@ impl Module for ExternalEditor {
 						Action::AbortRebase => results.exit_status(ExitStatus::Good),
 						Action::EditRebase => self.set_state(&mut results, ExternalEditorState::Active),
 						Action::UndoAndEdit => {
-							todo_file.set_lines(self.lines.clone());
-							self.undo_and_edit(&mut results, todo_file);
+							self.undo_and_edit(&mut results);
 						},
 						Action::RestoreAndAbortEdit => {},
 					}
@@ -133,11 +147,12 @@ impl Module for ExternalEditor {
 				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => {
-							todo_file.set_lines(vec![]);
+							self.todo_file.lock().set_lines(vec![]);
 							results.exit_status(ExitStatus::Good);
 						},
 						Action::EditRebase => self.set_state(&mut results, ExternalEditorState::Active),
 						Action::RestoreAndAbortEdit => {
+							let mut todo_file = self.todo_file.lock();
 							todo_file.set_lines(self.lines.clone());
 							results.state(State::List);
 							if let Err(err) = todo_file.write_file() {
@@ -145,8 +160,7 @@ impl Module for ExternalEditor {
 							}
 						},
 						Action::UndoAndEdit => {
-							todo_file.set_lines(self.lines.clone());
-							self.undo_and_edit(&mut results, todo_file);
+							self.undo_and_edit(&mut results);
 						},
 					}
 				}
@@ -157,7 +171,7 @@ impl Module for ExternalEditor {
 }
 
 impl ExternalEditor {
-	pub(crate) fn new(editor: &str) -> Self {
+	pub(crate) fn new(editor: &str, todo_file: Arc<Mutex<TodoFile>>) -> Self {
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 		});
@@ -195,6 +209,7 @@ impl ExternalEditor {
 			external_command: (String::new(), vec![]),
 			lines: vec![],
 			state: ExternalEditorState::Active,
+			todo_file,
 			view_data,
 		}
 	}
@@ -209,16 +224,18 @@ impl ExternalEditor {
 		}
 	}
 
-	fn undo_and_edit(&mut self, results: &mut Results, todo_file: &mut TodoFile) {
+	fn undo_and_edit(&mut self, results: &mut Results) {
+		let mut todo_file = self.todo_file.lock();
 		todo_file.set_lines(self.lines.clone());
 		if let Err(err) = todo_file.write_file() {
 			results.error_with_return(err.into(), State::List);
 			return;
 		}
+		drop(todo_file);
 		self.set_state(results, ExternalEditorState::Active);
 	}
 
-	fn get_command(&mut self, todo_file: &TodoFile) -> Result<(String, Vec<String>)> {
+	fn get_command(&self) -> Result<(String, Vec<String>)> {
 		let mut parameters = tokenize(self.editor.as_str())
 			.map_or(Err(anyhow!("Invalid editor: \"{}\"", self.editor)), |args| {
 				if args.is_empty() {
@@ -230,6 +247,7 @@ impl ExternalEditor {
 			})
 			.map_err(|e| anyhow!("Please see the git \"core.editor\" configuration for details").context(e))?;
 
+		let todo_file = self.todo_file.lock();
 		let filepath = todo_file.get_filepath().to_str().ok_or_else(|| {
 			anyhow!(
 				"The file path {} is invalid",

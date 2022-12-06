@@ -1,5 +1,5 @@
 use captur::capture;
-use todo_file::testutil::{with_todo_file, TodoFileTestContext};
+use todo_file::{testutil::with_todo_file, TodoFile};
 use view::{
 	testutil::{with_view_state, TestContext as ViewContext},
 	RenderContext,
@@ -16,17 +16,18 @@ use crate::{
 pub(crate) struct TestContext {
 	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) render_context: RenderContext,
-	pub(crate) todo_file_context: TodoFileTestContext,
 	pub(crate) view_context: ViewContext,
+	todo_file: Option<TodoFile>,
 }
 
 impl TestContext {
 	fn get_build_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
-		module.build_view_data(&self.render_context, self.todo_file_context.todo_file())
+		module.build_view_data(&self.render_context)
 	}
 
+	#[allow(clippy::unused_self)]
 	pub(crate) fn activate(&self, module: &'_ mut dyn Module, state: State) -> Results {
-		module.activate(self.todo_file_context.todo_file(), state)
+		module.activate(state)
 	}
 
 	#[allow(clippy::unused_self)]
@@ -51,7 +52,7 @@ impl TestContext {
 		let event = self.read_event(module);
 		let mut results = Results::new();
 		results.event(event);
-		results.append(module.handle_event(event, &self.view_context.state, self.todo_file_context.todo_file_mut()));
+		results.append(module.handle_event(event, &self.view_context.state));
 		results
 	}
 
@@ -66,6 +67,10 @@ impl TestContext {
 	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<Results> {
 		self.handle_n_events(module, self.event_handler_context.number_events)
 	}
+
+	pub(crate) fn take_todo_file(&mut self) -> TodoFile {
+		self.todo_file.take().expect("Cannot take the TodoFile more than once")
+	}
 }
 
 pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
@@ -74,10 +79,11 @@ where C: FnOnce(TestContext) {
 		with_view_state(|view_context| {
 			capture!(lines);
 			with_todo_file(lines, |todo_file_context| {
+				let (_git_todo_file, todo_file) = todo_file_context.to_owned();
 				callback(TestContext {
 					event_handler_context,
 					render_context: RenderContext::new(300, 120),
-					todo_file_context,
+					todo_file: Some(todo_file),
 					view_context,
 				});
 			});

@@ -5,11 +5,14 @@ mod view_builder;
 #[cfg(test)]
 mod tests;
 
+use std::sync::Arc;
+
 use anyhow::{anyhow, Error};
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use input::{InputOptions, StandardEvent};
+use parking_lot::Mutex;
 use todo_file::TodoFile;
 use view::{RenderContext, ViewData};
 
@@ -40,13 +43,14 @@ pub(crate) struct ShowCommit {
 	overview_view_data: ViewData,
 	repository: Repository,
 	state: ShowCommitState,
+	todo_file: Arc<Mutex<TodoFile>>,
 	view_builder: ViewBuilder,
 }
 
 impl Module for ShowCommit {
-	fn activate(&mut self, rebase_todo: &TodoFile, _: State) -> Results {
+	fn activate(&mut self, _: State) -> Results {
 		let mut results = Results::new();
-		if let Some(selected_line) = rebase_todo.get_selected_line() {
+		if let Some(selected_line) = self.todo_file.lock().get_selected_line() {
 			// skip loading commit data if the currently loaded commit has not changed, this retains
 			// position after returning to the list view or help
 			if let Some(diff) = self.diff.as_ref() {
@@ -83,7 +87,7 @@ impl Module for ShowCommit {
 		results
 	}
 
-	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, context: &RenderContext) -> &ViewData {
 		if self.help.is_active() {
 			return self.help.get_view_data();
 		}
@@ -133,7 +137,7 @@ impl Module for ShowCommit {
 		)
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
 		if self.help.is_active() {
 			self.help.handle_event(event, view_state);
 			return Results::new();
@@ -174,7 +178,7 @@ impl Module for ShowCommit {
 }
 
 impl ShowCommit {
-	pub(crate) fn new(config: &Config, repository: Repository) -> Self {
+	pub(crate) fn new(config: &Config, repository: Repository, todo_file: Arc<Mutex<TodoFile>>) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -203,14 +207,15 @@ impl ShowCommit {
 			.renames(config.git.diff_renames, config.git.diff_rename_limit);
 
 		Self {
+			commit_diff_loader_options,
 			diff: None,
 			diff_view_data,
 			help: Help::new_from_keybindings(&get_show_commit_help_lines(&config.key_bindings)),
-			commit_diff_loader_options,
 			overview_view_data,
-			state: ShowCommitState::Overview,
-			view_builder: ViewBuilder::new(view_builder_options),
 			repository,
+			state: ShowCommitState::Overview,
+			todo_file,
+			view_builder: ViewBuilder::new(view_builder_options),
 		}
 	}
 }

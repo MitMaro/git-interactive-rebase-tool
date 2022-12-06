@@ -1,6 +1,5 @@
 use input::InputOptions;
 use lazy_static::lazy_static;
-use todo_file::TodoFile;
 use view::{RenderContext, ViewData, ViewLine};
 
 use crate::{
@@ -23,12 +22,12 @@ pub(crate) struct WindowSizeError {
 }
 
 impl Module for WindowSizeError {
-	fn activate(&mut self, _: &TodoFile, previous_state: State) -> Results {
+	fn activate(&mut self, previous_state: State) -> Results {
 		self.return_state = previous_state;
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, context: &RenderContext, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, context: &RenderContext) -> &ViewData {
 		let view_width = context.width();
 		let message = if !context.is_minimum_view_width() {
 			if view_width >= SHORT_ERROR_MESSAGE.len() {
@@ -58,7 +57,7 @@ impl Module for WindowSizeError {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, _: &view::State, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, _: &view::State) -> Results {
 		let mut results = Results::new();
 
 		if let Event::Resize(width, height) = event {

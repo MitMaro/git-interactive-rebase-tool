@@ -1,5 +1,9 @@
+use std::sync::Arc;
+
 use config::Config;
 use git::Repository;
+use parking_lot::Mutex;
+use todo_file::TodoFile;
 
 use super::{Module, State};
 use crate::{
@@ -19,16 +23,20 @@ pub(crate) struct Modules {
 }
 
 impl ModuleProvider for Modules {
-	fn new(config: &Config, repository: Repository) -> Self {
+	fn new(config: &Config, repository: Repository, todo_file: &Arc<Mutex<TodoFile>>) -> Self {
 		Self {
 			error: Error::new(),
-			list: List::new(config),
-			show_commit: ShowCommit::new(config, repository),
+			list: List::new(config, Arc::clone(todo_file)),
+			show_commit: ShowCommit::new(config, repository, Arc::clone(todo_file)),
 			window_size_error: WindowSizeError::new(),
-			confirm_abort: ConfirmAbort::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
+			confirm_abort: ConfirmAbort::new(
+				&config.key_bindings.confirm_yes,
+				&config.key_bindings.confirm_no,
+				Arc::clone(todo_file),
+			),
 			confirm_rebase: ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
-			external_editor: ExternalEditor::new(config.git.editor.as_str()),
-			insert: Insert::new(),
+			external_editor: ExternalEditor::new(config.git.editor.as_str(), Arc::clone(todo_file)),
+			insert: Insert::new(Arc::clone(todo_file)),
 		}
 	}
 
@@ -62,15 +70,19 @@ impl ModuleProvider for Modules {
 #[cfg(test)]
 mod tests {
 	use git::testutil::with_temp_repository;
+	use todo_file::testutil::with_todo_file;
 
 	use super::*;
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {
 		with_temp_repository(|repository| {
-			let config = Config::new();
-			let modules = Modules::new(&config, repository);
-			callback(modules);
+			with_todo_file(&[], |todo_file_context| {
+				let (_todo_file_path, todo_file) = todo_file_context.to_owned();
+				let config = Config::new();
+				let modules = Modules::new(&config, repository, &Arc::new(Mutex::new(todo_file)));
+				callback(modules);
+			});
 		});
 	}
 

@@ -2,7 +2,6 @@ use captur::capture;
 use display::DisplayColor;
 use input::InputOptions;
 use lazy_static::lazy_static;
-use todo_file::TodoFile;
 use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
 use crate::{
@@ -22,12 +21,12 @@ pub(crate) struct Error {
 }
 
 impl Module for Error {
-	fn activate(&mut self, _: &TodoFile, previous_state: State) -> Results {
+	fn activate(&mut self, previous_state: State) -> Results {
 		self.return_state = previous_state;
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, _: &RenderContext) -> &ViewData {
 		&self.view_data
 	}
 
@@ -35,7 +34,7 @@ impl Module for Error {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
 		let mut results = Results::new();
 		if handle_view_data_scroll(event, view_state).is_none() {
 			if let Event::Key(_) = event {

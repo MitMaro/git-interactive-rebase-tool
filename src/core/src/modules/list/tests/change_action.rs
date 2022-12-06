@@ -21,7 +21,7 @@ fn pinned_segments() {
 		],
 		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -51,7 +51,7 @@ fn normal_mode_action_change_to_drop() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -83,7 +83,7 @@ fn visual_mode_action_change_to_drop() {
 			Event::from(MetaEvent::ActionDrop),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -107,7 +107,7 @@ fn normal_mode_action_change_to_edit() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionEdit)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -139,7 +139,7 @@ fn visual_mode_action_change_to_edit() {
 			Event::from(MetaEvent::ActionEdit),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -163,7 +163,7 @@ fn normal_mode_action_change_to_fixup() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionFixup)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -195,7 +195,7 @@ fn visual_mode_action_change_to_fixup() {
 			Event::from(MetaEvent::ActionFixup),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -219,7 +219,7 @@ fn normal_mode_action_change_to_pick() {
 		&["drop aaa c1"],
 		&[Event::from(MetaEvent::ActionPick)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -251,7 +251,7 @@ fn visual_mode_action_change_to_pick() {
 			Event::from(MetaEvent::ActionPick),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -275,7 +275,7 @@ fn normal_mode_action_change_to_reword() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionReword)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -307,7 +307,7 @@ fn visual_mode_action_change_to_reword() {
 			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -331,7 +331,7 @@ fn normal_mode_action_change_to_squash() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -363,7 +363,7 @@ fn visual_mode_action_change_to_squash() {
 			Event::from(MetaEvent::ActionSquash),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
