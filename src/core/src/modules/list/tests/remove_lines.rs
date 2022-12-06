@@ -15,7 +15,7 @@ fn normal_mode_remove_line_first() {
 		],
 		&[Event::from(MetaEvent::Delete)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -49,7 +49,7 @@ fn normal_mode_remove_line_end() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -82,7 +82,7 @@ fn visual_mode_remove_lines_start_index_first() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -94,7 +94,7 @@ fn visual_mode_remove_lines_start_index_first() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.todo_file_context.todo_file().get_selected_line_index()
+				module.todo_file.lock().get_selected_line_index()
 			);
 		},
 	);
@@ -119,7 +119,7 @@ fn visual_mode_remove_lines_end_index_first() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -131,7 +131,7 @@ fn visual_mode_remove_lines_end_index_first() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.todo_file_context.todo_file().get_selected_line_index()
+				module.todo_file.lock().get_selected_line_index()
 			);
 		},
 	);
@@ -158,7 +158,7 @@ fn visual_mode_remove_lines_start_index_last() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -170,7 +170,7 @@ fn visual_mode_remove_lines_start_index_last() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.todo_file_context.todo_file().get_selected_line_index()
+				module.todo_file.lock().get_selected_line_index()
 			);
 		},
 	);
@@ -195,7 +195,7 @@ fn visual_mode_remove_lines_end_index_last() {
 			Event::from(MetaEvent::Delete),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -207,7 +207,7 @@ fn visual_mode_remove_lines_end_index_last() {
 			);
 			assert_eq!(
 				module.visual_index_start.unwrap(),
-				test_context.todo_file_context.todo_file().get_selected_line_index()
+				module.todo_file.lock().get_selected_line_index()
 			);
 		},
 	);

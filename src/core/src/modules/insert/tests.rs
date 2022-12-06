@@ -4,18 +4,22 @@ use view::assert_rendered_output;
 use super::*;
 use crate::{assert_results, events::Event, process::Artifact, testutil::module_test};
 
+fn create_insert(todo_file: TodoFile) -> Insert {
+	Insert::new(Arc::new(Mutex::new(todo_file)))
+}
+
 #[test]
 fn activate() {
-	module_test(&[], &[], |test_context| {
-		let mut module = Insert::new();
+	module_test(&[], &[], |mut test_context| {
+		let mut module = create_insert(test_context.take_todo_file());
 		assert_results!(test_context.activate(&mut module, State::List));
 	});
 }
 
 #[test]
 fn render_prompt() {
-	module_test(&[], &[], |test_context| {
-		let mut module = Insert::new();
+	module_test(&[], &[], |mut test_context| {
+		let mut module = create_insert(test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,
@@ -40,7 +44,7 @@ fn render_prompt() {
 #[test]
 fn prompt_cancel() {
 	module_test(&[], &[Event::from('q')], |mut test_context| {
-		let mut module = Insert::new();
+		let mut module = create_insert(test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('q')),
@@ -61,7 +65,7 @@ fn edit_render_exec() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -80,15 +84,7 @@ fn edit_render_exec() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.to_text(),
-				"exec foo"
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().to_text(), "exec foo");
 		},
 	);
 }
@@ -105,7 +101,7 @@ fn edit_render_pick() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -124,15 +120,7 @@ fn edit_render_pick() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.to_text(),
-				"pick abc "
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().to_text(), "pick abc ");
 		},
 	);
 }
@@ -149,7 +137,7 @@ fn edit_render_label() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -168,15 +156,7 @@ fn edit_render_label() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.to_text(),
-				"label foo"
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().to_text(), "label foo");
 		},
 	);
 }
@@ -193,7 +173,7 @@ fn edit_render_reset() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -212,15 +192,7 @@ fn edit_render_reset() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.to_text(),
-				"reset foo"
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().to_text(), "reset foo");
 		},
 	);
 }
@@ -237,7 +209,7 @@ fn edit_render_merge() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -256,15 +228,7 @@ fn edit_render_merge() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.to_text(),
-				"merge foo"
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().to_text(), "merge foo");
 		},
 	);
 }
@@ -281,7 +245,7 @@ fn update_ref_render_merge() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -300,15 +264,7 @@ fn update_ref_render_merge() {
 				Artifact::Event(Event::from(KeyCode::Enter)),
 				Artifact::ChangeState(State::List)
 			);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.to_text(),
-				"update-ref foo"
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().to_text(), "update-ref foo");
 		},
 	);
 }
@@ -325,9 +281,9 @@ fn edit_select_next_index() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
-			assert_eq!(test_context.todo_file_context.todo_file().get_selected_line_index(), 1);
+			assert_eq!(module.todo_file.lock().get_selected_line_index(), 1);
 		},
 	);
 }
@@ -338,9 +294,9 @@ fn cancel_edit() {
 		&[],
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
 		|mut test_context| {
-			let mut module = Insert::new();
+			let mut module = create_insert(test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
-			assert!(test_context.todo_file_context.todo_file().is_empty());
+			assert!(module.todo_file.lock().is_empty());
 		},
 	);
 }

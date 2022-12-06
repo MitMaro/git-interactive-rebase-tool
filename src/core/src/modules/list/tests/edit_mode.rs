@@ -10,7 +10,7 @@ fn edit_with_edit_content() {
 		&["exec echo foo"],
 		&[Event::from(MetaEvent::Edit)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::Edit))
@@ -23,7 +23,7 @@ fn edit_with_edit_content() {
 #[test]
 fn edit_without_edit_content() {
 	module_test(&["pick aaa c1"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
-		let mut module = List::new(&Config::new());
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from(MetaEvent::Edit))
@@ -35,7 +35,7 @@ fn edit_without_edit_content() {
 #[test]
 fn edit_without_selected_line() {
 	module_test(&[], &[Event::from(MetaEvent::Edit)], |mut test_context| {
-		let mut module = List::new(&Config::new());
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from(MetaEvent::Edit))
@@ -54,18 +54,10 @@ fn handle_event() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.build_view_data(&mut module);
 			let _ = test_context.handle_all_events(&mut module);
-			assert_eq!(
-				test_context
-					.todo_file_context
-					.todo_file()
-					.get_line(0)
-					.unwrap()
-					.get_content(),
-				"fo"
-			);
+			assert_eq!(module.todo_file.lock().get_line(0).unwrap().get_content(), "fo");
 			assert_eq!(module.state, ListState::Normal);
 		},
 	);
@@ -74,7 +66,7 @@ fn handle_event() {
 #[test]
 fn render() {
 	module_test(&["exec foo"], &[Event::from(MetaEvent::Edit)], |mut test_context| {
-		let mut module = List::new(&Config::new());
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let _ = test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(

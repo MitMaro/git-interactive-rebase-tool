@@ -5,8 +5,8 @@ use crate::testutil::module_test;
 
 #[test]
 fn empty_list() {
-	module_test(&[], &[], |test_context| {
-		let mut module = List::new(&Config::new());
+	module_test(&[], &[], |mut test_context| {
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,
@@ -37,8 +37,8 @@ fn full() {
 			"update-ref reference",
 		],
 		&[],
-		|test_context| {
-			let mut module = List::new(&Config::new());
+		|mut test_context| {
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -85,7 +85,7 @@ fn compact() {
 		&[],
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -114,12 +114,12 @@ fn compact() {
 #[test]
 fn noop_list() {
 	module_test(&["break"], &[], |mut test_context| {
-		let mut module = List::new(&Config::new());
-		test_context.todo_file_context.todo_file_mut().remove_lines(0, 0);
-		test_context
-			.todo_file_context
-			.todo_file_mut()
-			.add_line(0, Line::new("noop").unwrap());
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut todo_file = module.todo_file.lock();
+		todo_file.remove_lines(0, 0);
+		todo_file.add_line(0, Line::new("noop").unwrap());
+		drop(todo_file);
+
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,

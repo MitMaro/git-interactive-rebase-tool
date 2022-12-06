@@ -10,7 +10,7 @@ fn start() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::ToggleVisualMode)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -34,7 +34,7 @@ fn start_cursor_down_one() {
 			Event::from(MetaEvent::MoveCursorDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -64,7 +64,7 @@ fn start_cursor_page_down() {
 			Event::from(MetaEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -101,7 +101,7 @@ fn start_cursor_from_bottom_move_up() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -140,7 +140,7 @@ fn start_cursor_from_bottom_to_top() {
 			Event::from(MetaEvent::MoveCursorUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -168,7 +168,7 @@ fn action_change_top_bottom() {
 			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -196,7 +196,7 @@ fn action_change_bottom_top() {
 			Event::from(MetaEvent::ActionReword),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -220,7 +220,7 @@ fn toggle_visual_mode() {
 			Event::from(MetaEvent::ToggleVisualMode),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -235,7 +235,7 @@ fn toggle_visual_mode() {
 #[test]
 fn other_event() {
 	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
-		let mut module = List::new(&Config::new());
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from(KeyCode::Null))

@@ -4,8 +4,11 @@ mod line_type;
 #[cfg(all(unix, test))]
 mod tests;
 
+use std::sync::Arc;
+
 use display::DisplayColor;
 use input::InputOptions;
+use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine};
 
@@ -25,16 +28,17 @@ pub(crate) struct Insert {
 	edit: Edit,
 	line_type: LineType,
 	state: InsertState,
+	todo_file: Arc<Mutex<TodoFile>>,
 }
 
 impl Module for Insert {
-	fn activate(&mut self, _: &TodoFile, _: State) -> Results {
+	fn activate(&mut self, _: State) -> Results {
 		self.state = InsertState::Prompt;
 		self.edit.clear();
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, _: &RenderContext) -> &ViewData {
 		match self.state {
 			InsertState::Prompt => self.action_choices.get_view_data(),
 			InsertState::Edit => {
@@ -60,7 +64,7 @@ impl Module for Insert {
 	}
 
 	#[allow(clippy::unreachable)]
-	fn handle_event(&mut self, event: Event, view_state: &view::State, rebase_todo: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			InsertState::Prompt => {
@@ -92,9 +96,10 @@ impl Module for Insert {
 							// this should exit in the prompt state and never get here
 							LineType::Cancel => unreachable!(),
 						};
-						let new_line_index = rebase_todo.get_selected_line_index() + 1;
-						rebase_todo.add_line(new_line_index, line);
-						let _ = rebase_todo.set_selected_line_index(new_line_index);
+						let mut todo_file = self.todo_file.lock();
+						let new_line_index = todo_file.get_selected_line_index() + 1;
+						todo_file.add_line(new_line_index, line);
+						let _ = todo_file.set_selected_line_index(new_line_index);
 					}
 				}
 			},
@@ -104,7 +109,7 @@ impl Module for Insert {
 }
 
 impl Insert {
-	pub(crate) fn new() -> Self {
+	pub(crate) fn new(todo_file: Arc<Mutex<TodoFile>>) -> Self {
 		let mut action_choices = Choice::new(vec![
 			(LineType::Exec, 'e', String::from("exec <command>")),
 			(LineType::Pick, 'p', String::from("pick <hash>")),
@@ -121,10 +126,11 @@ impl Insert {
 		action_choices.set_prompt(vec![ViewLine::from("Select the type of line to insert:")]);
 
 		Self {
-			state: InsertState::Prompt,
-			edit: Edit::new(),
 			action_choices,
+			edit: Edit::new(),
 			line_type: LineType::Exec,
+			state: InsertState::Prompt,
+			todo_file,
 		}
 	}
 }

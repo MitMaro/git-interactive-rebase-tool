@@ -2,13 +2,14 @@
 mod tests;
 mod utils;
 
-use std::cmp::min;
+use std::{cmp::min, sync::Arc};
 
 use captur::capture;
 use config::Config;
 use display::DisplayColor;
 use if_chain::if_chain;
 use input::{InputOptions, MouseEventKind, StandardEvent};
+use parking_lot::Mutex;
 use todo_file::{Action, EditContext, Line, Search, TodoFile};
 use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
@@ -61,23 +62,24 @@ pub(crate) struct List {
 	search_bar: SearchBar,
 	selected_line_action: Option<Action>,
 	state: ListState,
+	todo_file: Arc<Mutex<TodoFile>>,
 	view_data: ViewData,
 	visual_index_start: Option<usize>,
 	visual_mode_help: Help,
 }
 
 impl Module for List {
-	fn activate(&mut self, todo_file: &TodoFile, _: State) -> Results {
-		self.selected_line_action = todo_file.get_selected_line().map(|line| *line.get_action());
+	fn activate(&mut self, _: State) -> Results {
+		self.selected_line_action = self.todo_file.lock().get_selected_line().map(|line| *line.get_action());
 		Results::new()
 	}
 
-	fn build_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, context: &RenderContext) -> &ViewData {
 		match self.state {
-			ListState::Normal => self.get_normal_mode_view_data(todo_file, context),
-			ListState::Visual => self.get_visual_mode_view_data(todo_file, context),
+			ListState::Normal => self.get_normal_mode_view_data(context),
+			ListState::Visual => self.get_visual_mode_view_data(context),
 			ListState::Edit => {
-				if let Some(selected_line) = todo_file.get_selected_line() {
+				if let Some(selected_line) = self.todo_file.lock().get_selected_line() {
 					if selected_line.is_editable() {
 						return self.edit.build_view_data(
 							|updater| {
@@ -96,18 +98,18 @@ impl Module for List {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State, todo_file: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
 		select!(
 			default || {
 				match self.state {
-					ListState::Normal => self.handle_normal_mode_event(event, view_state, todo_file),
-					ListState::Visual => self.handle_visual_mode_input(event, view_state, todo_file),
-					ListState::Edit => self.handle_edit_mode_input(event, todo_file),
+					ListState::Normal => self.handle_normal_mode_event(event, view_state),
+					ListState::Visual => self.handle_visual_mode_input(event, view_state),
+					ListState::Edit => self.handle_edit_mode_input(event),
 				}
 			},
 			|| self.handle_normal_help_input(event, view_state),
 			|| self.handle_visual_help_input(event, view_state),
-			|| self.handle_search_input(event, todo_file)
+			|| self.handle_search_input(event)
 		)
 	}
 
@@ -133,7 +135,7 @@ impl Module for List {
 }
 
 impl List {
-	pub(crate) fn new(config: &Config) -> Self {
+	pub(crate) fn new(config: &Config, todo_file: Arc<Mutex<TodoFile>>) -> Self {
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -148,13 +150,15 @@ impl List {
 			search_bar: SearchBar::new(),
 			selected_line_action: None,
 			state: ListState::Normal,
+			todo_file,
 			view_data,
 			visual_index_start: None,
 			visual_mode_help: Help::new_from_keybindings(&get_list_visual_mode_help_lines(&config.key_bindings)),
 		}
 	}
 
-	fn update_cursor(&mut self, todo_file: &mut TodoFile, cursor_update: CursorUpdate) -> usize {
+	fn update_cursor(&mut self, cursor_update: CursorUpdate) -> usize {
+		let mut todo_file = self.todo_file.lock();
 		let new_selected_line_index = match cursor_update {
 			CursorUpdate::Down(amount) => todo_file.get_selected_line_index().saturating_add(amount),
 			CursorUpdate::Up(amount) => todo_file.get_selected_line_index().saturating_sub(amount),
@@ -183,8 +187,9 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn force_abort(&self, results: &mut Results, rebase_todo: &mut TodoFile) {
-		rebase_todo.set_lines(vec![]);
+	fn force_abort(&self, results: &mut Results) {
+		let mut todo_file = self.todo_file.lock();
+		todo_file.set_lines(vec![]);
 		results.exit_status(ExitStatus::Good);
 	}
 
@@ -198,43 +203,58 @@ impl List {
 		results.exit_status(ExitStatus::Good);
 	}
 
-	fn swap_selected_up(&mut self, todo_file: &mut TodoFile) {
+	fn swap_selected_up(&mut self) {
+		let mut todo_file = self.todo_file.lock();
 		let start_index = todo_file.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
-		if todo_file.swap_range_up(start_index, end_index) {
+		let swapped = todo_file.swap_range_up(start_index, end_index);
+		drop(todo_file);
+
+		if swapped {
 			if let Some(visual_index_start) = self.visual_index_start {
 				self.visual_index_start = Some(visual_index_start - 1);
 			}
-			let _ = self.update_cursor(todo_file, CursorUpdate::Up(1));
+			let _ = self.update_cursor(CursorUpdate::Up(1));
 		}
 	}
 
-	fn swap_selected_down(&mut self, todo_file: &mut TodoFile) {
+	fn swap_selected_down(&mut self) {
+		let mut todo_file = self.todo_file.lock();
 		let start_index = todo_file.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
-		if todo_file.swap_range_down(start_index, end_index) {
+		let swapped = todo_file.swap_range_down(start_index, end_index);
+		drop(todo_file);
+
+		if swapped {
 			if let Some(visual_index_start) = self.visual_index_start {
 				self.visual_index_start = Some(visual_index_start + 1);
 			}
-			let _ = self.update_cursor(todo_file, CursorUpdate::Down(1));
+			let _ = self.update_cursor(CursorUpdate::Down(1));
 		}
 	}
 
-	fn set_selected_line_action(&mut self, rebase_todo: &mut TodoFile, action: Action) {
-		let start_index = rebase_todo.get_selected_line_index();
+	fn set_selected_line_action(&mut self, action: Action) {
+		let mut todo_file = self.todo_file.lock();
+		let start_index = todo_file.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
-		rebase_todo.update_range(start_index, end_index, &EditContext::new().action(action));
+		todo_file.update_range(start_index, end_index, &EditContext::new().action(action));
+		drop(todo_file);
+
 		if self.state == ListState::Normal && self.auto_select_next {
-			let _ = self.update_cursor(rebase_todo, CursorUpdate::Down(1));
+			let _ = self.update_cursor(CursorUpdate::Down(1));
 		}
 	}
 
-	fn undo(&mut self, todo_file: &mut TodoFile) {
-		if let Some((start_index, end_index)) = todo_file.undo() {
-			let new_start_index = self.update_cursor(todo_file, CursorUpdate::Set(start_index));
+	fn undo(&mut self) {
+		let mut todo_file = self.todo_file.lock();
+		let undo_result = todo_file.undo();
+		drop(todo_file);
+
+		if let Some((start_index, end_index)) = undo_result {
+			let new_start_index = self.update_cursor(CursorUpdate::Set(start_index));
 			if new_start_index == end_index {
 				self.state = ListState::Normal;
 				self.visual_index_start = None;
@@ -246,9 +266,13 @@ impl List {
 		}
 	}
 
-	fn redo(&mut self, todo_file: &mut TodoFile) {
-		if let Some((start_index, end_index)) = todo_file.redo() {
-			let new_start_index = self.update_cursor(todo_file, CursorUpdate::Set(start_index));
+	fn redo(&mut self) {
+		let mut todo_file = self.todo_file.lock();
+		let redo_result = todo_file.redo();
+		drop(todo_file);
+
+		if let Some((start_index, end_index)) = redo_result {
+			let new_start_index = self.update_cursor(CursorUpdate::Set(start_index));
 			if new_start_index == end_index {
 				self.state = ListState::Normal;
 				self.visual_index_start = None;
@@ -260,14 +284,16 @@ impl List {
 		}
 	}
 
-	fn delete(&mut self, todo_file: &mut TodoFile) {
+	fn delete(&mut self) {
+		let mut todo_file = self.todo_file.lock();
 		let start_index = todo_file.get_selected_line_index();
 		let end_index = self.visual_index_start.unwrap_or(start_index);
 
 		todo_file.remove_lines(start_index, end_index);
-		let new_index = min(start_index, end_index);
+		drop(todo_file);
 
-		let selected_line_index = self.update_cursor(todo_file, CursorUpdate::Set(new_index));
+		let new_index = min(start_index, end_index);
+		let selected_line_index = self.update_cursor(CursorUpdate::Set(new_index));
 
 		if self.state == ListState::Visual {
 			self.visual_index_start = Some(selected_line_index);
@@ -280,14 +306,14 @@ impl List {
 		results.state(State::ExternalEditor);
 	}
 
-	fn toggle_visual_mode(&mut self, todo_file: &mut TodoFile) {
+	fn toggle_visual_mode(&mut self) {
 		if self.state == ListState::Visual {
 			self.state = ListState::Normal;
 			self.visual_index_start = None;
 		}
 		else {
 			self.state = ListState::Visual;
-			self.visual_index_start = Some(todo_file.get_selected_line_index());
+			self.visual_index_start = Some(self.todo_file.lock().get_selected_line_index());
 		}
 	}
 
@@ -308,8 +334,8 @@ impl List {
 		self.height = height as usize;
 	}
 
-	#[allow(clippy::unused_self)]
-	fn show_commit(&mut self, results: &mut Results, todo_file: &TodoFile) {
+	fn show_commit(&mut self, results: &mut Results) {
+		let todo_file = self.todo_file.lock();
 		if let Some(selected_line) = todo_file.get_selected_line() {
 			if selected_line.has_reference() {
 				results.state(State::ShowCommit);
@@ -317,36 +343,49 @@ impl List {
 		}
 	}
 
-	fn action_break(&mut self, todo_file: &mut TodoFile) {
+	fn action_break(&mut self) {
+		let mut todo_file = self.todo_file.lock();
 		let selected_line_index = todo_file.get_selected_line_index();
 		let next_action_is_break = todo_file
 			.get_line(selected_line_index + 1)
 			.map_or(false, |line| line.get_action() == &Action::Break);
-		if !next_action_is_break {
-			let selected_action_is_break = todo_file
-				.get_line(selected_line_index)
-				.map_or(false, |line| line.get_action() == &Action::Break);
-			if selected_action_is_break {
-				todo_file.remove_lines(selected_line_index, selected_line_index);
-				let _ = self.update_cursor(todo_file, CursorUpdate::Up(1));
-			}
-			else {
-				todo_file.add_line(selected_line_index + 1, Line::new_break());
-				let _ = self.update_cursor(todo_file, CursorUpdate::Down(1));
-			}
+
+		// no need to add an additional break when the next line is already a break
+		if next_action_is_break {
+			return;
 		}
+
+		let selected_action_is_break = todo_file
+			.get_line(selected_line_index)
+			.map_or(false, |line| line.get_action() == &Action::Break);
+
+		let cursor_update = if selected_action_is_break {
+			todo_file.remove_lines(selected_line_index, selected_line_index);
+			CursorUpdate::Up(1)
+		}
+		else {
+			todo_file.add_line(selected_line_index + 1, Line::new_break());
+			CursorUpdate::Down(1)
+		};
+
+		drop(todo_file);
+
+		let _ = self.update_cursor(cursor_update);
 	}
 
 	#[allow(clippy::unused_self)]
-	fn toggle_option(&mut self, option: &str, todo_file: &mut TodoFile) {
+	fn toggle_option(&mut self, option: &str) {
+		let mut todo_file = self.todo_file.lock();
+		let selected_line_index = todo_file.get_selected_line_index();
 		todo_file.update_range(
-			todo_file.get_selected_line_index(),
-			todo_file.get_selected_line_index(),
+			selected_line_index,
+			selected_line_index,
 			&EditContext::new().option(option),
 		);
 	}
 
-	fn edit(&mut self, todo_file: &mut TodoFile) {
+	fn edit(&mut self) {
+		let todo_file = self.todo_file.lock();
 		if let Some(selected_line) = todo_file.get_selected_line() {
 			if selected_line.is_editable() {
 				self.state = ListState::Edit;
@@ -361,7 +400,8 @@ impl List {
 		results.state(State::Insert);
 	}
 
-	fn update_list_view_data(&mut self, context: &RenderContext, todo_file: &TodoFile) -> &ViewData {
+	fn update_list_view_data(&mut self, context: &RenderContext) -> &ViewData {
+		let todo_file = self.todo_file.lock();
 		let is_visual_mode = self.state == ListState::Visual;
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
@@ -381,7 +421,7 @@ impl List {
 				)));
 			}
 			else {
-				let maximum_action_width = get_line_action_maximum_width(todo_file);
+				let maximum_action_width = get_line_action_maximum_width(&todo_file);
 				for (index, line) in todo_file.lines_iter().enumerate() {
 					let selected_line = is_visual_mode
 						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
@@ -439,21 +479,21 @@ impl List {
 		&self.view_data
 	}
 
-	fn get_visual_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &ViewData {
+	fn get_visual_mode_view_data(&mut self, context: &RenderContext) -> &ViewData {
 		if self.visual_mode_help.is_active() {
 			self.visual_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(context, todo_file)
+			self.update_list_view_data(context)
 		}
 	}
 
-	fn get_normal_mode_view_data(&mut self, todo_file: &TodoFile, context: &RenderContext) -> &ViewData {
+	fn get_normal_mode_view_data(&mut self, context: &RenderContext) -> &ViewData {
 		if self.normal_mode_help.is_active() {
 			self.normal_mode_help.get_view_data()
 		}
 		else {
-			self.update_list_view_data(context, todo_file)
+			self.update_list_view_data(context)
 		}
 	}
 
@@ -527,8 +567,9 @@ impl List {
 		})
 	}
 
-	fn handle_search_input(&mut self, event: Event, todo_file: &mut TodoFile) -> Option<Results> {
+	fn handle_search_input(&mut self, event: Event) -> Option<Results> {
 		if self.search_bar.is_active() {
+			let todo_file = self.todo_file.lock();
 			match self.search_bar.handle_event(event) {
 				SearchBarAction::Start(term) => {
 					if term.is_empty() {
@@ -536,20 +577,21 @@ impl List {
 						self.search_bar.reset();
 					}
 					else {
-						self.search.next(todo_file, term.as_str());
+						self.search.next(&todo_file, term.as_str());
 					}
 				},
-				SearchBarAction::Next(term) => self.search.next(todo_file, term.as_str()),
-				SearchBarAction::Previous(term) => self.search.previous(todo_file, term.as_str()),
+				SearchBarAction::Next(term) => self.search.next(&todo_file, term.as_str()),
+				SearchBarAction::Previous(term) => self.search.previous(&todo_file, term.as_str()),
 				SearchBarAction::Cancel => {
 					self.search.cancel();
 					return Some(Results::from(event));
 				},
 				SearchBarAction::None => return None,
 			}
+			drop(todo_file);
 
 			if let Some(selected) = self.search.current_match() {
-				let _ = self.update_cursor(todo_file, CursorUpdate::Set(selected));
+				let _ = self.update_cursor(CursorUpdate::Set(selected));
 			}
 			return Some(Results::from(event));
 		}
@@ -557,59 +599,54 @@ impl List {
 	}
 
 	#[allow(clippy::integer_division)]
-	fn handle_common_list_input(
-		&mut self,
-		event: Event,
-		view_state: &view::State,
-		rebase_todo: &mut TodoFile,
-	) -> Option<Results> {
+	fn handle_common_list_input(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
 		let mut results = Results::new();
 		match event {
 			Event::MetaEvent(meta_event) => {
 				match meta_event {
 					MetaEvent::Abort => self.abort(&mut results),
-					MetaEvent::ActionDrop => self.set_selected_line_action(rebase_todo, Action::Drop),
-					MetaEvent::ActionEdit => self.set_selected_line_action(rebase_todo, Action::Edit),
-					MetaEvent::ActionFixup => self.set_selected_line_action(rebase_todo, Action::Fixup),
-					MetaEvent::ActionPick => self.set_selected_line_action(rebase_todo, Action::Pick),
-					MetaEvent::ActionReword => self.set_selected_line_action(rebase_todo, Action::Reword),
-					MetaEvent::ActionSquash => self.set_selected_line_action(rebase_todo, Action::Squash),
-					MetaEvent::Delete => self.delete(rebase_todo),
-					MetaEvent::ForceAbort => self.force_abort(&mut results, rebase_todo),
+					MetaEvent::ActionDrop => self.set_selected_line_action(Action::Drop),
+					MetaEvent::ActionEdit => self.set_selected_line_action(Action::Edit),
+					MetaEvent::ActionFixup => self.set_selected_line_action(Action::Fixup),
+					MetaEvent::ActionPick => self.set_selected_line_action(Action::Pick),
+					MetaEvent::ActionReword => self.set_selected_line_action(Action::Reword),
+					MetaEvent::ActionSquash => self.set_selected_line_action(Action::Squash),
+					MetaEvent::Delete => self.delete(),
+					MetaEvent::ForceAbort => self.force_abort(&mut results),
 					MetaEvent::ForceRebase => self.force_rebase(&mut results),
 					MetaEvent::MoveCursorDown => {
-						let _ = self.update_cursor(rebase_todo, CursorUpdate::Down(1));
+						let _ = self.update_cursor(CursorUpdate::Down(1));
 					},
 					MetaEvent::MoveCursorEnd => {
-						let _ = self.update_cursor(rebase_todo, CursorUpdate::End);
+						let _ = self.update_cursor(CursorUpdate::End);
 					},
 					MetaEvent::MoveCursorHome => {
-						let _ = self.update_cursor(rebase_todo, CursorUpdate::Set(0));
+						let _ = self.update_cursor(CursorUpdate::Set(0));
 					},
 					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_state),
 					MetaEvent::MoveCursorPageDown => {
-						let _ = self.update_cursor(rebase_todo, CursorUpdate::Down(self.height / 2));
+						let _ = self.update_cursor(CursorUpdate::Down(self.height / 2));
 					},
 					MetaEvent::MoveCursorPageUp => {
-						let _ = self.update_cursor(rebase_todo, CursorUpdate::Up(self.height / 2));
+						let _ = self.update_cursor(CursorUpdate::Up(self.height / 2));
 					},
 					MetaEvent::MoveCursorRight => self.move_cursor_right(view_state),
 					MetaEvent::MoveCursorUp => {
-						let _ = self.update_cursor(rebase_todo, CursorUpdate::Up(1));
+						let _ = self.update_cursor(CursorUpdate::Up(1));
 					},
 					MetaEvent::OpenInEditor => self.open_in_editor(&mut results),
 					MetaEvent::Rebase => self.rebase(&mut results),
-					MetaEvent::SwapSelectedDown => self.swap_selected_down(rebase_todo),
-					MetaEvent::SwapSelectedUp => self.swap_selected_up(rebase_todo),
-					MetaEvent::ToggleVisualMode => self.toggle_visual_mode(rebase_todo),
+					MetaEvent::SwapSelectedDown => self.swap_selected_down(),
+					MetaEvent::SwapSelectedUp => self.swap_selected_up(),
+					MetaEvent::ToggleVisualMode => self.toggle_visual_mode(),
 					_ => return None,
 				}
 			},
 			Event::Standard(standard_event) => {
 				match standard_event {
 					StandardEvent::Help => self.help(),
-					StandardEvent::Redo => self.redo(rebase_todo),
-					StandardEvent::Undo => self.undo(rebase_todo),
+					StandardEvent::Redo => self.redo(),
+					StandardEvent::Undo => self.undo(),
 					StandardEvent::SearchStart => self.search_start(),
 					_ => return None,
 				}
@@ -621,25 +658,20 @@ impl List {
 		Some(results)
 	}
 
-	fn handle_normal_mode_event(
-		&mut self,
-		event: Event,
-		view_state: &view::State,
-		rebase_todo: &mut TodoFile,
-	) -> Results {
-		if let Some(results) = self.handle_common_list_input(event, view_state, rebase_todo) {
+	fn handle_normal_mode_event(&mut self, event: Event, view_state: &view::State) -> Results {
+		if let Some(results) = self.handle_common_list_input(event, view_state) {
 			results
 		}
 		else {
 			let mut results = Results::new();
 			if let Event::MetaEvent(meta_event) = event {
 				match meta_event {
-					MetaEvent::ActionBreak => self.action_break(rebase_todo),
-					MetaEvent::Edit => self.edit(rebase_todo),
+					MetaEvent::ActionBreak => self.action_break(),
+					MetaEvent::Edit => self.edit(),
 					MetaEvent::InsertLine => self.insert_line(&mut results),
-					MetaEvent::ShowCommit => self.show_commit(&mut results, rebase_todo),
-					MetaEvent::FixupKeepMessage => self.toggle_option("-C", rebase_todo),
-					MetaEvent::FixupKeepMessageWithEditor => self.toggle_option("-c", rebase_todo),
+					MetaEvent::ShowCommit => self.show_commit(&mut results),
+					MetaEvent::FixupKeepMessage => self.toggle_option("-C"),
+					MetaEvent::FixupKeepMessageWithEditor => self.toggle_option("-c"),
 					_ => {},
 				}
 			}
@@ -647,21 +679,17 @@ impl List {
 		}
 	}
 
-	fn handle_visual_mode_input(
-		&mut self,
-		event: Event,
-		view_state: &view::State,
-		rebase_todo: &mut TodoFile,
-	) -> Results {
-		self.handle_common_list_input(event, view_state, rebase_todo)
+	fn handle_visual_mode_input(&mut self, event: Event, view_state: &view::State) -> Results {
+		self.handle_common_list_input(event, view_state)
 			.unwrap_or_else(Results::new)
 	}
 
-	fn handle_edit_mode_input(&mut self, event: Event, rebase_todo: &mut TodoFile) -> Results {
+	fn handle_edit_mode_input(&mut self, event: Event) -> Results {
 		self.edit.handle_event(event);
 		if self.edit.is_finished() {
-			let selected_index = rebase_todo.get_selected_line_index();
-			rebase_todo.update_range(
+			let mut todo_file = self.todo_file.lock();
+			let selected_index = todo_file.get_selected_line_index();
+			todo_file.update_range(
 				selected_index,
 				selected_index,
 				&EditContext::new().content(self.edit.get_content()),

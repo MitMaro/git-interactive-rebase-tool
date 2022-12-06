@@ -1,8 +1,11 @@
+use std::sync::Arc;
+
 use anyhow::Result;
 use config::Config;
 use display::{Display, Size};
 use git::Repository;
 use input::{EventHandler, EventReaderFn};
+use parking_lot::Mutex;
 use runtime::Runtime;
 use todo_file::TodoFile;
 use view::View;
@@ -25,7 +28,7 @@ where
 {
 	_config: Config,
 	_repository: Repository,
-	todo_file: TodoFile,
+	todo_file: Arc<Mutex<TodoFile>>,
 	view: View<Tui>,
 	event_provider: EventProvider,
 	initial_display_size: Size,
@@ -42,11 +45,11 @@ where
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
 		let config = Self::load_config(&repository)?;
-		let todo_file = Self::load_todo_file(filepath.as_str(), &config)?;
+		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
 
 		let module_handler = ModuleHandler::new(
 			EventHandler::new(KeyBindings::new(&config.key_bindings)),
-			ModuleProvider::new(&config, repository.clone()),
+			ModuleProvider::new(&config, repository.clone(), &todo_file),
 		);
 
 		let display = Display::new(tui, &config.theme);

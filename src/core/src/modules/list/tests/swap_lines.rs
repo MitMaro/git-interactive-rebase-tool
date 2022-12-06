@@ -9,7 +9,7 @@ fn normal_mode_change_swap_down() {
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -43,7 +43,7 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -81,7 +81,7 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -120,7 +120,7 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -157,7 +157,7 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedDown),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -185,7 +185,7 @@ fn normal_mode_change_swap_up() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -219,7 +219,7 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -257,7 +257,7 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -294,7 +294,7 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -333,7 +333,7 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 			Event::from(MetaEvent::SwapSelectedUp),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(

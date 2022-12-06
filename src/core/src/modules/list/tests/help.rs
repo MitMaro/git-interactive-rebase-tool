@@ -10,7 +10,7 @@ fn normal_mode_help() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Normal;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -63,7 +63,7 @@ fn normal_mode_help_event() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from(KeyCode::Enter)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Normal;
 			let _ = test_context.handle_all_events(&mut module);
 			assert!(!module.normal_mode_help.is_active());
@@ -77,7 +77,7 @@ fn visual_mode_help() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Visual;
 			let _ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
@@ -126,7 +126,7 @@ fn visual_mode_help_event() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from(KeyCode::Enter)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Visual;
 			let _ = test_context.handle_all_events(&mut module);
 			assert!(!module.visual_mode_help.is_active());

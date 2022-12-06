@@ -7,7 +7,7 @@ fn normal_mode_abort() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Abort)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::Abort)),
@@ -23,7 +23,7 @@ fn visual_mode_abort() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Abort)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -40,13 +40,13 @@ fn normal_mode_force_abort() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ForceAbort)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(test_context.todo_file_context.todo_file().is_empty());
+			assert!(module.todo_file.lock().is_empty());
 		},
 	);
 }
@@ -60,14 +60,14 @@ fn visual_mode_force_abort() {
 			Event::from(MetaEvent::ForceAbort),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(test_context.todo_file_context.todo_file().is_empty());
+			assert!(module.todo_file.lock().is_empty());
 		},
 	);
 }
@@ -78,7 +78,7 @@ fn normal_mode_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::Rebase)),
@@ -94,7 +94,7 @@ fn visual_mode_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -111,13 +111,13 @@ fn normal_mode_force_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(MetaEvent::ForceRebase)],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(!test_context.todo_file_context.todo_file().is_noop());
+			assert!(!module.todo_file.lock().is_noop());
 		},
 	);
 }
@@ -131,14 +131,14 @@ fn visual_mode_force_rebase() {
 			Event::from(MetaEvent::ForceRebase),
 		],
 		|mut test_context| {
-			let mut module = List::new(&Config::new());
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let _ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
-			assert!(!test_context.todo_file_context.todo_file().is_noop());
+			assert!(!module.todo_file.lock().is_noop());
 		},
 	);
 }

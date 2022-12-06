@@ -1,5 +1,4 @@
 use input::InputOptions;
-use todo_file::TodoFile;
 use view::{RenderContext, ViewData};
 
 use crate::{
@@ -14,7 +13,7 @@ pub(crate) struct ConfirmRebase {
 }
 
 impl Module for ConfirmRebase {
-	fn build_view_data(&mut self, _: &RenderContext, _: &TodoFile) -> &ViewData {
+	fn build_view_data(&mut self, _: &RenderContext) -> &ViewData {
 		self.dialog.get_view_data()
 	}
 
@@ -26,7 +25,7 @@ impl Module for ConfirmRebase {
 		Confirm::read_event(event, key_bindings)
 	}
 
-	fn handle_event(&mut self, event: Event, _: &view::State, _: &mut TodoFile) -> Results {
+	fn handle_event(&mut self, event: Event, _: &view::State) -> Results {
 		let confirmed = self.dialog.handle_event(event);
 		let mut results = Results::new();
 		match confirmed {
@@ -49,7 +48,6 @@ impl ConfirmRebase {
 		}
 	}
 }
-
 #[cfg(test)]
 mod tests {
 	use input::KeyCode;
@@ -89,7 +87,6 @@ mod tests {
 					Artifact::Event(Event::from(MetaEvent::Yes)),
 					Artifact::ExitStatus(ExitStatus::Good)
 				);
-				assert!(!test_context.todo_file_context.todo_file().is_empty());
 			},
 		);
 	}

@@ -1,6 +1,10 @@
+use std::sync::Arc;
+
 use config::Config;
 use git::Repository;
 use input::EventHandler;
+use parking_lot::Mutex;
+use todo_file::TodoFile;
 
 use crate::{
 	module::{Module, ModuleHandler, ModuleProvider, State},
@@ -18,7 +22,7 @@ impl<M: Module> From<M> for TestModuleProvider<M> {
 }
 
 impl<M: Module> ModuleProvider for TestModuleProvider<M> {
-	fn new(_: &Config, _: Repository) -> Self {
+	fn new(_: &Config, _: Repository, _: &Arc<Mutex<TodoFile>>) -> Self {
 		unimplemented!("Not implemented for the TestModuleProvider");
 	}
 
