@@ -44,6 +44,14 @@ enum ListState {
 	Edit,
 }
 
+#[derive(Debug, Copy, Clone)]
+enum CursorUpdate {
+	Down(usize),
+	Set(usize),
+	Up(usize),
+	End,
+}
+
 pub(crate) struct List {
 	auto_select_next: bool,
 	edit: Edit,
@@ -146,10 +154,17 @@ impl List {
 		}
 	}
 
-	fn set_cursor(&mut self, todo_file: &mut TodoFile, cursor: usize) {
-		todo_file.set_selected_line_index(cursor);
+	fn update_cursor(&mut self, todo_file: &mut TodoFile, cursor_update: CursorUpdate) -> usize {
+		let new_selected_line_index = match cursor_update {
+			CursorUpdate::Down(amount) => todo_file.get_selected_line_index().saturating_add(amount),
+			CursorUpdate::Up(amount) => todo_file.get_selected_line_index().saturating_sub(amount),
+			CursorUpdate::Set(value) => value,
+			CursorUpdate::End => todo_file.get_max_selected_line_index(),
+		};
+		let selected_line_index = todo_file.set_selected_line_index(new_selected_line_index);
 		self.selected_line_action = todo_file.get_selected_line().map(|line| *line.get_action());
-		self.search.set_search_start_hint(cursor);
+		self.search.set_search_start_hint(selected_line_index);
+		selected_line_index
 	}
 
 	#[allow(clippy::unused_self)]
@@ -160,27 +175,6 @@ impl List {
 	#[allow(clippy::unused_self)]
 	fn move_cursor_right(&self, view_state: &view::State) {
 		view_state.scroll_right();
-	}
-
-	fn move_cursor_up(&mut self, todo_file: &mut TodoFile, amount: usize) {
-		let current_selected_line_index = todo_file.get_selected_line_index();
-		let new_selected_line_index = current_selected_line_index.saturating_sub(amount);
-		self.set_cursor(todo_file, new_selected_line_index);
-	}
-
-	fn move_cursor_down(&mut self, todo_file: &mut TodoFile, amount: usize) {
-		let current_selected_line_index = todo_file.get_selected_line_index();
-		let new_selected_line_index = current_selected_line_index + amount;
-		self.set_cursor(todo_file, new_selected_line_index);
-	}
-
-	fn move_cursor_home(&mut self, todo_file: &mut TodoFile) {
-		self.set_cursor(todo_file, 0);
-	}
-
-	fn move_cursor_end(&mut self, todo_file: &mut TodoFile) {
-		let new_selected_line_index = todo_file.get_max_selected_line_index();
-		self.set_cursor(todo_file, new_selected_line_index);
 	}
 
 	#[allow(clippy::unused_self)]
@@ -212,7 +206,7 @@ impl List {
 			if let Some(visual_index_start) = self.visual_index_start {
 				self.visual_index_start = Some(visual_index_start - 1);
 			}
-			self.move_cursor_up(todo_file, 1);
+			let _ = self.update_cursor(todo_file, CursorUpdate::Up(1));
 		}
 	}
 
@@ -224,7 +218,7 @@ impl List {
 			if let Some(visual_index_start) = self.visual_index_start {
 				self.visual_index_start = Some(visual_index_start + 1);
 			}
-			self.move_cursor_down(todo_file, 1);
+			let _ = self.update_cursor(todo_file, CursorUpdate::Down(1));
 		}
 	}
 
@@ -234,14 +228,14 @@ impl List {
 
 		rebase_todo.update_range(start_index, end_index, &EditContext::new().action(action));
 		if self.state == ListState::Normal && self.auto_select_next {
-			self.move_cursor_down(rebase_todo, 1);
+			let _ = self.update_cursor(rebase_todo, CursorUpdate::Down(1));
 		}
 	}
 
 	fn undo(&mut self, todo_file: &mut TodoFile) {
 		if let Some((start_index, end_index)) = todo_file.undo() {
-			self.set_cursor(todo_file, start_index);
-			if start_index == end_index {
+			let new_start_index = self.update_cursor(todo_file, CursorUpdate::Set(start_index));
+			if new_start_index == end_index {
 				self.state = ListState::Normal;
 				self.visual_index_start = None;
 			}
@@ -254,8 +248,8 @@ impl List {
 
 	fn redo(&mut self, todo_file: &mut TodoFile) {
 		if let Some((start_index, end_index)) = todo_file.redo() {
-			self.set_cursor(todo_file, start_index);
-			if start_index == end_index {
+			let new_start_index = self.update_cursor(todo_file, CursorUpdate::Set(start_index));
+			if new_start_index == end_index {
 				self.state = ListState::Normal;
 				self.visual_index_start = None;
 			}
@@ -273,10 +267,10 @@ impl List {
 		todo_file.remove_lines(start_index, end_index);
 		let new_index = min(start_index, end_index);
 
-		self.set_cursor(todo_file, new_index);
+		let selected_line_index = self.update_cursor(todo_file, CursorUpdate::Set(new_index));
 
 		if self.state == ListState::Visual {
-			self.visual_index_start = Some(todo_file.get_selected_line_index());
+			self.visual_index_start = Some(selected_line_index);
 		}
 	}
 
@@ -334,11 +328,11 @@ impl List {
 				.map_or(false, |line| line.get_action() == &Action::Break);
 			if selected_action_is_break {
 				todo_file.remove_lines(selected_line_index, selected_line_index);
-				self.move_cursor_up(todo_file, 1);
+				let _ = self.update_cursor(todo_file, CursorUpdate::Up(1));
 			}
 			else {
 				todo_file.add_line(selected_line_index + 1, Line::new_break());
-				self.move_cursor_down(todo_file, 1);
+				let _ = self.update_cursor(todo_file, CursorUpdate::Down(1));
 			}
 		}
 	}
@@ -555,7 +549,7 @@ impl List {
 			}
 
 			if let Some(selected) = self.search.current_match() {
-				self.set_cursor(todo_file, selected);
+				let _ = self.update_cursor(todo_file, CursorUpdate::Set(selected));
 			}
 			return Some(Results::from(event));
 		}
@@ -583,14 +577,26 @@ impl List {
 					MetaEvent::Delete => self.delete(rebase_todo),
 					MetaEvent::ForceAbort => self.force_abort(&mut results, rebase_todo),
 					MetaEvent::ForceRebase => self.force_rebase(&mut results),
-					MetaEvent::MoveCursorDown => self.move_cursor_down(rebase_todo, 1),
-					MetaEvent::MoveCursorEnd => self.move_cursor_end(rebase_todo),
-					MetaEvent::MoveCursorHome => self.move_cursor_home(rebase_todo),
+					MetaEvent::MoveCursorDown => {
+						let _ = self.update_cursor(rebase_todo, CursorUpdate::Down(1));
+					},
+					MetaEvent::MoveCursorEnd => {
+						let _ = self.update_cursor(rebase_todo, CursorUpdate::End);
+					},
+					MetaEvent::MoveCursorHome => {
+						let _ = self.update_cursor(rebase_todo, CursorUpdate::Set(0));
+					},
 					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_state),
-					MetaEvent::MoveCursorPageDown => self.move_cursor_down(rebase_todo, self.height / 2),
-					MetaEvent::MoveCursorPageUp => self.move_cursor_up(rebase_todo, self.height / 2),
+					MetaEvent::MoveCursorPageDown => {
+						let _ = self.update_cursor(rebase_todo, CursorUpdate::Down(self.height / 2));
+					},
+					MetaEvent::MoveCursorPageUp => {
+						let _ = self.update_cursor(rebase_todo, CursorUpdate::Up(self.height / 2));
+					},
 					MetaEvent::MoveCursorRight => self.move_cursor_right(view_state),
-					MetaEvent::MoveCursorUp => self.move_cursor_up(rebase_todo, 1),
+					MetaEvent::MoveCursorUp => {
+						let _ = self.update_cursor(rebase_todo, CursorUpdate::Up(1));
+					},
 					MetaEvent::OpenInEditor => self.open_in_editor(&mut results),
 					MetaEvent::Rebase => self.rebase(&mut results),
 					MetaEvent::SwapSelectedDown => self.swap_selected_down(rebase_todo),

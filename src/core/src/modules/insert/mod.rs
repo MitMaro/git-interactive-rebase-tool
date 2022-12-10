@@ -94,7 +94,7 @@ impl Module for Insert {
 						};
 						let new_line_index = rebase_todo.get_selected_line_index() + 1;
 						rebase_todo.add_line(new_line_index, line);
-						rebase_todo.set_selected_line_index(new_line_index);
+						let _ = rebase_todo.set_selected_line_index(new_line_index);
 					}
 				}
 			},
