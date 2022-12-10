@@ -244,9 +244,9 @@ impl TodoFile {
 		Ok(())
 	}
 
-	/// Set the selected line index.
+	/// Set the selected line index returning the new index based after ensuring within range.
 	#[inline]
-	pub fn set_selected_line_index(&mut self, selected_line_index: usize) {
+	pub fn set_selected_line_index(&mut self, selected_line_index: usize) -> usize {
 		self.selected_line_index = if self.lines.is_empty() {
 			0
 		}
@@ -255,7 +255,8 @@ impl TodoFile {
 		}
 		else {
 			selected_line_index
-		}
+		};
+		self.selected_line_index
 	}
 
 	/// Swap a range of lines up.
@@ -873,28 +874,30 @@ mod tests {
 	#[test]
 	fn selected_line_index() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		todo_file.set_selected_line_index(1);
+		let selected_line_index = todo_file.set_selected_line_index(1);
+		assert_eq!(selected_line_index, 1);
 		assert_eq!(todo_file.get_selected_line_index(), 1);
 	}
 
 	#[test]
 	fn selected_line_index_overflow() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		todo_file.set_selected_line_index(3);
+		let selected_line_index = todo_file.set_selected_line_index(3);
+		assert_eq!(selected_line_index, 2);
 		assert_eq!(todo_file.get_selected_line_index(), 2);
 	}
 
 	#[test]
 	fn selected_line() {
 		let (mut todo_file, _) = create_and_load_todo_file(&["exec foo", "exec bar", "exec foobar"]);
-		todo_file.set_selected_line_index(0);
+		let _ = todo_file.set_selected_line_index(0);
 		assert_some_eq!(todo_file.get_selected_line(), &create_line("exec foo"));
 	}
 
 	#[test]
 	fn selected_line_empty_list() {
 		let (mut todo_file, _) = create_and_load_todo_file(&[]);
-		todo_file.set_selected_line_index(0);
+		let _ = todo_file.set_selected_line_index(0);
 		assert_none!(todo_file.get_selected_line());
 	}
 
