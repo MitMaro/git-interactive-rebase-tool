@@ -13,9 +13,10 @@ pub enum DisplayError {
 
 impl PartialEq for DisplayError {
 	#[inline]
+	#[allow(clippy::pattern_type_mismatch)]
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
-			(&Self::Unexpected(ref self_io_error), &Self::Unexpected(ref other_io_error)) => {
+			(Self::Unexpected(self_io_error), Self::Unexpected(other_io_error)) => {
 				self_io_error.kind() == other_io_error.kind()
 			},
 		}

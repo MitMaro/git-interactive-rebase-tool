@@ -24,10 +24,11 @@ pub(crate) struct Choice<T> {
 impl<T> Choice<T>
 where T: Clone
 {
+	#[allow(clippy::pattern_type_mismatch)]
 	pub(crate) fn new(options: Vec<(T, char, String)>) -> Self {
 		let map = options
 			.iter()
-			.map(|&(ref v, ref k, _)| {
+			.map(|(v, k, _)| {
 				let c = *k;
 				let t = v.clone();
 				(c, t)
@@ -54,12 +55,13 @@ where T: Clone
 		});
 	}
 
+	#[allow(clippy::pattern_type_mismatch)]
 	pub(crate) fn get_view_data(&mut self) -> &ViewData {
 		let options = &self.options;
 		let invalid_selection = self.invalid_selection;
 		self.view_data.update_view_data(|updater| {
 			updater.clear_body();
-			for &(_, ref key, ref description) in options {
+			for (_, key, description) in options {
 				updater.push_line(ViewLine::from(format!("{key}) {description}")));
 			}
 			updater.push_line(ViewLine::new_empty_line());

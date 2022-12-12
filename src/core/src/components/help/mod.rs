@@ -18,9 +18,10 @@ pub(crate) struct Help {
 }
 
 impl Help {
+	#[allow(clippy::pattern_type_mismatch)]
 	fn get_max_help_key_length(lines: &[(Vec<String>, String)]) -> usize {
 		let mut max_length = 0;
-		for &(ref key, _) in lines {
+		for (key, _) in lines {
 			let combined_key = key.join(", ");
 			let len = UnicodeSegmentation::graphemes(combined_key.as_str(), true).count();
 			if len > max_length {

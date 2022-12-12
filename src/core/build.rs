@@ -14,7 +14,7 @@ fn main() {
 
 	// Make the current git hash available to the build
 	if let Some(rev) = git_revision_hash() {
-		println!("cargo:rustc-env=GIRT_BUILD_GIT_HASH={}", rev);
+		println!("cargo:rustc-env=GIRT_BUILD_GIT_HASH={rev}");
 	}
 	println!("cargo:rustc-env=GIRT_BUILD_DATE={}", Utc::now().format("%Y-%m-%d"));
 }
