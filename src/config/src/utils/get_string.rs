@@ -3,9 +3,8 @@ use git::{Config, ErrorCode};
 use crate::{ConfigError, ConfigErrorCause};
 
 pub(crate) fn _get_string(config: Option<&Config>, name: &str) -> Result<Option<String>, ConfigError> {
-	let cfg = match config {
-		None => return Ok(None),
-		Some(c) => c,
+	let Some(cfg) = config  else {
+		return Ok(None);
 	};
 	match cfg.get_string(name) {
 		Ok(v) => Ok(Some(v)),

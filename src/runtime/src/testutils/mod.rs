@@ -114,9 +114,7 @@ impl ThreadableTester {
 			}
 			assert!(
 				attempt <= 100,
-				"Timeout waited for status change to '{:?}' on thread.\n Status is: {:?}",
-				status,
-				current_status,
+				"Timeout waited for status change to '{status:?}' on thread.\n Status is: {current_status:?}",
 			);
 
 			sleep(WAIT_TIME);
@@ -142,8 +140,7 @@ impl ThreadableTester {
 			}
 			assert!(
 				attempt <= 100,
-				"Timeout waited for status change to 'Status::Error(_)' on thread.\n Status is: {:?}",
-				current_status,
+				"Timeout waited for status change to 'Status::Error(_)' on thread.\n Status is: {current_status:?}"
 			);
 
 			sleep(WAIT_TIME);

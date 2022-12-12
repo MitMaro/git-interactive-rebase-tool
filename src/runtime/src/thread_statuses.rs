@@ -53,8 +53,7 @@ impl ThreadStatuses {
 	pub(crate) fn register_thread(&self, thread_name: &str, status: Status) {
 		assert!(
 			self.statuses.lock().insert(String::from(thread_name), status).is_none(),
-			"Attempt to register more than one threads with name: {}",
-			thread_name
+			"Attempt to register more than one threads with name: {thread_name}"
 		);
 	}
 

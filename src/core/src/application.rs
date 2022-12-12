@@ -61,7 +61,7 @@ where
 				.key_bindings
 				.help
 				.first()
-				.map_or(String::from("?"), String::from)
+				.map_or_else(|| String::from("?"), String::from)
 				.as_str(),
 		);
 

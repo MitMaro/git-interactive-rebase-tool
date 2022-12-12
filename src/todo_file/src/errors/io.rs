@@ -19,10 +19,11 @@ pub enum FileReadErrorCause {
 
 impl PartialEq for FileReadErrorCause {
 	#[inline]
+	#[allow(clippy::pattern_type_mismatch)]
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
-			(&Self::IoError(ref self_err), &Self::IoError(ref other_err)) => self_err.kind() == other_err.kind(),
-			(&Self::ParseError(ref self_err), &Self::ParseError(ref other_err)) => self_err == other_err,
+			(Self::IoError(self_err), Self::IoError(other_err)) => self_err.kind() == other_err.kind(),
+			(Self::ParseError(self_err), Self::ParseError(other_err)) => self_err == other_err,
 			_ => false,
 		}
 	}
