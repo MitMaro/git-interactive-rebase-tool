@@ -65,6 +65,7 @@
 	clippy::integer_arithmetic,
 	clippy::map_err_ignore,
 	clippy::missing_docs_in_private_items,
+	clippy::missing_trait_methods,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
 	clippy::new_without_default,
@@ -104,7 +105,7 @@
 	)
 )]
 // allowable upcoming nightly lints
-#![cfg_attr(include_nightly_lints, allow(clippy::missing_trait_methods))]
+#![cfg_attr(include_nightly_lints, allow(clippy::semicolon_outside_block))]
 // LINT-REPLACE-END
 
 //! Git Interactive Rebase Tool - Input Module
