@@ -85,6 +85,13 @@ impl SearchBar {
 				self.state = State::Deactivated;
 				SearchBarAction::Cancel
 			},
+			Event::Key(KeyEvent {
+				code: KeyCode::Esc,
+				modifiers: KeyModifiers::NONE,
+			}) => {
+				self.reset();
+				SearchBarAction::Cancel
+			},
 			_ => {
 				if self.state == State::Editing {
 					self.editable_line.handle_event(event);

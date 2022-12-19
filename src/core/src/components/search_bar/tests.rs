@@ -151,6 +151,14 @@ fn handle_event_search_finish_with_enter() {
 }
 
 #[test]
+fn handle_event_search_cancel_with_esc() {
+	let mut search_bar = SearchBar::new();
+	search_bar.start_search(Some("foo"));
+	let event = Event::from(KeyCode::Esc);
+	assert_eq!(search_bar.handle_event(event), SearchBarAction::Cancel);
+}
+
+#[test]
 fn handle_event_search_start_active() {
 	let mut search_bar = SearchBar::new();
 	search_bar.start_search(Some("foo"));
