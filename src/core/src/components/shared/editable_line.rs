@@ -5,6 +5,13 @@ use view::LineSegment;
 
 use crate::events::Event;
 
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum EditAction {
+	CursorMove,
+	ContentUpdate,
+	None,
+}
+
 pub(crate) struct EditableLine {
 	content: String,
 	cursor_position: usize,
@@ -84,16 +91,19 @@ impl EditableLine {
 		segments
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event) {
+	pub(crate) fn handle_event(&mut self, event: Event) -> EditAction {
 		if self.read_only {
-			return;
+			return EditAction::None;
 		}
 		match event {
 			Event::Key(KeyEvent {
 				code: KeyCode::Backspace,
 				modifiers: KeyModifiers::NONE,
 			}) => {
-				if self.cursor_position != 0 {
+				if self.cursor_position == 0 {
+					EditAction::None
+				}
+				else {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 						.take(self.cursor_position - 1)
 						.collect::<String>();
@@ -102,6 +112,7 @@ impl EditableLine {
 						.collect::<String>();
 					self.content = format!("{start}{end}");
 					self.cursor_position -= 1;
+					EditAction::ContentUpdate
 				}
 			},
 			Event::Key(KeyEvent {
@@ -109,7 +120,10 @@ impl EditableLine {
 				modifiers: KeyModifiers::NONE,
 			}) => {
 				let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
-				if self.cursor_position != length {
+				if self.cursor_position == length {
+					EditAction::None
+				}
+				else {
 					let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 						.take(self.cursor_position)
 						.collect::<String>();
@@ -117,16 +131,34 @@ impl EditableLine {
 						.skip(self.cursor_position + 1)
 						.collect::<String>();
 					self.content = format!("{start}{end}");
+					EditAction::ContentUpdate
 				}
 			},
 			Event::Key(KeyEvent {
 				code: KeyCode::Home,
 				modifiers: KeyModifiers::NONE,
-			}) => self.cursor_position = 0,
+			}) => {
+				if self.cursor_position == 0 {
+					EditAction::None
+				}
+				else {
+					self.cursor_position = 0;
+					EditAction::CursorMove
+				}
+			},
 			Event::Key(KeyEvent {
 				code: KeyCode::End,
 				modifiers: KeyModifiers::NONE,
-			}) => self.cursor_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count(),
+			}) => {
+				let new_position = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
+				if new_position == self.cursor_position {
+					EditAction::None
+				}
+				else {
+					self.cursor_position = new_position;
+					EditAction::CursorMove
+				}
+			},
 			Event::Key(KeyEvent {
 				code: KeyCode::Right,
 				modifiers: KeyModifiers::NONE,
@@ -134,14 +166,22 @@ impl EditableLine {
 				let length = UnicodeSegmentation::graphemes(self.content.as_str(), true).count();
 				if self.cursor_position < length {
 					self.cursor_position += 1;
+					EditAction::CursorMove
+				}
+				else {
+					EditAction::None
 				}
 			},
 			Event::Key(KeyEvent {
 				code: KeyCode::Left,
 				modifiers: KeyModifiers::NONE,
 			}) => {
-				if self.cursor_position != 0 {
+				if self.cursor_position == 0 {
+					EditAction::None
+				}
+				else {
 					self.cursor_position -= 1;
+					EditAction::CursorMove
 				}
 			},
 			Event::Key(KeyEvent {
@@ -156,8 +196,9 @@ impl EditableLine {
 					.collect::<String>();
 				self.content = format!("{start}{c}{end}");
 				self.cursor_position += 1;
+				EditAction::ContentUpdate
 			},
-			_ => {},
+			_ => EditAction::None,
 		}
 	}
 }
@@ -177,7 +218,7 @@ mod tests {
 
 	fn handle_events(module: &mut EditableLine, events: &[Event]) {
 		for event in events {
-			module.handle_event(*event);
+			let _ = module.handle_event(*event);
 		}
 	}
 
@@ -198,7 +239,7 @@ mod tests {
 	fn move_cursor_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
-		editable_line.handle_event(Event::from(KeyCode::Right));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Right));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -211,7 +252,7 @@ mod tests {
 	fn move_cursor_1_left() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
-		editable_line.handle_event(Event::from(KeyCode::Left));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Left));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -263,7 +304,7 @@ mod tests {
 	fn move_cursor_to_home() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
-		editable_line.handle_event(Event::from(KeyCode::Home));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Home));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -381,7 +422,7 @@ mod tests {
 	fn add_character_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		editable_line.handle_event(Event::from('x'));
+		let _ = editable_line.handle_event(Event::from('x'));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -444,7 +485,7 @@ mod tests {
 	fn add_character_uppercase() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		editable_line.handle_event(Event::Key(KeyEvent {
+		let _ = editable_line.handle_event(Event::Key(KeyEvent {
 			code: KeyCode::Char('X'),
 			modifiers: KeyModifiers::SHIFT,
 		}));
@@ -460,7 +501,7 @@ mod tests {
 	fn backspace_at_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		editable_line.handle_event(Event::from(KeyCode::Backspace));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Backspace));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -526,7 +567,7 @@ mod tests {
 	fn delete_at_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		editable_line.handle_event(Event::from(KeyCode::Delete));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Delete));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -591,7 +632,7 @@ mod tests {
 	#[test]
 	fn ignore_other_input() {
 		let mut editable_line = EditableLine::new();
-		editable_line.handle_event(Event::from(KeyCode::Null));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Null));
 	}
 
 	#[test]
@@ -599,7 +640,7 @@ mod tests {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
 		editable_line.set_read_only(true);
-		editable_line.handle_event(Event::from(KeyCode::Home));
+		let _ = editable_line.handle_event(Event::from(KeyCode::Home));
 		assert_eq!(editable_line.cursor_position(), 4);
 	}
 
@@ -626,5 +667,138 @@ mod tests {
 		editable_line.clear();
 		assert_eq!(editable_line.cursor_position(), 0);
 		assert_eq!(editable_line.get_content(), "");
+	}
+
+	#[test]
+	fn handle_event_edit_action_backspace_with_content() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Backspace)),
+			EditAction::ContentUpdate
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_backspace_without_content() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Backspace)),
+			EditAction::None
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_delete_with_content() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.cursor_position = 0;
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Delete)),
+			EditAction::ContentUpdate
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_delete_without_content() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Delete)),
+			EditAction::None
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_home_with_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Home)),
+			EditAction::CursorMove
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_home_without_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.cursor_position = 0;
+		assert_eq!(editable_line.handle_event(Event::from(KeyCode::Home)), EditAction::None);
+	}
+
+	#[test]
+	fn handle_event_edit_action_end_with_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.cursor_position = 0;
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::End)),
+			EditAction::CursorMove
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_end_without_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(editable_line.handle_event(Event::from(KeyCode::End)), EditAction::None);
+	}
+
+	#[test]
+	fn handle_event_edit_action_right_with_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.cursor_position = 0;
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Right)),
+			EditAction::CursorMove
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_right_without_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Right)),
+			EditAction::None
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_left_with_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Left)),
+			EditAction::CursorMove
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_left_without_cursor_change() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		editable_line.cursor_position = 0;
+		assert_eq!(editable_line.handle_event(Event::from(KeyCode::Left)), EditAction::None);
+	}
+
+	#[test]
+	fn handle_event_edit_action_new_character() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(
+			editable_line.handle_event(Event::from(KeyCode::Char('a'))),
+			EditAction::ContentUpdate
+		);
+	}
+
+	#[test]
+	fn handle_event_edit_action_other() {
+		let mut editable_line = EditableLine::new();
+		editable_line.set_content("abcd");
+		assert_eq!(editable_line.handle_event(Event::from(KeyCode::Esc)), EditAction::None);
 	}
 }

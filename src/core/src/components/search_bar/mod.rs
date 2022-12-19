@@ -94,7 +94,7 @@ impl SearchBar {
 			},
 			_ => {
 				if self.state == State::Editing {
-					self.editable_line.handle_event(event);
+					let _ = self.editable_line.handle_event(event);
 				}
 				SearchBarAction::None
 			},

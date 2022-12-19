@@ -64,7 +64,7 @@ impl Edit {
 			self.finished = true;
 		}
 		else {
-			self.editable_line.handle_event(event);
+			let _ = self.editable_line.handle_event(event);
 		}
 	}
 
