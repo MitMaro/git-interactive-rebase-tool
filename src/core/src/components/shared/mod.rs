@@ -1,3 +1,3 @@
 mod editable_line;
 
-pub(crate) use editable_line::EditableLine;
+pub(crate) use editable_line::{EditAction, EditableLine};

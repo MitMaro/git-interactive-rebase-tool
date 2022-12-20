@@ -1,5 +1,4 @@
 mod action;
-// mod options;
 mod state;
 #[cfg(test)]
 mod tests;
@@ -9,7 +8,10 @@ use view::{LineSegment, ViewLine};
 
 pub(crate) use self::action::Action as SearchBarAction;
 use crate::{
-	components::{search_bar::state::State, shared::EditableLine},
+	components::{
+		search_bar::state::State,
+		shared::{EditAction, EditableLine},
+	},
 	events::Event,
 };
 
@@ -93,10 +95,12 @@ impl SearchBar {
 				SearchBarAction::Cancel
 			},
 			_ => {
-				if self.state == State::Editing {
-					let _ = self.editable_line.handle_event(event);
+				if self.state == State::Editing && self.editable_line.handle_event(event) == EditAction::ContentUpdate {
+					SearchBarAction::Update(String::from(self.editable_line.get_content()))
 				}
-				SearchBarAction::None
+				else {
+					SearchBarAction::None
+				}
 			},
 		}
 	}
