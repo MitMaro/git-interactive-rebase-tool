@@ -168,11 +168,27 @@ fn handle_event_search_start_active() {
 }
 
 #[test]
-fn handle_event_other_active() {
+fn handle_event_other_active_without_change() {
+	let mut search_bar = SearchBar::new();
+	search_bar.start_search(Some("foo"));
+	let event = Event::from(KeyCode::Null);
+	assert_eq!(search_bar.handle_event(event), SearchBarAction::None);
+	assert_rendered_output!(
+		&create_view_data(&search_bar),
+		"{BODY}",
+		"{Normal}/foo{Normal,Underline}"
+	);
+}
+
+#[test]
+fn handle_event_other_active_with_change() {
 	let mut search_bar = SearchBar::new();
 	search_bar.start_search(Some("foo"));
 	let event = Event::from('a');
-	assert_eq!(search_bar.handle_event(event), SearchBarAction::None);
+	assert_eq!(
+		search_bar.handle_event(event),
+		SearchBarAction::Update(String::from("fooa"))
+	);
 	assert_rendered_output!(
 		&create_view_data(&search_bar),
 		"{BODY}",

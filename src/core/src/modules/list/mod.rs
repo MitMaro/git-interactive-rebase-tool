@@ -586,7 +586,7 @@ impl List {
 					self.search.cancel();
 					return Some(Results::from(event));
 				},
-				SearchBarAction::None => return None,
+				SearchBarAction::None | SearchBarAction::Update(_) => return None,
 			}
 			drop(todo_file);
 
