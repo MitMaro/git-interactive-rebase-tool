@@ -61,9 +61,10 @@ fn set_get_content() {
 }
 
 #[test]
-fn clear_content() {
+fn reset() {
 	let mut module = Edit::new();
 	module.set_content("abcd");
-	module.clear();
+	module.reset();
 	assert_eq!(module.get_content(), "");
+	assert!(!module.is_finished());
 }
