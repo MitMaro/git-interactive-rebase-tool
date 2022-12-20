@@ -82,8 +82,9 @@ impl Edit {
 		self.editable_line.set_content(content);
 	}
 
-	pub(crate) fn clear(&mut self) {
+	pub(crate) fn reset(&mut self) {
 		self.editable_line.clear();
+		self.editable_line.set_read_only(false);
 		self.finished = false;
 	}
 

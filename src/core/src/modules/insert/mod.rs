@@ -34,7 +34,7 @@ pub(crate) struct Insert {
 impl Module for Insert {
 	fn activate(&mut self, _: State) -> Results {
 		self.state = InsertState::Prompt;
-		self.edit.clear();
+		self.edit.reset();
 		Results::new()
 	}
 
