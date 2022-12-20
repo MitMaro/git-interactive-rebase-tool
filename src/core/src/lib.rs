@@ -127,6 +127,8 @@ mod license;
 mod module;
 mod modules;
 mod process;
+#[allow(dead_code)]
+mod search;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]

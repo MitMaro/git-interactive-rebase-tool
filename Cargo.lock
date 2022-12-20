@@ -312,6 +312,7 @@ dependencies = [
  "captur",
  "chrono",
  "claim",
+ "crossbeam-channel",
  "girt-config",
  "girt-display",
  "girt-git",
