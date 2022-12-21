@@ -5,8 +5,8 @@ mod search_state;
 mod searchable;
 mod state;
 mod thread;
+mod update_handler;
 
-#[allow(unused_imports)]
 pub(crate) use self::{
 	action::Action,
 	interrupter::Interrupter,
@@ -15,4 +15,5 @@ pub(crate) use self::{
 	searchable::Searchable,
 	state::State,
 	thread::Thread,
+	update_handler::UpdateHandlerFn,
 };

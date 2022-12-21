@@ -13,6 +13,7 @@ use crate::search::{
 	search_result::SearchResult,
 	searchable::Searchable,
 	State,
+	UpdateHandlerFn,
 };
 
 pub(crate) const THREAD_NAME: &str = "search";
@@ -20,13 +21,13 @@ const MINIMUM_PAUSE_RATE: Duration = Duration::from_millis(50);
 const SEARCH_INTERRUPT_TIME: Duration = Duration::from_millis(10);
 
 #[derive(Debug)]
-pub(crate) struct Thread<UpdateHandler: Fn() + Sync + Send> {
+pub(crate) struct Thread<UpdateHandler: UpdateHandlerFn> {
 	state: State,
 	search_update_handler: Arc<UpdateHandler>,
 }
 
 impl<UpdateHandler> Threadable for Thread<UpdateHandler>
-where UpdateHandler: Fn() + Sync + Send + 'static
+where UpdateHandler: UpdateHandlerFn + 'static
 {
 	#[inline]
 	fn install(&self, installer: &Installer) {
@@ -116,7 +117,7 @@ where UpdateHandler: Fn() + Sync + Send + 'static
 }
 
 impl<UpdateHandler> Thread<UpdateHandler>
-where UpdateHandler: Fn() + Sync + Send
+where UpdateHandler: UpdateHandlerFn
 {
 	pub(crate) fn new(search_update_handler: UpdateHandler) -> Self {
 		Self {

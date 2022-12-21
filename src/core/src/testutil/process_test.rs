@@ -10,12 +10,13 @@ use crate::{
 	events::Event,
 	module::{self, ModuleHandler},
 	process::Process,
-	testutil::{with_event_handler, EventHandlerTestContext},
+	testutil::{with_event_handler, with_search, EventHandlerTestContext, SearchTestContext},
 };
 
 pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
 	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) process: Process<ModuleProvider>,
+	pub(crate) search_context: SearchTestContext,
 	pub(crate) todo_file_path: PathBuf,
 	pub(crate) view_context: ViewContext,
 }
@@ -29,23 +30,27 @@ pub(crate) fn process_test<C, ModuleProvider: module::ModuleProvider + Send + 's
 	with_event_handler(&[Event::from('a')], |event_handler_context| {
 		with_view_state(|view_context| {
 			with_todo_file(&[], |todo_file_context| {
-				let (todo_file_tmp_path, todo_file) = todo_file_context.to_owned();
-				let view_state = view_context.state.clone();
-				let input_state = event_handler_context.state.clone();
-				let todo_file_path = PathBuf::from(todo_file_tmp_path.path());
+				with_search(|search_context| {
+					let (todo_file_tmp_path, todo_file) = todo_file_context.to_owned();
+					let view_state = view_context.state.clone();
+					let input_state = event_handler_context.state.clone();
+					let todo_file_path = PathBuf::from(todo_file_tmp_path.path());
 
-				callback(TestContext {
-					event_handler_context,
-					process: Process::new(
-						Size::new(300, 120),
-						Arc::new(Mutex::new(todo_file)),
-						module_handler,
-						input_state,
-						view_state,
-						ThreadStatuses::new(),
-					),
-					todo_file_path,
-					view_context,
+					callback(TestContext {
+						event_handler_context,
+						process: Process::new(
+							Size::new(300, 120),
+							Arc::new(Mutex::new(todo_file)),
+							module_handler,
+							input_state,
+							view_state,
+							search_context.state.clone(),
+							ThreadStatuses::new(),
+						),
+						search_context,
+						todo_file_path,
+						view_context,
+					});
 				});
 			});
 		});
