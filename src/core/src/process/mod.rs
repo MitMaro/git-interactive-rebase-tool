@@ -26,6 +26,7 @@ use crate::{
 	events,
 	events::{Event, MetaEvent},
 	module::{self, ExitStatus, ModuleHandler, State},
+	search::{self, Action, Searchable},
 };
 
 pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
@@ -39,6 +40,7 @@ pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
 	thread_statuses: ThreadStatuses,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_state: view::State,
+	search_state: search::State,
 }
 
 impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
@@ -54,6 +56,7 @@ impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
 			thread_statuses: self.thread_statuses.clone(),
 			todo_file: Arc::clone(&self.todo_file),
 			view_state: self.view_state.clone(),
+			search_state: self.search_state.clone(),
 		}
 	}
 }
@@ -65,6 +68,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		module_handler: ModuleHandler<ModuleProvider>,
 		input_state: events::State,
 		view_state: view::State,
+		search_state: search::State,
 		thread_statuses: ThreadStatuses,
 	) -> Self {
 		Self {
@@ -77,6 +81,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 				initial_display_size.width(),
 				initial_display_size.height(),
 			))),
+			search_state,
 			state: Arc::new(Mutex::new(State::WindowSizeError)),
 			thread_statuses,
 			todo_file,
@@ -266,6 +271,21 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		result
 	}
 
+	fn handle_search_cancel(&self) -> Results {
+		self.search_state.send_update(Action::Cancel);
+		Results::new()
+	}
+
+	fn handle_search_term(&self, term: String) -> Results {
+		self.search_state.send_update(Action::Start(term));
+		Results::new()
+	}
+
+	fn handle_searchable(&self, searchable: Box<dyn Searchable>) -> Results {
+		self.search_state.send_update(Action::SetSearchable(searchable));
+		Results::new()
+	}
+
 	fn handle_results(&self, mut results: Results) {
 		while let Some(artifact) = results.artifact() {
 			results.append(match artifact {
@@ -275,6 +295,9 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 				Artifact::Event(event) => self.handle_event_artifact(event),
 				Artifact::ExitStatus(exit_status) => self.handle_exit_status(exit_status),
 				Artifact::ExternalCommand(command) => self.handle_external_command(&command),
+				Artifact::SearchCancel => self.handle_search_cancel(),
+				Artifact::SearchTerm(search_term) => self.handle_search_term(search_term),
+				Artifact::Searchable(searchable) => self.handle_searchable(searchable),
 			});
 		}
 	}

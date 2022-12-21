@@ -113,7 +113,8 @@
 	clippy::redundant_closure_for_method_calls,
 	clippy::wildcard_enum_match_arm,
 	missing_docs,
-	rustdoc::missing_crate_level_docs
+	rustdoc::missing_crate_level_docs,
+	unused
 )]
 
 mod application;
@@ -127,7 +128,6 @@ mod license;
 mod module;
 mod modules;
 mod process;
-#[allow(dead_code)]
 mod search;
 #[cfg(test)]
 mod tests;

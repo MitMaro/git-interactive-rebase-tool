@@ -70,6 +70,8 @@ pub(crate) enum MetaEvent {
 	ExternalCommandSuccess,
 	/// The external command was an error meta event.
 	ExternalCommandError,
+	/// Search was updated
+	SearchUpdate,
 }
 
 impl input::CustomEvent for MetaEvent {}

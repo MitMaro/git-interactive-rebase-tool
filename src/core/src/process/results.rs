@@ -6,6 +6,7 @@ use crate::{
 	events::Event,
 	module::{ExitStatus, State},
 	process::artifact::Artifact,
+	search::Searchable,
 };
 
 #[derive(Debug)]
@@ -38,6 +39,14 @@ impl Results {
 
 	pub(crate) fn state(&mut self, new_state: State) {
 		self.artifacts.push_back(Artifact::ChangeState(new_state));
+	}
+
+	pub(crate) fn search_cancel(&mut self) {
+		self.artifacts.push_back(Artifact::SearchCancel);
+	}
+
+	pub(crate) fn search_term(&mut self, term: &str) {
+		self.artifacts.push_back(Artifact::SearchTerm(String::from(term)));
 	}
 
 	pub(crate) fn external_command(&mut self, command: String, arguments: Vec<String>) {
@@ -90,11 +99,20 @@ impl From<State> for Results {
 	}
 }
 
+impl From<Box<dyn Searchable>> for Results {
+	fn from(searchable: Box<dyn Searchable>) -> Self {
+		Self {
+			artifacts: VecDeque::from(vec![Artifact::Searchable(searchable)]),
+		}
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
 
 	use super::*;
+	use crate::testutil::MockedSearchable;
 
 	#[test]
 	fn empty() {
@@ -144,6 +162,28 @@ mod tests {
 	fn state() {
 		let mut results = Results::from(State::List);
 		assert!(matches!(results.artifact(), Some(Artifact::ChangeState(State::List))));
+	}
+
+	#[test]
+	fn search_cancel() {
+		let mut results = Results::new();
+		results.search_cancel();
+		assert!(matches!(results.artifact(), Some(Artifact::SearchCancel)));
+	}
+
+	#[test]
+	fn search_term() {
+		let mut results = Results::new();
+		let search_term = String::from("foo");
+		results.search_term(search_term.as_str());
+		assert!(matches!(results.artifact(), Some(Artifact::SearchTerm(search_term))));
+	}
+
+	#[test]
+	fn searchable() {
+		let mocked_searchable: Box<dyn Searchable> = Box::new(MockedSearchable::new());
+		let mut results = Results::from(mocked_searchable);
+		assert!(matches!(results.artifact(), Some(Artifact::Searchable(_))));
 	}
 
 	#[test]

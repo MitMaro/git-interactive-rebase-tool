@@ -1,17 +1,20 @@
 mod assert_results;
 mod create_event_reader;
 mod create_test_keybindings;
+mod mocked_searchable;
 mod module_test;
 mod process_test;
 mod read_event_test;
 mod set_git_directory;
 mod test_module_provider;
 mod with_event_handler;
+mod with_search;
 
 pub(crate) use self::{
 	assert_results::_assert_results,
 	create_event_reader::create_event_reader,
 	create_test_keybindings::{create_test_custom_keybindings, create_test_keybindings},
+	mocked_searchable::MockedSearchable,
 	module_test::module_test,
 	process_test::{process_test, TestContext as ProcessTestContext},
 	read_event_test::read_event_test,
@@ -23,4 +26,5 @@ pub(crate) use self::{
 		TestModuleProvider,
 	},
 	with_event_handler::{with_event_handler, EventHandlerTestContext},
+	with_search::{with_search, TestContext as SearchTestContext},
 };

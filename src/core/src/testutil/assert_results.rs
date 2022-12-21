@@ -20,6 +20,9 @@ fn _assert_results_format(artifacts: &[Artifact]) -> String {
 					format!("ExternalCommand({:?} {:?})", command.0, command.1.join(","))
 				},
 				Artifact::EnqueueResize => String::from("EnqueueResize"),
+				Artifact::SearchCancel => String::from("SearchCancel"),
+				Artifact::SearchTerm(ref term) => format!("SearchTerm({term})"),
+				Artifact::Searchable(ref _searchable) => String::from("SearchCancel(_)"),
 			}
 		})
 		.collect::<Vec<String>>()

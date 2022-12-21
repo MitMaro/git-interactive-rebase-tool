@@ -4,7 +4,7 @@ use anyhow::Result;
 use config::Config;
 use display::Display;
 use git::Repository;
-use input::{EventHandler, EventReaderFn};
+use input::{Event, EventHandler, EventReaderFn};
 use parking_lot::Mutex;
 use runtime::{Runtime, Threadable};
 use todo_file::TodoFile;
@@ -12,10 +12,12 @@ use view::View;
 
 use crate::{
 	events,
-	events::KeyBindings,
+	events::{KeyBindings, MetaEvent},
 	help::build_help,
 	module::{self, ExitStatus, ModuleHandler},
 	process::{self, Process},
+	search,
+	search::UpdateHandlerFn,
 	Args,
 	Exit,
 };
@@ -71,12 +73,18 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let view_state = view_threads.state();
 		threads.push(Box::new(view_threads));
 
+		let search_update_handler = Self::create_search_update_handler(input_state.clone());
+		let search_threads = search::Thread::new(search_update_handler);
+		let search_state = search_threads.state();
+		threads.push(Box::new(search_threads));
+
 		let process = Process::new(
 			initial_display_size,
 			todo_file,
 			module_handler,
 			input_state,
 			view_state,
+			search_state,
 			runtime.statuses(),
 		);
 		let process_threads = process::Thread::new(process.clone());
@@ -159,6 +167,10 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		}
 
 		Ok(todo_file)
+	}
+
+	fn create_search_update_handler(input_state: events::State) -> impl Fn() + Send + Sync {
+		move || input_state.push_event(Event::MetaEvent(MetaEvent::SearchUpdate))
 	}
 }
 
@@ -288,6 +300,19 @@ mod tests {
 				.unwrap()
 				.contains("An empty rebase was provided, nothing to edit")
 		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn search_update_handler_handles_update() {
+		let event_provider = create_event_reader(|| Ok(None));
+		let input_threads = events::Thread::new(event_provider);
+		let input_state = input_threads.state();
+		let update_handler =
+			Application::<TestModuleProvider<DefaultTestModule>>::create_search_update_handler(input_state.clone());
+		update_handler();
+
+		assert_eq!(input_state.read_event(), Event::MetaEvent(MetaEvent::SearchUpdate));
 	}
 
 	#[test]

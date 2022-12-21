@@ -11,7 +11,14 @@ use crate::{
 	assert_results,
 	events::KeyBindings,
 	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
-	testutil::{create_default_test_module_handler, create_test_module_handler, process_test, ProcessTestContext},
+	search::{Interrupter, SearchResult},
+	testutil::{
+		create_default_test_module_handler,
+		create_test_module_handler,
+		process_test,
+		MockedSearchable,
+		ProcessTestContext,
+	},
 };
 
 #[derive(Clone)]
@@ -580,6 +587,67 @@ fn handle_results_external_command_success() {
 				process.input_state.read_event(),
 				Event::from(MetaEvent::ExternalCommandSuccess)
 			);
+		},
+	);
+}
+
+#[test]
+fn handle_search_cancel() {
+	let module = TestModule::new();
+	process_test(
+		create_test_module_handler(module),
+		|ProcessTestContext {
+		     process,
+		     search_context,
+		     ..
+		 }| {
+			let mut results = Results::new();
+			results.search_cancel();
+			process.handle_results(results);
+			assert!(matches!(search_context.state.receive_update(), Action::Cancel));
+		},
+	);
+}
+
+#[test]
+fn handle_search_term() {
+	let module = TestModule::new();
+	process_test(
+		create_test_module_handler(module),
+		|ProcessTestContext {
+		     process,
+		     search_context,
+		     ..
+		 }| {
+			let mut results = Results::new();
+			let search_term = String::from("foo");
+			results.search_term(search_term.as_str());
+			process.handle_results(results);
+			assert!(matches!(
+				search_context.state.receive_update(),
+				Action::Start(search_term)
+			));
+		},
+	);
+}
+
+#[test]
+fn handle_searchable() {
+	let module = TestModule::new();
+	process_test(
+		create_test_module_handler(module),
+		|ProcessTestContext {
+		     process,
+		     search_context,
+		     ..
+		 }| {
+			let searchable: Box<dyn Searchable> = Box::new(MockedSearchable {});
+			let results = Results::from(searchable);
+			process.handle_results(results);
+			assert!(matches!(
+				search_context.state.receive_update(),
+				Action::SetSearchable(_)
+			));
 		},
 	);
 }
