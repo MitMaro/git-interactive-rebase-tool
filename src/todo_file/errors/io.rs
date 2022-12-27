@@ -15,6 +15,9 @@ pub(crate) enum FileReadErrorCause {
 	/// Caused by a parse error
 	#[error(transparent)]
 	ParseError(#[from] ParseError),
+	/// Caused by the file path returning None for parent()
+	#[error("NoParentDir")]
+	NoParentDir(),
 }
 
 impl PartialEq for FileReadErrorCause {
@@ -23,6 +26,7 @@ impl PartialEq for FileReadErrorCause {
 		match (self, other) {
 			(Self::IoError(self_err), Self::IoError(other_err)) => self_err.kind() == other_err.kind(),
 			(Self::ParseError(self_err), Self::ParseError(other_err)) => self_err == other_err,
+			(Self::NoParentDir(), Self::NoParentDir()) => true,
 			_ => false,
 		}
 	}
