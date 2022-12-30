@@ -52,6 +52,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+	use crate::testutil::{with_todo_revise_file, TodoFileTestDirContext, with_todo_rebase_edit_file, with_todo_rebase_edit_file_stopped};
 
 	#[rstest]
 	#[case::edit(State::Initial, "initial")]
@@ -59,5 +60,23 @@ mod tests {
 	#[case::edit(State::Revise, "revise")]
 	fn to_string(#[case] action: State, #[case] expected: &str) {
 		assert_eq!(format!("{action}"), expected);
+	}
+
+	#[rstest]
+	#[case::edit(State::Initial)]
+	#[case::edit(State::Edit)]
+	#[case::edit(State::Revise)]
+	fn detect(#[case] expected: State) {
+		let check = |context: TodoFileTestDirContext| {
+			assert_eq!(
+				detect_state(context.todo_file().filepath.as_path()).unwrap(),
+				expected
+			)
+		};
+		match expected {
+			State::Initial => with_todo_rebase_edit_file(&[], check),
+			State::Edit => with_todo_rebase_edit_file_stopped(&[], check),
+			State::Revise => with_todo_revise_file(&[], check),
+		}
 	}
 }
