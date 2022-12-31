@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use config::Config;
-use display::{Display, Size};
+use display::Display;
 use git::Repository;
 use input::{EventHandler, EventReaderFn};
 use parking_lot::Mutex;
-use runtime::Runtime;
+use runtime::{Runtime, Threadable};
 use todo_file::TodoFile;
 use view::View;
 
@@ -20,28 +20,23 @@ use crate::{
 	Exit,
 };
 
-pub(crate) struct Application<ModuleProvider, EventProvider, Tui>
-where
-	ModuleProvider: module::ModuleProvider + Send + 'static,
-	EventProvider: EventReaderFn,
-	Tui: display::Tui + 'static,
+pub(crate) struct Application<ModuleProvider>
+where ModuleProvider: module::ModuleProvider + Send + 'static
 {
 	_config: Config,
 	_repository: Repository,
-	todo_file: Arc<Mutex<TodoFile>>,
-	view: View<Tui>,
-	event_provider: EventProvider,
-	initial_display_size: Size,
-	module_handler: ModuleHandler<ModuleProvider>,
+	process: Process<ModuleProvider>,
+	threads: Option<Vec<Box<dyn Threadable>>>,
 }
 
-impl<ModuleProvider, EventProvider, Tui> Application<ModuleProvider, EventProvider, Tui>
-where
-	ModuleProvider: module::ModuleProvider + Send + 'static,
-	EventProvider: EventReaderFn,
-	Tui: display::Tui + Send + 'static,
+impl<ModuleProvider> Application<ModuleProvider>
+where ModuleProvider: module::ModuleProvider + Send + 'static
 {
-	pub(crate) fn new(args: &Args, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit> {
+	pub(crate) fn new<EventProvider, Tui>(args: &Args, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit>
+	where
+		EventProvider: EventReaderFn,
+		Tui: display::Tui + Send + 'static,
+	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
 		let config = Self::load_config(&repository)?;
@@ -65,39 +60,46 @@ where
 				.as_str(),
 		);
 
-		Ok(Self {
-			_config: config,
-			_repository: repository,
-			todo_file,
-			view,
-			event_provider,
-			module_handler,
-			initial_display_size,
-		})
-	}
-
-	pub(crate) fn run_until_finished(self) -> Result<(), Exit> {
+		let mut threads: Vec<Box<dyn Threadable>> = vec![];
 		let runtime = Runtime::new();
 
-		let mut input_threads = events::Thread::new(self.event_provider);
+		let input_threads = events::Thread::new(event_provider);
 		let input_state = input_threads.state();
+		threads.push(Box::new(input_threads));
 
-		let mut view_threads = view::Thread::new(self.view);
+		let view_threads = view::Thread::new(view);
 		let view_state = view_threads.state();
+		threads.push(Box::new(view_threads));
 
 		let process = Process::new(
-			self.initial_display_size,
-			self.todo_file,
-			self.module_handler,
+			initial_display_size,
+			todo_file,
+			module_handler,
 			input_state,
 			view_state,
 			runtime.statuses(),
 		);
-		let mut process_threads = process::Thread::new(process.clone());
+		let process_threads = process::Thread::new(process.clone());
+		threads.push(Box::new(process_threads));
 
-		runtime.register(&mut input_threads);
-		runtime.register(&mut view_threads);
-		runtime.register(&mut process_threads);
+		Ok(Self {
+			_config: config,
+			_repository: repository,
+			process,
+			threads: Some(threads),
+		})
+	}
+
+	pub(crate) fn run_until_finished(&mut self) -> Result<(), Exit> {
+		let Some(mut threads) = self.threads.take() else {
+			return Err(Exit::new(ExitStatus::StateError, "Attempt made to run application a second time"));
+		};
+
+		let runtime = Runtime::new();
+
+		for thread in &mut threads {
+			runtime.register(thread.as_mut());
+		}
 
 		runtime.join().map_err(|err| {
 			Exit::new(
@@ -106,7 +108,7 @@ where
 			)
 		})?;
 
-		let exit_status = process.exit_status();
+		let exit_status = self.process.exit_status();
 		if exit_status != ExitStatus::Good {
 			return Err(Exit::from(exit_status));
 		}
@@ -165,8 +167,9 @@ mod tests {
 	use std::ffi::OsString;
 
 	use claim::assert_ok;
-	use display::testutil::CrossTerm;
+	use display::{testutil::CrossTerm, Size};
 	use input::{KeyCode, KeyEvent, KeyModifiers};
+	use runtime::{Installer, RuntimeError};
 
 	use super::*;
 	use crate::{
@@ -200,7 +203,7 @@ mod tests {
 	#[serial_test::serial]
 	fn load_filepath_from_args_failure() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&[]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
@@ -217,7 +220,7 @@ mod tests {
 	fn load_repository_failure() {
 		let _ = set_git_directory("fixtures/not-a-repository");
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
@@ -234,7 +237,7 @@ mod tests {
 	fn load_config_failure() {
 		let _ = set_git_directory("fixtures/invalid-config");
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
@@ -245,7 +248,7 @@ mod tests {
 	fn load_todo_file_load_error() {
 		let _ = set_git_directory("fixtures/simple");
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> =
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&["does-not-exist"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::FileReadError);
@@ -257,7 +260,7 @@ mod tests {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{git_dir}/rebase-todo-noop");
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> = Application::new(
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
 			create_mocked_crossterm(),
@@ -272,7 +275,7 @@ mod tests {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{git_dir}/rebase-todo-empty");
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>, _, _>, Exit> = Application::new(
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
 			create_mocked_crossterm(),
@@ -293,13 +296,49 @@ mod tests {
 		let git_dir = set_git_directory("fixtures/simple");
 		let rebase_todo = format!("{git_dir}/rebase-todo");
 		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
-		let application: Application<Modules, _, _> = Application::new(
+		let mut application: Application<Modules> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
 			create_mocked_crossterm(),
 		)
 		.unwrap();
 		assert_ok!(application.run_until_finished());
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn run_join_error() {
+		struct FailingThread;
+		impl Threadable for FailingThread {
+			fn install(&self, installer: &Installer) {
+				installer.spawn("THREAD", |notifier| {
+					move || {
+						notifier.error(RuntimeError::ThreadSpawnError(String::from("Error")));
+					}
+				});
+			}
+		}
+
+		let git_dir = set_git_directory("fixtures/simple");
+		let rebase_todo = format!("{git_dir}/rebase-todo");
+		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
+		let mut application: Application<Modules> = Application::new(
+			&args(&[rebase_todo.as_str()]),
+			event_provider,
+			create_mocked_crossterm(),
+		)
+		.unwrap();
+
+		application.threads = Some(vec![Box::new(FailingThread {})]);
+
+		let exit = application.run_until_finished().unwrap_err();
+		assert_eq!(exit.get_status(), &ExitStatus::StateError);
+		assert!(
+			exit.get_message()
+				.as_ref()
+				.unwrap()
+				.starts_with("Failed to join runtime:")
+		);
 	}
 
 	#[test]
@@ -313,7 +352,7 @@ mod tests {
 				KeyModifiers::CONTROL,
 			))))
 		});
-		let application: Application<Modules, _, _> = Application::new(
+		let mut application: Application<Modules> = Application::new(
 			&args(&[rebase_todo.as_str()]),
 			event_provider,
 			create_mocked_crossterm(),
@@ -321,5 +360,26 @@ mod tests {
 		.unwrap();
 		let exit = application.run_until_finished().unwrap_err();
 		assert_eq!(exit.get_status(), &ExitStatus::Kill);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn run_error_on_second_attempt() {
+		let git_dir = set_git_directory("fixtures/simple");
+		let rebase_todo = format!("{git_dir}/rebase-todo");
+		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
+		let mut application: Application<Modules> = Application::new(
+			&args(&[rebase_todo.as_str()]),
+			event_provider,
+			create_mocked_crossterm(),
+		)
+		.unwrap();
+		assert_ok!(application.run_until_finished());
+		let exit = application.run_until_finished().unwrap_err();
+		assert_eq!(exit.get_status(), &ExitStatus::StateError);
+		assert_eq!(
+			exit.get_message().as_ref().unwrap(),
+			"Attempt made to run application a second time"
+		);
 	}
 }

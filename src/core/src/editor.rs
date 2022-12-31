@@ -13,7 +13,7 @@ use crate::{
 
 #[cfg(not(tarpaulin_include))]
 pub(crate) fn run(args: &Args) -> Exit {
-	let application: Application<Modules, _, _> = match Application::new(args, read_event, CrossTerm::new()) {
+	let mut application: Application<Modules> = match Application::new(args, read_event, CrossTerm::new()) {
 		Ok(app) => app,
 		Err(exit) => return exit,
 	};
