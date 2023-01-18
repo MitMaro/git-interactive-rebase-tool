@@ -22,7 +22,7 @@ girt-git = {version = "2.2.0", path = "../../src/git"}
 claim = { git = "https://github.com/Turbo87/rust-claim.git", rev = "23892a3" }
 lazy_static = "1.4.0"
 rstest = "0.16.0"
-serial_test = "0.10.0"
+serial_test = "1.0.0"
 tempfile = "3.3.0"
 girt-testutils = {version = "0.1.0", path = "../testutils"}
 
