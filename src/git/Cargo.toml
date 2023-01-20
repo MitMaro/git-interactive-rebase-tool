@@ -22,7 +22,7 @@ tempfile = "3.3.0"
 thiserror = "1.0.38"
 
 [dependencies.git2]
-version = "=0.15.0"
+version = "=0.16.1"
 default-features = false
 features = []
 
