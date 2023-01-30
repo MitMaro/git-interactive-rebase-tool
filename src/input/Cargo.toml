@@ -19,7 +19,7 @@ anyhow = "1.0"
 bitflags = "1.3.2"
 captur = "0.1.0"
 crossbeam-channel = "0.5.6"
-crossterm = "0.25.0"
+crossterm = "0.26.0"
 parking_lot = "0.12.1"
 girt-config = {version = "2.2.0", path = "../config"}
 girt-runtime = {version = "0.1.0", path = "../runtime"}
