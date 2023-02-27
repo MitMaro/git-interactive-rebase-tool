@@ -18,7 +18,7 @@ name = "git"
 chrono = "0.4.23"
 lazy_static = "1.4.0"
 parking_lot = "0.12.1"
-tempfile = "3.3.0"
+tempfile = "3.4.0"
 thiserror = "1.0.38"
 
 [dependencies.git2]
