@@ -16,7 +16,7 @@ name = "runtime"
 
 [dependencies]
 thiserror = "1.0.38"
-crossbeam-channel = "0.5.6"
+crossbeam-channel = "0.5.7"
 parking_lot = "0.12.1"
 
 [dev-dependencies]
