@@ -4,6 +4,8 @@ mod search_result;
 mod search_state;
 mod searchable;
 mod state;
+#[cfg(test)]
+pub(crate) mod testutil;
 mod thread;
 mod update_handler;
 

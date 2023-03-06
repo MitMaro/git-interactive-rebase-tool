@@ -13,11 +13,11 @@ mod with_search;
 
 pub(crate) use self::{
 	action_line::ActionPattern,
-	assert_results::_assert_results,
+	assert_results::{AnyArtifact, ArtifactCompareWrapper, _assert_results},
 	create_event_reader::create_event_reader,
 	create_test_keybindings::{create_test_custom_keybindings, create_test_keybindings},
 	mocked_searchable::MockedSearchable,
-	module_test::module_test,
+	module_test::{module_test, TestContext as ModuleTestContext},
 	process_test::{process_test, TestContext as ProcessTestContext},
 	read_event_test::read_event_test,
 	set_git_directory::set_git_directory,

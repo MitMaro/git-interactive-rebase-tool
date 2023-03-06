@@ -173,6 +173,13 @@ install_crate = false
 command = "cargo"
 args = ["test", "--workspace"]
 
+[tasks.test-nightly]
+dependencies = ["update-rust-nightly"]
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
+install_crate = false
+command = "cargo"
+args = ["test", "--workspace"]
+
 [tasks.update-rust-stable]
 command = "rustup"
 args = ["update", "stable"]

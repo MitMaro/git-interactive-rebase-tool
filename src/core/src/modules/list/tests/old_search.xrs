@@ -1,0 +1,599 @@
+use std::time::Duration;
+
+use view::assert_rendered_output;
+
+use super::*;
+use crate::{
+	assert_results,
+	process::Artifact,
+	search::{testutil::SearchableRunner, Interrupter},
+	testutil::{EventHandlerTestContext, module_test, ModuleTestContext},
+};
+
+pub(crate) struct TestContext {
+	module_test_context:ModuleTestContext,
+	pub(crate) list: List,
+}
+
+
+impl TestContext {
+	fn get_build_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
+		module.build_view_data(&self.render_context)
+	}
+
+	#[allow(clippy::unused_self)]
+	pub(crate) fn activate(&self, module: &'_ mut dyn Module, state: State) -> Results {
+		module.activate(state)
+	}
+
+	#[allow(clippy::unused_self)]
+	pub(crate) fn deactivate(&mut self, module: &'_ mut dyn Module) -> Results {
+		module.deactivate()
+	}
+
+	pub(crate) fn build_view_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
+		self.get_build_data(module)
+	}
+
+	pub(crate) fn read_event(&mut self, module: &'_ mut dyn Module) -> Event {
+		let input_options = module.input_options();
+		self.event_handler_context.event_handler.read_event(
+			self.event_handler_context.state.read_event(),
+			input_options,
+			|event, key_bindings| module.read_event(event, key_bindings),
+		)
+	}
+
+	pub(crate) fn handle_event(&mut self, module: &'_ mut dyn Module) -> Results {
+		let event = self.read_event(module);
+		let mut results = Results::new();
+		results.event(event);
+		results.append(module.handle_event(event, &self.view_context.state));
+		results
+	}
+
+	pub(crate) fn handle_n_events(&mut self, module: &'_ mut dyn Module, n: usize) -> Vec<Results> {
+		let mut results = vec![];
+		for _ in 0..n {
+			results.push(self.handle_event(module));
+		}
+		results
+	}
+
+	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<Results> {
+		self.handle_n_events(module, self.event_handler_context.number_events)
+	}
+
+	pub(crate) fn take_todo_file(&mut self) -> TodoFile {
+		self.todo_file.take().expect("Cannot take the TodoFile more than once")
+	}
+}
+
+#[derive(Debug, Eq, PartialEq)]
+enum Action {
+	Start,
+	Finish,
+	FinishWithNext(usize),
+	FinishWithPrevious(usize),
+}
+
+pub(crate) fn search_test<C>(action: Action, term: &str, lines: &[&str], callback: C)
+where C: FnOnce(TestContext) {
+	let mut events = vec![Event::from(StandardEvent::SearchStart)];
+
+	for c in term.chars() {
+		events.push(Event::from(c))
+	}
+
+	match action {
+		Action::Start => {},
+		Action::Finish => {
+			events.push(Event::from(StandardEvent::SearchFinish));
+		},
+		Action::FinishWithNext(n) => {
+			events.push(Event::from(StandardEvent::SearchFinish));
+			for _ in n {
+				events.push(Event::from(StandardEvent::SearchNext));
+			}
+		},
+		Action::FinishWithPrevious(n) => {
+			events.push(Event::from(StandardEvent::SearchFinish));
+			for _ in n {
+				events.push(Event::from(StandardEvent::SearchPrevious));
+			}
+		},
+	}
+	module_test(lines, events.as_slice(), |mut context| {
+		let list = create_list(&Config::new(), context.take_todo_file());
+		callback(TestContext {
+			event_handler_context: context.event_handler_context,
+			list,
+		});
+	});
+}
+
+// #[test]
+// fn with_match_on_hash() {
+// 	module_test(
+// 		&["pick aaaaaaaa comment1"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('a'),
+// 			Event::from('a'),
+// 			Event::from('a'),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = SearchableRunner::new(&module.search).run_search("aaa");
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {IndicatorColor}aaaaaaaa{Normal} comment1{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}/aaa{Normal,Underline}"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn with_no_match() {
+// 	module_test(
+// 		&["pick aaaaaaaa comment1"],
+// 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = SearchableRunner::new(&module.search).run_search("x");
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment1{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}/x{Normal,Underline}"
+// 			);
+// 		},
+// 	);
+// }
+
+// #[test]
+// fn start_with_matches_and_with_term() {
+// 	module_test(
+// 		&["pick aaaaaaaa comment1"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('a'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = SearchableRunner::new(&module.search).run_search("a");
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {IndicatorColor,Underline}aaaaaaaa{Normal} comment1{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}[a]: 1/1"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn start_with_no_matches_and_with_term() {
+// 	module_test(
+// 		&["pick aaaaaaaa comment1"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment1{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: No Results"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn start_with_no_term() {
+// 	module_test(
+// 		&["pick aaaaaaaa comment1"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from(StandardEvent::SearchFinish),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment1{Pad( )}"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn normal_mode_next() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchNext),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 2/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn visual_mode_next() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(MetaEvent::ToggleVisualMode),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchNext),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1{Pad( )}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 2/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn normal_mode_next_with_wrap() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchNext),
+// 			Event::from(StandardEvent::SearchNext),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor,Underline}x{Normal}1{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2",
+// 				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 1/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn visual_mode_next_with_wrap() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(MetaEvent::ToggleVisualMode),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchNext),
+// 			Event::from(StandardEvent::SearchNext),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor,Underline}x{Normal}1{Pad( )}",
+// 				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 1/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn normal_mode_previous() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchPrevious),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 2/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn visual_mode_previous() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(MetaEvent::ToggleVisualMode),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchPrevious),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
+// 				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 2/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn normal_mode_previous_with_wrap() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchPrevious),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
+// 				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}cccccccc {IndicatorColor,Underline}x{Normal}3{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 3/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn visual_mode_previous_with_wrap() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(MetaEvent::ToggleVisualMode),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchPrevious),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1{Pad( )}",
+// 				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2{Pad( )}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}cccccccc {IndicatorColor,Underline}x{Normal}3{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 3/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn cancel() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(StandardEvent::SearchStart),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa x1{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb x2",
+// 				"{Normal}   {ActionPick}pick {Normal}cccccccc x3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn set_search_start_hint() {
+// 	module_test(
+// 		&[
+// 			"pick aaaaaaaa x1",
+// 			"pick aaaaaaaa a",
+// 			"pick bbbbbbbb x2",
+// 			"pick aaaaaaaa b",
+// 			"pick bbbbbbbb x3",
+// 		],
+// 		&[
+// 			Event::from(MetaEvent::MoveCursorDown),
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from('x'),
+// 			Event::from(StandardEvent::SearchFinish),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa a",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
+// 				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa b",
+// 				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}3",
+// 				"{TRAILING}",
+// 				"{Normal}[x]: 2/3"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn highlight_multiple() {
+// 	module_test(
+// 		&["pick 12345678 xaxxaxxx"],
+// 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let mut search = module.search.clone();
+// 			let _ = search.search(Interrupter::new(SEARCH_TIMEOUT), "x");
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionPick}pick {Normal}12345678 \
+// 				 {IndicatorColor}x{Normal}a{IndicatorColor}xx{Normal}a{IndicatorColor}xxx{Normal}{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}/x{Normal,Underline}"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn skip_no_content() {
+// 	module_test(
+// 		&["break"],
+// 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let _ = test_context.handle_all_events(&mut module);
+// 			let view_data = test_context.build_view_data(&mut module);
+// 			assert_rendered_output!(
+// 				view_data,
+// 				"{TITLE}{HELP}",
+// 				"{BODY}",
+// 				"{Selected}{Normal} > {ActionBreak}break {Normal}{Pad( )}",
+// 				"{TRAILING}",
+// 				"{Normal}/x{Normal,Underline}"
+// 			);
+// 		},
+// 	);
+// }
+//
+// #[test]
+// fn handle_other_event() {
+// 	module_test(
+// 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+// 		&[
+// 			Event::from(StandardEvent::SearchStart),
+// 			Event::from(StandardEvent::SearchFinish),
+// 			Event::from(MetaEvent::Abort),
+// 		],
+// 		|mut test_context| {
+// 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+// 			let mut results: Vec<_> = test_context.handle_all_events(&mut module);
+// 			assert_results!(
+// 				results.remove(results.len() - 1),
+// 				Artifact::Event(Event::from(MetaEvent::Abort)),
+// 				Artifact::ChangeState(State::ConfirmAbort)
+// 			);
+// 		},
+// 	);
+// }

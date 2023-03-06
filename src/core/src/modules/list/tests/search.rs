@@ -1,48 +1,133 @@
-use view::{assert_rendered_output, render_line, testutil::AssertRenderOptions};
+use std::{thread::sleep, time::Duration};
+
+use claims::{assert_none, assert_some_eq};
+use input::KeyCode;
+use view::{assert_rendered_output, render_line};
 
 use super::*;
-use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
+use crate::{
+	action_line,
+	assert_results,
+	modules::list::search::LineMatch,
+	process::Artifact,
+	search::{testutil::SearchableRunner, Interrupter, SearchResult},
+	testutil::{module_test, AnyArtifact, EventHandlerTestContext, ModuleTestContext},
+};
 
-#[test]
-fn start_edit() {
-	module_test(
-		&["pick aaaaaaaa comment"],
-		&[Event::from(StandardEvent::SearchStart)],
-		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Not Contains "IndicatorColor"),
-				"{TRAILING}",
-				"{Normal}/{Normal,Underline}"
-			);
-		},
-	);
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum Action<'action> {
+	Start(&'action str),
+	Search,
+	Finish,
+	Next,
+	Previous,
+	Cancel,
+	Event(Event),
+}
+
+struct TestContext {
+	pub(crate) list: List,
+	module_test_context: ModuleTestContext,
+	results: Vec<Results>,
+}
+
+impl TestContext {
+	fn build_view_data(&mut self) -> &ViewData {
+		self.module_test_context.build_view_data(&mut self.list)
+	}
+
+	fn handle_event(&mut self, event: Event) {
+		self.results.push(
+			self.list
+				.handle_event(event, &self.module_test_context.view_context.state),
+		);
+	}
+}
+
+fn search_test<C>(actions: &[Action<'_>], lines: &[&str], callback: C)
+where C: FnOnce(TestContext) {
+	module_test(lines, &[], |mut context| {
+		let list = create_list(&Config::new(), context.take_todo_file());
+		let mut search_context = TestContext {
+			list,
+			module_test_context: context,
+			results: vec![],
+		};
+
+		let mut finish_pushed = false;
+
+		for action in actions {
+			match *action {
+				Action::Start(term) => {
+					finish_pushed = false;
+					search_context.handle_event(Event::from(StandardEvent::SearchStart));
+					for c in term.chars() {
+						search_context.handle_event(Event::from(c));
+					}
+				},
+				Action::Search => {
+					if let Some(term) = search_context.list.search_bar.search_value() {
+						_ = search_context
+							.list
+							.search
+							.search(Interrupter::new(Duration::from_secs(5)), term);
+						search_context.handle_event(Event::from(MetaEvent::SearchUpdate));
+					}
+				},
+				Action::Finish => {
+					finish_pushed = true;
+					search_context.handle_event(Event::from(StandardEvent::SearchFinish));
+				},
+				Action::Next => {
+					if !finish_pushed {
+						search_context.handle_event(Event::from(StandardEvent::SearchFinish));
+					}
+					search_context.handle_event(Event::from(StandardEvent::SearchNext));
+				},
+				Action::Previous => {
+					if !finish_pushed {
+						search_context.handle_event(Event::from(StandardEvent::SearchFinish));
+					}
+					search_context.handle_event(Event::from(StandardEvent::SearchPrevious));
+				},
+				Action::Cancel => {
+					search_context.handle_event(Event::from(KeyCode::Esc));
+				},
+				Action::Event(event) => {
+					search_context.handle_event(event);
+				},
+			}
+		}
+
+		callback(search_context);
+	});
 }
 
 #[test]
-fn with_match_on_hash() {
-	module_test(
-		&["pick aaaaaaaa comment1"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from('a'),
-			Event::from('a'),
-			Event::from('a'),
-		],
+fn render_start() {
+	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |mut test_context| {
+		assert_rendered_output!(
+			Style test_context.build_view_data(),
+			"{TITLE}{HELP}",
+			"{BODY}",
+			"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa comment{Pad( )}",
+			"{TRAILING}",
+			"{Normal}/{Normal,Underline}"
+		);
+	});
+}
+
+#[test]
+fn render_match_hash() {
+	search_test(
+		&[Action::Start("aaa"), Action::Search],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				Style test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(Contains "IndicatorColor"),
+				"{Selected}{Normal} > {ActionPick}pick   {IndicatorColor}aaaaaaaa{Normal} comment{Pad( )}",
 				"{TRAILING}",
 				"{Normal}/aaa{Normal,Underline}"
 			);
@@ -51,472 +136,288 @@ fn with_match_on_hash() {
 }
 
 #[test]
-fn with_no_match() {
-	module_test(
-		&["pick aaaaaaaa comment1"],
-		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
+fn render_match_content_start() {
+	search_test(
+		&[Action::Start("com"), Action::Search],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				Style test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(Not Contains "IndicatorColor"),
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa {IndicatorColor}com{Normal}ment{Pad( )}",
 				"{TRAILING}",
-				"{Normal}/x{Normal,Underline}"
+				"{Normal}/com{Normal,Underline}"
 			);
 		},
 	);
 }
 
 #[test]
-fn start_with_matches_and_with_term() {
-	module_test(
-		&["pick aaaaaaaa comment1"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from('a'),
-			Event::from(StandardEvent::SearchFinish),
-		],
+fn render_match_content_middle() {
+	search_test(
+		&[Action::Start("omm"), Action::Search],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				Style test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(Contains "{IndicatorColor,Underline}"),
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa c{IndicatorColor}omm{Normal}ent{Pad( )}",
 				"{TRAILING}",
-				"{Normal}[a]: 1/1"
+				"{Normal}/omm{Normal,Underline}"
 			);
 		},
 	);
 }
 
 #[test]
-fn start_with_no_matches_and_with_term() {
-	module_test(
-		&["pick aaaaaaaa comment1"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-		],
+fn render_match_content_end() {
+	search_test(
+		&[Action::Start("ent"), Action::Search],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				Style test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(Not Contains "IndicatorColor"),
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa comm{IndicatorColor}ent{Normal}{Pad( )}",
 				"{TRAILING}",
-				"{Normal}[x]: No Results"
+				"{Normal}/ent{Normal,Underline}"
 			);
 		},
 	);
 }
 
 #[test]
-fn start_with_no_term() {
-	module_test(
-		&["pick aaaaaaaa comment1"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from(StandardEvent::SearchFinish),
-		],
+fn render_match_content_full() {
+	search_test(
+		&[Action::Start("comment"), Action::Search],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				Style test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				action_line!(Selected Pick "aaaaaaaa", "comment1")
+				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa {IndicatorColor}comment{Normal}{Pad( )}",
+				"{TRAILING}",
+				"{Normal}/comment{Normal,Underline}"
 			);
 		},
 	);
 }
 
 #[test]
-fn normal_mode_next() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+fn render_match_finish_with_search_active() {
+	search_test(
+		&[Action::Start("aaa"), Action::Search, Action::Finish],
 		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchNext),
+			"pick aaaaaaaa comment",
+			"pick aaaaaaab comment",
+			"pick aaaaaaac comment",
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(Contains "{IndicatorColor}"),
+				action_line!(Selected Pick "aaaaaaaa", "comment"),
+				action_line!(Pick "aaaaaaab", "comment"),
+				action_line!(Pick "aaaaaaac", "comment"),
 				"{TRAILING}",
-				"{Normal}[x]: 2/3"
+				"[aaa]: 1/3 Searching [(-)]"
 			);
 		},
 	);
 }
 
 #[test]
-fn visual_mode_next() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+fn render_match_finish_with_search_complete() {
+	search_test(
+		&[Action::Start("aaa"), Action::Search, Action::Finish, Action::Search],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchNext),
+			"pick aaaaaaaa comment",
+			"pick aaaaaaab comment",
+			"pick aaaaaaac comment",
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(
-					All render_line!(Contains "Dimmed"),
-					render_line!(Contains "{IndicatorColor}")
-				),
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(
-					All render_line!(Not Contains "Dimmed"),
-					render_line!(Contains "{IndicatorColor}")
-				),
+				action_line!(Selected Pick "aaaaaaaa", "comment"),
+				action_line!(Pick "aaaaaaab", "comment"),
+				action_line!(Pick "aaaaaaac", "comment"),
 				"{TRAILING}",
-				"{Normal}[x]: 2/3"
+				"[aaa]: 1/3"
 			);
 		},
 	);
 }
 
 #[test]
-fn normal_mode_next_with_wrap() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchNext),
-			Event::from(StandardEvent::SearchNext),
-		],
+fn render_no_results() {
+	search_test(
+		&[Action::Start("xxx"), Action::Search, Action::Finish, Action::Search],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Style view_data,
+				test_context.build_view_data(),
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor}"),
+				action_line!(Selected Pick "aaaaaaaa", "comment"),
 				"{TRAILING}",
-				"{Normal}[x]: 1/3"
+				"[xxx]: No Results"
 			);
 		},
 	);
 }
 
 #[test]
-fn visual_mode_next_with_wrap() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchNext),
-			Event::from(StandardEvent::SearchNext),
-		],
+fn search_indicator_refresh_on_update() {
+	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |mut test_context| {
+		let cur_indicator = test_context.list.spin_indicator.indicator();
+		sleep(Duration::from_millis(200)); // indicator only changes every 100 ms
+		test_context.list.search_update();
+		assert_ne!(test_context.list.spin_indicator.indicator(), cur_indicator);
+	});
+}
+
+#[test]
+fn start_edit() {
+	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |mut test_context| {
+		assert!(test_context.list.search_bar.is_active());
+	});
+}
+
+#[test]
+fn term_entry() {
+	search_test(
+		&[Action::Start("aaa")],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(
-					All render_line!(Contains "Dimmed"),
-					render_line!(Contains "{IndicatorColor}")
-				),
-				render_line!(Contains "{IndicatorColor}"),
-				"{TRAILING}",
-				"{Normal}[x]: 1/3"
+			assert_results!(
+				test_context.results.pop().unwrap(),
+				AnyArtifact,
+				Artifact::SearchTerm(String::from("aaa"))
 			);
 		},
 	);
 }
 
 #[test]
-fn normal_mode_previous() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchPrevious),
-		],
+fn term_entry_delete_last_character() {
+	search_test(
+		&[Action::Start("a"), Action::Event(Event::from(KeyCode::Backspace))],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(Contains "{IndicatorColor}"),
-				"{TRAILING}",
-				"{Normal}[x]: 2/3"
-			);
+			assert_results!(test_context.results.pop().unwrap(), AnyArtifact, Artifact::SearchCancel);
 		},
 	);
 }
 
 #[test]
-fn visual_mode_previous() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchPrevious),
-		],
+fn start_search_with_empty_term() {
+	search_test(
+		&[Action::Start(""), Action::Search, Action::Finish],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(
-					All render_line!(Not Contains "Dimmed"),
-					render_line!(Contains "{IndicatorColor,Underline}")
-				),
-				render_line!(
-					All render_line!(Contains "Dimmed"),
-					render_line!(Contains "{IndicatorColor}")
-				),
-				"{TRAILING}",
-				"{Normal}[x]: 2/3"
-			);
+			assert_results!(test_context.results.pop().unwrap(), AnyArtifact, Artifact::SearchCancel);
+			assert!(!test_context.list.search_bar.is_active());
 		},
 	);
 }
 
 #[test]
-fn normal_mode_previous_with_wrap() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchPrevious),
-		],
+fn start_search_with_term() {
+	search_test(
+		&[Action::Start("aaa"), Action::Search, Action::Finish],
+		&["pick aaaaaaaa comment"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				"{TRAILING}",
-				"{Normal}[x]: 3/3"
+			assert_results!(
+				test_context.results.pop().unwrap(),
+				AnyArtifact,
+				Artifact::SearchTerm(String::from("aaa"))
 			);
+			assert_some_eq!(test_context.list.search.current_match(), LineMatch::new(0, true, false));
 		},
 	);
 }
 
 #[test]
-fn visual_mode_previous_with_wrap() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
+fn next() {
+	search_test(
+		&[Action::Start("aaa"), Action::Search, Action::Finish, Action::Next],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchPrevious),
+			"pick aaaaaaaa comment1",
+			"pick aaaaaaaa comment2",
+			"pick aaaaaaaa comment3",
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
-				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
-				render_line!(
-					All render_line!(Not Contains "Dimmed"),
-					render_line!(Contains "{IndicatorColor,Underline}")
-				),
-				"{TRAILING}",
-				"{Normal}[x]: 3/3"
+			assert_results!(
+				test_context.results.pop().unwrap(),
+				AnyArtifact,
+				Artifact::SearchTerm(String::from("aaa"))
 			);
+			assert_some_eq!(test_context.list.search.current_match(), LineMatch::new(1, true, false));
+		},
+	);
+}
+
+#[test]
+fn previous() {
+	search_test(
+		&[Action::Start("aaa"), Action::Search, Action::Finish, Action::Previous],
+		&[
+			"pick aaaaaaaa comment1",
+			"pick aaaaaaaa comment2",
+			"pick aaaaaaaa comment3",
+		],
+		|mut test_context| {
+			assert_results!(
+				test_context.results.pop().unwrap(),
+				AnyArtifact,
+				Artifact::SearchTerm(String::from("aaa"))
+			);
+			assert_some_eq!(test_context.list.search.current_match(), LineMatch::new(2, true, false));
 		},
 	);
 }
 
 #[test]
 fn cancel() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(StandardEvent::SearchStart),
-		],
+	search_test(
+		&[Action::Start("aaa"), Action::Cancel],
+		&["pick aaaaaaaa comment1"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				action_line!(Selected Pick "aaaaaaaa", "x1"),
-				action_line!(Pick "bbbbbbbb", "x2"),
-				action_line!(Pick "cccccccc", "x3")
-			);
+			assert_results!(test_context.results.pop().unwrap(), AnyArtifact, Artifact::SearchCancel);
 		},
 	);
 }
 
 #[test]
-fn set_search_start_hint() {
-	module_test(
-		&[
-			"pick aaaaaaaa x1",
-			"pick aaaaaaaa a",
-			"pick bbbbbbbb x2",
-			"pick aaaaaaaa b",
-			"pick bbbbbbbb x3",
-		],
-		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(StandardEvent::SearchStart),
-			Event::from('x'),
-			Event::from(StandardEvent::SearchFinish),
-		],
+fn ignored_event() {
+	search_test(
+		&[Action::Start("aaa"), Action::Event(Event::from(KeyCode::Null))],
+		&["pick aaaaaaaa comment1"],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Contains "{IndicatorColor}"),
-				render_line!(Not Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(Not Contains "{IndicatorColor}"),
-				render_line!(Contains "{IndicatorColor}"),
-				"{TRAILING}",
-				"{Normal}[x]: 2/3"
-			);
-		},
-	);
-}
-
-#[test]
-fn highlight_multiple() {
-	module_test(
-		&["pick 12345678 xaxxaxxx"],
-		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
-		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Contains "{IndicatorColor}x{Normal}a{IndicatorColor}xx{Normal}a{IndicatorColor}xxx"),
-				"{TRAILING}",
-				"{Normal}/x{Normal,Underline}"
-			);
-		},
-	);
-}
-
-#[test]
-fn skip_no_content() {
-	module_test(
-		&["break"],
-		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
-		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Style view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				render_line!(Not Contains "{IndicatorColor}"),
-				"{TRAILING}",
-				"{Normal}/x{Normal,Underline}"
-			);
-		},
-	);
-}
-
-#[test]
-fn handle_other_event() {
-	module_test(
-		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
-		&[
-			Event::from(StandardEvent::SearchStart),
-			Event::from(StandardEvent::SearchFinish),
-			Event::from(MetaEvent::Abort),
-		],
-		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let mut results: Vec<_> = test_context.handle_all_events(&mut module);
 			assert_results!(
-				results.remove(results.len() - 1),
-				Artifact::Event(Event::from(MetaEvent::Abort)),
-				Artifact::ChangeState(State::ConfirmAbort)
+				test_context.results.pop().unwrap(),
+				Artifact::Event(Event::from(KeyCode::Null))
+			);
+		},
+	);
+}
+
+#[test]
+fn select_matching_line() {
+	search_test(
+		&[Action::Start("aaa"), Action::Event(Event::from(KeyCode::Null))],
+		&["pick aaaaaaaa comment1"],
+		|mut test_context| {
+			assert_results!(
+				test_context.results.pop().unwrap(),
+				Artifact::Event(Event::from(KeyCode::Null))
 			);
 		},
 	);

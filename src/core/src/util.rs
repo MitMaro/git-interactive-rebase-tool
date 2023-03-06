@@ -26,6 +26,7 @@ macro_rules! select {
 }
 
 #[macro_export]
+#[allow(clippy::redundant_closure_call)]
 macro_rules! first {
 	($first: expr, $($arg:expr),*) => {
 		if $first().is_some() {

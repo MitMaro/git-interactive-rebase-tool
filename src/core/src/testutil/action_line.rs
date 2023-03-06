@@ -106,7 +106,7 @@ impl LinePattern for ActionPattern {
 
 	fn expected(&self) -> String {
 		if self.selected {
-			replace_invisibles(format!(">  {}", self.line.to_text()).as_str())
+			replace_invisibles(format!("> {}", self.line.to_text()).as_str())
 		}
 		else {
 			replace_invisibles(format!("  {}", self.line.to_text()).as_str())

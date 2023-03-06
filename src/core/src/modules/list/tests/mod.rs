@@ -1,4 +1,5 @@
 mod abort_and_rebase;
+mod activate;
 mod change_action;
 mod edit_mode;
 mod external_editor;

@@ -245,17 +245,6 @@ fn is_editing() {
 }
 
 #[test]
-fn is_searching() {
-	let mut search_bar = SearchBar::new();
-	search_bar.state = State::Editing;
-	assert!(!search_bar.is_searching());
-	search_bar.state = State::Deactivated;
-	assert!(!search_bar.is_searching());
-	search_bar.state = State::Searching;
-	assert!(search_bar.is_searching());
-}
-
-#[test]
 fn build_view_line() {
 	assert_rendered_output!(
 		Options AssertRenderOptions::INCLUDE_STYLE | AssertRenderOptions::BODY_ONLY,

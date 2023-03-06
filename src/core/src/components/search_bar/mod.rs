@@ -123,10 +123,6 @@ impl SearchBar {
 		self.state == State::Editing
 	}
 
-	pub(crate) fn is_searching(&self) -> bool {
-		self.state == State::Searching
-	}
-
 	pub(crate) fn build_view_line(&self) -> ViewLine {
 		ViewLine::from(self.editable_line.line_segments())
 	}

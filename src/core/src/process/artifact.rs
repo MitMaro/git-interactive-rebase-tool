@@ -26,7 +26,7 @@ impl Debug for Artifact {
 		match *self {
 			Self::ChangeState(state) => write!(f, "ChangeState({state:?})"),
 			Self::EnqueueResize => write!(f, "EnqueueResize"),
-			Self::Error(ref err, state) => write!(f, "Error({err:?}, {state:?})"),
+			Self::Error(ref err, state) => write!(f, "Error({err}, {state:?})"),
 			Self::Event(event) => write!(f, "Event({event:?})"),
 			Self::ExitStatus(status) => write!(f, "ExitStatus({status:?})"),
 			Self::ExternalCommand((ref command, ref args)) => write!(f, "ExternalCommand({command:?}, {args:?})"),
