@@ -215,7 +215,7 @@ impl List {
 			if let Some(visual_index_start) = self.visual_index_start {
 				self.visual_index_start = Some(visual_index_start - 1);
 			}
-			let _ = self.update_cursor(CursorUpdate::Up(1));
+			_ = self.update_cursor(CursorUpdate::Up(1));
 		}
 	}
 
@@ -231,7 +231,7 @@ impl List {
 			if let Some(visual_index_start) = self.visual_index_start {
 				self.visual_index_start = Some(visual_index_start + 1);
 			}
-			let _ = self.update_cursor(CursorUpdate::Down(1));
+			_ = self.update_cursor(CursorUpdate::Down(1));
 		}
 	}
 
@@ -244,7 +244,7 @@ impl List {
 		drop(todo_file);
 
 		if self.state == ListState::Normal && self.auto_select_next {
-			let _ = self.update_cursor(CursorUpdate::Down(1));
+			_ = self.update_cursor(CursorUpdate::Down(1));
 		}
 	}
 
@@ -370,7 +370,7 @@ impl List {
 
 		drop(todo_file);
 
-		let _ = self.update_cursor(cursor_update);
+		_ = self.update_cursor(cursor_update);
 	}
 
 	#[allow(clippy::unused_self)]
@@ -591,7 +591,7 @@ impl List {
 			drop(todo_file);
 
 			if let Some(selected) = self.search.current_match() {
-				let _ = self.update_cursor(CursorUpdate::Set(selected));
+				_ = self.update_cursor(CursorUpdate::Set(selected));
 			}
 			return Some(Results::from(event));
 		}
@@ -615,24 +615,24 @@ impl List {
 					MetaEvent::ForceAbort => self.force_abort(&mut results),
 					MetaEvent::ForceRebase => self.force_rebase(&mut results),
 					MetaEvent::MoveCursorDown => {
-						let _ = self.update_cursor(CursorUpdate::Down(1));
+						_ = self.update_cursor(CursorUpdate::Down(1));
 					},
 					MetaEvent::MoveCursorEnd => {
-						let _ = self.update_cursor(CursorUpdate::End);
+						_ = self.update_cursor(CursorUpdate::End);
 					},
 					MetaEvent::MoveCursorHome => {
-						let _ = self.update_cursor(CursorUpdate::Set(0));
+						_ = self.update_cursor(CursorUpdate::Set(0));
 					},
 					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_state),
 					MetaEvent::MoveCursorPageDown => {
-						let _ = self.update_cursor(CursorUpdate::Down(self.height / 2));
+						_ = self.update_cursor(CursorUpdate::Down(self.height / 2));
 					},
 					MetaEvent::MoveCursorPageUp => {
-						let _ = self.update_cursor(CursorUpdate::Up(self.height / 2));
+						_ = self.update_cursor(CursorUpdate::Up(self.height / 2));
 					},
 					MetaEvent::MoveCursorRight => self.move_cursor_right(view_state),
 					MetaEvent::MoveCursorUp => {
-						let _ = self.update_cursor(CursorUpdate::Up(1));
+						_ = self.update_cursor(CursorUpdate::Up(1));
 					},
 					MetaEvent::OpenInEditor => self.open_in_editor(&mut results),
 					MetaEvent::Rebase => self.rebase(&mut results),

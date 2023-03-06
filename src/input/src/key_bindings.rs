@@ -43,7 +43,7 @@ pub struct KeyBindings<CustomKeybinding: crate::CustomKeybinding, CustomEvent: c
 /// Map a keybinding to a list of events.
 #[must_use]
 #[inline]
-#[allow(clippy::string_slice)]
+#[allow(clippy::string_slice, clippy::missing_panics_doc)]
 pub fn map_keybindings<CustomEvent: crate::CustomEvent>(bindings: &[String]) -> Vec<Event<CustomEvent>> {
 	bindings
 		.iter()

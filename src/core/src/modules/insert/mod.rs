@@ -99,7 +99,7 @@ impl Module for Insert {
 						let mut todo_file = self.todo_file.lock();
 						let new_line_index = todo_file.get_selected_line_index() + 1;
 						todo_file.add_line(new_line_index, line);
-						let _ = todo_file.set_selected_line_index(new_line_index);
+						_ = todo_file.set_selected_line_index(new_line_index);
 					}
 				}
 			},

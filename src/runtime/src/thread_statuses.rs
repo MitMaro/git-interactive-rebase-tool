@@ -98,7 +98,7 @@ mod tests {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);
 		let thread_statuses = statuses.clone();
-		let _ = thread::spawn(move || {
+		_ = thread::spawn(move || {
 			sleep(WAIT_TIME.mul(4));
 			thread_statuses.update_thread("name", Status::Ended);
 		});

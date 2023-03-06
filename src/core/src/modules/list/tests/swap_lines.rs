@@ -10,7 +10,7 @@ fn normal_mode_change_swap_down() {
 		&[Event::from(MetaEvent::SwapSelectedDown)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -44,7 +44,7 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -82,7 +82,7 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -121,7 +121,7 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -158,7 +158,7 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -186,7 +186,7 @@ fn normal_mode_change_swap_up() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -220,7 +220,7 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -258,7 +258,7 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -295,7 +295,7 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -334,7 +334,7 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,

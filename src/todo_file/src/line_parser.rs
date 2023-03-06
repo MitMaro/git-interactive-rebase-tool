@@ -77,14 +77,14 @@ mod tests {
 	#[test]
 	fn has_more_after_next() {
 		let mut parser = LineParser::new("foo");
-		let _ = parser.next();
+		_ = parser.next();
 		assert!(!parser.has_more());
 	}
 
 	#[test]
 	fn has_more_after_next_with_trailing_spaces() {
 		let mut parser = LineParser::new("foo ");
-		let _ = parser.next();
+		_ = parser.next();
 		assert!(!parser.has_more());
 	}
 
@@ -139,14 +139,14 @@ mod tests {
 	#[test]
 	fn next_end_of_tokens() {
 		let mut parser = LineParser::new("foo");
-		let _ = parser.next();
+		_ = parser.next();
 		assert_err_eq!(parser.next(), ParseError::InvalidLine(String::from("foo")));
 	}
 
 	#[test]
 	fn next_end_of_tokens_with_trailing_space() {
 		let mut parser = LineParser::new("foo ");
-		let _ = parser.next();
+		_ = parser.next();
 		assert_err_eq!(parser.next(), ParseError::InvalidLine(String::from("foo ")));
 	}
 
@@ -171,21 +171,21 @@ mod tests {
 	#[test]
 	fn take_remaining_after_next() {
 		let mut parser = LineParser::new("foo bar");
-		let _ = parser.next();
+		_ = parser.next();
 		assert_eq!(parser.take_remaining(), "bar");
 	}
 
 	#[test]
 	fn take_remaining_end_of_tokens() {
 		let mut parser = LineParser::new("foo");
-		let _ = parser.next();
+		_ = parser.next();
 		assert_eq!(parser.take_remaining(), "");
 	}
 
 	#[test]
 	fn take_remaining_end_of_tokens_trailing_space() {
 		let mut parser = LineParser::new("foo ");
-		let _ = parser.next();
+		_ = parser.next();
 		assert_eq!(parser.take_remaining(), "");
 	}
 }

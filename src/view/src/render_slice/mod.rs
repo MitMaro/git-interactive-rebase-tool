@@ -231,7 +231,7 @@ impl RenderSlice {
 					.remove(&String::from(name))
 					.unwrap_or_else(ScrollPosition::new),
 			);
-			let _ = self
+			_ = self
 				.scroll_position_cache
 				.insert(String::from(self.view_data_name.as_str()), previous_scroll_position);
 			let version = view_data.get_scroll_version();

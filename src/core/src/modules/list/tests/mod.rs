@@ -28,7 +28,7 @@ pub(crate) fn create_list(config: &Config, todo_file: TodoFile) -> List {
 fn resize() {
 	module_test(&["pick aaa c1"], &[Event::Resize(100, 200)], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
-		let _ = test_context.handle_all_events(&mut module);
+		_ = test_context.handle_all_events(&mut module);
 		assert_eq!(module.height, 200);
 	});
 }

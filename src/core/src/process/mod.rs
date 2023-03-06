@@ -242,7 +242,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 			.wait_for_status(input::THREAD_NAME, &runtime::Status::Waiting)?;
 
 		let mut cmd = Command::new(external_command.0.clone());
-		let _ = cmd.args(external_command.1.clone());
+		_ = cmd.args(external_command.1.clone());
 
 		let result = cmd
 			.status()

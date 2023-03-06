@@ -1,0 +1,10 @@
+This file contains any lints from rustc that have not been added, and why.
+
+box-pointers - This project uses Box pointers, and it is safe to do so
+unstable-features - This is deprecated, and this project doesn't depend on it
+
+Unstable lints:
+	fuzzy-provenance-casts
+	lossy-provenance-casts
+	multiple-supertrait-upcastable
+	must-not-suspend

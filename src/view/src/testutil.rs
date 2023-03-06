@@ -32,8 +32,6 @@ bitflags! {
 	/// Options for the `assert_rendered_output!` macro
 	#[derive(Default)]
 	pub struct AssertRenderOptions: u8 {
-		/// The default assertion options
-		const DEFAULT = 0b0000_0000;
 		/// Ignore trailing whitespace
 		const INCLUDE_TRAILING_WHITESPACE = 0b0000_0001;
 		/// Ignore pinned indicator
@@ -293,12 +291,12 @@ macro_rules! assert_rendered_output {
 	($view_data:expr) => {
 		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected: Vec<String> = vec![];
-		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::DEFAULT);
+		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::default());
 	};
 	($view_data:expr, $($arg:expr),*) => {
 		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};
 		let expected = vec![$( String::from($arg), )*];
-		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::DEFAULT);
+		_assert_rendered_output_from_view_data($view_data, &expected, AssertRenderOptions::default());
 	};
 	(Options $options:expr, $view_data:expr, $($arg:expr),*) => {
 		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions};

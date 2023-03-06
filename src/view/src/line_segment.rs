@@ -128,7 +128,7 @@ impl LineSegment {
 					false
 				}
 				else {
-					let _ = skip_length.replace(value + len);
+					_ = skip_length.replace(value + len);
 					true
 				}
 			});
@@ -143,7 +143,7 @@ impl LineSegment {
 							false
 						}
 						else {
-							let _ = take_length.replace(value + len);
+							_ = take_length.replace(value + len);
 							true
 						}
 					})

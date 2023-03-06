@@ -11,7 +11,7 @@ fn move_down_1() {
 		&[Event::from(MetaEvent::MoveCursorDown)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -33,7 +33,7 @@ fn move_down_view_end() {
 		&[Event::from(MetaEvent::MoveCursorDown); 2],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -55,7 +55,7 @@ fn move_down_past_end() {
 		&[Event::from(MetaEvent::MoveCursorDown); 3],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -81,7 +81,7 @@ fn move_down_scroll_bottom_move_up_one() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -107,7 +107,7 @@ fn move_down_scroll_bottom_move_up_top() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -132,7 +132,7 @@ fn move_up_attempt_above_top() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -155,7 +155,7 @@ fn move_down_attempt_below_bottom() {
 		&[Event::from(MetaEvent::MoveCursorDown); 4],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -179,7 +179,7 @@ fn move_page_up_from_top() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -207,7 +207,7 @@ fn move_page_up_from_one_page_down() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -235,7 +235,7 @@ fn move_page_up_from_one_page_down_minus_1() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -264,7 +264,7 @@ fn move_page_up_from_bottom() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -291,7 +291,7 @@ fn move_home() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -314,7 +314,7 @@ fn move_end() {
 		&[Event::from(MetaEvent::MoveCursorEnd)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -338,7 +338,7 @@ fn move_page_down_past_bottom() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -366,7 +366,7 @@ fn move_page_down_one_from_bottom() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -393,7 +393,7 @@ fn move_page_down_one_page_from_bottom() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -435,7 +435,7 @@ fn mouse_scroll() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -457,7 +457,7 @@ fn scroll_right() {
 		&[Event::from(MetaEvent::MoveCursorRight)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			test_context.view_context.assert_render_action(&["ScrollRight"]);
 		},
 	);
@@ -470,7 +470,7 @@ fn scroll_left() {
 		&[Event::from(MetaEvent::MoveCursorLeft)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			test_context.view_context.assert_render_action(&["ScrollLeft"]);
 		},
 	);

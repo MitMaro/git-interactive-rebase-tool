@@ -2,7 +2,6 @@ mod action;
 mod state;
 
 use std::{
-	borrow::Borrow,
 	sync::Arc,
 	thread::sleep,
 	time::{Duration, Instant},
@@ -115,7 +114,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 						last_render_time += MINIMUM_TICK_RATE;
 						should_render = false;
 						let render_slice_mutex = render_slice.lock();
-						if let Err(err) = view.lock().render(render_slice_mutex.borrow()) {
+						if let Err(err) = view.lock().render(&render_slice_mutex) {
 							notifier.error(RuntimeError::ThreadError(err.to_string()));
 							break;
 						}
@@ -441,11 +440,11 @@ mod tests {
 
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
-			let _ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
+			_ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
 			state.stop();
 			tester.wait_for_status(&Status::Waiting);
 			while receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok() {}
-			let _ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap_err();
+			_ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap_err();
 			state.start();
 			assert_ok!(receiver.recv_timeout(READ_MESSAGE_TIMEOUT));
 			state.end();
@@ -462,7 +461,7 @@ mod tests {
 
 			let tester = ThreadableTester::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
-			let _ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
+			_ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
 			state.stop();
 			while receiver.recv_timeout(READ_MESSAGE_TIMEOUT).is_ok() {}
 			state.end();

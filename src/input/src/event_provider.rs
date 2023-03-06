@@ -69,10 +69,9 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn read_event_poll_error() {
-		{
-			let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
-			*lock = Err(io::Error::from(ErrorKind::Other));
-		}
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Err(io::Error::from(ErrorKind::Other));
+		drop(lock);
 
 		assert!(read_event().unwrap().is_none());
 	}
@@ -80,10 +79,9 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn read_event_poll_timeout() {
-		{
-			let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
-			*lock = Ok(false);
-		}
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(false);
+		drop(lock);
 
 		assert!(read_event().unwrap().is_none());
 	}
@@ -91,13 +89,13 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn read_event_read_error() {
-		{
-			let mut lock = read_event_mocks::NEXT_EVENT.lock();
-			*lock = Err(io::Error::from(ErrorKind::Other));
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Err(io::Error::from(ErrorKind::Other));
+		drop(lock);
 
-			let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
-			*lock = Ok(true);
-		}
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
 
 		assert_eq!(read_event().unwrap_err().to_string(), "Unexpected Error");
 	}
@@ -105,13 +103,13 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn read_event_read_success() {
-		{
-			let mut lock = read_event_mocks::NEXT_EVENT.lock();
-			*lock = Ok(Event::Key(KeyEvent::from(KeyCode::Enter)));
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Key(KeyEvent::from(KeyCode::Enter)));
+		drop(lock);
 
-			let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
-			*lock = Ok(true);
-		}
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
 
 		assert_eq!(read_event().unwrap(), Some(Event::Key(KeyEvent::from(KeyCode::Enter))));
 	}

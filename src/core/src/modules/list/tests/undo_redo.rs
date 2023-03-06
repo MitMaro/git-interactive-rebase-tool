@@ -10,7 +10,7 @@ fn normal_mode_undo() {
 		&[Event::from(MetaEvent::ActionDrop), Event::from(StandardEvent::Undo)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Undo))
@@ -40,7 +40,7 @@ fn normal_mode_undo_visual_mode_change() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
@@ -65,8 +65,8 @@ fn normal_mode_redo() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Redo))
@@ -96,7 +96,7 @@ fn normal_mode_redo_visual_mode_change() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
@@ -122,7 +122,7 @@ fn visual_mode_undo() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 3);
+			_ = test_context.handle_n_events(&mut module, 3);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Undo))
@@ -151,7 +151,7 @@ fn visual_mode_undo_normal_mode_change() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 3);
+			_ = test_context.handle_n_events(&mut module, 3);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Undo))
@@ -182,7 +182,7 @@ fn visual_mode_redo() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),
@@ -208,7 +208,7 @@ fn visual_mode_redo_normal_mode_change() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
 				test_context.build_view_data(&mut module),

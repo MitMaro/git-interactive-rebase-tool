@@ -10,7 +10,7 @@ fn start_edit() {
 		&[Event::from(StandardEvent::SearchStart)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -36,7 +36,7 @@ fn with_match_on_hash() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -57,7 +57,7 @@ fn with_no_match() {
 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -82,7 +82,7 @@ fn start_with_matches_and_with_term() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -107,7 +107,7 @@ fn start_with_no_matches_and_with_term() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -131,7 +131,7 @@ fn start_with_no_term() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -155,7 +155,7 @@ fn normal_mode_next() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -184,7 +184,7 @@ fn visual_mode_next() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -214,7 +214,7 @@ fn normal_mode_next_with_wrap() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -245,7 +245,7 @@ fn visual_mode_next_with_wrap() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -275,7 +275,7 @@ fn normal_mode_previous() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -306,7 +306,7 @@ fn visual_mode_previous() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -334,7 +334,7 @@ fn normal_mode_previous_with_wrap() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -363,7 +363,7 @@ fn visual_mode_previous_with_wrap() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -391,7 +391,7 @@ fn cancel() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -423,7 +423,7 @@ fn set_search_start_hint() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -448,7 +448,7 @@ fn highlight_multiple() {
 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -470,7 +470,7 @@ fn skip_no_content() {
 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,

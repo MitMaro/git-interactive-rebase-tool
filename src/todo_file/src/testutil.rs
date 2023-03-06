@@ -21,7 +21,7 @@ impl Debug for TodoFileTestContext {
 		f.debug_struct("TodoFileTestContext")
 			.field("todo_file", &self.todo_file)
 			.field("filepath", &self.todo_file.filepath)
-			.finish()
+			.finish_non_exhaustive()
 	}
 }
 

@@ -87,7 +87,7 @@ mod tests {
 	fn simple_error() {
 		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			let _ = module.handle_error(&anyhow!("Test Error"));
+			_ = module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -104,7 +104,7 @@ mod tests {
 	fn error_with_contest() {
 		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			let _ = module.handle_error(&anyhow!("Test Error").context("Context"));
+			_ = module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -122,7 +122,7 @@ mod tests {
 	fn error_with_newlines() {
 		module_test(&[], &[], |test_context| {
 			let mut module = Error::new();
-			let _ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
+			_ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -142,8 +142,8 @@ mod tests {
 	fn return_state() {
 		module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = Error::new();
-			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			let _ = module.handle_error(&anyhow!("Test Error"));
+			_ = test_context.activate(&mut module, State::ConfirmRebase);
+			_ = module.handle_error(&anyhow!("Test Error"));
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from('a')),
@@ -156,8 +156,8 @@ mod tests {
 	fn resize() {
 		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = Error::new();
-			let _ = test_context.activate(&mut module, State::ConfirmRebase);
-			let _ = module.handle_error(&anyhow!("Test Error"));
+			_ = test_context.activate(&mut module, State::ConfirmRebase);
+			_ = module.handle_error(&anyhow!("Test Error"));
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::Resize(100, 100))

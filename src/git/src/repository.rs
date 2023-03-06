@@ -157,7 +157,7 @@ impl Repository {
 		let repo = self.repository.lock();
 		let tree = repo.find_tree(repo.index()?.write_tree()?)?;
 		let head = repo.find_reference(reference)?.peel_to_commit()?;
-		let _ = repo.commit(Some("HEAD"), author, committer, message, &tree, &[&head])?;
+		_ = repo.commit(Some("HEAD"), author, committer, message, &tree, &[&head])?;
 		Ok(())
 	}
 
@@ -280,7 +280,7 @@ mod tests {
 				let git2_repository = repository.repository();
 				let git2_lock = git2_repository.lock();
 				let blob = git2_lock.blob(b"foo").unwrap();
-				let _ = git2_lock.reference("refs/blob", blob, false, "blob").unwrap();
+				_ = git2_lock.reference("refs/blob", blob, false, "blob").unwrap();
 				blob.to_string()
 			};
 

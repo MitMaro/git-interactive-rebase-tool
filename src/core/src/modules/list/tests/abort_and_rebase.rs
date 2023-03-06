@@ -24,7 +24,7 @@ fn visual_mode_abort() {
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Abort)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::Abort)),
@@ -61,7 +61,7 @@ fn visual_mode_force_abort() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
@@ -95,7 +95,7 @@ fn visual_mode_rebase() {
 		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Rebase)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::Rebase)),
@@ -132,7 +132,7 @@ fn visual_mode_force_rebase() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ForceRebase)),

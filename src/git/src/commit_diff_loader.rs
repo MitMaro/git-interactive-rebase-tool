@@ -59,7 +59,7 @@ impl<'options> CommitDiffLoader<'options> {
 	) -> Result<CommitDiff, git2::Error> {
 		let mut diff_options = DiffOptions::new();
 		// include_unmodified added to find copies from unmodified files
-		let _ = diff_options
+		_ = diff_options
 			.context_lines(self.config.context_lines)
 			.ignore_filemode(false)
 			.ignore_whitespace(self.config.ignore_whitespace)
@@ -73,7 +73,7 @@ impl<'options> CommitDiffLoader<'options> {
 			.minimal(true);
 
 		let mut diff_find_options = DiffFindOptions::new();
-		let _ = diff_find_options
+		_ = diff_find_options
 			.rename_limit(self.config.rename_limit as usize)
 			.renames(self.config.renames)
 			.renames_from_rewrites(self.config.renames)
@@ -292,7 +292,7 @@ mod tests {
 		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
 		let file_path = root.join(name);
-		let _ = remove_file(file_path);
+		_ = remove_file(file_path);
 
 		repository
 			.remove_path_from_index(PathBuf::from(name).as_path())

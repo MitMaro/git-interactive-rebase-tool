@@ -16,6 +16,7 @@ use crate::Display;
 ///
 /// Will panic is the expected output does not match the rendered output.
 #[inline]
+#[allow(clippy::missing_assert_message)] // not sure why this is triggering
 pub fn assert_output(display: &Display<CrossTerm>, expected: &[&str]) {
 	assert_eq!(display.tui.get_output().join(""), format!("{}\n", expected.join("\n")));
 }

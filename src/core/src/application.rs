@@ -99,8 +99,12 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	}
 
 	pub(crate) fn run_until_finished(&mut self) -> Result<(), Exit> {
-		let Some(mut threads) = self.threads.take() else {
-			return Err(Exit::new(ExitStatus::StateError, "Attempt made to run application a second time"));
+		let Some(mut threads) = self.threads.take()
+		else {
+			return Err(Exit::new(
+				ExitStatus::StateError,
+				"Attempt made to run application a second time",
+			));
 		};
 
 		let runtime = Runtime::new();
@@ -230,7 +234,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn load_repository_failure() {
-		let _ = set_git_directory("fixtures/not-a-repository");
+		_ = set_git_directory("fixtures/not-a-repository");
 		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
@@ -247,7 +251,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn load_config_failure() {
-		let _ = set_git_directory("fixtures/invalid-config");
+		_ = set_git_directory("fixtures/invalid-config");
 		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
@@ -258,7 +262,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn load_todo_file_load_error() {
-		let _ = set_git_directory("fixtures/simple");
+		_ = set_git_directory("fixtures/simple");
 		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
 			Application::new(&args(&["does-not-exist"]), event_provider, create_mocked_crossterm());

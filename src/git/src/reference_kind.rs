@@ -62,7 +62,7 @@ mod tests {
 			let git2_lock = git2_repository.lock();
 			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0)).unwrap();
 			let head_id = git2_lock.refname_to_id("HEAD").unwrap();
-			let _ = git2_lock.note(&sig, &sig, None, head_id, "note", false).unwrap();
+			_ = git2_lock.note(&sig, &sig, None, head_id, "note", false).unwrap();
 			assert_eq!(
 				ReferenceKind::from(&git2_lock.find_reference("refs/notes/commits").unwrap()),
 				ReferenceKind::Note
@@ -91,7 +91,7 @@ mod tests {
 			let git2_lock = git2_repository.lock();
 			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0)).unwrap();
 			let head_id = git2_lock.revparse_single("HEAD").unwrap();
-			let _ = git2_lock.tag("tag", &head_id, &sig, "note", false).unwrap();
+			_ = git2_lock.tag("tag", &head_id, &sig, "note", false).unwrap();
 			assert_eq!(
 				ReferenceKind::from(&git2_lock.find_reference("refs/tags/tag").unwrap()),
 				ReferenceKind::Tag
@@ -105,7 +105,7 @@ mod tests {
 			let git2_repository = repository.repository();
 			let git2_lock = git2_repository.lock();
 			let blob = git2_lock.blob(b"foo").unwrap();
-			let _ = git2_lock.reference("refs/blob", blob, false, "blob").unwrap();
+			_ = git2_lock.reference("refs/blob", blob, false, "blob").unwrap();
 			assert_eq!(
 				ReferenceKind::from(&git2_lock.find_reference("refs/blob").unwrap()),
 				ReferenceKind::Other
