@@ -253,7 +253,7 @@ mod tests {
 			let repo = repository.repository();
 			let repo_lock = repo.lock();
 			let blob = repo_lock.blob(b"foo").unwrap();
-			let _ = repo_lock.reference("refs/blob", blob, false, "blob").unwrap();
+			_ = repo_lock.reference("refs/blob", blob, false, "blob").unwrap();
 
 			let reference = repo_lock.find_reference("refs/blob").unwrap();
 			assert_err_eq!(Commit::try_from(&reference), GitError::CommitLoad {

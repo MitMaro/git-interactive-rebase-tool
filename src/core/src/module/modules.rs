@@ -90,28 +90,28 @@ mod tests {
 	#[test]
 	fn get_mut_module() {
 		modules_test(|mut modules| {
-			let _ = modules.get_mut_module(State::ConfirmAbort);
-			let _ = modules.get_mut_module(State::ConfirmRebase);
-			let _ = modules.get_mut_module(State::Error);
-			let _ = modules.get_mut_module(State::ExternalEditor);
-			let _ = modules.get_mut_module(State::Insert);
-			let _ = modules.get_mut_module(State::List);
-			let _ = modules.get_mut_module(State::ShowCommit);
-			let _ = modules.get_mut_module(State::WindowSizeError);
+			_ = modules.get_mut_module(State::ConfirmAbort);
+			_ = modules.get_mut_module(State::ConfirmRebase);
+			_ = modules.get_mut_module(State::Error);
+			_ = modules.get_mut_module(State::ExternalEditor);
+			_ = modules.get_mut_module(State::Insert);
+			_ = modules.get_mut_module(State::List);
+			_ = modules.get_mut_module(State::ShowCommit);
+			_ = modules.get_mut_module(State::WindowSizeError);
 		});
 	}
 
 	#[test]
 	fn get_module() {
 		modules_test(|modules| {
-			let _ = modules.get_module(State::ConfirmAbort);
-			let _ = modules.get_module(State::ConfirmRebase);
-			let _ = modules.get_module(State::Error);
-			let _ = modules.get_module(State::ExternalEditor);
-			let _ = modules.get_module(State::Insert);
-			let _ = modules.get_module(State::List);
-			let _ = modules.get_module(State::ShowCommit);
-			let _ = modules.get_module(State::WindowSizeError);
+			_ = modules.get_module(State::ConfirmAbort);
+			_ = modules.get_module(State::ConfirmRebase);
+			_ = modules.get_module(State::Error);
+			_ = modules.get_module(State::ExternalEditor);
+			_ = modules.get_module(State::Insert);
+			_ = modules.get_module(State::List);
+			_ = modules.get_module(State::ShowCommit);
+			_ = modules.get_module(State::WindowSizeError);
 		});
 	}
 }

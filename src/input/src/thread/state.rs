@@ -89,7 +89,7 @@ impl<CustomEvent: crate::CustomEvent> State<CustomEvent> {
 	pub fn push_event(&self, event: Event<CustomEvent>) {
 		let mut events = self.event_queue.lock();
 		if events.len() >= MAXIMUM_EVENTS {
-			let _ = events.pop_back();
+			_ = events.pop_back();
 		}
 		events.push_front(event);
 		self.send_update();
@@ -263,7 +263,7 @@ mod tests {
 		let thread_state = state.clone();
 		let thread_step = Arc::clone(&step);
 		let thread_events_read = Arc::clone(&events_read);
-		let _ = spawn(move || {
+		_ = spawn(move || {
 			loop {
 				let mut thread_events_read_lock = thread_events_read.lock();
 				let thread_step_lock = thread_step.lock();

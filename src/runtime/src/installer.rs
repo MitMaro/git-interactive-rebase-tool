@@ -52,7 +52,7 @@ impl Debug for Installer {
 		f.debug_struct("Installer")
 			.field("sender", &self.sender)
 			.field("thread_statuses", &self.thread_statuses)
-			.finish()
+			.finish_non_exhaustive()
 	}
 }
 
@@ -112,7 +112,7 @@ mod tests {
 		let installer = Installer::new(sender);
 		assert_eq!(
 			format!("{installer:?}"),
-			"Installer { sender: Sender { .. }, thread_statuses: ThreadStatuses { statuses: Mutex { data: {} } } }"
+			"Installer { sender: Sender { .. }, thread_statuses: ThreadStatuses { statuses: Mutex { data: {} } }, .. }"
 		);
 	}
 }

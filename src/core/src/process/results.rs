@@ -15,7 +15,7 @@ pub(crate) struct Results {
 }
 
 impl Results {
-	pub(crate) fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			artifacts: VecDeque::new(),
 		}

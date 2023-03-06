@@ -27,7 +27,7 @@ fn visual_mode_open_external_editor() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_event(&mut module);
+			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::OpenInEditor)),
@@ -49,7 +49,7 @@ fn cancels_search() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert!(!module.search_bar.is_searching());
 		},
 	);

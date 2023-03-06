@@ -225,7 +225,6 @@ pub(super) fn get_line_action_maximum_width(todo_file: &TodoFile) -> usize {
 
 bitflags! {
 	pub(crate) struct TodoLineSegmentsOptions: u8 {
-		const DEFAULT = 0b0000_0000;
 		const CURSOR_LINE = 0b0000_0001;
 		const SELECTED = 0b0000_0010;
 		const FULL_WIDTH = 0b0000_0100;

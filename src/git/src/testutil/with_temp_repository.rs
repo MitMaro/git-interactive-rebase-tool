@@ -25,17 +25,17 @@ pub fn with_temp_repository<F>(callback: F)
 where F: FnOnce(Repository) {
 	with_temporary_path(|path| {
 		let mut opts = git2::RepositoryInitOptions::new();
-		let _ = opts.initial_head("main");
+		_ = opts.initial_head("main");
 		let repo = git2::Repository::init_opts(path, &opts).unwrap();
 
 		{
 			let id = repo.index().unwrap().write_tree().unwrap();
 			let tree = repo.find_tree(id).unwrap();
 			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0)).unwrap();
-			let _ = repo
+			_ = repo
 				.commit(Some("HEAD"), &sig, &sig, "initial commit", &tree, &[])
 				.unwrap();
-		}
+		};
 		callback(Repository::from(repo));
 	});
 }

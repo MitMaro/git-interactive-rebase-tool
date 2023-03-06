@@ -121,7 +121,7 @@ mod tests {
 	fn event_resize_window_still_small() {
 		module_test(&[], &[Event::Resize(1, 1)], |mut test_context| {
 			let mut module = WindowSizeError::new();
-			let _ = test_context.activate(&mut module, State::ConfirmRebase);
+			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::Resize(1, 1))
@@ -133,7 +133,7 @@ mod tests {
 	fn event_resize_window_no_longer_too_small() {
 		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = WindowSizeError::new();
-			let _ = test_context.activate(&mut module, State::ConfirmRebase);
+			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::Resize(100, 100)),
@@ -146,7 +146,7 @@ mod tests {
 	fn event_other_character() {
 		module_test(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = WindowSizeError::new();
-			let _ = test_context.activate(&mut module, State::ConfirmRebase);
+			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from('a'))

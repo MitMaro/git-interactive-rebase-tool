@@ -12,7 +12,7 @@ fn normal_mode_help() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Normal;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -65,7 +65,7 @@ fn normal_mode_help_event() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Normal;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert!(!module.normal_mode_help.is_active());
 		},
 	);
@@ -79,7 +79,7 @@ fn visual_mode_help() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Visual;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -128,7 +128,7 @@ fn visual_mode_help_event() {
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.state = ListState::Visual;
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert!(!module.visual_mode_help.is_active());
 		},
 	);

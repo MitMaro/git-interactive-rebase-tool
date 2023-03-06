@@ -22,7 +22,7 @@ fn pinned_segments() {
 		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::INCLUDE_PINNED | AssertRenderOptions::EXCLUDE_STYLE,
@@ -52,7 +52,7 @@ fn normal_mode_action_change_to_drop() {
 		&[Event::from(MetaEvent::ActionDrop)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -84,7 +84,7 @@ fn visual_mode_action_change_to_drop() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -108,7 +108,7 @@ fn normal_mode_action_change_to_edit() {
 		&[Event::from(MetaEvent::ActionEdit)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -140,7 +140,7 @@ fn visual_mode_action_change_to_edit() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -164,7 +164,7 @@ fn normal_mode_action_change_to_fixup() {
 		&[Event::from(MetaEvent::ActionFixup)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -196,7 +196,7 @@ fn visual_mode_action_change_to_fixup() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -220,7 +220,7 @@ fn normal_mode_action_change_to_pick() {
 		&[Event::from(MetaEvent::ActionPick)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -252,7 +252,7 @@ fn visual_mode_action_change_to_pick() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -276,7 +276,7 @@ fn normal_mode_action_change_to_reword() {
 		&[Event::from(MetaEvent::ActionReword)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -308,7 +308,7 @@ fn visual_mode_action_change_to_reword() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -332,7 +332,7 @@ fn normal_mode_action_change_to_squash() {
 		&[Event::from(MetaEvent::ActionSquash)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,
@@ -364,7 +364,7 @@ fn visual_mode_action_change_to_squash() {
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options AssertRenderOptions::EXCLUDE_STYLE,

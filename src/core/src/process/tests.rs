@@ -215,7 +215,7 @@ fn deactivate() {
 	process_test(
 		create_test_module_handler(module.clone()),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.deactivate(State::List);
+			_ = process.deactivate(State::List);
 			module.assert_trace(&["deactivate"]);
 		},
 	);
@@ -228,7 +228,7 @@ fn handle_event() {
 		create_test_module_handler(module.clone()),
 		|ProcessTestContext { process, .. }| {
 			let event = Event::from('a');
-			let _ = process.handle_event();
+			_ = process.handle_event();
 			module.assert_trace(&[
 				"input_options",
 				format!("read_event(event = {event:?})").as_str(),
@@ -331,7 +331,7 @@ fn handle_state_with_no_change() {
 		create_test_module_handler(module.clone()),
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
-			let _ = process.handle_state(State::List);
+			_ = process.handle_state(State::List);
 			module.assert_trace(&[]);
 		},
 	);
@@ -344,7 +344,7 @@ fn handle_state_with_change() {
 		create_test_module_handler(module.clone()),
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
-			let _ = process.handle_state(State::ShowCommit);
+			_ = process.handle_state(State::ShowCommit);
 			assert_eq!(process.state(), State::ShowCommit);
 			module.assert_trace(&["deactivate", "activate(state = List)"]);
 		},
@@ -358,7 +358,7 @@ fn handle_error_with_previous_state() {
 		create_test_module_handler(module.clone()),
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
-			let _ = process.handle_error(&anyhow!("Error"), Some(State::ShowCommit));
+			_ = process.handle_error(&anyhow!("Error"), Some(State::ShowCommit));
 			assert_eq!(process.state(), State::Error);
 			module.assert_trace(&["activate(state = ShowCommit)", "handle_error(error = Error)"]);
 		},
@@ -372,7 +372,7 @@ fn handle_error_with_no_previous_state() {
 		create_test_module_handler(module.clone()),
 		|ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
-			let _ = process.handle_error(&anyhow!("Error"), None);
+			_ = process.handle_error(&anyhow!("Error"), None);
 			assert_eq!(process.state(), State::Error);
 			module.assert_trace(&["activate(state = List)", "handle_error(error = Error)"]);
 		},
@@ -395,9 +395,9 @@ fn handle_enqueue_resize() {
 	process_test(
 		create_default_test_module_handler(),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // skip existing events
+			_ = process.input_state.read_event(); // skip existing events
 			process.render_context.lock().update(120, 130);
-			let _ = process.handle_enqueue_resize();
+			_ = process.handle_enqueue_resize();
 			assert_eq!(process.input_state.read_event(), Event::Resize(120, 130));
 		},
 	);
@@ -409,7 +409,7 @@ fn handle_external_command_success() {
 	process_test(
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // clear existing event
+			_ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
 			notifier.register_thread(view::REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(input::THREAD_NAME, Status::Waiting);
@@ -428,7 +428,7 @@ fn handle_external_command_failure() {
 	process_test(
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // clear existing event
+			_ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
 			notifier.register_thread(view::REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(input::THREAD_NAME, Status::Waiting);
@@ -457,7 +457,7 @@ fn handle_external_command_not_executable() {
 	process_test(
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // clear existing event
+			_ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
 			notifier.register_thread(view::REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(input::THREAD_NAME, Status::Waiting);
@@ -486,7 +486,7 @@ fn handle_external_command_not_found() {
 	process_test(
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // clear existing event
+			_ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
 			notifier.register_thread(view::REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(input::THREAD_NAME, Status::Waiting);
@@ -520,7 +520,7 @@ fn handle_results_enqueue_resize() {
 	process_test(
 		create_default_test_module_handler(),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // skip existing events
+			_ = process.input_state.read_event(); // skip existing events
 			process.render_context.lock().update(120, 130);
 			let mut results = Results::new();
 			results.enqueue_resize();
@@ -576,7 +576,7 @@ fn handle_results_external_command_success() {
 	process_test(
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
-			let _ = process.input_state.read_event(); // clear existing event
+			_ = process.input_state.read_event(); // clear existing event
 			let mut notifier = MockNotifier::new(&process.thread_statuses);
 			notifier.register_thread(view::REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(input::THREAD_NAME, Status::Waiting);

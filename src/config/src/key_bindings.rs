@@ -245,7 +245,7 @@ mod tests {
 	#[test]
 	fn try_from_git_config_error() {
 		with_git_config(&["[interactive-rebase-tool]", "inputAbort = invalid"], |git_config| {
-			let _ = KeyBindings::try_from(&git_config).unwrap_err();
+			_ = KeyBindings::try_from(&git_config).unwrap_err();
 		});
 	}
 

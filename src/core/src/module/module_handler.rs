@@ -139,15 +139,15 @@ mod tests {
 					context.event_handler_context.event_handler,
 					TestModuleProvider::from(test_module.clone()),
 				);
-				let _ = module_handler.activate(State::List, State::Insert);
-				let _ = module_handler.handle_event(
+				_ = module_handler.activate(State::List, State::Insert);
+				_ = module_handler.handle_event(
 					State::List,
 					&context.event_handler_context.state,
 					&context.view_context.state,
 				);
 
-				let _ = module_handler.build_view_data(State::List, &RenderContext::new(100, 100));
-				let _ = module_handler.deactivate(State::List);
+				_ = module_handler.build_view_data(State::List, &RenderContext::new(100, 100));
+				_ = module_handler.deactivate(State::List);
 				assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
 			},
 		);
@@ -164,7 +164,7 @@ mod tests {
 					context.event_handler_context.event_handler,
 					TestModuleProvider::from(test_module.clone()),
 				);
-				let _ = module_handler.error(State::Error, &anyhow!("Test Error"));
+				_ = module_handler.error(State::Error, &anyhow!("Test Error"));
 				assert_eq!(test_module.trace(), "Test Error");
 			},
 		);

@@ -17,7 +17,7 @@ impl FileStatusBuilder {
 	}
 
 	fn close_delta(&mut self) {
-		if let Some(ref d) = self.delta {
+		if let Some(d) = self.delta.as_ref() {
 			self.file_stat
 				.as_mut()
 				.expect("add_file_stat must be called once before adding a delta")
@@ -26,7 +26,7 @@ impl FileStatusBuilder {
 	}
 
 	fn close_file_stat(&mut self) {
-		if let Some(ref fs) = self.file_stat {
+		if let Some(fs) = self.file_stat.as_ref() {
 			self.file_stats.push(fs.clone());
 		}
 	}
@@ -246,7 +246,7 @@ mod tests {
 	fn add_delta_without_file_stat() {
 		let mut file_stats_builder = FileStatusBuilder::new();
 		file_stats_builder.add_delta(Delta::new("@ path/to/file.rs:56 @ impl Delta {", 10, 12, 3, 4));
-		let _ = file_stats_builder.build();
+		_ = file_stats_builder.build();
 	}
 
 	#[test]
@@ -263,6 +263,6 @@ mod tests {
 			Status::Added,
 		));
 		file_stats_builder.add_diff_line(DiffLine::new(Origin::Addition, "My Line", Some(1), Some(2), false));
-		let _ = file_stats_builder.build();
+		_ = file_stats_builder.build();
 	}
 }

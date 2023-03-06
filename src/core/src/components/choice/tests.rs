@@ -102,7 +102,7 @@ fn invalid_selection_character() {
 fn event_standard(#[case] event: Event) {
 	with_view_state(|context| {
 		let mut module = Choice::new(create_choices());
-		let _ = module.handle_event(event, &context.state);
+		_ = module.handle_event(event, &context.state);
 		assert!(!module.invalid_selection);
 	});
 }

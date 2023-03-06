@@ -1167,7 +1167,7 @@ fn render_help() {
 			&[Event::from(StandardEvent::Help)],
 			|mut test_context| {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
-				let _ = test_context.handle_all_events(&mut module);
+				_ = test_context.handle_all_events(&mut module);
 				assert_rendered_output!(
 					test_context.build_view_data(&mut module),
 					"{TITLE}",
@@ -1200,7 +1200,7 @@ fn handle_help_event_show() {
 			&[Event::from(StandardEvent::Help)],
 			|mut test_context| {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
-				let _ = test_context.handle_all_events(&mut module);
+				_ = test_context.handle_all_events(&mut module);
 				assert!(module.help.is_active());
 			},
 		);
@@ -1214,7 +1214,7 @@ fn handle_help_event_hide() {
 			&[Event::from(StandardEvent::Help), Event::from('?')],
 			|mut test_context| {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
-				let _ = test_context.handle_all_events(&mut module);
+				_ = test_context.handle_all_events(&mut module);
 				assert!(!module.help.is_active());
 			},
 		);

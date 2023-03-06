@@ -83,7 +83,8 @@ where UpdateHandler: UpdateHandlerFn + 'static
 						continue;
 					}
 
-					let Some(searchable) = active_searchable.as_mut() else {
+					let Some(searchable) = active_searchable.as_mut()
+					else {
 						continue;
 					};
 
@@ -221,7 +222,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -245,7 +246,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -269,7 +270,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -293,7 +294,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -318,7 +319,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -341,7 +342,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -365,7 +366,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 
@@ -384,7 +385,7 @@ mod tests {
 		let update_handler_calls = Arc::new(AtomicUsize::new(0));
 		let update_handler_calls_thread = Arc::clone(&update_handler_calls);
 		let thread = Thread::new(move || {
-			let _ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
+			_ = update_handler_calls_thread.fetch_add(1, Ordering::Release);
 		});
 		let state = thread.state();
 

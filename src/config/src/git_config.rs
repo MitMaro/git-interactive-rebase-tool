@@ -152,7 +152,7 @@ mod tests {
 	#[test]
 	fn try_from_git_config_error() {
 		with_git_config(&["[diff]", "renames = invalid"], |git_config| {
-			let _ = GitConfig::try_from(&git_config).unwrap_err();
+			_ = GitConfig::try_from(&git_config).unwrap_err();
 		});
 	}
 

@@ -218,7 +218,7 @@ mod tests {
 
 	fn handle_events(module: &mut EditableLine, events: &[Event]) {
 		for event in events {
-			let _ = module.handle_event(*event);
+			_ = module.handle_event(*event);
 		}
 	}
 
@@ -239,7 +239,7 @@ mod tests {
 	fn move_cursor_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
-		let _ = editable_line.handle_event(Event::from(KeyCode::Right));
+		_ = editable_line.handle_event(Event::from(KeyCode::Right));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -252,7 +252,7 @@ mod tests {
 	fn move_cursor_1_left() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
-		let _ = editable_line.handle_event(Event::from(KeyCode::Left));
+		_ = editable_line.handle_event(Event::from(KeyCode::Left));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -304,7 +304,7 @@ mod tests {
 	fn move_cursor_to_home() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
-		let _ = editable_line.handle_event(Event::from(KeyCode::Home));
+		_ = editable_line.handle_event(Event::from(KeyCode::Home));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -422,7 +422,7 @@ mod tests {
 	fn add_character_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		let _ = editable_line.handle_event(Event::from('x'));
+		_ = editable_line.handle_event(Event::from('x'));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -485,7 +485,7 @@ mod tests {
 	fn add_character_uppercase() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		let _ = editable_line.handle_event(Event::Key(KeyEvent {
+		_ = editable_line.handle_event(Event::Key(KeyEvent {
 			code: KeyCode::Char('X'),
 			modifiers: KeyModifiers::SHIFT,
 		}));
@@ -501,7 +501,7 @@ mod tests {
 	fn backspace_at_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		let _ = editable_line.handle_event(Event::from(KeyCode::Backspace));
+		_ = editable_line.handle_event(Event::from(KeyCode::Backspace));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -567,7 +567,7 @@ mod tests {
 	fn delete_at_end() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		let _ = editable_line.handle_event(Event::from(KeyCode::Delete));
+		_ = editable_line.handle_event(Event::from(KeyCode::Delete));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),
@@ -632,7 +632,7 @@ mod tests {
 	#[test]
 	fn ignore_other_input() {
 		let mut editable_line = EditableLine::new();
-		let _ = editable_line.handle_event(Event::from(KeyCode::Null));
+		_ = editable_line.handle_event(Event::from(KeyCode::Null));
 	}
 
 	#[test]
@@ -640,7 +640,7 @@ mod tests {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
 		editable_line.set_read_only(true);
-		let _ = editable_line.handle_event(Event::from(KeyCode::Home));
+		_ = editable_line.handle_event(Event::from(KeyCode::Home));
 		assert_eq!(editable_line.cursor_position(), 4);
 	}
 

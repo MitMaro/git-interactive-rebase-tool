@@ -19,7 +19,9 @@
 	deprecated_in_future,
 	elided_lifetimes_in_paths,
 	explicit_outlives_requirements,
+	ffi_unwind_calls,
 	keyword_idents,
+	let_underscore_drop,
 	macro_use_extern_crate,
 	meta_variable_misuse,
 	missing_abi,
@@ -39,7 +41,6 @@
 	unreachable_pub,
 	unsafe_code,
 	unsafe_op_in_unsafe_fn,
-	unstable_features,
 	unused_crate_dependencies,
 	unused_extern_crates,
 	unused_import_braces,
@@ -47,12 +48,14 @@
 	unused_macro_rules,
 	unused_qualifications,
 	unused_results,
+	unused_tuple_struct_fields,
 	variant_size_differences
 )]
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::pedantic, clippy::restriction)]
 #![cfg_attr(include_nightly_lints, deny(clippy::nursery))]
 #![allow(
+	clippy::arithmetic_side_effects,
 	clippy::arithmetic_side_effects,
 	clippy::blanket_clippy_restriction_lints,
 	clippy::bool_to_int_with_if,
@@ -62,7 +65,6 @@
 	clippy::float_arithmetic,
 	clippy::implicit_return,
 	clippy::indexing_slicing,
-	clippy::integer_arithmetic,
 	clippy::map_err_ignore,
 	clippy::missing_docs_in_private_items,
 	clippy::missing_trait_methods,
@@ -72,10 +74,13 @@
 	clippy::non_ascii_literal,
 	clippy::option_if_let_else,
 	clippy::pub_use,
+	clippy::question_mark_used,
 	clippy::redundant_pub_crate,
+	clippy::ref_patterns,
 	clippy::std_instead_of_alloc,
 	clippy::std_instead_of_core,
 	clippy::tabs_in_doc_comments,
+	clippy::tests_outside_test_module,
 	clippy::too_many_lines,
 	clippy::unwrap_used
 )]
@@ -92,9 +97,10 @@
 #![cfg_attr(
 	test,
 	allow(
+		let_underscore_drop,
 		clippy::cognitive_complexity,
-		clippy::let_underscore_drop,
 		clippy::let_underscore_must_use,
+		clippy::let_underscore_untyped,
 		clippy::needless_pass_by_value,
 		clippy::panic,
 		clippy::shadow_reuse,
@@ -105,7 +111,17 @@
 	)
 )]
 // allowable upcoming nightly lints
-#![cfg_attr(include_nightly_lints, allow(clippy::semicolon_outside_block))]
+#![cfg_attr(
+	include_nightly_lints,
+	allow(
+		clippy::arc_with_non_send_sync,
+		clippy::min_ident_chars,
+		clippy::needless_raw_strings,
+		clippy::pub_with_shorthand,
+		clippy::redundant_closure_call,
+		clippy::single_call_fn
+	)
+)]
 // LINT-REPLACE-END
 
 //! Git Interactive Rebase Tool - Git Module

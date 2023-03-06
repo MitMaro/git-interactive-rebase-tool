@@ -66,7 +66,7 @@ fn edit_render_exec() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 4);
+			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -102,7 +102,7 @@ fn edit_render_pick() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 4);
+			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -138,7 +138,7 @@ fn edit_render_label() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 4);
+			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -174,7 +174,7 @@ fn edit_render_reset() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 4);
+			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -210,7 +210,7 @@ fn edit_render_merge() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 4);
+			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -246,7 +246,7 @@ fn update_ref_render_merge() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_n_events(&mut module, 4);
+			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				view_data,
@@ -282,7 +282,7 @@ fn edit_select_next_index() {
 		],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert_eq!(module.todo_file.lock().get_selected_line_index(), 1);
 		},
 	);
@@ -295,7 +295,7 @@ fn cancel_edit() {
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
 		|mut test_context| {
 			let mut module = create_insert(test_context.take_todo_file());
-			let _ = test_context.handle_all_events(&mut module);
+			_ = test_context.handle_all_events(&mut module);
 			assert!(module.todo_file.lock().is_empty());
 		},
 	);
