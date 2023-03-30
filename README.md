@@ -240,7 +240,7 @@ Other platforms are not officially supported. Some platforms have community supp
 
 ### Install Rust
 
-To start developing the project, you will need to [install Rust][install-rust], which can generally be done using [rustup].
+To start developing the project, you will need to [install Rust][install-rust], which should be done using [rustup].
 
 ### Setup
 
