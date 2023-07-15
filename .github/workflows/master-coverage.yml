@@ -15,12 +15,12 @@ jobs:
         with:
           toolchain: nightly
       - uses: Swatinem/rust-cache@v2
-      - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
+      - uses: baptiste0928/cargo-install@v2
         with:
-          timeout: 10
-          out-type: Lcov
-          args: '--workspace --all-features --ignore-tests --line --output-dir coverage'
+          crate: cargo-tarpaulin
+      - name: Run cargo-tarpaulin
+        run: |
+          cargo +nightly tarpaulin --workspace --all-features --ignore-tests --line --output-dir coverage --timeout 10 --out Lcov
       - name: Post to Coveralls
         uses: coverallsapp/github-action@master
         with:
