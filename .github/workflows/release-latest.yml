@@ -15,13 +15,18 @@ jobs:
         REPOSITORY: "MitMaro/git-interactive-rebase-tool"
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: "System Setup"
         run: |
-            sudo apt-get update || true;
-            sudo apt-get --assume-yes -f install curl build-essential pkg-config liblzma-dev;
-            cargo install --force cargo-deb
+          apt-get update;
+          apt-get --assume-yes -f install curl build-essential pkg-config;
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: "America/St_Johns"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-deb
       - name: "Build Deb"
         run: cargo +stable deb --output "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb" -- --features dev
       - name: Upload
