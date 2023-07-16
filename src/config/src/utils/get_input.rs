@@ -9,8 +9,8 @@ pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> R
 	for mut value in input.split_whitespace().map(String::from) {
 		let mut modifiers = vec![];
 
-		if let Some(index) = value.to_lowercase().find("shift+") {
-			modifiers.push("Shift");
+		let shift_index = value.to_lowercase().find("shift+");
+		if let Some(index) = shift_index {
 			value.replace_range(index..index + 6, "");
 		}
 		if let Some(index) = value.to_lowercase().find("control+") {
@@ -22,45 +22,53 @@ pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> R
 			value.replace_range(index..index + 4, "");
 		}
 
-		values.push(format!(
-			"{}{}",
-			modifiers.join(""),
-			match value.to_lowercase().as_ref() {
-				"backspace" => String::from("Backspace"),
-				"backtab" => String::from("BackTab"),
-				"delete" => String::from("Delete"),
-				"down" => String::from("Down"),
-				"end" => String::from("End"),
-				"enter" => String::from("Enter"),
-				"esc" => String::from("Esc"),
-				"home" => String::from("Home"),
-				"insert" => String::from("Insert"),
-				"left" => String::from("Left"),
-				"pagedown" => String::from("PageDown"),
-				"pageup" => String::from("PageUp"),
-				"right" => String::from("Right"),
-				"tab" => String::from("Tab"),
-				"up" => String::from("Up"),
-				v => {
-					if v.len() > 1 {
-						// allow F{number} values
-						if v.starts_with('f') && v[1..].parse::<u8>().is_ok() {
-							v.to_uppercase()
-						}
-						else {
-							return Err(ConfigError::new(
-								name,
-								input.as_str(),
-								ConfigErrorCause::InvalidKeyBinding,
-							));
-						}
-					}
-					else {
-						value
-					}
-				},
+		let mut key = match value.to_lowercase().as_ref() {
+			"backspace" => String::from("Backspace"),
+			"backtab" => String::from("BackTab"),
+			"delete" => String::from("Delete"),
+			"down" => String::from("Down"),
+			"end" => String::from("End"),
+			"enter" => String::from("Enter"),
+			"esc" => String::from("Esc"),
+			"home" => String::from("Home"),
+			"insert" => String::from("Insert"),
+			"left" => String::from("Left"),
+			"pagedown" => String::from("PageDown"),
+			"pageup" => String::from("PageUp"),
+			"right" => String::from("Right"),
+			"tab" => String::from("Tab"),
+			"up" => String::from("Up"),
+			v => {
+				let v_len = v.chars().count();
+				// allow F{number} values
+				if v_len > 1 && v.starts_with('f') && v[1..].parse::<u8>().is_ok() {
+					v.to_uppercase()
+				}
+				else if v_len == 1 {
+					value
+				}
+				else {
+					return Err(ConfigError::new(
+						name,
+						input.as_str(),
+						ConfigErrorCause::InvalidKeyBinding,
+					));
+				}
+			},
+		};
+
+		// Shift support was partially removed, due to Shift not being universally reported, but still maintain
+		// some backwards compatibility with printable characters
+		if shift_index.is_some() {
+			if key.len() == 1 {
+				key = key.to_uppercase();
 			}
-		));
+			else {
+				modifiers.push("Shift");
+			}
+		}
+
+		values.push(format!("{}{}", modifiers.join(""), key));
 	}
 	Ok(values)
 }
@@ -75,7 +83,9 @@ mod tests {
 	use crate::testutils::{invalid_utf, with_git_config};
 
 	#[rstest]
-	#[case::single("a", "a")]
+	#[case::single_lower("a", "a")]
+	#[case::single_upper("A", "A")]
+	#[case::single_non_ascii("ẞ", "ẞ")]
 	#[case::backspace("backspace", "Backspace")]
 	#[case::backtab("backtab", "BackTab")]
 	#[case::delete("delete", "Delete")]
@@ -97,16 +107,19 @@ mod tests {
 	#[case::modifier_character_uppercase("Control+A", "ControlA")]
 	#[case::modifier_character_number("Control+1", "Control1")]
 	#[case::modifier_character_special("Control++", "Control+")]
+	#[case::modifier_character_non_ascii("Control+ẞ", "Controlẞ")]
 	#[case::modifier_character("Control+a", "Controla")]
 	#[case::modifier_special("Control+End", "ControlEnd")]
 	#[case::modifier_function("Control+F32", "ControlF32")]
-	#[case::modifier_control_alt_shift_lowercase("alt+shift+control+end", "ShiftControlAltEnd")]
-	#[case::modifier_control_alt_shift_mixedcase("aLt+shIft+conTrol+eNd", "ShiftControlAltEnd")]
-	#[case::modifier_control_alt_shift_out_of_order_1("Alt+Shift+Control+End", "ShiftControlAltEnd")]
-	#[case::modifier_control_alt_shift_out_of_order_2("Shift+Control+Alt+End", "ShiftControlAltEnd")]
+	#[case::modifier_control_alt_shift_lowercase("alt+shift+control+end", "ControlAltShiftEnd")]
+	#[case::modifier_control_alt_shift_mixedcase("aLt+shIft+conTrol+eNd", "ControlAltShiftEnd")]
+	#[case::modifier_control_alt_shift_out_of_order_1("Alt+Shift+Control+End", "ControlAltShiftEnd")]
+	#[case::modifier_control_alt_shift_out_of_order_2("Shift+Control+Alt+End", "ControlAltShiftEnd")]
 	#[case::modifier_only_shift("Shift+End", "ShiftEnd")]
 	#[case::modifier_only_control("Control+End", "ControlEnd")]
-	#[case::multiple("a b c d", "a,b,c,d")]
+	#[case::shift_with_printable_lower("Shift+a", "A")]
+	#[case::shift_with_printable_upper("Shift+A", "A")]
+	#[case::multiple("a b ẞ c d", "a,b,ẞ,c,d")]
 	#[case::multiple_with_modifiers("Control+End Control+A", "ControlEnd,ControlA")]
 	fn read_value(#[case] binding: &str, #[case] expected: &str) {
 		with_git_config(&["[test]", format!("value = {binding}").as_str()], |git_config| {

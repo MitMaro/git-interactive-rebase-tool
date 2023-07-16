@@ -93,13 +93,10 @@ mod tests {
 	fn from_crossterm_key_event_char_with_modifier() {
 		let event = Event::from(ct_event::Event::Key(ct_event::KeyEvent::new(
 			KeyCode::Char('?'),
-			KeyModifiers::SHIFT,
+			KeyModifiers::ALT,
 		)));
 
-		assert_eq!(
-			event,
-			Event::Key(KeyEvent::new(KeyCode::Char('?'), KeyModifiers::SHIFT))
-		);
+		assert_eq!(event, Event::Key(KeyEvent::new(KeyCode::Char('?'), KeyModifiers::ALT)));
 	}
 
 	#[test]
