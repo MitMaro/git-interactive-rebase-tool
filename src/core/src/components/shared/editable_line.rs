@@ -186,7 +186,7 @@ impl EditableLine {
 			},
 			Event::Key(KeyEvent {
 				code: KeyCode::Char(c),
-				modifiers: KeyModifiers::NONE | KeyModifiers::SHIFT,
+				modifiers: KeyModifiers::NONE,
 			}) => {
 				let start = UnicodeSegmentation::graphemes(self.content.as_str(), true)
 					.take(self.cursor_position)
@@ -485,10 +485,7 @@ mod tests {
 	fn add_character_uppercase() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("abcd");
-		_ = editable_line.handle_event(Event::Key(KeyEvent {
-			code: KeyCode::Char('X'),
-			modifiers: KeyModifiers::SHIFT,
-		}));
+		_ = editable_line.handle_event(Event::from(KeyCode::Char('X')));
 		assert_rendered_output!(
 			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
 			view_data_from_editable_line!(&editable_line),

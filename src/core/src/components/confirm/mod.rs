@@ -41,7 +41,6 @@ impl Confirm {
 		if let Event::Key(key) = event {
 			if let KeyCode::Char(c) = key.code {
 				let mut event_lower_modifiers = key.modifiers;
-				event_lower_modifiers.remove(KeyModifiers::SHIFT);
 				let event_lower = Event::Key(KeyEvent::new(
 					KeyCode::Char(c.to_ascii_lowercase()),
 					event_lower_modifiers,
