@@ -41,5 +41,5 @@ serial_test = "2.0.0"
 girt-view = {version = "2.2.0", path = "../../src/view", features = ["testutils"]}
 
 [build-dependencies]
-chrono = "0.4.23"
+chrono = "0.4.26"
 rustc_version = "0.4.0"
