@@ -2,7 +2,13 @@ use std::io::{stdout, BufWriter, Stdout, Write};
 
 use crossterm::{
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
-	event::{DisableMouseCapture, EnableMouseCapture},
+	event::{
+		DisableMouseCapture,
+		EnableMouseCapture,
+		KeyboardEnhancementFlags,
+		PopKeyboardEnhancementFlags,
+		PushKeyboardEnhancementFlags,
+	},
 	style::{available_color_count, Attribute, Colors, Print, ResetColor, SetAttribute, SetColors},
 	terminal::{
 		disable_raw_mode,
@@ -118,12 +124,21 @@ impl Tui for CrossTerm {
 		self.queue_command(DisableLineWrap)?;
 		self.queue_command(Hide)?;
 		self.queue_command(EnableMouseCapture)?;
+		// this will fail on terminals without support, so ignore any errors
+		let _command_result = self.queue_command(PushKeyboardEnhancementFlags(
+			KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
+				| KeyboardEnhancementFlags::REPORT_EVENT_TYPES
+				| KeyboardEnhancementFlags::REPORT_ALTERNATE_KEYS
+				| KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES,
+		));
 		enable_raw_mode().map_err(DisplayError::Unexpected)?;
 		self.flush()
 	}
 
 	#[inline]
 	fn end(&mut self) -> Result<(), DisplayError> {
+		// this will fail on terminals without support, so ignore any errors
+		let _command_result = self.queue_command(PopKeyboardEnhancementFlags);
 		self.queue_command(DisableMouseCapture)?;
 		self.queue_command(Show)?;
 		self.queue_command(EnableLineWrap)?;

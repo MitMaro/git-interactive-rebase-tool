@@ -1,9 +1,9 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
-use crossterm::event::Event;
 #[cfg(not(test))]
 use crossterm::event::{poll, read};
+use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseEvent, MouseEventKind};
 #[cfg(test)]
 use read_event_mocks::{poll, read};
 
@@ -23,7 +23,20 @@ impl<FN: Fn() -> Result<Option<Event>> + Send + Sync + 'static> EventReaderFn fo
 pub fn read_event() -> Result<Option<Event>> {
 	if poll(Duration::from_millis(20)).unwrap_or(false) {
 		read()
-			.map(Some)
+			.map(|event| {
+				match event {
+					e @ (Event::Key(KeyEvent {
+						kind: KeyEventKind::Press | KeyEventKind::Repeat,
+						..
+					})
+					| Event::Mouse(MouseEvent {
+						kind: MouseEventKind::Down(_) | MouseEventKind::ScrollDown | MouseEventKind::ScrollUp,
+						..
+					})
+					| Event::Resize(..)) => Some(e),
+					Event::Key(_) | Event::Mouse(_) | Event::Paste(_) | Event::FocusGained | Event::FocusLost => None,
+				}
+			})
 			.map_err(|err| anyhow!("{:#}", err).context("Unexpected Error"))
 	}
 	else {
@@ -62,7 +75,7 @@ mod read_event_mocks {
 mod tests {
 	use std::{io, io::ErrorKind};
 
-	use crossterm::event::{KeyCode, KeyEvent};
+	use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
 
 	use super::*;
 
@@ -102,7 +115,7 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn read_event_read_success() {
+	fn read_event_read_key_press() {
 		let mut lock = read_event_mocks::NEXT_EVENT.lock();
 		*lock = Ok(Event::Key(KeyEvent::from(KeyCode::Enter)));
 		drop(lock);
@@ -112,5 +125,204 @@ mod tests {
 		drop(lock);
 
 		assert_eq!(read_event().unwrap(), Some(Event::Key(KeyEvent::from(KeyCode::Enter))));
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_key_repeat() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Key(KeyEvent::new_with_kind(
+			KeyCode::Enter,
+			KeyModifiers::NONE,
+			KeyEventKind::Repeat,
+		)));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(
+			read_event().unwrap(),
+			Some(Event::Key(KeyEvent::new_with_kind(
+				KeyCode::Enter,
+				KeyModifiers::NONE,
+				KeyEventKind::Repeat,
+			)))
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_mouse_down() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Mouse(MouseEvent {
+			kind: MouseEventKind::Down(MouseButton::Right),
+			column: 0,
+			row: 0,
+			modifiers: KeyModifiers::NONE,
+		}));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(
+			read_event().unwrap(),
+			Some(Event::Mouse(MouseEvent {
+				kind: MouseEventKind::Down(MouseButton::Right),
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::NONE
+			}))
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_mouse_scroll_down() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Mouse(MouseEvent {
+			kind: MouseEventKind::ScrollDown,
+			column: 0,
+			row: 0,
+			modifiers: KeyModifiers::NONE,
+		}));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(
+			read_event().unwrap(),
+			Some(Event::Mouse(MouseEvent {
+				kind: MouseEventKind::ScrollDown,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::NONE
+			}))
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_mouse_scroll_up() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Mouse(MouseEvent {
+			kind: MouseEventKind::ScrollDown,
+			column: 0,
+			row: 0,
+			modifiers: KeyModifiers::NONE,
+		}));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(
+			read_event().unwrap(),
+			Some(Event::Mouse(MouseEvent {
+				kind: MouseEventKind::ScrollDown,
+				column: 0,
+				row: 0,
+				modifiers: KeyModifiers::NONE
+			}))
+		);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_resize() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Resize(1, 1));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(read_event().unwrap(), Some(Event::Resize(1, 1)));
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_key_other() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Key(KeyEvent::new_with_kind(
+			KeyCode::Enter,
+			KeyModifiers::NONE,
+			KeyEventKind::Release,
+		)));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(read_event().unwrap(), None);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_mouse_other() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Mouse(MouseEvent {
+			kind: MouseEventKind::Moved,
+			column: 0,
+			row: 0,
+			modifiers: KeyModifiers::NONE,
+		}));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(read_event().unwrap(), None);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_paste() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::Paste(String::from("Foo")));
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(read_event().unwrap(), None);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_focus_gained() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::FocusGained);
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(read_event().unwrap(), None);
+	}
+
+	#[test]
+	#[serial_test::serial]
+	fn read_event_read_focus_lost() {
+		let mut lock = read_event_mocks::NEXT_EVENT.lock();
+		*lock = Ok(Event::FocusLost);
+		drop(lock);
+
+		let mut lock = read_event_mocks::HAS_POLLED_EVENT.lock();
+		*lock = Ok(true);
+		drop(lock);
+
+		assert_eq!(read_event().unwrap(), None);
 	}
 }
