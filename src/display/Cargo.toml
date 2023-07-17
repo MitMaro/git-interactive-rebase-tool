@@ -16,7 +16,7 @@ name = "display"
 
 [dependencies]
 crossterm = "0.26.1"
-thiserror = "1.0.38"
+thiserror = "1.0.43"
 girt-config = {version = "2.2.0", path = "../config"}
 
 [dev-dependencies]

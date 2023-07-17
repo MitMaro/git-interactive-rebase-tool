@@ -19,7 +19,7 @@ chrono = "0.4.23"
 lazy_static = "1.4.0"
 parking_lot = "0.12.1"
 tempfile = "3.6.0"
-thiserror = "1.0.38"
+thiserror = "1.0.43"
 
 [dependencies.git2]
 version = "=0.15.0"
