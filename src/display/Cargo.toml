@@ -20,7 +20,7 @@ thiserror = "1.0.43"
 girt-config = {version = "2.2.0", path = "../config"}
 
 [dev-dependencies]
-rstest = "0.16.0"
+rstest = "0.18.1"
 serial_test = "2.0.0"
 
 [build-dependencies]
