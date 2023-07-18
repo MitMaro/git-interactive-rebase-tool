@@ -9,7 +9,7 @@ fn edit_mode_passthrough_event() {
 	read_event_test(Event::from('p'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.state = ListState::Edit;
-		assert_eq!(context.read_event(&mut module), Event::from('p'));
+		assert_eq!(context.read_event(&module), Event::from('p'));
 	});
 }
 
@@ -18,7 +18,7 @@ fn normal_mode_help() {
 	read_event_test(Event::from('?'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.normal_mode_help.set_active();
-		assert_eq!(context.read_event(&mut module), Event::from(StandardEvent::Help));
+		assert_eq!(context.read_event(&module), Event::from(StandardEvent::Help));
 	});
 }
 
@@ -27,7 +27,7 @@ fn visual_mode_help() {
 	read_event_test(Event::from('?'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.visual_mode_help.set_active();
-		assert_eq!(context.read_event(&mut module), Event::from(StandardEvent::Help));
+		assert_eq!(context.read_event(&module), Event::from(StandardEvent::Help));
 	});
 }
 
@@ -36,7 +36,7 @@ fn search() {
 	read_event_test(Event::from('p'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.search_bar.start_search(Some(""));
-		assert_eq!(context.read_event(&mut module), Event::from('p'));
+		assert_eq!(context.read_event(&module), Event::from('p'));
 	});
 }
 
@@ -62,7 +62,7 @@ fn search() {
 fn default_events_single_char(#[case] binding: char, #[case] expected: MetaEvent) {
 	read_event_test(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
-		assert_eq!(context.read_event(&mut module), Event::from(expected));
+		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
 
@@ -79,7 +79,7 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: MetaEvent
 fn default_events_special(#[case] code: KeyCode, #[case] expected: MetaEvent) {
 	read_event_test(Event::from(code), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
-		assert_eq!(context.read_event(&mut module), Event::from(expected));
+		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
 
@@ -91,7 +91,7 @@ fn fixup_events(#[case] binding: char, #[case] expected: MetaEvent) {
 	read_event_test(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Fixup);
-		assert_eq!(context.read_event(&mut module), Event::from(expected));
+		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
 
@@ -102,7 +102,7 @@ fn fixup_events_with_non_fixpo_event(#[case] binding: char) {
 	read_event_test(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Pick);
-		assert_eq!(context.read_event(&mut module), Event::from(binding));
+		assert_eq!(context.read_event(&module), Event::from(binding));
 	});
 }
 
@@ -117,7 +117,7 @@ fn mouse_move_down() {
 		}),
 		|mut context| {
 			let mut module = create_list(&Config::new(), context.take_todo_file());
-			assert_eq!(context.read_event(&mut module), Event::from(MetaEvent::MoveCursorDown));
+			assert_eq!(context.read_event(&module), Event::from(MetaEvent::MoveCursorDown));
 		},
 	);
 }
@@ -133,7 +133,7 @@ fn mouse_move_up() {
 		}),
 		|mut context| {
 			let mut module = create_list(&Config::new(), context.take_todo_file());
-			assert_eq!(context.read_event(&mut module), Event::from(MetaEvent::MoveCursorUp));
+			assert_eq!(context.read_event(&module), Event::from(MetaEvent::MoveCursorUp));
 		},
 	);
 }
@@ -148,7 +148,7 @@ fn mouse_other() {
 	});
 	read_event_test(mouse_event, |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
-		assert_eq!(context.read_event(&mut module), mouse_event);
+		assert_eq!(context.read_event(&module), mouse_event);
 	});
 }
 
@@ -156,6 +156,6 @@ fn mouse_other() {
 fn event_other() {
 	read_event_test(Event::None, |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
-		assert_eq!(context.read_event(&mut module), Event::None);
+		assert_eq!(context.read_event(&module), Event::None);
 	});
 }

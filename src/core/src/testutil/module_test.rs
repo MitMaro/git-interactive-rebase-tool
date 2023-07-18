@@ -39,7 +39,7 @@ impl TestContext {
 		self.get_build_data(module)
 	}
 
-	pub(crate) fn read_event(&mut self, module: &'_ mut dyn Module) -> Event {
+	pub(crate) fn read_event(&mut self, module: &dyn Module) -> Event {
 		let input_options = module.input_options();
 		self.event_handler_context.event_handler.read_event(
 			self.event_handler_context.state.read_event(),
