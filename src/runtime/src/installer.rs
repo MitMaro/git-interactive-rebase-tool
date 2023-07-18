@@ -16,10 +16,10 @@ pub struct Installer {
 }
 
 impl Installer {
-	pub(crate) fn new(sender: Sender<(String, Status)>) -> Self {
+	pub(crate) fn new(thread_statuses: ThreadStatuses, sender: Sender<(String, Status)>) -> Self {
 		Self {
 			sender,
-			thread_statuses: ThreadStatuses::new(),
+			thread_statuses,
 			ops: RefCell::new(HashMap::new()),
 		}
 	}
@@ -94,7 +94,7 @@ mod tests {
 	#[test]
 	fn test() {
 		let (sender, _receiver) = unbounded();
-		let installer = Installer::new(sender);
+		let installer = Installer::new(ThreadStatuses::new(), sender);
 
 		let thread = Thread::new();
 		thread.install(&installer);
@@ -109,7 +109,7 @@ mod tests {
 	#[test]
 	fn debug() {
 		let (sender, _receiver) = unbounded();
-		let installer = Installer::new(sender);
+		let installer = Installer::new(ThreadStatuses::new(), sender);
 		assert_eq!(
 			format!("{installer:?}"),
 			"Installer { sender: Sender { .. }, thread_statuses: ThreadStatuses { statuses: Mutex { data: {} } }, .. }"

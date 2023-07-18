@@ -6,7 +6,7 @@ use display::Display;
 use git::Repository;
 use input::{Event, EventHandler, EventReaderFn};
 use parking_lot::Mutex;
-use runtime::{Runtime, Threadable};
+use runtime::{Runtime, ThreadStatuses, Threadable};
 use todo_file::TodoFile;
 use view::View;
 
@@ -29,6 +29,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	_repository: Repository,
 	process: Process<ModuleProvider>,
 	threads: Option<Vec<Box<dyn Threadable>>>,
+	thread_statuses: ThreadStatuses,
 }
 
 impl<ModuleProvider> Application<ModuleProvider>
@@ -62,8 +63,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 				.as_str(),
 		);
 
+		let thread_statuses = ThreadStatuses::new();
 		let mut threads: Vec<Box<dyn Threadable>> = vec![];
-		let runtime = Runtime::new();
 
 		let input_threads = events::Thread::new(event_provider);
 		let input_state = input_threads.state();
@@ -85,7 +86,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 			input_state,
 			view_state,
 			search_state,
-			runtime.statuses(),
+			thread_statuses.clone(),
 		);
 		let process_threads = process::Thread::new(process.clone());
 		threads.push(Box::new(process_threads));
@@ -95,6 +96,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 			_repository: repository,
 			process,
 			threads: Some(threads),
+			thread_statuses,
 		})
 	}
 
@@ -107,7 +109,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 			));
 		};
 
-		let runtime = Runtime::new();
+		let runtime = Runtime::new(self.thread_statuses.clone());
 
 		for thread in &mut threads {
 			runtime.register(thread.as_mut());

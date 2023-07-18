@@ -21,10 +21,9 @@ impl<'runtime> Runtime<'runtime> {
 	/// Create a new instances of the `Runtime`.
 	#[inline]
 	#[must_use]
-	pub fn new() -> Self {
+	pub fn new(thread_statuses: ThreadStatuses) -> Self {
 		let (sender, receiver) = unbounded();
 
-		let thread_statuses = ThreadStatuses::new();
 		thread_statuses.register_thread(RUNTIME_THREAD_NAME, Status::Waiting);
 
 		Self {
@@ -54,7 +53,7 @@ impl<'runtime> Runtime<'runtime> {
 	/// Returns and error if any of the threads registered to the runtime produce an error.
 	#[inline]
 	pub fn join(&self) -> Result<(), RuntimeError> {
-		let installer = Installer::new(self.sender.clone());
+		let installer = Installer::new(self.thread_statuses.clone(), self.sender.clone());
 		{
 			let threadables = self.threadables.lock();
 			for threadable in threadables.iter() {
@@ -166,7 +165,7 @@ mod tests {
 			}
 		}
 
-		let runtime = Runtime::new();
+		let runtime = Runtime::new(ThreadStatuses::new());
 		let mut thread = Thread::new();
 		runtime.register(&mut thread);
 		runtime.join().unwrap();
@@ -223,7 +222,7 @@ mod tests {
 			}
 		}
 
-		let runtime = Runtime::new();
+		let runtime = Runtime::new(ThreadStatuses::new());
 		let mut thread1 = Thread1::new();
 		let mut thread2 = Thread2::new();
 		runtime.register(&mut thread1);
@@ -283,7 +282,7 @@ mod tests {
 			}
 		}
 
-		let runtime = Runtime::new();
+		let runtime = Runtime::new(ThreadStatuses::new());
 		let mut thread1 = Thread1::new();
 		let mut thread2 = Thread2::new();
 		runtime.register(&mut thread1);
@@ -344,7 +343,7 @@ mod tests {
 			}
 		}
 
-		let runtime = Runtime::new();
+		let runtime = Runtime::new(ThreadStatuses::new());
 		let mut thread1 = Thread1::new();
 		let mut thread2 = Thread2::new();
 		runtime.register(&mut thread1);
@@ -404,7 +403,7 @@ mod tests {
 			}
 		}
 
-		let runtime = Runtime::new();
+		let runtime = Runtime::new(ThreadStatuses::new());
 		let mut thread1 = Thread1::new();
 		let mut thread2 = Thread2::new();
 		runtime.register(&mut thread1);

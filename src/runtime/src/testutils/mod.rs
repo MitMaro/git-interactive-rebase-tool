@@ -75,7 +75,7 @@ impl ThreadableTester {
 	#[allow(clippy::missing_panics_doc)]
 	pub fn start_threadable<Threadable: crate::Threadable>(&self, theadable: &Threadable, thread_name: &str) {
 		self.ended.store(false, Ordering::Release);
-		let installer = Installer::new(self.sender.clone());
+		let installer = Installer::new(ThreadStatuses::new(), self.sender.clone());
 		theadable.install(&installer);
 		let mut ops = installer.into_ops();
 		let op = ops.remove(thread_name).expect("Expected to find thead");
