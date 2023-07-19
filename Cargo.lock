@@ -316,7 +316,7 @@ dependencies = [
 
 [[package]]
 name = "girt-config"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "claim",
  "girt-git",
@@ -332,7 +332,7 @@ dependencies = [
 
 [[package]]
 name = "girt-core"
-version = "2.2.1"
+version = "2.3.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -361,7 +361,7 @@ dependencies = [
 
 [[package]]
 name = "girt-display"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "crossterm",
  "girt-config",
@@ -373,7 +373,7 @@ dependencies = [
 
 [[package]]
 name = "girt-git"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "chrono",
  "claim",
@@ -391,7 +391,7 @@ dependencies = [
 
 [[package]]
 name = "girt-input"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -409,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "girt-runtime"
-version = "0.1.0"
+version = "2.3.0"
 dependencies = [
  "claim",
  "crossbeam-channel",
@@ -421,14 +421,14 @@ dependencies = [
 
 [[package]]
 name = "girt-testutils"
-version = "0.1.0"
+version = "2.3.0"
 dependencies = [
  "rustc_version",
 ]
 
 [[package]]
 name = "girt-todo-file"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "claim",
  "girt-testutils",
@@ -442,7 +442,7 @@ dependencies = [
 
 [[package]]
 name = "girt-view"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -462,7 +462,7 @@ dependencies = [
 
 [[package]]
 name = "git-interactive-rebase-tool"
-version = "2.2.1"
+version = "2.3.0"
 dependencies = [
  "girt-core",
  "rustc_version",

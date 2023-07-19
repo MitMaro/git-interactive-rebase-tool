@@ -1,6 +1,6 @@
 [package]
 name = "girt-input"
-version = "2.2.0"
+version = "2.3.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Input module for git-interactive-rebase-tool"
@@ -21,8 +21,8 @@ captur = "0.1.0"
 crossbeam-channel = "0.5.8"
 crossterm = "0.26.1"
 parking_lot = "0.12.1"
-girt-config = {version = "2.2.0", path = "../config"}
-girt-runtime = {version = "0.1.0", path = "../runtime"}
+girt-config = {version = "2.3.0", path = "../config"}
+girt-runtime = {version = "2.3.0", path = "../runtime"}
 
 [dev-dependencies]
 rstest = "0.18.1"

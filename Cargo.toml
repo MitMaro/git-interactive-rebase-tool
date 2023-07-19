@@ -1,6 +1,6 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "2.2.1"
+version = "2.3.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Full feature terminal based sequence editor for git interactive rebase."
@@ -37,7 +37,7 @@ members = [
 ]
 
 [dependencies]
-girt-core = {version = "2.2.1", path = "src/core"}
+girt-core = {version = "2.3.0", path = "src/core"}
 
 [build-dependencies]
 rustc_version = "0.4.0"

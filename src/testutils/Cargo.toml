@@ -1,6 +1,6 @@
 [package]
 name = "girt-testutils"
-version = "0.1.0"
+version = "2.3.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Test utils for git-interactive-rebase-tool"
