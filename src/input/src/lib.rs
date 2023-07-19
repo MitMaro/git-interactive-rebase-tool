@@ -123,6 +123,8 @@
 	)
 )]
 // LINT-REPLACE-END
+// TODO deny clippy::same_name_method again once bitflags/bitflags#374 is merged
+#![allow(clippy::same_name_method)]
 
 //! Git Interactive Rebase Tool - Input Module
 //!

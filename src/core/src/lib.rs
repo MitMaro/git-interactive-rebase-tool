@@ -123,10 +123,12 @@
 	)
 )]
 // LINT-REPLACE-END
+// TODO deny clippy::same_name_method again once bitflags/bitflags#374 is merged
 #![allow(
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
 	clippy::redundant_closure_for_method_calls,
+	clippy::same_name_method,
 	clippy::wildcard_enum_match_arm,
 	missing_docs,
 	rustdoc::missing_crate_level_docs,

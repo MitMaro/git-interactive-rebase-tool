@@ -2,6 +2,7 @@ use bitflags::bitflags;
 
 bitflags! {
 	/// Represents options for parsing input events.
+	#[derive(Default, PartialEq, Eq, Debug, Clone, Copy)]
 	pub struct InputOptions: u8 {
 		/// Enable movement input handling
 		const MOVEMENT = 0b0000_0001;
