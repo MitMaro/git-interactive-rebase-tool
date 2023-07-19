@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [2.3.0] - 2022-10-13
+## [2.3.0] - 2023-07-19
 ### Added
 - Support for update-ref action ([#801](https://github.com/MitMaro/git-interactive-rebase-tool/pull/801))
 - Search in the list view ([#797](https://github.com/MitMaro/git-interactive-rebase-tool/pull/797))

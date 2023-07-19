@@ -14,8 +14,8 @@ fi
 
 # order is based on dependency graph
 crates=(
-	"src/git"
 	"src/testutils"
+	"src/git"
 	"src/config"
 	"src/display"
 	"src/todo_file"
