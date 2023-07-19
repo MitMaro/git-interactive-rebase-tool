@@ -19,7 +19,7 @@ testutils = ["dep:bitflags", "dep:iter_tools"]
 
 [dependencies]
 anyhow = "1.0.72"
-bitflags = { version = "1.3.2", optional = true }
+bitflags = { version = "2.3.3", optional = true }
 captur = "0.1.0"
 crossbeam-channel = "0.5.8"
 parking_lot = "0.12.1"

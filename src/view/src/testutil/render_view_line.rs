@@ -5,7 +5,7 @@ use crate::{LineSegment, ViewData, ViewLine};
 
 bitflags! {
 	/// Options for the `assert_rendered_output!` macro
-	#[derive(Default)]
+	#[derive(Default, PartialEq, Eq, Debug, Clone, Copy)]
 	pub struct AssertRenderOptions: u8 {
 		/// Ignore trailing whitespace
 		const INCLUDE_TRAILING_WHITESPACE = 0b0000_0001;

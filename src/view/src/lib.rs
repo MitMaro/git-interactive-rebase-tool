@@ -123,8 +123,8 @@
 	)
 )]
 // LINT-REPLACE-END
-#![allow(clippy::as_conversions, clippy::integer_division)]
-
+// TODO deny clippy::same_name_method again once bitflags/bitflags#374 is merged
+#![allow(clippy::same_name_method, clippy::as_conversions, clippy::integer_division)]
 //! Git Interactive Rebase Tool - View Module
 //!
 //! # Description
