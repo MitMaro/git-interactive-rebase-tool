@@ -1,6 +1,6 @@
 [package]
 name = "girt-core"
-version = "2.2.1"
+version = "2.3.0"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Core modules for git-interactive-rebase-tool"
@@ -25,20 +25,20 @@ num-format = "0.4.4"
 parking_lot = "0.12.1"
 pico-args = "0.5.0"
 unicode-segmentation = "1.10.1"
-girt-config = {version = "2.2.0", path = "../../src/config"}
-girt-display = {version = "2.2.0", path = "../../src/display"}
-girt-git = {version = "2.2.0", path = "../../src/git"}
-girt-input = {version = "2.2.0", path = "../../src/input"}
-girt-runtime = {version = "0.1.0", path = "../runtime"}
-girt-todo-file = {version = "2.2.0", path = "../../src/todo_file"}
-girt-view = {version = "2.2.0", path = "../../src/view"}
+girt-config = {version = "2.3.0", path = "../../src/config"}
+girt-display = {version = "2.3.0", path = "../../src/display"}
+girt-git = {version = "2.3.0", path = "../../src/git"}
+girt-input = {version = "2.3.0", path = "../../src/input"}
+girt-runtime = {version = "2.3.0", path = "../runtime"}
+girt-todo-file = {version = "2.3.0", path = "../../src/todo_file"}
+girt-view = {version = "2.3.0", path = "../../src/view"}
 
 [dev-dependencies]
 claim = { git = "https://github.com/Turbo87/rust-claim.git", rev = "23892a3" }
 pretty_assertions = "1.4.0"
 rstest = "0.18.1"
 serial_test = "2.0.0"
-girt-view = {version = "2.2.0", path = "../../src/view", features = ["testutils"]}
+girt-view = {version = "2.3.0", path = "../../src/view", features = ["testutils"]}
 
 [build-dependencies]
 chrono = "0.4.26"
