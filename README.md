@@ -9,6 +9,8 @@ Native cross-platform full feature terminal based [sequence editor][git-sequence
 
 [![Git Interactive Rebase Tool](/docs/assets/images/girt-demo.gif?raw=true)](https://youtu.be/q3tzb-gQC0w)
 
+**This is the documentation for the development build. For the current stable release, please use the [2.3.x documentation](https://github.com/MitMaro/git-interactive-rebase-tool/tree/2.3.0/README.md).**
+
 ## Table of Contents
 
 * [Features](./README.md#features)
