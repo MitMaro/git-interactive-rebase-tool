@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [2.3.0] - 2022-10-13
+### Added
+- Support for update-ref action ([#801](https://github.com/MitMaro/git-interactive-rebase-tool/pull/801))
+- Search in the list view ([#797](https://github.com/MitMaro/git-interactive-rebase-tool/pull/797))
+
 ## [2.2.1] - 2022-10-13
 ### Fixed
 - Crash on multibyte strings in commit diff view ([#755](https://github.com/MitMaro/git-interactive-rebase-tool/pull/755))
@@ -165,9 +170,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.1...HEAD
-[2.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.1...2.2.0
-[2.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.0...2.1.0
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.3.0...HEAD
+[2.3.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.1...2.3.0
+[2.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.0...2.2.1
+[2.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.1.0...2.2.0
 [2.1.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.1...2.0.0
 [1.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/1.2.0...1.2.1
