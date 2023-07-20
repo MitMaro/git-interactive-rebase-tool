@@ -144,7 +144,7 @@ Key bindings can be customized, see [configuration](readme/customization.md#key-
 | `f`         | Normal/Diff | Set selected commit(s) to be fixed-up     |
 | `d`         | Normal/Diff | Set selected commit(s) to be dropped      |
 | `E`         | Normal      | Edit the command of an editable action    |
-| `v`         | Normal/Diff | Enter and exit visual mode                |
+| `v`         | Normal/Diff | Enter and exit visual mode (for selection)|
 | `I`         | Normal      | Insert a new line                         |
 | `Delete`    | Normal/Diff | Remove selected lines                     |
 | `!`         | Normal/Diff | Open todo file in external editor         |

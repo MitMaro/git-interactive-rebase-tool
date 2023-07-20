@@ -150,12 +150,12 @@ fn build_help_lines(key_bindings: &KeyBindings, selector: HelpLinesSelector) -> 
 		),
 		(
 			&key_bindings.toggle_visual_mode,
-			"Enter visual mode",
+			"Enter visual selection mode",
 			HelpLinesSelector::Normal,
 		),
 		(
 			&key_bindings.toggle_visual_mode,
-			"Exit visual mode",
+			"Exit visual selection mode",
 			HelpLinesSelector::Visual,
 		),
 	];

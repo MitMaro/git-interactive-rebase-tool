@@ -49,7 +49,7 @@ fn normal_mode_help() {
 				"{IndicatorColor} Controlz{Normal,Dimmed}|{Normal}Undo the last change",
 				"{IndicatorColor} Controly{Normal,Dimmed}|{Normal}Redo the previous undone change",
 				"{IndicatorColor} !       {Normal,Dimmed}|{Normal}Open the todo file in the default editor",
-				"{IndicatorColor} v       {Normal,Dimmed}|{Normal}Enter visual mode",
+				"{IndicatorColor} v       {Normal,Dimmed}|{Normal}Enter visual selection mode",
 				"{TRAILING}",
 				"{IndicatorColor}Press any key to close"
 			);
@@ -112,7 +112,7 @@ fn visual_mode_help() {
 				"{IndicatorColor} Controlz{Normal,Dimmed}|{Normal}Undo the last change",
 				"{IndicatorColor} Controly{Normal,Dimmed}|{Normal}Redo the previous undone change",
 				"{IndicatorColor} !       {Normal,Dimmed}|{Normal}Open the todo file in the default editor",
-				"{IndicatorColor} v       {Normal,Dimmed}|{Normal}Exit visual mode",
+				"{IndicatorColor} v       {Normal,Dimmed}|{Normal}Exit visual selection mode",
 				"{TRAILING}",
 				"{IndicatorColor}Press any key to close"
 			);
