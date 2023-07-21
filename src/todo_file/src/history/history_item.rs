@@ -9,6 +9,15 @@ pub(crate) struct HistoryItem {
 }
 
 impl HistoryItem {
+	pub(crate) const fn new_load() -> Self {
+		Self {
+			operation: Operation::Load,
+			start_index: 0,
+			end_index: 0,
+			lines: vec![],
+		}
+	}
+
 	pub(crate) fn new_modify(start_index: usize, end_index: usize, lines: Vec<Line>) -> Self {
 		Self {
 			operation: Operation::Modify,
