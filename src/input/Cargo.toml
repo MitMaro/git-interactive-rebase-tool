@@ -24,6 +24,10 @@ parking_lot = "0.12.1"
 girt-config = {version = "2.3.0", path = "../config"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
 
+# Fix tty issues on MacOS
+[target.'cfg(target_os = "macos")'.dependencies]
+crossterm = { version = "0.26.1", features = ["use-dev-tty"] }
+
 [dev-dependencies]
 rstest = "0.18.1"
 lazy_static = "1.4.0"
