@@ -154,7 +154,10 @@ use self::{
 	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},
 };
-use crate::errors::{FileReadErrorCause, IoError};
+use crate::{
+	errors::{FileReadErrorCause, IoError},
+	history::Operation,
+};
 
 /// Represents a rebase file.
 #[derive(Debug)]
@@ -391,14 +394,22 @@ impl TodoFile {
 	#[inline]
 	pub fn undo(&mut self) -> Option<(usize, usize)> {
 		self.version.increment();
-		self.history.undo(&mut self.lines)
+		if let Some((operation, start, end)) = self.history.undo(&mut self.lines) {
+			return if operation == Operation::Load {
+				None
+			}
+			else {
+				Some((start, end))
+			};
+		}
+		None
 	}
 
 	/// Redo the last undone modification.
 	#[inline]
 	pub fn redo(&mut self) -> Option<(usize, usize)> {
 		self.version.increment();
-		self.history.redo(&mut self.lines)
+		self.history.redo(&mut self.lines).map(|(_, start, end)| (start, end))
 	}
 
 	/// Get the current version
@@ -750,6 +761,32 @@ mod tests {
 	}
 
 	#[test]
+	fn undo_load_operation() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		assert_none!(todo_file.undo());
+	}
+
+	#[test]
+	fn undo_empty_history() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		// set short history, to remove load entry
+		todo_file.history = History::new(1);
+		todo_file.update_range(0, 0, &EditContext::new().action(Action::Drop));
+		_ = todo_file.undo(); // remove Drop operation
+		assert_none!(todo_file.undo());
+	}
+
+	#[test]
+	fn undo_operation() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		todo_file.update_range(0, 1, &EditContext::new().action(Action::Drop));
+		assert_some_eq!(todo_file.undo(), (0, 1));
+	}
+
+	#[test]
 	fn history_undo_redo() {
 		let (mut todo_file, _) =
 			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
@@ -762,6 +799,22 @@ mod tests {
 		_ = todo_file.redo();
 		assert_todo_lines!(todo_file, "drop aaa comment", "drop bbb comment", "edit ccc comment");
 		assert_ne!(todo_file.version(), &old_version);
+	}
+
+	#[test]
+	fn redo_empty_history() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		assert_none!(todo_file.redo());
+	}
+
+	#[test]
+	fn redo_operation() {
+		let (mut todo_file, _) =
+			create_and_load_todo_file(&["pick aaa comment", "drop bbb comment", "edit ccc comment"]);
+		todo_file.update_range(0, 1, &EditContext::new().action(Action::Drop));
+		_ = todo_file.undo();
+		assert_some_eq!(todo_file.redo(), (0, 1));
 	}
 
 	#[test]
