@@ -162,7 +162,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 mod tests {
 	use std::borrow::BorrowMut;
 
-	use claim::assert_ok;
+	use claims::assert_ok;
 	use config::Theme;
 	use display::{
 		testutil::{create_unexpected_error, CrossTerm, MockableTui},

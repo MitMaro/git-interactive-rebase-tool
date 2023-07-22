@@ -86,7 +86,7 @@ impl DiffLine {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_some_eq;
+	use claims::assert_some_eq;
 	use parking_lot::Mutex;
 
 	use super::*;

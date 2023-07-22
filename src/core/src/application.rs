@@ -184,7 +184,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 mod tests {
 	use std::ffi::OsString;
 
-	use claim::assert_ok;
+	use claims::assert_ok;
 	use display::{testutil::CrossTerm, Size};
 	use input::{KeyCode, KeyEvent, KeyModifiers};
 	use runtime::{Installer, RuntimeError};

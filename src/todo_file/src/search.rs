@@ -166,7 +166,7 @@ impl Search {
 
 #[cfg(test)]
 mod tests {
-	use claim::{assert_none, assert_some_eq};
+	use claims::{assert_none, assert_some_eq};
 
 	use super::*;
 	use crate::testutil::with_todo_file;

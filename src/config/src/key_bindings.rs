@@ -196,7 +196,7 @@ impl TryFrom<&Config> for KeyBindings {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_ok;
+	use claims::assert_ok;
 
 	use super::*;
 	use crate::testutils::with_git_config;

@@ -75,7 +75,7 @@ pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> R
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_ok_eq;
+	use claims::assert_ok_eq;
 	use rstest::rstest;
 	use testutils::assert_err_eq;
 
