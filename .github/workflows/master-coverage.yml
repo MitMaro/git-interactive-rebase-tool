@@ -22,12 +22,7 @@ jobs:
         run: |
           cargo +nightly tarpaulin --workspace --all-features --ignore-tests --line --output-dir coverage --timeout 10 --out Lcov
       - name: Post to Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: "coverage/lcov.info"
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v1
-        with:
-          name: code-coverage-report
-          path: coverage/lcov.info

@@ -1,21 +1,33 @@
 name: Release Latest
 
 on:
-    push:
-        branches:
-            - master
+  push:
+    branches:
+      - master
+
 jobs:
-  ubuntu:
-    name: Ubuntu
+  update-latest-tag:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    name: Update Latest Tag
     env:
-        TARGET_RELEASE_ID: 18843342
-        GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        REPOSITORY: "MitMaro/git-interactive-rebase-tool"
+      TARGET_RELEASE_ID: 18843342
+      GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      REPOSITORY: "MitMaro/git-interactive-rebase-tool"
+      DEFAULT_BRANCH: "master"
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v2
+      - name: "Update Tag and Title"
+        run: "./.github/scripts/update-tag.bash"
+
+  debian:
+    name: Debian Latest
+    runs-on: ubuntu-latest
+    needs: update-latest-tag
+    timeout-minutes: 10
+    container:
+      image: 'docker://debian:sid-slim'
+    steps:
+      - uses: actions/checkout@v3
       - name: "System Setup"
         run: |
           apt-get update;
@@ -23,40 +35,239 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
           TZ: "America/St_Johns"
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: baptiste0928/cargo-install@v1
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - uses: baptiste0928/cargo-install@v2
         with:
           crate: cargo-deb
       - name: "Build Deb"
-        run: cargo +stable deb --output "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb" -- --features dev
+        run: cargo +nightly deb --output "target/debian/debian_amd64-interactive-rebase-tool.deb" -- --features dev
       - name: Upload
-        env:
-            FILE_PATH: "target/debian/git-interactive-rebase-tool-ubuntu_amd64.deb"
-            ASSET_NAME: git-interactive-rebase-tool-ubuntu_amd64.deb
-            CONTENT_TYPE: "application/vnd.debian.binary-package"
-        run: "./.github/scripts/push-latest-release.bash"
-      - name: "Update Tag and Title"
-        env:
-            DEFAULT_BRANCH: "master"
-        run: "./.github/scripts/update-tag.bash"
-  macos:
-    name: MacOS
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/debian/debian_amd64-interactive-rebase-tool.deb"
+          artifactErrorsFailBuild: true
+          artifactContentType: "application/vnd.debian.binary-package"
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  ubuntu:
+    name: Ubuntu Latest
+    runs-on: ubuntu-latest
+    needs: update-latest-tag
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-deb
+      - name: "Build Deb"
+        run: cargo +nightly deb --output "target/debian/ubuntu_amd64-interactive-rebase-tool.deb" -- --features dev
+      - name: Upload
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/debian/ubuntu_amd64-interactive-rebase-tool.deb"
+          artifactErrorsFailBuild: true
+          artifactContentType: "application/vnd.debian.binary-package"
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  alpine:
+    name: Alpine Latest
+    runs-on: ubuntu-latest
+    needs: update-latest-tag
+    container:
+      image: 'docker://rust:alpine'
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          apk update
+          apk upgrade
+          apk add bash musl-dev zlib-dev zlib-static
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - name: "Build"
+        run: |
+          cargo build --features dev
+          cp target/debug/interactive-rebase-tool target/debug/alpine_amd64-interactive-rebase-tool
+      - name: Upload
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/debug/alpine_amd64-interactive-rebase-tool"
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  arch:
+    name: Arch Latest
+    runs-on: ubuntu-latest
+    needs: update-latest-tag
+    container:
+      image: 'docker://archlinux:base-devel'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - name: "Build"
+        run: |
+          cargo build --features dev
+          cp target/debug/interactive-rebase-tool target/debug/arch_amd64-interactive-rebase-tool
+      - name: Upload
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/debug/arch_amd64-interactive-rebase-tool"
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  fedora:
+    name: Fedora Latest
+    runs-on: ubuntu-latest
+    needs: update-latest-tag
+    container:
+      image: 'docker://fedora:latest'
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          dnf install curl dnf-plugins-core cmake gcc clang make -y
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly
+      - name: "Build"
+        run: |
+          cargo build --features dev
+          cp target/debug/interactive-rebase-tool target/debug/fedora_amd64-interactive-rebase-tool
+      - name: Upload
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/debug/fedora_amd64-interactive-rebase-tool"
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  macos-amd64:
+    name: MacOS amd64 Latest
     runs-on: macos-latest
     timeout-minutes: 10
-    env:
-        TARGET_RELEASE_ID: 18843342
-        GITHUB_ACCESS_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        REPOSITORY: "MitMaro/git-interactive-rebase-tool"
+    needs: update-latest-tag
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
         with:
           toolchain: nightly
       - name: "Build"
-        run: cargo build --features dev --release
+        run: |
+          cargo build --features dev 
+          cp target/debug/interactive-rebase-tool target/debug/macos-amd64-interactive-rebase-tool
       - name: Upload
-        env:
-            FILE_PATH: "target/release/interactive-rebase-tool"
-            ASSET_NAME: macos-interactive-rebase-tool
-            CONTENT_TYPE: "application/x-mach-binary"
-        run: "./.github/scripts/push-latest-release.bash"
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/debug/macos-amd64-interactive-rebase-tool"
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  macos-arm:
+    name: MacOS ARM Latest
+    runs-on: macos-latest
+    timeout-minutes: 10
+    needs: update-latest-tag
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+          targets: aarch64-apple-darwin
+      - name: "Build"
+        run: |
+          cargo build --target aarch64-apple-darwin --features dev 
+          cp target/aarch64-apple-darwin/debug/interactive-rebase-tool target/aarch64-apple-darwin/debug/macos-arm-interactive-rebase-tool
+      - name: Upload
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/aarch64-apple-darwin/debug/macos-arm-interactive-rebase-tool"
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
+
+  windows:
+    name: Windows Latest
+    runs-on: windows-latest
+    timeout-minutes: 10
+    needs: update-latest-tag
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: "Build"
+        run: |
+          cargo rustc --target x86_64-pc-windows-msvc --release --bin interactive-rebase-tool
+          copy target/x86_64-pc-windows-msvc/release/interactive-rebase-tool.exe target/x86_64-pc-windows-msvc/release/windows_amd64-interactive-rebase-tool.exe
+      - name: Upload
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          allowUpdates: true
+          artifacts: "target/x86_64-pc-windows-msvc/release/windows_amd64-interactive-rebase-tool.exe"
+          artifactErrorsFailBuild: true
+          replacesArtifacts: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          makeLatest: false
+          prerelease: true
+          updateOnlyUnreleased: true
