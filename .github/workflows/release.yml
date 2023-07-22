@@ -1,158 +1,158 @@
 name: Release Packages
 
 on:
-    release:
-        types: [published]
+  release:
+    types: [ published ]
 
 jobs:
-    build-ubuntu-legacy:
-        strategy:
-            matrix:
-                version: ['14.04', '16.04']
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        container:
-            image: 'docker://ubuntu:${{ matrix.version }}'
-        steps:
-            - name: "Get Tag Name"
-              id: ref
-              shell: bash
-              run: |
-                  ref="${{ github.ref }}";
-                  ref="${ref//refs\/heads\//}";
-                  ref="${ref//refs\/tags\//}";
-                  ref="${ref//master/dev}";
-                  echo "$ref";
-                  echo "::set-output name=name::$ref"
-            - uses: actions/checkout@v3
-            # manually install and use rustup, since dtolnay/rust-toolchain is not supported on older versions of Ubuntu
-            - name: "System Setup"
-              run: |
-                apt-get update;
-                apt-get --assume-yes -f install curl build-essential pkg-config;
-                curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs  | sh -s -- --default-toolchain stable -y;
-                $HOME/.cargo/bin/cargo install --force cargo-deb
-              env:
-                DEBIAN_FRONTEND: noninteractive
-                TZ: "America/St_Johns"
-            - name: "Build Deb"
-              run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-ubuntu-${{ matrix.version }}_amd64.deb"
-            - name: "Upload Release"
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: |
-                      target/debian/*.deb
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    build-ubuntu:
-        strategy:
-            matrix:
-                version: ['18.04', '20.04', '22.04', '22.10', '23.04']
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        container:
-            image: 'docker://ubuntu:${{ matrix.version }}'
-        steps:
-            - name: "Get Tag Name"
-              id: ref
-              shell: bash
-              run: |
-                  ref="${{ github.ref }}";
-                  ref="${ref//refs\/heads\//}";
-                  ref="${ref//refs\/tags\//}";
-                  ref="${ref//master/dev}";
-                  echo "$ref";
-                  echo "::set-output name=name::$ref"
-            - uses: actions/checkout@v3
-            - name: "System Setup"
-              run: |
-                apt-get update;
-                apt-get --assume-yes -f install curl build-essential pkg-config;
-              env:
-                DEBIAN_FRONTEND: noninteractive
-                TZ: "America/St_Johns"
-            - uses: dtolnay/rust-toolchain@stable
-            - uses: baptiste0928/cargo-install@v1
-              with:
-                crate: cargo-deb
-            - name: "Build Deb"
-              run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-ubuntu-${{ matrix.version }}_amd64.deb"
-            - name: "Upload Release"
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: |
-                      target/debian/*.deb
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-ubuntu-legacy:
+    strategy:
+      matrix:
+        version: [ '14.04', '16.04' ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: 'docker://ubuntu:${{ matrix.version }}'
+    steps:
+      - name: "Get Tag Name"
+        id: ref
+        shell: bash
+        run: |
+          ref="${{ github.ref }}";
+          ref="${ref//refs\/heads\//}";
+          ref="${ref//refs\/tags\//}";
+          ref="${ref//master/dev}";
+          echo "$ref";
+          echo "::set-output name=name::$ref"
+      - uses: actions/checkout@v3
+      # manually install and use rustup, since dtolnay/rust-toolchain is not supported on older versions of Ubuntu
+      - name: "System Setup"
+        run: |
+          apt-get update;
+          apt-get --assume-yes -f install curl build-essential pkg-config;
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs  | sh -s -- --default-toolchain stable -y;
+          $HOME/.cargo/bin/cargo install --force cargo-deb
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: "America/St_Johns"
+      - name: "Build Deb"
+        run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-ubuntu-${{ matrix.version }}_amd64.deb"
+      - name: "Upload Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/debian/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-ubuntu:
+    strategy:
+      matrix:
+        version: [ '18.04', '20.04', '22.04', '22.10', '23.04' ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: 'docker://ubuntu:${{ matrix.version }}'
+    steps:
+      - name: "Get Tag Name"
+        id: ref
+        shell: bash
+        run: |
+          ref="${{ github.ref }}";
+          ref="${ref//refs\/heads\//}";
+          ref="${ref//refs\/tags\//}";
+          ref="${ref//master/dev}";
+          echo "$ref";
+          echo "::set-output name=name::$ref"
+      - uses: actions/checkout@v3
+      - name: "System Setup"
+        run: |
+          apt-get update;
+          apt-get --assume-yes -f install curl build-essential pkg-config;
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: "America/St_Johns"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-deb
+      - name: "Build Deb"
+        run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-ubuntu-${{ matrix.version }}_amd64.deb"
+      - name: "Upload Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/debian/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    build-debian:
-        strategy:
-            matrix:
-                version: ['10', '11', '12', 'sid']
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        container:
-            image: 'docker://debian:${{ matrix.version }}-slim'
-        steps:
-            - name: "Get Tag Name"
-              id: ref
-              shell: bash
-              run: |
-                  ref="${{ github.ref }}";
-                  ref="${ref//refs\/heads\//}";
-                  ref="${ref//refs\/tags\//}";
-                  ref="${ref//master/dev}";
-                  echo "$ref";
-                  echo "::set-output name=name::$ref"
-            - uses: actions/checkout@v3
-            - name: "System Setup"
-              run: |
-                apt-get update;
-                apt-get --assume-yes -f install curl build-essential pkg-config;
-              env:
-                DEBIAN_FRONTEND: noninteractive
-                TZ: "America/St_Johns"
-            - uses: dtolnay/rust-toolchain@stable
-            - uses: baptiste0928/cargo-install@v1
-              with:
-                crate: cargo-deb
-            - name: "Build Deb"
-              run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-debian-${{ matrix.version }}_amd64.deb"
-            - name: "Upload Release"
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: |
-                      target/debian/*.deb
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    build-macos:
-        runs-on: macos-latest
-        timeout-minutes: 5
-        steps:
-            - uses: actions/checkout@v3
-            - uses: dtolnay/rust-toolchain@stable
-            - name: "Build"
-              run: "cargo +stable build --release"
-            - name: "Rename"
-              run: "cp target/release/interactive-rebase-tool target/release/macos-interactive-rebase-tool"
-            - name: "Upload Release"
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: target/release/macos-interactive-rebase-tool
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-debian:
+    strategy:
+      matrix:
+        version: [ '10', '11', '12', 'sid' ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: 'docker://debian:${{ matrix.version }}-slim'
+    steps:
+      - name: "Get Tag Name"
+        id: ref
+        shell: bash
+        run: |
+          ref="${{ github.ref }}";
+          ref="${ref//refs\/heads\//}";
+          ref="${ref//refs\/tags\//}";
+          ref="${ref//master/dev}";
+          echo "$ref";
+          echo "::set-output name=name::$ref"
+      - uses: actions/checkout@v3
+      - name: "System Setup"
+        run: |
+          apt-get update;
+          apt-get --assume-yes -f install curl build-essential pkg-config;
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: "America/St_Johns"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-deb
+      - name: "Build Deb"
+        run: $HOME/.cargo/bin/cargo +stable deb --output "target/debian/git-interactive-rebase-tool-${{ steps.ref.outputs.name }}-debian-${{ matrix.version }}_amd64.deb"
+      - name: "Upload Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/debian/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: "Build"
+        run: "cargo +stable build --release"
+      - name: "Rename"
+        run: "cp target/release/interactive-rebase-tool target/release/macos-interactive-rebase-tool"
+      - name: "Upload Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/release/macos-interactive-rebase-tool
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    build-windows:
-        runs-on: windows-latest
-        timeout-minutes: 10
-        steps:
-            - uses: actions/checkout@v3
-            - uses: dtolnay/rust-toolchain@stable
-            - name: "Build"
-              run: "cargo rustc --target x86_64-pc-windows-msvc --release --bin interactive-rebase-tool"
-            - name: "Upload Release"
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: target/x86_64-pc-windows-msvc/release/interactive-rebase-tool.exe
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: "Build"
+        run: "cargo rustc --target x86_64-pc-windows-msvc --release --bin interactive-rebase-tool"
+      - name: "Upload Release"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/x86_64-pc-windows-msvc/release/interactive-rebase-tool.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
