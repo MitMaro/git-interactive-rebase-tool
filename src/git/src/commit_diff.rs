@@ -57,7 +57,7 @@ impl CommitDiff {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_some_eq;
+	use claims::assert_some_eq;
 
 	use crate::{
 		delta::Delta,

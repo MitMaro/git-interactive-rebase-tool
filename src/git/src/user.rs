@@ -71,7 +71,7 @@ impl ToString for User {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_some_eq;
+	use claims::assert_some_eq;
 	use rstest::rstest;
 
 	use super::*;

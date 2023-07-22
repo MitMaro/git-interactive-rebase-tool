@@ -190,7 +190,7 @@ impl std::fmt::Debug for Repository {
 mod tests {
 	use std::env::set_var;
 
-	use claim::assert_ok;
+	use claims::assert_ok;
 	use git2::{ErrorClass, ErrorCode};
 	use testutils::assert_err_eq;
 

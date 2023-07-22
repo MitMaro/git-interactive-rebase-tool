@@ -29,7 +29,7 @@ pub(crate) fn get_string(config: Option<&Config>, name: &str, default: &str) -> 
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_ok_eq;
+	use claims::assert_ok_eq;
 	use testutils::assert_err_eq;
 
 	use super::*;

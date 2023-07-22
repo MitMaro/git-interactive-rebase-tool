@@ -90,7 +90,7 @@ impl TryFrom<&Config> for GitConfig {
 mod tests {
 	use std::env::{remove_var, set_var};
 
-	use claim::assert_ok;
+	use claims::assert_ok;
 	use rstest::rstest;
 	use testutils::assert_err_eq;
 

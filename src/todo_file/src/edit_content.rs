@@ -68,7 +68,7 @@ impl EditContext {
 
 #[cfg(test)]
 mod tests {
-	use claim::{assert_none, assert_some_eq};
+	use claims::{assert_none, assert_some_eq};
 
 	use super::*;
 

@@ -140,7 +140,7 @@ mod tests {
 		time::Duration,
 	};
 
-	use claim::assert_err;
+	use claims::assert_err;
 
 	use super::*;
 

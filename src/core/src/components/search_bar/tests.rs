@@ -1,4 +1,4 @@
-use claim::{assert_none, assert_some_eq};
+use claims::{assert_none, assert_some_eq};
 use view::{assert_rendered_output, ViewData};
 
 use super::*;

@@ -83,7 +83,7 @@ impl Notifier {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_ok_eq;
+	use claims::assert_ok_eq;
 	use crossbeam_channel::unbounded;
 
 	use super::*;

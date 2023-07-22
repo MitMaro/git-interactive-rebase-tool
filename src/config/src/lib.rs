@@ -261,7 +261,7 @@ mod tests {
 	use std::fmt::Debug;
 
 	use ::testutils::assert_err_eq;
-	use claim::assert_ok;
+	use claims::assert_ok;
 	use git::testutil::with_temp_bare_repository;
 	use rstest::rstest;
 

@@ -94,7 +94,7 @@ impl Delta {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_err;
+	use claims::assert_err;
 
 	use super::{super::origin::Origin, *};
 

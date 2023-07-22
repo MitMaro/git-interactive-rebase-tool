@@ -474,7 +474,7 @@ impl TodoFile {
 
 #[cfg(test)]
 mod tests {
-	use claim::{assert_none, assert_some_eq};
+	use claims::{assert_none, assert_some_eq};
 	use tempfile::{Builder, NamedTempFile};
 	use testutils::{assert_empty, assert_not_empty};
 

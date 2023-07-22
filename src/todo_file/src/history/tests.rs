@@ -1,4 +1,4 @@
-use claim::assert_some_eq;
+use claims::assert_some_eq;
 use testutils::assert_empty;
 
 use super::*;

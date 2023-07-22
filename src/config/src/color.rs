@@ -124,7 +124,7 @@ impl TryFrom<&str> for Color {
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_ok_eq;
+	use claims::assert_ok_eq;
 	use rstest::rstest;
 	use testutils::assert_err_eq;
 

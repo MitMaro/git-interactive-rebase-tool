@@ -30,7 +30,7 @@ pub(crate) fn get_bool(config: Option<&Config>, name: &str, default: bool) -> Re
 
 #[cfg(test)]
 mod tests {
-	use claim::assert_ok_eq;
+	use claims::assert_ok_eq;
 	use testutils::assert_err_eq;
 
 	use super::*;
