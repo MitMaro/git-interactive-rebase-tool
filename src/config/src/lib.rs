@@ -152,8 +152,6 @@ mod utils;
 mod testutils;
 
 use git::Repository;
-// TODO: remove override of indirect dependency
-use proc_macro2 as _;
 
 use self::utils::{get_bool, get_diff_ignore_whitespace, get_diff_show_whitespace, get_string, get_unsigned_integer};
 pub use self::{
