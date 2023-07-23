@@ -17,7 +17,6 @@ name = "config"
 [dependencies]
 thiserror = "1.0.43"
 girt-git = {version = "2.3.0", path = "../../src/git"}
-proc-macro2 = "1.0.66" # TODO: remove override of indirect dependency
 
 [dev-dependencies]
 claims = "0.7.1"

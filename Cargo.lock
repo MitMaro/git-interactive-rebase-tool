@@ -335,7 +335,6 @@ dependencies = [
  "girt-git",
  "girt-testutils",
  "lazy_static",
- "proc-macro2",
  "rstest",
  "rustc_version",
  "serial_test",
