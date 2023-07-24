@@ -15,7 +15,7 @@ readme = "README.md"
 name = "todo_file"
 
 [dependencies]
-tempfile = "3.6.0"
+tempfile = "3.7.0"
 thiserror = "1.0.43"
 version-track = "0.1.0"
 
@@ -23,7 +23,7 @@ version-track = "0.1.0"
 claims = "0.7.1"
 pretty_assertions = "1.4.0"
 rstest = "0.18.1"
-tempfile = "3.6.0"
+tempfile = "3.7.0"
 girt-testutils = {version = "2.3.0", path = "../testutils"}
 
 [build-dependencies]
