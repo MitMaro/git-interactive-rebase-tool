@@ -1,6 +1,7 @@
+use std::env;
 use std::process;
 
-use chrono::Utc;
+use chrono::{TimeZone, Utc};
 use rustc_version::{version_meta, Channel};
 
 fn main() {
@@ -16,7 +17,12 @@ fn main() {
 	if let Some(rev) = git_revision_hash() {
 		println!("cargo:rustc-env=GIRT_BUILD_GIT_HASH={rev}");
 	}
-	println!("cargo:rustc-env=GIRT_BUILD_DATE={}", Utc::now().format("%Y-%m-%d"));
+
+	let now = match env::var("SOURCE_DATE_EPOCH") {
+		Ok(val) => { Utc.timestamp_opt(val.parse::<i64>().unwrap(), 0).unwrap() }
+		Err(_) => Utc::now(),
+	};
+	println!("cargo:rustc-env=GIRT_BUILD_DATE={}", now.format("%Y-%m-%d"));
 }
 
 fn git_revision_hash() -> Option<String> {
