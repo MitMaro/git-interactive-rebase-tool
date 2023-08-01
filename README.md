@@ -256,11 +256,15 @@ An addition to the report printed to the CLI, an HTML report can be found in the
 
 ### Release
 
-##### Building
+#### Debian Building
 
     cargo make deb
 
 A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
+
+#### Reproducible Builds
+
+Providing a [`SOURCE_DATE_EPOCH`](https://reproducible-builds.org/specs/source-date-epoch/#idm55) environment variable with a valid UNIX timestamp, defined in seconds, will ensure a reproducible build.
 
 ## Related Projects
 
