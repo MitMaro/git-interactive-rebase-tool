@@ -15,7 +15,7 @@ readme = "README.md"
 name = "view"
 
 [features]
-testutils = ["dep:bitflags"]
+testutils = ["dep:bitflags", "dep:iter_tools"]
 
 [dependencies]
 anyhow = "1.0.72"
@@ -25,6 +25,7 @@ crossbeam-channel = "0.5.8"
 parking_lot = "0.12.1"
 unicode-segmentation = "1.10.1"
 unicode-width = "0.1.10"
+iter_tools = { version = "0.1.4", optional = true }
 xi-unicode = "0.3.0"
 girt-display = {version = "2.3.0", path = "../display"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
