@@ -1,7 +1,13 @@
 use display::DisplayColor;
 
 use super::*;
-use crate::testutil::{_assert_rendered_output, render_view_line, AssertRenderOptions};
+use crate::testutil::{
+	assert_rendered_output::_assert_rendered_output,
+	render_view_line,
+	AssertRenderOptions,
+	ExactPattern,
+	LinePattern,
+};
 
 fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 	let mut output = vec![];
@@ -48,10 +54,17 @@ fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 			}
 		}
 	}
+
 	_assert_rendered_output(
 		AssertRenderOptions::default(),
 		&output,
-		&expected.iter().map(|s| String::from(*s)).collect::<Vec<String>>(),
+		&expected
+			.iter()
+			.map(|s| {
+				let pattern: Box<dyn LinePattern> = Box::new(ExactPattern::new(s));
+				pattern
+			})
+			.collect::<Vec<Box<dyn LinePattern>>>(),
 	);
 }
 
