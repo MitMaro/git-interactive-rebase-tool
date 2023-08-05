@@ -96,7 +96,7 @@ fn render_overview_minimal_commit() {
 					"{LEADING}",
 					"{IndicatorColor}Commit: {Normal}0123456789abcdef0123456789abcdef",
 					"{BODY}",
-					format!("{{IndicatorColor}}Date: {{Normal}}{commit_date}").as_str(),
+					format!("{{IndicatorColor}}Date: {{Normal}}{commit_date}"),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
@@ -125,7 +125,7 @@ fn render_overview_minimal_commit_compact() {
 					"{LEADING}",
 					"{Normal}01234567",
 					"{BODY}",
-					format!("{{IndicatorColor}}D: {{Normal}}{commit_date}").as_str(),
+					format!("{{IndicatorColor}}D: {{Normal}}{commit_date}"),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0"
 				);
@@ -150,10 +150,9 @@ fn render_overview_with_author() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
-					"{IndicatorColor}Author: {Normal}John Doe <john.doe@example.com>",
-					render_line!(AnyLine 2)
+					"{IndicatorColor}Author: {Normal}John Doe <john.doe@example.com>"
 				);
 			},
 		);
@@ -177,10 +176,9 @@ fn render_overview_with_author_compact() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
-					"{IndicatorColor}A: {Normal}John Doe <john.doe@example.com>",
-					render_line!(AnyLine 2)
+					"{IndicatorColor}A: {Normal}John Doe <john.doe@example.com>"
 				);
 			},
 		);
@@ -203,10 +201,9 @@ fn render_overview_with_committer() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
-					"{IndicatorColor}Committer: {Normal}John Doe <john.doe@example.com>",
-					render_line!(AnyLine 2)
+					"{IndicatorColor}Committer: {Normal}John Doe <john.doe@example.com>"
 				);
 			},
 		);
@@ -230,10 +227,9 @@ fn render_overview_with_committer_compact() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
-					"{IndicatorColor}C: {Normal}John Doe <john.doe@example.com>",
-					render_line!(AnyLine 2)
+					"{IndicatorColor}C: {Normal}John Doe <john.doe@example.com>"
 				);
 			},
 		);
@@ -256,10 +252,9 @@ fn render_overview_with_commit_summary() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
-					"{Normal}Commit title",
-					render_line!(AnyLine 2)
+					"{Normal}Commit title"
 				);
 			},
 		);
@@ -282,10 +277,9 @@ fn render_overview_with_commit_body() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
-					"{Normal}Commit body",
-					render_line!(AnyLine 2)
+					"{Normal}Commit body"
 				);
 			},
 		);
@@ -309,12 +303,11 @@ fn render_overview_with_commit_summary_and_body() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5;2,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
 					"{Normal}Commit title",
 					"{Normal}",
-					"{Normal}Commit body",
-					render_line!(AnyLine 2)
+					"{Normal}Commit body"
 				);
 			},
 		);
@@ -371,8 +364,8 @@ fn render_overview_with_file_stats() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 6,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 6),
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{DiffChangeColor} renamed: {DiffRemoveColor}file.1b{Normal} → {DiffAddColor}file.1a",
@@ -440,8 +433,8 @@ fn render_overview_with_file_stats_compact() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 6,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 6),
 					"{IndicatorColor}0{Normal} / {DiffAddColor}0{Normal} / {DiffRemoveColor}0",
 					"{DiffChangeColor}R {DiffRemoveColor}file.1b{Normal}→{DiffAddColor}file.1a",
 					"{DiffAddColor}A file.2a",
@@ -469,8 +462,8 @@ fn render_overview_single_file_changed() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 6,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 6),
 					"{IndicatorColor}1{Normal} file with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
 				);
@@ -492,8 +485,8 @@ fn render_overview_more_than_one_file_changed() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
 					"{Normal}",
 					"{IndicatorColor}2{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
@@ -516,8 +509,8 @@ fn render_overview_single_insertion() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}1{Normal} insertion and \
 					 {DiffRemoveColor}0{Normal} deletions"
@@ -540,8 +533,8 @@ fn render_overview_more_than_one_insertion() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}2{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions"
@@ -564,8 +557,8 @@ fn render_overview_single_deletion() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}1{Normal} deletion"
@@ -588,8 +581,8 @@ fn render_overview_more_than_one_deletion() {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module.diff = Some(diff);
 				assert_rendered_output!(
+					Skip 5,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 5),
 					"{Normal}",
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}2{Normal} deletions"
@@ -708,8 +701,8 @@ fn render_diff_basic_file_stats() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 3,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 3),
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
@@ -760,8 +753,8 @@ fn render_diff_end_new_line_missing() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 3,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 3),
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
@@ -804,8 +797,8 @@ fn render_diff_add_line() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 3,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 3),
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
@@ -847,8 +840,8 @@ fn render_diff_delete_line() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 3,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 3),
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
@@ -893,8 +886,8 @@ fn render_diff_context_add_remove_lines() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 3,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 3),
 					"{IndicatorColor}0{Normal} files with {DiffAddColor}0{Normal} insertions and \
 					 {DiffRemoveColor}0{Normal} deletions",
 					"{BODY}",
@@ -962,8 +955,8 @@ fn render_diff_show_both_whitespace() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 10,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 10),
 					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content"),
 					render_line!(EndsWith "sp tabs    content{DiffWhitespaceColor}#>#>"),
 					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content{DiffWhitespaceColor}#>#>"),
@@ -1003,8 +996,8 @@ fn render_diff_show_leading_whitespace() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 10,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 10),
 					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content"),
 					render_line!(EndsWith "sp tabs    content{DiffWhitespaceColor}"),
 					render_line!(EndsWith "#>#>{DiffContextColor}sp tabs    content{DiffWhitespaceColor}"),
@@ -1044,8 +1037,8 @@ fn render_diff_show_no_whitespace() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 10,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 10),
 					render_line!(EndsWith "    sp tabs    content"),
 					render_line!(EndsWith "sp tabs    content"),
 					render_line!(EndsWith "    sp tabs    content"),
@@ -1087,8 +1080,8 @@ fn render_diff_show_whitespace_all_spaces() {
 				module.diff = Some(diff);
 				module.state = ShowCommitState::Diff;
 				assert_rendered_output!(
+					Skip 10,
 					test_context.build_view_data(&mut module),
-					render_line!(AnyLine 10),
 					"{Normal}  1| {DiffWhitespaceColor}%%%%"
 				);
 			},

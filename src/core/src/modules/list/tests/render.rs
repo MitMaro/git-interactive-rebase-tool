@@ -129,3 +129,45 @@ fn noop_list() {
 		);
 	});
 }
+
+#[test]
+fn pinned_segments() {
+	module_test(
+		&[
+			"break",
+			"drop aaa c1",
+			"edit aaa c1",
+			"fixup aaa c1",
+			"pick aaa c1",
+			"reword aaa c1",
+			"squash aaa c1",
+			"exec command",
+			"label reference",
+			"reset reference",
+			"merge command",
+		],
+		&[Event::from(MetaEvent::ActionDrop)],
+		|mut test_context| {
+			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			_ = test_context.handle_all_events(&mut module);
+			let view_data = test_context.build_view_data(&mut module);
+			assert_rendered_output!(
+				Options AssertRenderOptions::INCLUDE_PINNED | AssertRenderOptions::EXCLUDE_STYLE,
+				view_data,
+				"{TITLE}{HELP}",
+				"{BODY}",
+				"{Pin(3)}{Selected} > break  {Pad( )}",
+				"{Pin(2)}   drop   aaa      c1",
+				"{Pin(2)}   edit   aaa      c1",
+				"{Pin(2)}   fixup  aaa      c1",
+				"{Pin(2)}   pick   aaa      c1",
+				"{Pin(2)}   reword aaa      c1",
+				"{Pin(2)}   squash aaa      c1",
+				"{Pin(3)}   exec   command",
+				"{Pin(3)}   label  reference",
+				"{Pin(3)}   reset  reference",
+				"{Pin(3)}   merge  command"
+			);
+		},
+	);
+}

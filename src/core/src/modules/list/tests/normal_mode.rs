@@ -2,7 +2,7 @@ use ::input::KeyCode;
 use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_results, process::Artifact, testutil::module_test};
+use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
 
 #[test]
 fn change_auto_select_next_with_next_line() {
@@ -16,11 +16,9 @@ fn change_auto_select_next_with_next_line() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal}   {ActionSquash}squash {Normal}aaa      c1",
-				"{Selected}{Normal} > {ActionPick}pick   {Normal}aaa      c2{Pad( )}"
+				Body view_data,
+				action_line!(Squash "aaa", "c1"),
+				action_line!(Selected Pick "aaa", "c2")
 			);
 		},
 	);
