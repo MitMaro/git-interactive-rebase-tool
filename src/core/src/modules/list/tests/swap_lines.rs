@@ -1,7 +1,7 @@
 use view::assert_rendered_output;
 
 use super::*;
-use crate::testutil::module_test;
+use crate::{action_line, testutil::module_test};
 
 #[test]
 fn normal_mode_change_swap_down() {
@@ -13,13 +13,10 @@ fn normal_mode_change_swap_down() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c2",
-				"{Selected} > pick aaa      c1{Pad( )}",
-				"   pick aaa      c3"
+				Body view_data,
+				action_line!(Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c3")
 			);
 		},
 	);
@@ -47,15 +44,12 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"   pick aaa      c5",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5"),
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4")
 			);
 		},
 	);
@@ -85,15 +79,12 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"   pick aaa      c5",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5"),
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4")
 			);
 		},
 	);
@@ -124,15 +115,12 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"   pick aaa      c5",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5"),
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4")
 			);
 		},
 	);
@@ -161,15 +149,12 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"   pick aaa      c5",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5"),
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4")
 			);
 		},
 	);
@@ -189,13 +174,10 @@ fn normal_mode_change_swap_up() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"   pick aaa      c2"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Pick "aaa", "c2")
 			);
 		},
 	);
@@ -223,15 +205,12 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}",
-				"   pick aaa      c1",
-				"   pick aaa      c5"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4"),
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -261,15 +240,12 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}",
-				"   pick aaa      c1",
-				"   pick aaa      c5"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4"),
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -298,15 +274,12 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}",
-				"   pick aaa      c1",
-				"   pick aaa      c5"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4"),
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -337,15 +310,12 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}",
-				"   pick aaa      c1",
-				"   pick aaa      c5"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4"),
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);

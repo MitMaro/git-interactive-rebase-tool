@@ -1,3 +1,4 @@
+mod action_line;
 mod assert_results;
 mod create_event_reader;
 mod create_test_keybindings;
@@ -11,6 +12,7 @@ mod with_event_handler;
 mod with_search;
 
 pub(crate) use self::{
+	action_line::ActionPattern,
 	assert_results::_assert_results,
 	create_event_reader::create_event_reader,
 	create_test_keybindings::{create_test_custom_keybindings, create_test_keybindings},

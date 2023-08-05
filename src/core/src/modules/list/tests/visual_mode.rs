@@ -1,8 +1,8 @@
 use ::input::KeyCode;
-use view::assert_rendered_output;
+use view::{assert_rendered_output, render_line};
 
 use super::*;
-use crate::{assert_results, process::Artifact, testutil::module_test};
+use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
 
 #[test]
 fn start() {
@@ -14,12 +14,10 @@ fn start() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c3"
+				Body test_context.build_view_data(&mut module),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
+				action_line!(Pick "aaa", "c2"),
+				action_line!(Pick "aaa", "c3")
 			);
 		},
 	);
@@ -38,12 +36,10 @@ fn start_cursor_down_one() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c2{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c3"
+				Body test_context.build_view_data(&mut module),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
+				action_line!(Pick "aaa", "c3")
 			);
 		},
 	);
@@ -69,14 +65,12 @@ fn start_cursor_page_down() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c3{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c4",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c5"
+				Body test_context.build_view_data(&mut module),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c3")),
+				action_line!(Pick "aaa", "c4"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -105,14 +99,12 @@ fn start_cursor_from_bottom_move_up() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c1",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c2",
-				"{Normal}   {ActionPick}pick {Normal}aaa      c3",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c4{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c5{Pad( )}"
+				Body test_context.build_view_data(&mut module),
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Pick "aaa", "c2"),
+				action_line!(Pick "aaa", "c3"),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c4")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c5"))
 			);
 		},
 	);
@@ -144,14 +136,12 @@ fn start_cursor_from_bottom_to_top() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c3{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c4{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaa      c5{Pad( )}"
+				Body test_context.build_view_data(&mut module),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c3")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c4")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c5"))
 			);
 		},
 	);
@@ -172,12 +162,10 @@ fn action_change_top_bottom() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c3{Pad( )}"
+				Body test_context.build_view_data(&mut module),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c1")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c2")),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Reword "aaa", "c3"))
 			);
 		},
 	);
@@ -200,12 +188,10 @@ fn action_change_bottom_top() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected}{Normal} > {ActionReword}reword {Normal}aaa      c1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionReword}reword {Normal}aaa      c3{Pad( )}"
+				Body test_context.build_view_data(&mut module),
+				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Reword "aaa", "c1")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c2")),
+				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c3"))
 			);
 		},
 	);

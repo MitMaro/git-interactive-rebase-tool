@@ -36,6 +36,7 @@ girt-view = {version = "2.3.0", path = "../../src/view"}
 [dev-dependencies]
 claims = "0.7.1"
 pretty_assertions = "1.4.0"
+regex = "1.8.3"
 rstest = "0.18.1"
 serial_test = "2.0.0"
 girt-view = {version = "2.3.0", path = "../../src/view", features = ["testutils"]}

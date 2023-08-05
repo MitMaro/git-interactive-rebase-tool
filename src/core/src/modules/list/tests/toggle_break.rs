@@ -1,7 +1,8 @@
-use view::assert_rendered_output;
+use todo_file::{errors::ParseError, Action::Pick};
+use view::{assert_rendered_output, testutil::LinePattern};
 
 use super::*;
-use crate::testutil::module_test;
+use crate::{action_line, testutil::module_test};
 
 #[test]
 fn change_toggle_break_add() {
@@ -13,12 +14,9 @@ fn change_toggle_break_add() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick  aaa      c1",
-				"{Selected} > break {Pad( )}"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Selected Break)
 			);
 		},
 	);
@@ -37,11 +35,8 @@ fn change_toggle_break_remove() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick aaa      c1{Pad( )}"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c1")
 			);
 		},
 	);
@@ -57,12 +52,9 @@ fn change_toggle_break_above_existing() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick  aaa      c1{Pad( )}",
-				"   break"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c1"),
+				action_line!(Break)
 			);
 		},
 	);

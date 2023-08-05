@@ -374,6 +374,7 @@ dependencies = [
  "parking_lot",
  "pico-args",
  "pretty_assertions",
+ "regex",
  "rstest",
  "rustc_version",
  "serial_test",

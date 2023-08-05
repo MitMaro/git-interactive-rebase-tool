@@ -1,7 +1,7 @@
-use view::assert_rendered_output;
+use view::{assert_rendered_output, render_line};
 
 use super::*;
-use crate::{assert_results, process::Artifact, testutil::module_test};
+use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
 
 #[test]
 fn start_edit() {
@@ -16,7 +16,7 @@ fn start_edit() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment{Pad( )}",
+				render_line!(Not Contains "IndicatorColor"),
 				"{TRAILING}",
 				"{Normal}/{Normal,Underline}"
 			);
@@ -42,7 +42,7 @@ fn with_match_on_hash() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {IndicatorColor}aaaaaaaa{Normal} comment1{Pad( )}",
+				render_line!(Contains "IndicatorColor"),
 				"{TRAILING}",
 				"{Normal}/aaa{Normal,Underline}"
 			);
@@ -63,7 +63,7 @@ fn with_no_match() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment1{Pad( )}",
+				render_line!(Not Contains "IndicatorColor"),
 				"{TRAILING}",
 				"{Normal}/x{Normal,Underline}"
 			);
@@ -88,7 +88,7 @@ fn start_with_matches_and_with_term() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {IndicatorColor,Underline}aaaaaaaa{Normal} comment1{Pad( )}",
+				render_line!(Contains "{IndicatorColor,Underline}"),
 				"{TRAILING}",
 				"{Normal}[a]: 1/1"
 			);
@@ -113,7 +113,7 @@ fn start_with_no_matches_and_with_term() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment1{Pad( )}",
+				render_line!(Not Contains "IndicatorColor"),
 				"{TRAILING}",
 				"{Normal}[x]: No Results"
 			);
@@ -137,7 +137,7 @@ fn start_with_no_term() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa comment1{Pad( )}"
+				action_line!(Selected Pick "aaaaaaaa", "comment1")
 			);
 		},
 	);
@@ -161,9 +161,9 @@ fn normal_mode_next() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor,Underline}"),
+				render_line!(Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -190,9 +190,9 @@ fn visual_mode_next() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(Contains "{IndicatorColor,Underline}"),
+				render_line!(All render_line!(Not Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -220,9 +220,9 @@ fn normal_mode_next_with_wrap() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor,Underline}x{Normal}1{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2",
-				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+				render_line!(Contains "{IndicatorColor,Underline}"),
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}[x]: 1/3"
 			);
@@ -251,9 +251,9 @@ fn visual_mode_next_with_wrap() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor,Underline}x{Normal}1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+				render_line!(Contains "{IndicatorColor,Underline}"),
+				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}[x]: 1/3"
 			);
@@ -281,9 +281,9 @@ fn normal_mode_previous() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3",
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor,Underline}"),
+				render_line!(Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -312,9 +312,9 @@ fn visual_mode_previous() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}cccccccc {IndicatorColor}x{Normal}3{Pad( )}",
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(All render_line!(Not Contains "Dimmed"), render_line!(Contains "{IndicatorColor,Underline}")),
+				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -340,9 +340,9 @@ fn normal_mode_previous_with_wrap() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
-				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}cccccccc {IndicatorColor,Underline}x{Normal}3{Pad( )}",
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor,Underline}"),
 				"{TRAILING}",
 				"{Normal}[x]: 3/3"
 			);
@@ -369,9 +369,9 @@ fn visual_mode_previous_with_wrap() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1{Pad( )}",
-				"{Selected}{Normal,Dimmed} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}2{Pad( )}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}cccccccc {IndicatorColor,Underline}x{Normal}3{Pad( )}",
+				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(All render_line!(Not Contains "Dimmed"), render_line!(Contains "{IndicatorColor,Underline}")),
 				"{TRAILING}",
 				"{Normal}[x]: 3/3"
 			);
@@ -397,9 +397,9 @@ fn cancel() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}aaaaaaaa x1{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb x2",
-				"{Normal}   {ActionPick}pick {Normal}cccccccc x3"
+				action_line!(Selected Pick "aaaaaaaa", "x1"),
+				action_line!(Pick "bbbbbbbb", "x2"),
+				action_line!(Pick "cccccccc", "x3")
 			);
 		},
 	);
@@ -429,11 +429,11 @@ fn set_search_start_hint() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa {IndicatorColor}x{Normal}1",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa a",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor,Underline}x{Normal}2{Pad( )}",
-				"{Normal}   {ActionPick}pick {Normal}aaaaaaaa b",
-				"{Normal}   {ActionPick}pick {Normal}bbbbbbbb {IndicatorColor}x{Normal}3",
+				render_line!(Contains "{IndicatorColor}"),
+				render_line!(Not Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor,Underline}"),
+				render_line!(Not Contains "{IndicatorColor}"),
+				render_line!(Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -454,8 +454,7 @@ fn highlight_multiple() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionPick}pick {Normal}12345678 \
-				 {IndicatorColor}x{Normal}a{IndicatorColor}xx{Normal}a{IndicatorColor}xxx{Normal}{Pad( )}",
+				render_line!(Contains "{IndicatorColor}x{Normal}a{IndicatorColor}xx{Normal}a{IndicatorColor}xxx"),
 				"{TRAILING}",
 				"{Normal}/x{Normal,Underline}"
 			);
@@ -476,7 +475,7 @@ fn skip_no_content() {
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				"{Selected}{Normal} > {ActionBreak}break {Normal}{Pad( )}",
+				render_line!(Not Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}/x{Normal,Underline}"
 			);

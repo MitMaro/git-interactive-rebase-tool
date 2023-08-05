@@ -1,49 +1,7 @@
 use view::assert_rendered_output;
 
 use super::*;
-use crate::testutil::module_test;
-
-#[test]
-fn pinned_segments() {
-	module_test(
-		&[
-			"break",
-			"drop aaa c1",
-			"edit aaa c1",
-			"fixup aaa c1",
-			"pick aaa c1",
-			"reword aaa c1",
-			"squash aaa c1",
-			"exec command",
-			"label reference",
-			"reset reference",
-			"merge command",
-		],
-		&[Event::from(MetaEvent::ActionDrop)],
-		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
-			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Options AssertRenderOptions::INCLUDE_PINNED | AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Pin(3)}{Selected} > break  {Pad( )}",
-				"{Pin(2)}   drop   aaa      c1",
-				"{Pin(2)}   edit   aaa      c1",
-				"{Pin(2)}   fixup  aaa      c1",
-				"{Pin(2)}   pick   aaa      c1",
-				"{Pin(2)}   reword aaa      c1",
-				"{Pin(2)}   squash aaa      c1",
-				"{Pin(3)}   exec   command",
-				"{Pin(3)}   label  reference",
-				"{Pin(3)}   reset  reference",
-				"{Pin(3)}   merge  command"
-			);
-		},
-	);
-}
+use crate::{action_line, testutil::module_test};
 
 #[test]
 fn normal_mode_action_change_to_drop() {
@@ -54,13 +12,7 @@ fn normal_mode_action_change_to_drop() {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > drop aaa      c1{Pad( )}"
-			);
+			assert_rendered_output!(Body view_data, action_line!(Selected Drop "aaa", "c1"));
 		},
 	);
 }
@@ -87,15 +39,12 @@ fn visual_mode_action_change_to_drop() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"{Selected} > drop aaa      c2{Pad( )}",
-				"{Selected} > drop aaa      c3{Pad( )}",
-				"{Selected} > drop aaa      c4{Pad( )}",
-				"   pick aaa      c5"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Drop "aaa", "c2"),
+				action_line!(Drop "aaa", "c3"),
+				action_line!(Drop "aaa", "c4"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -111,11 +60,8 @@ fn normal_mode_action_change_to_edit() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > edit aaa      c1{Pad( )}"
+				Body view_data,
+				action_line!(Selected Edit "aaa", "c1")
 			);
 		},
 	);
@@ -143,15 +89,12 @@ fn visual_mode_action_change_to_edit() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick aaa      c1",
-				"{Selected} > edit aaa      c2{Pad( )}",
-				"{Selected} > edit aaa      c3{Pad( )}",
-				"{Selected} > edit aaa      c4{Pad( )}",
-				"   pick aaa      c5"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Selected Edit "aaa", "c2"),
+				action_line!(Selected Edit "aaa", "c3"),
+				action_line!(Selected Edit "aaa", "c4"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -167,11 +110,8 @@ fn normal_mode_action_change_to_fixup() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > fixup aaa      c1{Pad( )}"
+				Body view_data,
+				action_line!(Selected Fixup "aaa", "c1")
 			);
 		},
 	);
@@ -199,15 +139,12 @@ fn visual_mode_action_change_to_fixup() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick  aaa      c1",
-				"{Selected} > fixup aaa      c2{Pad( )}",
-				"{Selected} > fixup aaa      c3{Pad( )}",
-				"{Selected} > fixup aaa      c4{Pad( )}",
-				"   pick  aaa      c5"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Selected Fixup "aaa", "c2"),
+				action_line!(Selected Fixup "aaa", "c3"),
+				action_line!(Selected Fixup "aaa", "c4"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -223,11 +160,8 @@ fn normal_mode_action_change_to_pick() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > pick aaa      c1{Pad( )}"
+				Body view_data,
+				action_line!(Selected Pick "aaa", "c1")
 			);
 		},
 	);
@@ -255,15 +189,12 @@ fn visual_mode_action_change_to_pick() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   drop aaa      c1",
-				"{Selected} > pick aaa      c2{Pad( )}",
-				"{Selected} > pick aaa      c3{Pad( )}",
-				"{Selected} > pick aaa      c4{Pad( )}",
-				"   drop aaa      c5"
+				Body view_data,
+				action_line!(Drop "aaa", "c1"),
+				action_line!(Selected Pick "aaa", "c2"),
+				action_line!(Selected Pick "aaa", "c3"),
+				action_line!(Selected Pick "aaa", "c4"),
+				action_line!(Drop "aaa", "c5")
 			);
 		},
 	);
@@ -279,11 +210,8 @@ fn normal_mode_action_change_to_reword() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > reword aaa      c1{Pad( )}"
+				Body view_data,
+				action_line!(Selected Reword "aaa", "c1")
 			);
 		},
 	);
@@ -311,15 +239,12 @@ fn visual_mode_action_change_to_reword() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick   aaa      c1",
-				"{Selected} > reword aaa      c2{Pad( )}",
-				"{Selected} > reword aaa      c3{Pad( )}",
-				"{Selected} > reword aaa      c4{Pad( )}",
-				"   pick   aaa      c5"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Selected Reword "aaa", "c2"),
+				action_line!(Selected Reword "aaa", "c3"),
+				action_line!(Selected Reword "aaa", "c4"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
@@ -335,11 +260,7 @@ fn normal_mode_action_change_to_squash() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"{Selected} > squash aaa      c1{Pad( )}"
+				Body view_data, action_line!(Squash "aaa", "c1")
 			);
 		},
 	);
@@ -367,15 +288,12 @@ fn visual_mode_action_change_to_squash() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::EXCLUDE_STYLE,
-				view_data,
-				"{TITLE}{HELP}",
-				"{BODY}",
-				"   pick   aaa      c1",
-				"{Selected} > squash aaa      c2{Pad( )}",
-				"{Selected} > squash aaa      c3{Pad( )}",
-				"{Selected} > squash aaa      c4{Pad( )}",
-				"   pick   aaa      c5"
+				Body view_data,
+				action_line!(Pick "aaa", "c1"),
+				action_line!(Squash "aaa", "c2"),
+				action_line!(Squash "aaa", "c3"),
+				action_line!(Squash "aaa", "c4"),
+				action_line!(Pick "aaa", "c5")
 			);
 		},
 	);
