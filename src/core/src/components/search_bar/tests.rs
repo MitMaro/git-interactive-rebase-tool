@@ -12,7 +12,8 @@ fn create_view_data(search_bar: &SearchBar) -> ViewData {
 fn new() {
 	let search_bar = SearchBar::new();
 	assert_eq!(search_bar.state, State::Deactivated);
-	assert_rendered_output!(&create_view_data(&search_bar), "{BODY}", "{Normal}/{Normal,Underline}");
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/");
 }
 
 #[test]
@@ -21,18 +22,16 @@ fn start_search_without_initial_value() {
 	search_bar.editable_line.set_read_only(true);
 	search_bar.start_search(None);
 	assert_eq!(search_bar.state, State::Editing);
-	assert_rendered_output!(&create_view_data(&search_bar), "{BODY}", "{Normal}/{Normal,Underline}");
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/");
 }
 
 #[test]
 fn start_search_with_initial_value() {
 	let mut search_bar = SearchBar::new();
 	search_bar.start_search(Some("foo"));
-	assert_rendered_output!(
-		&create_view_data(&search_bar),
-		"{BODY}",
-		"{Normal}/foo{Normal,Underline}"
-	);
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/foo");
 }
 
 #[test]
@@ -40,11 +39,8 @@ fn start_search_with_previous_value_and_without_initial_value() {
 	let mut search_bar = SearchBar::new();
 	search_bar.start_search(Some("foo"));
 	search_bar.start_search(None);
-	assert_rendered_output!(
-		&create_view_data(&search_bar),
-		"{BODY}",
-		"{Normal}/foo{Normal,Underline}"
-	);
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/foo");
 }
 
 #[test]
@@ -136,7 +132,8 @@ fn handle_event_search_finish() {
 		SearchBarAction::Start(String::from("foo"))
 	);
 	assert_eq!(search_bar.state, State::Searching);
-	assert_rendered_output!(&create_view_data(&search_bar), "{BODY}", "{Normal}foo");
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "foo");
 }
 
 #[test]
@@ -173,11 +170,8 @@ fn handle_event_other_active_without_change() {
 	search_bar.start_search(Some("foo"));
 	let event = Event::from(KeyCode::Null);
 	assert_eq!(search_bar.handle_event(event), SearchBarAction::None);
-	assert_rendered_output!(
-		&create_view_data(&search_bar),
-		"{BODY}",
-		"{Normal}/foo{Normal,Underline}"
-	);
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/foo");
 }
 
 #[test]
@@ -189,11 +183,8 @@ fn handle_event_other_active_with_change() {
 		search_bar.handle_event(event),
 		SearchBarAction::Update(String::from("fooa"))
 	);
-	assert_rendered_output!(
-		&create_view_data(&search_bar),
-		"{BODY}",
-		"{Normal}/fooa{Normal,Underline}"
-	);
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/fooa");
 }
 
 #[test]
@@ -203,11 +194,8 @@ fn handle_event_other_inactive() {
 	search_bar.state = State::Deactivated;
 	let event = Event::from('a');
 	assert_eq!(search_bar.handle_event(event), SearchBarAction::None);
-	assert_rendered_output!(
-		&create_view_data(&search_bar),
-		"{BODY}",
-		"{Normal}/foo{Normal,Underline}"
-	);
+	let view_data = &create_view_data(&search_bar);
+	assert_rendered_output!(Body view_data, "/foo");
 }
 
 #[test]
@@ -270,8 +258,8 @@ fn is_searching() {
 #[test]
 fn build_view_line() {
 	assert_rendered_output!(
+		Options AssertRenderOptions::INCLUDE_STYLE | AssertRenderOptions::BODY_ONLY,
 		&create_view_data(&SearchBar::new()),
-		"{BODY}",
 		"{Normal}/{Normal,Underline}"
 	);
 }

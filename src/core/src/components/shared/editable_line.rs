@@ -205,7 +205,7 @@ impl EditableLine {
 
 #[cfg(test)]
 mod tests {
-	use view::{assert_rendered_output, ViewData, ViewLine};
+	use view::{assert_rendered_output, testutil::AssertRenderOptions, ViewData, ViewLine};
 
 	use super::*;
 
@@ -222,15 +222,20 @@ mod tests {
 		}
 	}
 
+	fn render_options() -> AssertRenderOptions {
+		AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE
+			| AssertRenderOptions::INCLUDE_STYLE
+			| AssertRenderOptions::BODY_ONLY
+	}
+
 	#[test]
 	fn with_label() {
 		let mut editable_line = EditableLine::new();
 		editable_line.set_content("foobar");
 		editable_line.set_label(LineSegment::new("Label: "));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}Label: foobar{Normal,Underline} "
 		);
 	}
@@ -241,9 +246,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		_ = editable_line.handle_event(Event::from(KeyCode::Right));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}foobar{Normal,Underline} "
 		);
 	}
@@ -254,9 +258,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		_ = editable_line.handle_event(Event::from(KeyCode::Left));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}fooba{Normal,Underline}r"
 		);
 	}
@@ -267,9 +270,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left); 2]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}foob{Normal,Underline}a{Normal}r"
 		);
 	}
@@ -280,9 +282,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left); 5]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}f{Normal,Underline}o{Normal}obar"
 		);
 	}
@@ -293,9 +294,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left); 6]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline}f{Normal}oobar"
 		);
 	}
@@ -306,9 +306,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		_ = editable_line.handle_event(Event::from(KeyCode::Home));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline}f{Normal}oobar"
 		);
 	}
@@ -324,9 +323,8 @@ mod tests {
 			Event::from(KeyCode::Right),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}foob{Normal,Underline}a{Normal}r"
 		);
 	}
@@ -342,9 +340,8 @@ mod tests {
 			Event::from(KeyCode::End),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}foobar{Normal,Underline} "
 		);
 	}
@@ -359,9 +356,8 @@ mod tests {
 			Event::from(KeyCode::Home),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline} "
 		);
 	}
@@ -372,9 +368,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left); 10]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline}f{Normal}oobar"
 		);
 	}
@@ -385,9 +380,8 @@ mod tests {
 		editable_line.set_content("foobar");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Right); 10]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}foobar{Normal,Underline} "
 		);
 	}
@@ -398,9 +392,8 @@ mod tests {
 		editable_line.set_content("a🗳b");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left); 2]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}a{Normal,Underline}🗳{Normal}b"
 		);
 	}
@@ -411,9 +404,8 @@ mod tests {
 		editable_line.set_content("a😀b");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left); 2]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}a{Normal,Underline}😀{Normal}b"
 		);
 	}
@@ -424,9 +416,8 @@ mod tests {
 		editable_line.set_content("abcd");
 		_ = editable_line.handle_event(Event::from('x'));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}abcdx{Normal,Underline} "
 		);
 	}
@@ -437,9 +428,8 @@ mod tests {
 		editable_line.set_content("abcd");
 		handle_events(&mut editable_line, &[Event::from(KeyCode::Left), Event::from('x')]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}abcx{Normal,Underline}d"
 		);
 	}
@@ -455,9 +445,8 @@ mod tests {
 			Event::from('x'),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}ax{Normal,Underline}b{Normal}cd"
 		);
 	}
@@ -474,9 +463,8 @@ mod tests {
 			Event::from('x'),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}x{Normal,Underline}a{Normal}bcd"
 		);
 	}
@@ -487,9 +475,8 @@ mod tests {
 		editable_line.set_content("abcd");
 		_ = editable_line.handle_event(Event::from(KeyCode::Char('X')));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}abcdX{Normal,Underline} "
 		);
 	}
@@ -500,9 +487,8 @@ mod tests {
 		editable_line.set_content("abcd");
 		_ = editable_line.handle_event(Event::from(KeyCode::Backspace));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}abc{Normal,Underline} "
 		);
 	}
@@ -516,9 +502,8 @@ mod tests {
 			Event::from(KeyCode::Backspace),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}ab{Normal,Underline}d"
 		);
 	}
@@ -534,9 +519,8 @@ mod tests {
 			Event::from(KeyCode::Backspace),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline}b{Normal}cd"
 		);
 	}
@@ -553,9 +537,8 @@ mod tests {
 			Event::from(KeyCode::Backspace),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline}a{Normal}bcd"
 		);
 	}
@@ -566,9 +549,8 @@ mod tests {
 		editable_line.set_content("abcd");
 		_ = editable_line.handle_event(Event::from(KeyCode::Delete));
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}abcd{Normal,Underline} "
 		);
 	}
@@ -582,9 +564,8 @@ mod tests {
 			Event::from(KeyCode::Delete),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}abc{Normal,Underline} "
 		);
 	}
@@ -600,9 +581,8 @@ mod tests {
 			Event::from(KeyCode::Delete),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal}a{Normal,Underline}c{Normal}d"
 		);
 	}
@@ -619,9 +599,8 @@ mod tests {
 			Event::from(KeyCode::Delete),
 		]);
 		assert_rendered_output!(
-			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+			Options render_options(),
 			view_data_from_editable_line!(&editable_line),
-			"{BODY}",
 			"{Normal,Underline}b{Normal}cd"
 		);
 	}

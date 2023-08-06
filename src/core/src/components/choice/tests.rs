@@ -1,6 +1,9 @@
 use input::StandardEvent;
 use rstest::rstest;
-use view::{assert_rendered_output, testutil::with_view_state};
+use view::{
+	assert_rendered_output,
+	testutil::{with_view_state, AssertRenderOptions},
+};
 
 use super::*;
 
@@ -23,7 +26,7 @@ fn create_choices() -> Vec<(TestAction, char, String)> {
 fn render_options_no_prompt() {
 	let mut module = Choice::new(create_choices());
 	assert_rendered_output!(
-		module.get_view_data(),
+		Style module.get_view_data(),
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}a) Description A",
@@ -39,7 +42,7 @@ fn render_options_prompt() {
 	let mut module = Choice::new(create_choices());
 	module.set_prompt(vec![ViewLine::from("Prompt")]);
 	assert_rendered_output!(
-		module.get_view_data(),
+		Style module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
 		"{Normal}Prompt",
@@ -60,14 +63,12 @@ fn valid_selection() {
 		let choice = module.handle_event(Event::from('b'), &context.state);
 		assert_eq!(choice.unwrap(), &TestAction::B);
 		assert_rendered_output!(
-			module.get_view_data(),
-			"{TITLE}",
-			"{BODY}",
-			"{Normal}a) Description A",
-			"{Normal}b) Description B",
-			"{Normal}c) Description C",
+			Body module.get_view_data(),
+			"a) Description A",
+			"b) Description B",
+			"c) Description C",
 			"",
-			"{IndicatorColor}Please choose an option."
+			"Please choose an option."
 		);
 	});
 }
@@ -79,14 +80,12 @@ fn invalid_selection_character() {
 		let choice = module.handle_event(Event::from('z'), &context.state);
 		assert!(choice.is_none());
 		assert_rendered_output!(
-			module.get_view_data(),
-			"{TITLE}",
-			"{BODY}",
-			"{Normal}a) Description A",
-			"{Normal}b) Description B",
-			"{Normal}c) Description C",
+			Body module.get_view_data(),
+			"a) Description A",
+			"b) Description B",
+			"c) Description C",
 			"",
-			"{IndicatorColor}Invalid option selected. Please choose an option."
+			"Invalid option selected. Please choose an option."
 		);
 	});
 }

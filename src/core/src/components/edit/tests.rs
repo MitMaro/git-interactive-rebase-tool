@@ -1,4 +1,4 @@
-use view::assert_rendered_output;
+use view::{assert_rendered_output, testutil::AssertRenderOptions};
 
 use super::*;
 
@@ -15,7 +15,7 @@ fn with_before_and_after_build() {
 		},
 	);
 	assert_rendered_output!(
-		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::INCLUDE_STYLE,
 		view_data,
 		"{TITLE}",
 		"{BODY}",
@@ -35,8 +35,7 @@ fn edit_event() {
 	let view_data = module.get_view_data();
 
 	assert_rendered_output!(
-		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
-		view_data,
+		Style view_data,
 		"{TITLE}",
 		"{BODY}",
 		"{Normal}fooba{Normal,Underline}r",

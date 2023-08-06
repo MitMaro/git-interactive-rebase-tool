@@ -113,7 +113,7 @@ mod tests {
 			test_context.render_context.update(width as u16, height as u16);
 			let mut module = WindowSizeError::new();
 			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(view_data, "{BODY}", format!("{{Normal}}{expected}"));
+			assert_rendered_output!(Body view_data, String::from(expected));
 		});
 	}
 

@@ -391,7 +391,7 @@ pub fn _assert_rendered_output_from_view_data(
 	}
 
 	if let Some(skip) = skip_end {
-		output_iter = Box::new(output_iter.take(length - skip));
+		output_iter = Box::new(output_iter.take(length.saturating_sub(skip)));
 	}
 
 	_assert_rendered_output(options, &output_iter.collect::<Vec<String>>(), expected);
@@ -436,6 +436,11 @@ macro_rules! assert_rendered_output {
 	(Body $view_data:expr, $($arg:expr),*) => {
 		assert_rendered_output!(
 			@base AssertRenderOptions::BODY_ONLY, None, None, $view_data, $($arg),*
+		)
+	};
+	(Style $view_data:expr, $($arg:expr),*) => {
+		assert_rendered_output!(
+			@base AssertRenderOptions::INCLUDE_STYLE, None, None, $view_data, $($arg),*
 		)
 	};
 	(Skip $start:expr, $view_data:expr, $($arg:expr),*) => {

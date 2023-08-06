@@ -13,7 +13,7 @@ fn handle_event(help: &mut Help, event: Event) {
 fn empty() {
 	let mut module = Help::new_from_keybindings(&[]);
 	assert_rendered_output!(
-		module.get_view_data(),
+		Style module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
 		"{Normal,Underline} Key Action{Pad( )}",
@@ -29,7 +29,7 @@ fn from_key_bindings() {
 		(vec![String::from("b")], String::from("Description B")),
 	]);
 	assert_rendered_output!(
-		module.get_view_data(),
+		Style module.get_view_data(),
 		"{TITLE}",
 		"{LEADING}",
 		"{Normal,Underline} Key Action{Pad( )}",

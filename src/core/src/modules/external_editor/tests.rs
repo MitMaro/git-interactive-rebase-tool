@@ -125,7 +125,7 @@ fn edit_success() {
 			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);
 			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "{Normal}Editing...");
+			assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "Editing...");
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(MetaEvent::ExternalCommandSuccess)),
@@ -159,14 +159,14 @@ fn empty_edit_error() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal}The rebase file is empty.",
+				"The rebase file is empty.",
 				"",
 				"{BODY}",
-				"{Normal}1) Abort rebase",
-				"{Normal}2) Edit rebase file",
-				"{Normal}3) Undo modifications and edit rebase file",
+				"1) Abort rebase",
+				"2) Edit rebase file",
+				"3) Undo modifications and edit rebase file",
 				"",
-				"{IndicatorColor}Please choose an option."
+				"Please choose an option."
 			);
 		},
 	);
@@ -242,14 +242,14 @@ fn empty_edit_noop() {
 			view_data,
 			"{TITLE}",
 			"{LEADING}",
-			"{Normal}The rebase file is empty.",
+			"The rebase file is empty.",
 			"",
 			"{BODY}",
-			"{Normal}1) Abort rebase",
-			"{Normal}2) Edit rebase file",
-			"{Normal}3) Undo modifications and edit rebase file",
+			"1) Abort rebase",
+			"2) Edit rebase file",
+			"3) Undo modifications and edit rebase file",
 			"",
-			"{IndicatorColor}Please choose an option."
+			"Please choose an option."
 		);
 	});
 }
@@ -289,15 +289,15 @@ fn editor_non_zero_exit() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{Normal}Editor returned a non-zero exit status",
+				"Editor returned a non-zero exit status",
 				"",
 				"{BODY}",
-				"{Normal}1) Abort rebase",
-				"{Normal}2) Edit rebase file",
-				"{Normal}3) Restore rebase file and abort edit",
-				"{Normal}4) Undo modifications and edit rebase file",
+				"1) Abort rebase",
+				"2) Edit rebase file",
+				"3) Restore rebase file and abort edit",
+				"4) Undo modifications and edit rebase file",
 				"",
-				"{IndicatorColor}Please choose an option."
+				"Please choose an option."
 			);
 		},
 	);
@@ -329,15 +329,15 @@ fn editor_reload_error() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				format!("{{Normal}}Unable to read file `{todo_path}`"),
+				format!("Unable to read file `{todo_path}`"),
 				"",
 				"{BODY}",
-				"{Normal}1) Abort rebase",
-				"{Normal}2) Edit rebase file",
-				"{Normal}3) Restore rebase file and abort edit",
-				"{Normal}4) Undo modifications and edit rebase file",
+				"1) Abort rebase",
+				"2) Edit rebase file",
+				"3) Restore rebase file and abort edit",
+				"4) Undo modifications and edit rebase file",
 				"",
-				"{IndicatorColor}Please choose an option."
+				"Please choose an option."
 			);
 		},
 	);
