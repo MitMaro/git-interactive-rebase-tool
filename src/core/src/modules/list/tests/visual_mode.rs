@@ -1,8 +1,12 @@
 use ::input::KeyCode;
-use view::{assert_rendered_output, render_line};
+use view::{assert_rendered_output, render_line, testutil::AssertRenderOptions};
 
 use super::*;
 use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
+
+fn render_options() -> AssertRenderOptions {
+	AssertRenderOptions::BODY_ONLY | AssertRenderOptions::INCLUDE_STYLE
+}
 
 #[test]
 fn start() {
@@ -14,7 +18,8 @@ fn start() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				action_line!(Pick "aaa", "c2"),
 				action_line!(Pick "aaa", "c3")
@@ -36,7 +41,7 @@ fn start_cursor_down_one() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
 				action_line!(Pick "aaa", "c3")
@@ -65,7 +70,7 @@ fn start_cursor_page_down() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c3")),
@@ -99,7 +104,7 @@ fn start_cursor_from_bottom_move_up() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),test_context.build_view_data(&mut module),
 				action_line!(Pick "aaa", "c1"),
 				action_line!(Pick "aaa", "c2"),
 				action_line!(Pick "aaa", "c3"),
@@ -136,7 +141,7 @@ fn start_cursor_from_bottom_to_top() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c3")),
@@ -162,7 +167,8 @@ fn action_change_top_bottom() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c2")),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Reword "aaa", "c3"))
@@ -188,7 +194,7 @@ fn action_change_bottom_top() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body test_context.build_view_data(&mut module),
+				Options render_options(),test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Reword "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c2")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c3"))

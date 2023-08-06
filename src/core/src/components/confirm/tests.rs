@@ -1,6 +1,6 @@
 use input::StandardEvent;
 use rstest::rstest;
-use view::assert_rendered_output;
+use view::{assert_rendered_output, testutil::AssertRenderOptions};
 
 use super::*;
 use crate::testutil::create_test_keybindings;
@@ -12,11 +12,9 @@ fn render() {
 		String::from("X"),
 	]);
 	assert_rendered_output!(
-		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+		Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::BODY_ONLY,
 		module.get_view_data(),
-		"{TITLE}",
-		"{BODY}",
-		"{Normal}Prompt message (y,Z/n,X)? "
+		"Prompt message (y,Z/n,X)? "
 	);
 }
 

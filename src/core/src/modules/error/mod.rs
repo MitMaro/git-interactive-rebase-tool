@@ -90,7 +90,7 @@ mod tests {
 			_ = module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}",
 				"{BODY}",
 				"{Normal}Test Error",
@@ -107,13 +107,9 @@ mod tests {
 			_ = module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}",
-				"{BODY}",
-				"{Normal}Context",
-				"{Normal}Test Error",
-				"{TRAILING}",
-				"{IndicatorColor}Press any key to continue"
+				Body view_data,
+				"Context",
+				"Test Error"
 			);
 		});
 	}
@@ -125,15 +121,11 @@ mod tests {
 			_ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
-				"{TITLE}",
-				"{BODY}",
-				"{Normal}With",
-				"{Normal}Context",
-				"{Normal}Test",
-				"{Normal}Error",
-				"{TRAILING}",
-				"{IndicatorColor}Press any key to continue"
+				Body view_data,
+				"With",
+				"Context",
+				"Test",
+				"Error"
 			);
 		});
 	}

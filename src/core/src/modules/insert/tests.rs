@@ -25,18 +25,18 @@ fn render_prompt() {
 			view_data,
 			"{TITLE}",
 			"{LEADING}",
-			"{Normal}Select the type of line to insert:",
+			"Select the type of line to insert:",
 			"",
 			"{BODY}",
-			"{Normal}e) exec <command>",
-			"{Normal}p) pick <hash>",
-			"{Normal}l) label <label>",
-			"{Normal}r) reset <label>",
-			"{Normal}m) merge [-C <commit> | -c <commit>] <label> [# <oneline>]",
-			"{Normal}u) update-ref <reference>",
-			"{Normal}q) Cancel add line",
+			"e) exec <command>",
+			"p) pick <hash>",
+			"l) label <label>",
+			"r) reset <label>",
+			"m) merge [-C <commit> | -c <commit>] <label> [# <oneline>]",
+			"u) update-ref <reference>",
+			"q) Cancel add line",
 			"",
-			"{IndicatorColor}Please choose an option."
+			"Please choose an option."
 		);
 	});
 }
@@ -72,12 +72,12 @@ fn edit_render_exec() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}exec {Normal}foo{Normal,Underline}",
+				"exec foo",
 				"{TRAILING}",
-				"{IndicatorColor}Enter to finish"
+				"Enter to finish"
 			);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -108,12 +108,12 @@ fn edit_render_pick() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}pick {Normal}abc{Normal,Underline}",
+				"pick abc",
 				"{TRAILING}",
-				"{IndicatorColor}Enter to finish"
+				"Enter to finish"
 			);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -144,12 +144,12 @@ fn edit_render_label() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}label {Normal}foo{Normal,Underline}",
+				"label foo",
 				"{TRAILING}",
-				"{IndicatorColor}Enter to finish"
+				"Enter to finish"
 			);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -180,12 +180,12 @@ fn edit_render_reset() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}reset {Normal}foo{Normal,Underline}",
+				"reset foo",
 				"{TRAILING}",
-				"{IndicatorColor}Enter to finish"
+				"Enter to finish"
 			);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -216,12 +216,12 @@ fn edit_render_merge() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}merge {Normal}foo{Normal,Underline}",
+				"merge foo",
 				"{TRAILING}",
-				"{IndicatorColor}Enter to finish"
+				"Enter to finish"
 			);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -252,12 +252,12 @@ fn update_ref_render_merge() {
 				view_data,
 				"{TITLE}",
 				"{LEADING}",
-				"{IndicatorColor}Enter contents of the new line. Empty content cancels creation of a new line.",
+				"Enter contents of the new line. Empty content cancels creation of a new line.",
 				"",
 				"{BODY}",
-				"{Normal,Dimmed}update-ref {Normal}foo{Normal,Underline}",
+				"update-ref foo",
 				"{TRAILING}",
-				"{IndicatorColor}Enter to finish"
+				"Enter to finish"
 			);
 			assert_results!(
 				test_context.handle_event(&mut module),

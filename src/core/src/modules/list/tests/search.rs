@@ -1,4 +1,4 @@
-use view::{assert_rendered_output, render_line};
+use view::{assert_rendered_output, render_line, testutil::AssertRenderOptions};
 
 use super::*;
 use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
@@ -13,7 +13,7 @@ fn start_edit() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Not Contains "IndicatorColor"),
@@ -39,7 +39,7 @@ fn with_match_on_hash() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "IndicatorColor"),
@@ -60,7 +60,7 @@ fn with_no_match() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Not Contains "IndicatorColor"),
@@ -85,7 +85,7 @@ fn start_with_matches_and_with_term() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor,Underline}"),
@@ -110,7 +110,7 @@ fn start_with_no_matches_and_with_term() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Not Contains "IndicatorColor"),
@@ -134,7 +134,7 @@ fn start_with_no_term() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				action_line!(Selected Pick "aaaaaaaa", "comment1")
@@ -158,7 +158,7 @@ fn normal_mode_next() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor}"),
@@ -187,12 +187,18 @@ fn visual_mode_next() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
-				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(
+					All render_line!(Contains "Dimmed"),
+					render_line!(Contains "{IndicatorColor}")
+				),
 				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(All render_line!(Not Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(
+					All render_line!(Not Contains "Dimmed"),
+					render_line!(Contains "{IndicatorColor}")
+				),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -217,7 +223,7 @@ fn normal_mode_next_with_wrap() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor,Underline}"),
@@ -248,11 +254,14 @@ fn visual_mode_next_with_wrap() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor,Underline}"),
-				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(
+					All render_line!(Contains "Dimmed"),
+					render_line!(Contains "{IndicatorColor}")
+				),
 				render_line!(Contains "{IndicatorColor}"),
 				"{TRAILING}",
 				"{Normal}[x]: 1/3"
@@ -278,7 +287,7 @@ fn normal_mode_previous() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor}"),
@@ -309,12 +318,18 @@ fn visual_mode_previous() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor}"),
-				render_line!(All render_line!(Not Contains "Dimmed"), render_line!(Contains "{IndicatorColor,Underline}")),
-				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
+				render_line!(
+					All render_line!(Not Contains "Dimmed"),
+					render_line!(Contains "{IndicatorColor,Underline}")
+				),
+				render_line!(
+					All render_line!(Contains "Dimmed"),
+					render_line!(Contains "{IndicatorColor}")
+				),
 				"{TRAILING}",
 				"{Normal}[x]: 2/3"
 			);
@@ -337,7 +352,7 @@ fn normal_mode_previous_with_wrap() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor}"),
@@ -366,12 +381,15 @@ fn visual_mode_previous_with_wrap() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
 				render_line!(All render_line!(Contains "Dimmed"), render_line!(Contains "{IndicatorColor}")),
-				render_line!(All render_line!(Not Contains "Dimmed"), render_line!(Contains "{IndicatorColor,Underline}")),
+				render_line!(
+					All render_line!(Not Contains "Dimmed"),
+					render_line!(Contains "{IndicatorColor,Underline}")
+				),
 				"{TRAILING}",
 				"{Normal}[x]: 3/3"
 			);
@@ -394,7 +412,7 @@ fn cancel() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				action_line!(Selected Pick "aaaaaaaa", "x1"),
@@ -426,7 +444,7 @@ fn set_search_start_hint() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor}"),
@@ -451,7 +469,7 @@ fn highlight_multiple() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Contains "{IndicatorColor}x{Normal}a{IndicatorColor}xx{Normal}a{IndicatorColor}xxx"),
@@ -472,7 +490,7 @@ fn skip_no_content() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				render_line!(Not Contains "{IndicatorColor}"),

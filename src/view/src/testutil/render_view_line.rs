@@ -12,7 +12,7 @@ bitflags! {
 		/// Ignore pinned indicator
 		const INCLUDE_PINNED = 0b0000_0010;
 		/// Don't include style information
-		const EXCLUDE_STYLE = 0b0000_0100;
+		const INCLUDE_STYLE = 0b0000_0100;
 		/// Only render the body, in this mode {BODY} is also not rendered
 		const BODY_ONLY = 0b0000_1000;
 	}
@@ -129,7 +129,7 @@ pub fn render_view_line(view_line: &ViewLine, options: Option<AssertRenderOption
 
 	let mut last_style = String::new();
 	for segment in view_line.get_segments() {
-		if !opts.contains(AssertRenderOptions::EXCLUDE_STYLE) {
+		if opts.contains(AssertRenderOptions::INCLUDE_STYLE) {
 			let style = render_style(segment);
 			if style != last_style {
 				line.push_str(style.as_str());
@@ -139,7 +139,7 @@ pub fn render_view_line(view_line: &ViewLine, options: Option<AssertRenderOption
 		line.push_str(segment.get_content());
 	}
 	if let Some(padding) = view_line.get_padding().as_ref() {
-		if !opts.contains(AssertRenderOptions::EXCLUDE_STYLE) {
+		if opts.contains(AssertRenderOptions::INCLUDE_STYLE) {
 			let style = render_style(padding);
 			if style != last_style {
 				line.push_str(style.as_str());

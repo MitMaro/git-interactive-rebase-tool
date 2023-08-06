@@ -59,7 +59,7 @@ impl ConfirmAbort {
 #[cfg(test)]
 mod tests {
 	use input::KeyCode;
-	use view::assert_rendered_output;
+	use view::{assert_rendered_output, testutil::AssertRenderOptions};
 
 	use super::*;
 	use crate::{assert_results, events::MetaEvent, process::Artifact, testutil::module_test};
@@ -78,7 +78,7 @@ mod tests {
 			let mut module = create_confirm_abort(test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE,
+				Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::INCLUDE_STYLE,
 				view_data,
 				"{TITLE}",
 				"{BODY}",

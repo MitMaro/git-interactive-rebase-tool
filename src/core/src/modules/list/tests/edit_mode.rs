@@ -70,7 +70,7 @@ fn render() {
 		_ = test_context.handle_all_events(&mut module);
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
-			view_data,
+			Style view_data,
 			"{TITLE}",
 			"{LEADING}",
 			"{IndicatorColor}Modifying line: exec foo",

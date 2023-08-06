@@ -9,7 +9,7 @@ fn empty_list() {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
-			view_data,
+			Style view_data,
 			"{TITLE}{HELP}",
 			"{LEADING}",
 			"{IndicatorColor}Rebase todo file is empty"
@@ -41,7 +41,7 @@ fn full() {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				"{Selected}{Normal} > {ActionPick}pick     {Normal}aaaaaaaa comment 1{Pad( )}",
@@ -88,7 +88,7 @@ fn compact() {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				view_data,
+				Style view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
 				"{Selected}{Normal}>{ActionPick}p {Normal}aaa comment 1{Pad( )}",
@@ -122,7 +122,7 @@ fn noop_list() {
 
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
-			view_data,
+			Style view_data,
 			"{TITLE}{HELP}",
 			"{BODY}",
 			"{Selected}{Normal} > noop {Pad( )}"
@@ -152,7 +152,7 @@ fn pinned_segments() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::INCLUDE_PINNED | AssertRenderOptions::EXCLUDE_STYLE,
+				Options AssertRenderOptions::INCLUDE_PINNED,
 				view_data,
 				"{TITLE}{HELP}",
 				"{BODY}",
