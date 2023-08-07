@@ -73,7 +73,12 @@ impl ActionPattern {
 
 impl LinePattern for ActionPattern {
 	fn matches(&self, rendered: &str) -> bool {
-		if self.selected && !rendered.contains("{Selected}") {
+		if rendered.contains("{Selected}") {
+			if !self.selected {
+				return false;
+			}
+		}
+		else if self.selected {
 			return false;
 		}
 
@@ -101,10 +106,10 @@ impl LinePattern for ActionPattern {
 
 	fn expected(&self) -> String {
 		if self.selected {
-			format!("> {}", replace_invisibles(self.line.to_text().as_str()))
+			replace_invisibles(format!(">  {}", self.line.to_text()).as_str())
 		}
 		else {
-			format!("  {}", replace_invisibles(self.line.to_text().as_str()))
+			replace_invisibles(format!("  {}", self.line.to_text()).as_str())
 		}
 	}
 
@@ -113,7 +118,7 @@ impl LinePattern for ActionPattern {
 		else {
 			return String::from(rendered);
 		};
-		if self.selected {
+		if rendered.contains("{Selected}") {
 			replace_invisibles(format!("> {}", actual_line_parsed.to_text()).as_str())
 		}
 		else {
