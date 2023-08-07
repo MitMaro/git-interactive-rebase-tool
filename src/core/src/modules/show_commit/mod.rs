@@ -152,14 +152,14 @@ impl Module for ShowCommit {
 
 		if handle_view_data_scroll(event, view_state).is_none() {
 			match event {
-				Event::MetaEvent(meta_event) if meta_event == MetaEvent::ShowDiff => {
+				Event::MetaEvent(MetaEvent::ShowDiff) => {
 					active_view_data.update_view_data(|updater| updater.clear());
 					self.state = match self.state {
 						ShowCommitState::Overview => ShowCommitState::Diff,
 						ShowCommitState::Diff => ShowCommitState::Overview,
 					}
 				},
-				Event::Standard(standard_event) if standard_event == StandardEvent::Help => self.help.set_active(),
+				Event::Standard(StandardEvent::Help) => self.help.set_active(),
 				Event::Key(_) => {
 					active_view_data.update_view_data(|updater| updater.clear());
 					if self.state == ShowCommitState::Diff {
