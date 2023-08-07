@@ -16,7 +16,7 @@ impl FileMode {
 	pub(crate) const fn from(file_mode: git2::FileMode) -> Self {
 		match file_mode {
 			git2::FileMode::Commit | git2::FileMode::Tree | git2::FileMode::Unreadable => Self::Other,
-			git2::FileMode::Blob => Self::Normal,
+			git2::FileMode::Blob | git2::FileMode::BlobGroupWritable => Self::Normal,
 			git2::FileMode::BlobExecutable => Self::Executable,
 			git2::FileMode::Link => Self::Link,
 		}
