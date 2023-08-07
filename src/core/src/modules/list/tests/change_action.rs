@@ -41,9 +41,9 @@ fn visual_mode_action_change_to_drop() {
 			assert_rendered_output!(
 				Body view_data,
 				action_line!(Pick "aaa", "c1"),
-				action_line!(Drop "aaa", "c2"),
-				action_line!(Drop "aaa", "c3"),
-				action_line!(Drop "aaa", "c4"),
+				action_line!(Selected Drop "aaa", "c2"),
+				action_line!(Selected Drop "aaa", "c3"),
+				action_line!(Selected Drop "aaa", "c4"),
 				action_line!(Pick "aaa", "c5")
 			);
 		},
@@ -260,7 +260,7 @@ fn normal_mode_action_change_to_squash() {
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Body view_data, action_line!(Squash "aaa", "c1")
+				Body view_data, action_line!(Selected Squash "aaa", "c1")
 			);
 		},
 	);
@@ -290,9 +290,9 @@ fn visual_mode_action_change_to_squash() {
 			assert_rendered_output!(
 				Body view_data,
 				action_line!(Pick "aaa", "c1"),
-				action_line!(Squash "aaa", "c2"),
-				action_line!(Squash "aaa", "c3"),
-				action_line!(Squash "aaa", "c4"),
+				action_line!(Selected Squash "aaa", "c2"),
+				action_line!(Selected Squash "aaa", "c3"),
+				action_line!(Selected Squash "aaa", "c4"),
 				action_line!(Pick "aaa", "c5")
 			);
 		},
