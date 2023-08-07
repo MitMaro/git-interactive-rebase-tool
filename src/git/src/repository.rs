@@ -1,4 +1,5 @@
 use std::{
+	fmt::{Debug, Formatter},
 	path::{Path, PathBuf},
 	sync::Arc,
 };
@@ -176,9 +177,9 @@ impl From<git2::Repository> for Repository {
 	}
 }
 
-impl std::fmt::Debug for Repository {
+impl Debug for Repository {
 	#[inline]
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
 		f.debug_struct("Repository")
 			.field("[path]", &self.repository.lock().path())
 			.finish()

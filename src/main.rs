@@ -53,7 +53,6 @@
 )]
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::pedantic, clippy::restriction)]
-#![cfg_attr(include_nightly_lints, deny(clippy::nursery))]
 #![allow(
 	clippy::arithmetic_side_effects,
 	clippy::arithmetic_side_effects,
@@ -114,6 +113,7 @@
 #![cfg_attr(
 	include_nightly_lints,
 	allow(
+		clippy::absolute_paths,
 		clippy::arc_with_non_send_sync,
 		clippy::min_ident_chars,
 		clippy::needless_raw_strings,

@@ -40,14 +40,14 @@ macro_rules! first {
 #[must_use]
 pub(crate) fn handle_view_data_scroll(event: Event, view_state: &view::State) -> Option<Event> {
 	match event {
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollLeft => view_state.scroll_left(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollRight => view_state.scroll_right(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollDown => view_state.scroll_down(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollUp => view_state.scroll_up(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollTop => view_state.scroll_top(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollBottom => view_state.scroll_bottom(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpDown => view_state.scroll_page_down(),
-		Event::Standard(meta_event) if meta_event == StandardEvent::ScrollJumpUp => view_state.scroll_page_up(),
+		Event::Standard(StandardEvent::ScrollLeft) => view_state.scroll_left(),
+		Event::Standard(StandardEvent::ScrollRight) => view_state.scroll_right(),
+		Event::Standard(StandardEvent::ScrollDown) => view_state.scroll_down(),
+		Event::Standard(StandardEvent::ScrollUp) => view_state.scroll_up(),
+		Event::Standard(StandardEvent::ScrollTop) => view_state.scroll_top(),
+		Event::Standard(StandardEvent::ScrollBottom) => view_state.scroll_bottom(),
+		Event::Standard(StandardEvent::ScrollJumpDown) => view_state.scroll_page_down(),
+		Event::Standard(StandardEvent::ScrollJumpUp) => view_state.scroll_page_up(),
 		_ => return None,
 	};
 	Some(event)
@@ -66,6 +66,8 @@ mod tests {
 	#[case::scroll_right(StandardEvent::ScrollRight, "ScrollRight")]
 	#[case::scroll_down(StandardEvent::ScrollDown, "ScrollDown")]
 	#[case::scroll_up(StandardEvent::ScrollUp, "ScrollUp")]
+	#[case::scroll_top(StandardEvent::ScrollTop, "ScrollTop")]
+	#[case::scroll_bottom(StandardEvent::ScrollBottom, "ScrollBottom")]
 	#[case::jump_down(StandardEvent::ScrollJumpDown, "PageDown")]
 	#[case::jump_up(StandardEvent::ScrollJumpUp, "PageUp")]
 	fn handle_view_data_scroll_event(#[case] meta_event: StandardEvent, #[case] action: &str) {
