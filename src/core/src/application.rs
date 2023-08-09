@@ -7,7 +7,7 @@ use git::Repository;
 use input::{Event, EventHandler, EventReaderFn};
 use parking_lot::Mutex;
 use runtime::{Runtime, ThreadStatuses, Threadable};
-use todo_file::TodoFile;
+use todo_file::{TodoFile, TodoFileOptions};
 use view::View;
 
 use crate::{
@@ -153,7 +153,10 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	}
 
 	fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile, Exit> {
-		let mut todo_file = TodoFile::new(filepath, config.undo_limit, config.git.comment_char.as_str());
+		let mut todo_file = TodoFile::new(
+			filepath,
+			TodoFileOptions::new(config.undo_limit, config.git.comment_char.as_str()),
+		);
 		todo_file
 			.load_file()
 			.map_err(|err| Exit::new(ExitStatus::FileReadError, err.to_string().as_str()))?;

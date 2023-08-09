@@ -7,7 +7,7 @@ use std::{
 
 use tempfile::{Builder, NamedTempFile};
 
-use crate::{Line, TodoFile};
+use crate::{Line, TodoFile, TodoFileOptions};
 
 /// Context for `with_todo_file`
 pub struct TodoFileTestContext {
@@ -95,7 +95,7 @@ where C: FnOnce(TodoFileTestContext) {
 		.tempfile_in(git_repo_dir.as_path())
 		.unwrap();
 
-	let mut todo_file = TodoFile::new(git_todo_file.path().to_str().unwrap(), 1, "#");
+	let mut todo_file = TodoFile::new(git_todo_file.path().to_str().unwrap(), TodoFileOptions::new(1, "#"));
 	todo_file.set_lines(lines.iter().map(|l| Line::parse(l).unwrap()).collect());
 	callback(TodoFileTestContext {
 		git_todo_file: RefCell::new(git_todo_file),

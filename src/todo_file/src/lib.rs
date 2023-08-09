@@ -138,6 +138,7 @@ mod line_parser;
 mod search;
 #[cfg(not(tarpaulin_include))]
 pub mod testutil;
+mod todo_file_options;
 mod utils;
 
 use std::{
@@ -149,7 +150,13 @@ use std::{
 
 pub use version_track::Version;
 
-pub use self::{action::Action, edit_content::EditContext, line::Line, search::Search};
+pub use self::{
+	action::Action,
+	edit_content::EditContext,
+	line::Line,
+	search::Search,
+	todo_file_options::TodoFileOptions,
+};
 use self::{
 	history::{History, HistoryItem},
 	utils::{remove_range, swap_range_down, swap_range_up},
@@ -162,11 +169,11 @@ use crate::{
 /// Represents a rebase file.
 #[derive(Debug)]
 pub struct TodoFile {
-	comment_char: String,
 	filepath: PathBuf,
 	history: History,
 	is_noop: bool,
 	lines: Vec<Line>,
+	options: TodoFileOptions,
 	selected_line_index: usize,
 	version: Version,
 }
@@ -175,13 +182,15 @@ impl TodoFile {
 	/// Create a new instance.
 	#[must_use]
 	#[inline]
-	pub fn new<Path: AsRef<std::path::Path>>(path: Path, undo_limit: u32, comment_char: &str) -> Self {
+	pub fn new<Path: AsRef<std::path::Path>>(path: Path, options: TodoFileOptions) -> Self {
+		let history = History::new(options.undo_limit);
+
 		Self {
-			comment_char: String::from(comment_char),
 			filepath: PathBuf::from(path.as_ref()),
-			history: History::new(undo_limit),
-			lines: vec![],
+			history,
 			is_noop: false,
+			lines: vec![],
+			options,
 			selected_line_index: 0,
 			version: Version::new(),
 		}
@@ -220,7 +229,7 @@ impl TodoFile {
 			})?
 			.lines()
 			.filter_map(|l| {
-				if l.starts_with(self.comment_char.as_str()) || l.is_empty() {
+				if l.starts_with(self.options.comment_prefix.as_str()) || l.is_empty() {
 					None
 				}
 				else {
@@ -502,7 +511,7 @@ mod tests {
 			.tempfile()
 			.unwrap();
 		write!(todo_file_path.as_file(), "{}", file_contents.join("\n")).unwrap();
-		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), 1, "#");
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), TodoFileOptions::new(1, "#"));
 		todo_file.load_file().unwrap();
 		(todo_file, todo_file_path)
 	}
