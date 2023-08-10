@@ -9,7 +9,7 @@ lazy_static! {
 
 fn parse_rendered_action_line(rendered: &str) -> Result<Line, ParseError> {
 	let cleaned_line = FORMAT_REGEX.replace_all(rendered, "").replace(" > ", "");
-	Line::new(cleaned_line.as_ref())
+	Line::parse(cleaned_line.as_ref())
 }
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub(crate) struct ActionPattern {
 impl ActionPattern {
 	fn new(line: &str, selected: bool) -> Self {
 		Self {
-			line: Line::new(line).expect("Expected valid pick"),
+			line: Line::parse(line).expect("Expected valid pick"),
 			selected,
 		}
 	}

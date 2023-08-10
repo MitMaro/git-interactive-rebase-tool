@@ -117,7 +117,7 @@ fn noop_list() {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let mut todo_file = module.todo_file.lock();
 		todo_file.remove_lines(0, 0);
-		todo_file.add_line(0, Line::new("noop").unwrap());
+		todo_file.add_line(0, Line::parse("noop").unwrap());
 		drop(todo_file);
 
 		let view_data = test_context.build_view_data(&mut module);

@@ -36,17 +36,17 @@ macro_rules! assert_history_items {
 
 fn create_lines() -> Vec<Line> {
 	vec![
-		Line::new("pick aaa c1").unwrap(),
-		Line::new("pick bbb c2").unwrap(),
-		Line::new("pick ccc c3").unwrap(),
-		Line::new("pick ddd c4").unwrap(),
-		Line::new("pick eee c5").unwrap(),
+		Line::parse("pick aaa c1").unwrap(),
+		Line::parse("pick bbb c2").unwrap(),
+		Line::parse("pick ccc c3").unwrap(),
+		Line::parse("pick ddd c4").unwrap(),
+		Line::parse("pick eee c5").unwrap(),
 	]
 }
 
 macro_rules! assert_todo_lines {
 	($lines:expr, $($arg:expr),*) => {
-		let expected = vec![$( Line::new($arg).unwrap(), )*];
+		let expected = vec![$( Line::parse($arg).unwrap(), )*];
 		pretty_assertions::assert_str_eq!(
 			$lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n"),
 			expected.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
@@ -229,7 +229,7 @@ fn undo_redo_add_range_end_index_at_bottom() {
 #[test]
 fn undo_redo_remove_start() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_remove(0, 0, vec![Line::new("drop xxx cx").unwrap()]));
+	history.record(HistoryItem::new_remove(0, 0, vec![Line::parse("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 0, 0));
 	assert_todo_lines!(
@@ -255,7 +255,7 @@ fn undo_redo_remove_start() {
 #[test]
 fn undo_redo_remove_end() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_remove(5, 5, vec![Line::new("drop xxx cx").unwrap()]));
+	history.record(HistoryItem::new_remove(5, 5, vec![Line::parse("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 5, 5));
 	assert_todo_lines!(
@@ -281,7 +281,7 @@ fn undo_redo_remove_end() {
 #[test]
 fn undo_redo_remove_middle() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_remove(2, 2, vec![Line::new("drop xxx cx").unwrap()]));
+	history.record(HistoryItem::new_remove(2, 2, vec![Line::parse("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 2, 2));
 	assert_todo_lines!(
@@ -308,8 +308,8 @@ fn undo_redo_remove_middle() {
 fn undo_redo_remove_range_start_index_top() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_remove(0, 1, vec![
-		Line::new("drop xxx cx").unwrap(),
-		Line::new("drop yyy cy").unwrap(),
+		Line::parse("drop xxx cx").unwrap(),
+		Line::parse("drop yyy cy").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 0, 1));
@@ -338,8 +338,8 @@ fn undo_redo_remove_range_start_index_top() {
 fn undo_redo_remove_range_start_index_bottom() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_remove(6, 5, vec![
-		Line::new("drop xxx cx").unwrap(),
-		Line::new("drop yyy cy").unwrap(),
+		Line::parse("drop xxx cx").unwrap(),
+		Line::parse("drop yyy cy").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 6, 5));
@@ -368,8 +368,8 @@ fn undo_redo_remove_range_start_index_bottom() {
 fn undo_redo_remove_range_end_index_top() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_remove(1, 0, vec![
-		Line::new("drop xxx cx").unwrap(),
-		Line::new("drop yyy cy").unwrap(),
+		Line::parse("drop xxx cx").unwrap(),
+		Line::parse("drop yyy cy").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 1, 0));
@@ -398,8 +398,8 @@ fn undo_redo_remove_range_end_index_top() {
 fn undo_redo_remove_range_end_index_bottom() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_remove(5, 6, vec![
-		Line::new("drop xxx cx").unwrap(),
-		Line::new("drop yyy cy").unwrap(),
+		Line::parse("drop xxx cx").unwrap(),
+		Line::parse("drop yyy cy").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Remove, 5, 6));
@@ -702,7 +702,7 @@ fn undo_redo_swap_down_range_up_index_end() {
 #[test]
 fn undo_redo_modify_single_index_start() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_modify(0, 0, vec![Line::new("drop xxx cx").unwrap()]));
+	history.record(HistoryItem::new_modify(0, 0, vec![Line::parse("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 0, 0));
 	assert_todo_lines!(
@@ -727,7 +727,7 @@ fn undo_redo_modify_single_index_start() {
 #[test]
 fn undo_redo_modify_single_index_end() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_modify(4, 4, vec![Line::new("drop xxx cx").unwrap()]));
+	history.record(HistoryItem::new_modify(4, 4, vec![Line::parse("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 4, 4));
 	assert_todo_lines!(
@@ -752,7 +752,7 @@ fn undo_redo_modify_single_index_end() {
 #[test]
 fn undo_redo_modify_single_index_middle() {
 	let mut history = History::new(10);
-	history.record(HistoryItem::new_modify(2, 2, vec![Line::new("drop xxx cx").unwrap()]));
+	history.record(HistoryItem::new_modify(2, 2, vec![Line::parse("drop xxx cx").unwrap()]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 2, 2));
 	assert_todo_lines!(
@@ -778,9 +778,9 @@ fn undo_redo_modify_single_index_middle() {
 fn undo_redo_modify_range_down_index_start() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_modify(0, 2, vec![
-		Line::new("drop xx1 c1").unwrap(),
-		Line::new("drop xx2 c2").unwrap(),
-		Line::new("drop xx3 c3").unwrap(),
+		Line::parse("drop xx1 c1").unwrap(),
+		Line::parse("drop xx2 c2").unwrap(),
+		Line::parse("drop xx3 c3").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 0, 2));
@@ -807,9 +807,9 @@ fn undo_redo_modify_range_down_index_start() {
 fn undo_redo_modify_range_down_index_end() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_modify(2, 4, vec![
-		Line::new("drop xx1 c1").unwrap(),
-		Line::new("drop xx2 c2").unwrap(),
-		Line::new("drop xx3 c3").unwrap(),
+		Line::parse("drop xx1 c1").unwrap(),
+		Line::parse("drop xx2 c2").unwrap(),
+		Line::parse("drop xx3 c3").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 2, 4));
@@ -836,9 +836,9 @@ fn undo_redo_modify_range_down_index_end() {
 fn undo_redo_modify_range_up_index_start() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_modify(2, 0, vec![
-		Line::new("drop xx1 c1").unwrap(),
-		Line::new("drop xx2 c2").unwrap(),
-		Line::new("drop xx3 c3").unwrap(),
+		Line::parse("drop xx1 c1").unwrap(),
+		Line::parse("drop xx2 c2").unwrap(),
+		Line::parse("drop xx3 c3").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 2, 0));
@@ -865,9 +865,9 @@ fn undo_redo_modify_range_up_index_start() {
 fn undo_redo_modify_range_up_index_end() {
 	let mut history = History::new(10);
 	history.record(HistoryItem::new_modify(4, 2, vec![
-		Line::new("drop xx1 c1").unwrap(),
-		Line::new("drop xx2 c2").unwrap(),
-		Line::new("drop xx3 c3").unwrap(),
+		Line::parse("drop xx1 c1").unwrap(),
+		Line::parse("drop xx2 c2").unwrap(),
+		Line::parse("drop xx3 c3").unwrap(),
 	]));
 	let mut lines = create_lines();
 	assert_some_eq!(history.undo(&mut lines), (Operation::Modify, 4, 2));

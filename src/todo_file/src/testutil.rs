@@ -96,7 +96,7 @@ where C: FnOnce(TodoFileTestContext) {
 		.unwrap();
 
 	let mut todo_file = TodoFile::new(git_todo_file.path().to_str().unwrap(), 1, "#");
-	todo_file.set_lines(lines.iter().map(|l| Line::new(l).unwrap()).collect());
+	todo_file.set_lines(lines.iter().map(|l| Line::parse(l).unwrap()).collect());
 	callback(TodoFileTestContext {
 		git_todo_file: RefCell::new(git_todo_file),
 		todo_file,
