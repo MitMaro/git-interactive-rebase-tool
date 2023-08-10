@@ -224,7 +224,7 @@ impl TodoFile {
 					None
 				}
 				else {
-					Some(Line::new(l).map_err(|err| {
+					Some(Line::parse(l).map_err(|err| {
 						IoError::FileRead {
 							file: self.filepath.clone(),
 							cause: FileReadErrorCause::from(err),
@@ -492,7 +492,7 @@ mod tests {
 	use super::*;
 
 	fn create_line(line: &str) -> Line {
-		Line::new(line).unwrap()
+		Line::parse(line).unwrap()
 	}
 
 	fn create_and_load_todo_file(file_contents: &[&str]) -> (TodoFile, NamedTempFile) {

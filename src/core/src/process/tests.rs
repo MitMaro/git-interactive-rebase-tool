@@ -198,12 +198,12 @@ fn write_todo_file() {
 			process
 				.todo_file
 				.lock()
-				.set_lines(vec![Line::new("fixup ddd comment").unwrap()]);
+				.set_lines(vec![Line::parse("fixup ddd comment").unwrap()]);
 			process.write_todo_file().unwrap();
 			process.todo_file.lock().load_file().unwrap();
 			assert_eq!(
 				process.todo_file.lock().get_line(0).unwrap(),
-				&Line::new("fixup ddd comment").unwrap()
+				&Line::parse("fixup ddd comment").unwrap()
 			);
 		},
 	);

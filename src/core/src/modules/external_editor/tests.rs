@@ -60,8 +60,8 @@ fn activate() {
 			Artifact::ExternalCommand((String::from("editor"), vec![String::from(todo_path.as_str())]))
 		);
 		assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
-			Line::new("pick aaa comment1").unwrap(),
-			Line::new("drop bbb comment2").unwrap()
+			Line::parse("pick aaa comment1").unwrap(),
+			Line::parse("drop bbb comment2").unwrap()
 		]);
 		assert!(!module.lines.is_empty());
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
@@ -223,8 +223,8 @@ fn empty_edit_undo_and_edit() {
 			);
 			assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 			assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
-				Line::new("pick aaa comment").unwrap(),
-				Line::new("drop bbb comment").unwrap()
+				Line::parse("pick aaa comment").unwrap(),
+				Line::parse("drop bbb comment").unwrap()
 			]);
 		},
 	);
@@ -387,7 +387,7 @@ fn error_restore_and_abort() {
 			Artifact::ChangeState(State::List)
 		);
 		assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
-			Line::new("pick aaa comment").unwrap()
+			Line::parse("pick aaa comment").unwrap()
 		]);
 	});
 }
@@ -407,7 +407,7 @@ fn error_undo_modifications_and_reedit() {
 		);
 		assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
 		assert_eq!(module.todo_file.lock().get_lines_owned(), vec![
-			Line::new("pick aaa comment").unwrap()
+			Line::parse("pick aaa comment").unwrap()
 		]);
 	});
 }
