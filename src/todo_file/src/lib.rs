@@ -262,7 +262,41 @@ impl TodoFile {
 			String::from("noop")
 		}
 		else {
-			self.lines.iter().map(Line::to_text).collect::<Vec<String>>().join("\n")
+			self.lines
+				.iter()
+				.flat_map(|l| {
+					let mut lines = vec![Line::to_text(l)];
+					if let Some(command) = self.options.line_changed_command.as_deref() {
+						if l.is_modified() {
+							let action = l.get_action();
+
+							match *action {
+								Action::Break | Action::Noop => {},
+								Action::Drop
+								| Action::Fixup
+								| Action::Edit
+								| Action::Pick
+								| Action::Reword
+								| Action::Squash => {
+									lines.push(format!("exec {command} \"{}\" \"{}\"", action, l.get_hash()));
+								},
+								Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::UpdateRef => {
+									let original_label =
+										l.original().map_or_else(|| l.get_content(), Line::get_content);
+									lines.push(format!(
+										"exec {command} \"{}\" \"{}\" \"{}\"",
+										action,
+										original_label,
+										l.get_content()
+									));
+								},
+							}
+						}
+					}
+					lines
+				})
+				.collect::<Vec<String>>()
+				.join("\n")
 		};
 		writeln!(file, "{file_contents}").map_err(|err| {
 			IoError::FileRead {
@@ -504,16 +538,23 @@ mod tests {
 		Line::parse(line).unwrap()
 	}
 
-	fn create_and_load_todo_file(file_contents: &[&str]) -> (TodoFile, NamedTempFile) {
+	fn create_and_load_todo_file_with_options(
+		file_contents: &[&str],
+		todo_file_options: TodoFileOptions,
+	) -> (TodoFile, NamedTempFile) {
 		let todo_file_path = Builder::new()
 			.prefix("git-rebase-todo-scratch")
 			.suffix("")
 			.tempfile()
 			.unwrap();
 		write!(todo_file_path.as_file(), "{}", file_contents.join("\n")).unwrap();
-		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), TodoFileOptions::new(1, "#"));
+		let mut todo_file = TodoFile::new(todo_file_path.path().to_str().unwrap(), todo_file_options);
 		todo_file.load_file().unwrap();
 		(todo_file, todo_file_path)
+	}
+
+	fn create_and_load_todo_file(file_contents: &[&str]) -> (TodoFile, NamedTempFile) {
+		create_and_load_todo_file_with_options(file_contents, TodoFileOptions::new(1, "#"))
 	}
 
 	macro_rules! assert_read_todo_file {
@@ -601,6 +642,107 @@ mod tests {
 		todo_file.set_lines(vec![create_line("pick bbb comment")]);
 		todo_file.write_file().unwrap();
 		assert_todo_lines!(todo_file, "pick bbb comment");
+	}
+
+	#[test]
+	fn write_file_with_exec_command_modified_line_with_reference() {
+		fn create_modified_line(action: &str) -> Line {
+			let mut parsed = create_line(format!("{action} label").as_str());
+			parsed.edit_content("new-label");
+			parsed
+		}
+		let mut options = TodoFileOptions::new(10, "#");
+		options.line_changed_command("command");
+		let (mut todo_file, _) = create_and_load_todo_file_with_options(&[], options);
+		todo_file.set_lines(vec![
+			create_modified_line("label"),
+			create_modified_line("reset"),
+			create_modified_line("merge"),
+			create_modified_line("update-ref"),
+		]);
+		todo_file.write_file().unwrap();
+		assert_read_todo_file!(
+			todo_file.get_filepath(),
+			"label new-label",
+			"exec command \"label\" \"label\" \"new-label\"",
+			"reset new-label",
+			"exec command \"reset\" \"label\" \"new-label\"",
+			"merge new-label",
+			"exec command \"merge\" \"label\" \"new-label\"",
+			"update-ref new-label",
+			"exec command \"update-ref\" \"label\" \"new-label\""
+		);
+	}
+
+	#[test]
+	fn write_file_with_exec_command_modified_line_with_hash() {
+		fn create_modified_line(action: &str) -> Line {
+			let mut parsed = create_line(format!("{action} bbb comment").as_str());
+			parsed.set_action(
+				if parsed.get_action() == &Action::Fixup {
+					Action::Pick
+				}
+				else {
+					Action::Fixup
+				},
+			);
+			parsed
+		}
+		let mut options = TodoFileOptions::new(10, "#");
+		options.line_changed_command("command");
+		let (mut todo_file, _) = create_and_load_todo_file_with_options(&[], options);
+		let mut line = create_line("pick bbb comment");
+		line.set_action(Action::Fixup);
+		todo_file.set_lines(vec![
+			create_modified_line("drop"),
+			create_modified_line("fixup"),
+			create_modified_line("edit"),
+			create_modified_line("pick"),
+			create_modified_line("reword"),
+			create_modified_line("squash"),
+		]);
+		todo_file.write_file().unwrap();
+		assert_read_todo_file!(
+			todo_file.get_filepath(),
+			"fixup bbb comment",
+			"exec command \"fixup\" \"bbb\"",
+			"pick bbb comment",
+			"exec command \"pick\" \"bbb\"",
+			"fixup bbb comment",
+			"exec command \"fixup\" \"bbb\"",
+			"fixup bbb comment",
+			"exec command \"fixup\" \"bbb\"",
+			"fixup bbb comment",
+			"exec command \"fixup\" \"bbb\"",
+			"fixup bbb comment",
+			"exec command \"fixup\" \"bbb\""
+		);
+	}
+
+	#[test]
+	fn write_file_with_exec_command_modified_line_with_exec() {
+		let mut options = TodoFileOptions::new(10, "#");
+		options.line_changed_command("command");
+		let (mut todo_file, _) = create_and_load_todo_file_with_options(&[], options);
+		let mut line = create_line("exec command");
+		line.edit_content("new-command");
+		todo_file.set_lines(vec![line]);
+		todo_file.write_file().unwrap();
+		assert_read_todo_file!(
+			todo_file.get_filepath(),
+			"exec new-command",
+			"exec command \"exec\" \"command\" \"new-command\""
+		);
+	}
+
+	#[test]
+	fn write_file_with_exec_command_modified_line_with_break() {
+		let mut options = TodoFileOptions::new(10, "#");
+		options.line_changed_command("command");
+		let (mut todo_file, _) = create_and_load_todo_file_with_options(&[], options);
+		todo_file.set_lines(vec![create_line("break")]);
+		todo_file.write_file().unwrap();
+		assert_read_todo_file!(todo_file.get_filepath(), "break");
 	}
 
 	#[test]

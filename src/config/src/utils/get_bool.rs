@@ -1,6 +1,6 @@
 use git::{Config, ErrorCode};
 
-use crate::{utils::_get_string, ConfigError, ConfigErrorCause};
+use crate::{utils::get_optional_string, ConfigError, ConfigErrorCause};
 
 pub(crate) fn get_bool(config: Option<&Config>, name: &str, default: bool) -> Result<bool, ConfigError> {
 	if let Some(cfg) = config {
@@ -10,14 +10,14 @@ pub(crate) fn get_bool(config: Option<&Config>, name: &str, default: bool) -> Re
 			Err(e) if e.message().contains("failed to parse") => {
 				Err(ConfigError::new_with_optional_input(
 					name,
-					_get_string(config, name).ok().flatten(),
+					get_optional_string(config, name).ok().flatten(),
 					ConfigErrorCause::InvalidBoolean,
 				))
 			},
 			Err(e) => {
 				Err(ConfigError::new_with_optional_input(
 					name,
-					_get_string(config, name).ok().flatten(),
+					get_optional_string(config, name).ok().flatten(),
 					ConfigErrorCause::UnknownError(String::from(e.message())),
 				))
 			},

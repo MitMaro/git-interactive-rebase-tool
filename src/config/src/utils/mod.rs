@@ -12,6 +12,6 @@ pub(crate) use self::{
 	get_diff_rename::git_diff_renames,
 	get_diff_show_whitespace::get_diff_show_whitespace,
 	get_input::get_input,
-	get_string::{_get_string, get_string},
+	get_string::{get_optional_string, get_string},
 	get_unsigned_integer::get_unsigned_integer,
 };

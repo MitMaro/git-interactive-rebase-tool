@@ -152,11 +152,16 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		Config::try_from(repo).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
 	}
 
+	fn todo_file_options(config: &Config) -> TodoFileOptions {
+		let mut todo_file_options = TodoFileOptions::new(config.undo_limit, config.git.comment_char.as_str());
+		if let Some(command) = config.post_modified_line_exec_command.as_deref() {
+			todo_file_options.line_changed_command(command);
+		}
+		todo_file_options
+	}
+
 	fn load_todo_file(filepath: &str, config: &Config) -> Result<TodoFile, Exit> {
-		let mut todo_file = TodoFile::new(
-			filepath,
-			TodoFileOptions::new(config.undo_limit, config.git.comment_char.as_str()),
-		);
+		let mut todo_file = TodoFile::new(filepath, Self::todo_file_options(config));
 		todo_file
 			.load_file()
 			.map_err(|err| Exit::new(ExitStatus::FileReadError, err.to_string().as_str()))?;
@@ -187,7 +192,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 mod tests {
 	use std::ffi::OsString;
 
-	use claims::assert_ok;
+	use claims::{assert_none, assert_ok};
 	use display::{testutil::CrossTerm, Size};
 	use input::{KeyCode, KeyEvent, KeyModifiers};
 	use runtime::{Installer, RuntimeError};
@@ -262,6 +267,36 @@ mod tests {
 			Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
+	}
+
+	#[test]
+	fn todo_file_options_without_command() {
+		let mut config = Config::new();
+		config.undo_limit = 10;
+		config.git.comment_char = String::from("#");
+		config.post_modified_line_exec_command = None;
+
+		let expected = TodoFileOptions::new(10, "#");
+		assert_eq!(
+			Application::<TestModuleProvider<DefaultTestModule>>::todo_file_options(&config),
+			expected
+		);
+	}
+
+	#[test]
+	fn todo_file_options_with_command() {
+		let mut config = Config::new();
+		config.undo_limit = 10;
+		config.git.comment_char = String::from("#");
+		config.post_modified_line_exec_command = Some(String::from("command"));
+
+		let mut expected = TodoFileOptions::new(10, "#");
+		expected.line_changed_command("command");
+
+		assert_eq!(
+			Application::<TestModuleProvider<DefaultTestModule>>::todo_file_options(&config),
+			expected
+		);
 	}
 
 	#[test]

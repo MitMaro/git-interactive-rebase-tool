@@ -2,13 +2,13 @@ use git::Config;
 
 use crate::{
 	errors::ConfigError,
-	utils::{_get_string, get_string},
+	utils::{get_optional_string, get_string},
 	Color,
 	ConfigErrorCause,
 };
 
 fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Color, ConfigError> {
-	if let Some(value) = _get_string(config, name)? {
+	if let Some(value) = get_optional_string(config, name)? {
 		Color::try_from(value.to_lowercase().as_str()).map_err(|invalid_color_error| {
 			ConfigError::new(
 				name,

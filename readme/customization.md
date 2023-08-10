@@ -39,17 +39,18 @@ Some values from your Git Config are directly used by this application.
 
 ## General
 
-| Key                        | Default | Type    | Description                                                                                 |
-|----------------------------|---------|---------|---------------------------------------------------------------------------------------------|
-| `autoSelectNext`           | false   | bool    | If true, auto select the next line after action modification                                |
-| `diffIgnoreBlankLines`     | none    | String¹ | If to ignore blank lines during diff.                                                       |
-| `diffIgnoreWhitespace`     | none    | String¹ | If and how to ignore whitespace during diff.                                                |
-| `diffShowWhitespace`       | both    | String² | If and how to show whitespace during diff.                                                  |
-| `diffSpaceSymbol`          | ·       | String  | The visible symbol for the space character. Only used when `diffShowWhitespace` is enabled. |
-| `diffTabSymbol`            | →       | String  | The visible symbol for the tab character. Only used when `diffShowWhitespace` is enabled.   |
-| `diffTabWidth`             | 4       | Integer | The width of the tab character                                                              |
-| `undoLimit`                | 5000    | Integer | Number of undo operations to store.                                                         |
-| `verticalSpacingCharacter` | ~       | String  | Vertical spacing character. Can be set to an empty string.                                  |
+| Key                           | Default | Type    | Description                                                                                 |
+|-------------------------------|---------|---------|---------------------------------------------------------------------------------------------|
+| `autoSelectNext`              | false   | bool    | If true, auto select the next line after action modification                                |
+| `diffIgnoreBlankLines`        | none    | String¹ | If to ignore blank lines during diff.                                                       |
+| `diffIgnoreWhitespace`        | none    | String¹ | If and how to ignore whitespace during diff.                                                |
+| `diffShowWhitespace`          | both    | String² | If and how to show whitespace during diff.                                                  |
+| `diffSpaceSymbol`             | ·       | String  | The visible symbol for the space character. Only used when `diffShowWhitespace` is enabled. |
+| `diffTabSymbol`               | →       | String  | The visible symbol for the tab character. Only used when `diffShowWhitespace` is enabled.   |
+| `diffTabWidth`                | 4       | Integer | The width of the tab character                                                              |
+| `undoLimit`                   | 5000    | Integer | Number of undo operations to store.                                                         |
+| `postModifiedLineExecCommand` |         | String  | Exec command to attach to modified lines. See [modified line exec command] for details.     |
+| `verticalSpacingCharacter`    | ~       | String  | Vertical spacing character. Can be set to an empty string.                                  |
 
 ¹ Ignore whitespace can be:
 - `change` to ignore changed whitespace in diffs, same as the [`--ignore-space-change`][diffIgnoreSpaceChange] flag
@@ -62,6 +63,7 @@ Some values from your Git Config are directly used by this application.
 - `true`, `on` or `both` to show both leading and trailing whitespace
 - `false`, `off`, `none` to show no whitespace
 
+[modified line exec command]:../README.md#modified-line-exec-command
 [diffIgnoreSpaceChange]:https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---ignore-space-change
 [diffIgnoreAllSpace]:https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---ignore-all-space
 
