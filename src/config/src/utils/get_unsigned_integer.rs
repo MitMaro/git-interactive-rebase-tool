@@ -1,6 +1,6 @@
 use git::{Config, ErrorCode};
 
-use crate::{utils::_get_string, ConfigError, ConfigErrorCause};
+use crate::{utils::get_optional_string, ConfigError, ConfigErrorCause};
 
 pub(crate) fn get_unsigned_integer(config: Option<&Config>, name: &str, default: u32) -> Result<u32, ConfigError> {
 	if let Some(cfg) = config {
@@ -9,7 +9,7 @@ pub(crate) fn get_unsigned_integer(config: Option<&Config>, name: &str, default:
 				v.try_into().map_err(|_| {
 					ConfigError::new_with_optional_input(
 						name,
-						_get_string(config, name).ok().flatten(),
+						get_optional_string(config, name).ok().flatten(),
 						ConfigErrorCause::InvalidUnsignedInteger,
 					)
 				})
@@ -18,14 +18,14 @@ pub(crate) fn get_unsigned_integer(config: Option<&Config>, name: &str, default:
 			Err(e) if e.message().contains("failed to parse") => {
 				Err(ConfigError::new_with_optional_input(
 					name,
-					_get_string(config, name).ok().flatten(),
+					get_optional_string(config, name).ok().flatten(),
 					ConfigErrorCause::InvalidUnsignedInteger,
 				))
 			},
 			Err(e) => {
 				Err(ConfigError::new_with_optional_input(
 					name,
-					_get_string(config, name).ok().flatten(),
+					get_optional_string(config, name).ok().flatten(),
 					ConfigErrorCause::UnknownError(String::from(e.message())),
 				))
 			},

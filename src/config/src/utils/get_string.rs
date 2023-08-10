@@ -2,7 +2,7 @@ use git::{Config, ErrorCode};
 
 use crate::{ConfigError, ConfigErrorCause};
 
-pub(crate) fn _get_string(config: Option<&Config>, name: &str) -> Result<Option<String>, ConfigError> {
+pub(crate) fn get_optional_string(config: Option<&Config>, name: &str) -> Result<Option<String>, ConfigError> {
 	let Some(cfg) = config
 	else {
 		return Ok(None);
@@ -24,7 +24,7 @@ pub(crate) fn _get_string(config: Option<&Config>, name: &str) -> Result<Option<
 }
 
 pub(crate) fn get_string(config: Option<&Config>, name: &str, default: &str) -> Result<String, ConfigError> {
-	Ok(_get_string(config, name)?.unwrap_or_else(|| String::from(default)))
+	Ok(get_optional_string(config, name)?.unwrap_or_else(|| String::from(default)))
 }
 
 #[cfg(test)]

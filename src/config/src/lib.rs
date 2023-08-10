@@ -162,7 +162,10 @@ pub use self::{
 	key_bindings::KeyBindings,
 	theme::Theme,
 };
-use crate::errors::{ConfigError, ConfigErrorCause};
+use crate::{
+	errors::{ConfigError, ConfigErrorCause},
+	utils::get_optional_string,
+};
 
 const DEFAULT_SPACE_SYMBOL: &str = "\u{b7}"; // ·
 const DEFAULT_TAB_SYMBOL: &str = "\u{2192}"; // →
@@ -185,6 +188,8 @@ pub struct Config {
 	pub diff_tab_symbol: String,
 	/// The display width of the tab character.
 	pub diff_tab_width: u32,
+	/// If set, automatically add an exec line with the command after every modified line
+	pub post_modified_line_exec_command: Option<String>,
 	/// The maximum number of undo steps.
 	pub undo_limit: u32,
 	/// Configuration options loaded directly from Git.
@@ -221,6 +226,10 @@ impl Config {
 			diff_tab_symbol: get_string(git_config, "interactive-rebase-tool.diffTabSymbol", DEFAULT_TAB_SYMBOL)?,
 			diff_tab_width: get_unsigned_integer(git_config, "interactive-rebase-tool.diffTabWidth", 4)?,
 			undo_limit: get_unsigned_integer(git_config, "interactive-rebase-tool.undoLimit", 5000)?,
+			post_modified_line_exec_command: get_optional_string(
+				git_config,
+				"interactive-rebase-tool.postModifiedLineExecCommand",
+			)?,
 			git: GitConfig::new_with_config(git_config)?,
 			key_bindings: KeyBindings::new_with_config(git_config)?,
 			theme: Theme::new_with_config(git_config)?,
@@ -435,7 +444,6 @@ mod tests {
 	#[case::diff_tab_width("diffTabWidth", "42", 42, |config: Config| config.diff_tab_width)]
 	#[case::diff_tab_symbol_default("diffTabSymbol", "", String::from("→"), |config: Config| config.diff_tab_symbol)]
 	#[case::diff_tab_symbol("diffTabSymbol", "|", String::from("|"), |config: Config| config.diff_tab_symbol)]
-	#[case::diff_tab_symbol("diffTabSymbol", "|", String::from("|"), |config: Config| config.diff_tab_symbol)]
 	#[case::diff_space_symbol_default(
 		"diffSpaceSymbol",
 		"",
@@ -444,8 +452,20 @@ mod tests {
 	]
 	#[case::diff_space_symbol("diffSpaceSymbol", "-", String::from("-"), |config: Config| config.diff_space_symbol)]
 	#[case::undo_limit_default("undoLimit", "", 5000, |config: Config| config.undo_limit)]
-	#[case::undo_limit_default("undoLimit", "42", 42, |config: Config| config.undo_limit)]
-	pub(crate) fn theme_color<F, T>(
+	#[case::undo_limit("undoLimit", "42", 42, |config: Config| config.undo_limit)]
+	#[case::post_modified_line_exec_command(
+		"postModifiedLineExecCommand",
+		"command",
+		Some(String::from("command")),
+		|config: Config| config.post_modified_line_exec_command
+	)]
+	#[case::post_modified_line_exec_command_default(
+		"postModifiedLineExecCommand",
+		"",
+		None,
+		|config: Config| config.post_modified_line_exec_command
+	)]
+	pub(crate) fn config_test<F, T>(
 		#[case] config_name: &str,
 		#[case] config_value: &str,
 		#[case] expected: T,
@@ -497,9 +517,10 @@ mod tests {
 
 	#[rstest]
 	#[case::diff_tab_symbol("diffIgnoreWhitespace")]
-	#[case::diff_tab_symbol("diffShowWhitespace")]
+	#[case::diff_show_whitespace("diffShowWhitespace")]
 	#[case::diff_tab_symbol("diffTabSymbol")]
 	#[case::diff_space_symbol("diffSpaceSymbol")]
+	#[case::post_modified_line_exec_command("postModifiedLineExecCommand")]
 	fn value_parsing_invalid_utf(#[case] config_name: &str) {
 		with_git_config(
 			&[

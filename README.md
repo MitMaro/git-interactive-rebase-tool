@@ -76,6 +76,53 @@ Need to do something in your Git editor? Quickly shell out to your editor, make 
 
 ![Shell out to editor](/docs/assets/images/girt-external-editor.gif?raw=true)
 
+### Advanced Features
+
+#### Modified line exec command
+
+This optional feature allows for the injection of an `exec` action after modified lines, where modified is determined as a changed action, command, or reference. This can be used to amend commits to update references in the commit message or run a test suite only on modified commits.
+
+To enable this option, set the `interactive-rebase-tool.postModifiedLineExecCommand` option, providing an executable or script.
+
+```shell
+git config --global interactive-rebase-tool.postModifiedLineExecCommand "/path/to/global/script"
+```
+
+Or using repository-specific configuration, for targeted scripts.
+
+```shell
+git config --global interactive-rebase-tool.postModifiedLineExecCommand "/path/to/repo/script"
+```
+
+The first argument provided to the script will always be the action performed. Then, depending on the action, the script will be provided a different set of arguments.
+
+For `drop`, `fixup`, `edit`, `pick`, `reword` and `squash` actions, the script will additionally receive the original commit hash, for `exec` the original and new commands are provided, and for `label`, `reset`, `merge`, and `update-ref` the original label/reference and new label/reference are provided.
+
+Full example of a resulting rebase todo file, assuming that `interactive-rebase-tool.postModifiedLineExecCommand` was set to `script.sh`.
+
+```
+# original line: label onto
+label new-onto
+exec script.sh "label" "onto" "new-onto"
+
+# original line: reset onto
+reset new-onto
+exec script.sh "reset" "onto" "new-onto"
+
+pick   a12345 My feature
+# original line: pick b12345 My change
+squash b12345 My change
+exec script.sh "squash" "b12345"
+
+# original line: label branch
+label branch
+exec script.sh "label" "branch" "new-branch"
+
+# original line: exec command
+exec new-command
+exec script.sh "exec" "command" "new-command"
+```
+
 ## Setup
 
 ### Most systems

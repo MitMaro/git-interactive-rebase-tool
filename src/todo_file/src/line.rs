@@ -8,9 +8,7 @@ pub struct Line {
 	hash: String,
 	mutated: bool,
 	option: Option<String>,
-	original_action: Action,
-	original_content: String,
-	original_option: Option<String>,
+	original_line: Option<Box<Line>>,
 }
 
 impl Line {
@@ -25,9 +23,14 @@ impl Line {
 			hash: String::from(hash),
 			mutated: false,
 			option: original_option.clone(),
-			original_action,
-			original_content,
-			original_option,
+			original_line: Some(Box::new(Line {
+				action: original_action,
+				content: original_content,
+				hash: String::from(hash),
+				mutated: false,
+				option: original_option,
+				original_line: None,
+			})),
 		}
 	}
 
@@ -157,6 +160,13 @@ impl Line {
 		self.option = Some(String::from(option));
 	}
 
+	/// Get the original line, before any modifications
+	#[must_use]
+	#[inline]
+	pub fn original(&self) -> Option<&Line> {
+		self.original_line.as_deref()
+	}
+
 	/// Get the action of the line.
 	#[must_use]
 	#[inline]
@@ -273,9 +283,14 @@ mod tests {
 			content: String::new(),
 			mutated: false,
 			option: None,
-			original_action: Action::Pick,
-			original_content: String::new(),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::Pick,
+				hash: String::from("abc123"),
+				content: String::new(),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
@@ -287,9 +302,14 @@ mod tests {
 			content: String::new(),
 			mutated: false,
 			option: None,
-			original_action: Action::Break,
-			original_content: String::new(),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::Break,
+				hash: String::new(),
+				content: String::new(),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
@@ -301,9 +321,14 @@ mod tests {
 			content: String::from("command"),
 			mutated: false,
 			option: None,
-			original_action: Action::Exec,
-			original_content: String::from("command"),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::Exec,
+				hash: String::new(),
+				content: String::from("command"),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
@@ -315,9 +340,14 @@ mod tests {
 			content: String::from("command"),
 			mutated: false,
 			option: None,
-			original_action: Action::Merge,
-			original_content: String::from("command"),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::Merge,
+				hash: String::new(),
+				content: String::from("command"),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
@@ -329,9 +359,14 @@ mod tests {
 			content: String::from("label"),
 			mutated: false,
 			option: None,
-			original_action: Action::Label,
-			original_content: String::from("label"),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::Label,
+				hash: String::new(),
+				content: String::from("label"),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
@@ -343,9 +378,14 @@ mod tests {
 			content: String::from("label"),
 			mutated: false,
 			option: None,
-			original_action: Action::Reset,
-			original_content: String::from("label"),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::Reset,
+				hash: String::new(),
+				content: String::from("label"),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
@@ -357,9 +397,14 @@ mod tests {
 			content: String::from("reference"),
 			mutated: false,
 			option: None,
-			original_action: Action::UpdateRef,
-			original_content: String::from("reference"),
-			original_option: None,
+			original_line: Some(Box::new(Line {
+				action: Action::UpdateRef,
+				hash: String::new(),
+				content: String::from("reference"),
+				mutated: false,
+				option: None,
+				original_line: None,
+			}))
 		});
 	}
 
