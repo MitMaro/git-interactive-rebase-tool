@@ -268,12 +268,14 @@ pub(super) fn get_todo_line_segments(
 		false,
 	));
 
+	let action_padding = cmp::max(maximum_action_width, 6);
+
 	let action_name = if is_full_width {
 		if let Some(opt) = line.option() {
-			format!("{:maximum_action_width$} ", format!("{action} {opt}"))
+			format!("{:action_padding$} ", format!("{action} {opt}"))
 		}
 		else {
-			format!("{:maximum_action_width$} ", action.to_string())
+			format!("{:action_padding$} ", action.to_string())
 		}
 	}
 	else {

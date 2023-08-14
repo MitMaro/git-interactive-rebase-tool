@@ -125,7 +125,7 @@ fn noop_list() {
 			Style view_data,
 			"{TITLE}{HELP}",
 			"{BODY}",
-			"{Selected}{Normal} > noop {Pad( )}"
+			"{Selected}{Normal} > noop   {Pad( )}"
 		);
 	});
 }
@@ -170,4 +170,18 @@ fn pinned_segments() {
 			);
 		},
 	);
+}
+
+#[test]
+fn full_with_short_actions() {
+	module_test(&["pick aaaaaaaa comment 1"], &[], |mut test_context| {
+		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let view_data = test_context.build_view_data(&mut module);
+		assert_rendered_output!(
+			Style view_data,
+			"{TITLE}{HELP}",
+			"{BODY}",
+			"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa comment 1{Pad( )}"
+		);
+	});
 }

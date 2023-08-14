@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 ### Added
-- Post modified line exec command ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/888))
+- Post modified line exec command ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/890))
 
+### Fixed
+- Flicker when action width changes ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/891))
 
 ## [2.3.0] - 2023-07-19
 ### Added
