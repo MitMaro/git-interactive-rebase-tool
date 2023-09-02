@@ -155,6 +155,7 @@ impl TodoFile {
 								Action::Drop
 								| Action::Fixup
 								| Action::Edit
+								| Action::Index
 								| Action::Pick
 								| Action::Reword
 								| Action::Squash => {

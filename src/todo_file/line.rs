@@ -95,7 +95,7 @@ impl Line {
 		Ok(match action {
 			Action::Noop => Self::new_noop(),
 			Action::Break => Self::new_break(),
-			Action::Pick | Action::Reword | Action::Edit | Action::Squash | Action::Drop => {
+			Action::Pick | Action::Reword | Action::Edit | Action::Squash | Action::Drop | Action::Index => {
 				Self::new(action, line_parser.next()?, line_parser.take_remaining(), None)
 			},
 			Action::Fixup => {
@@ -190,7 +190,7 @@ impl Line {
 	#[must_use]
 	pub(crate) const fn is_editable(&self) -> bool {
 		match self.action {
-			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::UpdateRef => true,
+			Action::Exec | Action::Index | Action::Label | Action::Reset | Action::Merge | Action::UpdateRef => true,
 			Action::Break
 			| Action::Drop
 			| Action::Edit
@@ -212,7 +212,7 @@ impl Line {
 	#[must_use]
 	pub(crate) fn to_text(&self) -> String {
 		match self.action {
-			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
+			Action::Drop | Action::Edit | Action::Fixup | Action::Index | Action::Pick | Action::Reword | Action::Squash => {
 				if let Some(opt) = self.option.as_ref() {
 					format!("{} {opt} {} {}", self.action, self.hash, self.content)
 				}

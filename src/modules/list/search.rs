@@ -62,6 +62,7 @@ impl Searchable for Search {
 				Action::Drop
 				| Action::Edit
 				| Action::Fixup
+				| Action::Index
 				| Action::Pick
 				| Action::Reword
 				| Action::Squash
@@ -72,6 +73,7 @@ impl Searchable for Search {
 				Action::Drop
 				| Action::Edit
 				| Action::Fixup
+				| Action::Index
 				| Action::Pick
 				| Action::Reword
 				| Action::Squash
