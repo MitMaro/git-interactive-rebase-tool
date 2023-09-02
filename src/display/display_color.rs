@@ -12,6 +12,8 @@ pub(crate) enum DisplayColor {
 	ActionExec,
 	/// The color for the fixup action.
 	ActionFixup,
+	/// The color for the index action.
+	ActionIndex,
 	/// The color for the pick action.
 	ActionPick,
 	/// The color for the reword action.
