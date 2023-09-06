@@ -131,7 +131,7 @@ mod tests {
 	}
 
 	#[test]
-	#[should_panic]
+	#[should_panic(expected = "Attempt to register more than one threads with name: name")]
 	fn register_thread_same_name() {
 		let statuses = ThreadStatuses::new();
 		statuses.register_thread("name", Status::New);

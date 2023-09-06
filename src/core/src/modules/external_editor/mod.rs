@@ -102,7 +102,7 @@ impl Module for ExternalEditor {
 						let mut todo_file = self.todo_file.lock();
 						let result = todo_file.load_file();
 						let state = match result {
-							Ok(_) => {
+							Ok(()) => {
 								if todo_file.is_empty() || todo_file.is_noop() {
 									Some(ExternalEditorState::Empty)
 								}

@@ -242,7 +242,7 @@ mod tests {
 	}
 
 	#[test]
-	#[should_panic]
+	#[should_panic(expected = "add_file_stat must be called once before adding a delta")]
 	fn add_delta_without_file_stat() {
 		let mut file_stats_builder = FileStatusBuilder::new();
 		file_stats_builder.add_delta(Delta::new("@ path/to/file.rs:56 @ impl Delta {", 10, 12, 3, 4));
@@ -250,7 +250,7 @@ mod tests {
 	}
 
 	#[test]
-	#[should_panic]
+	#[should_panic(expected = "add_delta must be called once before adding a diff line")]
 	fn add_diff_line_before_delta() {
 		let mut file_stats_builder = FileStatusBuilder::new();
 		file_stats_builder.add_file_stat(FileStatus::new(

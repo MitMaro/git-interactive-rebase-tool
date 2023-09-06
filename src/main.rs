@@ -65,17 +65,23 @@
 	clippy::implicit_return,
 	clippy::indexing_slicing,
 	clippy::map_err_ignore,
+	clippy::min_ident_chars,
 	clippy::missing_docs_in_private_items,
 	clippy::missing_trait_methods,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
+	clippy::needless_raw_strings,
 	clippy::new_without_default,
 	clippy::non_ascii_literal,
 	clippy::option_if_let_else,
+	clippy::pattern_type_mismatch,
 	clippy::pub_use,
+	clippy::pub_with_shorthand,
 	clippy::question_mark_used,
+	clippy::redundant_closure_call,
 	clippy::redundant_pub_crate,
 	clippy::ref_patterns,
+	clippy::single_call_fn,
 	clippy::std_instead_of_alloc,
 	clippy::std_instead_of_core,
 	clippy::tabs_in_doc_comments,
@@ -110,30 +116,19 @@
 	)
 )]
 // allowable upcoming nightly lints
-#![cfg_attr(
-	include_nightly_lints,
-	allow(
-		clippy::absolute_paths,
-		clippy::arc_with_non_send_sync,
-		clippy::min_ident_chars,
-		clippy::needless_raw_strings,
-		clippy::pub_with_shorthand,
-		clippy::redundant_closure_call,
-		clippy::single_call_fn
-	)
-)]
+#![cfg_attr(include_nightly_lints, allow(clippy::absolute_paths, clippy::arc_with_non_send_sync))]
 // LINT-REPLACE-END
 #![allow(missing_docs, rustdoc::missing_crate_level_docs)]
 
-use std::env::args_os;
+use std::{env, process};
 
 // TODO use the termination trait once rust-lang/rust#43301 is stable
 #[allow(clippy::exit, clippy::print_stderr)]
 #[cfg(not(tarpaulin_include))]
 fn main() {
-	let exit = core::run(args_os().skip(1).collect());
+	let exit = core::run(env::args_os().skip(1).collect());
 	if let Some(message) = exit.get_message().as_ref() {
 		eprintln!("{message}");
 	}
-	std::process::exit(exit.get_status().to_code());
+	process::exit(exit.get_status().to_code());
 }
