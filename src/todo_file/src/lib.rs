@@ -65,17 +65,23 @@
 	clippy::implicit_return,
 	clippy::indexing_slicing,
 	clippy::map_err_ignore,
+	clippy::min_ident_chars,
 	clippy::missing_docs_in_private_items,
 	clippy::missing_trait_methods,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
+	clippy::needless_raw_strings,
 	clippy::new_without_default,
 	clippy::non_ascii_literal,
 	clippy::option_if_let_else,
+	clippy::pattern_type_mismatch,
 	clippy::pub_use,
+	clippy::pub_with_shorthand,
 	clippy::question_mark_used,
+	clippy::redundant_closure_call,
 	clippy::redundant_pub_crate,
 	clippy::ref_patterns,
+	clippy::single_call_fn,
 	clippy::std_instead_of_alloc,
 	clippy::std_instead_of_core,
 	clippy::tabs_in_doc_comments,
@@ -110,18 +116,7 @@
 	)
 )]
 // allowable upcoming nightly lints
-#![cfg_attr(
-	include_nightly_lints,
-	allow(
-		clippy::absolute_paths,
-		clippy::arc_with_non_send_sync,
-		clippy::min_ident_chars,
-		clippy::needless_raw_strings,
-		clippy::pub_with_shorthand,
-		clippy::redundant_closure_call,
-		clippy::single_call_fn
-	)
-)]
+#![cfg_attr(include_nightly_lints, allow(clippy::absolute_paths, clippy::arc_with_non_send_sync))]
 // LINT-REPLACE-END
 
 //! Git Interactive Rebase Tool - Todo File Module
