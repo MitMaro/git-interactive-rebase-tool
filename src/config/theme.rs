@@ -31,6 +31,8 @@ pub(crate) struct Theme {
 	pub(crate) character_vertical_spacing: String,
 	/// The color for the break action.
 	pub(crate) color_action_break: Color,
+	/// The color for the cut action.
+	pub(crate) color_action_cut: Color,
 	/// The color for the drop action.
 	pub(crate) color_action_drop: Color,
 	/// The color for the edit action.
@@ -85,6 +87,7 @@ impl Theme {
 				"~",
 			)?,
 			color_action_break: get_color(git_config, "interactive-rebase-tool.breakColor", Color::LightWhite)?,
+			color_action_cut: get_color(git_config, "interactive-rebase-tool.cutColor", Color::DarkRed)?,
 			color_action_drop: get_color(git_config, "interactive-rebase-tool.dropColor", Color::LightRed)?,
 			color_action_edit: get_color(git_config, "interactive-rebase-tool.editColor", Color::LightBlue)?,
 			color_action_exec: get_color(git_config, "interactive-rebase-tool.execColor", Color::LightWhite)?,

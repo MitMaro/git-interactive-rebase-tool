@@ -49,6 +49,8 @@ pub(crate) enum StandardEvent {
 	ForceRebase,
 	/// The break action meta event.
 	ActionBreak,
+	/// The cut (git-revise) action meta event.
+	ActionCut,
 	/// The drop action meta event.
 	ActionDrop,
 	/// The edit action meta event.

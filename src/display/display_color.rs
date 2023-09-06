@@ -4,6 +4,8 @@
 pub(crate) enum DisplayColor {
 	/// The color for the break action.
 	ActionBreak,
+	/// The color for the cut action.
+	ActionCut,
 	/// The color for the drop action.
 	ActionDrop,
 	/// The color for the edit action.
