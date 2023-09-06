@@ -8,6 +8,8 @@ use crate::todo_file::ParseError;
 pub(crate) enum Action {
 	/// A break action.
 	Break,
+	/// A cut action for git-revise.
+	Cut,
 	/// A drop action.
 	Drop,
 	/// An edit action.
@@ -43,6 +45,7 @@ impl Action {
 		String::from(match self {
 			Self::Break => "b",
 			Self::Drop => "d",
+			Self::Cut => "c",
 			Self::Edit => "e",
 			Self::Exec => "x",
 			Self::Fixup => "f",
@@ -63,7 +66,7 @@ impl Action {
 	pub(crate) const fn is_static(self) -> bool {
 		match self {
 			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge | Self::UpdateRef => true,
-			Self::Drop | Self::Edit | Self::Index | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
+			Self::Cut | Self::Drop | Self::Edit | Self::Index | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
 		}
 	}
 }
@@ -72,6 +75,7 @@ impl Display for Action {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", match *self {
 			Self::Break => "break",
+			Self::Cut => "cut",
 			Self::Drop => "drop",
 			Self::Edit => "edit",
 			Self::Exec => "exec",
