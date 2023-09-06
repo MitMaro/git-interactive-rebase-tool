@@ -20,6 +20,8 @@ pub(crate) struct KeyBindings {
 	pub(crate) abort: Vec<String>,
 	/// Key bindings for the break action.
 	pub(crate) action_break: Vec<String>,
+	/// Key bindings for the cut action.
+	pub(crate) action_cut: Vec<String>,
 	/// Key bindings for the drop action.
 	pub(crate) action_drop: Vec<String>,
 	/// Key bindings for the edit action.
@@ -128,6 +130,7 @@ impl KeyBindings {
 		Ok(Self {
 			abort: get_input(git_config, "interactive-rebase-tool.inputAbort", "q")?,
 			action_break: get_input(git_config, "interactive-rebase-tool.inputActionBreak", "b")?,
+			action_cut: get_input(git_config, "interactive-rebase-tool.inputActionCut", "x")?,
 			action_drop: get_input(git_config, "interactive-rebase-tool.inputActionDrop", "d")?,
 			action_edit: get_input(git_config, "interactive-rebase-tool.inputActionEdit", "e")?,
 			action_fixup: get_input(git_config, "interactive-rebase-tool.inputActionFixup", "f")?,

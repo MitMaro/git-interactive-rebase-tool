@@ -113,6 +113,7 @@ Most keys can be changed to any printable character or supported special charact
 | `inputActionPick`           | p         | String | Key for setting action to pick                      |
 | `inputActionReword`         | r         | String | Key for setting action to reword                    |
 | `inputActionSquash`         | s         | String | Key for setting action to squash                    |
+| `inputActionCut`            | x         | String | Key for setting action to cut (git-revise)          |
 | `inputActionIndex`          | i         | String | Key for setting action to index (git-revise)        |
 | `inputConfirmNo`            | n         | String | Key for rejecting a confirmation                    |
 | `inputConfirmYes`           | y         | String | Key for confirming a confirmation                   |
