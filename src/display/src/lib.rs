@@ -54,6 +54,7 @@
 // enable all of Clippy's lints
 #![deny(clippy::all, clippy::cargo, clippy::pedantic, clippy::restriction)]
 #![allow(
+	clippy::absolute_paths,
 	clippy::arithmetic_side_effects,
 	clippy::arithmetic_side_effects,
 	clippy::blanket_clippy_restriction_lints,
@@ -70,6 +71,7 @@
 	clippy::missing_trait_methods,
 	clippy::mod_module_files,
 	clippy::module_name_repetitions,
+	clippy::needless_raw_string_hashes,
 	clippy::needless_raw_strings,
 	clippy::new_without_default,
 	clippy::non_ascii_literal,
