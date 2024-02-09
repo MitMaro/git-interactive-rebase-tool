@@ -96,7 +96,8 @@ impl Delta {
 mod tests {
 	use claims::assert_err;
 
-	use super::{super::origin::Origin, *};
+	use super::*;
+	use crate::origin::Origin;
 
 	#[test]
 	fn new_with_correctly_formatted_context() {

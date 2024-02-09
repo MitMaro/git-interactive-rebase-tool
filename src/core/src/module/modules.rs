@@ -5,9 +5,8 @@ use git::Repository;
 use parking_lot::Mutex;
 use todo_file::TodoFile;
 
-use super::{Module, State};
 use crate::{
-	module::ModuleProvider,
+	module::{Module, ModuleProvider, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
 };
 

@@ -1,5 +1,4 @@
-use super::{Event, KeyCode, KeyModifiers};
-use crate::{key_bindings::KeyBindings, InputOptions, KeyEvent, StandardEvent};
+use crate::{key_bindings::KeyBindings, Event, InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent};
 
 /// A handler for reading and processing events.
 #[derive(Debug)]

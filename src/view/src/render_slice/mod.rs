@@ -10,7 +10,7 @@ use std::{
 
 pub(crate) use render_action::RenderAction;
 
-use super::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
+use crate::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
 
 #[derive(Debug)]
 pub struct RenderSlice {
