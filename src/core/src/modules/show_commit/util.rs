@@ -1,12 +1,14 @@
 use std::path::Path;
 
 use config::KeyBindings;
-use display::DisplayColor;
 use git::{CommitDiff, Status};
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::view::{LineSegment, ViewLine};
+use crate::{
+	display::DisplayColor,
+	view::{LineSegment, ViewLine},
+};
 
 const TO_FILE_INDICATOR_LONG: &str = " \u{2192} "; // " → "
 const TO_FILE_INDICATOR_SHORT: &str = "\u{2192}"; // "→"

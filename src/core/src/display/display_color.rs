@@ -1,7 +1,7 @@
 /// An abstraction of colors to display.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[allow(clippy::exhaustive_enums)]
-pub enum DisplayColor {
+pub(crate) enum DisplayColor {
 	/// The color for the break action.
 	ActionBreak,
 	/// The color for the drop action.

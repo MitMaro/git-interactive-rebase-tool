@@ -27,7 +27,6 @@ path = "src/main.rs"
 members = [
     "src/config",
     "src/core",
-    "src/display",
     "src/git",
     "src/input",
     "src/runtime",

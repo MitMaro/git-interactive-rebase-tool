@@ -1,8 +1,7 @@
-use display::DisplayColor;
 use input::{KeyCode, KeyEvent, KeyModifiers};
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::{events::Event, view::LineSegment};
+use crate::{display::DisplayColor, events::Event, view::LineSegment};
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum EditAction {

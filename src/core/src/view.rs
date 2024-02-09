@@ -25,7 +25,6 @@ mod tests;
 pub(crate) mod testutil;
 
 use anyhow::{Error, Result};
-use display::{Display, DisplayColor, Tui};
 
 pub(crate) use self::{
 	line_segment::LineSegment,
@@ -36,6 +35,7 @@ pub(crate) use self::{
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,
 };
+use crate::display::{Display, DisplayColor, Tui};
 
 const TITLE: &str = "Git Interactive Rebase Tool";
 const TITLE_SHORT: &str = "Git Rebase";

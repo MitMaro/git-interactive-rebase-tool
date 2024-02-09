@@ -1,6 +1,6 @@
-use crossterm::style::{Attribute, Attributes, Color, Colors};
+use ::crossterm::style::{Attribute, Attributes, Color, Colors};
 
-use crate::{
+use crate::display::{
 	testutil::{MockableTui, State},
 	ColorMode,
 	DisplayError,
@@ -9,7 +9,7 @@ use crate::{
 
 /// A mocked version of `CrossTerm`, useful for testing.
 #[derive(Debug)]
-pub struct CrossTerm {
+pub(crate) struct CrossTerm {
 	attributes: Attributes,
 	color_mode: ColorMode,
 	colors: Colors,
@@ -122,7 +122,7 @@ impl CrossTerm {
 	/// Create a new mocked version of `CrossTerm`.
 	#[inline]
 	#[must_use]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self {
 			attributes: Attributes::from(Attribute::Reset),
 			color_mode: ColorMode::FourBit,
@@ -138,62 +138,62 @@ impl CrossTerm {
 	/// Get a representation of the rendered output.
 	#[inline]
 	#[must_use]
-	pub const fn get_output(&self) -> &Vec<String> {
+	pub(crate) const fn get_output(&self) -> &Vec<String> {
 		&self.output
 	}
 
 	/// Get the current state.
 	#[inline]
 	#[must_use]
-	pub const fn get_state(&self) -> State {
+	pub(crate) const fn get_state(&self) -> State {
 		self.state
 	}
 
 	/// Are colors enabled.
 	#[inline]
 	#[must_use]
-	pub fn is_colors_enabled(&self, colors: Colors) -> bool {
+	pub(crate) fn is_colors_enabled(&self, colors: Colors) -> bool {
 		self.colors == colors
 	}
 
 	/// Does the current style attributes contained dimmed.
 	#[inline]
 	#[must_use]
-	pub const fn is_dimmed(&self) -> bool {
+	pub(crate) const fn is_dimmed(&self) -> bool {
 		self.attributes.has(Attribute::Dim)
 	}
 
 	/// Does the current style attributes contained reverse.
 	#[inline]
 	#[must_use]
-	pub const fn is_reverse(&self) -> bool {
+	pub(crate) const fn is_reverse(&self) -> bool {
 		self.attributes.has(Attribute::Reverse)
 	}
 
 	/// Does the current style attributes contained underlined.
 	#[inline]
 	#[must_use]
-	pub const fn is_underline(&self) -> bool {
+	pub(crate) const fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
 	}
 
 	/// Update the size.
 	#[inline]
-	pub fn set_size(&mut self, size: Size) {
+	pub(crate) fn set_size(&mut self, size: Size) {
 		self.size = size;
 	}
 
 	/// Get the current cursor position.
 	#[inline]
 	#[must_use]
-	pub const fn get_position(&self) -> (u16, u16) {
+	pub(crate) const fn get_position(&self) -> (u16, u16) {
 		self.position
 	}
 
 	/// Has the output been flushed.
 	#[inline]
 	#[must_use]
-	pub const fn is_dirty(&self) -> bool {
+	pub(crate) const fn is_dirty(&self) -> bool {
 		self.dirty
 	}
 }

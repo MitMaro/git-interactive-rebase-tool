@@ -1,12 +1,13 @@
-use display::DisplayColor;
-
 use super::*;
-use crate::view::testutil::{
-	assert_rendered_output::_assert_rendered_output,
-	render_view_line,
-	AssertRenderOptions,
-	ExactPattern,
-	LinePattern,
+use crate::{
+	display::DisplayColor,
+	view::testutil::{
+		assert_rendered_output::_assert_rendered_output,
+		render_view_line,
+		AssertRenderOptions,
+		ExactPattern,
+		LinePattern,
+	},
 };
 
 fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {

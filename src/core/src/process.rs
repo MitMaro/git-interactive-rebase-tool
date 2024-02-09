@@ -14,7 +14,6 @@ use std::{
 };
 
 use anyhow::{anyhow, Error, Result};
-use display::Size;
 use input::StandardEvent;
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
@@ -22,6 +21,7 @@ use todo_file::TodoFile;
 
 pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
+	display::Size,
 	events,
 	events::{Event, MetaEvent},
 	module::{self, ExitStatus, ModuleHandler, State},

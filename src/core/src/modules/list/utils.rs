@@ -2,10 +2,9 @@ use std::cmp;
 
 use bitflags::bitflags;
 use config::KeyBindings;
-use display::DisplayColor;
 use todo_file::{Action, Line, TodoFile};
 
-use crate::view::LineSegment;
+use crate::{display::DisplayColor, view::LineSegment};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum HelpLinesSelector {

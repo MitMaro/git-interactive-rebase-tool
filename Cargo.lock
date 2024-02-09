@@ -346,8 +346,8 @@ dependencies = [
  "chrono",
  "claims",
  "crossbeam-channel",
+ "crossterm",
  "girt-config",
- "girt-display",
  "girt-git",
  "girt-input",
  "girt-runtime",
@@ -363,22 +363,11 @@ dependencies = [
  "rstest",
  "rustc_version",
  "serial_test",
+ "thiserror",
  "unicode-segmentation",
  "unicode-width",
  "uuid",
  "xi-unicode",
-]
-
-[[package]]
-name = "girt-display"
-version = "2.3.0"
-dependencies = [
- "crossterm",
- "girt-config",
- "rstest",
- "rustc_version",
- "serial_test",
- "thiserror",
 ]
 
 [[package]]

@@ -1,11 +1,11 @@
 use std::{path::PathBuf, sync::Arc};
 
-use display::Size;
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
 use todo_file::testutil::with_todo_file;
 
 use crate::{
+	display::Size,
 	events::Event,
 	module::{self, ModuleHandler},
 	process::Process,

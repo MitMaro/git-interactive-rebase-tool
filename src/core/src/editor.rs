@@ -1,9 +1,9 @@
-#[cfg(test)]
-use display::testutil::CrossTerm;
-#[cfg(not(test))]
-use display::CrossTerm;
 use input::read_event;
 
+#[cfg(test)]
+use crate::display::testutil::CrossTerm;
+#[cfg(not(test))]
+use crate::display::CrossTerm;
 use crate::{
 	application::Application,
 	arguments::Args,

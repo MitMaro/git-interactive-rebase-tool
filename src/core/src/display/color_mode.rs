@@ -1,7 +1,7 @@
 /// Represents the color mode of a terminal interface.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
-pub enum ColorMode {
+pub(crate) enum ColorMode {
 	/// Supports 2 colors.
 	TwoTone,
 	/// Supports 8 colors.
@@ -18,14 +18,14 @@ impl ColorMode {
 	/// Supports 4 bit or more of color.
 	#[inline]
 	#[must_use]
-	pub fn has_minimum_four_bit_color(self) -> bool {
+	pub(crate) fn has_minimum_four_bit_color(self) -> bool {
 		self == Self::FourBit || self == Self::EightBit || self == Self::TrueColor
 	}
 
 	/// Has true color support.
 	#[inline]
 	#[must_use]
-	pub fn has_true_color(self) -> bool {
+	pub(crate) fn has_true_color(self) -> bool {
 		self == Self::TrueColor
 	}
 }

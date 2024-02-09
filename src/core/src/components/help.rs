@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests;
 
-use display::DisplayColor;
 use input::{InputOptions, StandardEvent};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
+	display::DisplayColor,
 	events::Event,
 	first,
 	util::handle_view_data_scroll,

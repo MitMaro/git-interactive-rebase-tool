@@ -6,7 +6,6 @@ mod tests;
 
 use std::sync::Arc;
 
-use display::DisplayColor;
 use input::InputOptions;
 use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
@@ -17,6 +16,7 @@ use crate::{
 		choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
 		edit::{Edit, INPUT_OPTIONS as EDIT_INPUT_OPTIONS},
 	},
+	display::DisplayColor,
 	events::Event,
 	module::{Module, State},
 	process::Results,

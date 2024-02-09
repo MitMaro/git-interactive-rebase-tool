@@ -5,7 +5,7 @@ use thiserror::Error;
 /// A display error.
 #[derive(Error, Debug)]
 #[non_exhaustive]
-pub enum DisplayError {
+pub(crate) enum DisplayError {
 	/// An unexpected error occurred.
 	#[error("Unexpected error")]
 	Unexpected(io::Error),

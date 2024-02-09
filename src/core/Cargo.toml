@@ -12,15 +12,17 @@ categories = ["command-line-interface", "command-line-utilities", "text-editors"
 readme = "README.md"
 
 [lib]
-name = "core"
+name = "gcore"
 
 [dependencies]
 anyhow = "1.0.72"
 bitflags = "2.4.2"
 captur = "0.1.0"
+crossterm = "0.26.1"
 crossbeam-channel = "0.5.8"
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
+thiserror = "1.0.56"
 num-format = "0.4.4"
 parking_lot = "0.12.1"
 pico-args = "0.5.0"
@@ -29,7 +31,6 @@ unicode-width = "0.1.10"
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 xi-unicode = "0.3.0"
 girt-config = {version = "2.3.0", path = "../../src/config"}
-girt-display = {version = "2.3.0", path = "../../src/display"}
 girt-git = {version = "2.3.0", path = "../../src/git"}
 girt-input = {version = "2.3.0", path = "../../src/input"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
