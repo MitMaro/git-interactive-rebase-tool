@@ -1,26 +1,30 @@
 //! Utilities for writing tests that interact with input events.
 pub(crate) mod assert_rendered_output;
-pub(crate) mod render_view_line;
+mod render_view_line;
 
 use std::time::Duration;
 
-pub use crate::testutil::{
-	assert_rendered_output::{
-		replace_invisibles,
-		AllPattern,
-		AnyLinePattern,
-		AnyPattern,
-		ContainsPattern,
-		EndsWithPattern,
-		ExactPattern,
-		LinePattern,
-		NotPattern,
-		StartsWithPattern,
-		_assert_rendered_output_from_view_data,
+pub(crate) use crate::view::{
+	render_slice::RenderAction,
+	testutil::{
+		assert_rendered_output::{
+			replace_invisibles,
+			AllPattern,
+			AnyLinePattern,
+			AnyPattern,
+			ContainsPattern,
+			EndsWithPattern,
+			ExactPattern,
+			LinePattern,
+			NotPattern,
+			StartsWithPattern,
+			_assert_rendered_output_from_view_data,
+		},
+		render_view_line::{render_view_line, AssertRenderOptions},
 	},
-	render_view_line::{render_view_line, AssertRenderOptions},
+	thread::ViewAction,
+	State,
 };
-use crate::{render_slice::RenderAction, thread::ViewAction, State};
 
 #[allow(clippy::panic)]
 fn assert_view_state_actions(state: &State, expected_actions: &[String]) {
@@ -98,15 +102,15 @@ fn action_to_string(action: ViewAction) -> String {
 /// Context for a view state test.
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct TestContext {
+pub(crate) struct TestContext {
 	/// The state instance.
-	pub state: State,
+	pub(crate) state: State,
 }
 
 impl TestContext {
 	/// Assert that render actions were sent.
 	#[inline]
-	pub fn assert_render_action(&self, actions: &[&str]) {
+	pub(crate) fn assert_render_action(&self, actions: &[&str]) {
 		assert_view_state_actions(
 			&self.state,
 			actions
@@ -120,7 +124,7 @@ impl TestContext {
 	/// Assert that certain messages were sent by the `State`.
 	#[inline]
 	#[allow(clippy::missing_panics_doc, clippy::panic)]
-	pub fn assert_sent_messages(&self, messages: Vec<&str>) {
+	pub(crate) fn assert_sent_messages(&self, messages: Vec<&str>) {
 		let mut mismatch = false;
 		let mut error_output = vec![
 			String::from("\nUnexpected messages!"),
@@ -162,7 +166,7 @@ impl TestContext {
 
 /// Provide a `State` instance for use within a view test.
 #[inline]
-pub fn with_view_state<C>(callback: C)
+pub(crate) fn with_view_state<C>(callback: C)
 where C: FnOnce(TestContext) {
 	callback(TestContext { state: State::new() });
 }

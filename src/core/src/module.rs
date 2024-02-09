@@ -9,7 +9,6 @@ mod tests;
 use anyhow::Error;
 use input::InputOptions;
 use lazy_static::lazy_static;
-use view::{RenderContext, ViewData};
 
 pub(crate) use self::{
 	exit_status::ExitStatus,
@@ -21,6 +20,7 @@ pub(crate) use self::{
 use crate::{
 	events::{Event, KeyBindings},
 	process::Results,
+	view::{RenderContext, ViewData},
 };
 
 lazy_static! {
@@ -49,7 +49,7 @@ pub(crate) trait Module: Send {
 		event
 	}
 
-	fn handle_event(&mut self, _event: Event, _view_state: &view::State) -> Results {
+	fn handle_event(&mut self, _event: Event, _view_state: &crate::view::State) -> Results {
 		Results::new()
 	}
 

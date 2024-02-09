@@ -1,8 +1,7 @@
 use ::input::{KeyModifiers, MouseEvent, MouseEventKind};
-use view::assert_rendered_output;
 
 use super::*;
-use crate::{action_line, testutil::module_test};
+use crate::{action_line, assert_rendered_output, testutil::module_test};
 
 #[test]
 fn move_down_1() {

@@ -1,7 +1,5 @@
-use view::assert_rendered_output;
-
 use super::*;
-use crate::testutil::module_test;
+use crate::{assert_rendered_output, testutil::module_test};
 
 #[test]
 fn empty_list() {

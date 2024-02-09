@@ -2,13 +2,13 @@ use captur::capture;
 use display::DisplayColor;
 use input::InputOptions;
 use lazy_static::lazy_static;
-use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
 use crate::{
 	events::Event,
 	module::{Module, State},
 	process::Results,
 	util::handle_view_data_scroll,
+	view::{LineSegment, RenderContext, ViewData, ViewLine},
 };
 
 lazy_static! {
@@ -34,7 +34,7 @@ impl Module for Error {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		let mut results = Results::new();
 		if handle_view_data_scroll(event, view_state).is_none() {
 			if let Event::Key(_) = event {
@@ -78,10 +78,9 @@ impl Error {
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
-	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_results, process::Artifact, testutil::module_test};
+	use crate::{assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
 
 	#[test]
 	fn simple_error() {

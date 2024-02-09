@@ -1,8 +1,7 @@
 use claims::{assert_none, assert_some_eq};
-use view::{assert_rendered_output, ViewData};
 
 use super::*;
-
+use crate::{assert_rendered_output, view::ViewData};
 fn create_view_data(search_bar: &SearchBar) -> ViewData {
 	let view_line = search_bar.build_view_line();
 	ViewData::new(|updater| updater.push_line(view_line))

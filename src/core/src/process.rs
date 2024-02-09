@@ -19,7 +19,6 @@ use input::StandardEvent;
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
 use todo_file::TodoFile;
-use view::RenderContext;
 
 pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
@@ -27,6 +26,7 @@ use crate::{
 	events::{Event, MetaEvent},
 	module::{self, ExitStatus, ModuleHandler, State},
 	search::{self, Action, Searchable},
+	view::{RenderContext, State as ViewState},
 };
 
 pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
@@ -39,7 +39,7 @@ pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
 	state: Arc<Mutex<State>>,
 	thread_statuses: ThreadStatuses,
 	todo_file: Arc<Mutex<TodoFile>>,
-	view_state: view::State,
+	view_state: crate::view::State,
 	search_state: search::State,
 }
 
@@ -67,7 +67,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		todo_file: Arc<Mutex<TodoFile>>,
 		module_handler: ModuleHandler<ModuleProvider>,
 		input_state: events::State,
-		view_state: view::State,
+		view_state: crate::view::State,
 		search_state: search::State,
 		thread_statuses: ThreadStatuses,
 	) -> Self {
@@ -134,7 +134,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		let render_context = *self.render_context.lock();
 		let mut module_handler = self.module_handler.lock();
 		let view_data = module_handler.build_view_data(self.state(), &render_context);
-		// TODO It is not possible for this to fail. view::State should be updated to not return an error
+		// TODO It is not possible for this to fail. crate::view::State should be updated to not return an error
 		self.view_state.render(view_data);
 	}
 
@@ -237,7 +237,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		self.input_state.pause();
 
 		self.thread_statuses
-			.wait_for_status(view::REFRESH_THREAD_NAME, &runtime::Status::Waiting)?;
+			.wait_for_status(crate::view::REFRESH_THREAD_NAME, &runtime::Status::Waiting)?;
 		self.thread_statuses
 			.wait_for_status(input::THREAD_NAME, &runtime::Status::Waiting)?;
 

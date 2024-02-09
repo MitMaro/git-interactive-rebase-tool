@@ -1,8 +1,8 @@
 use std::fmt::{Debug, Formatter};
 
-use iter_tools::Itertools;
+use itertools::Itertools;
 
-use crate::{
+use crate::view::{
 	testutil::{render_view_line::render_view_data, AssertRenderOptions},
 	ViewData,
 };
@@ -13,13 +13,13 @@ const VISIBLE_TAB_REPLACEMENT: &str = "   \u{2192}"; // "   →"
 /// Replace invisible characters with visible counterparts
 #[inline]
 #[must_use]
-pub fn replace_invisibles(line: &str) -> String {
+pub(crate) fn replace_invisibles(line: &str) -> String {
 	line.replace(' ', VISIBLE_SPACE_REPLACEMENT)
 		.replace('\t', VISIBLE_TAB_REPLACEMENT)
 }
 
 /// A pattern matcher for a rendered line
-pub trait LinePattern: Debug {
+pub(crate) trait LinePattern: Debug {
 	/// Check if the rendered line matches the matchers pattern
 	fn matches(&self, rendered: &str) -> bool;
 
@@ -67,13 +67,13 @@ impl LinePattern for &str {
 /// A pattern matcher that will match any line
 #[derive(Debug, Copy, Clone)]
 #[non_exhaustive]
-pub struct AnyLinePattern;
+pub(crate) struct AnyLinePattern;
 
 impl AnyLinePattern {
 	/// Create a new instance
 	#[inline]
 	#[must_use]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self
 	}
 }
@@ -98,13 +98,13 @@ impl LinePattern for AnyLinePattern {
 /// A pattern matcher that matches that a rendered line is an exact match
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct ExactPattern(String);
+pub(crate) struct ExactPattern(String);
 
 impl ExactPattern {
 	/// Create a new matcher against a line pattern
 	#[inline]
 	#[must_use]
-	pub fn new(pattern: &str) -> Self {
+	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
 	}
 }
@@ -124,13 +124,13 @@ impl LinePattern for ExactPattern {
 /// A pattern that matches that a rendered line starts with a pattern
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct StartsWithPattern(String);
+pub(crate) struct StartsWithPattern(String);
 
 impl StartsWithPattern {
 	/// Create a new matcher with a pattern
 	#[inline]
 	#[must_use]
-	pub fn new(pattern: &str) -> Self {
+	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
 	}
 }
@@ -158,13 +158,13 @@ impl LinePattern for StartsWithPattern {
 /// A pattern that matches that a rendered line ends with a pattern
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct EndsWithPattern(String);
+pub(crate) struct EndsWithPattern(String);
 
 impl EndsWithPattern {
 	/// Create a new matcher with a pattern
 	#[inline]
 	#[must_use]
-	pub fn new(pattern: &str) -> Self {
+	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
 	}
 }
@@ -193,13 +193,13 @@ impl LinePattern for EndsWithPattern {
 /// A pattern that matches that a rendered line contains a pattern
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct ContainsPattern(String);
+pub(crate) struct ContainsPattern(String);
 
 impl ContainsPattern {
 	/// Create a new matcher with a pattern
 	#[inline]
 	#[must_use]
-	pub fn new(pattern: &str) -> Self {
+	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
 	}
 }
@@ -207,7 +207,7 @@ impl ContainsPattern {
 /// A pattern that matches that a rendered line matches all patterns
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct NotPattern(Box<dyn LinePattern>);
+pub(crate) struct NotPattern(Box<dyn LinePattern>);
 
 impl LinePattern for ContainsPattern {
 	#[inline]
@@ -231,7 +231,7 @@ impl NotPattern {
 	/// Create a new matcher with a pattern
 	#[inline]
 	#[must_use]
-	pub fn new(pattern: Box<dyn LinePattern>) -> Self {
+	pub(crate) fn new(pattern: Box<dyn LinePattern>) -> Self {
 		Self(pattern)
 	}
 }
@@ -255,13 +255,13 @@ impl LinePattern for NotPattern {
 
 /// A pattern that matches that a rendered line matches all of a set of patterns
 #[non_exhaustive]
-pub struct AllPattern(Vec<Box<dyn LinePattern>>);
+pub(crate) struct AllPattern(Vec<Box<dyn LinePattern>>);
 
 impl AllPattern {
 	/// Create a new matcher with patterns
 	#[inline]
 	#[must_use]
-	pub fn new(patterns: Vec<Box<dyn LinePattern>>) -> Self {
+	pub(crate) fn new(patterns: Vec<Box<dyn LinePattern>>) -> Self {
 		Self(patterns)
 	}
 }
@@ -287,13 +287,13 @@ impl Debug for AllPattern {
 
 /// A pattern that matches that a rendered line matches any of a set of patterns
 #[non_exhaustive]
-pub struct AnyPattern(Vec<Box<dyn LinePattern>>);
+pub(crate) struct AnyPattern(Vec<Box<dyn LinePattern>>);
 
 impl AnyPattern {
 	/// Create a new matcher with patterns
 	#[inline]
 	#[must_use]
-	pub fn new(patterns: Vec<Box<dyn LinePattern>>) -> Self {
+	pub(crate) fn new(patterns: Vec<Box<dyn LinePattern>>) -> Self {
 		Self(patterns)
 	}
 }
@@ -374,7 +374,7 @@ pub(crate) fn _assert_rendered_output(
 /// Assert the rendered output from a `ViewData`. Generally this function is not used directly,
 /// instead use the `assert_rendered_output!` macro.
 #[inline]
-pub fn _assert_rendered_output_from_view_data(
+pub(crate) fn _assert_rendered_output_from_view_data(
 	view_data: &ViewData,
 	expected: &[Box<dyn LinePattern>],
 	options: AssertRenderOptions,
@@ -400,28 +400,28 @@ pub fn _assert_rendered_output_from_view_data(
 /// Create an assertion on a line. For use in `assert_rendered_output` macro.
 #[macro_export]
 macro_rules! render_line {
-	($line:expr) => {{ $crate::testutil::ExactPattern::new($line) }};
-	(Line) => {{ $crate::testutil::AnyLinePattern::new() }};
-	(StartsWith $line:expr) => {{ $crate::testutil::StartsWithPattern::new($line) }};
-	(Not StartsWith $line:expr) => {{ $crate::testutil::NotPattern::new(
-		Box::new($crate::testutil::StartsWithPattern::new($line))
+	($line:expr) => {{ $crate::view::testutil::ExactPattern::new($line) }};
+	(Line) => {{ $crate::view::testutil::AnyLinePattern::new() }};
+	(StartsWith $line:expr) => {{ $crate::view::testutil::StartsWithPattern::new($line) }};
+	(Not StartsWith $line:expr) => {{ $crate::view::testutil::NotPattern::new(
+		Box::new($crate::view::testutil::StartsWithPattern::new($line))
 	) }};
-	(EndsWith $line:expr) => {{ $crate::testutil::EndsWithPattern::new($line) }};
-	(Not EndsWith $line:expr) => {{ $crate::testutil::NotPattern::new(
-		Box::new($crate::testutil::EndsWithPattern::new($line))
+	(EndsWith $line:expr) => {{ $crate::view::testutil::EndsWithPattern::new($line) }};
+	(Not EndsWith $line:expr) => {{ $crate::view::testutil::NotPattern::new(
+		Box::new($crate::view::testutil::EndsWithPattern::new($line))
 	) }};
-	(Contains $line:expr) => {{ $crate::testutil::ContainsPattern::new($line) }};
-	(Not Contains $line:expr) => {{ $crate::testutil::NotPattern::new(
-		Box::new($crate::testutil::ContainsPattern::new($line))
+	(Contains $line:expr) => {{ $crate::view::testutil::ContainsPattern::new($line) }};
+	(Not Contains $line:expr) => {{ $crate::view::testutil::NotPattern::new(
+		Box::new($crate::view::testutil::ContainsPattern::new($line))
 	) }};
-	(Not $pattern:expr) => {{ $crate::testutil::NotPattern::new(Box::new($pattern)) }};
+	(Not $pattern:expr) => {{ $crate::view::testutil::NotPattern::new(Box::new($pattern)) }};
 	(All $($patterns:expr),*) => {{
 		let patterns: Vec<Box<dyn LinePattern>> = vec![$( Box::new($patterns), )*];
-		$crate::testutil::AllPattern::new(patterns)
+		$crate::view::testutil::AllPattern::new(patterns)
 	}};
 	(Any $($patterns:expr),*) => {{
 		let patterns: Vec<Box<dyn LinePattern>> = vec![$( Box::new($patterns), )*];
-		$crate::testutil::AnyPattern::new(patterns)
+		$crate::view::testutil::AnyPattern::new(patterns)
 	}};
 }
 
@@ -479,7 +479,7 @@ macro_rules! assert_rendered_output {
 		)
 	};
 	(@base $options:expr, $start:expr, $end:expr, $view_data:expr, $($arg:expr),*) => {
-		use $crate::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions, LinePattern};
+		use $crate::view::testutil::{_assert_rendered_output_from_view_data, AssertRenderOptions, LinePattern};
 		let expected: Vec<Box<dyn LinePattern>> = vec![$( Box::new($arg), )*];
 		_assert_rendered_output_from_view_data($view_data, &expected, $options, $start, $end);
 	};

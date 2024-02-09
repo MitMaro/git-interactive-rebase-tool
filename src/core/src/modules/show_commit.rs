@@ -14,7 +14,6 @@ use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use input::{InputOptions, StandardEvent};
 use parking_lot::Mutex;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData};
 
 use self::{
 	show_commit_state::ShowCommitState,
@@ -28,6 +27,7 @@ use crate::{
 	process::Results,
 	select,
 	util::handle_view_data_scroll,
+	view::{RenderContext, ViewData},
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
@@ -137,7 +137,7 @@ impl Module for ShowCommit {
 		)
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		if self.help.is_active() {
 			self.help.handle_event(event, view_state);
 			return Results::new();

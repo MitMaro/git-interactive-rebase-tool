@@ -4,7 +4,6 @@ mod state;
 mod tests;
 
 use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent};
-use view::{LineSegment, ViewLine};
 
 pub(crate) use self::action::Action as SearchBarAction;
 use crate::{
@@ -13,6 +12,7 @@ use crate::{
 		shared::{EditAction, EditableLine},
 	},
 	events::Event,
+	view::{LineSegment, ViewLine},
 };
 
 const DEFAULT_LABEL: &str = "/";

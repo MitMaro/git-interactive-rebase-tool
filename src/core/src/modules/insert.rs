@@ -10,7 +10,6 @@ use display::DisplayColor;
 use input::InputOptions;
 use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
-use view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine};
 
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
@@ -21,6 +20,7 @@ use crate::{
 	events::Event,
 	module::{Module, State},
 	process::Results,
+	view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine},
 };
 
 pub(crate) struct Insert {
@@ -64,7 +64,7 @@ impl Module for Insert {
 	}
 
 	#[allow(clippy::unreachable)]
-	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			InsertState::Prompt => {

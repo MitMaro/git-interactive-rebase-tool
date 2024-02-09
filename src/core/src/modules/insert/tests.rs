@@ -1,8 +1,7 @@
 use input::KeyCode;
-use view::assert_rendered_output;
 
 use super::*;
-use crate::{assert_results, events::Event, process::Artifact, testutil::module_test};
+use crate::{assert_rendered_output, assert_results, events::Event, process::Artifact, testutil::module_test};
 
 fn create_insert(todo_file: TodoFile) -> Insert {
 	Insert::new(Arc::new(Mutex::new(todo_file)))

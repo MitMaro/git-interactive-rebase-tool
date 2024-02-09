@@ -42,7 +42,7 @@ impl SegmentPartial {
 
 /// Represents a segment in a larger line.
 #[derive(Clone, Debug)]
-pub struct LineSegment {
+pub(crate) struct LineSegment {
 	color: DisplayColor,
 	dim: bool,
 	reverse: bool,
@@ -55,21 +55,21 @@ impl LineSegment {
 	/// Create a new instance with just the content.
 	#[must_use]
 	#[inline]
-	pub fn new(text: &str) -> Self {
+	pub(crate) fn new(text: &str) -> Self {
 		Self::new_with_color_and_style(text, DisplayColor::Normal, false, false, false)
 	}
 
 	/// Create a new instance with added color.
 	#[must_use]
 	#[inline]
-	pub fn new_with_color(text: &str, color: DisplayColor) -> Self {
+	pub(crate) fn new_with_color(text: &str, color: DisplayColor) -> Self {
 		Self::new_with_color_and_style(text, color, false, false, false)
 	}
 
 	/// Create a new instance with added color and style.
 	#[must_use]
 	#[inline]
-	pub fn new_with_color_and_style(
+	pub(crate) fn new_with_color_and_style(
 		text: &str,
 		color: DisplayColor,
 		dim: bool,

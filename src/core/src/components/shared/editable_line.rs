@@ -1,9 +1,8 @@
 use display::DisplayColor;
 use input::{KeyCode, KeyEvent, KeyModifiers};
 use unicode_segmentation::UnicodeSegmentation;
-use view::LineSegment;
 
-use crate::events::Event;
+use crate::{events::Event, view::LineSegment};
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum EditAction {
@@ -205,9 +204,11 @@ impl EditableLine {
 
 #[cfg(test)]
 mod tests {
-	use view::{assert_rendered_output, testutil::AssertRenderOptions, ViewData, ViewLine};
-
 	use super::*;
+	use crate::{
+		assert_rendered_output,
+		view::{testutil::AssertRenderOptions, ViewData, ViewLine},
+	};
 
 	macro_rules! view_data_from_editable_line {
 		($editable_line:expr) => {{

@@ -1,10 +1,10 @@
 use uuid::Uuid;
 
-use crate::{ViewDataUpdater, ViewLine};
+use crate::view::{ViewDataUpdater, ViewLine};
 
 /// Represents the content to be rendered to the `View`.
 #[derive(Debug)]
-pub struct ViewData {
+pub(crate) struct ViewData {
 	lines: Vec<ViewLine>,
 	lines_leading: Vec<ViewLine>,
 	lines_trailing: Vec<ViewLine>,
@@ -21,7 +21,7 @@ pub struct ViewData {
 impl ViewData {
 	/// Create a new instance using a `ViewDataUpdater`.
 	#[inline]
-	pub fn new<C>(callback: C) -> Self
+	pub(crate) fn new<C>(callback: C) -> Self
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let mut view_data = Self {
 			lines: vec![],
@@ -44,13 +44,13 @@ impl ViewData {
 	/// Does the instance contain any content.
 	#[must_use]
 	#[inline]
-	pub fn is_empty(&self) -> bool {
+	pub(crate) fn is_empty(&self) -> bool {
 		self.lines.is_empty() && self.lines_leading.is_empty() && self.lines_trailing.is_empty()
 	}
 
 	/// Update the view data using a `ViewDataUpdater`. This allows for batch updating of the `ViewData`.
 	#[inline]
-	pub fn update_view_data<C>(&mut self, callback: C)
+	pub(crate) fn update_view_data<C>(&mut self, callback: C)
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let modified = {
 			let mut view_data_updater = ViewDataUpdater::new(self);

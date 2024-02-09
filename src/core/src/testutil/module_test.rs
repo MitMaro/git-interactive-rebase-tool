@@ -1,16 +1,16 @@
 use captur::capture;
 use todo_file::{testutil::with_todo_file, TodoFile};
-use view::{
-	testutil::{with_view_state, TestContext as ViewContext},
-	RenderContext,
-	ViewData,
-};
 
 use crate::{
 	events::Event,
 	module::{Module, State},
 	process::Results,
 	testutil::{with_event_handler, EventHandlerTestContext},
+	view::{
+		testutil::{with_view_state, TestContext as ViewContext},
+		RenderContext,
+		ViewData,
+	},
 };
 
 pub(crate) struct TestContext {

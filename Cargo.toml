@@ -32,8 +32,7 @@ members = [
     "src/input",
     "src/runtime",
     "src/testutils",
-    "src/todo_file",
-    "src/view",
+    "src/todo_file"
 ]
 
 [dependencies]

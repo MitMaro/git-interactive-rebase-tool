@@ -11,7 +11,6 @@ use if_chain::if_chain;
 use input::{InputOptions, MouseEventKind, StandardEvent};
 use parking_lot::Mutex;
 use todo_file::{Action, EditContext, Line, Search, TodoFile};
-use view::{LineSegment, RenderContext, ViewData, ViewLine};
 
 use self::utils::{
 	get_list_normal_mode_help_lines,
@@ -30,6 +29,7 @@ use crate::{
 	modules::list::utils::get_line_action_maximum_width,
 	process::Results,
 	select,
+	view::{LineSegment, RenderContext, ViewData, ViewLine},
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
@@ -98,7 +98,7 @@ impl Module for List {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		select!(
 			default || {
 				match self.state {
@@ -172,12 +172,12 @@ impl List {
 	}
 
 	#[allow(clippy::unused_self)]
-	fn move_cursor_left(&self, view_state: &view::State) {
+	fn move_cursor_left(&self, view_state: &crate::view::State) {
 		view_state.scroll_left();
 	}
 
 	#[allow(clippy::unused_self)]
-	fn move_cursor_right(&self, view_state: &view::State) {
+	fn move_cursor_right(&self, view_state: &crate::view::State) {
 		view_state.scroll_right();
 	}
 
@@ -553,14 +553,14 @@ impl List {
 		}
 	}
 
-	fn handle_normal_help_input(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
+	fn handle_normal_help_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
 		self.normal_mode_help.is_active().then(|| {
 			self.normal_mode_help.handle_event(event, view_state);
 			Results::new()
 		})
 	}
 
-	fn handle_visual_help_input(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
+	fn handle_visual_help_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
 		self.visual_mode_help.is_active().then(|| {
 			self.visual_mode_help.handle_event(event, view_state);
 			Results::new()
@@ -599,7 +599,7 @@ impl List {
 	}
 
 	#[allow(clippy::integer_division)]
-	fn handle_common_list_input(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
+	fn handle_common_list_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
 		let mut results = Results::new();
 		match event {
 			Event::MetaEvent(meta_event) => {
@@ -658,7 +658,7 @@ impl List {
 		Some(results)
 	}
 
-	fn handle_normal_mode_event(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_normal_mode_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		if let Some(results) = self.handle_common_list_input(event, view_state) {
 			results
 		}
@@ -679,7 +679,7 @@ impl List {
 		}
 	}
 
-	fn handle_visual_mode_input(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_visual_mode_input(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		self.handle_common_list_input(event, view_state)
 			.unwrap_or_else(Results::new)
 	}

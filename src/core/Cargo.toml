@@ -25,21 +25,24 @@ num-format = "0.4.4"
 parking_lot = "0.12.1"
 pico-args = "0.5.0"
 unicode-segmentation = "1.10.1"
+unicode-width = "0.1.10"
+uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
+xi-unicode = "0.3.0"
 girt-config = {version = "2.3.0", path = "../../src/config"}
 girt-display = {version = "2.3.0", path = "../../src/display"}
 girt-git = {version = "2.3.0", path = "../../src/git"}
 girt-input = {version = "2.3.0", path = "../../src/input"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
 girt-todo-file = {version = "2.3.0", path = "../../src/todo_file"}
-girt-view = {version = "2.3.0", path = "../../src/view"}
 
 [dev-dependencies]
 claims = "0.7.1"
+itertools = "0.12.1"
 pretty_assertions = "1.4.0"
 regex = "1.8.3"
 rstest = "0.18.1"
 serial_test = "2.0.0"
-girt-view = {version = "2.3.0", path = "../../src/view", features = ["testutils"]}
+girt-config = {version = "2.3.0", path = "../config"}
 
 [build-dependencies]
 chrono = "0.4.26"

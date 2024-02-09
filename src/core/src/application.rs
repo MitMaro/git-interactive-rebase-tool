@@ -8,7 +8,6 @@ use input::{Event, EventHandler, EventReaderFn};
 use parking_lot::Mutex;
 use runtime::{Runtime, ThreadStatuses, Threadable};
 use todo_file::{TodoFile, TodoFileOptions};
-use view::View;
 
 use crate::{
 	events,
@@ -18,6 +17,7 @@ use crate::{
 	process::{self, Process},
 	search,
 	search::UpdateHandlerFn,
+	view::View,
 	Args,
 	Exit,
 };
@@ -70,7 +70,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let input_state = input_threads.state();
 		threads.push(Box::new(input_threads));
 
-		let view_threads = view::Thread::new(view);
+		let view_threads = crate::view::Thread::new(view);
 		let view_state = view_threads.state();
 		threads.push(Box::new(view_threads));
 

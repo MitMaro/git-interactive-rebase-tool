@@ -4,13 +4,13 @@ use display::Size;
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
 use todo_file::testutil::with_todo_file;
-use view::testutil::{with_view_state, TestContext as ViewContext};
 
 use crate::{
 	events::Event,
 	module::{self, ModuleHandler},
 	process::Process,
 	testutil::{with_event_handler, with_search, EventHandlerTestContext, SearchTestContext},
+	view::testutil::{with_view_state, TestContext as ViewContext},
 };
 
 pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {

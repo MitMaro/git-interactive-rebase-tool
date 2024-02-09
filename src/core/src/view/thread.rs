@@ -12,21 +12,20 @@ use display::Tui;
 use parking_lot::Mutex;
 use runtime::{Installer, RuntimeError, Threadable};
 
-pub(crate) use self::action::ViewAction;
-pub use self::state::State;
-use crate::View;
+pub(crate) use self::{action::ViewAction, state::State};
+use super::View;
 
 /// The name of the main view thread.
-pub const MAIN_THREAD_NAME: &str = "view_main";
+pub(crate) const MAIN_THREAD_NAME: &str = "view_main";
 /// The name of the view refresh thread.
-pub const REFRESH_THREAD_NAME: &str = "view_refresh";
+pub(crate) const REFRESH_THREAD_NAME: &str = "view_refresh";
 
 const MINIMUM_TICK_RATE: Duration = Duration::from_millis(20); // ~50 Hz update
 const PAUSE_TIME: Duration = Duration::from_millis(230); // 250 ms total pause
 
 /// A thread that updates the rendered view.
 #[derive(Debug)]
-pub struct Thread<ViewTui: Tui + Send + 'static> {
+pub(crate) struct Thread<ViewTui: Tui + Send + 'static> {
 	state: State,
 	view: Arc<Mutex<View<ViewTui>>>,
 }
@@ -57,7 +56,7 @@ impl<ViewTui: Tui + Send + 'static> Threadable for Thread<ViewTui> {
 impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 	/// Creates a new thread.
 	#[inline]
-	pub fn new(view: View<ViewTui>) -> Self {
+	pub(crate) fn new(view: View<ViewTui>) -> Self {
 		Self {
 			state: State::new(),
 			view: Arc::new(Mutex::new(view)),
@@ -67,7 +66,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 	/// Returns a cloned copy of the state of the thread.
 	#[inline]
 	#[must_use]
-	pub fn state(&self) -> State {
+	pub(crate) fn state(&self) -> State {
 		self.state.clone()
 	}
 
@@ -172,7 +171,7 @@ mod tests {
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
-	use crate::ViewData;
+	use crate::view::ViewData;
 
 	const READ_MESSAGE_TIMEOUT: Duration = Duration::from_secs(1);
 
