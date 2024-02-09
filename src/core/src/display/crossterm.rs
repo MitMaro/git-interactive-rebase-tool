@@ -25,11 +25,11 @@ use crossterm::{
 	QueueableCommand,
 };
 
-use crate::{color_mode::ColorMode, error::DisplayError, size::Size, tui::Tui, utils::detect_color_mode};
+use crate::display::{color_mode::ColorMode, error::DisplayError, size::Size, tui::Tui, utils::detect_color_mode};
 
 /// A thin wrapper over the [Crossterm library](https://github.com/crossterm-rs/crossterm).
 #[derive(Debug)]
-pub struct CrossTerm {
+pub(crate) struct CrossTerm {
 	color_mode: ColorMode,
 	window: BufWriter<Stdout>,
 }
@@ -151,7 +151,7 @@ impl CrossTerm {
 	/// Create a new instance.
 	#[inline]
 	#[must_use]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self {
 			window: BufWriter::new(stdout()),
 			color_mode: detect_color_mode(available_color_count()),

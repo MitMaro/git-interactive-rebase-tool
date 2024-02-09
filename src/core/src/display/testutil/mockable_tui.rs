@@ -2,12 +2,12 @@ use std::io;
 
 use crossterm::style::Colors;
 
-use crate::{ColorMode, DisplayError, Size, Tui};
+use crate::display::{ColorMode, DisplayError, Size, Tui};
 
 /// Create an instance of a `DisplayError::Unexpected` error with an other IO error.
 #[must_use]
 #[inline]
-pub fn create_unexpected_error() -> DisplayError {
+pub(crate) fn create_unexpected_error() -> DisplayError {
 	DisplayError::Unexpected(io::Error::from(io::ErrorKind::Other))
 }
 
@@ -15,7 +15,7 @@ pub fn create_unexpected_error() -> DisplayError {
 /// mocked versions of the `TUI` interface, without needing to define all methods provided by the
 /// interface.
 #[allow(missing_docs, clippy::missing_errors_doc)]
-pub trait MockableTui: Tui {
+pub(crate) trait MockableTui: Tui {
 	#[inline]
 	fn get_color_mode(&self) -> ColorMode {
 		ColorMode::TwoTone

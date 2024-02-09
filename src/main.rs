@@ -128,7 +128,7 @@ use std::{env, process};
 #[allow(clippy::exit, clippy::print_stderr)]
 #[cfg(not(tarpaulin_include))]
 fn main() {
-	let exit = core::run(env::args_os().skip(1).collect());
+	let exit = gcore::run(env::args_os().skip(1).collect());
 	if let Some(message) = exit.get_message().as_ref() {
 		eprintln!("{message}");
 	}

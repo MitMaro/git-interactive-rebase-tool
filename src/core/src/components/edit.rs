@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests;
 
-use display::DisplayColor;
 use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 
 use crate::{
 	components::shared::EditableLine,
+	display::DisplayColor,
 	events::Event,
 	view::{LineSegment, ViewData, ViewDataUpdater, ViewLine},
 };

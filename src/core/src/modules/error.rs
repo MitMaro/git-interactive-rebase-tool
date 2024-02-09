@@ -1,9 +1,9 @@
 use captur::capture;
-use display::DisplayColor;
 use input::InputOptions;
 use lazy_static::lazy_static;
 
 use crate::{
+	display::DisplayColor,
 	events::Event,
 	module::{Module, State},
 	process::Results,

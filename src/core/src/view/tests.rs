@@ -1,10 +1,10 @@
 use config::Theme;
-use display::{
+
+use super::*;
+use crate::display::{
 	testutil::{assert_output, CrossTerm},
 	Size,
 };
-
-use super::*;
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let theme = Theme::new();

@@ -1,7 +1,9 @@
 use bitflags::bitflags;
-use display::DisplayColor;
 
-use crate::view::{LineSegment, ViewData, ViewLine};
+use crate::{
+	display::DisplayColor,
+	view::{LineSegment, ViewData, ViewLine},
+};
 
 bitflags! {
 	/// Options for the `assert_rendered_output!` macro

@@ -1,9 +1,9 @@
 use crossterm::style::Colors;
 
-use crate::{color_mode::ColorMode, DisplayError, Size};
+use crate::display::{color_mode::ColorMode, DisplayError, Size};
 
 /// An interface that describes interactions with a terminal interface.
-pub trait Tui {
+pub(crate) trait Tui {
 	/// Get the supported color mode.
 	fn get_color_mode(&self) -> ColorMode;
 

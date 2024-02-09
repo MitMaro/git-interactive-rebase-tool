@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use config::Config;
-use display::Display;
 use git::Repository;
 use input::{Event, EventHandler, EventReaderFn};
 use parking_lot::Mutex;
@@ -10,6 +9,7 @@ use runtime::{Runtime, ThreadStatuses, Threadable};
 use todo_file::{TodoFile, TodoFileOptions};
 
 use crate::{
+	display::Display,
 	events,
 	events::{KeyBindings, MetaEvent},
 	help::build_help,
@@ -38,7 +38,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	pub(crate) fn new<EventProvider, Tui>(args: &Args, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit>
 	where
 		EventProvider: EventReaderFn,
-		Tui: display::Tui + Send + 'static,
+		Tui: crate::display::Tui + Send + 'static,
 	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
@@ -193,12 +193,12 @@ mod tests {
 	use std::ffi::OsString;
 
 	use claims::{assert_none, assert_ok};
-	use display::{testutil::CrossTerm, Size};
 	use input::{KeyCode, KeyEvent, KeyModifiers};
 	use runtime::{Installer, RuntimeError};
 
 	use super::*;
 	use crate::{
+		display::{testutil::CrossTerm, Size},
 		events::Event,
 		module::Modules,
 		testutil::{create_event_reader, set_git_directory, DefaultTestModule, TestModuleProvider},

@@ -6,7 +6,6 @@ use std::{cmp::min, sync::Arc};
 
 use captur::capture;
 use config::Config;
-use display::DisplayColor;
 use if_chain::if_chain;
 use input::{InputOptions, MouseEventKind, StandardEvent};
 use parking_lot::Mutex;
@@ -24,6 +23,7 @@ use crate::{
 		help::Help,
 		search_bar::{SearchBar, SearchBarAction},
 	},
+	display::DisplayColor,
 	events::{Event, KeyBindings, MetaEvent},
 	module::{ExitStatus, Module, State},
 	modules::list::utils::get_line_action_maximum_width,

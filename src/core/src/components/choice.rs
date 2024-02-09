@@ -3,11 +3,11 @@ mod tests;
 
 use std::collections::HashMap;
 
-use display::DisplayColor;
 use input::{InputOptions, KeyCode};
 use lazy_static::lazy_static;
 
 use crate::{
+	display::DisplayColor,
 	events::Event,
 	util::handle_view_data_scroll,
 	view::{LineSegment, ViewData, ViewLine},

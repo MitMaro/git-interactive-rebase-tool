@@ -8,12 +8,12 @@ use std::{
 };
 
 use captur::capture;
-use display::Tui;
 use parking_lot::Mutex;
 use runtime::{Installer, RuntimeError, Threadable};
 
 pub(crate) use self::{action::ViewAction, state::State};
 use super::View;
+use crate::display::Tui;
 
 /// The name of the main view thread.
 pub(crate) const MAIN_THREAD_NAME: &str = "view_main";
@@ -163,15 +163,17 @@ mod tests {
 
 	use claims::assert_ok;
 	use config::Theme;
-	use display::{
-		testutil::{create_unexpected_error, CrossTerm, MockableTui},
-		Display,
-		DisplayError,
-	};
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
-	use crate::view::ViewData;
+	use crate::{
+		display::{
+			testutil::{create_unexpected_error, CrossTerm, MockableTui},
+			Display,
+			DisplayError,
+		},
+		view::ViewData,
+	};
 
 	const READ_MESSAGE_TIMEOUT: Duration = Duration::from_secs(1);
 
