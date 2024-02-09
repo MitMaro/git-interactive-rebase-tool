@@ -1,4 +1,4 @@
-use super::{ViewData, ViewLine};
+use crate::{ViewData, ViewLine};
 
 /// An updater utility for a `ViewData`.
 #[derive(Debug)]

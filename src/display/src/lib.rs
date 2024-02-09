@@ -520,8 +520,8 @@ mod tests {
 	use ::crossterm::style::Color as CrosstermColor;
 	use rstest::rstest;
 
-	use super::{testutil::CrossTerm, *};
-	use crate::testutil::State;
+	use super::*;
+	use crate::testutil::{CrossTerm, State};
 
 	#[test]
 	fn draw_str() {

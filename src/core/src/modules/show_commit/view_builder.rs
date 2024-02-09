@@ -2,7 +2,11 @@ use display::DisplayColor;
 use git::{Commit, CommitDiff, DiffLine, Origin};
 use view::{LineSegment, ViewDataUpdater, ViewLine};
 
-use super::util::{get_files_changed_summary, get_partition_index_on_whitespace_for_line, get_stat_item_segments};
+use crate::modules::show_commit::util::{
+	get_files_changed_summary,
+	get_partition_index_on_whitespace_for_line,
+	get_stat_item_segments,
+};
 
 const PADDING_CHARACTER: char = '\u{2015}'; // '―'
 

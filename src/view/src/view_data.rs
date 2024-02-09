@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use super::{ViewDataUpdater, ViewLine};
+use crate::{ViewDataUpdater, ViewLine};
 
 /// Represents the content to be rendered to the `View`.
 #[derive(Debug)]

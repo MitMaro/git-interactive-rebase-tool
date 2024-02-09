@@ -32,9 +32,9 @@ pub(crate) mod local {
 		}
 	}
 
-	pub(crate) type Event = super::Event<TestEvent>;
-	pub(crate) type EventHandler = super::EventHandler<TestKeybinding, TestEvent>;
-	pub(crate) type KeyBindings = super::KeyBindings<TestKeybinding, TestEvent>;
+	pub(crate) type Event = crate::Event<TestEvent>;
+	pub(crate) type EventHandler = crate::EventHandler<TestKeybinding, TestEvent>;
+	pub(crate) type KeyBindings = crate::KeyBindings<TestKeybinding, TestEvent>;
 
 	pub(crate) fn create_test_keybindings() -> KeyBindings {
 		super::create_test_keybindings::<TestKeybinding, TestEvent>(TestKeybinding {})
