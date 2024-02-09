@@ -147,9 +147,10 @@ mod search;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
-pub mod testutil;
+mod testutil;
 mod util;
 mod version;
+mod view;
 
 use std::ffi::OsString;
 

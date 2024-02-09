@@ -1,10 +1,10 @@
 use display::DisplayColor;
 
-use crate::line_segment::LineSegment;
+use crate::view::line_segment::LineSegment;
 
 /// Represents a line in the view.
 #[derive(Debug)]
-pub struct ViewLine {
+pub(crate) struct ViewLine {
 	pinned_segments: usize,
 	segments: Vec<LineSegment>,
 	selected: bool,
@@ -15,14 +15,14 @@ impl ViewLine {
 	/// Create a new instance that contains no content.
 	#[must_use]
 	#[inline]
-	pub fn new_empty_line() -> Self {
+	pub(crate) fn new_empty_line() -> Self {
 		Self::new_with_pinned_segments(vec![], 1)
 	}
 
 	/// Create a new instance with all segments pinned.
 	#[must_use]
 	#[inline]
-	pub fn new_pinned(segments: Vec<LineSegment>) -> Self {
+	pub(crate) fn new_pinned(segments: Vec<LineSegment>) -> Self {
 		let segments_length = segments.len();
 		Self::new_with_pinned_segments(segments, segments_length)
 	}
@@ -30,7 +30,7 @@ impl ViewLine {
 	/// Create a new instance with a number of pinned leading segments.
 	#[must_use]
 	#[inline]
-	pub fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
+	pub(crate) fn new_with_pinned_segments(segments: Vec<LineSegment>, pinned_segments: usize) -> Self {
 		Self {
 			selected: false,
 			segments,
@@ -42,7 +42,7 @@ impl ViewLine {
 	/// Set that this line is selected.
 	#[must_use]
 	#[inline]
-	pub const fn set_selected(mut self, selected: bool) -> Self {
+	pub(crate) const fn set_selected(mut self, selected: bool) -> Self {
 		self.selected = selected;
 		self
 	}
@@ -50,7 +50,7 @@ impl ViewLine {
 	/// Set a padding character.
 	#[must_use]
 	#[inline]
-	pub fn set_padding(mut self, c: char) -> Self {
+	pub(crate) fn set_padding(mut self, c: char) -> Self {
 		self.padding = Some(LineSegment::new(String::from(c).as_str()));
 		self
 	}
@@ -58,7 +58,7 @@ impl ViewLine {
 	/// Set the padding character with a related color and style.
 	#[must_use]
 	#[inline]
-	pub fn set_padding_with_color_and_style(
+	pub(crate) fn set_padding_with_color_and_style(
 		mut self,
 		c: char,
 		color: DisplayColor,
@@ -79,21 +79,21 @@ impl ViewLine {
 	/// Get the number of pinned line segments.
 	#[must_use]
 	#[inline]
-	pub const fn get_number_of_pinned_segment(&self) -> usize {
+	pub(crate) const fn get_number_of_pinned_segment(&self) -> usize {
 		self.pinned_segments
 	}
 
 	/// Get the view line segments.
 	#[must_use]
 	#[inline]
-	pub const fn get_segments(&self) -> &Vec<LineSegment> {
+	pub(crate) const fn get_segments(&self) -> &Vec<LineSegment> {
 		&self.segments
 	}
 
 	/// Is the line selected.
 	#[must_use]
 	#[inline]
-	pub const fn get_selected(&self) -> bool {
+	pub(crate) const fn get_selected(&self) -> bool {
 		self.selected
 	}
 

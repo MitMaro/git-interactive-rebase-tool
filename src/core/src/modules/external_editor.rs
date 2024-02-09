@@ -12,7 +12,6 @@ use input::InputOptions;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
-use view::{RenderContext, ViewData, ViewLine};
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
@@ -20,6 +19,7 @@ use crate::{
 	events::{Event, MetaEvent},
 	module::{ExitStatus, Module, State},
 	process::Results,
+	view::{RenderContext, ViewData, ViewLine},
 };
 
 lazy_static! {
@@ -93,7 +93,7 @@ impl Module for ExternalEditor {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			ExternalEditorState::Active => {

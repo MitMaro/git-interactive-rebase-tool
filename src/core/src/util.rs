@@ -38,7 +38,7 @@ macro_rules! first {
 /// Utility function to handle scroll events.
 #[inline]
 #[must_use]
-pub(crate) fn handle_view_data_scroll(event: Event, view_state: &view::State) -> Option<Event> {
+pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::State) -> Option<Event> {
 	match event {
 		Event::Standard(StandardEvent::ScrollLeft) => view_state.scroll_left(),
 		Event::Standard(StandardEvent::ScrollRight) => view_state.scroll_right(),
@@ -57,9 +57,9 @@ pub(crate) fn handle_view_data_scroll(event: Event, view_state: &view::State) ->
 mod tests {
 	use captur::capture;
 	use rstest::rstest;
-	use view::testutil::with_view_state;
 
 	use super::*;
+	use crate::view::testutil::with_view_state;
 
 	#[rstest]
 	#[case::scroll_left(StandardEvent::ScrollLeft, "ScrollLeft")]

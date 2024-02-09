@@ -6,9 +6,12 @@ use std::collections::HashMap;
 use display::DisplayColor;
 use input::{InputOptions, KeyCode};
 use lazy_static::lazy_static;
-use view::{LineSegment, ViewData, ViewLine};
 
-use crate::{events::Event, util::handle_view_data_scroll};
+use crate::{
+	events::Event,
+	util::handle_view_data_scroll,
+	view::{LineSegment, ViewData, ViewLine},
+};
 
 lazy_static! {
 	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
@@ -81,7 +84,7 @@ where T: Clone
 		&self.view_data
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event, view_state: &view::State) -> Option<&T> {
+	pub(crate) fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Option<&T> {
 		if handle_view_data_scroll(event, view_state).is_none() {
 			if let Event::Key(key_event) = event {
 				if let KeyCode::Char(c) = key_event.code {

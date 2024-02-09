@@ -1,11 +1,11 @@
 use input::InputOptions;
 use lazy_static::lazy_static;
-use view::{RenderContext, ViewData, ViewLine};
 
 use crate::{
 	events::Event,
 	module::{Module, State},
 	process::Results,
+	view::{RenderContext, ViewData, ViewLine},
 };
 
 const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continue";
@@ -57,7 +57,7 @@ impl Module for WindowSizeError {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, _: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, _: &crate::view::State) -> Results {
 		let mut results = Results::new();
 
 		if let Event::Resize(width, height) = event {
@@ -83,10 +83,9 @@ impl WindowSizeError {
 #[cfg(test)]
 mod tests {
 	use rstest::rstest;
-	use view::assert_rendered_output;
 
 	use super::*;
-	use crate::{assert_results, process::Artifact, testutil::module_test};
+	use crate::{assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
 
 	const MINIMUM_WINDOW_HEIGHT: usize = 5;
 	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;

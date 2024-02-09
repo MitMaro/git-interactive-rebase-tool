@@ -4,9 +4,13 @@ mod tests;
 use display::DisplayColor;
 use input::{InputOptions, StandardEvent};
 use unicode_segmentation::UnicodeSegmentation;
-use view::{LineSegment, ViewData, ViewLine};
 
-use crate::{events::Event, first, util::handle_view_data_scroll};
+use crate::{
+	events::Event,
+	first,
+	util::handle_view_data_scroll,
+	view::{LineSegment, ViewData, ViewLine},
+};
 
 const INPUT_OPTIONS: InputOptions = InputOptions::RESIZE
 	.union(InputOptions::MOVEMENT)
@@ -84,7 +88,7 @@ impl Help {
 		(self.is_active() || event == Event::Standard(StandardEvent::Help)).then_some(event)
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event, view_state: &view::State) {
+	pub(crate) fn handle_event(&mut self, event: Event, view_state: &crate::view::State) {
 		let mut event_handler = || {
 			match event {
 				Event::Key(_) | Event::Standard(StandardEvent::Help) => self.active = false,

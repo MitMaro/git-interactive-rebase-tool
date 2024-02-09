@@ -10,10 +10,10 @@ use std::{
 
 pub(crate) use render_action::RenderAction;
 
-use crate::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
+use crate::view::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
 
 #[derive(Debug)]
-pub struct RenderSlice {
+pub(crate) struct RenderSlice {
 	actions: VecDeque<RenderAction>,
 	height: usize,
 	lines: Vec<ViewLine>,
@@ -33,7 +33,7 @@ pub struct RenderSlice {
 }
 
 impl RenderSlice {
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self {
 			actions: VecDeque::new(),
 			height: 0,
@@ -54,43 +54,43 @@ impl RenderSlice {
 		}
 	}
 
-	pub fn record_scroll_up(&mut self) {
+	pub(crate) fn record_scroll_up(&mut self) {
 		self.actions.push_back(RenderAction::ScrollUp);
 	}
 
-	pub fn record_scroll_down(&mut self) {
+	pub(crate) fn record_scroll_down(&mut self) {
 		self.actions.push_back(RenderAction::ScrollDown);
 	}
 
-	pub fn record_page_up(&mut self) {
+	pub(crate) fn record_page_up(&mut self) {
 		self.actions.push_back(RenderAction::PageUp);
 	}
 
-	pub fn record_page_down(&mut self) {
+	pub(crate) fn record_page_down(&mut self) {
 		self.actions.push_back(RenderAction::PageDown);
 	}
 
-	pub fn record_scroll_left(&mut self) {
+	pub(crate) fn record_scroll_left(&mut self) {
 		self.actions.push_back(RenderAction::ScrollLeft);
 	}
 
-	pub fn record_scroll_right(&mut self) {
+	pub(crate) fn record_scroll_right(&mut self) {
 		self.actions.push_back(RenderAction::ScrollRight);
 	}
 
-	pub fn record_scroll_top(&mut self) {
+	pub(crate) fn record_scroll_top(&mut self) {
 		self.actions.push_back(RenderAction::ScrollTop);
 	}
 
-	pub fn record_scroll_bottom(&mut self) {
+	pub(crate) fn record_scroll_bottom(&mut self) {
 		self.actions.push_back(RenderAction::ScrollBottom);
 	}
 
-	pub fn record_resize(&mut self, width: usize, height: usize) {
+	pub(crate) fn record_resize(&mut self, width: usize, height: usize) {
 		self.actions.push_back(RenderAction::Resize(width, height));
 	}
 
-	pub fn sync_view_data(&mut self, view_data: &ViewData) {
+	pub(crate) fn sync_view_data(&mut self, view_data: &ViewData) {
 		let cache_expired = self.cache_expired(view_data);
 		// scroll position depends on padding, so if the view has changed it needs to be updated early
 		if cache_expired {
@@ -195,7 +195,7 @@ impl RenderSlice {
 		self.version
 	}
 
-	#[cfg(feature = "testutils")]
+	#[cfg(test)]
 	pub(super) const fn get_actions(&self) -> &VecDeque<RenderAction> {
 		&self.actions
 	}

@@ -3,13 +3,13 @@ use std::sync::Arc;
 use input::InputOptions;
 use parking_lot::Mutex;
 use todo_file::TodoFile;
-use view::{RenderContext, ViewData};
 
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	events::{Event, KeyBindings},
 	module::{ExitStatus, Module, State},
 	process::Results,
+	view::{RenderContext, ViewData},
 };
 
 pub(crate) struct ConfirmAbort {
@@ -30,7 +30,7 @@ impl Module for ConfirmAbort {
 		Confirm::read_event(event, key_bindings)
 	}
 
-	fn handle_event(&mut self, event: Event, _: &view::State) -> Results {
+	fn handle_event(&mut self, event: Event, _: &crate::view::State) -> Results {
 		let confirmed = self.dialog.handle_event(event);
 		let mut results = Results::new();
 		match confirmed {
@@ -59,10 +59,16 @@ impl ConfirmAbort {
 #[cfg(test)]
 mod tests {
 	use input::KeyCode;
-	use view::{assert_rendered_output, testutil::AssertRenderOptions};
 
 	use super::*;
-	use crate::{assert_results, events::MetaEvent, process::Artifact, testutil::module_test};
+	use crate::{
+		assert_rendered_output,
+		assert_results,
+		events::MetaEvent,
+		process::Artifact,
+		testutil::module_test,
+		view::testutil::AssertRenderOptions,
+	};
 
 	fn create_confirm_abort(todo_file: TodoFile) -> ConfirmAbort {
 		ConfirmAbort::new(

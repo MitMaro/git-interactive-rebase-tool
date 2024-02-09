@@ -4,7 +4,8 @@ use bitflags::bitflags;
 use config::KeyBindings;
 use display::DisplayColor;
 use todo_file::{Action, Line, TodoFile};
-use view::LineSegment;
+
+use crate::view::LineSegment;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum HelpLinesSelector {

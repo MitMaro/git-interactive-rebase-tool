@@ -1,7 +1,7 @@
 use display::DisplayColor;
 
 use super::*;
-use crate::testutil::{
+use crate::view::testutil::{
 	assert_rendered_output::_assert_rendered_output,
 	render_view_line,
 	AssertRenderOptions,

@@ -1,12 +1,12 @@
 use bitflags::bitflags;
 use display::DisplayColor;
 
-use crate::{LineSegment, ViewData, ViewLine};
+use crate::view::{LineSegment, ViewData, ViewLine};
 
 bitflags! {
 	/// Options for the `assert_rendered_output!` macro
 	#[derive(Default, PartialEq, Eq, Debug, Clone, Copy)]
-	pub struct AssertRenderOptions: u8 {
+	pub(crate) struct AssertRenderOptions: u8 {
 		/// Ignore trailing whitespace
 		const INCLUDE_TRAILING_WHITESPACE = 0b0000_0001;
 		/// Ignore pinned indicator
@@ -111,7 +111,7 @@ pub(crate) fn render_style(line_segment: &LineSegment) -> String {
 /// Render a `ViewLine` to a `String` using similar logic that is used in the `View`.
 #[must_use]
 #[inline]
-pub fn render_view_line(view_line: &ViewLine, options: Option<AssertRenderOptions>) -> String {
+pub(crate) fn render_view_line(view_line: &ViewLine, options: Option<AssertRenderOptions>) -> String {
 	let mut line = String::new();
 
 	let opts = options.unwrap_or_default();

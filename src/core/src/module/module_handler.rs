@@ -1,11 +1,11 @@
 use input::EventHandler;
-use view::{RenderContext, ViewData};
 
 use super::State;
 use crate::{
 	events,
 	events::{AppKeyBindings, Event, MetaEvent},
 	process::Results,
+	view::{RenderContext, ViewData},
 };
 
 pub(crate) struct ModuleHandler<ModuleProvider: crate::module::ModuleProvider> {
@@ -42,7 +42,7 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 		&mut self,
 		state: State,
 		input_state: &events::State,
-		view_state: &view::State,
+		view_state: &crate::view::State,
 	) -> Option<Results> {
 		let module = self.module_provider.get_module(state);
 		let input_options = module.input_options();
@@ -117,7 +117,7 @@ mod tests {
 			&self.view_data
 		}
 
-		fn handle_event(&mut self, _: Event, _: &view::State) -> Results {
+		fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
 			self.trace.lock().push(String::from("Handle Events"));
 			Results::new()
 		}

@@ -10,10 +10,16 @@ use git::{
 };
 use input::StandardEvent;
 use rstest::rstest;
-use view::{assert_rendered_output, render_line, testutil::AssertRenderOptions, ViewLine};
 
 use super::*;
-use crate::{assert_results, process::Artifact, testutil::module_test};
+use crate::{
+	assert_rendered_output,
+	assert_results,
+	process::Artifact,
+	render_line,
+	testutil::module_test,
+	view::{testutil::AssertRenderOptions, ViewLine},
+};
 
 fn create_show_commit(config: &Config, repository: Repository, todo_file: TodoFile) -> ShowCommit {
 	ShowCommit::new(config, repository, Arc::new(Mutex::new(todo_file)))

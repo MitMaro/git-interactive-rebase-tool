@@ -1,8 +1,15 @@
 use ::input::KeyCode;
-use view::{assert_rendered_output, render_line, testutil::AssertRenderOptions};
 
 use super::*;
-use crate::{action_line, assert_results, process::Artifact, testutil::module_test};
+use crate::{
+	action_line,
+	assert_rendered_output,
+	assert_results,
+	process::Artifact,
+	render_line,
+	testutil::module_test,
+	view::testutil::AssertRenderOptions,
+};
 
 fn render_options() -> AssertRenderOptions {
 	AssertRenderOptions::BODY_ONLY | AssertRenderOptions::INCLUDE_STYLE
