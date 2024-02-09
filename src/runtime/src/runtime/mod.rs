@@ -52,6 +52,7 @@ impl<'runtime> Runtime<'runtime> {
 	/// # Errors
 	/// Returns and error if any of the threads registered to the runtime produce an error.
 	#[inline]
+	#[allow(clippy::iter_over_hash_type)]
 	pub fn join(&self) -> Result<(), RuntimeError> {
 		let installer = Installer::new(self.thread_statuses.clone(), self.sender.clone());
 		{
