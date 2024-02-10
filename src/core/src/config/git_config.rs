@@ -2,7 +2,7 @@ use std::env;
 
 use git::Config;
 
-use crate::{
+use crate::config::{
 	errors::ConfigError,
 	get_string,
 	utils::{get_unsigned_integer, git_diff_renames},
@@ -17,35 +17,35 @@ fn editor_from_env() -> String {
 /// Represents the git configuration options.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
-pub struct GitConfig {
+pub(crate) struct GitConfig {
 	/// The Git comment character, from [`core.commentChar`](
 	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar
 	/// ).
-	pub comment_char: String,
+	pub(crate) comment_char: String,
 	/// Number of context lines, from [`diff.context`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffcontext
 	/// ).
-	pub diff_context: u32,
+	pub(crate) diff_context: u32,
 	/// Number of interhunk lines, from [`diff.interhunk_lines`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffinterHunkContext
 	/// ).
-	pub diff_interhunk_lines: u32,
+	pub(crate) diff_interhunk_lines: u32,
 	/// The limit for detecting renames, from [`diff.renameLimit`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenameLimit
 	/// ).
-	pub diff_rename_limit: u32,
+	pub(crate) diff_rename_limit: u32,
 	/// If to detect renames, from [`diff.renames`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
 	/// ).
-	pub diff_renames: bool,
+	pub(crate) diff_renames: bool,
 	/// If to detect copies, from [`diff.renames`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
 	/// ).
-	pub diff_copies: bool,
+	pub(crate) diff_copies: bool,
 	/// The Git editor, from [`core.editor`](
 	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreeditor
 	/// ).
-	pub editor: String,
+	pub(crate) editor: String,
 }
 
 impl GitConfig {
@@ -53,7 +53,7 @@ impl GitConfig {
 	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
@@ -95,7 +95,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::{
+	use crate::config::{
 		testutils::{invalid_utf, with_git_config},
 		ConfigErrorCause,
 	};

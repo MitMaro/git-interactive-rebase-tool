@@ -5,7 +5,6 @@ mod utils;
 use std::{cmp::min, sync::Arc};
 
 use captur::capture;
-use config::Config;
 use if_chain::if_chain;
 use parking_lot::Mutex;
 
@@ -21,6 +20,7 @@ use crate::{
 		help::Help,
 		search_bar::{SearchBar, SearchBarAction},
 	},
+	config::Config,
 	display::DisplayColor,
 	events::{Event, KeyBindings, MetaEvent},
 	input::{InputOptions, MouseEventKind, StandardEvent},

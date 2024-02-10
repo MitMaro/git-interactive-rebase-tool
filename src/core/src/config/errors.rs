@@ -10,13 +10,13 @@ use std::fmt::{Display, Formatter};
 
 use thiserror::Error;
 
-pub use crate::errors::{config_error_cause::ConfigErrorCause, invalid_color::InvalidColorError};
+pub(crate) use crate::config::errors::{config_error_cause::ConfigErrorCause, invalid_color::InvalidColorError};
 
 /// Config errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
 #[allow(clippy::module_name_repetitions)]
-pub struct ConfigError {
+pub(crate) struct ConfigError {
 	name: String,
 	input: Option<String>,
 	#[source]

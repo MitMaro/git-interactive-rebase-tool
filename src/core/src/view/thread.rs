@@ -162,11 +162,11 @@ mod tests {
 	use std::borrow::BorrowMut;
 
 	use claims::assert_ok;
-	use config::Theme;
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
 	use crate::{
+		config::Theme,
 		display::{
 			testutil::{create_unexpected_error, CrossTerm, MockableTui},
 			Display,

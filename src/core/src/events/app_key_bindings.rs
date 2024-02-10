@@ -1,6 +1,5 @@
-use config::KeyBindings;
-
 use crate::{
+	config::KeyBindings,
 	events::{Event, MetaEvent},
 	input::CustomKeybinding,
 };

@@ -1,13 +1,13 @@
 use git::errors::GitError;
 use thiserror::Error;
 
-use crate::errors::InvalidColorError;
+use crate::config::errors::InvalidColorError;
 
 /// The kind of config error that occurred.
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
 #[allow(variant_size_differences)]
-pub enum ConfigErrorCause {
+pub(crate) enum ConfigErrorCause {
 	/// The input provided is not a valid color
 	#[error(transparent)]
 	InvalidColor(InvalidColorError),

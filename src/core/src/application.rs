@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use config::Config;
 use git::Repository;
 use parking_lot::Mutex;
 use runtime::{Runtime, ThreadStatuses, Threadable};
 
 use crate::{
+	config::Config,
 	display::Display,
 	events,
 	events::{KeyBindings, MetaEvent},

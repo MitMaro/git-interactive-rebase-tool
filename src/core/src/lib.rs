@@ -135,6 +135,7 @@
 mod application;
 mod arguments;
 mod components;
+mod config;
 mod display;
 mod editor;
 mod events;

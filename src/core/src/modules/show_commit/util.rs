@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use config::KeyBindings;
 use git::{CommitDiff, Status};
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
+	config::KeyBindings,
 	display::DisplayColor,
 	view::{LineSegment, ViewLine},
 };

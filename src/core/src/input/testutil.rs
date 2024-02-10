@@ -27,7 +27,7 @@ pub(crate) mod local {
 
 	pub(crate) struct TestKeybinding;
 	impl CustomKeybinding for TestKeybinding {
-		fn new(_: &config::KeyBindings) -> Self {
+		fn new(_: &crate::config::KeyBindings) -> Self {
 			Self {}
 		}
 	}

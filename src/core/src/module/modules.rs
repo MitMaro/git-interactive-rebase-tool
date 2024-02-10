@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use config::Config;
 use git::Repository;
 use parking_lot::Mutex;
 
 use crate::{
+	config::Config,
 	module::{Module, ModuleProvider, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
 	todo_file::TodoFile,

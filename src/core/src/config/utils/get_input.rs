@@ -1,6 +1,6 @@
 use git::Config;
 
-use crate::{utils::get_string, ConfigError, ConfigErrorCause};
+use crate::config::{utils::get_string, ConfigError, ConfigErrorCause};
 
 #[allow(clippy::string_slice)]
 pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
@@ -80,7 +80,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{invalid_utf, with_git_config};
+	use crate::config::testutils::{invalid_utf, with_git_config};
 
 	#[rstest]
 	#[case::single_lower("a", "a")]

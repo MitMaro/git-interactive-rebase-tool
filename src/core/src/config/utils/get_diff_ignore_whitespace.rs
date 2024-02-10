@@ -1,6 +1,6 @@
 use git::Config;
 
-use crate::{utils::get_string, ConfigError, ConfigErrorCause, DiffIgnoreWhitespaceSetting};
+use crate::config::{utils::get_string, ConfigError, ConfigErrorCause, DiffIgnoreWhitespaceSetting};
 
 pub(crate) fn get_diff_ignore_whitespace(
 	git_config: Option<&Config>,
@@ -27,7 +27,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{invalid_utf, with_git_config};
+	use crate::config::testutils::{invalid_utf, with_git_config};
 
 	#[rstest]
 	#[case::true_str("true", DiffIgnoreWhitespaceSetting::All)]

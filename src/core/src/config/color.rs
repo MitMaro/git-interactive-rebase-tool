@@ -1,9 +1,9 @@
-use crate::errors::InvalidColorError;
+use crate::config::errors::InvalidColorError;
 
 /// Represents a color.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
-pub enum Color {
+pub(crate) enum Color {
 	/// The default terminal color.
 	Default,
 	/// The standard white color.

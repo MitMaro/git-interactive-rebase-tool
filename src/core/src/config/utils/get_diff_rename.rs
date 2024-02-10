@@ -1,6 +1,6 @@
 use git::Config;
 
-use crate::{get_string, ConfigError, ConfigErrorCause};
+use crate::config::{get_string, ConfigError, ConfigErrorCause};
 
 pub(crate) fn git_diff_renames(git_config: Option<&Config>, name: &str) -> Result<(bool, bool), ConfigError> {
 	match get_string(git_config, name, "true")?.to_lowercase().as_str() {
@@ -18,7 +18,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{invalid_utf, with_git_config};
+	use crate::config::testutils::{invalid_utf, with_git_config};
 
 	#[rstest]
 	#[case::true_str("true", (true, false))]

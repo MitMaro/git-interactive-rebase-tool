@@ -1,8 +1,9 @@
 use std::env::var;
 
-use config::Color;
-
-use crate::display::{color_mode::ColorMode, Color as CrosstermColor, Colors};
+use crate::{
+	config::Color,
+	display::{color_mode::ColorMode, Color as CrosstermColor, Colors},
+};
 
 pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
 	// respect COLORTERM being truecolor or 24bit
