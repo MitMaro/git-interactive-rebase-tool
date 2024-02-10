@@ -1,11 +1,11 @@
 use captur::capture;
-use todo_file::{testutil::with_todo_file, TodoFile};
 
 use crate::{
 	events::Event,
 	module::{Module, State},
 	process::Results,
 	testutil::{with_event_handler, EventHandlerTestContext},
+	todo_file::{testutil::with_todo_file, TodoFile},
 	view::{
 		testutil::{with_view_state, TestContext as ViewContext},
 		RenderContext,

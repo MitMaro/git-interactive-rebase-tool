@@ -350,7 +350,7 @@ dependencies = [
  "girt-config",
  "girt-git",
  "girt-runtime",
- "girt-todo-file",
+ "girt-testutils",
  "if_chain",
  "itertools",
  "lazy_static",
@@ -362,10 +362,12 @@ dependencies = [
  "rstest",
  "rustc_version",
  "serial_test",
+ "tempfile",
  "thiserror",
  "unicode-segmentation",
  "unicode-width",
  "uuid",
+ "version-track",
  "xi-unicode",
 ]
 
@@ -404,20 +406,6 @@ name = "girt-testutils"
 version = "2.3.0"
 dependencies = [
  "rustc_version",
-]
-
-[[package]]
-name = "girt-todo-file"
-version = "2.3.0"
-dependencies = [
- "claims",
- "girt-testutils",
- "pretty_assertions",
- "rstest",
- "rustc_version",
- "tempfile",
- "thiserror",
- "version-track",
 ]
 
 [[package]]

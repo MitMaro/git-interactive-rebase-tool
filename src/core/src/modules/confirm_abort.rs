@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use parking_lot::Mutex;
-use todo_file::TodoFile;
 
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
@@ -9,6 +8,7 @@ use crate::{
 	input::InputOptions,
 	module::{ExitStatus, Module, State},
 	process::Results,
+	todo_file::TodoFile,
 	view::{RenderContext, ViewData},
 };
 

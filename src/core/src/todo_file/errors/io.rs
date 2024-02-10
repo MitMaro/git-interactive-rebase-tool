@@ -2,13 +2,13 @@ use std::{io, path::PathBuf};
 
 use thiserror::Error;
 
-use crate::errors::ParseError;
+use crate::todo_file::errors::ParseError;
 
 /// The cause of a `FileRead` error
 #[derive(Error, Debug)]
 #[non_exhaustive]
 #[allow(variant_size_differences)]
-pub enum FileReadErrorCause {
+pub(crate) enum FileReadErrorCause {
 	/// Caused by an io error
 	#[error(transparent)]
 	IoError(#[from] io::Error),
@@ -32,7 +32,7 @@ impl PartialEq for FileReadErrorCause {
 /// IO baser errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
-pub enum IoError {
+pub(crate) enum IoError {
 	/// The file could not be read
 	#[error("Unable to read file `{file}`")]
 	FileRead {

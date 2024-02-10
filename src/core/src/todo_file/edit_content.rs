@@ -1,8 +1,8 @@
-use super::action::Action;
+use crate::todo_file::action::Action;
 
 /// Describes a edit context for modifying a line.
 #[derive(Debug)]
-pub struct EditContext {
+pub(crate) struct EditContext {
 	action: Option<Action>,
 	content: Option<String>,
 	option: Option<String>,
@@ -12,7 +12,7 @@ impl EditContext {
 	/// Create a new empty instance.
 	#[must_use]
 	#[inline]
-	pub const fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			action: None,
 			content: None,
@@ -23,7 +23,7 @@ impl EditContext {
 	/// Set the action.
 	#[must_use]
 	#[inline]
-	pub const fn action(mut self, action: Action) -> Self {
+	pub(crate) const fn action(mut self, action: Action) -> Self {
 		self.action = Some(action);
 		self
 	}
@@ -31,7 +31,7 @@ impl EditContext {
 	/// Set the content.
 	#[must_use]
 	#[inline]
-	pub fn content(mut self, content: &str) -> Self {
+	pub(crate) fn content(mut self, content: &str) -> Self {
 		self.content = Some(String::from(content));
 		self
 	}
@@ -39,7 +39,7 @@ impl EditContext {
 	/// Set the option.
 	#[must_use]
 	#[inline]
-	pub fn option(mut self, option: &str) -> Self {
+	pub(crate) fn option(mut self, option: &str) -> Self {
 		self.option = Some(String::from(option));
 		self
 	}
@@ -47,21 +47,21 @@ impl EditContext {
 	/// Get the action.
 	#[must_use]
 	#[inline]
-	pub const fn get_action(&self) -> Option<Action> {
+	pub(crate) const fn get_action(&self) -> Option<Action> {
 		self.action
 	}
 
 	/// Get the content.
 	#[must_use]
 	#[inline]
-	pub fn get_content(&self) -> Option<&str> {
+	pub(crate) fn get_content(&self) -> Option<&str> {
 		self.content.as_deref()
 	}
 
 	/// Get the option.
 	#[must_use]
 	#[inline]
-	pub fn get_option(&self) -> Option<&str> {
+	pub(crate) fn get_option(&self) -> Option<&str> {
 		self.option.as_deref()
 	}
 }

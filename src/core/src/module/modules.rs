@@ -3,11 +3,11 @@ use std::sync::Arc;
 use config::Config;
 use git::Repository;
 use parking_lot::Mutex;
-use todo_file::TodoFile;
 
 use crate::{
 	module::{Module, ModuleProvider, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
+	todo_file::TodoFile,
 };
 
 pub(crate) struct Modules {
@@ -69,9 +69,9 @@ impl ModuleProvider for Modules {
 #[cfg(test)]
 mod tests {
 	use git::testutil::with_temp_repository;
-	use todo_file::testutil::with_todo_file;
 
 	use super::*;
+	use crate::todo_file::testutil::with_todo_file;
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {

@@ -18,22 +18,22 @@ name = "gcore"
 anyhow = "1.0.72"
 bitflags = "2.4.2"
 captur = "0.1.0"
-crossterm = "0.26.1"
 crossbeam-channel = "0.5.8"
+crossterm = "0.26.1"
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
-thiserror = "1.0.56"
 num-format = "0.4.4"
 parking_lot = "0.12.1"
 pico-args = "0.5.0"
+thiserror = "1.0.56"
 unicode-segmentation = "1.10.1"
 unicode-width = "0.1.10"
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
+version-track = "0.1.0"
 xi-unicode = "0.3.0"
 girt-config = {version = "2.3.0", path = "../../src/config"}
 girt-git = {version = "2.3.0", path = "../../src/git"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
-girt-todo-file = {version = "2.3.0", path = "../../src/todo_file"}
 
 [target.'cfg(target_os = "macos")'.dependencies]
 crossterm = { version = "0.26.1", features = ["use-dev-tty"] }
@@ -45,7 +45,9 @@ pretty_assertions = "1.4.0"
 regex = "1.8.3"
 rstest = "0.18.1"
 serial_test = "2.0.0"
+tempfile = "3.7.0"
 girt-config = {version = "2.3.0", path = "../config"}
+girt-testutils = {version = "2.3.0", path = "../testutils"}
 
 [build-dependencies]
 chrono = "0.4.26"

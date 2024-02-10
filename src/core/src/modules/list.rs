@@ -8,7 +8,6 @@ use captur::capture;
 use config::Config;
 use if_chain::if_chain;
 use parking_lot::Mutex;
-use todo_file::{Action, EditContext, Line, Search, TodoFile};
 
 use self::utils::{
 	get_list_normal_mode_help_lines,
@@ -29,6 +28,7 @@ use crate::{
 	modules::list::utils::get_line_action_maximum_width,
 	process::Results,
 	select,
+	todo_file::{Action, EditContext, Line, Search, TodoFile},
 	view::{LineSegment, RenderContext, ViewData, ViewLine},
 };
 

@@ -2,7 +2,6 @@ use std::path::Path;
 
 use anyhow::anyhow;
 use runtime::{testutils::MockNotifier, Status};
-use todo_file::Line;
 
 use super::*;
 use crate::{
@@ -18,6 +17,7 @@ use crate::{
 		MockedSearchable,
 		ProcessTestContext,
 	},
+	todo_file::Line,
 	view::{ViewData, REFRESH_THREAD_NAME},
 };
 

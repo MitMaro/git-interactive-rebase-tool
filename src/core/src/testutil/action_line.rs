@@ -1,8 +1,10 @@
 use lazy_static::lazy_static;
 use regex::Regex;
-use todo_file::{errors::ParseError, Line};
 
-use crate::view::testutil::{replace_invisibles, LinePattern};
+use crate::{
+	todo_file::{errors::ParseError, Line},
+	view::testutil::{replace_invisibles, LinePattern},
+};
 
 lazy_static! {
 	pub static ref FORMAT_REGEX: Regex = Regex::new(r"\{.*?}").unwrap();

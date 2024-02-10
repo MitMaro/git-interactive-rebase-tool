@@ -1,11 +1,11 @@
 use std::fmt::{Display, Formatter};
 
-use crate::errors::ParseError;
+use crate::todo_file::errors::ParseError;
 
 /// Describes an rebase action.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
-pub enum Action {
+pub(crate) enum Action {
 	/// A break action.
 	Break,
 	/// A drop action.
@@ -38,7 +38,7 @@ impl Action {
 	/// Get the abbreviated version of the action.
 	#[must_use]
 	#[inline]
-	pub fn to_abbreviation(self) -> String {
+	pub(crate) fn to_abbreviation(self) -> String {
 		String::from(match self {
 			Self::Break => "b",
 			Self::Drop => "d",
@@ -59,7 +59,7 @@ impl Action {
 	/// Can the action be changed.
 	#[must_use]
 	#[inline]
-	pub const fn is_static(self) -> bool {
+	pub(crate) const fn is_static(self) -> bool {
 		match self {
 			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge | Self::UpdateRef => true,
 			Self::Drop | Self::Edit | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,

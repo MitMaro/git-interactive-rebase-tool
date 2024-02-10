@@ -6,7 +6,7 @@
 mod io;
 mod parse;
 
-pub use self::{
+pub(crate) use self::{
 	io::{FileReadErrorCause, IoError},
 	parse::ParseError,
 };

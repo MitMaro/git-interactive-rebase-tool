@@ -3,9 +3,11 @@ use std::sync::Arc;
 use config::Config;
 use git::Repository;
 use parking_lot::Mutex;
-use todo_file::TodoFile;
 
-use crate::module::{Module, State};
+use crate::{
+	module::{Module, State},
+	todo_file::TodoFile,
+};
 
 pub(crate) trait ModuleProvider {
 	fn new(config: &Config, repository: Repository, todo_file: &Arc<Mutex<TodoFile>>) -> Self;
