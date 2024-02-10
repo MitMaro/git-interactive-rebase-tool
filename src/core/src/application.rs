@@ -5,7 +5,6 @@ use config::Config;
 use git::Repository;
 use parking_lot::Mutex;
 use runtime::{Runtime, ThreadStatuses, Threadable};
-use todo_file::{TodoFile, TodoFileOptions};
 
 use crate::{
 	display::Display,
@@ -17,6 +16,7 @@ use crate::{
 	process::{self, Process},
 	search,
 	search::UpdateHandlerFn,
+	todo_file::{TodoFile, TodoFileOptions},
 	view::View,
 	Args,
 	Exit,

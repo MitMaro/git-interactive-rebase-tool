@@ -3,7 +3,7 @@ use thiserror::Error;
 /// Parsing errors
 #[derive(Error, Debug, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum ParseError {
+pub(crate) enum ParseError {
 	/// The provided action string is not one of the allowed values
 	#[error("The action `{0}` is not valid")]
 	InvalidAction(String),

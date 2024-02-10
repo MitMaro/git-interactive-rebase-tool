@@ -1,8 +1,9 @@
-use crate::{errors::ParseError, line_parser::LineParser, Action};
+use crate::todo_file::{errors::ParseError, line_parser::LineParser, Action};
 
 /// Represents a line in the rebase file.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Line {
+#[allow(clippy::struct_field_names)]
+pub(crate) struct Line {
 	action: Action,
 	content: String,
 	hash: String,
@@ -43,49 +44,49 @@ impl Line {
 	/// Create a new pick line.
 	#[must_use]
 	#[inline]
-	pub fn new_pick(hash: &str) -> Self {
+	pub(crate) fn new_pick(hash: &str) -> Self {
 		Self::new(Action::Pick, hash, "", None)
 	}
 
 	/// Create a new break line.
 	#[must_use]
 	#[inline]
-	pub fn new_break() -> Self {
+	pub(crate) fn new_break() -> Self {
 		Self::new(Action::Break, "", "", None)
 	}
 
 	/// Create a new exec line.
 	#[must_use]
 	#[inline]
-	pub fn new_exec(command: &str) -> Self {
+	pub(crate) fn new_exec(command: &str) -> Self {
 		Self::new(Action::Exec, "", command, None)
 	}
 
 	/// Create a new merge line.
 	#[must_use]
 	#[inline]
-	pub fn new_merge(label: &str) -> Self {
+	pub(crate) fn new_merge(label: &str) -> Self {
 		Self::new(Action::Merge, "", label, None)
 	}
 
 	/// Create a new label line.
 	#[must_use]
 	#[inline]
-	pub fn new_label(label: &str) -> Self {
+	pub(crate) fn new_label(label: &str) -> Self {
 		Self::new(Action::Label, "", label, None)
 	}
 
 	/// Create a new reset line.
 	#[must_use]
 	#[inline]
-	pub fn new_reset(label: &str) -> Self {
+	pub(crate) fn new_reset(label: &str) -> Self {
 		Self::new(Action::Reset, "", label, None)
 	}
 
 	/// Create a new update-ref line.
 	#[must_use]
 	#[inline]
-	pub fn new_update_ref(ref_name: &str) -> Self {
+	pub(crate) fn new_update_ref(ref_name: &str) -> Self {
 		Self::new(Action::UpdateRef, "", ref_name, None)
 	}
 
@@ -95,7 +96,7 @@ impl Line {
 	///
 	/// Returns an error if an invalid line is provided.
 	#[inline]
-	pub fn parse(input_line: &str) -> Result<Self, ParseError> {
+	pub(crate) fn parse(input_line: &str) -> Result<Self, ParseError> {
 		let mut line_parser = LineParser::new(input_line);
 
 		let action = Action::try_from(line_parser.next()?)?;
@@ -130,7 +131,7 @@ impl Line {
 
 	/// Set the action of the line.
 	#[inline]
-	pub fn set_action(&mut self, action: Action) {
+	pub(crate) fn set_action(&mut self, action: Action) {
 		if !self.action.is_static() && self.action != action {
 			self.mutated = true;
 			self.action = action;
@@ -140,7 +141,7 @@ impl Line {
 
 	/// Edit the content of the line, if it is editable.
 	#[inline]
-	pub fn edit_content(&mut self, content: &str) {
+	pub(crate) fn edit_content(&mut self, content: &str) {
 		if self.is_editable() {
 			self.content = String::from(content);
 			self.mutated = true;
@@ -149,7 +150,7 @@ impl Line {
 
 	/// Set the option on the line, toggling if the existing option matches.
 	#[inline]
-	pub fn toggle_option(&mut self, option: &str) {
+	pub(crate) fn toggle_option(&mut self, option: &str) {
 		// try toggle off first
 		if let Some(current) = self.option.as_deref() {
 			if current == option {
@@ -163,49 +164,49 @@ impl Line {
 	/// Get the original line, before any modifications
 	#[must_use]
 	#[inline]
-	pub fn original(&self) -> Option<&Line> {
+	pub(crate) fn original(&self) -> Option<&Line> {
 		self.original_line.as_deref()
 	}
 
 	/// Get the action of the line.
 	#[must_use]
 	#[inline]
-	pub const fn get_action(&self) -> &Action {
+	pub(crate) const fn get_action(&self) -> &Action {
 		&self.action
 	}
 
 	/// Get the content of the line.
 	#[must_use]
 	#[inline]
-	pub fn get_content(&self) -> &str {
+	pub(crate) fn get_content(&self) -> &str {
 		self.content.as_str()
 	}
 
 	/// Get the commit hash for the line.
 	#[must_use]
 	#[inline]
-	pub fn get_hash(&self) -> &str {
+	pub(crate) fn get_hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
 	/// Get the commit hash for the line.
 	#[must_use]
 	#[inline]
-	pub fn option(&self) -> Option<&str> {
+	pub(crate) fn option(&self) -> Option<&str> {
 		self.option.as_deref()
 	}
 
 	/// Does this line contain a commit reference.
 	#[must_use]
 	#[inline]
-	pub fn has_reference(&self) -> bool {
+	pub(crate) fn has_reference(&self) -> bool {
 		!self.hash.is_empty()
 	}
 
 	/// Can this line be edited.
 	#[must_use]
 	#[inline]
-	pub const fn is_editable(&self) -> bool {
+	pub(crate) const fn is_editable(&self) -> bool {
 		match self.action {
 			Action::Exec | Action::Label | Action::Reset | Action::Merge | Action::UpdateRef => true,
 			Action::Break
@@ -222,14 +223,14 @@ impl Line {
 	/// Has this line been modified
 	#[must_use]
 	#[inline]
-	pub fn is_modified(&self) -> bool {
+	pub(crate) fn is_modified(&self) -> bool {
 		self.mutated
 	}
 
 	/// Create a string containing a textual version of the line, as would be seen in the rebase file.
 	#[must_use]
 	#[inline]
-	pub fn to_text(&self) -> String {
+	pub(crate) fn to_text(&self) -> String {
 		match self.action {
 			Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 				if let Some(opt) = self.option.as_ref() {

@@ -150,6 +150,7 @@ mod search;
 mod tests;
 #[cfg(test)]
 mod testutil;
+mod todo_file;
 mod util;
 mod version;
 mod view;

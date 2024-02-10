@@ -16,7 +16,6 @@ use std::{
 use anyhow::{anyhow, Error, Result};
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
-use todo_file::TodoFile;
 
 pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
@@ -26,6 +25,7 @@ use crate::{
 	input::StandardEvent,
 	module::{self, ExitStatus, ModuleHandler, State},
 	search::{self, Action, Searchable},
+	todo_file::TodoFile,
 	view::{RenderContext, State as ViewState},
 };
 

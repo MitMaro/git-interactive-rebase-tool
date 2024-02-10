@@ -10,7 +10,6 @@ use std::sync::Arc;
 use anyhow::{anyhow, Result};
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
-use todo_file::{Line, TodoFile};
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
@@ -19,6 +18,7 @@ use crate::{
 	input::InputOptions,
 	module::{ExitStatus, Module, State},
 	process::Results,
+	todo_file::{Line, TodoFile},
 	view::{RenderContext, ViewData, ViewLine},
 };
 

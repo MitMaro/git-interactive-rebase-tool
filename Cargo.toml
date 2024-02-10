@@ -30,7 +30,6 @@ members = [
     "src/git",
     "src/runtime",
     "src/testutils",
-    "src/todo_file"
 ]
 
 [dependencies]

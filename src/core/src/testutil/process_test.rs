@@ -2,7 +2,6 @@ use std::{path::PathBuf, sync::Arc};
 
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
-use todo_file::testutil::with_todo_file;
 
 use crate::{
 	display::Size,
@@ -10,6 +9,7 @@ use crate::{
 	module::{self, ModuleHandler},
 	process::Process,
 	testutil::{with_event_handler, with_search, EventHandlerTestContext, SearchTestContext},
+	todo_file::testutil::with_todo_file,
 	view::testutil::{with_view_state, TestContext as ViewContext},
 };
 

@@ -1,10 +1,11 @@
 use version_track::Version;
 
-use crate::{Action, TodoFile};
+use crate::todo_file::{Action, TodoFile};
 
 /// Search handler for the todofile
 #[derive(Debug)]
-pub struct Search {
+#[allow(clippy::struct_field_names)]
+pub(crate) struct Search {
 	match_start_hint: usize,
 	matches: Vec<usize>,
 	rebase_todo_version: Version,
@@ -16,7 +17,7 @@ impl Search {
 	/// Create a new instance
 	#[inline]
 	#[must_use]
-	pub const fn new() -> Self {
+	pub(crate) const fn new() -> Self {
 		Self {
 			match_start_hint: 0,
 			matches: vec![],
@@ -28,7 +29,7 @@ impl Search {
 
 	/// Generate search results
 	#[inline]
-	pub fn search(&mut self, rebase_todo: &TodoFile, term: &str) -> bool {
+	pub(crate) fn search(&mut self, rebase_todo: &TodoFile, term: &str) -> bool {
 		if &self.rebase_todo_version != rebase_todo.version() || self.search_term != term || self.matches.is_empty() {
 			self.matches.clear();
 			self.selected = None;
@@ -62,7 +63,7 @@ impl Search {
 	/// Select the next search result
 	#[inline]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn next(&mut self, rebase_todo: &TodoFile, term: &str) {
+	pub(crate) fn next(&mut self, rebase_todo: &TodoFile, term: &str) {
 		if !self.search(rebase_todo, term) {
 			return;
 		}
@@ -90,7 +91,7 @@ impl Search {
 	/// Select the previous search result
 	#[inline]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn previous(&mut self, rebase_todo: &TodoFile, term: &str) {
+	pub(crate) fn previous(&mut self, rebase_todo: &TodoFile, term: &str) {
 		if !self.search(rebase_todo, term) {
 			return;
 		}
@@ -121,7 +122,7 @@ impl Search {
 
 	/// Set a hint for which result to select first during search
 	#[inline]
-	pub fn set_search_start_hint(&mut self, hint: usize) {
+	pub(crate) fn set_search_start_hint(&mut self, hint: usize) {
 		if self.match_start_hint != hint {
 			self.match_start_hint = hint;
 		}
@@ -129,13 +130,13 @@ impl Search {
 
 	/// Invalidate current search results
 	#[inline]
-	pub fn invalidate(&mut self) {
+	pub(crate) fn invalidate(&mut self) {
 		self.matches.clear();
 	}
 
 	/// Cancel search, clearing results, selected result and search term
 	#[inline]
-	pub fn cancel(&mut self) {
+	pub(crate) fn cancel(&mut self) {
 		self.selected = None;
 		self.search_term.clear();
 		self.matches.clear();
@@ -144,7 +145,7 @@ impl Search {
 	/// Get the index of the current selected result, if there is one
 	#[inline]
 	#[must_use]
-	pub fn current_match(&self) -> Option<usize> {
+	pub(crate) fn current_match(&self) -> Option<usize> {
 		let selected = self.selected?;
 		self.matches.get(selected).copied()
 	}
@@ -152,14 +153,14 @@ impl Search {
 	/// Get the selected result number, if there is one
 	#[inline]
 	#[must_use]
-	pub const fn current_result_selected(&self) -> Option<usize> {
+	pub(crate) const fn current_result_selected(&self) -> Option<usize> {
 		self.selected
 	}
 
 	/// Get the total number of results
 	#[inline]
 	#[must_use]
-	pub fn total_results(&self) -> usize {
+	pub(crate) fn total_results(&self) -> usize {
 		self.matches.len()
 	}
 }
@@ -169,7 +170,7 @@ mod tests {
 	use claims::{assert_none, assert_some_eq};
 
 	use super::*;
-	use crate::testutil::with_todo_file;
+	use crate::todo_file::testutil::with_todo_file;
 
 	#[test]
 	fn search_empty_rebase_file() {

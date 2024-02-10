@@ -7,7 +7,6 @@ mod tests;
 use std::sync::Arc;
 
 use parking_lot::Mutex;
-use todo_file::{Line, TodoFile};
 
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
@@ -20,6 +19,7 @@ use crate::{
 	input::InputOptions,
 	module::{Module, State},
 	process::Results,
+	todo_file::{Line, TodoFile},
 	view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine},
 };
 

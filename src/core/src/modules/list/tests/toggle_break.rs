@@ -1,7 +1,11 @@
-use todo_file::{errors::ParseError, Action::Pick};
-
 use super::*;
-use crate::{action_line, assert_rendered_output, testutil::module_test, view::testutil::LinePattern};
+use crate::{
+	action_line,
+	assert_rendered_output,
+	testutil::module_test,
+	todo_file::{errors::ParseError, Action::Pick},
+	view::testutil::LinePattern,
+};
 
 #[test]
 fn change_toggle_break_add() {
