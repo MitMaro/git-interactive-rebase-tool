@@ -1,10 +1,12 @@
 use config::KeyBindings;
-use input::CustomKeybinding;
 
-use crate::events::{Event, MetaEvent};
+use crate::{
+	events::{Event, MetaEvent},
+	input::CustomKeybinding,
+};
 
 pub(crate) fn map_keybindings(bindings: &[String]) -> Vec<Event> {
-	input::map_keybindings::<MetaEvent>(bindings)
+	crate::input::map_keybindings::<MetaEvent>(bindings)
 }
 
 /// Represents a mapping between an input event and an action.

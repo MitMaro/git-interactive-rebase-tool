@@ -3,7 +3,6 @@ use std::sync::Arc;
 use anyhow::Result;
 use config::Config;
 use git::Repository;
-use input::{Event, EventHandler, EventReaderFn};
 use parking_lot::Mutex;
 use runtime::{Runtime, ThreadStatuses, Threadable};
 use todo_file::{TodoFile, TodoFileOptions};
@@ -13,6 +12,7 @@ use crate::{
 	events,
 	events::{KeyBindings, MetaEvent},
 	help::build_help,
+	input::{Event, EventHandler, EventReaderFn},
 	module::{self, ExitStatus, ModuleHandler},
 	process::{self, Process},
 	search,
@@ -193,13 +193,13 @@ mod tests {
 	use std::ffi::OsString;
 
 	use claims::{assert_none, assert_ok};
-	use input::{KeyCode, KeyEvent, KeyModifiers};
 	use runtime::{Installer, RuntimeError};
 
 	use super::*;
 	use crate::{
 		display::{testutil::CrossTerm, Size},
 		events::Event,
+		input::{KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		testutil::{create_event_reader, set_git_directory, DefaultTestModule, TestModuleProvider},
 	};

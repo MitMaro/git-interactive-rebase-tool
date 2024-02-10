@@ -1,24 +1,26 @@
-use crate::{key_bindings::KeyBindings, Event, InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent};
+use crate::input::{key_bindings::KeyBindings, Event, InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent};
 
 /// A handler for reading and processing events.
 #[derive(Debug)]
-pub struct EventHandler<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
+pub(crate) struct EventHandler<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent>
+{
 	key_bindings: KeyBindings<CustomKeybinding, CustomEvent>,
 }
 
-impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
+impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent>
 	EventHandler<CustomKeybinding, CustomEvent>
 {
 	/// Create a new instance of the `EventHandler`.
 	#[inline]
 	#[must_use]
-	pub const fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
+	pub(crate) const fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
 		Self { key_bindings }
 	}
 
 	/// Read and handle an event.
 	#[inline]
-	pub fn read_event<F>(
+	#[allow(clippy::trivially_copy_pass_by_ref)]
+	pub(crate) fn read_event<F>(
 		&self,
 		event: Event<CustomEvent>,
 		input_options: &InputOptions,
@@ -161,7 +163,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{
+	use crate::input::{
 		map_keybindings,
 		testutil::local::{create_test_keybindings, Event, EventHandler},
 	};

@@ -7,7 +7,6 @@ use std::{cmp::min, sync::Arc};
 use captur::capture;
 use config::Config;
 use if_chain::if_chain;
-use input::{InputOptions, MouseEventKind, StandardEvent};
 use parking_lot::Mutex;
 use todo_file::{Action, EditContext, Line, Search, TodoFile};
 
@@ -25,6 +24,7 @@ use crate::{
 	},
 	display::DisplayColor,
 	events::{Event, KeyBindings, MetaEvent},
+	input::{InputOptions, MouseEventKind, StandardEvent},
 	module::{ExitStatus, Module, State},
 	modules::list::utils::get_line_action_maximum_width,
 	process::Results,

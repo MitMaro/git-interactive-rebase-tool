@@ -140,6 +140,7 @@ mod editor;
 mod events;
 mod exit;
 mod help;
+mod input;
 mod license;
 mod module;
 mod modules;

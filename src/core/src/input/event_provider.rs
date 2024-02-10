@@ -8,7 +8,7 @@ use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseEvent, MouseEventKind
 use read_event_mocks::{poll, read};
 
 /// Function that returns a event
-pub trait EventReaderFn: Fn() -> Result<Option<Event>> + Send + Sync + 'static {}
+pub(crate) trait EventReaderFn: Fn() -> Result<Option<Event>> + Send + Sync + 'static {}
 
 impl<FN: Fn() -> Result<Option<Event>> + Send + Sync + 'static> EventReaderFn for FN {}
 
@@ -20,7 +20,7 @@ impl<FN: Fn() -> Result<Option<Event>> + Send + Sync + 'static> EventReaderFn fo
 /// if this does generate an error, the Tui should be considered to be in a non-recoverable
 /// state.
 #[inline]
-pub fn read_event() -> Result<Option<Event>> {
+pub(crate) fn read_event() -> Result<Option<Event>> {
 	if poll(Duration::from_millis(20)).unwrap_or(false) {
 		read()
 			.map(|event| {
@@ -56,8 +56,9 @@ mod read_event_mocks {
 	use parking_lot::Mutex;
 
 	lazy_static! {
-		pub static ref HAS_POLLED_EVENT: Mutex<Result<bool>> = Mutex::new(Ok(true));
-		pub static ref NEXT_EVENT: Mutex<Result<Event>> = Mutex::new(Ok(Event::Key(KeyEvent::from(KeyCode::Null))));
+		pub(crate) static ref HAS_POLLED_EVENT: Mutex<Result<bool>> = Mutex::new(Ok(true));
+		pub(crate) static ref NEXT_EVENT: Mutex<Result<Event>> =
+			Mutex::new(Ok(Event::Key(KeyEvent::from(KeyCode::Null))));
 	}
 
 	pub(crate) fn poll(_: Duration) -> Result<bool> {

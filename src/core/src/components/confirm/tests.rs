@@ -1,8 +1,12 @@
-use input::StandardEvent;
 use rstest::rstest;
 
 use super::*;
-use crate::{assert_rendered_output, testutil::create_test_keybindings, view::testutil::AssertRenderOptions};
+use crate::{
+	assert_rendered_output,
+	input::StandardEvent,
+	testutil::create_test_keybindings,
+	view::testutil::AssertRenderOptions,
+};
 
 #[test]
 fn render() {

@@ -1,50 +1,51 @@
-use crate::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crate::input::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 /// Represents a mapping between an input event and an action.
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct KeyBindings<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
+pub(crate) struct KeyBindings<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent>
+{
 	/// Key bindings for redoing a change.
-	pub redo: Vec<Event<CustomEvent>>,
+	pub(crate) redo: Vec<Event<CustomEvent>>,
 	/// Key bindings for undoing a change.
-	pub undo: Vec<Event<CustomEvent>>,
+	pub(crate) undo: Vec<Event<CustomEvent>>,
 
 	/// Key bindings for scrolling down.
-	pub scroll_down: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_down: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling to the end.
-	pub scroll_end: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_end: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling to the start.
-	pub scroll_home: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_home: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling to the left.
-	pub scroll_left: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_left: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling to the right.
-	pub scroll_right: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_right: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling up.
-	pub scroll_up: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_up: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling down a step.
-	pub scroll_step_down: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_step_down: Vec<Event<CustomEvent>>,
 	/// Key bindings for scrolling up a step.
-	pub scroll_step_up: Vec<Event<CustomEvent>>,
+	pub(crate) scroll_step_up: Vec<Event<CustomEvent>>,
 
 	/// Key bindings for help.
-	pub help: Vec<Event<CustomEvent>>,
+	pub(crate) help: Vec<Event<CustomEvent>>,
 
 	/// Key bindings for starting search.
-	pub search_start: Vec<Event<CustomEvent>>,
+	pub(crate) search_start: Vec<Event<CustomEvent>>,
 	/// Key bindings for next search match.
-	pub search_next: Vec<Event<CustomEvent>>,
+	pub(crate) search_next: Vec<Event<CustomEvent>>,
 	/// Key bindings for previous search match.
-	pub search_previous: Vec<Event<CustomEvent>>,
+	pub(crate) search_previous: Vec<Event<CustomEvent>>,
 
 	/// Custom keybindings
-	pub custom: CustomKeybinding,
+	pub(crate) custom: CustomKeybinding,
 }
 
 /// Map a keybinding to a list of events.
 #[must_use]
 #[inline]
 #[allow(clippy::string_slice, clippy::missing_panics_doc)]
-pub fn map_keybindings<CustomEvent: crate::CustomEvent>(bindings: &[String]) -> Vec<Event<CustomEvent>> {
+pub(crate) fn map_keybindings<CustomEvent: crate::input::CustomEvent>(bindings: &[String]) -> Vec<Event<CustomEvent>> {
 	bindings
 		.iter()
 		.map(|b| {
@@ -91,13 +92,13 @@ pub fn map_keybindings<CustomEvent: crate::CustomEvent>(bindings: &[String]) -> 
 		.collect()
 }
 
-impl<CustomKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>
+impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent>
 	KeyBindings<CustomKeybinding, CustomEvent>
 {
 	/// Create a new instance from the configuration keybindings.
 	#[inline]
 	#[must_use]
-	pub fn new(key_bindings: &config::KeyBindings) -> Self {
+	pub(crate) fn new(key_bindings: &config::KeyBindings) -> Self {
 		Self {
 			redo: map_keybindings(&key_bindings.redo),
 			undo: map_keybindings(&key_bindings.undo),
@@ -123,7 +124,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::testutil::local::{TestEvent, TestKeybinding};
+	use crate::input::testutil::local::{TestEvent, TestKeybinding};
 
 	#[test]
 	fn new() {

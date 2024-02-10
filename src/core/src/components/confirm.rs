@@ -4,16 +4,16 @@ mod tests;
 
 use captur::capture;
 pub(crate) use confirmed::Confirmed;
-use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 
 use crate::{
 	events::{Event, KeyBindings, MetaEvent},
+	input::{InputOptions, KeyCode, KeyEvent, KeyModifiers},
 	view::{ViewData, ViewLine},
 };
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
+	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
 }
 
 pub(crate) struct Confirm {

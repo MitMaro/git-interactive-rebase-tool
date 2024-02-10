@@ -6,7 +6,6 @@ mod tests;
 
 use std::sync::Arc;
 
-use input::InputOptions;
 use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
 
@@ -18,6 +17,7 @@ use crate::{
 	},
 	display::DisplayColor,
 	events::Event,
+	input::InputOptions,
 	module::{Module, State},
 	process::Results,
 	view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine},

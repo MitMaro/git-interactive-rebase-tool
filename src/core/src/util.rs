@@ -1,6 +1,4 @@
-use input::StandardEvent;
-
-use crate::events::Event;
+use crate::{events::Event, input::StandardEvent};
 
 #[macro_export]
 macro_rules! select {

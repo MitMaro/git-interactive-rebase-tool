@@ -3,18 +3,18 @@ use crossterm::event::{KeyCode, KeyModifiers};
 /// Represents a key event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 #[allow(clippy::exhaustive_structs)]
-pub struct KeyEvent {
+pub(crate) struct KeyEvent {
 	/// The key itself.
-	pub code: KeyCode,
+	pub(crate) code: KeyCode,
 	/// Additional key modifiers.
-	pub modifiers: KeyModifiers,
+	pub(crate) modifiers: KeyModifiers,
 }
 
 impl KeyEvent {
 	/// Creates a new `KeyEvent` with `code` and `modifiers`.
 	#[must_use]
 	#[inline]
-	pub fn new(mut code: KeyCode, mut modifiers: KeyModifiers) -> Self {
+	pub(crate) fn new(mut code: KeyCode, mut modifiers: KeyModifiers) -> Self {
 		// normalize keys with the SHIFT modifier
 		if let KeyCode::Char(c) = code {
 			if modifiers.contains(KeyModifiers::SHIFT) {

@@ -1,8 +1,7 @@
-use input::InputOptions;
-
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	events::{Event, KeyBindings},
+	input::InputOptions,
 	module::{ExitStatus, Module, State},
 	process::Results,
 	view::{RenderContext, ViewData},
@@ -50,10 +49,15 @@ impl ConfirmRebase {
 }
 #[cfg(test)]
 mod tests {
-	use input::KeyCode;
-
 	use super::*;
-	use crate::{assert_rendered_output, assert_results, events::MetaEvent, process::Artifact, testutil::module_test};
+	use crate::{
+		assert_rendered_output,
+		assert_results,
+		events::MetaEvent,
+		input::KeyCode,
+		process::Artifact,
+		testutil::module_test,
+	};
 
 	fn create_confirm_rebase() -> ConfirmRebase {
 		ConfirmRebase::new(&[String::from("y")], &[String::from("n")])

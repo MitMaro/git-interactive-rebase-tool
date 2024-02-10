@@ -1,12 +1,11 @@
 use std::{fs, fs::File};
 
-use input::KeyCode;
-
 use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
 	events::Event,
+	input::KeyCode,
 	module::ExitStatus,
 	process::Artifact,
 	testutil::module_test,

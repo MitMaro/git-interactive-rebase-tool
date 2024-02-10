@@ -1,4 +1,4 @@
-use input::Event;
+use crate::input::Event;
 
 pub struct Options {
 	pub(crate) next_result_event: Vec<Event>,

@@ -3,18 +3,18 @@ mod tests;
 
 use std::collections::HashMap;
 
-use input::{InputOptions, KeyCode};
 use lazy_static::lazy_static;
 
 use crate::{
 	display::DisplayColor,
 	events::Event,
+	input::{InputOptions, KeyCode},
 	util::handle_view_data_scroll,
 	view::{LineSegment, ViewData, ViewLine},
 };
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
+	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
 }
 
 pub(crate) struct Choice<T> {

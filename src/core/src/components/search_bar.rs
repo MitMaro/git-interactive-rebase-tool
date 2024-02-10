@@ -3,8 +3,6 @@ mod state;
 #[cfg(test)]
 mod tests;
 
-use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent};
-
 pub(crate) use self::action::Action as SearchBarAction;
 use crate::{
 	components::{
@@ -12,6 +10,7 @@ use crate::{
 		shared::{EditAction, EditableLine},
 	},
 	events::Event,
+	input::{InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent},
 	view::{LineSegment, ViewLine},
 };
 

@@ -74,7 +74,7 @@ pub(crate) enum MetaEvent {
 	SearchUpdate,
 }
 
-impl input::CustomEvent for MetaEvent {}
+impl crate::input::CustomEvent for MetaEvent {}
 
 impl From<MetaEvent> for Event {
 	#[inline]

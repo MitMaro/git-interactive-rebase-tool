@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use input::InputOptions;
 use parking_lot::Mutex;
 use todo_file::TodoFile;
 
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	events::{Event, KeyBindings},
+	input::InputOptions,
 	module::{ExitStatus, Module, State},
 	process::Results,
 	view::{RenderContext, ViewData},
@@ -58,13 +58,12 @@ impl ConfirmAbort {
 
 #[cfg(test)]
 mod tests {
-	use input::KeyCode;
-
 	use super::*;
 	use crate::{
 		assert_rendered_output,
 		assert_results,
 		events::MetaEvent,
+		input::KeyCode,
 		process::Artifact,
 		testutil::module_test,
 		view::testutil::AssertRenderOptions,

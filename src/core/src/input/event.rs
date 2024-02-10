@@ -1,11 +1,11 @@
 use crossterm::event::{KeyCode, MouseEvent};
 
-use crate::{KeyEvent, StandardEvent};
+use crate::input::{KeyEvent, StandardEvent};
 
 /// An event, either from an input device, system change or action event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
-#[allow(clippy::exhaustive_enums)]
-pub enum Event<CustomEvent: crate::CustomEvent> {
+#[allow(clippy::exhaustive_enums, clippy::enum_variant_names)]
+pub(crate) enum Event<CustomEvent: crate::input::CustomEvent> {
 	/// A keyboard event.
 	Key(KeyEvent),
 	/// An action event.
@@ -20,7 +20,7 @@ pub enum Event<CustomEvent: crate::CustomEvent> {
 	MetaEvent(CustomEvent),
 }
 
-impl<CustomEvent: crate::CustomEvent> From<crossterm::event::Event> for Event<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> From<crossterm::event::Event> for Event<CustomEvent> {
 	#[inline]
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
@@ -35,35 +35,35 @@ impl<CustomEvent: crate::CustomEvent> From<crossterm::event::Event> for Event<Cu
 	}
 }
 
-impl<CustomEvent: crate::CustomEvent> From<KeyEvent> for Event<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> From<KeyEvent> for Event<CustomEvent> {
 	#[inline]
 	fn from(key_event: KeyEvent) -> Self {
 		Self::Key(key_event)
 	}
 }
 
-impl<CustomEvent: crate::CustomEvent> From<MouseEvent> for Event<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> From<MouseEvent> for Event<CustomEvent> {
 	#[inline]
 	fn from(mouse_event: MouseEvent) -> Self {
 		Self::Mouse(mouse_event)
 	}
 }
 
-impl<CustomEvent: crate::CustomEvent> From<StandardEvent> for Event<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> From<StandardEvent> for Event<CustomEvent> {
 	#[inline]
 	fn from(event: StandardEvent) -> Self {
 		Self::Standard(event)
 	}
 }
 
-impl<CustomEvent: crate::CustomEvent> From<KeyCode> for Event<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> From<KeyCode> for Event<CustomEvent> {
 	#[inline]
 	fn from(code: KeyCode) -> Self {
 		Self::Key(KeyEvent::from(code))
 	}
 }
 
-impl<CustomEvent: crate::CustomEvent> From<char> for Event<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> From<char> for Event<CustomEvent> {
 	#[inline]
 	fn from(c: char) -> Self {
 		Self::Key(KeyEvent::from(KeyCode::Char(c)))
@@ -78,7 +78,7 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::testutil::local::Event;
+	use crate::input::testutil::local::Event;
 
 	#[test]
 	fn from_crossterm_key_event() {

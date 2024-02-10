@@ -1,7 +1,5 @@
-use ::input::KeyCode;
-
 use super::*;
-use crate::{assert_rendered_output, testutil::module_test};
+use crate::{assert_rendered_output, input::KeyCode, testutil::module_test};
 
 #[test]
 fn normal_mode_help() {

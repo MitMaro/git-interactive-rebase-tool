@@ -10,14 +10,14 @@ use std::{
 
 use parking_lot::Mutex;
 
-use crate::Event;
+use crate::input::Event;
 
 const MAXIMUM_EVENTS: usize = 100;
 const EVENT_POLL_TIMEOUT: Duration = Duration::from_secs(1);
 
 /// Input thread state.
 #[derive(Clone, Debug)]
-pub struct State<CustomEvent: crate::CustomEvent> {
+pub(crate) struct State<CustomEvent: crate::input::CustomEvent> {
 	ended: Arc<AtomicBool>,
 	event_queue: Arc<Mutex<VecDeque<Event<CustomEvent>>>>,
 	paused: Arc<AtomicBool>,
@@ -25,7 +25,7 @@ pub struct State<CustomEvent: crate::CustomEvent> {
 	update_sender: crossbeam_channel::Sender<()>,
 }
 
-impl<CustomEvent: crate::CustomEvent> State<CustomEvent> {
+impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 	pub(crate) fn new() -> Self {
 		let (update_sender, update_receiver) = crossbeam_channel::unbounded();
 		Self {
@@ -51,25 +51,25 @@ impl<CustomEvent: crate::CustomEvent> State<CustomEvent> {
 
 	/// Pause the event read thread.
 	#[inline]
-	pub fn pause(&self) {
+	pub(crate) fn pause(&self) {
 		self.paused.store(true, Ordering::Release);
 	}
 
 	/// Resume the event read thread.
 	#[inline]
-	pub fn resume(&self) {
+	pub(crate) fn resume(&self) {
 		self.paused.store(false, Ordering::Release);
 	}
 
 	/// Permanently End the event read thread.
 	#[inline]
-	pub fn end(&self) {
+	pub(crate) fn end(&self) {
 		self.ended.store(true, Ordering::Release);
 	}
 
 	/// Add an event after existing events.
 	#[inline]
-	pub fn enqueue_event(&self, event: Event<CustomEvent>) {
+	pub(crate) fn enqueue_event(&self, event: Event<CustomEvent>) {
 		let mut events = self.event_queue.lock();
 		let last_resize_event_maybe = matches!(event, Event::Resize(..))
 			.then(|| events.back_mut().filter(|e| matches!(*e, &mut Event::Resize(..))))
@@ -86,7 +86,7 @@ impl<CustomEvent: crate::CustomEvent> State<CustomEvent> {
 
 	/// Add an event before existing events.
 	#[inline]
-	pub fn push_event(&self, event: Event<CustomEvent>) {
+	pub(crate) fn push_event(&self, event: Event<CustomEvent>) {
 		let mut events = self.event_queue.lock();
 		if events.len() >= MAXIMUM_EVENTS {
 			_ = events.pop_back();
@@ -99,7 +99,7 @@ impl<CustomEvent: crate::CustomEvent> State<CustomEvent> {
 	/// available. And if no event is available, it will return `Event::None`.
 	#[inline]
 	#[must_use]
-	pub fn read_event(&self) -> Event<CustomEvent> {
+	pub(crate) fn read_event(&self) -> Event<CustomEvent> {
 		// clear existing message since last read
 		while self.update_receiver.try_recv().is_ok() {}
 		loop {
@@ -128,7 +128,7 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::testutil::local::{Event, TestEvent};
+	use crate::input::testutil::local::{Event, TestEvent};
 
 	fn create_state() -> State<TestEvent> {
 		State::new()
