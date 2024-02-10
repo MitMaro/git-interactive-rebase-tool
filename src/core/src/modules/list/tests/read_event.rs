@@ -1,8 +1,10 @@
-use input::{KeyCode, KeyModifiers, MouseEvent};
 use rstest::rstest;
 
 use super::*;
-use crate::testutil::read_event_test;
+use crate::{
+	input::{KeyCode, KeyModifiers, MouseEvent},
+	testutil::read_event_test,
+};
 
 #[test]
 fn edit_mode_passthrough_event() {

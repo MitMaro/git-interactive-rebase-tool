@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use config::Config;
 use git::Repository;
-use input::EventHandler;
 use parking_lot::Mutex;
 use todo_file::TodoFile;
 
 use crate::{
+	input::EventHandler,
 	module::{Module, ModuleHandler, ModuleProvider, State},
 	testutil::create_test_keybindings,
 };

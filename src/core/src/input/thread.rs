@@ -8,20 +8,20 @@ use std::{
 
 use captur::capture;
 use runtime::{Installer, Threadable};
-pub use state::State;
+pub(crate) use state::State;
 
-use crate::{event::Event, event_provider::EventReaderFn};
+use crate::input::{event::Event, event_provider::EventReaderFn};
 
 /// The name of the input thread.
-pub const THREAD_NAME: &str = "input";
+pub(crate) const THREAD_NAME: &str = "input";
 const MINIMUM_PAUSE_RATE: Duration = Duration::from_millis(250);
 
 /// A thread for reading and handling input events.
 #[derive(Debug)]
-pub struct Thread<EventProvider, CustomEvent>
+pub(crate) struct Thread<EventProvider, CustomEvent>
 where
 	EventProvider: EventReaderFn,
-	CustomEvent: crate::CustomEvent + 'static,
+	CustomEvent: crate::input::CustomEvent + 'static,
 {
 	event_provider: Arc<EventProvider>,
 	state: State<CustomEvent>,
@@ -30,7 +30,7 @@ where
 impl<EventProvider, CustomEvent> Threadable for Thread<EventProvider, CustomEvent>
 where
 	EventProvider: EventReaderFn,
-	CustomEvent: crate::CustomEvent + Send + Sync + 'static,
+	CustomEvent: crate::input::CustomEvent + Send + Sync + 'static,
 {
 	#[inline]
 	fn install(&self, installer: &Installer) {
@@ -79,11 +79,11 @@ where
 impl<EventProvider, CustomEvent> Thread<EventProvider, CustomEvent>
 where
 	EventProvider: EventReaderFn,
-	CustomEvent: crate::CustomEvent + 'static,
+	CustomEvent: crate::input::CustomEvent + 'static,
 {
 	/// Create a new instance of a thread.
 	#[inline]
-	pub fn new(event_provider: EventProvider) -> Self {
+	pub(crate) fn new(event_provider: EventProvider) -> Self {
 		Self {
 			event_provider: Arc::new(event_provider),
 			state: State::new(),
@@ -93,7 +93,7 @@ where
 	/// Get a cloned copy of the state of the thread.
 	#[inline]
 	#[must_use]
-	pub fn state(&self) -> State<CustomEvent> {
+	pub(crate) fn state(&self) -> State<CustomEvent> {
 		self.state.clone()
 	}
 }
@@ -105,7 +105,7 @@ mod tests {
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
-	use crate::{
+	use crate::input::{
 		testutil::local::{create_event_reader, TestEvent},
 		KeyEvent,
 	};

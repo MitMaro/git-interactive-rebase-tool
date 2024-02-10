@@ -1,18 +1,18 @@
 #[cfg(test)]
 mod tests;
 
-use input::{InputOptions, KeyCode, KeyEvent, KeyModifiers};
 use lazy_static::lazy_static;
 
 use crate::{
 	components::shared::EditableLine,
 	display::DisplayColor,
 	events::Event,
+	input::{InputOptions, KeyCode, KeyEvent, KeyModifiers},
 	view::{LineSegment, ViewData, ViewDataUpdater, ViewLine},
 };
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
+	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
 }
 
 const FINISH_EVENT: Event = Event::Key(KeyEvent {

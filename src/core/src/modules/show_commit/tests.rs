@@ -8,13 +8,13 @@ use git::{
 	Status,
 	User,
 };
-use input::StandardEvent;
 use rstest::rstest;
 
 use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
+	input::StandardEvent,
 	process::Artifact,
 	render_line,
 	testutil::module_test,

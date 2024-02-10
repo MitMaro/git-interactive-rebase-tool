@@ -1,10 +1,10 @@
 use captur::capture;
-use input::InputOptions;
 use lazy_static::lazy_static;
 
 use crate::{
 	display::DisplayColor,
 	events::Event,
+	input::InputOptions,
 	module::{Module, State},
 	process::Results,
 	util::handle_view_data_scroll,
@@ -12,7 +12,7 @@ use crate::{
 };
 
 lazy_static! {
-	pub static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
+	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
 }
 
 pub(crate) struct Error {

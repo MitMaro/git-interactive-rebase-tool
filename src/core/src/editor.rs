@@ -1,5 +1,3 @@
-use input::read_event;
-
 #[cfg(test)]
 use crate::display::testutil::CrossTerm;
 #[cfg(not(test))]
@@ -8,6 +6,7 @@ use crate::{
 	application::Application,
 	arguments::Args,
 	exit::Exit,
+	input::read_event,
 	module::{ExitStatus, Modules},
 };
 

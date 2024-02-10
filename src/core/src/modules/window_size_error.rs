@@ -1,8 +1,8 @@
-use input::InputOptions;
 use lazy_static::lazy_static;
 
 use crate::{
 	events::Event,
+	input::InputOptions,
 	module::{Module, State},
 	process::Results,
 	view::{RenderContext, ViewData, ViewLine},

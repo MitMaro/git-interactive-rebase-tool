@@ -1,9 +1,10 @@
-use input::KeyCode;
-
-use crate::events::{AppKeyBindings, Event, KeyBindings};
+use crate::{
+	events::{AppKeyBindings, Event, KeyBindings},
+	input::KeyCode,
+};
 
 pub(crate) fn create_test_keybindings() -> KeyBindings {
-	input::testutil::create_test_keybindings(create_test_custom_keybindings())
+	crate::input::testutil::create_test_keybindings(create_test_custom_keybindings())
 }
 
 pub(crate) fn create_test_custom_keybindings() -> AppKeyBindings {

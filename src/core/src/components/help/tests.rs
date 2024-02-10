@@ -1,8 +1,11 @@
-use input::{KeyModifiers, MouseEvent, MouseEventKind, StandardEvent};
 use rstest::rstest;
 
 use super::*;
-use crate::{assert_rendered_output, view::testutil::with_view_state};
+use crate::{
+	assert_rendered_output,
+	input::{KeyModifiers, MouseEvent, MouseEventKind, StandardEvent},
+	view::testutil::with_view_state,
+};
 
 fn handle_event(help: &mut Help, event: Event) {
 	let evt = help.read_event(event).unwrap_or(event);

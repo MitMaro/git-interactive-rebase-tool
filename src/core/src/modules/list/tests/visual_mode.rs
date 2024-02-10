@@ -1,10 +1,9 @@
-use ::input::KeyCode;
-
 use super::*;
 use crate::{
 	action_line,
 	assert_rendered_output,
 	assert_results,
+	input::KeyCode,
 	process::Artifact,
 	render_line,
 	testutil::module_test,

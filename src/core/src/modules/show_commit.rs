@@ -11,7 +11,6 @@ use anyhow::{anyhow, Error};
 use captur::capture;
 use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
-use input::{InputOptions, StandardEvent};
 use parking_lot::Mutex;
 use todo_file::TodoFile;
 
@@ -23,6 +22,7 @@ use self::{
 use crate::{
 	components::help::Help,
 	events::{Event, KeyBindings, MetaEvent},
+	input::{InputOptions, StandardEvent},
 	module::{Module, State},
 	process::Results,
 	select,

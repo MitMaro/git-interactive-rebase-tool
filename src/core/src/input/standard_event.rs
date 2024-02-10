@@ -1,7 +1,7 @@
 /// Represents an event that is not tied directly to a user input device.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 #[non_exhaustive]
-pub enum StandardEvent {
+pub(crate) enum StandardEvent {
 	/// The exit meta event.
 	Exit,
 	/// The kill meta event.

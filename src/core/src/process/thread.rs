@@ -74,12 +74,12 @@ mod tests {
 		sync::atomic::{AtomicBool, Ordering},
 	};
 
-	use input::StandardEvent;
 	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
 	use crate::{
 		events::Event,
+		input::StandardEvent,
 		module::Module,
 		testutil::{create_default_test_module_handler, create_test_module_handler, process_test, ProcessTestContext},
 	};

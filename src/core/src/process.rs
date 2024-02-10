@@ -14,7 +14,6 @@ use std::{
 };
 
 use anyhow::{anyhow, Error, Result};
-use input::StandardEvent;
 use parking_lot::Mutex;
 use runtime::ThreadStatuses;
 use todo_file::TodoFile;
@@ -24,6 +23,7 @@ use crate::{
 	display::Size,
 	events,
 	events::{Event, MetaEvent},
+	input::StandardEvent,
 	module::{self, ExitStatus, ModuleHandler, State},
 	search::{self, Action, Searchable},
 	view::{RenderContext, State as ViewState},
@@ -239,7 +239,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		self.thread_statuses
 			.wait_for_status(crate::view::REFRESH_THREAD_NAME, &runtime::Status::Waiting)?;
 		self.thread_statuses
-			.wait_for_status(input::THREAD_NAME, &runtime::Status::Waiting)?;
+			.wait_for_status(crate::input::THREAD_NAME, &runtime::Status::Waiting)?;
 
 		let mut cmd = Command::new(external_command.0.clone());
 		_ = cmd.args(external_command.1.clone());

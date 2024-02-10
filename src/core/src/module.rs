@@ -7,7 +7,6 @@ mod state;
 mod tests;
 
 use anyhow::Error;
-use input::InputOptions;
 use lazy_static::lazy_static;
 
 pub(crate) use self::{
@@ -19,6 +18,7 @@ pub(crate) use self::{
 };
 use crate::{
 	events::{Event, KeyBindings},
+	input::InputOptions,
 	process::Results,
 	view::{RenderContext, ViewData},
 };

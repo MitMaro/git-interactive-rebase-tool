@@ -349,7 +349,6 @@ dependencies = [
  "crossterm",
  "girt-config",
  "girt-git",
- "girt-input",
  "girt-runtime",
  "girt-todo-file",
  "if_chain",
@@ -386,24 +385,6 @@ dependencies = [
  "serial_test",
  "tempfile",
  "thiserror",
-]
-
-[[package]]
-name = "girt-input"
-version = "2.3.0"
-dependencies = [
- "anyhow",
- "bitflags 2.4.2",
- "captur",
- "crossbeam-channel",
- "crossterm",
- "girt-config",
- "girt-runtime",
- "lazy_static",
- "parking_lot",
- "rstest",
- "rustc_version",
- "serial_test",
 ]
 
 [[package]]

@@ -32,9 +32,11 @@ uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 xi-unicode = "0.3.0"
 girt-config = {version = "2.3.0", path = "../../src/config"}
 girt-git = {version = "2.3.0", path = "../../src/git"}
-girt-input = {version = "2.3.0", path = "../../src/input"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
 girt-todo-file = {version = "2.3.0", path = "../../src/todo_file"}
+
+[target.'cfg(target_os = "macos")'.dependencies]
+crossterm = { version = "0.26.1", features = ["use-dev-tty"] }
 
 [dev-dependencies]
 claims = "0.7.1"

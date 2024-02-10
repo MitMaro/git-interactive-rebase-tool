@@ -3,7 +3,7 @@
 use anyhow::Result;
 use crossterm::event as c_event;
 
-use crate::{
+use crate::input::{
 	map_keybindings,
 	thread::State,
 	Event,
@@ -19,7 +19,7 @@ use crate::{
 pub(crate) mod local {
 	use anyhow::Result;
 
-	use crate::{CustomEvent, CustomKeybinding, EventReaderFn};
+	use crate::input::{CustomEvent, CustomKeybinding, EventReaderFn};
 
 	#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 	pub(crate) enum TestEvent {}
@@ -32,9 +32,9 @@ pub(crate) mod local {
 		}
 	}
 
-	pub(crate) type Event = crate::Event<TestEvent>;
-	pub(crate) type EventHandler = crate::EventHandler<TestKeybinding, TestEvent>;
-	pub(crate) type KeyBindings = crate::KeyBindings<TestKeybinding, TestEvent>;
+	pub(crate) type Event = crate::input::Event<TestEvent>;
+	pub(crate) type EventHandler = crate::input::EventHandler<TestKeybinding, TestEvent>;
+	pub(crate) type KeyBindings = crate::input::KeyBindings<TestKeybinding, TestEvent>;
 
 	pub(crate) fn create_test_keybindings() -> KeyBindings {
 		super::create_test_keybindings::<TestKeybinding, TestEvent>(TestKeybinding {})
@@ -51,7 +51,10 @@ pub(crate) mod local {
 /// Create a mocked version of `KeyBindings`.
 #[inline]
 #[must_use]
-pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>(
+pub(crate) fn create_test_keybindings<
+	TestKeybinding: crate::input::CustomKeybinding,
+	CustomEvent: crate::input::CustomEvent,
+>(
 	custom_key_bindings: TestKeybinding,
 ) -> KeyBindings<TestKeybinding, CustomEvent> {
 	KeyBindings {
@@ -76,19 +79,23 @@ pub fn create_test_keybindings<TestKeybinding: crate::CustomKeybinding, CustomEv
 /// Context for a `EventHandler` based test.
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct TestContext<TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent> {
+pub(crate) struct TestContext<TestKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent> {
 	/// The `EventHandler` instance.
-	pub event_handler: EventHandler<TestKeybinding, CustomEvent>,
+	pub(crate) event_handler: EventHandler<TestKeybinding, CustomEvent>,
 	/// The sender instance.
-	pub state: State<CustomEvent>,
+	pub(crate) state: State<CustomEvent>,
 	/// The number of known available events.
-	pub number_events: usize,
+	pub(crate) number_events: usize,
 }
 
 /// Provide an `EventHandler` instance for use within a test.
 #[inline]
 #[allow(clippy::missing_panics_doc)]
-pub fn with_event_handler<C, TestKeybinding: crate::CustomKeybinding, CustomEvent: crate::CustomEvent>(
+pub(crate) fn with_event_handler<
+	C,
+	TestKeybinding: crate::input::CustomKeybinding,
+	CustomEvent: crate::input::CustomEvent,
+>(
 	custom_key_bindings: TestKeybinding,
 	events: &[Event<CustomEvent>],
 	callback: C,
@@ -121,12 +128,12 @@ pub fn with_event_handler<C, TestKeybinding: crate::CustomKeybinding, CustomEven
 /// If provided an event generator that returns a `Event::MetaEvent` or `Event::StandardEvent` event type.
 #[allow(clippy::panic)]
 #[inline]
-pub fn create_event_reader<EventGeneratorFunction, CustomEvent>(
+pub(crate) fn create_event_reader<EventGeneratorFunction, CustomEvent>(
 	event_generator: EventGeneratorFunction,
 ) -> impl EventReaderFn
 where
 	EventGeneratorFunction: Fn() -> Result<Option<Event<CustomEvent>>> + Sync + Send + 'static,
-	CustomEvent: crate::CustomEvent,
+	CustomEvent: crate::input::CustomEvent,
 {
 	move || {
 		match event_generator()? {

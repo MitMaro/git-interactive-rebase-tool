@@ -8,7 +8,6 @@ mod tests;
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
-use input::InputOptions;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use todo_file::{Line, TodoFile};
@@ -17,6 +16,7 @@ use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::
 use crate::{
 	components::choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
 	events::{Event, MetaEvent},
+	input::InputOptions,
 	module::{ExitStatus, Module, State},
 	process::Results,
 	view::{RenderContext, ViewData, ViewLine},

@@ -1,7 +1,5 @@
-use ::input::KeyCode;
-
 use super::*;
-use crate::{assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
+use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact, testutil::module_test};
 
 #[test]
 fn edit_with_edit_content() {

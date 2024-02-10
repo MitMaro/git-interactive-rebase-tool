@@ -1,7 +1,12 @@
-use ::input::KeyCode;
-
 use super::*;
-use crate::{action_line, assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
+use crate::{
+	action_line,
+	assert_rendered_output,
+	assert_results,
+	input::KeyCode,
+	process::Artifact,
+	testutil::module_test,
+};
 
 #[test]
 fn change_auto_select_next_with_next_line() {

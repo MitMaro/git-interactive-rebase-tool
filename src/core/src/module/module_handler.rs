@@ -1,9 +1,8 @@
-use input::EventHandler;
-
 use super::State;
 use crate::{
 	events,
 	events::{AppKeyBindings, Event, MetaEvent},
+	input::EventHandler,
 	process::Results,
 	view::{RenderContext, ViewData},
 };
@@ -73,11 +72,11 @@ mod tests {
 	use std::sync::Arc;
 
 	use anyhow::{anyhow, Error};
-	use input::StandardEvent;
 	use parking_lot::Mutex;
 
 	use super::*;
 	use crate::{
+		input::StandardEvent,
 		module::Module,
 		testutil::{module_test, TestModuleProvider},
 	};
