@@ -322,21 +322,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "girt-config"
-version = "2.3.0"
-dependencies = [
- "claims",
- "girt-git",
- "girt-testutils",
- "lazy_static",
- "rstest",
- "rustc_version",
- "serial_test",
- "tempfile",
- "thiserror",
-]
-
-[[package]]
 name = "girt-core"
 version = "2.3.0"
 dependencies = [
@@ -347,7 +332,6 @@ dependencies = [
  "claims",
  "crossbeam-channel",
  "crossterm",
- "girt-config",
  "girt-git",
  "girt-runtime",
  "girt-testutils",

@@ -98,7 +98,7 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 	/// Create a new instance from the configuration keybindings.
 	#[inline]
 	#[must_use]
-	pub(crate) fn new(key_bindings: &config::KeyBindings) -> Self {
+	pub(crate) fn new(key_bindings: &crate::config::KeyBindings) -> Self {
 		Self {
 			redo: map_keybindings(&key_bindings.redo),
 			undo: map_keybindings(&key_bindings.undo),
@@ -128,7 +128,7 @@ mod tests {
 
 	#[test]
 	fn new() {
-		let _key_bindings = KeyBindings::<TestKeybinding, TestEvent>::new(&config::KeyBindings::new());
+		let _key_bindings = KeyBindings::<TestKeybinding, TestEvent>::new(&crate::config::KeyBindings::new());
 	}
 
 	#[test]

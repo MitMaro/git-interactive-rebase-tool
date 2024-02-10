@@ -1,6 +1,6 @@
 use git::Config;
 
-use crate::{errors::ConfigError, utils::get_input};
+use crate::config::{errors::ConfigError, utils::get_input};
 
 fn map_single_ascii_to_lower(s: &str) -> String {
 	if s.is_ascii() && s.len() == 1 {
@@ -14,102 +14,102 @@ fn map_single_ascii_to_lower(s: &str) -> String {
 /// Represents the key binding configuration options.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
-pub struct KeyBindings {
+pub(crate) struct KeyBindings {
 	/// Key bindings for aborting.
-	pub abort: Vec<String>,
+	pub(crate) abort: Vec<String>,
 	/// Key bindings for the break action.
-	pub action_break: Vec<String>,
+	pub(crate) action_break: Vec<String>,
 	/// Key bindings for the drop action.
-	pub action_drop: Vec<String>,
+	pub(crate) action_drop: Vec<String>,
 	/// Key bindings for the edit action.
-	pub action_edit: Vec<String>,
+	pub(crate) action_edit: Vec<String>,
 	/// Key bindings for the fixup action.
-	pub action_fixup: Vec<String>,
+	pub(crate) action_fixup: Vec<String>,
 	/// Key bindings for the pick action.
-	pub action_pick: Vec<String>,
+	pub(crate) action_pick: Vec<String>,
 	/// Key bindings for the reword action.
-	pub action_reword: Vec<String>,
+	pub(crate) action_reword: Vec<String>,
 	/// Key bindings for the squash action.
-	pub action_squash: Vec<String>,
+	pub(crate) action_squash: Vec<String>,
 	/// Key bindings for negative confirmation.
-	pub confirm_no: Vec<String>,
+	pub(crate) confirm_no: Vec<String>,
 	/// Key bindings for positive confirmation.
-	pub confirm_yes: Vec<String>,
+	pub(crate) confirm_yes: Vec<String>,
 	/// Key bindings for editing.
-	pub edit: Vec<String>,
+	pub(crate) edit: Vec<String>,
 	/// Key bindings for forcing a abort.
-	pub force_abort: Vec<String>,
+	pub(crate) force_abort: Vec<String>,
 	/// Key bindings for forcing a rebase.
-	pub force_rebase: Vec<String>,
+	pub(crate) force_rebase: Vec<String>,
 	/// Key bindings for showing help.
-	pub help: Vec<String>,
+	pub(crate) help: Vec<String>,
 	/// Key bindings for inserting a line.
-	pub insert_line: Vec<String>,
+	pub(crate) insert_line: Vec<String>,
 
 	/// Key bindings for moving down.
-	pub move_down: Vec<String>,
+	pub(crate) move_down: Vec<String>,
 	/// Key bindings for moving to the end.
-	pub move_end: Vec<String>,
+	pub(crate) move_end: Vec<String>,
 	/// Key bindings for moving to the start.
-	pub move_home: Vec<String>,
+	pub(crate) move_home: Vec<String>,
 	/// Key bindings for moving to the left.
-	pub move_left: Vec<String>,
+	pub(crate) move_left: Vec<String>,
 	/// Key bindings for moving to the right.
-	pub move_right: Vec<String>,
+	pub(crate) move_right: Vec<String>,
 	/// Key bindings for moving up.
-	pub move_up: Vec<String>,
+	pub(crate) move_up: Vec<String>,
 	/// Key bindings for moving down a step.
-	pub move_down_step: Vec<String>,
+	pub(crate) move_down_step: Vec<String>,
 	/// Key bindings for moving up a step.
-	pub move_up_step: Vec<String>,
+	pub(crate) move_up_step: Vec<String>,
 	/// Key bindings for moving the selection down.
-	pub move_selection_down: Vec<String>,
+	pub(crate) move_selection_down: Vec<String>,
 	/// Key bindings for moving the selection up.
-	pub move_selection_up: Vec<String>,
+	pub(crate) move_selection_up: Vec<String>,
 
 	/// Key bindings for scrolling down.
-	pub scroll_down: Vec<String>,
+	pub(crate) scroll_down: Vec<String>,
 	/// Key bindings for scrolling to the end.
-	pub scroll_end: Vec<String>,
+	pub(crate) scroll_end: Vec<String>,
 	/// Key bindings for scrolling to the start.
-	pub scroll_home: Vec<String>,
+	pub(crate) scroll_home: Vec<String>,
 	/// Key bindings for scrolling to the left.
-	pub scroll_left: Vec<String>,
+	pub(crate) scroll_left: Vec<String>,
 	/// Key bindings for scrolling to the right.
-	pub scroll_right: Vec<String>,
+	pub(crate) scroll_right: Vec<String>,
 	/// Key bindings for scrolling up.
-	pub scroll_up: Vec<String>,
+	pub(crate) scroll_up: Vec<String>,
 	/// Key bindings for scrolling down a step.
-	pub scroll_step_down: Vec<String>,
+	pub(crate) scroll_step_down: Vec<String>,
 	/// Key bindings for scrolling up a step.
-	pub scroll_step_up: Vec<String>,
+	pub(crate) scroll_step_up: Vec<String>,
 
 	/// Key bindings for opening the external editor.
-	pub open_in_external_editor: Vec<String>,
+	pub(crate) open_in_external_editor: Vec<String>,
 	/// Key bindings for rebasing.
-	pub rebase: Vec<String>,
+	pub(crate) rebase: Vec<String>,
 	/// Key bindings for redoing a change.
-	pub redo: Vec<String>,
+	pub(crate) redo: Vec<String>,
 	/// Key bindings for removing a line.
-	pub remove_line: Vec<String>,
+	pub(crate) remove_line: Vec<String>,
 	/// Key bindings for starting search.
-	pub search_start: Vec<String>,
+	pub(crate) search_start: Vec<String>,
 	/// Key bindings for next search match.
-	pub search_next: Vec<String>,
+	pub(crate) search_next: Vec<String>,
 	/// Key bindings for previous search match.
-	pub search_previous: Vec<String>,
+	pub(crate) search_previous: Vec<String>,
 	/// Key bindings for showing a commit.
-	pub show_commit: Vec<String>,
+	pub(crate) show_commit: Vec<String>,
 	/// Key bindings for showing a diff.
-	pub show_diff: Vec<String>,
+	pub(crate) show_diff: Vec<String>,
 	/// Key bindings for toggling visual mode.
-	pub toggle_visual_mode: Vec<String>,
+	pub(crate) toggle_visual_mode: Vec<String>,
 	/// Key bindings for undoing a change.
-	pub undo: Vec<String>,
+	pub(crate) undo: Vec<String>,
 	/// Key bindings for the fixup specific action to toggle the c option.
-	pub fixup_keep_message_with_editor: Vec<String>,
+	pub(crate) fixup_keep_message_with_editor: Vec<String>,
 	/// Key bindings for the fixup specific action to toggle the c option.
-	pub fixup_keep_message: Vec<String>,
+	pub(crate) fixup_keep_message: Vec<String>,
 }
 
 impl KeyBindings {
@@ -117,7 +117,7 @@ impl KeyBindings {
 	#[must_use]
 	#[inline]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
@@ -199,7 +199,7 @@ mod tests {
 	use claims::assert_ok;
 
 	use super::*;
-	use crate::testutils::with_git_config;
+	use crate::config::testutils::with_git_config;
 
 	macro_rules! config_test {
 		($key:ident, $config_name:literal, $default:literal) => {

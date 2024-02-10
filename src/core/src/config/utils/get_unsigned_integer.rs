@@ -1,6 +1,6 @@
 use git::{Config, ErrorCode};
 
-use crate::{utils::get_optional_string, ConfigError, ConfigErrorCause};
+use crate::config::{utils::get_optional_string, ConfigError, ConfigErrorCause};
 
 pub(crate) fn get_unsigned_integer(config: Option<&Config>, name: &str, default: u32) -> Result<u32, ConfigError> {
 	if let Some(cfg) = config {
@@ -42,7 +42,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{invalid_utf, with_git_config};
+	use crate::config::testutils::{invalid_utf, with_git_config};
 
 	#[test]
 	fn read_value() {

@@ -1,6 +1,6 @@
 use git::{Config, ErrorCode};
 
-use crate::{ConfigError, ConfigErrorCause};
+use crate::config::{ConfigError, ConfigErrorCause};
 
 pub(crate) fn get_optional_string(config: Option<&Config>, name: &str) -> Result<Option<String>, ConfigError> {
 	let Some(cfg) = config
@@ -33,7 +33,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::testutils::{invalid_utf, with_git_config};
+	use crate::config::testutils::{invalid_utf, with_git_config};
 
 	#[test]
 	fn read_value() {

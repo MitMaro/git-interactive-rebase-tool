@@ -9,7 +9,6 @@ use std::sync::Arc;
 
 use anyhow::{anyhow, Error};
 use captur::capture;
-use config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting};
 use git::{CommitDiff, CommitDiffLoaderOptions, Repository};
 use parking_lot::Mutex;
 
@@ -20,6 +19,7 @@ use self::{
 };
 use crate::{
 	components::help::Help,
+	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
 	events::{Event, KeyBindings, MetaEvent},
 	input::{InputOptions, StandardEvent},
 	module::{Module, State},

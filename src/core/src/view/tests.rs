@@ -1,9 +1,10 @@
-use config::Theme;
-
 use super::*;
-use crate::display::{
-	testutil::{assert_output, CrossTerm},
-	Size,
+use crate::{
+	config::Theme,
+	display::{
+		testutil::{assert_output, CrossTerm},
+		Size,
+	},
 };
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {

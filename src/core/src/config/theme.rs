@@ -1,6 +1,6 @@
 use git::Config;
 
-use crate::{
+use crate::config::{
 	errors::ConfigError,
 	utils::{get_optional_string, get_string},
 	Color,
@@ -25,51 +25,51 @@ fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Colo
 /// Represents the theme configuration options.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
-pub struct Theme {
+pub(crate) struct Theme {
 	/// The character for filling vertical spacing.
-	pub character_vertical_spacing: String,
+	pub(crate) character_vertical_spacing: String,
 	/// The color for the break action.
-	pub color_action_break: Color,
+	pub(crate) color_action_break: Color,
 	/// The color for the drop action.
-	pub color_action_drop: Color,
+	pub(crate) color_action_drop: Color,
 	/// The color for the edit action.
-	pub color_action_edit: Color,
+	pub(crate) color_action_edit: Color,
 	/// The color for the exec action.
-	pub color_action_exec: Color,
+	pub(crate) color_action_exec: Color,
 	/// The color for the fixup action.
-	pub color_action_fixup: Color,
+	pub(crate) color_action_fixup: Color,
 	/// The color for the pick action.
-	pub color_action_pick: Color,
+	pub(crate) color_action_pick: Color,
 	/// The color for the reword action.
-	pub color_action_reword: Color,
+	pub(crate) color_action_reword: Color,
 	/// The color for the squash action.
-	pub color_action_squash: Color,
+	pub(crate) color_action_squash: Color,
 	/// The color for the label action.
-	pub color_action_label: Color,
+	pub(crate) color_action_label: Color,
 	/// The color for the reset action.
-	pub color_action_reset: Color,
+	pub(crate) color_action_reset: Color,
 	/// The color for the merge action.
-	pub color_action_merge: Color,
+	pub(crate) color_action_merge: Color,
 	/// The color for the update-ref action.
-	pub color_action_update_ref: Color,
+	pub(crate) color_action_update_ref: Color,
 	/// The color for the background.
-	pub color_background: Color,
+	pub(crate) color_background: Color,
 	/// The color for added lines in a diff.
-	pub color_diff_add: Color,
+	pub(crate) color_diff_add: Color,
 	/// The color for changed lines in a diff.
-	pub color_diff_change: Color,
+	pub(crate) color_diff_change: Color,
 	/// The color for context lines in a diff.
-	pub color_diff_context: Color,
+	pub(crate) color_diff_context: Color,
 	/// The color for removed lines in a diff.
-	pub color_diff_remove: Color,
+	pub(crate) color_diff_remove: Color,
 	/// The color for whitespace characters in a diff.
-	pub color_diff_whitespace: Color,
+	pub(crate) color_diff_whitespace: Color,
 	/// The color for the standard text.
-	pub color_foreground: Color,
+	pub(crate) color_foreground: Color,
 	/// The color for indicator text.
-	pub color_indicator: Color,
+	pub(crate) color_indicator: Color,
 	/// The background color for selected lines.
-	pub color_selected_background: Color,
+	pub(crate) color_selected_background: Color,
 }
 
 impl Theme {
@@ -77,7 +77,7 @@ impl Theme {
 	#[must_use]
 	#[inline]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
@@ -146,7 +146,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::{
+	use crate::config::{
 		errors::InvalidColorError,
 		testutils::{invalid_utf, with_git_config},
 		ConfigErrorCause,

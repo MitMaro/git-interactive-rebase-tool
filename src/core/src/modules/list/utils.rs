@@ -1,9 +1,9 @@
 use std::cmp;
 
 use bitflags::bitflags;
-use config::KeyBindings;
 
 use crate::{
+	config::KeyBindings,
 	display::DisplayColor,
 	todo_file::{Action, Line, TodoFile},
 	view::LineSegment,

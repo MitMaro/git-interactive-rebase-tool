@@ -1,7 +1,7 @@
 /// Configuration option for how to show whitespace when displaying diffs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum DiffShowWhitespaceSetting {
+pub(crate) enum DiffShowWhitespaceSetting {
 	/// Do not show whitespace characters.
 	None,
 	/// Show only trailing whitespace characters.

@@ -20,7 +20,6 @@ mod tui;
 mod utils;
 
 use ::crossterm::style::{Color, Colors};
-use config::Theme;
 
 use self::utils::register_selectable_color_pairs;
 pub(crate) use self::{
@@ -31,6 +30,7 @@ pub(crate) use self::{
 	size::Size,
 	tui::Tui,
 };
+use crate::config::Theme;
 
 /// A high level interface to the terminal display.
 #[derive(Debug)]

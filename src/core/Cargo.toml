@@ -31,7 +31,6 @@ unicode-width = "0.1.10"
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 version-track = "0.1.0"
 xi-unicode = "0.3.0"
-girt-config = {version = "2.3.0", path = "../../src/config"}
 girt-git = {version = "2.3.0", path = "../../src/git"}
 girt-runtime = {version = "2.3.0", path = "../runtime"}
 
@@ -46,7 +45,6 @@ regex = "1.8.3"
 rstest = "0.18.1"
 serial_test = "2.0.0"
 tempfile = "3.7.0"
-girt-config = {version = "2.3.0", path = "../config"}
 girt-testutils = {version = "2.3.0", path = "../testutils"}
 
 [build-dependencies]
