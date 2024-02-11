@@ -19,10 +19,6 @@ include = [
 ]
 edition = "2021"
 
-[lib]
-name = "girt"
-path = "src/lib.rs"
-
 [[bin]]
 name = "interactive-rebase-tool"
 path = "src/main.rs"
