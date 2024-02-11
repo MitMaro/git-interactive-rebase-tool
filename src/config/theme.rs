@@ -145,10 +145,9 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::config::{
-		testutils::{invalid_utf, with_git_config},
-		ConfigErrorCause,
-		InvalidColorError,
+	use crate::{
+		config::{testutils::with_git_config, ConfigErrorCause, InvalidColorError},
+		test_helpers::invalid_utf,
 	};
 
 	macro_rules! config_test {

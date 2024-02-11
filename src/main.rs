@@ -139,6 +139,8 @@ mod process;
 mod runtime;
 mod search;
 #[cfg(test)]
+mod test_helpers;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod testutil;
