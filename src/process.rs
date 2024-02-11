@@ -202,6 +202,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		Results::new()
 	}
 
+	#[allow(clippy::cast_possible_truncation)]
 	fn handle_enqueue_resize(&self) -> Results {
 		let render_context = self.render_context.lock();
 		self.input_state.enqueue_event(Event::Resize(

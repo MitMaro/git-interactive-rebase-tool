@@ -19,7 +19,7 @@ use crate::{
 	module::{ExitStatus, Module, State},
 	process::Results,
 	todo_file::{Line, TodoFile},
-	view::{RenderContext, ViewData, ViewLine},
+	view::{RenderContext, ViewData, ViewDataUpdater, ViewLine},
 };
 
 lazy_static! {
