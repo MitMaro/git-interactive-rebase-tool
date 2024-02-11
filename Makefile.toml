@@ -160,9 +160,6 @@ script = ['''
 cargo +nightly about generate "docs/licenses.hbs" > "docs/licenses.html"
 ''']
 
-[tasks.add-lints]
-command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/scripts/add-lints.bash"
-
 [tasks.publish]
 command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/scripts/publish.bash"
 

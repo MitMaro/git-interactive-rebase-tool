@@ -154,7 +154,7 @@ pub(super) fn get_files_changed_summary(diff: &CommitDiff, is_full_width: bool) 
 
 pub(super) fn get_partition_index_on_whitespace_for_line(line: &str) -> (usize, usize) {
 	let graphemes = UnicodeSegmentation::graphemes(line, true);
-	let length = graphemes.clone().map(|c| c.len()).sum();
+	let length = graphemes.clone().map(str::len).sum();
 	let mut start_partition_index = 0;
 	let mut end_partition_index = length;
 

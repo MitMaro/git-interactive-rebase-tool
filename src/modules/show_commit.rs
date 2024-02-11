@@ -27,7 +27,7 @@ use crate::{
 	select,
 	todo_file::TodoFile,
 	util::handle_view_data_scroll,
-	view::{RenderContext, ViewData},
+	view::{RenderContext, ViewData, ViewDataUpdater},
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
