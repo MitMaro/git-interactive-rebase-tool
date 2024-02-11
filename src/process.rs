@@ -2,7 +2,7 @@ mod artifact;
 mod results;
 #[cfg(test)]
 mod tests;
-pub(crate) mod thread;
+mod thread;
 
 use std::{
 	io::ErrorKind,
@@ -26,7 +26,7 @@ use crate::{
 	runtime::ThreadStatuses,
 	search::{self, Action, Searchable},
 	todo_file::TodoFile,
-	view::{RenderContext, State as ViewState},
+	view::RenderContext,
 };
 
 pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {

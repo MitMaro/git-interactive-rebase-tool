@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use itertools::Itertools;
 
 use crate::view::{
-	testutil::{render_view_line::render_view_data, AssertRenderOptions},
+	testutil::{render_view_data, AssertRenderOptions},
 	ViewData,
 };
 

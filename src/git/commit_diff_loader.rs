@@ -5,15 +5,15 @@ use lazy_static::lazy_static;
 use parking_lot::{Mutex, MutexGuard};
 
 use crate::git::{
-	commit::Commit,
-	commit_diff::CommitDiff,
-	commit_diff_loader_options::CommitDiffLoaderOptions,
-	delta::Delta,
-	diff_line::DiffLine,
-	file_mode::FileMode,
-	file_status::FileStatus,
-	file_status_builder::FileStatusBuilder,
-	status::Status,
+	Commit,
+	CommitDiff,
+	CommitDiffLoaderOptions,
+	Delta,
+	DiffLine,
+	FileMode,
+	FileStatus,
+	FileStatusBuilder,
+	Status,
 };
 
 lazy_static! {

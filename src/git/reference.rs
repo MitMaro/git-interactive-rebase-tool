@@ -1,4 +1,4 @@
-use crate::git::reference_kind::ReferenceKind;
+use crate::git::ReferenceKind;
 
 /// Represents a pointer to an object in Git.
 #[derive(Debug, Clone, PartialEq, Eq)]

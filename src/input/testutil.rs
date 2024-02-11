@@ -5,7 +5,6 @@ use crossterm::event as c_event;
 
 use crate::input::{
 	map_keybindings,
-	thread::State,
 	Event,
 	EventHandler,
 	EventReaderFn,
@@ -13,6 +12,7 @@ use crate::input::{
 	KeyCode,
 	KeyEvent,
 	KeyModifiers,
+	State,
 };
 
 #[cfg(test)]

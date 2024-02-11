@@ -5,7 +5,7 @@ use anyhow::Error;
 use crate::{
 	events::Event,
 	module::{ExitStatus, State},
-	process::artifact::Artifact,
+	process::Artifact,
 	search::Searchable,
 };
 

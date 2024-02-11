@@ -1,6 +1,6 @@
 use crossterm::style::Colors;
 
-use crate::display::{color_mode::ColorMode, DisplayError, Size};
+use crate::display::{ColorMode, DisplayError, Size};
 
 /// An interface that describes interactions with a terminal interface.
 pub(crate) trait Tui {

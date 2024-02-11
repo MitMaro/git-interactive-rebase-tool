@@ -1,4 +1,4 @@
-use crate::todo_file::action::Action;
+use crate::todo_file::Action;
 
 /// Describes a edit context for modifying a line.
 #[derive(Debug)]

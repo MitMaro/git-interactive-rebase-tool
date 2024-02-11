@@ -8,14 +8,7 @@ use captur::capture;
 
 use crate::{
 	runtime::{Installer, Threadable},
-	search::{
-		action::Action,
-		interrupter::Interrupter,
-		search_result::SearchResult,
-		searchable::Searchable,
-		State,
-		UpdateHandlerFn,
-	},
+	search::{Action, Interrupter, SearchResult, Searchable, State, UpdateHandlerFn},
 };
 
 pub(crate) const THREAD_NAME: &str = "search";

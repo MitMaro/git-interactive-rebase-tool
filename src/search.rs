@@ -11,7 +11,6 @@ pub(crate) use self::{
 	action::Action,
 	interrupter::Interrupter,
 	search_result::SearchResult,
-	search_state::SearchState,
 	searchable::Searchable,
 	state::State,
 	thread::Thread,

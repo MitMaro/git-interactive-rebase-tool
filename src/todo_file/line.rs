@@ -1,4 +1,4 @@
-use crate::todo_file::{errors::ParseError, line_parser::LineParser, Action};
+use crate::todo_file::{Action, LineParser, ParseError};
 
 /// Represents a line in the rebase file.
 #[derive(Clone, Debug, PartialEq, Eq)]

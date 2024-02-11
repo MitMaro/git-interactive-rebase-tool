@@ -15,7 +15,6 @@ use crate::{
 	process::{self, Process},
 	runtime::{Runtime, ThreadStatuses, Threadable},
 	search,
-	search::UpdateHandlerFn,
 	todo_file::{TodoFile, TodoFileOptions},
 	view::View,
 	Args,
@@ -192,7 +191,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 mod tests {
 	use std::ffi::OsString;
 
-	use claims::{assert_none, assert_ok};
+	use claims::assert_ok;
 
 	use super::*;
 	use crate::{

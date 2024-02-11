@@ -8,13 +8,14 @@ use git2::{Oid, Signature};
 use parking_lot::Mutex;
 
 use crate::git::{
-	commit_diff_loader::CommitDiffLoader,
-	errors::{GitError, RepositoryLoadKind},
 	Commit,
 	CommitDiff,
+	CommitDiffLoader,
 	CommitDiffLoaderOptions,
 	Config,
+	GitError,
 	Reference,
+	RepositoryLoadKind,
 };
 
 /// A light cloneable, simple wrapper around the `git2::Repository` struct

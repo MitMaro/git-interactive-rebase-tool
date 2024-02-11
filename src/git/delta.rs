@@ -89,7 +89,7 @@ mod tests {
 	use claims::assert_err;
 
 	use super::*;
-	use crate::git::origin::Origin;
+	use crate::git::Origin;
 
 	#[test]
 	fn new_with_correctly_formatted_context() {

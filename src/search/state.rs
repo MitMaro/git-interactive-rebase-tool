@@ -8,7 +8,7 @@ use std::{
 
 use crossbeam_channel::RecvTimeoutError;
 
-use crate::search::action::Action;
+use crate::search::Action;
 
 const RECEIVE_TIMEOUT: Duration = Duration::from_millis(500);
 

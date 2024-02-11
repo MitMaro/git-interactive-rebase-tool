@@ -1,4 +1,4 @@
-use crate::config::errors::InvalidColorError;
+use crate::config::InvalidColorError;
 
 /// Represents a color.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

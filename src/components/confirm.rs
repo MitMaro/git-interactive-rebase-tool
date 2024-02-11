@@ -3,12 +3,12 @@ mod confirmed;
 mod tests;
 
 use captur::capture;
-pub(crate) use confirmed::Confirmed;
 use lazy_static::lazy_static;
 
+pub(crate) use self::confirmed::Confirmed;
 use crate::{
 	events::{Event, KeyBindings, MetaEvent},
-	input::{InputOptions, KeyCode, KeyEvent, KeyModifiers},
+	input::{InputOptions, KeyCode, KeyEvent},
 	view::{ViewData, ViewLine},
 };
 

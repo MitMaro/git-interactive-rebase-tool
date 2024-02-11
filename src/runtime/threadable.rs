@@ -1,4 +1,4 @@
-use crate::runtime::installer::Installer;
+use crate::runtime::Installer;
 
 /// An interface for a entity that has threads managed by the `Runtime`.
 pub(crate) trait Threadable: Send {

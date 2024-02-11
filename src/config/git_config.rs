@@ -2,9 +2,8 @@ use std::env;
 
 use crate::{
 	config::{
-		errors::ConfigError,
-		get_string,
-		utils::{get_unsigned_integer, git_diff_renames},
+		utils::{get_string, get_unsigned_integer, git_diff_renames},
+		ConfigError,
 	},
 	git::Config,
 };

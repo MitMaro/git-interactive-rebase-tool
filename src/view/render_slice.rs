@@ -8,9 +8,8 @@ use std::{
 	mem,
 };
 
-pub(crate) use render_action::RenderAction;
-
-use crate::view::{scroll_position::ScrollPosition, LineSegment, ViewData, ViewLine};
+pub(crate) use self::render_action::RenderAction;
+use crate::view::{LineSegment, ScrollPosition, ViewData, ViewLine};
 
 #[derive(Debug)]
 pub(crate) struct RenderSlice {

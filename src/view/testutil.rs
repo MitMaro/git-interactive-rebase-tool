@@ -1,30 +1,27 @@
 //! Utilities for writing tests that interact with input events.
-pub(crate) mod assert_rendered_output;
+mod assert_rendered_output;
 mod render_view_line;
 
 use std::time::Duration;
 
-pub(crate) use crate::view::{
-	render_slice::RenderAction,
-	testutil::{
-		assert_rendered_output::{
-			replace_invisibles,
-			AllPattern,
-			AnyLinePattern,
-			AnyPattern,
-			ContainsPattern,
-			EndsWithPattern,
-			ExactPattern,
-			LinePattern,
-			NotPattern,
-			StartsWithPattern,
-			_assert_rendered_output_from_view_data,
-		},
-		render_view_line::{render_view_line, AssertRenderOptions},
+pub(crate) use self::{
+	assert_rendered_output::{
+		_assert_rendered_output,
+		replace_invisibles,
+		AllPattern,
+		AnyLinePattern,
+		AnyPattern,
+		ContainsPattern,
+		EndsWithPattern,
+		ExactPattern,
+		LinePattern,
+		NotPattern,
+		StartsWithPattern,
+		_assert_rendered_output_from_view_data,
 	},
-	thread::ViewAction,
-	State,
+	render_view_line::{render_view_data, render_view_line, AssertRenderOptions},
 };
+use crate::view::{RenderAction, State, ViewAction};
 
 #[allow(clippy::panic)]
 fn assert_view_state_actions(state: &State, expected_actions: &[String]) {

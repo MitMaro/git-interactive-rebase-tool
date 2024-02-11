@@ -1,4 +1,4 @@
-use crate::{display::DisplayColor, view::line_segment::LineSegment};
+use crate::{display::DisplayColor, view::LineSegment};
 
 /// Represents a line in the view.
 #[derive(Debug)]

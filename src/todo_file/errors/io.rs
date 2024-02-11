@@ -2,7 +2,7 @@ use std::{io, path::PathBuf};
 
 use thiserror::Error;
 
-use crate::todo_file::errors::ParseError;
+use crate::todo_file::ParseError;
 
 /// The cause of a `FileRead` error
 #[derive(Error, Debug)]

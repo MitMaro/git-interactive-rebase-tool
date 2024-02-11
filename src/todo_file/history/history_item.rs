@@ -1,4 +1,4 @@
-use crate::todo_file::{history::operation::Operation, Line};
+use crate::todo_file::{Line, Operation};
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct HistoryItem {
