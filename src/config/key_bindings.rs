@@ -198,7 +198,7 @@ mod tests {
 	use claims::assert_ok;
 
 	use super::*;
-	use crate::config::testutils::with_git_config;
+	use crate::test_helpers::with_git_config;
 
 	macro_rules! config_test {
 		($key:ident, $config_name:literal, $default:literal) => {

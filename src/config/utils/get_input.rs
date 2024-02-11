@@ -81,7 +81,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::{config::testutils::with_git_config, test_helpers::invalid_utf};
+	use crate::test_helpers::{invalid_utf, with_git_config};
 
 	#[rstest]
 	#[case::single_lower("a", "a")]
