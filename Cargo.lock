@@ -175,9 +175,9 @@ checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
 
 [[package]]
 name = "either"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
+checksum = "11157ac094ffbdde99aa67b23417ebdd801842852b500e395a45a9c0aac03e4a"
 
 [[package]]
 name = "errno"
@@ -322,7 +322,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "girt-core"
+name = "girt-testutils"
+version = "2.3.0"
+dependencies = [
+ "rustc_version",
+]
+
+[[package]]
+name = "git-interactive-rebase-tool"
 version = "2.3.0"
 dependencies = [
  "anyhow",
@@ -352,21 +359,6 @@ dependencies = [
  "uuid",
  "version-track",
  "xi-unicode",
-]
-
-[[package]]
-name = "girt-testutils"
-version = "2.3.0"
-dependencies = [
- "rustc_version",
-]
-
-[[package]]
-name = "git-interactive-rebase-tool"
-version = "2.3.0"
-dependencies = [
- "girt-core",
- "rustc_version",
 ]
 
 [[package]]

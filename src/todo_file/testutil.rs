@@ -85,8 +85,6 @@ impl TodoFileTestContext {
 pub(crate) fn with_todo_file<C>(lines: &[&str], callback: C)
 where C: FnOnce(TodoFileTestContext) {
 	let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-		.join("..")
-		.join("..")
 		.join("test")
 		.join("fixtures")
 		.join("simple");

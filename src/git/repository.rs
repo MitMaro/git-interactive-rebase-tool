@@ -206,8 +206,6 @@ mod tests {
 	#[serial_test::serial]
 	fn open_from_env() {
 		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("..")
-			.join("..")
 			.join("test")
 			.join("fixtures")
 			.join("simple");
@@ -219,8 +217,6 @@ mod tests {
 	#[serial_test::serial]
 	fn open_from_env_error() {
 		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("..")
-			.join("..")
 			.join("test")
 			.join("fixtures")
 			.join("does-not-exist");
@@ -241,8 +237,6 @@ mod tests {
 	#[test]
 	fn open_from_path() {
 		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("..")
-			.join("..")
 			.join("test")
 			.join("fixtures")
 			.join("simple");
