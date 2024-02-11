@@ -7,7 +7,6 @@ pub(crate) struct User {
 
 impl User {
 	/// Creates a new user
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(name: Option<&str>, email: Option<&str>) -> Self {
 		Self {
@@ -17,28 +16,24 @@ impl User {
 	}
 
 	/// Get the optional name of the user
-	#[inline]
 	#[must_use]
 	pub(crate) fn name(&self) -> Option<&str> {
 		self.name.as_deref()
 	}
 
 	/// Get the optional email of the user
-	#[inline]
 	#[must_use]
 	pub(crate) fn email(&self) -> Option<&str> {
 		self.email.as_deref()
 	}
 
 	/// Returns `true` if one of name or email is a `Some` value.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn is_some(&self) -> bool {
 		self.name.is_some() || self.email.is_some()
 	}
 
 	/// Returns `true` if both name and email is a `None` value.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn is_none(&self) -> bool {
 		self.name.is_none() && self.email.is_none()
@@ -50,7 +45,6 @@ impl ToString for User {
 	///
 	/// The user if formatted with "Name &lt;Email&gt;", which matches the Git CLI. If name or email are
 	/// `None` then they are omitted from the result. If neither are set, and empty is returned.
-	#[inline]
 	fn to_string(&self) -> String {
 		if let Some(name) = self.name.as_ref() {
 			if let Some(email) = self.email.as_ref() {

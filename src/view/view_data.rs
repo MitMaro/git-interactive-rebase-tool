@@ -20,7 +20,6 @@ pub(crate) struct ViewData {
 
 impl ViewData {
 	/// Create a new instance using a `ViewDataUpdater`.
-	#[inline]
 	pub(crate) fn new<C>(callback: C) -> Self
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let mut view_data = Self {
@@ -43,13 +42,11 @@ impl ViewData {
 
 	/// Does the instance contain any content.
 	#[must_use]
-	#[inline]
 	pub(crate) fn is_empty(&self) -> bool {
 		self.lines.is_empty() && self.lines_leading.is_empty() && self.lines_trailing.is_empty()
 	}
 
 	/// Update the view data using a `ViewDataUpdater`. This allows for batch updating of the `ViewData`.
-	#[inline]
 	pub(crate) fn update_view_data<C>(&mut self, callback: C)
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let modified = {

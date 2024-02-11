@@ -30,7 +30,6 @@ impl Installer {
 
 	/// Spawn a new thread with a name. The installer function callback will be called with a `Notifier` and is
 	/// returns the thread function.
-	#[inline]
 	pub(crate) fn spawn<InstallFn, ThreadFn>(&self, name: &str, install: InstallFn)
 	where
 		InstallFn: FnOnce(Notifier) -> ThreadFn,
@@ -47,7 +46,6 @@ impl Installer {
 }
 
 impl Debug for Installer {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Installer")
 			.field("sender", &self.sender)

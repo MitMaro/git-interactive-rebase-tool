@@ -15,7 +15,6 @@ pub(crate) enum Origin {
 }
 
 impl From<git2::DiffLineType> for Origin {
-	#[inline]
 	fn from(diff_line_type: git2::DiffLineType) -> Self {
 		match diff_line_type {
 			git2::DiffLineType::Context | git2::DiffLineType::ContextEOFNL => Self::Context,

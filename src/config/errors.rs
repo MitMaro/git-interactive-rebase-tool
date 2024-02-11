@@ -50,7 +50,6 @@ impl ConfigError {
 }
 
 impl Display for ConfigError {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		if let Some(input) = self.input.as_deref() {
 			write!(

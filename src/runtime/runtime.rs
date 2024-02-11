@@ -19,7 +19,6 @@ pub(crate) struct Runtime<'runtime> {
 
 impl<'runtime> Runtime<'runtime> {
 	/// Create a new instances of the `Runtime`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(thread_statuses: ThreadStatuses) -> Self {
 		let (sender, receiver) = unbounded();
@@ -35,14 +34,12 @@ impl<'runtime> Runtime<'runtime> {
 	}
 
 	/// Get a cloned copy of the `ThreadStatuses`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn statuses(&self) -> ThreadStatuses {
 		self.thread_statuses.clone()
 	}
 
 	/// Register a new `Threadable`.
-	#[inline]
 	pub(crate) fn register(&self, threadable: &'runtime mut (dyn Threadable)) {
 		self.threadables.lock().push(threadable);
 	}
@@ -51,7 +48,6 @@ impl<'runtime> Runtime<'runtime> {
 	///
 	/// # Errors
 	/// Returns and error if any of the threads registered to the runtime produce an error.
-	#[inline]
 	#[allow(clippy::iter_over_hash_type)]
 	pub(crate) fn join(&self) -> Result<(), RuntimeError> {
 		let installer = Installer::new(self.thread_statuses.clone(), self.sender.clone());
@@ -118,7 +114,6 @@ impl<'runtime> Runtime<'runtime> {
 		result
 	}
 
-	#[inline]
 	fn shutdown(&self) -> Result<(), RuntimeError> {
 		if self.thread_statuses.all_ended() {
 			return Ok(());

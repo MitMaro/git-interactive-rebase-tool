@@ -71,7 +71,6 @@ pub(crate) struct Config {
 
 impl Config {
 	/// Create a new configuration with default values.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn new() -> Self {
@@ -114,7 +113,6 @@ impl TryFrom<&Repository> for Config {
 	/// # Errors
 	///
 	/// Will return an `Err` if there is a problem loading the configuration.
-	#[inline]
 	fn try_from(repo: &Repository) -> Result<Self, Self::Error> {
 		let config = repo
 			.load_config()
@@ -126,7 +124,6 @@ impl TryFrom<&Repository> for Config {
 impl TryFrom<&crate::git::Config> for Config {
 	type Error = ConfigError;
 
-	#[inline]
 	fn try_from(config: &crate::git::Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}

@@ -18,7 +18,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread is busy processing.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn busy(&self) {
 		self.sender
@@ -27,7 +26,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread pause processing.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn request_pause(&self) {
 		self.sender
@@ -36,7 +34,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread resume processing.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn request_resume(&self) {
 		self.sender
@@ -45,7 +42,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread end processing.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn request_end(&self) {
 		self.sender
@@ -54,7 +50,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread is waiting for new data or messages to process.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn wait(&self) {
 		self.sender
@@ -63,7 +58,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread is in a permanent error state.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn error(&self, err: RuntimeError) {
 		self.sender
@@ -72,7 +66,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread has ended processing.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn end(&self) {
 		self.sender

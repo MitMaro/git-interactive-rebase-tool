@@ -16,7 +16,6 @@ pub(crate) struct TodoFileTestContext {
 }
 
 impl Debug for TodoFileTestContext {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("TodoFileTestContext")
 			.field("todo_file", &self.todo_file)
@@ -27,25 +26,21 @@ impl Debug for TodoFileTestContext {
 
 impl TodoFileTestContext {
 	/// Return the path of the todo file
-	#[inline]
 	pub(crate) fn path(&self) -> String {
 		String::from(self.git_todo_file.borrow().path().to_str().unwrap_or_default())
 	}
 
 	/// Get the todo file instance
-	#[inline]
 	pub(crate) const fn todo_file(&self) -> &TodoFile {
 		&self.todo_file
 	}
 
 	/// Get the todo file instance as mutable
-	#[inline]
 	pub(crate) fn todo_file_mut(&mut self) -> &mut TodoFile {
 		&mut self.todo_file
 	}
 
 	/// Get the todo file instance
-	#[inline]
 	#[allow(clippy::wrong_self_convention)]
 	pub(crate) fn to_owned(self) -> (NamedTempFile, TodoFile) {
 		(self.git_todo_file.into_inner(), self.todo_file)
@@ -55,7 +50,6 @@ impl TodoFileTestContext {
 	///
 	/// # Panics
 	/// Will panic if the file cannot be deleted for any reason
-	#[inline]
 	pub(crate) fn delete_file(&self) {
 		self.git_todo_file
 			.replace(Builder::new().tempfile().unwrap())
@@ -67,7 +61,6 @@ impl TodoFileTestContext {
 	///
 	/// # Panics
 	/// Will panic if the file permissions cannot be changed for any reason
-	#[inline]
 	pub(crate) fn set_file_readonly(&self) {
 		let git_todo_file = self.git_todo_file.borrow_mut();
 		let todo_file = git_todo_file.as_file();
@@ -81,7 +74,6 @@ impl TodoFileTestContext {
 ///
 /// # Panics
 /// Will panic if a temporary file cannot be created
-#[inline]
 pub(crate) fn with_todo_file<C>(lines: &[&str], callback: C)
 where C: FnOnce(TodoFileTestContext) {
 	let git_repo_dir = Path::new(env!("CARGO_MANIFEST_DIR"))

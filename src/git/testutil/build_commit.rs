@@ -11,7 +11,6 @@ pub(crate) struct CommitBuilder {
 impl CommitBuilder {
 	/// Create a new instance of the builder with the provided hash. The new instance will default
 	/// to a committed date of Jan 1, 2021 UTC. All other fields are `None`.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn new(hash: &str) -> Self {
@@ -30,7 +29,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the hash.
-	#[inline]
 	#[must_use]
 	pub(crate) fn hash(mut self, hash: &str) -> Self {
 		self.commit.hash = String::from(hash);
@@ -38,7 +36,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the reference, use `create::testutil::ReferenceBuilder` to build a `Reference`.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn reference(mut self, reference: Reference) -> Self {
@@ -47,7 +44,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the author name and related email address.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn author(mut self, author: User) -> Self {
@@ -56,7 +52,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the authored commit time from number of seconds since unix epoch.
-	#[inline]
 	#[must_use]
 	pub(crate) fn authored_time(mut self, time: i64) -> Self {
 		self.commit.authored_date = Some(Local.timestamp_opt(time, 0).unwrap());
@@ -64,7 +59,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the committer name and related email address.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn committer(mut self, committer: User) -> Self {
@@ -73,7 +67,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the committed commit time from number of seconds since unix epoch.
-	#[inline]
 	#[must_use]
 	pub(crate) fn commit_time(mut self, time: i64) -> Self {
 		self.commit.committed_date = Local.timestamp_opt(time, 0).unwrap();
@@ -81,7 +74,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the commit summary.
-	#[inline]
 	#[must_use]
 	pub(crate) fn summary(mut self, summary: &str) -> Self {
 		self.commit.summary = Some(String::from(summary));
@@ -89,7 +81,6 @@ impl CommitBuilder {
 	}
 
 	/// Set the commit message.
-	#[inline]
 	#[must_use]
 	pub(crate) fn message(mut self, message: &str) -> Self {
 		self.commit.message = Some(String::from(message));
@@ -97,7 +88,6 @@ impl CommitBuilder {
 	}
 
 	/// Build the `Commit`.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> Commit {

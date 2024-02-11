@@ -49,7 +49,6 @@ pub(crate) mod local {
 }
 
 /// Create a mocked version of `KeyBindings`.
-#[inline]
 #[must_use]
 pub(crate) fn create_test_keybindings<
 	TestKeybinding: crate::input::CustomKeybinding,
@@ -89,7 +88,6 @@ pub(crate) struct TestContext<TestKeybinding: crate::input::CustomKeybinding, Cu
 }
 
 /// Provide an `EventHandler` instance for use within a test.
-#[inline]
 #[allow(clippy::missing_panics_doc)]
 pub(crate) fn with_event_handler<
 	C,
@@ -127,7 +125,6 @@ pub(crate) fn with_event_handler<
 /// # Panics
 /// If provided an event generator that returns a `Event::MetaEvent` or `Event::StandardEvent` event type.
 #[allow(clippy::panic)]
-#[inline]
 pub(crate) fn create_event_reader<EventGeneratorFunction, CustomEvent>(
 	event_generator: EventGeneratorFunction,
 ) -> impl EventReaderFn

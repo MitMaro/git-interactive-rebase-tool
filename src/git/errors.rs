@@ -18,7 +18,6 @@ pub(crate) enum RepositoryLoadKind {
 }
 
 impl Display for RepositoryLoadKind {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match *self {
 			Self::Environment => write!(f, "environment"),

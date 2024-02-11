@@ -12,7 +12,6 @@ pub(crate) struct DiffLine {
 
 impl DiffLine {
 	/// Create a new `DiffLine`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(
 		origin: Origin,
@@ -37,35 +36,30 @@ impl DiffLine {
 	}
 
 	/// Get the `Origin` of the `DiffLine`
-	#[inline]
 	#[must_use]
 	pub(crate) const fn origin(&self) -> Origin {
 		self.origin
 	}
 
 	/// Get the line of the `DiffLine`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn line(&self) -> &str {
 		self.line.as_str()
 	}
 
 	/// Get the old line number of the `DiffLine`, if it exists, else `None`.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn old_line_number(&self) -> Option<u32> {
 		self.old_line_number
 	}
 
 	/// Get the new line number of the `DiffLine`, if it exists, else `None`.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new_line_number(&self) -> Option<u32> {
 		self.new_line_number
 	}
 
 	/// Returns `true` is this line was at the end of a file, else `false`.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn end_of_file(&self) -> bool {
 		self.end_of_file

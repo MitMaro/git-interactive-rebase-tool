@@ -109,7 +109,6 @@ pub(crate) struct TestContext {
 
 impl TestContext {
 	/// Assert that render actions were sent.
-	#[inline]
 	pub(crate) fn assert_render_action(&self, actions: &[&str]) {
 		assert_view_state_actions(
 			&self.state,
@@ -122,7 +121,6 @@ impl TestContext {
 	}
 
 	/// Assert that certain messages were sent by the `State`.
-	#[inline]
 	#[allow(clippy::missing_panics_doc, clippy::panic)]
 	pub(crate) fn assert_sent_messages(&self, messages: Vec<&str>) {
 		let mut mismatch = false;
@@ -165,7 +163,6 @@ impl TestContext {
 }
 
 /// Provide a `State` instance for use within a view test.
-#[inline]
 pub(crate) fn with_view_state<C>(callback: C)
 where C: FnOnce(TestContext) {
 	callback(TestContext { state: State::new() });

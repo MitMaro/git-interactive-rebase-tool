@@ -77,7 +77,6 @@ pub(crate) enum MetaEvent {
 impl crate::input::CustomEvent for MetaEvent {}
 
 impl From<MetaEvent> for Event {
-	#[inline]
 	fn from(event: MetaEvent) -> Self {
 		Self::MetaEvent(event)
 	}

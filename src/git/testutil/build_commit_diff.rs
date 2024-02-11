@@ -8,7 +8,6 @@ pub(crate) struct CommitDiffBuilder {
 
 impl CommitDiffBuilder {
 	/// Create a new instance.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new(commit: Commit) -> Self {
 		Self {
@@ -24,7 +23,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Set the commit.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn commit(mut self, commit: Commit) -> Self {
@@ -33,7 +31,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Set the parent commit.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn parent(mut self, parent: Commit) -> Self {
@@ -42,7 +39,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Set the `FileStatus`es.
-	#[inline]
 	#[must_use]
 	pub(crate) fn file_statuses(mut self, statuses: Vec<FileStatus>) -> Self {
 		self.commit_diff.file_statuses = statuses;
@@ -50,7 +46,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Set the number of files changed.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn number_files_changed(mut self, count: usize) -> Self {
 		self.commit_diff.number_files_changed = count;
@@ -58,7 +53,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Set the number of line insertions.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn number_insertions(mut self, count: usize) -> Self {
 		self.commit_diff.number_insertions = count;
@@ -66,7 +60,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Set the number of line deletions.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn number_deletions(mut self, count: usize) -> Self {
 		self.commit_diff.number_deletions = count;
@@ -74,7 +67,6 @@ impl CommitDiffBuilder {
 	}
 
 	/// Return the built `CommitDiff`
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> CommitDiff {

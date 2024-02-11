@@ -13,42 +13,36 @@ pub(crate) struct CommitDiff {
 
 impl CommitDiff {
 	/// The commit of the diff
-	#[inline]
 	#[must_use]
 	pub(crate) const fn commit(&self) -> &Commit {
 		&self.commit
 	}
 
 	/// The parent commit for the diff
-	#[inline]
 	#[must_use]
 	pub(crate) const fn parent(&self) -> &Option<Commit> {
 		&self.parent
 	}
 
 	/// The file statuses
-	#[inline]
 	#[must_use]
 	pub(crate) const fn file_statuses(&self) -> &Vec<FileStatus> {
 		&self.file_statuses
 	}
 
 	/// The total number of files changed in the diff
-	#[inline]
 	#[must_use]
 	pub(crate) const fn number_files_changed(&self) -> usize {
 		self.number_files_changed
 	}
 
 	/// The total number of insertions in the diff
-	#[inline]
 	#[must_use]
 	pub(crate) const fn number_insertions(&self) -> usize {
 		self.number_insertions
 	}
 
 	/// The total number of deletions in the diff
-	#[inline]
 	#[must_use]
 	pub(crate) const fn number_deletions(&self) -> usize {
 		self.number_deletions

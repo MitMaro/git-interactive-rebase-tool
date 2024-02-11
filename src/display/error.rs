@@ -12,7 +12,6 @@ pub(crate) enum DisplayError {
 }
 
 impl PartialEq for DisplayError {
-	#[inline]
 	#[allow(clippy::pattern_type_mismatch)]
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {

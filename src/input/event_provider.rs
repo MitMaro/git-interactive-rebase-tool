@@ -19,7 +19,6 @@ impl<FN: Fn() -> Result<Option<Event>> + Send + Sync + 'static> EventReaderFn fo
 /// Errors if the Tui cannot read an event for any reason. In general this should not error, and
 /// if this does generate an error, the Tui should be considered to be in a non-recoverable
 /// state.
-#[inline]
 pub(crate) fn read_event() -> Result<Option<Event>> {
 	if poll(Duration::from_millis(20)).unwrap_or(false) {
 		read()

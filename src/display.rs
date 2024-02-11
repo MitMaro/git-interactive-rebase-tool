@@ -59,7 +59,6 @@ pub(crate) struct Display<T: Tui> {
 
 impl<T: Tui> Display<T> {
 	/// Create a new display instance.
-	#[inline]
 	pub(crate) fn new(tui: T, theme: &Theme) -> Self {
 		let color_mode = tui.get_color_mode();
 		let normal = register_selectable_color_pairs(
@@ -205,7 +204,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn draw_str(&mut self, s: &str) -> Result<(), DisplayError> {
 		self.tui.print(s)
 	}
@@ -214,7 +212,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn clear(&mut self) -> Result<(), DisplayError> {
 		self.color(DisplayColor::Normal, false)?;
 		self.set_style(false, false, false)?;
@@ -227,7 +224,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn refresh(&mut self) -> Result<(), DisplayError> {
 		self.tui.flush()
 	}
@@ -237,7 +233,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn color(&mut self, color: DisplayColor, selected: bool) -> Result<(), DisplayError> {
 		self.tui.set_color(
 			if selected {
@@ -294,7 +289,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn set_style(&mut self, dim: bool, underline: bool, reverse: bool) -> Result<(), DisplayError> {
 		self.set_dim(dim)?;
 		self.set_underline(underline)?;
@@ -306,7 +300,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn get_window_size(&self) -> Size {
 		self.tui.get_size()
 	}
@@ -315,7 +308,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn ensure_at_line_start(&mut self) -> Result<(), DisplayError> {
 		self.tui.move_to_column(0)
 	}
@@ -324,7 +316,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn move_from_end_of_line(&mut self, right: u16) -> Result<(), DisplayError> {
 		let width = self.get_window_size().width().try_into().unwrap_or(u16::MAX);
 		self.tui.move_to_column(width - right)
@@ -334,7 +325,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn next_line(&mut self) -> Result<(), DisplayError> {
 		self.tui.move_next_line()
 	}
@@ -344,7 +334,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn start(&mut self) -> Result<(), DisplayError> {
 		self.tui.start()?;
 		self.tui.flush()
@@ -356,7 +345,6 @@ impl<T: Tui> Display<T> {
 	///
 	/// # Errors
 	/// Will error if the underlying terminal interface is in an error state.
-	#[inline]
 	pub(crate) fn end(&mut self) -> Result<(), DisplayError> {
 		self.tui.end()?;
 		self.tui.flush()

@@ -12,13 +12,11 @@ pub(crate) struct RenderContext {
 impl RenderContext {
 	/// Create a new instance with a width and height.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn new(width: usize, height: usize) -> Self {
 		Self { height, width }
 	}
 
 	/// Update the recorded width and height.
-	#[inline]
 	pub(crate) fn update(&mut self, width: u16, height: u16) {
 		self.width = width as usize;
 		self.height = height as usize;
@@ -26,42 +24,36 @@ impl RenderContext {
 
 	/// Get the width of the terminal window.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn width(&self) -> usize {
 		self.width
 	}
 
 	/// Get the height of the terminal window.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn height(&self) -> usize {
 		self.height
 	}
 
 	/// Is the terminal window width at least the minimal supported width.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn is_minimum_view_width(&self) -> bool {
 		self.width > MINIMUM_COMPACT_WINDOW_WIDTH
 	}
 
 	/// Is the terminal window height at least the minimal supported height.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn is_minimum_view_height(&self) -> bool {
 		self.height > MINIMUM_WINDOW_HEIGHT
 	}
 
 	/// Is the terminal window large enough to render lines using their full width.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn is_full_width(&self) -> bool {
 		self.width >= MINIMUM_FULL_WINDOW_WIDTH
 	}
 
 	/// Is the terminal window too small to render content.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn is_window_too_small(&self) -> bool {
 		!self.is_minimum_view_width() || !self.is_minimum_view_height()
 	}

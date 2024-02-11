@@ -53,7 +53,6 @@ pub(crate) struct View<C: Tui> {
 
 impl<C: Tui> View<C> {
 	/// Create a new instance of the view.
-	#[inline]
 	pub(crate) fn new(display: Display<C>, character_vertical_spacing: &str, help_indicator_key: &str) -> Self {
 		Self {
 			character_vertical_spacing: String::from(character_vertical_spacing),
@@ -67,7 +66,6 @@ impl<C: Tui> View<C> {
 	///
 	/// # Errors
 	/// Results in an error if the terminal cannot be started.
-	#[inline]
 	pub(crate) fn start(&mut self) -> Result<()> {
 		self.display.start().map_err(Error::from)
 	}
@@ -76,7 +74,6 @@ impl<C: Tui> View<C> {
 	///
 	/// # Errors
 	/// Results in an error if the terminal cannot be ended.
-	#[inline]
 	pub(crate) fn end(&mut self) -> Result<()> {
 		self.display.end().map_err(Error::from)
 	}
@@ -85,7 +82,6 @@ impl<C: Tui> View<C> {
 	///
 	/// # Errors
 	/// Results in an error if there are errors with interacting with the terminal.
-	#[inline]
 	pub(crate) fn render(&mut self, render_slice: &RenderSlice) -> Result<()> {
 		let current_render_version = render_slice.get_version();
 		if self.last_render_version == current_render_version {

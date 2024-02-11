@@ -30,7 +30,6 @@ impl Repository {
 	///
 	/// # Errors
 	/// Will result in an error if the repository cannot be opened.
-	#[inline]
 	pub(crate) fn open_from_env() -> Result<Self, GitError> {
 		let repository = git2::Repository::open_from_env().map_err(|e| {
 			GitError::RepositoryLoad {
@@ -47,7 +46,6 @@ impl Repository {
 	///
 	/// # Errors
 	/// Will result in an error if the repository cannot be opened.
-	#[inline]
 	pub(crate) fn open_from_path(path: &Path) -> Result<Self, GitError> {
 		let repository = git2::Repository::open(path).map_err(|e| {
 			GitError::RepositoryLoad {
@@ -64,7 +62,6 @@ impl Repository {
 	///
 	/// # Errors
 	/// Will result in an error if the configuration is invalid.
-	#[inline]
 	pub(crate) fn load_config(&self) -> Result<Config, GitError> {
 		self.repository
 			.lock()
@@ -76,7 +73,6 @@ impl Repository {
 	///
 	/// # Errors
 	/// Will result in an error if the commit cannot be loaded.
-	#[inline]
 	pub(crate) fn load_commit_diff(
 		&self,
 		hash: &str,
@@ -101,7 +97,6 @@ impl Repository {
 	///
 	/// # Errors
 	/// Will result in an error if the reference cannot be found.
-	#[inline]
 	pub(crate) fn find_reference(&self, reference: &str) -> Result<Reference, GitError> {
 		let repo = self.repository.lock();
 		let git2_reference = repo
@@ -114,7 +109,6 @@ impl Repository {
 	///
 	/// # Errors
 	/// Will result in an error if the reference cannot be found or is not a commit.
-	#[inline]
 	pub(crate) fn find_commit(&self, reference: &str) -> Result<Commit, GitError> {
 		let repo = self.repository.lock();
 		let git2_reference = repo
@@ -173,7 +167,6 @@ impl Repository {
 }
 
 impl From<git2::Repository> for Repository {
-	#[inline]
 	fn from(repository: git2::Repository) -> Self {
 		Self {
 			repository: Arc::new(Mutex::new(repository)),
@@ -182,7 +175,6 @@ impl From<git2::Repository> for Repository {
 }
 
 impl Debug for Repository {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
 		f.debug_struct("Repository")
 			.field("[path]", &self.repository.lock().path())

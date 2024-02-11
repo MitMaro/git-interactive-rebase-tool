@@ -37,7 +37,6 @@ pub(crate) enum Action {
 impl Action {
 	/// Get the abbreviated version of the action.
 	#[must_use]
-	#[inline]
 	pub(crate) fn to_abbreviation(self) -> String {
 		String::from(match self {
 			Self::Break => "b",
@@ -58,7 +57,6 @@ impl Action {
 
 	/// Can the action be changed.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn is_static(self) -> bool {
 		match self {
 			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge | Self::UpdateRef => true,
@@ -68,7 +66,6 @@ impl Action {
 }
 
 impl Display for Action {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", match *self {
 			Self::Break => "break",
@@ -91,7 +88,6 @@ impl Display for Action {
 impl TryFrom<&str> for Action {
 	type Error = ParseError;
 
-	#[inline]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
 			"break" | "b" => Ok(Self::Break),

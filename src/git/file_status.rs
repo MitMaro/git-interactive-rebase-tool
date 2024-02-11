@@ -19,7 +19,6 @@ pub(crate) struct FileStatus {
 
 impl FileStatus {
 	/// Create a new `FileStat`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new<F: AsRef<Path>>(
 		source_path: F,
@@ -45,7 +44,6 @@ impl FileStatus {
 	}
 
 	/// Add a delta to the change.
-	#[inline]
 	pub(crate) fn add_delta(&mut self, delta: Delta) {
 		let last_old_line_number = delta.old_lines_start() + delta.old_number_lines();
 		if self.largest_old_line_number < last_old_line_number {
@@ -59,70 +57,60 @@ impl FileStatus {
 	}
 
 	/// Get the status of this file change.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn status(&self) -> Status {
 		self.status
 	}
 
 	/// Get the destination file path for this change.
-	#[inline]
 	#[must_use]
 	pub(crate) fn destination_path(&self) -> &Path {
 		self.destination_path.as_path()
 	}
 
 	/// Get the destination file mode for this change.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn destination_mode(&self) -> FileMode {
 		self.destination_mode
 	}
 
 	/// Is the destination file a binary file.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn destination_is_binary(&self) -> bool {
 		self.destination_is_binary
 	}
 
 	/// Get the source file path for this change.
-	#[inline]
 	#[must_use]
 	pub(crate) fn source_path(&self) -> &Path {
 		self.source_path.as_path()
 	}
 
 	/// Get the source file mode for this change.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn source_mode(&self) -> FileMode {
 		self.source_mode
 	}
 
 	/// Is the source file a binary file.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn source_is_binary(&self) -> bool {
 		self.source_is_binary
 	}
 
 	/// Get the deltas for this change.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn deltas(&self) -> &Vec<Delta> {
 		&self.deltas
 	}
 
 	/// Get the line number of the last old changed line.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn last_old_line_number(&self) -> u32 {
 		self.largest_old_line_number
 	}
 
 	/// Get the line number of the last new changed line.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn last_new_line_number(&self) -> u32 {
 		self.largest_new_line_number

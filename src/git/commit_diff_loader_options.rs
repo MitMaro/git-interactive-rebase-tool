@@ -14,7 +14,6 @@ pub(crate) struct CommitDiffLoaderOptions {
 
 impl CommitDiffLoaderOptions {
 	/// Create a new default instance.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new() -> Self {
 		Self {
@@ -30,7 +29,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set the number of context lines.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn context_lines(mut self, context_lines: u32) -> Self {
 		self.context_lines = context_lines;
@@ -38,7 +36,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set the number of interhunk lines.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn interhunk_context(mut self, interhunk_context: u32) -> Self {
 		self.interhunk_context = interhunk_context;
@@ -46,7 +43,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set if to detect copies or not.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn copies(mut self, copies: bool) -> Self {
 		self.copies = copies;
@@ -54,7 +50,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set if to ignore whitespace.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn ignore_whitespace(mut self, ignore_whitespace: bool) -> Self {
 		self.ignore_whitespace = ignore_whitespace;
@@ -62,7 +57,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set if to ignore changes in whitespace.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn ignore_whitespace_change(mut self, ignore_whitespace_change: bool) -> Self {
 		self.ignore_whitespace_change = ignore_whitespace_change;
@@ -70,7 +64,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set if to ignore blank lines.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn ignore_blank_lines(mut self, ignore_blank_lines: bool) -> Self {
 		self.ignore_blank_lines = ignore_blank_lines;
@@ -78,7 +71,6 @@ impl CommitDiffLoaderOptions {
 	}
 
 	/// Set if to detect renames, as well as the file rename limit.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn renames(mut self, renames: bool, limit: u32) -> Self {
 		self.rename_limit = limit;
