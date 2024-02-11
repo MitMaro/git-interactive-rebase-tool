@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use git::Repository;
 use parking_lot::Mutex;
 use runtime::{Runtime, ThreadStatuses, Threadable};
 
@@ -10,6 +9,7 @@ use crate::{
 	display::Display,
 	events,
 	events::{KeyBindings, MetaEvent},
+	git::Repository,
 	help::build_help,
 	input::{Event, EventHandler, EventReaderFn},
 	module::{self, ExitStatus, ModuleHandler},

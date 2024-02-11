@@ -1,7 +1,6 @@
-use git::errors::GitError;
 use thiserror::Error;
 
-use crate::config::errors::InvalidColorError;
+use crate::{config::errors::InvalidColorError, git::errors::GitError};
 
 /// The kind of config error that occurred.
 #[derive(Error, Debug, PartialEq)]

@@ -1,6 +1,7 @@
-use git::Config;
-
-use crate::config::{get_string, ConfigError, ConfigErrorCause, DiffShowWhitespaceSetting};
+use crate::{
+	config::{get_string, ConfigError, ConfigErrorCause, DiffShowWhitespaceSetting},
+	git::Config,
+};
 
 pub(crate) fn get_diff_show_whitespace(
 	git_config: Option<&Config>,

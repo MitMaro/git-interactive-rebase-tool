@@ -1,6 +1,7 @@
-use git::{Config, ErrorCode};
-
-use crate::config::{utils::get_optional_string, ConfigError, ConfigErrorCause};
+use crate::{
+	config::{utils::get_optional_string, ConfigError, ConfigErrorCause},
+	git::{Config, ErrorCode},
+};
 
 pub(crate) fn get_bool(config: Option<&Config>, name: &str, default: bool) -> Result<bool, ConfigError> {
 	if let Some(cfg) = config {

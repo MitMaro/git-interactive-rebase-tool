@@ -1,6 +1,7 @@
-use git::Config;
-
-use crate::config::{errors::ConfigError, utils::get_input};
+use crate::{
+	config::{errors::ConfigError, utils::get_input},
+	git::Config,
+};
 
 fn map_single_ascii_to_lower(s: &str) -> String {
 	if s.is_ascii() && s.len() == 1 {

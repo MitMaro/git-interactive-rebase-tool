@@ -1,6 +1,7 @@
-use git::Config;
-
-use crate::config::{utils::get_string, ConfigError, ConfigErrorCause, DiffIgnoreWhitespaceSetting};
+use crate::{
+	config::{utils::get_string, ConfigError, ConfigErrorCause, DiffIgnoreWhitespaceSetting},
+	git::Config,
+};
 
 pub(crate) fn get_diff_ignore_whitespace(
 	git_config: Option<&Config>,

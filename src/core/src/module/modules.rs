@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use git::Repository;
 use parking_lot::Mutex;
 
 use crate::{
 	config::Config,
+	git::Repository,
 	module::{Module, ModuleProvider, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
 	todo_file::TodoFile,
@@ -68,10 +68,8 @@ impl ModuleProvider for Modules {
 
 #[cfg(test)]
 mod tests {
-	use git::testutil::with_temp_repository;
-
 	use super::*;
-	use crate::todo_file::testutil::with_todo_file;
+	use crate::{git::testutil::with_temp_repository, todo_file::testutil::with_todo_file};
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {

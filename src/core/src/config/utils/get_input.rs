@@ -1,6 +1,7 @@
-use git::Config;
-
-use crate::config::{utils::get_string, ConfigError, ConfigErrorCause};
+use crate::{
+	config::{utils::get_string, ConfigError, ConfigErrorCause},
+	git::Config,
+};
 
 #[allow(clippy::string_slice)]
 pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
