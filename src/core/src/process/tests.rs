@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use anyhow::anyhow;
-use runtime::{testutils::MockNotifier, Status};
 
 use super::*;
 use crate::{
@@ -9,6 +8,7 @@ use crate::{
 	events::KeyBindings,
 	input::InputOptions,
 	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
+	runtime::{testutils::MockNotifier, Status},
 	search::{Interrupter, SearchResult},
 	testutil::{
 		create_default_test_module_handler,

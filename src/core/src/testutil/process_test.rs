@@ -1,13 +1,13 @@
 use std::{path::PathBuf, sync::Arc};
 
 use parking_lot::Mutex;
-use runtime::ThreadStatuses;
 
 use crate::{
 	display::Size,
 	events::Event,
 	module::{self, ModuleHandler},
 	process::Process,
+	runtime::ThreadStatuses,
 	testutil::{with_event_handler, with_search, EventHandlerTestContext, SearchTestContext},
 	todo_file::testutil::with_todo_file,
 	view::testutil::{with_view_state, TestContext as ViewContext},

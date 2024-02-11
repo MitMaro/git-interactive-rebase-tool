@@ -7,10 +7,12 @@ use std::{
 };
 
 use captur::capture;
-use runtime::{Installer, Threadable};
 pub(crate) use state::State;
 
-use crate::input::{event::Event, event_provider::EventReaderFn};
+use crate::{
+	input::{event::Event, event_provider::EventReaderFn},
+	runtime::{Installer, Threadable},
+};
 
 /// The name of the input thread.
 pub(crate) const THREAD_NAME: &str = "input";
@@ -102,12 +104,14 @@ where
 mod tests {
 	use anyhow::anyhow;
 	use crossterm::event::{KeyCode, KeyModifiers};
-	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
-	use crate::input::{
-		testutil::local::{create_event_reader, TestEvent},
-		KeyEvent,
+	use crate::{
+		input::{
+			testutil::local::{create_event_reader, TestEvent},
+			KeyEvent,
+		},
+		runtime::{testutils::ThreadableTester, Status},
 	};
 
 	#[test]

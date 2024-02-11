@@ -1,10 +1,10 @@
-use crate::RuntimeError;
+use crate::runtime::RuntimeError;
 
 /// The threads status.
 #[derive(Debug, PartialEq, Eq)]
 #[allow(variant_size_differences)]
 #[allow(clippy::exhaustive_enums)]
-pub enum Status {
+pub(crate) enum Status {
 	/// Thread is new, and hasn't yet started. This is the initial status of all threads.
 	New,
 	/// The thread is busy processing.

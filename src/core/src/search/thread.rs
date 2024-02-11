@@ -5,15 +5,17 @@ use std::{
 };
 
 use captur::capture;
-use runtime::{Installer, Threadable};
 
-use crate::search::{
-	action::Action,
-	interrupter::Interrupter,
-	search_result::SearchResult,
-	searchable::Searchable,
-	State,
-	UpdateHandlerFn,
+use crate::{
+	runtime::{Installer, Threadable},
+	search::{
+		action::Action,
+		interrupter::Interrupter,
+		search_result::SearchResult,
+		searchable::Searchable,
+		State,
+		UpdateHandlerFn,
+	},
 };
 
 pub(crate) const THREAD_NAME: &str = "search";
@@ -137,9 +139,9 @@ mod tests {
 	use std::sync::atomic::{AtomicUsize, Ordering};
 
 	use parking_lot::Mutex;
-	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
+	use crate::runtime::{testutils::ThreadableTester, Status};
 
 	#[derive(Clone)]
 	struct MockedSearchable {

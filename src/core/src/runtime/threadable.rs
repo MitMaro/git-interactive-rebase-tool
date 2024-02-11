@@ -1,7 +1,7 @@
-use crate::installer::Installer;
+use crate::runtime::installer::Installer;
 
 /// An interface for a entity that has threads managed by the `Runtime`.
-pub trait Threadable: Send {
+pub(crate) trait Threadable: Send {
 	/// Method that installs the threads that the `Threadable` is responsible for.
 	fn install(&self, installer: &Installer);
 

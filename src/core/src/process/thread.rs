@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use captur::capture;
-use runtime::{Installer, RuntimeError, Threadable};
 
 use crate::{
 	module,
 	module::{ExitStatus, State},
 	process::{Process, Results},
+	runtime::{Installer, RuntimeError, Threadable},
 };
 
 pub(crate) const THEAD_NAME: &str = "core_process";
@@ -74,13 +74,12 @@ mod tests {
 		sync::atomic::{AtomicBool, Ordering},
 	};
 
-	use runtime::{testutils::ThreadableTester, Status};
-
 	use super::*;
 	use crate::{
 		events::Event,
 		input::StandardEvent,
 		module::Module,
+		runtime::{testutils::ThreadableTester, Status},
 		testutil::{create_default_test_module_handler, create_test_module_handler, process_test, ProcessTestContext},
 	};
 
