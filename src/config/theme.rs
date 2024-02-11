@@ -76,7 +76,6 @@ pub(crate) struct Theme {
 impl Theme {
 	/// Create a new configuration with default values.
 	#[must_use]
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn new() -> Self {
 		Self::new_with_config(None).unwrap() // should never error with None config
@@ -134,7 +133,6 @@ impl Theme {
 impl TryFrom<&Config> for Theme {
 	type Error = ConfigError;
 
-	#[inline]
 	fn try_from(config: &Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}

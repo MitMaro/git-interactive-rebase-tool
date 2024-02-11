@@ -16,14 +16,12 @@ pub(crate) enum ColorMode {
 
 impl ColorMode {
 	/// Supports 4 bit or more of color.
-	#[inline]
 	#[must_use]
 	pub(crate) fn has_minimum_four_bit_color(self) -> bool {
 		self == Self::FourBit || self == Self::EightBit || self == Self::TrueColor
 	}
 
 	/// Has true color support.
-	#[inline]
 	#[must_use]
 	pub(crate) fn has_true_color(self) -> bool {
 		self == Self::TrueColor

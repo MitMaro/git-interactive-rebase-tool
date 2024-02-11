@@ -21,12 +21,10 @@ pub(crate) struct CrossTerm {
 }
 
 impl MockableTui for CrossTerm {
-	#[inline]
 	fn get_color_mode(&self) -> ColorMode {
 		self.color_mode
 	}
 
-	#[inline]
 	fn reset(&mut self) -> Result<(), DisplayError> {
 		self.attributes = Attributes::from(Attribute::Reset);
 		self.colors = Colors::new(Color::Reset, Color::Reset);
@@ -35,25 +33,21 @@ impl MockableTui for CrossTerm {
 		Ok(())
 	}
 
-	#[inline]
 	fn flush(&mut self) -> Result<(), DisplayError> {
 		self.dirty = false;
 		Ok(())
 	}
 
-	#[inline]
 	fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 		self.output.push(String::from(s));
 		Ok(())
 	}
 
-	#[inline]
 	fn set_color(&mut self, colors: Colors) -> Result<(), DisplayError> {
 		self.colors = colors;
 		Ok(())
 	}
 
-	#[inline]
 	fn set_dim(&mut self, dim: bool) -> Result<(), DisplayError> {
 		if dim {
 			self.attributes.set(Attribute::Dim);
@@ -64,7 +58,6 @@ impl MockableTui for CrossTerm {
 		Ok(())
 	}
 
-	#[inline]
 	fn set_underline(&mut self, dim: bool) -> Result<(), DisplayError> {
 		if dim {
 			self.attributes.set(Attribute::Underlined);
@@ -75,7 +68,6 @@ impl MockableTui for CrossTerm {
 		Ok(())
 	}
 
-	#[inline]
 	fn set_reverse(&mut self, dim: bool) -> Result<(), DisplayError> {
 		if dim {
 			self.attributes.set(Attribute::Reverse);
@@ -86,18 +78,15 @@ impl MockableTui for CrossTerm {
 		Ok(())
 	}
 
-	#[inline]
 	fn get_size(&self) -> Size {
 		self.size
 	}
 
-	#[inline]
 	fn move_to_column(&mut self, x: u16) -> Result<(), DisplayError> {
 		self.position.0 = x;
 		Ok(())
 	}
 
-	#[inline]
 	fn move_next_line(&mut self) -> Result<(), DisplayError> {
 		self.output.push(String::from("\n"));
 		self.position.0 = 0;
@@ -105,13 +94,11 @@ impl MockableTui for CrossTerm {
 		Ok(())
 	}
 
-	#[inline]
 	fn start(&mut self) -> Result<(), DisplayError> {
 		self.state = State::Normal;
 		Ok(())
 	}
 
-	#[inline]
 	fn end(&mut self) -> Result<(), DisplayError> {
 		self.state = State::Ended;
 		Ok(())
@@ -120,7 +107,6 @@ impl MockableTui for CrossTerm {
 
 impl CrossTerm {
 	/// Create a new mocked version of `CrossTerm`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		Self {
@@ -136,62 +122,53 @@ impl CrossTerm {
 	}
 
 	/// Get a representation of the rendered output.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn get_output(&self) -> &Vec<String> {
 		&self.output
 	}
 
 	/// Get the current state.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn get_state(&self) -> State {
 		self.state
 	}
 
 	/// Are colors enabled.
-	#[inline]
 	#[must_use]
 	pub(crate) fn is_colors_enabled(&self, colors: Colors) -> bool {
 		self.colors == colors
 	}
 
 	/// Does the current style attributes contained dimmed.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn is_dimmed(&self) -> bool {
 		self.attributes.has(Attribute::Dim)
 	}
 
 	/// Does the current style attributes contained reverse.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn is_reverse(&self) -> bool {
 		self.attributes.has(Attribute::Reverse)
 	}
 
 	/// Does the current style attributes contained underlined.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn is_underline(&self) -> bool {
 		self.attributes.has(Attribute::Underlined)
 	}
 
 	/// Update the size.
-	#[inline]
 	pub(crate) fn set_size(&mut self, size: Size) {
 		self.size = size;
 	}
 
 	/// Get the current cursor position.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn get_position(&self) -> (u16, u16) {
 		self.position
 	}
 
 	/// Has the output been flushed.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn is_dirty(&self) -> bool {
 		self.dirty

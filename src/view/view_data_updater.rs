@@ -16,63 +16,54 @@ impl<'view_data> ViewDataUpdater<'view_data> {
 	}
 
 	/// Clear content of the view data.
-	#[inline]
 	pub(crate) fn clear(&mut self) {
 		self.modified = true;
 		self.view_data.clear();
 	}
 
 	/// Clear just the body of the view data.
-	#[inline]
 	pub(crate) fn clear_body(&mut self) {
 		self.modified = true;
 		self.view_data.clear_body();
 	}
 
 	/// Set the line that must be visible during render.
-	#[inline]
 	pub(crate) fn ensure_line_visible(&mut self, row_index: usize) {
 		self.modified = true;
 		self.view_data.ensure_line_visible(row_index);
 	}
 
 	/// Set the column to must be visible during render.
-	#[inline]
 	pub(crate) fn ensure_column_visible(&mut self, column_index: usize) {
 		self.modified = true;
 		self.view_data.ensure_column_visible(column_index);
 	}
 
 	/// Set if to show title.
-	#[inline]
 	pub(crate) fn set_show_title(&mut self, show: bool) {
 		self.modified = true;
 		self.view_data.set_show_title(show);
 	}
 
 	/// Set if to show help.
-	#[inline]
 	pub(crate) fn set_show_help(&mut self, show: bool) {
 		self.modified = true;
 		self.view_data.set_show_help(show);
 	}
 
 	/// Push a new leading line to the view data.
-	#[inline]
 	pub(crate) fn push_leading_line(&mut self, view_line: ViewLine) {
 		self.modified = true;
 		self.view_data.push_leading_line(view_line);
 	}
 
 	/// Push a new body line to the view data.
-	#[inline]
 	pub(crate) fn push_line(&mut self, view_line: ViewLine) {
 		self.modified = true;
 		self.view_data.push_line(view_line);
 	}
 
 	/// Push a set of new body lines to the view data automatically split on newlines.
-	#[inline]
 	pub(crate) fn push_lines(&mut self, lines: &str) {
 		self.modified = true;
 
@@ -82,27 +73,23 @@ impl<'view_data> ViewDataUpdater<'view_data> {
 	}
 
 	/// Push a new trailing line to the view data.
-	#[inline]
 	pub(crate) fn push_trailing_line(&mut self, view_line: ViewLine) {
 		self.modified = true;
 		self.view_data.push_trailing_line(view_line);
 	}
 
 	/// Set the scroll position retain value of the view data.
-	#[inline]
 	pub(crate) fn set_retain_scroll_position(&mut self, value: bool) {
 		self.modified = true;
 		self.view_data.set_retain_scroll_position(value);
 	}
 
 	/// Reset the scroll position of the view data.
-	#[inline]
 	pub(crate) fn reset_scroll_position(&mut self) {
 		self.modified = true;
 		self.view_data.reset_scroll_position();
 	}
 
-	#[inline]
 	pub(crate) const fn is_modified(&self) -> bool {
 		self.modified
 	}

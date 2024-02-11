@@ -112,7 +112,6 @@ pub(crate) fn render_style(line_segment: &LineSegment) -> String {
 
 /// Render a `ViewLine` to a `String` using similar logic that is used in the `View`.
 #[must_use]
-#[inline]
 pub(crate) fn render_view_line(view_line: &ViewLine, options: Option<AssertRenderOptions>) -> String {
 	let mut line = String::new();
 

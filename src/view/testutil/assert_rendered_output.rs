@@ -11,7 +11,6 @@ const VISIBLE_SPACE_REPLACEMENT: &str = "\u{b7}"; // "·"
 const VISIBLE_TAB_REPLACEMENT: &str = "   \u{2192}"; // "   →"
 
 /// Replace invisible characters with visible counterparts
-#[inline]
 #[must_use]
 pub(crate) fn replace_invisibles(line: &str) -> String {
 	line.replace(' ', VISIBLE_SPACE_REPLACEMENT)
@@ -27,38 +26,32 @@ pub(crate) trait LinePattern: Debug {
 	fn expected(&self) -> String;
 
 	/// A formatted actual value for the matcher
-	#[inline]
 	#[must_use]
 	fn actual(&self, rendered: &str) -> String {
 		replace_invisibles(rendered)
 	}
 
 	/// Does this matcher use styles for matching
-	#[inline]
 	fn use_styles(&self) -> bool {
 		true
 	}
 }
 
 impl LinePattern for String {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		rendered == self
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		replace_invisibles(self.as_str())
 	}
 }
 
 impl LinePattern for &str {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		rendered == *self
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		replace_invisibles(self)
 	}
@@ -71,7 +64,6 @@ pub(crate) struct AnyLinePattern;
 
 impl AnyLinePattern {
 	/// Create a new instance
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		Self
@@ -79,17 +71,14 @@ impl AnyLinePattern {
 }
 
 impl LinePattern for AnyLinePattern {
-	#[inline]
 	fn matches(&self, _: &str) -> bool {
 		true
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		String::from("{{Any}}")
 	}
 
-	#[inline]
 	fn actual(&self, _: &str) -> String {
 		String::from("{{Any}}")
 	}
@@ -102,7 +91,6 @@ pub(crate) struct ExactPattern(String);
 
 impl ExactPattern {
 	/// Create a new matcher against a line pattern
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
@@ -110,12 +98,10 @@ impl ExactPattern {
 }
 
 impl LinePattern for ExactPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		rendered == self.0
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		replace_invisibles(self.0.as_str())
 	}
@@ -128,7 +114,6 @@ pub(crate) struct StartsWithPattern(String);
 
 impl StartsWithPattern {
 	/// Create a new matcher with a pattern
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
@@ -136,17 +121,14 @@ impl StartsWithPattern {
 }
 
 impl LinePattern for StartsWithPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		rendered.starts_with(self.0.as_str())
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		format!("StartsWith {}", replace_invisibles(self.0.as_str()))
 	}
 
-	#[inline]
 	fn actual(&self, rendered: &str) -> String {
 		format!(
 			"           {}",
@@ -162,7 +144,6 @@ pub(crate) struct EndsWithPattern(String);
 
 impl EndsWithPattern {
 	/// Create a new matcher with a pattern
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
@@ -170,18 +151,15 @@ impl EndsWithPattern {
 }
 
 impl LinePattern for EndsWithPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		rendered.ends_with(self.0.as_str())
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		format!("EndsWith {}", replace_invisibles(self.0.as_str()))
 	}
 
 	#[allow(clippy::string_slice)]
-	#[inline]
 	fn actual(&self, rendered: &str) -> String {
 		format!(
 			"         {}",
@@ -197,7 +175,6 @@ pub(crate) struct ContainsPattern(String);
 
 impl ContainsPattern {
 	/// Create a new matcher with a pattern
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(pattern: &str) -> Self {
 		Self(String::from(pattern))
@@ -210,18 +187,15 @@ impl ContainsPattern {
 pub(crate) struct NotPattern(Box<dyn LinePattern>);
 
 impl LinePattern for ContainsPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		rendered.contains(self.0.as_str())
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		format!("Contains {}", replace_invisibles(self.0.as_str()))
 	}
 
 	#[allow(clippy::string_slice)]
-	#[inline]
 	fn actual(&self, rendered: &str) -> String {
 		format!("         {}", replace_invisibles(rendered))
 	}
@@ -229,7 +203,6 @@ impl LinePattern for ContainsPattern {
 
 impl NotPattern {
 	/// Create a new matcher with a pattern
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(pattern: Box<dyn LinePattern>) -> Self {
 		Self(pattern)
@@ -237,17 +210,14 @@ impl NotPattern {
 }
 
 impl LinePattern for NotPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		!self.0.matches(rendered)
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		format!("Not({})", self.0.expected())
 	}
 
-	#[inline]
 	fn actual(&self, rendered: &str) -> String {
 		format!("Not({})", self.0.actual(rendered))
 	}
@@ -259,7 +229,6 @@ pub(crate) struct AllPattern(Vec<Box<dyn LinePattern>>);
 
 impl AllPattern {
 	/// Create a new matcher with patterns
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(patterns: Vec<Box<dyn LinePattern>>) -> Self {
 		Self(patterns)
@@ -267,19 +236,16 @@ impl AllPattern {
 }
 
 impl LinePattern for AllPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		self.0.iter().all(|pattern| pattern.matches(rendered))
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		format!("All({})", self.0.iter().map(|p| { p.expected() }).join(", "))
 	}
 }
 
 impl Debug for AllPattern {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "All({})", self.0.iter().map(|p| format!("{p:?}")).join(", "))
 	}
@@ -291,7 +257,6 @@ pub(crate) struct AnyPattern(Vec<Box<dyn LinePattern>>);
 
 impl AnyPattern {
 	/// Create a new matcher with patterns
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(patterns: Vec<Box<dyn LinePattern>>) -> Self {
 		Self(patterns)
@@ -299,19 +264,16 @@ impl AnyPattern {
 }
 
 impl LinePattern for AnyPattern {
-	#[inline]
 	fn matches(&self, rendered: &str) -> bool {
 		self.0.iter().any(|pattern| pattern.matches(rendered))
 	}
 
-	#[inline]
 	fn expected(&self) -> String {
 		format!("Any({})", self.0.iter().map(|p| { p.expected() }).join(", "))
 	}
 }
 
 impl Debug for AnyPattern {
-	#[inline]
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "Any({})", self.0.iter().map(|p| format!("{p:?}")).join(", "))
 	}
@@ -373,7 +335,6 @@ pub(crate) fn _assert_rendered_output(
 
 /// Assert the rendered output from a `ViewData`. Generally this function is not used directly,
 /// instead use the `assert_rendered_output!` macro.
-#[inline]
 pub(crate) fn _assert_rendered_output_from_view_data(
 	view_data: &ViewData,
 	expected: &[Box<dyn LinePattern>],

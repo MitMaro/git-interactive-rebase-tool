@@ -15,7 +15,6 @@ pub(crate) struct ThreadStatuses {
 impl ThreadStatuses {
 	/// Create a new instance.
 	#[must_use]
-	#[inline]
 	pub(crate) fn new() -> Self {
 		Self {
 			statuses: Arc::new(Mutex::new(HashMap::new())),
@@ -26,7 +25,6 @@ impl ThreadStatuses {
 	///
 	/// # Errors
 	/// Will error if the wait times out.
-	#[inline]
 	pub(crate) fn wait_for_status(&self, thread_name: &str, expected_status: &Status) -> Result<(), RuntimeError> {
 		let mut attempt = 0;
 

@@ -35,12 +35,10 @@ pub(crate) struct CrossTerm {
 }
 
 impl Tui for CrossTerm {
-	#[inline]
 	fn get_color_mode(&self) -> ColorMode {
 		self.color_mode
 	}
 
-	#[inline]
 	fn reset(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(ResetColor)?;
 		self.queue_command(SetAttribute(Attribute::Reset))?;
@@ -48,22 +46,18 @@ impl Tui for CrossTerm {
 		self.queue_command(MoveTo(0, 0))
 	}
 
-	#[inline]
 	fn flush(&mut self) -> Result<(), DisplayError> {
 		self.window.flush().map_err(DisplayError::Unexpected)
 	}
 
-	#[inline]
 	fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 		self.queue_command(Print(s))
 	}
 
-	#[inline]
 	fn set_color(&mut self, colors: Colors) -> Result<(), DisplayError> {
 		self.queue_command(SetColors(colors))
 	}
 
-	#[inline]
 	fn set_dim(&mut self, dim: bool) -> Result<(), DisplayError> {
 		self.queue_command(SetAttribute(
 			if dim {
@@ -75,7 +69,6 @@ impl Tui for CrossTerm {
 		))
 	}
 
-	#[inline]
 	fn set_underline(&mut self, underline: bool) -> Result<(), DisplayError> {
 		self.queue_command(SetAttribute(
 			if underline {
@@ -87,7 +80,6 @@ impl Tui for CrossTerm {
 		))
 	}
 
-	#[inline]
 	fn set_reverse(&mut self, reverse: bool) -> Result<(), DisplayError> {
 		self.queue_command(SetAttribute(
 			if reverse {
@@ -99,7 +91,6 @@ impl Tui for CrossTerm {
 		))
 	}
 
-	#[inline]
 	fn get_size(&self) -> Size {
 		size().map_or_else(
 			|_| Size::new(0, 0),
@@ -107,17 +98,14 @@ impl Tui for CrossTerm {
 		)
 	}
 
-	#[inline]
 	fn move_to_column(&mut self, x: u16) -> Result<(), DisplayError> {
 		self.queue_command(MoveToColumn(x))
 	}
 
-	#[inline]
 	fn move_next_line(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(MoveToNextLine(1))
 	}
 
-	#[inline]
 	fn start(&mut self) -> Result<(), DisplayError> {
 		self.queue_command(EnterAlternateScreen)?;
 		self.queue_command(DisableLineWrap)?;
@@ -134,7 +122,6 @@ impl Tui for CrossTerm {
 		self.flush()
 	}
 
-	#[inline]
 	fn end(&mut self) -> Result<(), DisplayError> {
 		// this will fail on terminals without support, so ignore any errors
 		let _command_result = self.queue_command(PopKeyboardEnhancementFlags);
@@ -149,7 +136,6 @@ impl Tui for CrossTerm {
 
 impl CrossTerm {
 	/// Create a new instance.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		Self {

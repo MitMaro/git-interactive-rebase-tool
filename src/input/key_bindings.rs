@@ -43,7 +43,6 @@ pub(crate) struct KeyBindings<CustomKeybinding: crate::input::CustomKeybinding, 
 
 /// Map a keybinding to a list of events.
 #[must_use]
-#[inline]
 #[allow(clippy::string_slice, clippy::missing_panics_doc)]
 pub(crate) fn map_keybindings<CustomEvent: crate::input::CustomEvent>(bindings: &[String]) -> Vec<Event<CustomEvent>> {
 	bindings
@@ -96,7 +95,6 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 	KeyBindings<CustomKeybinding, CustomEvent>
 {
 	/// Create a new instance from the configuration keybindings.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(key_bindings: &crate::config::KeyBindings) -> Self {
 		Self {

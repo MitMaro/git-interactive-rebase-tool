@@ -51,7 +51,6 @@ pub(crate) struct GitConfig {
 
 impl GitConfig {
 	/// Create a new configuration with default values.
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn new() -> Self {
@@ -81,7 +80,6 @@ impl GitConfig {
 impl TryFrom<&Config> for GitConfig {
 	type Error = ConfigError;
 
-	#[inline]
 	fn try_from(config: &Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}

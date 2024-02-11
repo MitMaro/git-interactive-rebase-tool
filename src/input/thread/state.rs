@@ -50,25 +50,21 @@ impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 	}
 
 	/// Pause the event read thread.
-	#[inline]
 	pub(crate) fn pause(&self) {
 		self.paused.store(true, Ordering::Release);
 	}
 
 	/// Resume the event read thread.
-	#[inline]
 	pub(crate) fn resume(&self) {
 		self.paused.store(false, Ordering::Release);
 	}
 
 	/// Permanently End the event read thread.
-	#[inline]
 	pub(crate) fn end(&self) {
 		self.ended.store(true, Ordering::Release);
 	}
 
 	/// Add an event after existing events.
-	#[inline]
 	pub(crate) fn enqueue_event(&self, event: Event<CustomEvent>) {
 		let mut events = self.event_queue.lock();
 		let last_resize_event_maybe = matches!(event, Event::Resize(..))
@@ -85,7 +81,6 @@ impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 	}
 
 	/// Add an event before existing events.
-	#[inline]
 	pub(crate) fn push_event(&self, event: Event<CustomEvent>) {
 		let mut events = self.event_queue.lock();
 		if events.len() >= MAXIMUM_EVENTS {
@@ -97,7 +92,6 @@ impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 
 	/// Read an event from the queue. This function will block for a while until an event is
 	/// available. And if no event is available, it will return `Event::None`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn read_event(&self) -> Event<CustomEvent> {
 		// clear existing message since last read

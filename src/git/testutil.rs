@@ -25,7 +25,6 @@ use crate::git::Repository;
 pub(crate) static JAN_2021_EPOCH: i64 = 1_609_459_200;
 
 /// Get the the path to the repository.
-#[inline]
 #[must_use]
 pub(crate) fn repo_path(repo: &Repository) -> PathBuf {
 	repo.repo_path()
@@ -35,7 +34,6 @@ pub(crate) fn repo_path(repo: &Repository) -> PathBuf {
 ///
 /// # Panics
 /// If the head id cannot be queried.
-#[inline]
 #[must_use]
 pub(crate) fn head_id(repo: &Repository, head_name: &str) -> Oid {
 	repo.head_id(head_name).unwrap()
@@ -45,7 +43,6 @@ pub(crate) fn head_id(repo: &Repository, head_name: &str) -> Oid {
 ///
 /// # Panics
 /// If the head id cannot be queried.
-#[inline]
 #[must_use]
 pub(crate) fn commit_id_from_ref(repo: &Repository, reference: &str) -> Oid {
 	repo.commit_id_from_ref(reference).unwrap()

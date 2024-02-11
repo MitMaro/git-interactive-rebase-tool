@@ -10,7 +10,6 @@ pub(crate) struct FileStatusBuilder {
 
 impl FileStatusBuilder {
 	/// Create a new instance of the builder. The new instance will default to an empty file status.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		Self {
@@ -30,7 +29,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Push a `Delta`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn push_delta(mut self, delta: Delta) -> Self {
 		self.file_status.add_delta(delta);
@@ -38,7 +36,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set if the destination is binary.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn destination_is_binary(mut self, binary: bool) -> Self {
 		self.file_status.destination_is_binary = binary;
@@ -46,7 +43,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set the destination file mode.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn destination_mode(mut self, mode: FileMode) -> Self {
 		self.file_status.destination_mode = mode;
@@ -54,7 +50,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set the destination file path.
-	#[inline]
 	#[must_use]
 	pub(crate) fn destination_path<F: AsRef<Path>>(mut self, path: F) -> Self {
 		self.file_status.destination_path = PathBuf::from(path.as_ref());
@@ -62,7 +57,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set the largest new line number.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn largest_new_line_number(mut self, largest_new_line_number: u32) -> Self {
 		self.file_status.largest_new_line_number = largest_new_line_number;
@@ -70,7 +64,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set the largest old line number.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn largest_old_line_number(mut self, largest_old_line_number: u32) -> Self {
 		self.file_status.largest_old_line_number = largest_old_line_number;
@@ -78,7 +71,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set if the source is binary.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn source_is_binary(mut self, binary: bool) -> Self {
 		self.file_status.source_is_binary = binary;
@@ -86,7 +78,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set if the source file mode.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn source_mode(mut self, mode: FileMode) -> Self {
 		self.file_status.source_mode = mode;
@@ -94,7 +85,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set the destination file path.
-	#[inline]
 	#[must_use]
 	pub(crate) fn source_path<F: AsRef<Path>>(mut self, path: F) -> Self {
 		self.file_status.source_path = PathBuf::from(path.as_ref());
@@ -102,7 +92,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Set the status.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn status(mut self, status: Status) -> Self {
 		self.file_status.status = status;
@@ -110,7 +99,6 @@ impl FileStatusBuilder {
 	}
 
 	/// Build the `FileStatus`
-	#[inline]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> FileStatus {

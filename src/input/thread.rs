@@ -34,7 +34,6 @@ where
 	EventProvider: EventReaderFn,
 	CustomEvent: crate::input::CustomEvent + Send + Sync + 'static,
 {
-	#[inline]
 	fn install(&self, installer: &Installer) {
 		let state = self.state();
 		let event_provider = Arc::clone(&self.event_provider);
@@ -62,17 +61,14 @@ where
 		});
 	}
 
-	#[inline]
 	fn pause(&self) {
 		self.state.pause();
 	}
 
-	#[inline]
 	fn resume(&self) {
 		self.state.resume();
 	}
 
-	#[inline]
 	fn end(&self) {
 		self.state.end();
 	}
@@ -84,7 +80,6 @@ where
 	CustomEvent: crate::input::CustomEvent + 'static,
 {
 	/// Create a new instance of a thread.
-	#[inline]
 	pub(crate) fn new(event_provider: EventProvider) -> Self {
 		Self {
 			event_provider: Arc::new(event_provider),
@@ -93,7 +88,6 @@ where
 	}
 
 	/// Get a cloned copy of the state of the thread.
-	#[inline]
 	#[must_use]
 	pub(crate) fn state(&self) -> State<CustomEvent> {
 		self.state.clone()

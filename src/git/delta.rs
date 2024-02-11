@@ -13,7 +13,6 @@ pub(crate) struct Delta {
 
 impl Delta {
 	/// Create a new `Delta`.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new(
 		header: &str,
@@ -34,48 +33,41 @@ impl Delta {
 	}
 
 	/// Add a `DiffLine`.
-	#[inline]
 	pub(crate) fn add_line(&mut self, diff_line: DiffLine) {
 		self.lines.push(diff_line);
 	}
 
 	/// Get the diff context.
-	#[inline]
 	#[must_use]
 	pub(crate) fn context(&self) -> &str {
 		self.context.as_str()
 	}
 
 	/// Get the lines.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn lines(&self) -> &Vec<DiffLine> {
 		&self.lines
 	}
 
 	/// Get the old lines start.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn old_lines_start(&self) -> u32 {
 		self.old_lines_start
 	}
 
 	/// Get the old number of lines
-	#[inline]
 	#[must_use]
 	pub(crate) const fn old_number_lines(&self) -> u32 {
 		self.old_number_lines
 	}
 
 	/// Get the new lines start.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new_lines_start(&self) -> u32 {
 		self.new_lines_start
 	}
 
 	/// Get the new number of lines.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new_number_lines(&self) -> u32 {
 		self.new_number_lines

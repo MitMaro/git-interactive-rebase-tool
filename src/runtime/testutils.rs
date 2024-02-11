@@ -26,14 +26,12 @@ pub(crate) struct MockNotifier<'notifier> {
 
 impl<'notifier> MockNotifier<'notifier> {
 	/// Create a new instance of a `MockNotifier`.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new(threadable_statuses: &'notifier ThreadStatuses) -> Self {
 		Self { threadable_statuses }
 	}
 
 	/// Register a thread by name and status. This does not create a thread.
-	#[inline]
 	pub(crate) fn register_thread(&mut self, thread_name: &str, status: Status) {
 		self.threadable_statuses.register_thread(thread_name, status);
 	}
@@ -50,7 +48,6 @@ pub(crate) struct ThreadableTester {
 
 impl ThreadableTester {
 	/// Create a new instance of the test utility.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		let (sender, receiver) = bounded(0);
@@ -64,14 +61,12 @@ impl ThreadableTester {
 	}
 
 	/// Take the current `Status` changes.
-	#[inline]
 	#[must_use]
 	pub(crate) fn take_statuses(&self) -> Vec<Status> {
 		mem::take(self.statuses.lock().borrow_mut())
 	}
 
 	/// Start a `Threadable` running the thread specified by the name, to completion in a separate thread.
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn start_threadable<Threadable: crate::runtime::Threadable>(
 		&self,
@@ -105,7 +100,6 @@ impl ThreadableTester {
 	/// # Panics
 	///
 	/// Will panic if the wait takes too long and times out.
-	#[inline]
 	pub(crate) fn wait_for_status(&self, status: &Status) {
 		let mut attempt = 0;
 
@@ -131,7 +125,6 @@ impl ThreadableTester {
 	/// # Panics
 	///
 	/// Will panic if the wait takes too long and times out.
-	#[inline]
 	pub(crate) fn wait_for_error_status(&self) {
 		let mut attempt = 0;
 
@@ -157,7 +150,6 @@ impl ThreadableTester {
 	/// # Panics
 	///
 	/// Will panic if the wait takes too long and times out.
-	#[inline]
 	pub(crate) fn wait_for_finished(&self) {
 		let mut attempt = 0;
 

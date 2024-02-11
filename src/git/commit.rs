@@ -18,56 +18,48 @@ pub(crate) struct Commit {
 impl Commit {
 	/// Get the hash of the commit
 	#[must_use]
-	#[inline]
 	pub(crate) fn hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
 	/// Get the reference to the commit
 	#[must_use]
-	#[inline]
 	pub(crate) const fn reference(&self) -> &Option<Reference> {
 		&self.reference
 	}
 
 	/// Get the author of the commit.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn author(&self) -> &User {
 		&self.author
 	}
 
 	/// Get the author of the commit.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn authored_date(&self) -> &Option<DateTime<Local>> {
 		&self.authored_date
 	}
 
 	/// Get the committer of the commit.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn committer(&self) -> &Option<User> {
 		&self.committer
 	}
 
 	/// Get the committed date of the commit.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn committed_date(&self) -> &DateTime<Local> {
 		&self.committed_date
 	}
 
 	/// Get the commit message summary.
 	#[must_use]
-	#[inline]
 	pub(crate) fn summary(&self) -> Option<&str> {
 		self.summary.as_deref()
 	}
 
 	/// Get the full commit message.
 	#[must_use]
-	#[inline]
 	pub(crate) fn message(&self) -> Option<&str> {
 		self.message.as_deref()
 	}
@@ -107,7 +99,6 @@ impl Commit {
 impl TryFrom<&git2::Reference<'_>> for Commit {
 	type Error = GitError;
 
-	#[inline]
 	fn try_from(reference: &git2::Reference<'_>) -> Result<Self, Self::Error> {
 		let commit = reference
 			.peel_to_commit()
@@ -117,7 +108,6 @@ impl TryFrom<&git2::Reference<'_>> for Commit {
 }
 
 impl From<&git2::Commit<'_>> for Commit {
-	#[inline]
 	fn from(commit: &git2::Commit<'_>) -> Self {
 		Self::new(commit, None)
 	}

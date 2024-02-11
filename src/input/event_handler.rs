@@ -11,14 +11,12 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 	EventHandler<CustomKeybinding, CustomEvent>
 {
 	/// Create a new instance of the `EventHandler`.
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
 		Self { key_bindings }
 	}
 
 	/// Read and handle an event.
-	#[inline]
 	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub(crate) fn read_event<F>(
 		&self,

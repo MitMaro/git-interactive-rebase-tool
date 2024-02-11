@@ -23,7 +23,6 @@ pub(crate) struct State {
 
 impl State {
 	/// Create a new instance.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		let (update_sender, update_receiver) = unbounded();
@@ -53,7 +52,6 @@ impl State {
 	}
 
 	/// Clone the render slice.
-	#[inline]
 	#[must_use]
 	pub(crate) fn render_slice(&self) -> Arc<Mutex<RenderSlice>> {
 		Arc::clone(&self.render_slice)
@@ -63,7 +61,6 @@ impl State {
 	///
 	/// # Errors
 	/// Results in an error if the sender has been closed.
-	#[inline]
 	pub(crate) fn start(&self) {
 		self.paused.store(false, Ordering::Release);
 		self.send_update(ViewAction::Start);
@@ -73,7 +70,6 @@ impl State {
 	///
 	/// # Errors
 	/// Results in an error if the sender has been closed.
-	#[inline]
 	pub(crate) fn stop(&self) {
 		self.paused.store(true, Ordering::Release);
 		self.send_update(ViewAction::Stop);
@@ -83,7 +79,6 @@ impl State {
 	///
 	/// # Errors
 	/// Results in an error if the sender has been closed.
-	#[inline]
 	pub(crate) fn end(&self) {
 		self.ended.store(true, Ordering::Release);
 		self.stop();
@@ -94,61 +89,51 @@ impl State {
 	///
 	/// # Errors
 	/// Results in an error if the sender has been closed.
-	#[inline]
 	pub(crate) fn refresh(&self) {
 		self.send_update(ViewAction::Refresh);
 	}
 
 	/// Queue a scroll up action.
-	#[inline]
 	pub(crate) fn scroll_top(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_top();
 	}
 
 	/// Queue a scroll up action.
-	#[inline]
 	pub(crate) fn scroll_bottom(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_bottom();
 	}
 
 	/// Queue a scroll up action.
-	#[inline]
 	pub(crate) fn scroll_up(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_up();
 	}
 
 	/// Queue a scroll down action.
-	#[inline]
 	pub(crate) fn scroll_down(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_down();
 	}
 
 	/// Queue a scroll left action.
-	#[inline]
 	pub(crate) fn scroll_left(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_left();
 	}
 
 	/// Queue a scroll right action.
-	#[inline]
 	pub(crate) fn scroll_right(&self) {
 		self.render_slice.lock().borrow_mut().record_scroll_right();
 	}
 
 	/// Queue a scroll up a page action.
-	#[inline]
 	pub(crate) fn scroll_page_up(&self) {
 		self.render_slice.lock().borrow_mut().record_page_up();
 	}
 
 	/// Queue a scroll down a page action.
-	#[inline]
 	pub(crate) fn scroll_page_down(&self) {
 		self.render_slice.lock().borrow_mut().record_page_down();
 	}
 
 	/// Queue a resize action.
-	#[inline]
 	pub(crate) fn resize(&self, width: u16, height: u16) {
 		self.render_slice
 			.lock()
@@ -160,7 +145,6 @@ impl State {
 	///
 	/// # Errors
 	/// Results in an error if the sender has been closed.
-	#[inline]
 	pub(crate) fn render(&self, view_data: &ViewData) {
 		self.render_slice.lock().borrow_mut().sync_view_data(view_data);
 		self.send_update(ViewAction::Render);

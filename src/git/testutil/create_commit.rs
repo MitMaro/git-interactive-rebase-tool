@@ -25,7 +25,6 @@ pub(crate) struct CreateCommitOptions {
 
 impl CreateCommitOptions {
 	/// Create a new instance.
-	#[inline]
 	#[must_use]
 	pub(crate) fn new() -> Self {
 		Self {
@@ -41,7 +40,6 @@ impl CreateCommitOptions {
 	}
 
 	/// Set the author name and related email address.
-	#[inline]
 	pub(crate) fn author(&mut self, name: &str) -> &mut Self {
 		self.author_name = String::from(name);
 		self.author_email = format!("{}@example.com", name.to_lowercase());
@@ -49,28 +47,24 @@ impl CreateCommitOptions {
 	}
 
 	/// Set the author name.
-	#[inline]
 	pub(crate) fn author_name(&mut self, name: &str) -> &mut Self {
 		self.author_name = String::from(name);
 		self
 	}
 
 	/// Set the author email address.
-	#[inline]
 	pub(crate) fn author_email(&mut self, email: &str) -> &mut Self {
 		self.author_email = String::from(email);
 		self
 	}
 
 	/// Set the authored commit time.
-	#[inline]
 	pub(crate) fn author_time(&mut self, time: i64) -> &mut Self {
 		self.author_time = Some(time);
 		self
 	}
 
 	/// Set the committer name and related email address.
-	#[inline]
 	pub(crate) fn committer(&mut self, name: &str) -> &mut Self {
 		self.committer_name = Some(String::from(name));
 		self.committer_email = Some(format!("{}@example.com", name.to_lowercase()));
@@ -78,35 +72,30 @@ impl CreateCommitOptions {
 	}
 
 	/// Set the committer name.
-	#[inline]
 	pub(crate) fn committer_name(&mut self, name: &str) -> &mut Self {
 		self.committer_name = Some(String::from(name));
 		self
 	}
 
 	/// Set the committer email.
-	#[inline]
 	pub(crate) fn committer_email(&mut self, email: &str) -> &mut Self {
 		self.committer_email = Some(String::from(email));
 		self
 	}
 
 	/// Set the committed commit time.
-	#[inline]
 	pub(crate) fn commit_time(&mut self, time: i64) -> &mut Self {
 		self.committer_time = time;
 		self
 	}
 
 	/// Set the head name.
-	#[inline]
 	pub(crate) fn head_name(&mut self, name: &str) -> &mut Self {
 		self.head_name = String::from(name);
 		self
 	}
 
 	/// Set the commit message.
-	#[inline]
 	pub(crate) fn message(&mut self, message: &str) -> &mut Self {
 		self.message = String::from(message);
 		self
@@ -117,7 +106,6 @@ impl CreateCommitOptions {
 ///
 /// # Panics
 /// If the path cannot be added to the index.
-#[inline]
 pub(crate) fn add_path_to_index(repo: &Repository, path: &Path) {
 	repo.add_path_to_index(path).unwrap();
 }
@@ -126,7 +114,6 @@ pub(crate) fn add_path_to_index(repo: &Repository, path: &Path) {
 ///
 /// # Panics
 /// If the path cannot be removed from the index.
-#[inline]
 pub(crate) fn remove_path_from_index(repo: &Repository, path: &Path) {
 	repo.remove_path_from_index(path).unwrap();
 }
@@ -137,7 +124,6 @@ pub(crate) fn remove_path_from_index(repo: &Repository, path: &Path) {
 ///
 /// # Panics
 /// If any Git operation cannot be performed.
-#[inline]
 pub(crate) fn create_commit(repository: &Repository, options: Option<&CreateCommitOptions>) {
 	let opts = options.unwrap_or(&DEFAULT_COMMIT_OPTIONS);
 	let author_sig = git2::Signature::new(

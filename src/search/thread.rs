@@ -31,7 +31,6 @@ pub(crate) struct Thread<UpdateHandler: UpdateHandlerFn> {
 impl<UpdateHandler> Threadable for Thread<UpdateHandler>
 where UpdateHandler: UpdateHandlerFn + 'static
 {
-	#[inline]
 	fn install(&self, installer: &Installer) {
 		let state = self.state();
 		let update_handler = Arc::clone(&self.search_update_handler);
@@ -103,17 +102,14 @@ where UpdateHandler: UpdateHandlerFn + 'static
 		});
 	}
 
-	#[inline]
 	fn pause(&self) {
 		self.state.pause();
 	}
 
-	#[inline]
 	fn resume(&self) {
 		self.state.resume();
 	}
 
-	#[inline]
 	fn end(&self) {
 		self.state.end();
 	}

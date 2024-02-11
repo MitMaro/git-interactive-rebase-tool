@@ -9,7 +9,6 @@ pub(crate) struct TodoFileOptions {
 impl TodoFileOptions {
 	/// Create a new instance of `TodoFileOptions`
 	#[must_use]
-	#[inline]
 	pub(crate) fn new(undo_limit: u32, comment_prefix: &str) -> Self {
 		Self {
 			comment_prefix: String::from(comment_prefix),
@@ -19,7 +18,6 @@ impl TodoFileOptions {
 	}
 
 	/// Set a command to be added after each changed line
-	#[inline]
 	pub(crate) fn line_changed_command(&mut self, command: &str) {
 		self.line_changed_command = Some(String::from(command));
 	}

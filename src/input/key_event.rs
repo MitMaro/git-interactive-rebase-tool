@@ -13,7 +13,6 @@ pub(crate) struct KeyEvent {
 impl KeyEvent {
 	/// Creates a new `KeyEvent` with `code` and `modifiers`.
 	#[must_use]
-	#[inline]
 	pub(crate) fn new(mut code: KeyCode, mut modifiers: KeyModifiers) -> Self {
 		// normalize keys with the SHIFT modifier
 		if let KeyCode::Char(c) = code {
@@ -27,14 +26,12 @@ impl KeyEvent {
 }
 
 impl From<crossterm::event::KeyEvent> for KeyEvent {
-	#[inline]
 	fn from(key_event: crossterm::event::KeyEvent) -> Self {
 		Self::new(key_event.code, key_event.modifiers)
 	}
 }
 
 impl From<KeyCode> for KeyEvent {
-	#[inline]
 	fn from(code: KeyCode) -> Self {
 		Self::new(code, KeyModifiers::empty())
 	}

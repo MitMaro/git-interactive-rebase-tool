@@ -16,28 +16,24 @@ pub(crate) struct Reference {
 impl Reference {
 	/// Get the oid of the reference
 	#[must_use]
-	#[inline]
 	pub(crate) fn hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
 	/// Get the name of the reference
 	#[must_use]
-	#[inline]
 	pub(crate) fn name(&self) -> &str {
 		self.name.as_str()
 	}
 
 	/// Get the shorthand name of the reference
 	#[must_use]
-	#[inline]
 	pub(crate) fn shortname(&self) -> &str {
 		self.shorthand.as_str()
 	}
 
 	/// Get the kind of the reference
 	#[must_use]
-	#[inline]
 	pub(crate) const fn kind(&self) -> ReferenceKind {
 		self.kind
 	}

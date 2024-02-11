@@ -15,7 +15,6 @@ pub(crate) struct Search {
 
 impl Search {
 	/// Create a new instance
-	#[inline]
 	#[must_use]
 	pub(crate) const fn new() -> Self {
 		Self {
@@ -28,7 +27,6 @@ impl Search {
 	}
 
 	/// Generate search results
-	#[inline]
 	pub(crate) fn search(&mut self, rebase_todo: &TodoFile, term: &str) -> bool {
 		if &self.rebase_todo_version != rebase_todo.version() || self.search_term != term || self.matches.is_empty() {
 			self.matches.clear();
@@ -61,7 +59,6 @@ impl Search {
 	}
 
 	/// Select the next search result
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn next(&mut self, rebase_todo: &TodoFile, term: &str) {
 		if !self.search(rebase_todo, term) {
@@ -89,7 +86,6 @@ impl Search {
 	}
 
 	/// Select the previous search result
-	#[inline]
 	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn previous(&mut self, rebase_todo: &TodoFile, term: &str) {
 		if !self.search(rebase_todo, term) {
@@ -121,7 +117,6 @@ impl Search {
 	}
 
 	/// Set a hint for which result to select first during search
-	#[inline]
 	pub(crate) fn set_search_start_hint(&mut self, hint: usize) {
 		if self.match_start_hint != hint {
 			self.match_start_hint = hint;
@@ -129,13 +124,11 @@ impl Search {
 	}
 
 	/// Invalidate current search results
-	#[inline]
 	pub(crate) fn invalidate(&mut self) {
 		self.matches.clear();
 	}
 
 	/// Cancel search, clearing results, selected result and search term
-	#[inline]
 	pub(crate) fn cancel(&mut self) {
 		self.selected = None;
 		self.search_term.clear();
@@ -143,7 +136,6 @@ impl Search {
 	}
 
 	/// Get the index of the current selected result, if there is one
-	#[inline]
 	#[must_use]
 	pub(crate) fn current_match(&self) -> Option<usize> {
 		let selected = self.selected?;
@@ -151,14 +143,12 @@ impl Search {
 	}
 
 	/// Get the selected result number, if there is one
-	#[inline]
 	#[must_use]
 	pub(crate) const fn current_result_selected(&self) -> Option<usize> {
 		self.selected
 	}
 
 	/// Get the total number of results
-	#[inline]
 	#[must_use]
 	pub(crate) fn total_results(&self) -> usize {
 		self.matches.len()

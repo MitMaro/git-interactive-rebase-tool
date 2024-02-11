@@ -9,20 +9,17 @@ pub(crate) trait Threadable: Send {
 	///
 	/// # Errors
 	/// Returns an error is that thread cannot be paused for any reason.
-	#[inline]
 	fn pause(&self) {}
 
 	/// Called when threads are requested to resume.
 	///
 	/// # Errors
 	/// Returns an error is that thread cannot be resumed for any reason.
-	#[inline]
 	fn resume(&self) {}
 
 	/// Called when threads are requested to finish.
 	///
 	/// # Errors
 	/// Returns an error is that thread cannot be ended for any reason.
-	#[inline]
 	fn end(&self) {}
 }

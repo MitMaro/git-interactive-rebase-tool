@@ -33,23 +33,19 @@ pub(crate) struct Thread<ViewTui: Tui + Send + 'static> {
 }
 
 impl<ViewTui: Tui + Send + 'static> Threadable for Thread<ViewTui> {
-	#[inline]
 	fn install(&self, installer: &Installer) {
 		self.install_message_thread(installer);
 		self.install_refresh_thread(installer);
 	}
 
-	#[inline]
 	fn pause(&self) {
 		self.state.stop();
 	}
 
-	#[inline]
 	fn resume(&self) {
 		self.state.start();
 	}
 
-	#[inline]
 	fn end(&self) {
 		self.state.end();
 	}
@@ -57,7 +53,6 @@ impl<ViewTui: Tui + Send + 'static> Threadable for Thread<ViewTui> {
 
 impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 	/// Creates a new thread.
-	#[inline]
 	pub(crate) fn new(view: View<ViewTui>) -> Self {
 		Self {
 			state: State::new(),
@@ -66,7 +61,6 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 	}
 
 	/// Returns a cloned copy of the state of the thread.
-	#[inline]
 	#[must_use]
 	pub(crate) fn state(&self) -> State {
 		self.state.clone()

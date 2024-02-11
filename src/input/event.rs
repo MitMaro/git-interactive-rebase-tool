@@ -21,7 +21,6 @@ pub(crate) enum Event<CustomEvent: crate::input::CustomEvent> {
 }
 
 impl<CustomEvent: crate::input::CustomEvent> From<crossterm::event::Event> for Event<CustomEvent> {
-	#[inline]
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
 			crossterm::event::Event::Key(evt) => Self::Key(KeyEvent::from(evt)),
@@ -36,35 +35,30 @@ impl<CustomEvent: crate::input::CustomEvent> From<crossterm::event::Event> for E
 }
 
 impl<CustomEvent: crate::input::CustomEvent> From<KeyEvent> for Event<CustomEvent> {
-	#[inline]
 	fn from(key_event: KeyEvent) -> Self {
 		Self::Key(key_event)
 	}
 }
 
 impl<CustomEvent: crate::input::CustomEvent> From<MouseEvent> for Event<CustomEvent> {
-	#[inline]
 	fn from(mouse_event: MouseEvent) -> Self {
 		Self::Mouse(mouse_event)
 	}
 }
 
 impl<CustomEvent: crate::input::CustomEvent> From<StandardEvent> for Event<CustomEvent> {
-	#[inline]
 	fn from(event: StandardEvent) -> Self {
 		Self::Standard(event)
 	}
 }
 
 impl<CustomEvent: crate::input::CustomEvent> From<KeyCode> for Event<CustomEvent> {
-	#[inline]
 	fn from(code: KeyCode) -> Self {
 		Self::Key(KeyEvent::from(code))
 	}
 }
 
 impl<CustomEvent: crate::input::CustomEvent> From<char> for Event<CustomEvent> {
-	#[inline]
 	fn from(c: char) -> Self {
 		Self::Key(KeyEvent::from(KeyCode::Char(c)))
 	}

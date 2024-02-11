@@ -21,7 +21,6 @@ pub(crate) enum Status {
 impl Status {
 	/// Create a new status for a `git2::Delta`.
 	#[must_use]
-	#[inline]
 	pub(crate) const fn from(delta: git2::Delta) -> Self {
 		match delta {
 			git2::Delta::Added => Self::Added,

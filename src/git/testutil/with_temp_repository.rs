@@ -20,7 +20,6 @@ where F: FnOnce(&Path) {
 /// # Panics
 ///
 /// If the repository cannot be created for any reason, this function will panic.
-#[inline]
 pub(crate) fn with_temp_repository<F>(callback: F)
 where F: FnOnce(Repository) {
 	with_temporary_path(|path| {
@@ -45,7 +44,6 @@ where F: FnOnce(Repository) {
 /// # Panics
 ///
 /// If the repository cannot be created for any reason, this function will panic.
-#[inline]
 #[allow(clippy::panic)]
 pub(crate) fn with_temp_bare_repository<F>(callback: F)
 where F: FnOnce(Repository) {

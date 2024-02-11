@@ -34,7 +34,6 @@ macro_rules! first {
 }
 
 /// Utility function to handle scroll events.
-#[inline]
 #[must_use]
 pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::State) -> Option<Event> {
 	match event {

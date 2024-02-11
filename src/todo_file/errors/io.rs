@@ -18,7 +18,6 @@ pub(crate) enum FileReadErrorCause {
 }
 
 impl PartialEq for FileReadErrorCause {
-	#[inline]
 	#[allow(clippy::pattern_type_mismatch)]
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
