@@ -8,7 +8,7 @@ use thiserror::Error;
 /// The kind of config error that occurred.
 #[derive(Error, Debug, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum RuntimeError {
+pub(crate) enum RuntimeError {
 	/// An error occurred while attempting to spawn a thread
 	#[error("An error occurred while attempting to spawn thread: {0}")]
 	ThreadSpawnError(String),

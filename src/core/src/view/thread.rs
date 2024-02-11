@@ -9,11 +9,13 @@ use std::{
 
 use captur::capture;
 use parking_lot::Mutex;
-use runtime::{Installer, RuntimeError, Threadable};
 
 pub(crate) use self::{action::ViewAction, state::State};
 use super::View;
-use crate::display::Tui;
+use crate::{
+	display::Tui,
+	runtime::{Installer, RuntimeError, Threadable},
+};
 
 /// The name of the main view thread.
 pub(crate) const MAIN_THREAD_NAME: &str = "view_main";
@@ -162,7 +164,6 @@ mod tests {
 	use std::borrow::BorrowMut;
 
 	use claims::assert_ok;
-	use runtime::{testutils::ThreadableTester, Status};
 
 	use super::*;
 	use crate::{
@@ -172,6 +173,7 @@ mod tests {
 			Display,
 			DisplayError,
 		},
+		runtime::{testutils::ThreadableTester, Status},
 		view::ViewData,
 	};
 

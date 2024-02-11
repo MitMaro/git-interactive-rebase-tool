@@ -2,13 +2,13 @@ use std::{collections::HashMap, sync::Arc, thread::sleep, time::Duration};
 
 use parking_lot::Mutex;
 
-use crate::{RuntimeError, Status};
+use crate::runtime::{RuntimeError, Status};
 
 const WAIT_TIME: Duration = Duration::from_millis(100);
 
 /// Tracker for threads current `Status`s.
 #[derive(Debug, Clone)]
-pub struct ThreadStatuses {
+pub(crate) struct ThreadStatuses {
 	statuses: Arc<Mutex<HashMap<String, Status>>>,
 }
 
@@ -16,7 +16,7 @@ impl ThreadStatuses {
 	/// Create a new instance.
 	#[must_use]
 	#[inline]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		Self {
 			statuses: Arc::new(Mutex::new(HashMap::new())),
 		}
@@ -27,7 +27,7 @@ impl ThreadStatuses {
 	/// # Errors
 	/// Will error if the wait times out.
 	#[inline]
-	pub fn wait_for_status(&self, thread_name: &str, expected_status: &Status) -> Result<(), RuntimeError> {
+	pub(crate) fn wait_for_status(&self, thread_name: &str, expected_status: &Status) -> Result<(), RuntimeError> {
 		let mut attempt = 0;
 
 		loop {

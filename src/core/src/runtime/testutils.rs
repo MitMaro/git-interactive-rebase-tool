@@ -13,14 +13,14 @@ use std::{
 use crossbeam_channel::{bounded, Receiver, Sender};
 use parking_lot::Mutex;
 
-use crate::{Installer, Status, ThreadStatuses};
+use crate::runtime::{Installer, Status, ThreadStatuses};
 
 const WAIT_TIME: Duration = Duration::from_millis(100);
 
 /// A mocked version of the `Notifier`, that will interact directly with a `ThreadStatuses` without the use of a thread
 /// or the `Runtime`.
 #[derive(Debug)]
-pub struct MockNotifier<'notifier> {
+pub(crate) struct MockNotifier<'notifier> {
 	threadable_statuses: &'notifier ThreadStatuses,
 }
 
@@ -28,20 +28,20 @@ impl<'notifier> MockNotifier<'notifier> {
 	/// Create a new instance of a `MockNotifier`.
 	#[inline]
 	#[must_use]
-	pub const fn new(threadable_statuses: &'notifier ThreadStatuses) -> Self {
+	pub(crate) const fn new(threadable_statuses: &'notifier ThreadStatuses) -> Self {
 		Self { threadable_statuses }
 	}
 
 	/// Register a thread by name and status. This does not create a thread.
 	#[inline]
-	pub fn register_thread(&mut self, thread_name: &str, status: Status) {
+	pub(crate) fn register_thread(&mut self, thread_name: &str, status: Status) {
 		self.threadable_statuses.register_thread(thread_name, status);
 	}
 }
 
 /// A tester utility for `Threadable`.
 #[derive(Clone, Debug)]
-pub struct ThreadableTester {
+pub(crate) struct ThreadableTester {
 	receiver: Receiver<(String, Status)>,
 	sender: Sender<(String, Status)>,
 	statuses: Arc<Mutex<Vec<Status>>>,
@@ -52,7 +52,7 @@ impl ThreadableTester {
 	/// Create a new instance of the test utility.
 	#[inline]
 	#[must_use]
-	pub fn new() -> Self {
+	pub(crate) fn new() -> Self {
 		let (sender, receiver) = bounded(0);
 
 		Self {
@@ -66,14 +66,18 @@ impl ThreadableTester {
 	/// Take the current `Status` changes.
 	#[inline]
 	#[must_use]
-	pub fn take_statuses(&self) -> Vec<Status> {
+	pub(crate) fn take_statuses(&self) -> Vec<Status> {
 		mem::take(self.statuses.lock().borrow_mut())
 	}
 
 	/// Start a `Threadable` running the thread specified by the name, to completion in a separate thread.
 	#[inline]
 	#[allow(clippy::missing_panics_doc)]
-	pub fn start_threadable<Threadable: crate::Threadable>(&self, theadable: &Threadable, thread_name: &str) {
+	pub(crate) fn start_threadable<Threadable: crate::runtime::Threadable>(
+		&self,
+		theadable: &Threadable,
+		thread_name: &str,
+	) {
 		self.ended.store(false, Ordering::Release);
 		let installer = Installer::new(ThreadStatuses::new(), self.sender.clone());
 		theadable.install(&installer);
@@ -102,7 +106,7 @@ impl ThreadableTester {
 	///
 	/// Will panic if the wait takes too long and times out.
 	#[inline]
-	pub fn wait_for_status(&self, status: &Status) {
+	pub(crate) fn wait_for_status(&self, status: &Status) {
 		let mut attempt = 0;
 
 		loop {
@@ -128,7 +132,7 @@ impl ThreadableTester {
 	///
 	/// Will panic if the wait takes too long and times out.
 	#[inline]
-	pub fn wait_for_error_status(&self) {
+	pub(crate) fn wait_for_error_status(&self) {
 		let mut attempt = 0;
 
 		loop {
@@ -154,7 +158,7 @@ impl ThreadableTester {
 	///
 	/// Will panic if the wait takes too long and times out.
 	#[inline]
-	pub fn wait_for_finished(&self) {
+	pub(crate) fn wait_for_finished(&self) {
 		let mut attempt = 0;
 
 		loop {

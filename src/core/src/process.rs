@@ -15,7 +15,6 @@ use std::{
 
 use anyhow::{anyhow, Error, Result};
 use parking_lot::Mutex;
-use runtime::ThreadStatuses;
 
 pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
@@ -24,6 +23,7 @@ use crate::{
 	events::{Event, MetaEvent},
 	input::StandardEvent,
 	module::{self, ExitStatus, ModuleHandler, State},
+	runtime::ThreadStatuses,
 	search::{self, Action, Searchable},
 	todo_file::TodoFile,
 	view::{RenderContext, State as ViewState},
@@ -237,9 +237,9 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		self.input_state.pause();
 
 		self.thread_statuses
-			.wait_for_status(crate::view::REFRESH_THREAD_NAME, &runtime::Status::Waiting)?;
+			.wait_for_status(crate::view::REFRESH_THREAD_NAME, &crate::runtime::Status::Waiting)?;
 		self.thread_statuses
-			.wait_for_status(crate::input::THREAD_NAME, &runtime::Status::Waiting)?;
+			.wait_for_status(crate::input::THREAD_NAME, &crate::runtime::Status::Waiting)?;
 
 		let mut cmd = Command::new(external_command.0.clone());
 		_ = cmd.args(external_command.1.clone());

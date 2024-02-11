@@ -332,7 +332,6 @@ dependencies = [
  "claims",
  "crossbeam-channel",
  "crossterm",
- "girt-runtime",
  "girt-testutils",
  "git2",
  "if_chain",
@@ -353,18 +352,6 @@ dependencies = [
  "uuid",
  "version-track",
  "xi-unicode",
-]
-
-[[package]]
-name = "girt-runtime"
-version = "2.3.0"
-dependencies = [
- "claims",
- "crossbeam-channel",
- "girt-testutils",
- "parking_lot",
- "rustc_version",
- "thiserror",
 ]
 
 [[package]]

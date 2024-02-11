@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use parking_lot::Mutex;
-use runtime::{Runtime, ThreadStatuses, Threadable};
 
 use crate::{
 	config::Config,
@@ -14,6 +13,7 @@ use crate::{
 	input::{Event, EventHandler, EventReaderFn},
 	module::{self, ExitStatus, ModuleHandler},
 	process::{self, Process},
+	runtime::{Runtime, ThreadStatuses, Threadable},
 	search,
 	search::UpdateHandlerFn,
 	todo_file::{TodoFile, TodoFileOptions},
@@ -193,7 +193,6 @@ mod tests {
 	use std::ffi::OsString;
 
 	use claims::{assert_none, assert_ok};
-	use runtime::{Installer, RuntimeError};
 
 	use super::*;
 	use crate::{
@@ -201,6 +200,7 @@ mod tests {
 		events::Event,
 		input::{KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
+		runtime::{Installer, RuntimeError},
 		testutil::{create_event_reader, set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 

@@ -6,10 +6,10 @@ use std::{
 
 use crossbeam_channel::Sender;
 
-use crate::{Notifier, Status, ThreadStatuses};
+use crate::runtime::{Notifier, Status, ThreadStatuses};
 
 /// A thread installer that is passed to a `Threadable` when installing the threads into the `Runtime`
-pub struct Installer {
+pub(crate) struct Installer {
 	sender: Sender<(String, Status)>,
 	thread_statuses: ThreadStatuses,
 	ops: RefCell<HashMap<String, Box<dyn FnOnce() + Send>>>,
@@ -31,7 +31,7 @@ impl Installer {
 	/// Spawn a new thread with a name. The installer function callback will be called with a `Notifier` and is
 	/// returns the thread function.
 	#[inline]
-	pub fn spawn<InstallFn, ThreadFn>(&self, name: &str, install: InstallFn)
+	pub(crate) fn spawn<InstallFn, ThreadFn>(&self, name: &str, install: InstallFn)
 	where
 		InstallFn: FnOnce(Notifier) -> ThreadFn,
 		ThreadFn: FnOnce() + Send + 'static,
@@ -66,7 +66,7 @@ mod tests {
 	use crossbeam_channel::unbounded;
 
 	use super::*;
-	use crate::Threadable;
+	use crate::runtime::Threadable;
 
 	struct Thread {
 		called: Arc<AtomicBool>,

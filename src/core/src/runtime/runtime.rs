@@ -3,14 +3,14 @@ use std::{clone::Clone, sync::Arc, thread};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use parking_lot::Mutex;
 
-use crate::{Installer, RuntimeError, Status, ThreadStatuses, Threadable};
+use crate::runtime::{Installer, RuntimeError, Status, ThreadStatuses, Threadable};
 
 const RUNTIME_THREAD_NAME: &str = "runtime";
 
 /// A system the manages the lifetime of threads. This includes ensuring errors are handled, threads are paused and
 /// resumed on request and that once the main application is completed, all threads complete and end.
 #[allow(missing_debug_implementations)]
-pub struct Runtime<'runtime> {
+pub(crate) struct Runtime<'runtime> {
 	receiver: Receiver<(String, Status)>,
 	sender: Sender<(String, Status)>,
 	thread_statuses: ThreadStatuses,
@@ -21,7 +21,7 @@ impl<'runtime> Runtime<'runtime> {
 	/// Create a new instances of the `Runtime`.
 	#[inline]
 	#[must_use]
-	pub fn new(thread_statuses: ThreadStatuses) -> Self {
+	pub(crate) fn new(thread_statuses: ThreadStatuses) -> Self {
 		let (sender, receiver) = unbounded();
 
 		thread_statuses.register_thread(RUNTIME_THREAD_NAME, Status::Waiting);
@@ -37,13 +37,13 @@ impl<'runtime> Runtime<'runtime> {
 	/// Get a cloned copy of the `ThreadStatuses`.
 	#[inline]
 	#[must_use]
-	pub fn statuses(&self) -> ThreadStatuses {
+	pub(crate) fn statuses(&self) -> ThreadStatuses {
 		self.thread_statuses.clone()
 	}
 
 	/// Register a new `Threadable`.
 	#[inline]
-	pub fn register(&self, threadable: &'runtime mut (dyn Threadable)) {
+	pub(crate) fn register(&self, threadable: &'runtime mut (dyn Threadable)) {
 		self.threadables.lock().push(threadable);
 	}
 
@@ -53,7 +53,7 @@ impl<'runtime> Runtime<'runtime> {
 	/// Returns and error if any of the threads registered to the runtime produce an error.
 	#[inline]
 	#[allow(clippy::iter_over_hash_type)]
-	pub fn join(&self) -> Result<(), RuntimeError> {
+	pub(crate) fn join(&self) -> Result<(), RuntimeError> {
 		let installer = Installer::new(self.thread_statuses.clone(), self.sender.clone());
 		{
 			let threadables = self.threadables.lock();
