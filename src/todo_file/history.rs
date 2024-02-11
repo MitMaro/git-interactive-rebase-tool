@@ -6,7 +6,7 @@ mod tests;
 
 use std::{cmp::min, collections::VecDeque};
 
-pub(crate) use crate::todo_file::history::{history_item::HistoryItem, operation::Operation};
+pub(crate) use self::{history_item::HistoryItem, operation::Operation};
 use crate::todo_file::{
 	line::Line,
 	utils::{add_range, remove_range, swap_range_down, swap_range_up},

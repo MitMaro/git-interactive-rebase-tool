@@ -1,4 +1,4 @@
-use crate::todo_file::errors::ParseError;
+use crate::todo_file::ParseError;
 
 pub(crate) struct LineParser<'line> {
 	input: &'line str,

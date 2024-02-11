@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use crate::todo_file::errors::ParseError;
+use crate::todo_file::ParseError;
 
 /// Describes an rebase action.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

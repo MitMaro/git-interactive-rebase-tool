@@ -19,7 +19,7 @@ pub(crate) mod testutils;
 mod thread_statuses;
 mod threadable;
 
-pub(crate) use crate::runtime::{
+pub(crate) use self::{
 	errors::RuntimeError,
 	installer::Installer,
 	notifier::Notifier,

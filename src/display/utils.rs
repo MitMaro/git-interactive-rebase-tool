@@ -2,7 +2,7 @@ use std::env::var;
 
 use crate::{
 	config::Color,
-	display::{color_mode::ColorMode, Color as CrosstermColor, Colors},
+	display::{Color as CrosstermColor, ColorMode, Colors},
 };
 
 pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {

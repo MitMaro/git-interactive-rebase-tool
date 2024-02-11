@@ -1,5 +1,5 @@
 use crate::{
-	config::{errors::ConfigError, utils::get_input},
+	config::{utils::get_input, ConfigError},
 	git::Config,
 };
 

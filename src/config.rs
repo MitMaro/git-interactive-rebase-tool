@@ -10,7 +10,7 @@
 mod color;
 mod diff_ignore_whitespace_setting;
 mod diff_show_whitespace_setting;
-pub(crate) mod errors;
+mod errors;
 mod git_config;
 mod key_bindings;
 mod theme;
@@ -30,7 +30,7 @@ pub(crate) use self::{
 };
 use crate::{
 	config::{
-		errors::{ConfigError, ConfigErrorCause},
+		errors::{ConfigError, ConfigErrorCause, InvalidColorError},
 		utils::get_optional_string,
 	},
 	git::Repository,

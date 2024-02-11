@@ -5,7 +5,7 @@
 
 mod action;
 mod edit_content;
-pub(crate) mod errors;
+mod errors;
 mod history;
 mod line;
 mod line_parser;
@@ -23,12 +23,14 @@ use std::{
 	slice::Iter,
 };
 
-pub(crate) use version_track::Version;
+use version_track::Version;
 
 pub(crate) use self::{
 	action::Action,
 	edit_content::EditContext,
+	errors::ParseError,
 	line::Line,
+	line_parser::LineParser,
 	search::Search,
 	todo_file_options::TodoFileOptions,
 };

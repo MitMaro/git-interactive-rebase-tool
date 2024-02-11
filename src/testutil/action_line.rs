@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 use crate::{
-	todo_file::{errors::ParseError, Line},
+	todo_file::{Line, ParseError},
 	view::testutil::{replace_invisibles, LinePattern},
 };
 

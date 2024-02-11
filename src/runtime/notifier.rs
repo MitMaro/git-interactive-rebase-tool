@@ -1,6 +1,6 @@
 use crossbeam_channel::Sender;
 
-use crate::runtime::{status::Status, RuntimeError};
+use crate::runtime::{RuntimeError, Status};
 
 /// A thread status notifier, that allows a thread to notify the `Runtime` of the current status of the thread.
 #[derive(Debug)]

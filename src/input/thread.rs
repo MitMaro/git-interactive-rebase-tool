@@ -7,10 +7,10 @@ use std::{
 };
 
 use captur::capture;
-pub(crate) use state::State;
 
+pub(crate) use self::state::State;
 use crate::{
-	input::{event::Event, event_provider::EventReaderFn},
+	input::{Event, EventReaderFn},
 	runtime::{Installer, Threadable},
 };
 

@@ -3,7 +3,7 @@ use crate::{
 	action_line,
 	assert_rendered_output,
 	testutil::module_test,
-	todo_file::{errors::ParseError, Action::Pick},
+	todo_file::{Action::Pick, ParseError},
 	view::testutil::LinePattern,
 };
 

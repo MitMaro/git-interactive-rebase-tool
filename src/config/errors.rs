@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter};
 
 use thiserror::Error;
 
-pub(crate) use crate::config::errors::{config_error_cause::ConfigErrorCause, invalid_color::InvalidColorError};
+pub(crate) use self::{config_error_cause::ConfigErrorCause, invalid_color::InvalidColorError};
 
 /// Config errors
 #[derive(Error, Debug, PartialEq)]

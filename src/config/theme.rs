@@ -1,8 +1,8 @@
 use crate::{
 	config::{
-		errors::ConfigError,
 		utils::{get_optional_string, get_string},
 		Color,
+		ConfigError,
 		ConfigErrorCause,
 	},
 	git::Config,
@@ -146,9 +146,9 @@ mod tests {
 
 	use super::*;
 	use crate::config::{
-		errors::InvalidColorError,
 		testutils::{invalid_utf, with_git_config},
 		ConfigErrorCause,
+		InvalidColorError,
 	};
 
 	macro_rules! config_test {

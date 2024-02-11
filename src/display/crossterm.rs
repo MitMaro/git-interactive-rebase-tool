@@ -25,7 +25,7 @@ use crossterm::{
 	QueueableCommand,
 };
 
-use crate::display::{color_mode::ColorMode, error::DisplayError, size::Size, tui::Tui, utils::detect_color_mode};
+use crate::display::{utils::detect_color_mode, ColorMode, DisplayError, Size, Tui};
 
 /// A thin wrapper over the [Crossterm library](https://github.com/crossterm-rs/crossterm).
 #[derive(Debug)]

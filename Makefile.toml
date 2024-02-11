@@ -1,5 +1,5 @@
 [env]
-RUST_NIGHTLY_VERSION_PREFIX = ""
+RUST_NIGHTLY_VERSION_PREFIX = "-2024-02-10"
 
 [config]
 skip_core_tasks = true
