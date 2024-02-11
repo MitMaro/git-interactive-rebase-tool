@@ -1,19 +1,19 @@
 use anyhow::anyhow;
-use git::{
-	testutil::{head_id, with_temp_repository, CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
-	Delta,
-	DiffLine,
-	FileMode,
-	Origin,
-	Status,
-	User,
-};
 use rstest::rstest;
 
 use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
+	git::{
+		testutil::{head_id, with_temp_repository, CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
+		Delta,
+		DiffLine,
+		FileMode,
+		Origin,
+		Status,
+		User,
+	},
 	input::StandardEvent,
 	process::Artifact,
 	render_line,

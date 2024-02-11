@@ -1,12 +1,12 @@
 use std::path::Path;
 
-use git::{CommitDiff, Status};
 use num_format::{Locale, ToFormattedString};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	config::KeyBindings,
 	display::DisplayColor,
+	git::{CommitDiff, Status},
 	view::{LineSegment, ViewLine},
 };
 

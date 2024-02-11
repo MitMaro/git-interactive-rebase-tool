@@ -7,7 +7,7 @@ use crate::{
 };
 
 lazy_static! {
-	pub static ref FORMAT_REGEX: Regex = Regex::new(r"\{.*?}").unwrap();
+	pub(crate) static ref FORMAT_REGEX: Regex = Regex::new(r"\{.*?}").unwrap();
 }
 
 fn parse_rendered_action_line(rendered: &str) -> Result<Line, ParseError> {

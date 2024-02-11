@@ -1,11 +1,12 @@
 use std::env;
 
-use git::Config;
-
-use crate::config::{
-	errors::ConfigError,
-	get_string,
-	utils::{get_unsigned_integer, git_diff_renames},
+use crate::{
+	config::{
+		errors::ConfigError,
+		get_string,
+		utils::{get_unsigned_integer, git_diff_renames},
+	},
+	git::Config,
 };
 
 fn editor_from_env() -> String {

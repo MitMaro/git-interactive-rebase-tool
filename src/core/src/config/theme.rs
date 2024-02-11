@@ -1,10 +1,11 @@
-use git::Config;
-
-use crate::config::{
-	errors::ConfigError,
-	utils::{get_optional_string, get_string},
-	Color,
-	ConfigErrorCause,
+use crate::{
+	config::{
+		errors::ConfigError,
+		utils::{get_optional_string, get_string},
+		Color,
+		ConfigErrorCause,
+	},
+	git::Config,
 };
 
 fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Color, ConfigError> {

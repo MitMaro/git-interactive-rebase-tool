@@ -1,6 +1,7 @@
-use git::{Config, ErrorCode};
-
-use crate::config::{ConfigError, ConfigErrorCause};
+use crate::{
+	config::{ConfigError, ConfigErrorCause},
+	git::{Config, ErrorCode},
+};
 
 pub(crate) fn get_optional_string(config: Option<&Config>, name: &str) -> Result<Option<String>, ConfigError> {
 	let Some(cfg) = config

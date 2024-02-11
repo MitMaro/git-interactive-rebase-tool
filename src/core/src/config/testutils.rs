@@ -1,8 +1,9 @@
 use std::io::Write;
 
-use git::Config;
 use lazy_static::lazy_static;
 use tempfile::NamedTempFile;
+
+use crate::git::Config;
 
 lazy_static! {
 	static ref INVALID_UTF_STRING: String = create_invalid_utf();

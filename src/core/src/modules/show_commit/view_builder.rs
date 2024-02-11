@@ -1,7 +1,6 @@
-use git::{Commit, CommitDiff, DiffLine, Origin};
-
 use crate::{
 	display::DisplayColor,
+	git::{Commit, CommitDiff, DiffLine, Origin},
 	modules::show_commit::util::{
 		get_files_changed_summary,
 		get_partition_index_on_whitespace_for_line,

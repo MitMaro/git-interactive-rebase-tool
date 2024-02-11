@@ -26,7 +26,6 @@ path = "src/main.rs"
 [workspace]
 members = [
     "src/core",
-    "src/git",
     "src/runtime",
     "src/testutils",
 ]

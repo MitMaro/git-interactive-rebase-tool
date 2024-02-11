@@ -1,6 +1,7 @@
-use git::Config;
-
-use crate::config::{get_string, ConfigError, ConfigErrorCause};
+use crate::{
+	config::{get_string, ConfigError, ConfigErrorCause},
+	git::Config,
+};
 
 pub(crate) fn git_diff_renames(git_config: Option<&Config>, name: &str) -> Result<(bool, bool), ConfigError> {
 	match get_string(git_config, name, "true")?.to_lowercase().as_str() {

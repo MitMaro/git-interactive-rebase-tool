@@ -332,9 +332,9 @@ dependencies = [
  "claims",
  "crossbeam-channel",
  "crossterm",
- "girt-git",
  "girt-runtime",
  "girt-testutils",
+ "git2",
  "if_chain",
  "itertools",
  "lazy_static",
@@ -353,24 +353,6 @@ dependencies = [
  "uuid",
  "version-track",
  "xi-unicode",
-]
-
-[[package]]
-name = "girt-git"
-version = "2.3.0"
-dependencies = [
- "chrono",
- "claims",
- "girt-testutils",
- "git2",
- "lazy_static",
- "parking_lot",
- "pretty_assertions",
- "rstest",
- "rustc_version",
- "serial_test",
- "tempfile",
- "thiserror",
 ]
 
 [[package]]

@@ -477,6 +477,8 @@ fn handle_external_command_not_executable() {
 fn handle_external_command_not_found() {
 	let command = String::from(
 		Path::new(env!("CARGO_MANIFEST_DIR"))
+			.join("..")
+			.join("..")
 			.join("test")
 			.join("not-found.sh")
 			.to_str()

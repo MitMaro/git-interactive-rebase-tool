@@ -140,6 +140,7 @@ mod display;
 mod editor;
 mod events;
 mod exit;
+mod git;
 mod help;
 mod input;
 mod license;

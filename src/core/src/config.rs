@@ -19,8 +19,6 @@ mod utils;
 #[cfg(test)]
 mod testutils;
 
-use git::Repository;
-
 use self::utils::{get_bool, get_diff_ignore_whitespace, get_diff_show_whitespace, get_string, get_unsigned_integer};
 pub(crate) use self::{
 	color::Color,
@@ -30,9 +28,12 @@ pub(crate) use self::{
 	key_bindings::KeyBindings,
 	theme::Theme,
 };
-use crate::config::{
-	errors::{ConfigError, ConfigErrorCause},
-	utils::get_optional_string,
+use crate::{
+	config::{
+		errors::{ConfigError, ConfigErrorCause},
+		utils::get_optional_string,
+	},
+	git::Repository,
 };
 
 const DEFAULT_SPACE_SYMBOL: &str = "\u{b7}"; // ·
@@ -77,7 +78,7 @@ impl Config {
 		Self::new_with_config(None).unwrap() // should never error with None config
 	}
 
-	fn new_with_config(git_config: Option<&git::Config>) -> Result<Self, ConfigError> {
+	fn new_with_config(git_config: Option<&crate::git::Config>) -> Result<Self, ConfigError> {
 		Ok(Self {
 			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
 			diff_ignore_whitespace: get_diff_ignore_whitespace(
@@ -122,11 +123,11 @@ impl TryFrom<&Repository> for Config {
 	}
 }
 
-impl TryFrom<&git::Config> for Config {
+impl TryFrom<&crate::git::Config> for Config {
 	type Error = ConfigError;
 
 	#[inline]
-	fn try_from(config: &git::Config) -> Result<Self, Self::Error> {
+	fn try_from(config: &crate::git::Config) -> Result<Self, Self::Error> {
 		Self::new_with_config(Some(config))
 	}
 }
@@ -137,11 +138,13 @@ mod tests {
 
 	use ::testutils::assert_err_eq;
 	use claims::assert_ok;
-	use git::testutil::with_temp_bare_repository;
 	use rstest::rstest;
 
 	use super::*;
-	use crate::config::testutils::{invalid_utf, with_git_config};
+	use crate::{
+		config::testutils::{invalid_utf, with_git_config},
+		git::testutil::with_temp_bare_repository,
+	};
 
 	#[test]
 	fn new() {

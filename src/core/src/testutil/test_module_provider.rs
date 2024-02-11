@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use git::Repository;
 use parking_lot::Mutex;
 
 use crate::{
 	config::Config,
+	git::Repository,
 	input::EventHandler,
 	module::{Module, ModuleHandler, ModuleProvider, State},
 	testutil::create_test_keybindings,
