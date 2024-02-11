@@ -16,9 +16,6 @@ mod key_bindings;
 mod theme;
 mod utils;
 
-#[cfg(test)]
-mod testutils;
-
 use self::utils::{get_bool, get_diff_ignore_whitespace, get_diff_show_whitespace, get_string, get_unsigned_integer};
 pub(crate) use self::{
 	color::Color,
@@ -139,9 +136,8 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		config::testutils::with_git_config,
 		git::testutil::with_temp_bare_repository,
-		test_helpers::invalid_utf,
+		test_helpers::{invalid_utf, with_git_config},
 	};
 
 	#[test]

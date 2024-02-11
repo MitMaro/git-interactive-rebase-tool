@@ -146,8 +146,8 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		config::{testutils::with_git_config, ConfigErrorCause, InvalidColorError},
-		test_helpers::invalid_utf,
+		config::{ConfigErrorCause, InvalidColorError},
+		test_helpers::{invalid_utf, with_git_config},
 	};
 
 	macro_rules! config_test {
