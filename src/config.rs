@@ -139,8 +139,9 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		config::testutils::{invalid_utf, with_git_config},
+		config::testutils::with_git_config,
 		git::testutil::with_temp_bare_repository,
+		test_helpers::invalid_utf,
 	};
 
 	#[test]
