@@ -4,8 +4,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
-	events::Event,
-	input::KeyCode,
+	input::{Event, KeyCode},
 	module::ExitStatus,
 	process::Artifact,
 	testutil::module_test,
@@ -125,7 +124,7 @@ fn deactivate() {
 fn edit_success() {
 	module_test(
 		&["pick aaa comment"],
-		&[Event::from(MetaEvent::ExternalCommandSuccess)],
+		&[Event::from(StandardEvent::ExternalCommandSuccess)],
 		|mut test_context| {
 			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);
@@ -133,7 +132,7 @@ fn edit_success() {
 			assert_rendered_output!(view_data, "{TITLE}", "{LEADING}", "Editing...");
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ExternalCommandSuccess)),
+				Artifact::Event(Event::from(StandardEvent::ExternalCommandSuccess)),
 				Artifact::ChangeState(State::List)
 			);
 			assert_external_editor_state_eq!(module.state, ExternalEditorState::Active);
@@ -145,7 +144,7 @@ fn edit_success() {
 fn empty_edit_error() {
 	module_test(
 		&["pick aaa comment"],
-		&[Event::from('1'), Event::from(MetaEvent::ExternalCommandSuccess)],
+		&[Event::from('1'), Event::from(StandardEvent::ExternalCommandSuccess)],
 		|mut test_context| {
 			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);
@@ -156,7 +155,7 @@ fn empty_edit_error() {
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ExternalCommandSuccess))
+				Artifact::Event(Event::from(StandardEvent::ExternalCommandSuccess))
 			);
 			assert_external_editor_state_eq!(module.state, ExternalEditorState::Empty);
 			let view_data = test_context.build_view_data(&mut module);
@@ -277,13 +276,13 @@ fn no_editor_set() {
 fn editor_non_zero_exit() {
 	module_test(
 		&["pick aaa comment"],
-		&[Event::from(MetaEvent::ExternalCommandError)],
+		&[Event::from(StandardEvent::ExternalCommandError)],
 		|mut test_context| {
 			let mut module = create_external_editor("editor", test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ExternalCommandError))
+				Artifact::Event(Event::from(StandardEvent::ExternalCommandError))
 			);
 			assert_external_editor_state_eq!(
 				module.state,
@@ -312,7 +311,10 @@ fn editor_non_zero_exit() {
 fn editor_reload_error() {
 	module_test(
 		&["pick aaa comment"],
-		&[Event::from(KeyCode::Up), Event::from(MetaEvent::ExternalCommandSuccess)],
+		&[
+			Event::from(KeyCode::Up),
+			Event::from(StandardEvent::ExternalCommandSuccess),
+		],
 		|mut test_context| {
 			let todo_file = test_context.take_todo_file();
 			let path = todo_file.get_filepath().to_path_buf();
@@ -323,7 +325,7 @@ fn editor_reload_error() {
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ExternalCommandSuccess))
+				Artifact::Event(Event::from(StandardEvent::ExternalCommandSuccess))
 			);
 			assert_external_editor_state_eq!(
 				module.state,

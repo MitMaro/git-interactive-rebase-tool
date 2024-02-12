@@ -5,9 +5,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	display::DisplayColor,
-	events::Event,
 	first,
-	input::{InputOptions, StandardEvent},
+	input::{Event, InputOptions, StandardEvent},
 	util::handle_view_data_scroll,
 	view::{LineSegment, ViewData, ViewLine},
 };

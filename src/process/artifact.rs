@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use anyhow::Error;
 
 use crate::{
-	events::Event,
+	input::Event,
 	module::{ExitStatus, State},
 	search::Searchable,
 };

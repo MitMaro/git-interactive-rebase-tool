@@ -14,8 +14,7 @@ use parking_lot::Mutex;
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
 	components::choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
-	events::{Event, MetaEvent},
-	input::InputOptions,
+	input::{Event, InputOptions, StandardEvent},
 	module::{ExitStatus, Module, State},
 	process::Results,
 	todo_file::{Line, TodoFile},
@@ -98,7 +97,7 @@ impl Module for ExternalEditor {
 		match self.state {
 			ExternalEditorState::Active => {
 				match event {
-					Event::MetaEvent(MetaEvent::ExternalCommandSuccess) => {
+					Event::Standard(StandardEvent::ExternalCommandSuccess) => {
 						let mut todo_file = self.todo_file.lock();
 						let result = todo_file.load_file();
 						let state = match result {
@@ -120,7 +119,7 @@ impl Module for ExternalEditor {
 							self.set_state(&mut results, new_state);
 						}
 					},
-					Event::MetaEvent(MetaEvent::ExternalCommandError) => {
+					Event::Standard(StandardEvent::ExternalCommandError) => {
 						self.set_state(
 							&mut results,
 							ExternalEditorState::Error(anyhow!("Editor returned a non-zero exit status")),

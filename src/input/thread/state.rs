@@ -17,15 +17,15 @@ const EVENT_POLL_TIMEOUT: Duration = Duration::from_secs(1);
 
 /// Input thread state.
 #[derive(Clone, Debug)]
-pub(crate) struct State<CustomEvent: crate::input::CustomEvent> {
+pub(crate) struct State {
 	ended: Arc<AtomicBool>,
-	event_queue: Arc<Mutex<VecDeque<Event<CustomEvent>>>>,
+	event_queue: Arc<Mutex<VecDeque<Event>>>,
 	paused: Arc<AtomicBool>,
 	update_receiver: crossbeam_channel::Receiver<()>,
 	update_sender: crossbeam_channel::Sender<()>,
 }
 
-impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
+impl State {
 	pub(crate) fn new() -> Self {
 		let (update_sender, update_receiver) = crossbeam_channel::unbounded();
 		Self {
@@ -65,7 +65,7 @@ impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 	}
 
 	/// Add an event after existing events.
-	pub(crate) fn enqueue_event(&self, event: Event<CustomEvent>) {
+	pub(crate) fn enqueue_event(&self, event: Event) {
 		let mut events = self.event_queue.lock();
 		let last_resize_event_maybe = matches!(event, Event::Resize(..))
 			.then(|| events.back_mut().filter(|e| matches!(*e, &mut Event::Resize(..))))
@@ -81,7 +81,7 @@ impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 	}
 
 	/// Add an event before existing events.
-	pub(crate) fn push_event(&self, event: Event<CustomEvent>) {
+	pub(crate) fn push_event(&self, event: Event) {
 		let mut events = self.event_queue.lock();
 		if events.len() >= MAXIMUM_EVENTS {
 			_ = events.pop_back();
@@ -93,7 +93,7 @@ impl<CustomEvent: crate::input::CustomEvent> State<CustomEvent> {
 	/// Read an event from the queue. This function will block for a while until an event is
 	/// available. And if no event is available, it will return `Event::None`.
 	#[must_use]
-	pub(crate) fn read_event(&self) -> Event<CustomEvent> {
+	pub(crate) fn read_event(&self) -> Event {
 		// clear existing message since last read
 		while self.update_receiver.try_recv().is_ok() {}
 		loop {
@@ -122,9 +122,9 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::input::testutil::local::{Event, TestEvent};
+	use crate::input::Event;
 
-	fn create_state() -> State<TestEvent> {
+	fn create_state() -> State {
 		State::new()
 	}
 

@@ -18,7 +18,7 @@ fn render_options() -> AssertRenderOptions {
 fn start() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
-		&[Event::from(MetaEvent::ToggleVisualMode)],
+		&[Event::from(StandardEvent::ToggleVisualMode)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -39,8 +39,8 @@ fn start_cursor_down_one() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -67,8 +67,8 @@ fn start_cursor_page_down() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -98,12 +98,12 @@ fn start_cursor_from_bottom_move_up() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -132,15 +132,15 @@ fn start_cursor_from_bottom_to_top() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -163,10 +163,10 @@ fn action_change_top_bottom() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionReword),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionReword),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -188,12 +188,12 @@ fn action_change_bottom_top() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::ActionReword),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::ActionReword),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -214,15 +214,15 @@ fn toggle_visual_mode() {
 	module_test(
 		&["pick aaa c1"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ToggleVisualMode),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ToggleVisualMode))
+				Artifact::Event(Event::from(StandardEvent::ToggleVisualMode))
 			);
 			assert_eq!(module.visual_index_start, None);
 			assert_eq!(module.state, ListState::Normal);

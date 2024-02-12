@@ -1,10 +1,9 @@
 use captur::capture;
 
 use crate::{
-	events::Event,
+	input::{testutil::with_event_handler, Event},
 	module::{Module, State},
 	process::Results,
-	testutil::{with_event_handler, EventHandlerTestContext},
 	todo_file::{testutil::with_todo_file, TodoFile},
 	view::{
 		testutil::{with_view_state, TestContext as ViewContext},
@@ -14,7 +13,7 @@ use crate::{
 };
 
 pub(crate) struct TestContext {
-	pub(crate) event_handler_context: EventHandlerTestContext,
+	pub(crate) event_handler_context: crate::input::testutil::TestContext,
 	pub(crate) render_context: RenderContext,
 	pub(crate) view_context: ViewContext,
 	todo_file: Option<TodoFile>,

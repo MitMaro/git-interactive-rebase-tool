@@ -3,8 +3,7 @@ use rstest::rstest;
 use super::*;
 use crate::{
 	assert_rendered_output,
-	input::StandardEvent,
-	testutil::create_test_keybindings,
+	input::{testutil::create_test_keybindings, StandardEvent},
 	view::testutil::AssertRenderOptions,
 };
 
@@ -25,7 +24,7 @@ fn render() {
 fn read_event_yes_uppercase() {
 	assert_eq!(
 		Confirm::read_event(Event::from('Y'), &create_test_keybindings()),
-		Event::from(MetaEvent::Yes)
+		Event::from(StandardEvent::Yes)
 	);
 }
 
@@ -33,7 +32,7 @@ fn read_event_yes_uppercase() {
 fn read_event_yes_lowercase() {
 	assert_eq!(
 		Confirm::read_event(Event::from('y'), &create_test_keybindings()),
-		Event::from(MetaEvent::Yes)
+		Event::from(StandardEvent::Yes)
 	);
 }
 
@@ -41,7 +40,7 @@ fn read_event_yes_lowercase() {
 fn read_event_no_lowercase() {
 	assert_eq!(
 		Confirm::read_event(Event::from('n'), &create_test_keybindings()),
-		Event::from(MetaEvent::No)
+		Event::from(StandardEvent::No)
 	);
 }
 
@@ -49,7 +48,7 @@ fn read_event_no_lowercase() {
 fn read_event_no_uppercase() {
 	assert_eq!(
 		Confirm::read_event(Event::from('N'), &create_test_keybindings()),
-		Event::from(MetaEvent::No)
+		Event::from(StandardEvent::No)
 	);
 }
 
@@ -72,14 +71,14 @@ fn read_event_not_char_event() {
 #[test]
 fn handle_event_yes() {
 	let module = Confirm::new("Prompt message", &[], &[]);
-	let confirmed = module.handle_event(Event::from(MetaEvent::Yes));
+	let confirmed = module.handle_event(Event::from(StandardEvent::Yes));
 	assert_eq!(confirmed, Confirmed::Yes);
 }
 
 #[test]
 fn handle_event_no() {
 	let module = Confirm::new("Prompt message", &[], &[]);
-	let confirmed = module.handle_event(Event::from(MetaEvent::No));
+	let confirmed = module.handle_event(Event::from(StandardEvent::No));
 	assert_eq!(confirmed, Confirmed::No);
 }
 

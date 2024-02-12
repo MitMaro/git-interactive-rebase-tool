@@ -1,22 +1,17 @@
 use super::State;
 use crate::{
-	events,
-	events::{AppKeyBindings, Event, MetaEvent},
-	input::EventHandler,
+	input::{Event, EventHandler},
 	process::Results,
 	view::{RenderContext, ViewData},
 };
 
 pub(crate) struct ModuleHandler<ModuleProvider: crate::module::ModuleProvider> {
-	event_handler: EventHandler<AppKeyBindings, MetaEvent>,
+	event_handler: EventHandler,
 	module_provider: ModuleProvider,
 }
 
 impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider> {
-	pub(crate) const fn new(
-		event_handler: EventHandler<AppKeyBindings, MetaEvent>,
-		module_provider: ModuleProvider,
-	) -> Self {
+	pub(crate) const fn new(event_handler: EventHandler, module_provider: ModuleProvider) -> Self {
 		Self {
 			event_handler,
 			module_provider,
@@ -40,7 +35,7 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 	pub(crate) fn handle_event(
 		&mut self,
 		state: State,
-		input_state: &events::State,
+		input_state: &crate::input::State,
 		view_state: &crate::view::State,
 	) -> Option<Results> {
 		let module = self.module_provider.get_module(state);

@@ -9,8 +9,7 @@ use crate::{
 		search_bar::state::State,
 		shared::{EditAction, EditableLine},
 	},
-	events::Event,
-	input::{InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent},
+	input::{Event, InputOptions, KeyCode, KeyEvent, KeyModifiers, StandardEvent},
 	view::{LineSegment, ViewLine},
 };
 

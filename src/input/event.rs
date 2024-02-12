@@ -4,8 +4,8 @@ use crate::input::{KeyEvent, StandardEvent};
 
 /// An event, either from an input device, system change or action event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
-#[allow(clippy::exhaustive_enums, clippy::enum_variant_names)]
-pub(crate) enum Event<CustomEvent: crate::input::CustomEvent> {
+#[allow(clippy::exhaustive_enums)]
+pub(crate) enum Event {
 	/// A keyboard event.
 	Key(KeyEvent),
 	/// An action event.
@@ -16,11 +16,9 @@ pub(crate) enum Event<CustomEvent: crate::input::CustomEvent> {
 	None,
 	/// A terminal resize event.
 	Resize(u16, u16),
-	/// Custom application defined events
-	MetaEvent(CustomEvent),
 }
 
-impl<CustomEvent: crate::input::CustomEvent> From<crossterm::event::Event> for Event<CustomEvent> {
+impl From<crossterm::event::Event> for Event {
 	fn from(event: crossterm::event::Event) -> Self {
 		match event {
 			crossterm::event::Event::Key(evt) => Self::Key(KeyEvent::from(evt)),
@@ -34,31 +32,31 @@ impl<CustomEvent: crate::input::CustomEvent> From<crossterm::event::Event> for E
 	}
 }
 
-impl<CustomEvent: crate::input::CustomEvent> From<KeyEvent> for Event<CustomEvent> {
+impl From<KeyEvent> for Event {
 	fn from(key_event: KeyEvent) -> Self {
 		Self::Key(key_event)
 	}
 }
 
-impl<CustomEvent: crate::input::CustomEvent> From<MouseEvent> for Event<CustomEvent> {
+impl From<MouseEvent> for Event {
 	fn from(mouse_event: MouseEvent) -> Self {
 		Self::Mouse(mouse_event)
 	}
 }
 
-impl<CustomEvent: crate::input::CustomEvent> From<StandardEvent> for Event<CustomEvent> {
+impl From<StandardEvent> for Event {
 	fn from(event: StandardEvent) -> Self {
 		Self::Standard(event)
 	}
 }
 
-impl<CustomEvent: crate::input::CustomEvent> From<KeyCode> for Event<CustomEvent> {
+impl From<KeyCode> for Event {
 	fn from(code: KeyCode) -> Self {
 		Self::Key(KeyEvent::from(code))
 	}
 }
 
-impl<CustomEvent: crate::input::CustomEvent> From<char> for Event<CustomEvent> {
+impl From<char> for Event {
 	fn from(c: char) -> Self {
 		Self::Key(KeyEvent::from(KeyCode::Char(c)))
 	}
@@ -72,7 +70,6 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::input::testutil::local::Event;
 
 	#[test]
 	fn from_crossterm_key_event() {

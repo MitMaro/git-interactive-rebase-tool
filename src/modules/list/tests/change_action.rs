@@ -5,7 +5,7 @@ use crate::{action_line, assert_rendered_output, testutil::module_test};
 fn normal_mode_action_change_to_drop() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionDrop)],
+		&[Event::from(StandardEvent::ActionDrop)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -26,11 +26,11 @@ fn visual_mode_action_change_to_drop() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionDrop),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionDrop),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -52,7 +52,7 @@ fn visual_mode_action_change_to_drop() {
 fn normal_mode_action_change_to_edit() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionEdit)],
+		&[Event::from(StandardEvent::ActionEdit)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -76,11 +76,11 @@ fn visual_mode_action_change_to_edit() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionEdit),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionEdit),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -102,7 +102,7 @@ fn visual_mode_action_change_to_edit() {
 fn normal_mode_action_change_to_fixup() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionFixup)],
+		&[Event::from(StandardEvent::ActionFixup)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -126,11 +126,11 @@ fn visual_mode_action_change_to_fixup() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionFixup),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionFixup),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -152,7 +152,7 @@ fn visual_mode_action_change_to_fixup() {
 fn normal_mode_action_change_to_pick() {
 	module_test(
 		&["drop aaa c1"],
-		&[Event::from(MetaEvent::ActionPick)],
+		&[Event::from(StandardEvent::ActionPick)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -176,11 +176,11 @@ fn visual_mode_action_change_to_pick() {
 			"drop aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionPick),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionPick),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -202,7 +202,7 @@ fn visual_mode_action_change_to_pick() {
 fn normal_mode_action_change_to_reword() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionReword)],
+		&[Event::from(StandardEvent::ActionReword)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -226,11 +226,11 @@ fn visual_mode_action_change_to_reword() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionReword),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionReword),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -252,7 +252,7 @@ fn visual_mode_action_change_to_reword() {
 fn normal_mode_action_change_to_squash() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionSquash)],
+		&[Event::from(StandardEvent::ActionSquash)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -275,11 +275,11 @@ fn visual_mode_action_change_to_squash() {
 			"pick aaa c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionSquash),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionSquash),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());

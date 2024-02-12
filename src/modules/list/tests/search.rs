@@ -182,7 +182,7 @@ fn visual_mode_next() {
 	module_test(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -217,7 +217,7 @@ fn normal_mode_next_with_wrap() {
 	module_test(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -247,8 +247,8 @@ fn visual_mode_next_with_wrap() {
 	module_test(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -281,8 +281,8 @@ fn normal_mode_previous() {
 	module_test(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -311,9 +311,9 @@ fn visual_mode_previous() {
 	module_test(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -376,7 +376,7 @@ fn visual_mode_previous_with_wrap() {
 	module_test(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -440,7 +440,7 @@ fn set_search_start_hint() {
 			"pick bbbbbbbb x3",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::SearchStart),
 			Event::from('x'),
 			Event::from(StandardEvent::SearchFinish),
@@ -514,14 +514,14 @@ fn handle_other_event() {
 		&[
 			Event::from(StandardEvent::SearchStart),
 			Event::from(StandardEvent::SearchFinish),
-			Event::from(MetaEvent::Abort),
+			Event::from(StandardEvent::Abort),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			let mut results: Vec<_> = test_context.handle_all_events(&mut module);
 			assert_results!(
 				results.remove(results.len() - 1),
-				Artifact::Event(Event::from(MetaEvent::Abort)),
+				Artifact::Event(Event::from(StandardEvent::Abort)),
 				Artifact::ChangeState(State::ConfirmAbort)
 			);
 		},

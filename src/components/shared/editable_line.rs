@@ -2,8 +2,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	display::DisplayColor,
-	events::Event,
-	input::{KeyCode, KeyEvent, KeyModifiers},
+	input::{Event, KeyCode, KeyEvent, KeyModifiers},
 	view::LineSegment,
 };
 

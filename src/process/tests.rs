@@ -5,8 +5,7 @@ use anyhow::anyhow;
 use super::*;
 use crate::{
 	assert_results,
-	events::KeyBindings,
-	input::InputOptions,
+	input::{InputOptions, KeyBindings},
 	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
 	runtime::{testutils::MockNotifier, Status},
 	search::{Interrupter, SearchResult},
@@ -416,7 +415,7 @@ fn handle_external_command_success() {
 			assert_results!(process.handle_external_command(&(String::from("true"), vec![])));
 			assert_eq!(
 				process.input_state.read_event(),
-				Event::from(MetaEvent::ExternalCommandSuccess)
+				Event::from(StandardEvent::ExternalCommandSuccess)
 			);
 		},
 	);
@@ -435,7 +434,7 @@ fn handle_external_command_failure() {
 			assert_results!(process.handle_external_command(&(String::from("false"), vec![])));
 			assert_eq!(
 				process.input_state.read_event(),
-				Event::from(MetaEvent::ExternalCommandError)
+				Event::from(StandardEvent::ExternalCommandError)
 			);
 		},
 	);
@@ -583,7 +582,7 @@ fn handle_results_external_command_success() {
 			process.handle_results(results);
 			assert_eq!(
 				process.input_state.read_event(),
-				Event::from(MetaEvent::ExternalCommandSuccess)
+				Event::from(StandardEvent::ExternalCommandSuccess)
 			);
 		},
 	);

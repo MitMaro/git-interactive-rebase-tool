@@ -19,9 +19,7 @@ use parking_lot::Mutex;
 pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
 	display::Size,
-	events,
-	events::{Event, MetaEvent},
-	input::StandardEvent,
+	input::{Event, StandardEvent},
 	module::{self, ExitStatus, ModuleHandler, State},
 	runtime::ThreadStatuses,
 	search::{self, Action, Searchable},
@@ -32,7 +30,7 @@ use crate::{
 pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
 	ended: Arc<AtomicBool>,
 	exit_status: Arc<Mutex<ExitStatus>>,
-	input_state: events::State,
+	input_state: crate::input::State,
 	module_handler: Arc<Mutex<ModuleHandler<ModuleProvider>>>,
 	paused: Arc<AtomicBool>,
 	render_context: Arc<Mutex<RenderContext>>,
@@ -66,7 +64,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		initial_display_size: Size,
 		todo_file: Arc<Mutex<TodoFile>>,
 		module_handler: ModuleHandler<ModuleProvider>,
-		input_state: events::State,
+		input_state: crate::input::State,
 		view_state: crate::view::State,
 		search_state: search::State,
 		thread_statuses: ThreadStatuses,
@@ -233,7 +231,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		results
 	}
 
-	fn run_command(&self, external_command: &(String, Vec<String>)) -> Result<MetaEvent> {
+	fn run_command(&self, external_command: &(String, Vec<String>)) -> Result<StandardEvent> {
 		self.view_state.stop();
 		self.input_state.pause();
 
@@ -249,10 +247,10 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 			.status()
 			.map(|status| {
 				if status.success() {
-					MetaEvent::ExternalCommandSuccess
+					StandardEvent::ExternalCommandSuccess
 				}
 				else {
-					MetaEvent::ExternalCommandError
+					StandardEvent::ExternalCommandError
 				}
 			})
 			.map_err(|err| {
