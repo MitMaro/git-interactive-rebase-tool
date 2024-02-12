@@ -120,9 +120,11 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		git::testutil::{create_commit, with_temp_repository, CreateCommitOptions},
+		git::testutil::with_temp_repository,
 		test_helpers::{
 			builders::{CommitBuilder, ReferenceBuilder},
+			create_commit,
+			CreateCommitOptions,
 			JAN_2021_EPOCH,
 		},
 	};

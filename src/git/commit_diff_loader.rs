@@ -165,10 +165,7 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::git::{
-		testutil::{add_path_to_index, with_temp_repository},
-		Origin,
-	};
+	use crate::git::{testutil::with_temp_repository, Origin};
 
 	fn _format_status(status: &FileStatus) -> String {
 		let s = match status.status() {
