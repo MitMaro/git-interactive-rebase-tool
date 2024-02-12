@@ -165,7 +165,7 @@ mod tests {
 		display::{Display, DisplayError},
 		runtime::Status,
 		test_helpers::{
-			mocks::crossterm::{CrossTerm, MockableTui},
+			mocks::{CrossTerm, MockableTui},
 			ThreadableTester,
 		},
 		view::ViewData,

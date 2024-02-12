@@ -1,4 +1,7 @@
-pub(crate) mod crossterm;
+mod crossterm;
 mod notifier;
 
-pub(crate) use self::notifier::Notifier;
+pub(crate) use self::{
+	crossterm::{CrossTerm, CrosstermMockState, MockableTui},
+	notifier::Notifier,
+};
