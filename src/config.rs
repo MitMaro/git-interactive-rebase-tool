@@ -135,10 +135,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{
-		git::testutil::with_temp_bare_repository,
-		test_helpers::{invalid_utf, with_git_config},
-	};
+	use crate::test_helpers::{invalid_utf, with_git_config, with_temp_bare_repository};
 
 	#[test]
 	fn new() {

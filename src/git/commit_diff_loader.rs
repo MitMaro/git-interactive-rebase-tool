@@ -165,7 +165,7 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::git::{testutil::with_temp_repository, Origin};
+	use crate::{git::Origin, test_helpers::with_temp_repository};
 
 	fn _format_status(status: &FileStatus) -> String {
 		let s = match status.status() {

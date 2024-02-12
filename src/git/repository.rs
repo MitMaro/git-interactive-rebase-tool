@@ -193,10 +193,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::{
-		git::testutil::{with_temp_bare_repository, with_temp_repository},
-		test_helpers::create_commit,
-	};
+	use crate::test_helpers::{create_commit, with_temp_bare_repository, with_temp_repository};
 
 	#[test]
 	#[serial_test::serial]
