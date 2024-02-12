@@ -194,10 +194,10 @@ mod tests {
 	use super::*;
 	use crate::{
 		display::Size,
-		input::{testutil::create_event_reader, Event, KeyCode, KeyEvent, KeyModifiers},
+		input::{Event, KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
-		test_helpers::mocks::crossterm::CrossTerm,
+		test_helpers::{create_event_reader, mocks::crossterm::CrossTerm},
 		testutil::{set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 

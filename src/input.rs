@@ -15,8 +15,6 @@ mod input_options;
 mod key_bindings;
 mod key_event;
 mod standard_event;
-#[cfg(test)]
-pub(crate) mod testutil;
 mod thread;
 
 pub(crate) use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};

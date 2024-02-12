@@ -142,7 +142,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::input::{map_keybindings, testutil::create_test_keybindings};
+	use crate::{input::map_keybindings, test_helpers::create_test_keybindings};
 
 	#[rstest]
 	#[case::standard(Event::Key(KeyEvent {

@@ -4,17 +4,18 @@ use parking_lot::Mutex;
 
 use crate::{
 	display::Size,
-	input::{testutil::with_event_handler, Event},
+	input::Event,
 	module::{self, ModuleHandler},
 	process::Process,
 	runtime::ThreadStatuses,
+	test_helpers::{with_event_handler, EventHandlerTestContext},
 	testutil::{with_search, SearchTestContext},
 	todo_file::testutil::with_todo_file,
 	view::testutil::{with_view_state, TestContext as ViewContext},
 };
 
 pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
-	pub(crate) event_handler_context: crate::input::testutil::TestContext,
+	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) process: Process<ModuleProvider>,
 	pub(crate) search_context: SearchTestContext,
 	pub(crate) todo_file_path: PathBuf,
