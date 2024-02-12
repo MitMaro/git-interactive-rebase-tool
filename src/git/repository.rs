@@ -193,7 +193,7 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::git::testutil::{commit_id_from_ref, create_commit, with_temp_bare_repository, with_temp_repository};
+	use crate::git::testutil::{create_commit, with_temp_bare_repository, with_temp_repository};
 
 	#[test]
 	#[serial_test::serial]
@@ -268,7 +268,7 @@ mod tests {
 	fn load_commit_diff() {
 		with_temp_repository(|repository| {
 			create_commit(&repository, None);
-			let id = commit_id_from_ref(&repository, "refs/heads/main");
+			let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
 			assert_ok!(repository.load_commit_diff(id.to_string().as_str(), &CommitDiffLoaderOptions::new()));
 		});
 	}

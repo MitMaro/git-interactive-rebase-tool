@@ -560,7 +560,7 @@ mod tests {
 			let mut permissions = file.metadata().unwrap().permissions();
 			permissions.set_mode(0o755);
 			file.set_permissions(permissions).unwrap();
-			add_path_to_index(&repo, PathBuf::from("a").as_path());
+			repo.add_path_to_index(PathBuf::from("a").as_path()).unwrap();
 			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
 			assert_eq!(diff.number_files_changed(), 1);
@@ -581,8 +581,8 @@ mod tests {
 			create_commit(&repo);
 			remove_path(&repo, "a");
 			symlink(root.join("b"), root.join("a")).unwrap();
-			add_path_to_index(&repo, PathBuf::from("a").as_path());
-			add_path_to_index(&repo, PathBuf::from("b").as_path());
+			repo.add_path_to_index(PathBuf::from("a").as_path()).unwrap();
+			repo.add_path_to_index(PathBuf::from("b").as_path()).unwrap();
 			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 1);

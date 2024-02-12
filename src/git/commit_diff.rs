@@ -53,15 +53,9 @@ impl CommitDiff {
 mod tests {
 	use claims::assert_some_eq;
 
-	use crate::git::{
-		testutil::{CommitBuilder, CommitDiffBuilder},
-		Delta,
-		DiffLine,
-		FileMode,
-		FileStatus,
-		FileStatusBuilder,
-		Origin,
-		Status,
+	use crate::{
+		git::{Delta, DiffLine, FileMode, FileStatus, FileStatusBuilder, Origin, Status},
+		test_helpers::builders::{CommitBuilder, CommitDiffBuilder},
 	};
 
 	#[test]

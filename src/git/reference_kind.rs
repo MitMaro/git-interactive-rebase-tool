@@ -37,7 +37,7 @@ impl ReferenceKind {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::git::testutil::{with_temp_repository, JAN_2021_EPOCH};
+	use crate::{git::testutil::with_temp_repository, test_helpers::JAN_2021_EPOCH};
 
 	#[test]
 	fn from_git2_reference_branch() {

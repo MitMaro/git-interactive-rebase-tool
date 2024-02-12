@@ -4,7 +4,7 @@ use std::path::Path;
 
 use lazy_static::lazy_static;
 
-use crate::git::{testutil::JAN_2021_EPOCH, Repository};
+use crate::{git::Repository, test_helpers::JAN_2021_EPOCH};
 
 lazy_static! {
 	static ref DEFAULT_COMMIT_OPTIONS: CreateCommitOptions = CreateCommitOptions::new();
@@ -100,22 +100,6 @@ impl CreateCommitOptions {
 		self.message = String::from(message);
 		self
 	}
-}
-
-/// Add a path to the working index.
-///
-/// # Panics
-/// If the path cannot be added to the index.
-pub(crate) fn add_path_to_index(repo: &Repository, path: &Path) {
-	repo.add_path_to_index(path).unwrap();
-}
-
-/// Remove a path to the working index.
-///
-/// # Panics
-/// If the path cannot be removed from the index.
-pub(crate) fn remove_path_from_index(repo: &Repository, path: &Path) {
-	repo.remove_path_from_index(path).unwrap();
 }
 
 /// Create a commit based on the provided options. If `options` is not provided, will create a

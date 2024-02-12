@@ -1,6 +1,9 @@
 use chrono::{Local, TimeZone};
 
-use crate::git::{testutil::JAN_2021_EPOCH, Commit, Reference, User};
+use crate::{
+	git::{Commit, Reference, User},
+	test_helpers::JAN_2021_EPOCH,
+};
 
 /// Builder for creating a new commit.
 #[derive(Debug)]
