@@ -1,15 +1,13 @@
 use super::*;
 use crate::{
 	config::Theme,
-	display::{
-		testutil::{assert_output, CrossTerm},
-		Size,
-	},
+	display::{testutil::CrossTerm, Size},
 };
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let theme = Theme::new();
 	let mut crossterm = CrossTerm::new();
+	let readonly_tui = crossterm.clone();
 	crossterm.set_size(Size::new(width, height));
 	let display = Display::new(crossterm, &theme);
 	let mut view = View::new(display, "~", "?");
@@ -18,8 +16,7 @@ fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[
 	render_slice.record_resize(width, height);
 	render_slice.sync_view_data(view_data);
 	view.render(&render_slice).unwrap();
-
-	assert_output(&view.display, expected);
+	assert_eq!(readonly_tui.get_output().join(""), format!("{}\n", expected.join("\n")));
 }
 
 #[test]
