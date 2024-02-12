@@ -5,18 +5,11 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
-	git::{
-		testutil::{head_id, with_temp_repository, CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
-		Delta,
-		DiffLine,
-		FileMode,
-		Origin,
-		Status,
-		User,
-	},
+	git::{testutil::with_temp_repository, Delta, DiffLine, FileMode, Origin, Status, User},
 	input::StandardEvent,
 	process::Artifact,
 	render_line,
+	test_helpers::builders::{CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
 	testutil::module_test,
 	view::{testutil::AssertRenderOptions, ViewLine},
 };
@@ -32,7 +25,7 @@ fn render_options() -> AssertRenderOptions {
 #[test]
 fn load_commit_during_activate() {
 	with_temp_repository(|repo| {
-		let oid = head_id(&repo, "main");
+		let oid = repo.head_id("main").unwrap();
 		let line = format!("pick {oid} comment1");
 		module_test(&[line.as_str()], &[], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
@@ -45,7 +38,7 @@ fn load_commit_during_activate() {
 #[test]
 fn cached_commit_in_activate() {
 	with_temp_repository(|repo| {
-		let oid = head_id(&repo, "main");
+		let oid = repo.head_id("main").unwrap();
 		let line = format!("pick {oid} comment1");
 		module_test(&[line.as_str()], &[], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());

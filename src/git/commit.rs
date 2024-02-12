@@ -119,13 +119,12 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::git::testutil::{
-		create_commit,
-		with_temp_repository,
-		CommitBuilder,
-		CreateCommitOptions,
-		ReferenceBuilder,
-		JAN_2021_EPOCH,
+	use crate::{
+		git::testutil::{create_commit, with_temp_repository, CreateCommitOptions},
+		test_helpers::{
+			builders::{CommitBuilder, ReferenceBuilder},
+			JAN_2021_EPOCH,
+		},
 	};
 
 	#[test]

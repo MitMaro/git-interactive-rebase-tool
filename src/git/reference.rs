@@ -59,12 +59,12 @@ impl Reference {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::git::testutil::{head_id, with_temp_repository};
+	use crate::git::testutil::with_temp_repository;
 
 	#[test]
 	fn test() {
 		with_temp_repository(|repository| {
-			let oid = head_id(&repository, "main");
+			let oid = repository.head_id("main").unwrap();
 			let reference = repository.find_reference("refs/heads/main").unwrap();
 			assert_eq!(reference.hash(), format!("{oid}"));
 			assert_eq!(reference.name(), "refs/heads/main");
