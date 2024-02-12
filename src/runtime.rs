@@ -14,8 +14,7 @@ mod notifier;
 #[allow(clippy::module_inception)]
 mod runtime;
 mod status;
-#[cfg(test)]
-pub(crate) mod testutils;
+
 mod thread_statuses;
 mod threadable;
 

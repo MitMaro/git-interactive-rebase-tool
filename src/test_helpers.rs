@@ -5,6 +5,7 @@ mod create_invalid_utf;
 mod create_test_keybindings;
 pub(crate) mod mocks;
 mod shared;
+mod threadable_tester;
 mod with_event_handler;
 mod with_git_config;
 mod with_temp_bare_repository;
@@ -17,6 +18,7 @@ pub(crate) use self::{
 	create_event_reader::create_event_reader,
 	create_invalid_utf::invalid_utf,
 	create_test_keybindings::create_test_keybindings,
+	threadable_tester::ThreadableTester,
 	with_event_handler::{with_event_handler, EventHandlerTestContext},
 	with_git_config::with_git_config,
 	with_temp_bare_repository::with_temp_bare_repository,

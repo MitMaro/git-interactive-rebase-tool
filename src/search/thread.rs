@@ -130,7 +130,7 @@ mod tests {
 	use parking_lot::Mutex;
 
 	use super::*;
-	use crate::runtime::{testutils::ThreadableTester, Status};
+	use crate::{runtime::Status, test_helpers::ThreadableTester};
 
 	#[derive(Clone)]
 	struct MockedSearchable {

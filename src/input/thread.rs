@@ -96,8 +96,8 @@ mod tests {
 	use super::*;
 	use crate::{
 		input::KeyEvent,
-		runtime::{testutils::ThreadableTester, Status},
-		test_helpers::create_event_reader,
+		runtime::Status,
+		test_helpers::{create_event_reader, ThreadableTester},
 	};
 
 	#[test]

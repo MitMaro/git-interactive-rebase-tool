@@ -163,8 +163,11 @@ mod tests {
 	use crate::{
 		config::Theme,
 		display::{Display, DisplayError},
-		runtime::{testutils::ThreadableTester, Status},
-		test_helpers::mocks::crossterm::{CrossTerm, MockableTui},
+		runtime::Status,
+		test_helpers::{
+			mocks::crossterm::{CrossTerm, MockableTui},
+			ThreadableTester,
+		},
 		view::ViewData,
 	};
 
