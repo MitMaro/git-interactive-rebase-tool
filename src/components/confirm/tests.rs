@@ -3,7 +3,8 @@ use rstest::rstest;
 use super::*;
 use crate::{
 	assert_rendered_output,
-	input::{testutil::create_test_keybindings, StandardEvent},
+	input::StandardEvent,
+	test_helpers::create_test_keybindings,
 	view::testutil::AssertRenderOptions,
 };
 

@@ -1,8 +1,8 @@
 use anyhow::anyhow;
 
 use crate::{
-	input::testutil::create_test_keybindings,
 	module::{Event, InputOptions, Module, State},
+	test_helpers::create_test_keybindings,
 	testutil::module_test,
 };
 
