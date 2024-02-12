@@ -8,7 +8,7 @@ use crate::display::{ColorMode, DisplayError, Size, Tui};
 /// The state of the `CrossTerm` instance.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::exhaustive_enums)]
-pub(crate) enum State {
+pub(crate) enum CrosstermMockState {
 	/// The TUI is new and unchanged.
 	New,
 	/// The TUI is in the normal mode.
@@ -138,7 +138,7 @@ struct CrossTermInternalState {
 	output: Vec<String>,
 	position: (u16, u16),
 	size: Size,
-	state: State,
+	state: CrosstermMockState,
 }
 
 /// A mocked version of `CrossTerm`, useful for testing.
@@ -157,7 +157,7 @@ impl MockableTui for CrossTerm {
 		state.attributes = Attributes::from(Attribute::Reset);
 		state.colors = Colors::new(Color::Reset, Color::Reset);
 		state.output.clear();
-		state.state = State::Normal;
+		state.state = CrosstermMockState::Normal;
 		Ok(())
 	}
 
@@ -224,12 +224,12 @@ impl MockableTui for CrossTerm {
 	}
 
 	fn start(&mut self) -> Result<(), DisplayError> {
-		self.state.write().state = State::Normal;
+		self.state.write().state = CrosstermMockState::Normal;
 		Ok(())
 	}
 
 	fn end(&mut self) -> Result<(), DisplayError> {
-		self.state.write().state = State::Ended;
+		self.state.write().state = CrosstermMockState::Ended;
 		Ok(())
 	}
 }
@@ -247,7 +247,7 @@ impl CrossTerm {
 				output: vec![],
 				position: (0, 0),
 				size: Size::new(10, 10),
-				state: State::New,
+				state: CrosstermMockState::New,
 			})),
 		}
 	}
@@ -260,7 +260,7 @@ impl CrossTerm {
 
 	/// Get the current state.
 	#[must_use]
-	pub(crate) fn get_state(&self) -> State {
+	pub(crate) fn get_state(&self) -> CrosstermMockState {
 		self.state.read().state
 	}
 

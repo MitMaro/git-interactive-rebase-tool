@@ -1,7 +1,7 @@
 #[cfg(not(test))]
 use crate::display::CrossTerm;
 #[cfg(test)]
-use crate::test_helpers::mocks::crossterm::CrossTerm;
+use crate::test_helpers::mocks::CrossTerm;
 use crate::{
 	application::Application,
 	arguments::Args,

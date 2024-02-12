@@ -197,7 +197,7 @@ mod tests {
 		input::{Event, KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
-		test_helpers::{create_event_reader, mocks::crossterm::CrossTerm},
+		test_helpers::{create_event_reader, mocks::CrossTerm},
 		testutil::{set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 

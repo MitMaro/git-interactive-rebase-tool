@@ -367,7 +367,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::test_helpers::mocks::crossterm::{CrossTerm, State};
+	use crate::test_helpers::mocks::{CrossTerm, CrosstermMockState};
 
 	#[test]
 	fn draw_str() {
@@ -585,13 +585,13 @@ mod tests {
 	fn start() {
 		let mut display = Display::new(CrossTerm::new(), &Theme::new());
 		display.start().unwrap();
-		assert_eq!(display.tui.get_state(), State::Normal);
+		assert_eq!(display.tui.get_state(), CrosstermMockState::Normal);
 	}
 
 	#[test]
 	fn end() {
 		let mut display = Display::new(CrossTerm::new(), &Theme::new());
 		display.end().unwrap();
-		assert_eq!(display.tui.get_state(), State::Ended);
+		assert_eq!(display.tui.get_state(), CrosstermMockState::Ended);
 	}
 }
