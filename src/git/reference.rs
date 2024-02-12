@@ -59,7 +59,7 @@ impl Reference {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::git::testutil::with_temp_repository;
+	use crate::test_helpers::with_temp_repository;
 
 	#[test]
 	fn test() {

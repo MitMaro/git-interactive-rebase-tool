@@ -23,8 +23,6 @@ mod reference;
 mod reference_kind;
 mod repository;
 mod status;
-#[cfg(test)]
-pub(crate) mod testutil;
 mod user;
 
 pub(crate) use git2::{Config, ErrorCode};
