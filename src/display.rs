@@ -14,8 +14,6 @@ mod crossterm;
 mod display_color;
 mod error;
 mod size;
-#[cfg(not(tarpaulin_include))]
-pub(crate) mod testutil;
 mod tui;
 mod utils;
 
@@ -369,7 +367,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::display::testutil::{CrossTerm, State};
+	use crate::test_helpers::mocks::crossterm::{CrossTerm, State};
 
 	#[test]
 	fn draw_str() {

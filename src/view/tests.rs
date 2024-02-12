@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-	config::Theme,
-	display::{testutil::CrossTerm, Size},
-};
+use crate::{config::Theme, display::Size, test_helpers::mocks::crossterm::CrossTerm};
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let theme = Theme::new();

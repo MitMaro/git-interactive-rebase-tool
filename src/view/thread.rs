@@ -155,23 +155,24 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 
 #[cfg(test)]
 mod tests {
-	use std::borrow::BorrowMut;
+	use std::{borrow::BorrowMut, io};
 
 	use claims::assert_ok;
 
 	use super::*;
 	use crate::{
 		config::Theme,
-		display::{
-			testutil::{create_unexpected_error, CrossTerm, MockableTui},
-			Display,
-			DisplayError,
-		},
+		display::{Display, DisplayError},
 		runtime::{testutils::ThreadableTester, Status},
+		test_helpers::mocks::crossterm::{CrossTerm, MockableTui},
 		view::ViewData,
 	};
 
 	const READ_MESSAGE_TIMEOUT: Duration = Duration::from_secs(1);
+
+	fn create_unexpected_error() -> DisplayError {
+		DisplayError::Unexpected(io::Error::from(io::ErrorKind::Other))
+	}
 
 	fn with_view<C, CT: MockableTui>(tui: CT, callback: C)
 	where C: FnOnce(View<CT>) {
