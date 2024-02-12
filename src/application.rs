@@ -195,11 +195,12 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		display::{testutil::CrossTerm, Size},
+		display::Size,
 		events::Event,
 		input::{KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
+		test_helpers::mocks::crossterm::CrossTerm,
 		testutil::{create_event_reader, set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 
