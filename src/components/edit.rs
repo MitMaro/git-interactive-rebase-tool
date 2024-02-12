@@ -6,8 +6,7 @@ use lazy_static::lazy_static;
 use crate::{
 	components::shared::EditableLine,
 	display::DisplayColor,
-	events::Event,
-	input::{InputOptions, KeyCode, KeyEvent, KeyModifiers},
+	input::{Event, InputOptions, KeyCode, KeyEvent, KeyModifiers},
 	view::{LineSegment, ViewData, ViewDataUpdater, ViewLine},
 };
 

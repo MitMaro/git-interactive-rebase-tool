@@ -76,8 +76,7 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		events::Event,
-		input::StandardEvent,
+		input::{Event, StandardEvent},
 		module::Module,
 		runtime::{testutils::ThreadableTester, Status},
 		testutil::{create_default_test_module_handler, create_test_module_handler, process_test, ProcessTestContext},

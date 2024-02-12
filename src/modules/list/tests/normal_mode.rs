@@ -12,7 +12,7 @@ use crate::{
 fn change_auto_select_next_with_next_line() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2"],
-		&[Event::from(MetaEvent::ActionSquash)],
+		&[Event::from(StandardEvent::ActionSquash)],
 		|mut test_context| {
 			let mut config = Config::new();
 			config.auto_select_next = true;
@@ -32,12 +32,12 @@ fn change_auto_select_next_with_next_line() {
 fn toggle_visual_mode() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ToggleVisualMode)],
+		&[Event::from(StandardEvent::ToggleVisualMode)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ToggleVisualMode))
+				Artifact::Event(Event::from(StandardEvent::ToggleVisualMode))
 			);
 			assert_eq!(module.visual_index_start, Some(0));
 			assert_eq!(module.state, ListState::Visual);

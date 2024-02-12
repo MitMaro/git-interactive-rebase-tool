@@ -7,7 +7,7 @@ use crate::testutil::module_test;
 fn on_fixup_keep_message() {
 	module_test(
 		&["fixup aaa c1"],
-		&[Event::from(MetaEvent::FixupKeepMessage)],
+		&[Event::from(StandardEvent::FixupKeepMessage)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);
@@ -23,7 +23,7 @@ fn on_fixup_keep_message() {
 fn on_fixup_keep_message_with_editor() {
 	module_test(
 		&["fixup aaa c1"],
-		&[Event::from(MetaEvent::FixupKeepMessageWithEditor)],
+		&[Event::from(StandardEvent::FixupKeepMessageWithEditor)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);
@@ -39,7 +39,7 @@ fn on_fixup_keep_message_with_editor() {
 fn after_select_line() {
 	module_test(
 		&["fixup aaa c1", "fixup aaa c2", "fixup aaa c3"],
-		&[Event::from(MetaEvent::MoveCursorDown), Event::from('u')],
+		&[Event::from(StandardEvent::MoveCursorDown), Event::from('u')],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.activate(&mut module, State::List);

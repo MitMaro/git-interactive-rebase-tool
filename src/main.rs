@@ -127,7 +127,6 @@ mod components;
 mod config;
 mod display;
 mod editor;
-mod events;
 mod exit;
 mod git;
 mod help;

@@ -6,11 +6,9 @@ use parking_lot::Mutex;
 use crate::{
 	config::Config,
 	display::Display,
-	events,
-	events::{KeyBindings, MetaEvent},
 	git::Repository,
 	help::build_help,
-	input::{Event, EventHandler, EventReaderFn},
+	input::{Event, EventHandler, EventReaderFn, KeyBindings, StandardEvent},
 	module::{self, ExitStatus, ModuleHandler},
 	process::{self, Process},
 	runtime::{Runtime, ThreadStatuses, Threadable},
@@ -65,7 +63,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let thread_statuses = ThreadStatuses::new();
 		let mut threads: Vec<Box<dyn Threadable>> = vec![];
 
-		let input_threads = events::Thread::new(event_provider);
+		let input_threads = crate::input::Thread::new(event_provider);
 		let input_state = input_threads.state();
 		threads.push(Box::new(input_threads));
 
@@ -182,8 +180,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		Ok(todo_file)
 	}
 
-	fn create_search_update_handler(input_state: events::State) -> impl Fn() + Send + Sync {
-		move || input_state.push_event(Event::MetaEvent(MetaEvent::SearchUpdate))
+	fn create_search_update_handler(input_state: crate::input::State) -> impl Fn() + Send + Sync {
+		move || input_state.push_event(Event::Standard(StandardEvent::SearchUpdate))
 	}
 }
 
@@ -196,12 +194,11 @@ mod tests {
 	use super::*;
 	use crate::{
 		display::Size,
-		events::Event,
-		input::{KeyCode, KeyEvent, KeyModifiers},
+		input::{testutil::create_event_reader, Event, KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
 		test_helpers::mocks::crossterm::CrossTerm,
-		testutil::{create_event_reader, set_git_directory, DefaultTestModule, TestModuleProvider},
+		testutil::{set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 
 	fn args(args: &[&str]) -> Args {
@@ -350,13 +347,13 @@ mod tests {
 	#[serial_test::serial]
 	fn search_update_handler_handles_update() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let input_threads = events::Thread::new(event_provider);
+		let input_threads = crate::input::Thread::new(event_provider);
 		let input_state = input_threads.state();
 		let update_handler =
 			Application::<TestModuleProvider<DefaultTestModule>>::create_search_update_handler(input_state.clone());
 		update_handler();
 
-		assert_eq!(input_state.read_event(), Event::MetaEvent(MetaEvent::SearchUpdate));
+		assert_eq!(input_state.read_event(), Event::Standard(StandardEvent::SearchUpdate));
 	}
 
 	#[test]

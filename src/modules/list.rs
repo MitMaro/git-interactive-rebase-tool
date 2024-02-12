@@ -22,8 +22,7 @@ use crate::{
 	},
 	config::Config,
 	display::DisplayColor,
-	events::{Event, KeyBindings, MetaEvent},
-	input::{InputOptions, MouseEventKind, StandardEvent},
+	input::{Event, InputOptions, KeyBindings, MouseEventKind, StandardEvent},
 	module::{ExitStatus, Module, State},
 	modules::list::utils::get_line_action_maximum_width,
 	process::Results,
@@ -503,11 +502,11 @@ impl List {
 		if let Some(action) = self.selected_line_action {
 			if action == Action::Fixup {
 				match event {
-					e if key_bindings.custom.fixup_keep_message.contains(&e) => {
-						return Event::from(MetaEvent::FixupKeepMessage);
+					e if key_bindings.fixup_keep_message.contains(&e) => {
+						return Event::from(StandardEvent::FixupKeepMessage);
 					},
-					e if key_bindings.custom.fixup_keep_message_with_editor.contains(&e) => {
-						return Event::from(MetaEvent::FixupKeepMessageWithEditor);
+					e if key_bindings.fixup_keep_message_with_editor.contains(&e) => {
+						return Event::from(StandardEvent::FixupKeepMessageWithEditor);
 					},
 					_ => {},
 				}
@@ -515,37 +514,37 @@ impl List {
 		}
 
 		match event {
-			e if key_bindings.custom.abort.contains(&e) => Event::from(MetaEvent::Abort),
-			e if key_bindings.custom.action_break.contains(&e) => Event::from(MetaEvent::ActionBreak),
-			e if key_bindings.custom.action_drop.contains(&e) => Event::from(MetaEvent::ActionDrop),
-			e if key_bindings.custom.action_edit.contains(&e) => Event::from(MetaEvent::ActionEdit),
-			e if key_bindings.custom.action_fixup.contains(&e) => Event::from(MetaEvent::ActionFixup),
-			e if key_bindings.custom.action_pick.contains(&e) => Event::from(MetaEvent::ActionPick),
-			e if key_bindings.custom.action_reword.contains(&e) => Event::from(MetaEvent::ActionReword),
-			e if key_bindings.custom.action_squash.contains(&e) => Event::from(MetaEvent::ActionSquash),
-			e if key_bindings.custom.edit.contains(&e) => Event::from(MetaEvent::Edit),
-			e if key_bindings.custom.force_abort.contains(&e) => Event::from(MetaEvent::ForceAbort),
-			e if key_bindings.custom.force_rebase.contains(&e) => Event::from(MetaEvent::ForceRebase),
-			e if key_bindings.custom.insert_line.contains(&e) => Event::from(MetaEvent::InsertLine),
-			e if key_bindings.custom.move_down.contains(&e) => Event::from(MetaEvent::MoveCursorDown),
-			e if key_bindings.custom.move_down_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageDown),
-			e if key_bindings.custom.move_end.contains(&e) => Event::from(MetaEvent::MoveCursorEnd),
-			e if key_bindings.custom.move_home.contains(&e) => Event::from(MetaEvent::MoveCursorHome),
-			e if key_bindings.custom.move_left.contains(&e) => Event::from(MetaEvent::MoveCursorLeft),
-			e if key_bindings.custom.move_right.contains(&e) => Event::from(MetaEvent::MoveCursorRight),
-			e if key_bindings.custom.move_selection_down.contains(&e) => Event::from(MetaEvent::SwapSelectedDown),
-			e if key_bindings.custom.move_selection_up.contains(&e) => Event::from(MetaEvent::SwapSelectedUp),
-			e if key_bindings.custom.move_up.contains(&e) => Event::from(MetaEvent::MoveCursorUp),
-			e if key_bindings.custom.move_up_step.contains(&e) => Event::from(MetaEvent::MoveCursorPageUp),
-			e if key_bindings.custom.open_in_external_editor.contains(&e) => Event::from(MetaEvent::OpenInEditor),
-			e if key_bindings.custom.rebase.contains(&e) => Event::from(MetaEvent::Rebase),
-			e if key_bindings.custom.remove_line.contains(&e) => Event::from(MetaEvent::Delete),
-			e if key_bindings.custom.show_commit.contains(&e) => Event::from(MetaEvent::ShowCommit),
-			e if key_bindings.custom.toggle_visual_mode.contains(&e) => Event::from(MetaEvent::ToggleVisualMode),
+			e if key_bindings.abort.contains(&e) => Event::from(StandardEvent::Abort),
+			e if key_bindings.action_break.contains(&e) => Event::from(StandardEvent::ActionBreak),
+			e if key_bindings.action_drop.contains(&e) => Event::from(StandardEvent::ActionDrop),
+			e if key_bindings.action_edit.contains(&e) => Event::from(StandardEvent::ActionEdit),
+			e if key_bindings.action_fixup.contains(&e) => Event::from(StandardEvent::ActionFixup),
+			e if key_bindings.action_pick.contains(&e) => Event::from(StandardEvent::ActionPick),
+			e if key_bindings.action_reword.contains(&e) => Event::from(StandardEvent::ActionReword),
+			e if key_bindings.action_squash.contains(&e) => Event::from(StandardEvent::ActionSquash),
+			e if key_bindings.edit.contains(&e) => Event::from(StandardEvent::Edit),
+			e if key_bindings.force_abort.contains(&e) => Event::from(StandardEvent::ForceAbort),
+			e if key_bindings.force_rebase.contains(&e) => Event::from(StandardEvent::ForceRebase),
+			e if key_bindings.insert_line.contains(&e) => Event::from(StandardEvent::InsertLine),
+			e if key_bindings.move_down.contains(&e) => Event::from(StandardEvent::MoveCursorDown),
+			e if key_bindings.move_down_step.contains(&e) => Event::from(StandardEvent::MoveCursorPageDown),
+			e if key_bindings.move_end.contains(&e) => Event::from(StandardEvent::MoveCursorEnd),
+			e if key_bindings.move_home.contains(&e) => Event::from(StandardEvent::MoveCursorHome),
+			e if key_bindings.move_left.contains(&e) => Event::from(StandardEvent::MoveCursorLeft),
+			e if key_bindings.move_right.contains(&e) => Event::from(StandardEvent::MoveCursorRight),
+			e if key_bindings.move_selection_down.contains(&e) => Event::from(StandardEvent::SwapSelectedDown),
+			e if key_bindings.move_selection_up.contains(&e) => Event::from(StandardEvent::SwapSelectedUp),
+			e if key_bindings.move_up.contains(&e) => Event::from(StandardEvent::MoveCursorUp),
+			e if key_bindings.move_up_step.contains(&e) => Event::from(StandardEvent::MoveCursorPageUp),
+			e if key_bindings.open_in_external_editor.contains(&e) => Event::from(StandardEvent::OpenInEditor),
+			e if key_bindings.rebase.contains(&e) => Event::from(StandardEvent::Rebase),
+			e if key_bindings.remove_line.contains(&e) => Event::from(StandardEvent::Delete),
+			e if key_bindings.show_commit.contains(&e) => Event::from(StandardEvent::ShowCommit),
+			e if key_bindings.toggle_visual_mode.contains(&e) => Event::from(StandardEvent::ToggleVisualMode),
 			Event::Mouse(mouse_event) => {
 				match mouse_event.kind {
-					MouseEventKind::ScrollDown => Event::from(MetaEvent::MoveCursorDown),
-					MouseEventKind::ScrollUp => Event::from(MetaEvent::MoveCursorUp),
+					MouseEventKind::ScrollDown => Event::from(StandardEvent::MoveCursorDown),
+					MouseEventKind::ScrollUp => Event::from(StandardEvent::MoveCursorUp),
 					_ => event,
 				}
 			},
@@ -602,48 +601,43 @@ impl List {
 	fn handle_common_list_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
 		let mut results = Results::new();
 		match event {
-			Event::MetaEvent(meta_event) => {
-				match meta_event {
-					MetaEvent::Abort => self.abort(&mut results),
-					MetaEvent::ActionDrop => self.set_selected_line_action(Action::Drop),
-					MetaEvent::ActionEdit => self.set_selected_line_action(Action::Edit),
-					MetaEvent::ActionFixup => self.set_selected_line_action(Action::Fixup),
-					MetaEvent::ActionPick => self.set_selected_line_action(Action::Pick),
-					MetaEvent::ActionReword => self.set_selected_line_action(Action::Reword),
-					MetaEvent::ActionSquash => self.set_selected_line_action(Action::Squash),
-					MetaEvent::Delete => self.delete(),
-					MetaEvent::ForceAbort => self.force_abort(&mut results),
-					MetaEvent::ForceRebase => self.force_rebase(&mut results),
-					MetaEvent::MoveCursorDown => {
-						_ = self.update_cursor(CursorUpdate::Down(1));
-					},
-					MetaEvent::MoveCursorEnd => {
-						_ = self.update_cursor(CursorUpdate::End);
-					},
-					MetaEvent::MoveCursorHome => {
-						_ = self.update_cursor(CursorUpdate::Set(0));
-					},
-					MetaEvent::MoveCursorLeft => self.move_cursor_left(view_state),
-					MetaEvent::MoveCursorPageDown => {
-						_ = self.update_cursor(CursorUpdate::Down(self.height / 2));
-					},
-					MetaEvent::MoveCursorPageUp => {
-						_ = self.update_cursor(CursorUpdate::Up(self.height / 2));
-					},
-					MetaEvent::MoveCursorRight => self.move_cursor_right(view_state),
-					MetaEvent::MoveCursorUp => {
-						_ = self.update_cursor(CursorUpdate::Up(1));
-					},
-					MetaEvent::OpenInEditor => self.open_in_editor(&mut results),
-					MetaEvent::Rebase => self.rebase(&mut results),
-					MetaEvent::SwapSelectedDown => self.swap_selected_down(),
-					MetaEvent::SwapSelectedUp => self.swap_selected_up(),
-					MetaEvent::ToggleVisualMode => self.toggle_visual_mode(),
-					_ => return None,
-				}
-			},
 			Event::Standard(standard_event) => {
 				match standard_event {
+					StandardEvent::Abort => self.abort(&mut results),
+					StandardEvent::ActionDrop => self.set_selected_line_action(Action::Drop),
+					StandardEvent::ActionEdit => self.set_selected_line_action(Action::Edit),
+					StandardEvent::ActionFixup => self.set_selected_line_action(Action::Fixup),
+					StandardEvent::ActionPick => self.set_selected_line_action(Action::Pick),
+					StandardEvent::ActionReword => self.set_selected_line_action(Action::Reword),
+					StandardEvent::ActionSquash => self.set_selected_line_action(Action::Squash),
+					StandardEvent::Delete => self.delete(),
+					StandardEvent::ForceAbort => self.force_abort(&mut results),
+					StandardEvent::ForceRebase => self.force_rebase(&mut results),
+					StandardEvent::MoveCursorDown => {
+						_ = self.update_cursor(CursorUpdate::Down(1));
+					},
+					StandardEvent::MoveCursorEnd => {
+						_ = self.update_cursor(CursorUpdate::End);
+					},
+					StandardEvent::MoveCursorHome => {
+						_ = self.update_cursor(CursorUpdate::Set(0));
+					},
+					StandardEvent::MoveCursorLeft => self.move_cursor_left(view_state),
+					StandardEvent::MoveCursorPageDown => {
+						_ = self.update_cursor(CursorUpdate::Down(self.height / 2));
+					},
+					StandardEvent::MoveCursorPageUp => {
+						_ = self.update_cursor(CursorUpdate::Up(self.height / 2));
+					},
+					StandardEvent::MoveCursorRight => self.move_cursor_right(view_state),
+					StandardEvent::MoveCursorUp => {
+						_ = self.update_cursor(CursorUpdate::Up(1));
+					},
+					StandardEvent::OpenInEditor => self.open_in_editor(&mut results),
+					StandardEvent::Rebase => self.rebase(&mut results),
+					StandardEvent::SwapSelectedDown => self.swap_selected_down(),
+					StandardEvent::SwapSelectedUp => self.swap_selected_up(),
+					StandardEvent::ToggleVisualMode => self.toggle_visual_mode(),
 					StandardEvent::Help => self.help(),
 					StandardEvent::Redo => self.redo(),
 					StandardEvent::Undo => self.undo(),
@@ -664,14 +658,14 @@ impl List {
 		}
 		else {
 			let mut results = Results::new();
-			if let Event::MetaEvent(meta_event) = event {
-				match meta_event {
-					MetaEvent::ActionBreak => self.action_break(),
-					MetaEvent::Edit => self.edit(),
-					MetaEvent::InsertLine => self.insert_line(&mut results),
-					MetaEvent::ShowCommit => self.show_commit(&mut results),
-					MetaEvent::FixupKeepMessage => self.toggle_option("-C"),
-					MetaEvent::FixupKeepMessageWithEditor => self.toggle_option("-c"),
+			if let Event::Standard(standard_event) = event {
+				match standard_event {
+					StandardEvent::ActionBreak => self.action_break(),
+					StandardEvent::Edit => self.edit(),
+					StandardEvent::InsertLine => self.insert_line(&mut results),
+					StandardEvent::ShowCommit => self.show_commit(&mut results),
+					StandardEvent::FixupKeepMessage => self.toggle_option("-C"),
+					StandardEvent::FixupKeepMessageWithEditor => self.toggle_option("-c"),
 					_ => {},
 				}
 			}

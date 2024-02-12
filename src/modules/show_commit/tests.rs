@@ -1128,7 +1128,7 @@ fn handle_event_toggle_diff_to_overview() {
 	with_temp_repository(|repo| {
 		module_test(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
-			&[Event::from(MetaEvent::ShowDiff)],
+			&[Event::from(StandardEvent::ShowDiff)],
 			|mut test_context| {
 				let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 				module
@@ -1137,7 +1137,7 @@ fn handle_event_toggle_diff_to_overview() {
 				module.state = ShowCommitState::Diff;
 				assert_results!(
 					test_context.handle_event(&mut module),
-					Artifact::Event(Event::from(MetaEvent::ShowDiff))
+					Artifact::Event(Event::from(StandardEvent::ShowDiff))
 				);
 				assert!(module.diff_view_data.is_empty());
 				assert_eq!(module.state, ShowCommitState::Overview);
@@ -1160,7 +1160,7 @@ fn handle_event_toggle_overview_to_diff() {
 				module.state = ShowCommitState::Overview;
 				assert_results!(
 					test_context.handle_event(&mut module),
-					Artifact::Event(Event::from(MetaEvent::ShowDiff))
+					Artifact::Event(Event::from(StandardEvent::ShowDiff))
 				);
 				assert!(module.diff_view_data.is_empty());
 				assert_eq!(module.state, ShowCommitState::Diff);

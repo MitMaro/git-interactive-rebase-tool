@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use anyhow::Error;
 
 use crate::{
-	events::Event,
+	input::Event,
 	module::{ExitStatus, State},
 	process::Artifact,
 	search::Searchable,

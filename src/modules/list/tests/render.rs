@@ -144,7 +144,7 @@ fn pinned_segments() {
 			"reset reference",
 			"merge command",
 		],
-		&[Event::from(MetaEvent::ActionDrop)],
+		&[Event::from(StandardEvent::ActionDrop)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);

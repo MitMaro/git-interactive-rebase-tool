@@ -1,7 +1,6 @@
 use crate::{
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
-	events::{Event, KeyBindings},
-	input::InputOptions,
+	input::{Event, InputOptions, KeyBindings},
 	module::{ExitStatus, Module, State},
 	process::Results,
 	view::{RenderContext, ViewData},
@@ -53,8 +52,7 @@ mod tests {
 	use crate::{
 		assert_rendered_output,
 		assert_results,
-		events::MetaEvent,
-		input::KeyCode,
+		input::{KeyCode, StandardEvent},
 		process::Artifact,
 		testutil::module_test,
 	};
@@ -82,12 +80,12 @@ mod tests {
 	fn handle_event_yes() {
 		module_test(
 			&["pick aaa comment"],
-			&[Event::from(MetaEvent::Yes)],
+			&[Event::from(StandardEvent::Yes)],
 			|mut test_context| {
 				let mut module = create_confirm_rebase();
 				assert_results!(
 					test_context.handle_event(&mut module),
-					Artifact::Event(Event::from(MetaEvent::Yes)),
+					Artifact::Event(Event::from(StandardEvent::Yes)),
 					Artifact::ExitStatus(ExitStatus::Good)
 				);
 			},
@@ -98,12 +96,12 @@ mod tests {
 	fn handle_event_no() {
 		module_test(
 			&["pick aaa comment"],
-			&[Event::from(MetaEvent::No)],
+			&[Event::from(StandardEvent::No)],
 			|mut test_context| {
 				let mut module = create_confirm_rebase();
 				assert_results!(
 					test_context.handle_event(&mut module),
-					Artifact::Event(Event::from(MetaEvent::No)),
+					Artifact::Event(Event::from(StandardEvent::No)),
 					Artifact::ChangeState(State::List)
 				);
 			},

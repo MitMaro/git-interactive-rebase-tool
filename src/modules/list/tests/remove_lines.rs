@@ -11,7 +11,7 @@ fn normal_mode_remove_line_first() {
 			"pick ddd c4",
 			"pick eee c5",
 		],
-		&[Event::from(MetaEvent::Delete)],
+		&[Event::from(StandardEvent::Delete)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -37,11 +37,11 @@ fn normal_mode_remove_line_end() {
 			"pick eee c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::Delete),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::Delete),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -68,10 +68,10 @@ fn visual_mode_remove_lines_start_index_first() {
 			"pick eee c5",
 		],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::Delete),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::Delete),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -100,12 +100,12 @@ fn visual_mode_remove_lines_end_index_first() {
 			"pick eee c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::Delete),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::Delete),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -134,14 +134,14 @@ fn visual_mode_remove_lines_start_index_last() {
 			"pick eee c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::Delete),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::Delete),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -170,12 +170,12 @@ fn visual_mode_remove_lines_end_index_last() {
 			"pick eee c5",
 		],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::Delete),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::Delete),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());

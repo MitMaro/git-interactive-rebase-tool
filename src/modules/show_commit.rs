@@ -19,9 +19,8 @@ use self::{
 use crate::{
 	components::help::Help,
 	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
-	events::{Event, KeyBindings, MetaEvent},
 	git::{CommitDiff, CommitDiffLoaderOptions, Repository},
-	input::{InputOptions, StandardEvent},
+	input::{Event, InputOptions, KeyBindings, StandardEvent},
 	module::{Module, State},
 	process::Results,
 	select,
@@ -127,10 +126,9 @@ impl Module for ShowCommit {
 		select!(
 			default || {
 				key_bindings
-					.custom
 					.show_diff
 					.contains(&event)
-					.then(|| Event::from(MetaEvent::ShowDiff))
+					.then(|| Event::from(StandardEvent::ShowDiff))
 					.unwrap_or(event)
 			},
 			|| { self.help.read_event(event) }
@@ -152,7 +150,7 @@ impl Module for ShowCommit {
 
 		if handle_view_data_scroll(event, view_state).is_none() {
 			match event {
-				Event::MetaEvent(MetaEvent::ShowDiff) => {
+				Event::Standard(StandardEvent::ShowDiff) => {
 					active_view_data.update_view_data(|updater| updater.clear());
 					self.state = match self.state {
 						ShowCommitState::Overview => ShowCommitState::Diff,

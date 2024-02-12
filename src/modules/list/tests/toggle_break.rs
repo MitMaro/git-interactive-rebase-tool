@@ -11,7 +11,7 @@ use crate::{
 fn change_toggle_break_add() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionBreak)],
+		&[Event::from(StandardEvent::ActionBreak)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -30,8 +30,8 @@ fn change_toggle_break_remove() {
 	module_test(
 		&["pick aaa c1", "break"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionBreak),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionBreak),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -49,7 +49,7 @@ fn change_toggle_break_remove() {
 fn change_toggle_break_above_existing() {
 	module_test(
 		&["pick aaa c1", "break"],
-		&[Event::from(MetaEvent::ActionBreak)],
+		&[Event::from(StandardEvent::ActionBreak)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);

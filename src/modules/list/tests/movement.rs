@@ -10,7 +10,7 @@ use crate::{
 fn move_down_1() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
-		&[Event::from(MetaEvent::MoveCursorDown)],
+		&[Event::from(StandardEvent::MoveCursorDown)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -29,7 +29,7 @@ fn move_down_1() {
 fn move_down_view_end() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
-		&[Event::from(MetaEvent::MoveCursorDown); 2],
+		&[Event::from(StandardEvent::MoveCursorDown); 2],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -48,7 +48,7 @@ fn move_down_view_end() {
 fn move_down_past_end() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
-		&[Event::from(MetaEvent::MoveCursorDown); 3],
+		&[Event::from(StandardEvent::MoveCursorDown); 3],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -68,9 +68,9 @@ fn move_down_scroll_bottom_move_up_one() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -91,9 +91,9 @@ fn move_down_scroll_bottom_move_up_top() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -114,8 +114,8 @@ fn move_up_attempt_above_top() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorUp),
-			Event::from(MetaEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
+			Event::from(StandardEvent::MoveCursorUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -136,7 +136,7 @@ fn move_up_attempt_above_top() {
 fn move_down_attempt_below_bottom() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
-		&[Event::from(MetaEvent::MoveCursorDown); 4],
+		&[Event::from(StandardEvent::MoveCursorDown); 4],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -156,7 +156,7 @@ fn move_down_attempt_below_bottom() {
 fn move_page_up_from_top() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
-		&[Event::from(MetaEvent::MoveCursorPageUp)],
+		&[Event::from(StandardEvent::MoveCursorPageUp)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
@@ -178,9 +178,9 @@ fn move_page_up_from_one_page_down() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -203,9 +203,9 @@ fn move_page_up_from_one_page_down_minus_1() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -228,10 +228,10 @@ fn move_page_up_from_bottom() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageUp),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorPageUp),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -254,9 +254,9 @@ fn move_home() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorHome),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorHome),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -277,7 +277,7 @@ fn move_home() {
 fn move_end() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
-		&[Event::from(MetaEvent::MoveCursorEnd)],
+		&[Event::from(StandardEvent::MoveCursorEnd)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -297,7 +297,7 @@ fn move_end() {
 fn move_page_down_past_bottom() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
-		&[Event::from(MetaEvent::MoveCursorPageDown); 3],
+		&[Event::from(StandardEvent::MoveCursorPageDown); 3],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			module.height = 4;
@@ -319,10 +319,10 @@ fn move_page_down_one_from_bottom() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -344,8 +344,8 @@ fn move_page_down_one_page_from_bottom() {
 	module_test(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3", "pick aaa c4"],
 		&[
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::MoveCursorPageDown),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::MoveCursorPageDown),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
@@ -405,7 +405,7 @@ fn mouse_scroll() {
 fn scroll_right() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::MoveCursorRight)],
+		&[Event::from(StandardEvent::MoveCursorRight)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -418,7 +418,7 @@ fn scroll_right() {
 fn scroll_left() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::MoveCursorLeft)],
+		&[Event::from(StandardEvent::MoveCursorLeft)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);

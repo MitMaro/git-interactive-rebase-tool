@@ -2,8 +2,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
-	events::Event,
-	input::KeyCode,
+	input::{Event, KeyCode},
 	process::Artifact,
 	testutil::module_test,
 };

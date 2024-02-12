@@ -7,8 +7,7 @@ use lazy_static::lazy_static;
 
 pub(crate) use self::confirmed::Confirmed;
 use crate::{
-	events::{Event, KeyBindings, MetaEvent},
-	input::{InputOptions, KeyCode, KeyEvent},
+	input::{Event, InputOptions, KeyBindings, KeyCode, KeyEvent, StandardEvent},
 	view::{ViewData, ViewLine},
 };
 
@@ -49,13 +48,13 @@ impl Confirm {
 				));
 				let event_upper = Event::Key(KeyEvent::new(KeyCode::Char(c.to_ascii_uppercase()), key.modifiers));
 
-				return if key_bindings.custom.confirm_yes.contains(&event_lower)
-					|| key_bindings.custom.confirm_yes.contains(&event_upper)
+				return if key_bindings.confirm_yes.contains(&event_lower)
+					|| key_bindings.confirm_yes.contains(&event_upper)
 				{
-					Event::from(MetaEvent::Yes)
+					Event::from(StandardEvent::Yes)
 				}
 				else {
-					Event::from(MetaEvent::No)
+					Event::from(StandardEvent::No)
 				};
 			}
 		}
@@ -64,10 +63,10 @@ impl Confirm {
 
 	#[allow(clippy::unused_self)]
 	pub(crate) const fn handle_event(&self, event: Event) -> Confirmed {
-		if let Event::MetaEvent(meta_event) = event {
-			match meta_event {
-				MetaEvent::Yes => Confirmed::Yes,
-				MetaEvent::No => Confirmed::No,
+		if let Event::Standard(standard_event) = event {
+			match standard_event {
+				StandardEvent::Yes => Confirmed::Yes,
+				StandardEvent::No => Confirmed::No,
 				_ => Confirmed::Other,
 			}
 		}

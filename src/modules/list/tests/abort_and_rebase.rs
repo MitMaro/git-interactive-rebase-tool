@@ -5,12 +5,12 @@ use crate::{assert_results, process::Artifact, testutil::module_test};
 fn normal_mode_abort() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::Abort)],
+		&[Event::from(StandardEvent::Abort)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::Abort)),
+				Artifact::Event(Event::from(StandardEvent::Abort)),
 				Artifact::ChangeState(State::ConfirmAbort)
 			);
 		},
@@ -21,13 +21,16 @@ fn normal_mode_abort() {
 fn visual_mode_abort() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Abort)],
+		&[
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::Abort),
+		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::Abort)),
+				Artifact::Event(Event::from(StandardEvent::Abort)),
 				Artifact::ChangeState(State::ConfirmAbort)
 			);
 		},
@@ -38,12 +41,12 @@ fn visual_mode_abort() {
 fn normal_mode_force_abort() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ForceAbort)],
+		&[Event::from(StandardEvent::ForceAbort)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
+				Artifact::Event(Event::from(StandardEvent::ForceAbort)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(module.todo_file.lock().is_empty());
@@ -56,15 +59,15 @@ fn visual_mode_force_abort() {
 	module_test(
 		&["pick aaa c1"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::ForceAbort),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ForceAbort),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ForceAbort)),
+				Artifact::Event(Event::from(StandardEvent::ForceAbort)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(module.todo_file.lock().is_empty());
@@ -76,12 +79,12 @@ fn visual_mode_force_abort() {
 fn normal_mode_rebase() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::Rebase)],
+		&[Event::from(StandardEvent::Rebase)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::Rebase)),
+				Artifact::Event(Event::from(StandardEvent::Rebase)),
 				Artifact::ChangeState(State::ConfirmRebase)
 			);
 		},
@@ -92,13 +95,16 @@ fn normal_mode_rebase() {
 fn visual_mode_rebase() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ToggleVisualMode), Event::from(MetaEvent::Rebase)],
+		&[
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::Rebase),
+		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::Rebase)),
+				Artifact::Event(Event::from(StandardEvent::Rebase)),
 				Artifact::ChangeState(State::ConfirmRebase)
 			);
 		},
@@ -109,12 +115,12 @@ fn visual_mode_rebase() {
 fn normal_mode_force_rebase() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ForceRebase)],
+		&[Event::from(StandardEvent::ForceRebase)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
+				Artifact::Event(Event::from(StandardEvent::ForceRebase)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(!module.todo_file.lock().is_noop());
@@ -127,15 +133,15 @@ fn visual_mode_force_rebase() {
 	module_test(
 		&["pick aaa c1"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::ForceRebase),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ForceRebase),
 		],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
-				Artifact::Event(Event::from(MetaEvent::ForceRebase)),
+				Artifact::Event(Event::from(StandardEvent::ForceRebase)),
 				Artifact::ExitStatus(ExitStatus::Good)
 			);
 			assert!(!module.todo_file.lock().is_noop());

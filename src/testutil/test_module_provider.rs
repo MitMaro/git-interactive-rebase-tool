@@ -5,9 +5,8 @@ use parking_lot::Mutex;
 use crate::{
 	config::Config,
 	git::Repository,
-	input::EventHandler,
+	input::{testutil::create_test_keybindings, EventHandler},
 	module::{Module, ModuleHandler, ModuleProvider, State},
-	testutil::create_test_keybindings,
 	todo_file::TodoFile,
 };
 

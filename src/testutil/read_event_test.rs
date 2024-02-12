@@ -1,5 +1,5 @@
 use crate::{
-	events::Event,
+	input::Event,
 	testutil::{module_test, module_test::TestContext},
 };
 

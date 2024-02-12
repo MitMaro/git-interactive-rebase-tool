@@ -1,8 +1,9 @@
 use anyhow::anyhow;
 
 use crate::{
+	input::testutil::create_test_keybindings,
 	module::{Event, InputOptions, Module, State},
-	testutil::{create_test_keybindings, module_test},
+	testutil::module_test,
 };
 
 struct TestModule;

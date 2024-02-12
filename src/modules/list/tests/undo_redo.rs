@@ -5,7 +5,7 @@ use crate::{action_line, assert_rendered_output, assert_results, process::Artifa
 fn normal_mode_undo() {
 	module_test(
 		&["pick aaa c1"],
-		&[Event::from(MetaEvent::ActionDrop), Event::from(StandardEvent::Undo)],
+		&[Event::from(StandardEvent::ActionDrop), Event::from(StandardEvent::Undo)],
 		|mut test_context| {
 			let mut module = create_list(&Config::new(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
@@ -27,10 +27,10 @@ fn normal_mode_undo_visual_mode_change() {
 	module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionDrop),
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionDrop),
+			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::Undo),
 		],
 		|mut test_context| {
@@ -51,7 +51,7 @@ fn normal_mode_redo() {
 	module_test(
 		&["drop aaa c1"],
 		&[
-			Event::from(MetaEvent::ActionPick),
+			Event::from(StandardEvent::ActionPick),
 			Event::from(StandardEvent::Undo),
 			Event::from(StandardEvent::Redo),
 		],
@@ -76,11 +76,11 @@ fn normal_mode_redo_visual_mode_change() {
 	module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionPick),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionPick),
 			Event::from(StandardEvent::Undo),
-			Event::from(MetaEvent::ToggleVisualMode),
+			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::Redo),
 		],
 		|mut test_context| {
@@ -101,9 +101,9 @@ fn visual_mode_undo() {
 	module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionDrop),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionDrop),
 			Event::from(StandardEvent::Undo),
 		],
 		|mut test_context| {
@@ -127,9 +127,9 @@ fn visual_mode_undo_normal_mode_change() {
 	module_test(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
-			Event::from(MetaEvent::ActionDrop),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionDrop),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::Undo),
 		],
 		|mut test_context| {
@@ -154,9 +154,9 @@ fn visual_mode_redo() {
 	module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
-			Event::from(MetaEvent::ActionPick),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionPick),
 			Event::from(StandardEvent::Undo),
 			Event::from(StandardEvent::Redo),
 		],
@@ -177,9 +177,9 @@ fn visual_mode_redo_normal_mode_change() {
 	module_test(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
-			Event::from(MetaEvent::ActionPick),
-			Event::from(MetaEvent::ToggleVisualMode),
-			Event::from(MetaEvent::MoveCursorDown),
+			Event::from(StandardEvent::ActionPick),
+			Event::from(StandardEvent::ToggleVisualMode),
+			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::Undo),
 			Event::from(StandardEvent::Redo),
 		],

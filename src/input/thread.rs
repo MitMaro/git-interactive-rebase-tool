@@ -20,19 +20,15 @@ const MINIMUM_PAUSE_RATE: Duration = Duration::from_millis(250);
 
 /// A thread for reading and handling input events.
 #[derive(Debug)]
-pub(crate) struct Thread<EventProvider, CustomEvent>
-where
-	EventProvider: EventReaderFn,
-	CustomEvent: crate::input::CustomEvent + 'static,
+pub(crate) struct Thread<EventProvider>
+where EventProvider: EventReaderFn
 {
 	event_provider: Arc<EventProvider>,
-	state: State<CustomEvent>,
+	state: State,
 }
 
-impl<EventProvider, CustomEvent> Threadable for Thread<EventProvider, CustomEvent>
-where
-	EventProvider: EventReaderFn,
-	CustomEvent: crate::input::CustomEvent + Send + Sync + 'static,
+impl<EventProvider> Threadable for Thread<EventProvider>
+where EventProvider: EventReaderFn
 {
 	fn install(&self, installer: &Installer) {
 		let state = self.state();
@@ -74,10 +70,8 @@ where
 	}
 }
 
-impl<EventProvider, CustomEvent> Thread<EventProvider, CustomEvent>
-where
-	EventProvider: EventReaderFn,
-	CustomEvent: crate::input::CustomEvent + 'static,
+impl<EventProvider> Thread<EventProvider>
+where EventProvider: EventReaderFn
 {
 	/// Create a new instance of a thread.
 	pub(crate) fn new(event_provider: EventProvider) -> Self {
@@ -89,7 +83,7 @@ where
 
 	/// Get a cloned copy of the state of the thread.
 	#[must_use]
-	pub(crate) fn state(&self) -> State<CustomEvent> {
+	pub(crate) fn state(&self) -> State {
 		self.state.clone()
 	}
 }
@@ -101,17 +95,14 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		input::{
-			testutil::local::{create_event_reader, TestEvent},
-			KeyEvent,
-		},
+		input::{testutil::create_event_reader, KeyEvent},
 		runtime::{testutils::ThreadableTester, Status},
 	};
 
 	#[test]
 	fn set_pause_resume() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
+		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 		thread.pause();
 		assert!(state.is_paused());
@@ -122,7 +113,7 @@ mod tests {
 	#[test]
 	fn set_end() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
+		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 		thread.end();
 		assert!(state.is_ended());
@@ -136,7 +127,7 @@ mod tests {
 				KeyModifiers::empty(),
 			))))
 		});
-		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
+		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
 		let tester = ThreadableTester::new();
@@ -158,7 +149,7 @@ mod tests {
 	#[test]
 	fn read_none_event() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
+		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
 		let tester = ThreadableTester::new();
@@ -173,7 +164,7 @@ mod tests {
 	#[test]
 	fn read_error() {
 		let event_provider = create_event_reader(|| Err(anyhow!("Err")));
-		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
+		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
 		let tester = ThreadableTester::new();
@@ -188,7 +179,7 @@ mod tests {
 	#[test]
 	fn pause_resume() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let thread: Thread<_, TestEvent> = Thread::new(event_provider);
+		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
 		let tester = ThreadableTester::new();

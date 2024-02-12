@@ -2,31 +2,21 @@ use crate::input::{Event, InputOptions, KeyBindings, KeyCode, KeyEvent, KeyModif
 
 /// A handler for reading and processing events.
 #[derive(Debug)]
-pub(crate) struct EventHandler<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent>
-{
-	key_bindings: KeyBindings<CustomKeybinding, CustomEvent>,
+pub(crate) struct EventHandler {
+	key_bindings: KeyBindings,
 }
 
-impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input::CustomEvent>
-	EventHandler<CustomKeybinding, CustomEvent>
-{
+impl EventHandler {
 	/// Create a new instance of the `EventHandler`.
 	#[must_use]
-	pub(crate) const fn new(key_bindings: KeyBindings<CustomKeybinding, CustomEvent>) -> Self {
+	pub(crate) const fn new(key_bindings: KeyBindings) -> Self {
 		Self { key_bindings }
 	}
 
 	/// Read and handle an event.
 	#[allow(clippy::trivially_copy_pass_by_ref)]
-	pub(crate) fn read_event<F>(
-		&self,
-		event: Event<CustomEvent>,
-		input_options: &InputOptions,
-		callback: F,
-	) -> Event<CustomEvent>
-	where
-		F: FnOnce(Event<CustomEvent>, &KeyBindings<CustomKeybinding, CustomEvent>) -> Event<CustomEvent>,
-	{
+	pub(crate) fn read_event<F>(&self, event: Event, input_options: &InputOptions, callback: F) -> Event
+	where F: FnOnce(Event, &KeyBindings) -> Event {
 		if event == Event::None {
 			return event;
 		}
@@ -67,7 +57,7 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 	}
 
 	#[allow(clippy::wildcard_enum_match_arm)]
-	fn handle_standard_inputs(event: Event<CustomEvent>) -> Option<Event<CustomEvent>> {
+	fn handle_standard_inputs(event: Event) -> Option<Event> {
 		match event {
 			Event::Key(KeyEvent {
 				code: KeyCode::Char('c'),
@@ -78,10 +68,7 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 	}
 
 	#[allow(clippy::wildcard_enum_match_arm)]
-	fn handle_movement_inputs(
-		key_bindings: &KeyBindings<CustomKeybinding, CustomEvent>,
-		event: Event<CustomEvent>,
-	) -> Option<Event<CustomEvent>> {
+	fn handle_movement_inputs(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
 		Some(match event {
 			e if key_bindings.scroll_down.contains(&e) => Event::from(StandardEvent::ScrollDown),
 			e if key_bindings.scroll_end.contains(&e) => Event::from(StandardEvent::ScrollBottom),
@@ -128,10 +115,7 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 		})
 	}
 
-	fn handle_search(
-		key_bindings: &KeyBindings<CustomKeybinding, CustomEvent>,
-		event: Event<CustomEvent>,
-	) -> Option<Event<CustomEvent>> {
+	fn handle_search(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
 		match event {
 			e if key_bindings.search_next.contains(&e) => Some(Event::from(StandardEvent::SearchNext)),
 			e if key_bindings.search_previous.contains(&e) => Some(Event::from(StandardEvent::SearchPrevious)),
@@ -140,10 +124,7 @@ impl<CustomKeybinding: crate::input::CustomKeybinding, CustomEvent: crate::input
 		}
 	}
 
-	fn handle_undo_redo(
-		key_bindings: &KeyBindings<CustomKeybinding, CustomEvent>,
-		event: Event<CustomEvent>,
-	) -> Option<Event<CustomEvent>> {
+	fn handle_undo_redo(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
 		if key_bindings.undo.contains(&event) {
 			Some(Event::from(StandardEvent::Undo))
 		}
@@ -161,10 +142,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::input::{
-		map_keybindings,
-		testutil::local::{create_test_keybindings, Event, EventHandler},
-	};
+	use crate::input::{map_keybindings, testutil::create_test_keybindings};
 
 	#[rstest]
 	#[case::standard(Event::Key(KeyEvent {

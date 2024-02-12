@@ -43,25 +43,25 @@ fn search() {
 }
 
 #[rstest]
-#[case::abort('q', MetaEvent::Abort)]
-#[case::actionbreak('b', MetaEvent::ActionBreak)]
-#[case::actiondrop('d', MetaEvent::ActionDrop)]
-#[case::actionedit('e', MetaEvent::ActionEdit)]
-#[case::actionfixup('f', MetaEvent::ActionFixup)]
-#[case::actionpick('p', MetaEvent::ActionPick)]
-#[case::actionreword('r', MetaEvent::ActionReword)]
-#[case::actionsquash('s', MetaEvent::ActionSquash)]
-#[case::edit('E', MetaEvent::Edit)]
-#[case::forceabort('Q', MetaEvent::ForceAbort)]
-#[case::forcerebase('W', MetaEvent::ForceRebase)]
-#[case::insertline('I', MetaEvent::InsertLine)]
-#[case::swapselecteddown('j', MetaEvent::SwapSelectedDown)]
-#[case::swapselectedup('k', MetaEvent::SwapSelectedUp)]
-#[case::openineditor('!', MetaEvent::OpenInEditor)]
-#[case::rebase('w', MetaEvent::Rebase)]
-#[case::showcommit('c', MetaEvent::ShowCommit)]
-#[case::togglevisualmode('v', MetaEvent::ToggleVisualMode)]
-fn default_events_single_char(#[case] binding: char, #[case] expected: MetaEvent) {
+#[case::abort('q', StandardEvent::Abort)]
+#[case::actionbreak('b', StandardEvent::ActionBreak)]
+#[case::actiondrop('d', StandardEvent::ActionDrop)]
+#[case::actionedit('e', StandardEvent::ActionEdit)]
+#[case::actionfixup('f', StandardEvent::ActionFixup)]
+#[case::actionpick('p', StandardEvent::ActionPick)]
+#[case::actionreword('r', StandardEvent::ActionReword)]
+#[case::actionsquash('s', StandardEvent::ActionSquash)]
+#[case::edit('E', StandardEvent::Edit)]
+#[case::forceabort('Q', StandardEvent::ForceAbort)]
+#[case::forcerebase('W', StandardEvent::ForceRebase)]
+#[case::insertline('I', StandardEvent::InsertLine)]
+#[case::swapselecteddown('j', StandardEvent::SwapSelectedDown)]
+#[case::swapselectedup('k', StandardEvent::SwapSelectedUp)]
+#[case::openineditor('!', StandardEvent::OpenInEditor)]
+#[case::rebase('w', StandardEvent::Rebase)]
+#[case::showcommit('c', StandardEvent::ShowCommit)]
+#[case::togglevisualmode('v', StandardEvent::ToggleVisualMode)]
+fn default_events_single_char(#[case] binding: char, #[case] expected: StandardEvent) {
 	read_event_test(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
@@ -69,16 +69,16 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: MetaEvent
 }
 
 #[rstest]
-#[case::movecursordown(KeyCode::Down, MetaEvent::MoveCursorDown)]
-#[case::movecursorpagedown(KeyCode::PageDown, MetaEvent::MoveCursorPageDown)]
-#[case::movecursorend(KeyCode::End, MetaEvent::MoveCursorEnd)]
-#[case::movecursorhome(KeyCode::Home, MetaEvent::MoveCursorHome)]
-#[case::movecursorleft(KeyCode::Left, MetaEvent::MoveCursorLeft)]
-#[case::movecursorright(KeyCode::Right, MetaEvent::MoveCursorRight)]
-#[case::movecursorup(KeyCode::Up, MetaEvent::MoveCursorUp)]
-#[case::movecursorpageup(KeyCode::PageUp, MetaEvent::MoveCursorPageUp)]
-#[case::delete(KeyCode::Delete, MetaEvent::Delete)]
-fn default_events_special(#[case] code: KeyCode, #[case] expected: MetaEvent) {
+#[case::movecursordown(KeyCode::Down, StandardEvent::MoveCursorDown)]
+#[case::movecursorpagedown(KeyCode::PageDown, StandardEvent::MoveCursorPageDown)]
+#[case::movecursorend(KeyCode::End, StandardEvent::MoveCursorEnd)]
+#[case::movecursorhome(KeyCode::Home, StandardEvent::MoveCursorHome)]
+#[case::movecursorleft(KeyCode::Left, StandardEvent::MoveCursorLeft)]
+#[case::movecursorright(KeyCode::Right, StandardEvent::MoveCursorRight)]
+#[case::movecursorup(KeyCode::Up, StandardEvent::MoveCursorUp)]
+#[case::movecursorpageup(KeyCode::PageUp, StandardEvent::MoveCursorPageUp)]
+#[case::delete(KeyCode::Delete, StandardEvent::Delete)]
+fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent) {
 	read_event_test(Event::from(code), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
@@ -86,10 +86,10 @@ fn default_events_special(#[case] code: KeyCode, #[case] expected: MetaEvent) {
 }
 
 #[rstest]
-#[case::abort('u', MetaEvent::FixupKeepMessage)]
-#[case::abort('U', MetaEvent::FixupKeepMessageWithEditor)]
-#[case::abort('p', MetaEvent::ActionPick)]
-fn fixup_events(#[case] binding: char, #[case] expected: MetaEvent) {
+#[case::abort('u', StandardEvent::FixupKeepMessage)]
+#[case::abort('U', StandardEvent::FixupKeepMessageWithEditor)]
+#[case::abort('p', StandardEvent::ActionPick)]
+fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
 	read_event_test(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Fixup);
@@ -119,7 +119,7 @@ fn mouse_move_down() {
 		}),
 		|mut context| {
 			let mut module = create_list(&Config::new(), context.take_todo_file());
-			assert_eq!(context.read_event(&module), Event::from(MetaEvent::MoveCursorDown));
+			assert_eq!(context.read_event(&module), Event::from(StandardEvent::MoveCursorDown));
 		},
 	);
 }
@@ -135,7 +135,7 @@ fn mouse_move_up() {
 		}),
 		|mut context| {
 			let mut module = create_list(&Config::new(), context.take_todo_file());
-			assert_eq!(context.read_event(&module), Event::from(MetaEvent::MoveCursorUp));
+			assert_eq!(context.read_event(&module), Event::from(StandardEvent::MoveCursorUp));
 		},
 	);
 }

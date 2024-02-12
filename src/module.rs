@@ -17,8 +17,7 @@ pub(crate) use self::{
 	state::State,
 };
 use crate::{
-	events::{Event, KeyBindings},
-	input::InputOptions,
+	input::{Event, InputOptions, KeyBindings},
 	process::Results,
 	view::{RenderContext, ViewData},
 };
