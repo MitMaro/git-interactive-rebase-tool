@@ -10,9 +10,6 @@ mod history;
 mod line;
 mod line_parser;
 mod search;
-#[cfg(test)]
-#[cfg(not(tarpaulin_include))]
-pub(crate) mod testutil;
 mod todo_file_options;
 mod utils;
 

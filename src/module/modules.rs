@@ -69,7 +69,7 @@ impl ModuleProvider for Modules {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::{test_helpers::with_temp_repository, todo_file::testutil::with_todo_file};
+	use crate::test_helpers::{with_temp_repository, with_todo_file};
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {

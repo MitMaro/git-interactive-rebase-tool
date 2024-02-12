@@ -8,9 +8,8 @@ use crate::{
 	module::{self, ModuleHandler},
 	process::Process,
 	runtime::ThreadStatuses,
-	test_helpers::{with_event_handler, EventHandlerTestContext},
+	test_helpers::{with_event_handler, with_todo_file, EventHandlerTestContext},
 	testutil::{with_search, SearchTestContext},
-	todo_file::testutil::with_todo_file,
 	view::testutil::{with_view_state, TestContext as ViewContext},
 };
 

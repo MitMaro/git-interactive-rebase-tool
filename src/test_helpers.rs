@@ -10,6 +10,7 @@ mod with_event_handler;
 mod with_git_config;
 mod with_temp_bare_repository;
 mod with_temp_repository;
+mod with_todo_file;
 
 pub(crate) static JAN_2021_EPOCH: i64 = 1_609_459_200;
 
@@ -23,4 +24,5 @@ pub(crate) use self::{
 	with_git_config::with_git_config,
 	with_temp_bare_repository::with_temp_bare_repository,
 	with_temp_repository::with_temp_repository,
+	with_todo_file::{with_todo_file, TodoFileTestContext},
 };
