@@ -7,8 +7,9 @@ use crate::{
 	assert_results,
 	input::{InputOptions, KeyBindings},
 	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
-	runtime::{testutils::MockNotifier, Status},
+	runtime::Status,
 	search::{Interrupter, SearchResult},
+	test_helpers::mocks::Notifier,
 	testutil::{
 		create_default_test_module_handler,
 		create_test_module_handler,
@@ -409,7 +410,7 @@ fn handle_external_command_success() {
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = MockNotifier::new(&process.thread_statuses);
+			let mut notifier = Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(process.handle_external_command(&(String::from("true"), vec![])));
@@ -428,7 +429,7 @@ fn handle_external_command_failure() {
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = MockNotifier::new(&process.thread_statuses);
+			let mut notifier = Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(process.handle_external_command(&(String::from("false"), vec![])));
@@ -455,7 +456,7 @@ fn handle_external_command_not_executable() {
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = MockNotifier::new(&process.thread_statuses);
+			let mut notifier = Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(
@@ -484,7 +485,7 @@ fn handle_external_command_not_found() {
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = MockNotifier::new(&process.thread_statuses);
+			let mut notifier = Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(
@@ -574,7 +575,7 @@ fn handle_results_external_command_success() {
 		create_test_module_handler(module),
 		|ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = MockNotifier::new(&process.thread_statuses);
+			let mut notifier = Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			let mut results = Results::new();
