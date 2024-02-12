@@ -19,7 +19,7 @@ impl Debug for TodoFileTestContext {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("TodoFileTestContext")
 			.field("todo_file", &self.todo_file)
-			.field("filepath", &self.todo_file.filepath)
+			.field("filepath", &self.todo_file.get_filepath())
 			.finish_non_exhaustive()
 	}
 }

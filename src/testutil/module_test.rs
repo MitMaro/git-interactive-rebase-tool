@@ -4,8 +4,8 @@ use crate::{
 	input::Event,
 	module::{Module, State},
 	process::Results,
-	test_helpers::{with_event_handler, EventHandlerTestContext},
-	todo_file::{testutil::with_todo_file, TodoFile},
+	test_helpers::{with_event_handler, with_todo_file, EventHandlerTestContext},
+	todo_file::TodoFile,
 	view::{
 		testutil::{with_view_state, TestContext as ViewContext},
 		RenderContext,
