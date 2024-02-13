@@ -1,5 +1,5 @@
 use super::*;
-use crate::{assert_rendered_output, view::testutil::AssertRenderOptions};
+use crate::{assert_rendered_output, test_helpers::assertions::assert_rendered_output::AssertRenderOptions};
 
 #[test]
 fn with_before_and_after_build() {

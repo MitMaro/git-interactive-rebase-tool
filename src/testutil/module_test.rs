@@ -7,7 +7,7 @@ use crate::{
 	test_helpers::{with_event_handler, with_todo_file, EventHandlerTestContext},
 	todo_file::TodoFile,
 	view::{
-		testutil::{with_view_state, TestContext as ViewContext},
+		testutil::{with_view_state, ViewStateTestContext as ViewContext},
 		RenderContext,
 		ViewData,
 	},

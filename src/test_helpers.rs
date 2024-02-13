@@ -1,3 +1,4 @@
+pub(crate) mod assertions;
 pub(crate) mod builders;
 mod create_commit;
 mod create_event_reader;

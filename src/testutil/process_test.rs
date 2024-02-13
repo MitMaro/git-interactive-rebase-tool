@@ -10,7 +10,7 @@ use crate::{
 	runtime::ThreadStatuses,
 	test_helpers::{with_event_handler, with_todo_file, EventHandlerTestContext},
 	testutil::{with_search, SearchTestContext},
-	view::testutil::{with_view_state, TestContext as ViewContext},
+	view::testutil::{with_view_state, ViewStateTestContext as ViewContext},
 };
 
 pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {

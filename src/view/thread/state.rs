@@ -153,11 +153,7 @@ impl State {
 
 #[cfg(test)]
 mod tests {
-	use crate::view::{
-		testutil::{render_view_line, with_view_state},
-		ViewData,
-		ViewLine,
-	};
+	use crate::view::{testutil::with_view_state, ViewData, ViewLine};
 
 	#[test]
 	fn start() {
@@ -273,7 +269,17 @@ mod tests {
 				.state
 				.render(&ViewData::new(|updater| updater.push_line(ViewLine::from("Foo"))));
 			assert_eq!(
-				render_view_line(context.state.render_slice().lock().get_lines().first().unwrap(), None),
+				context
+					.state
+					.render_slice()
+					.lock()
+					.get_lines()
+					.first()
+					.unwrap()
+					.get_segments()
+					.first()
+					.unwrap()
+					.get_content(),
 				"Foo"
 			);
 		});

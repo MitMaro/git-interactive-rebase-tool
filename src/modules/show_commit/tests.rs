@@ -10,11 +10,12 @@ use crate::{
 	process::Artifact,
 	render_line,
 	test_helpers::{
+		assertions::assert_rendered_output::AssertRenderOptions,
 		builders::{CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
 		with_temp_repository,
 	},
 	testutil::module_test,
-	view::{testutil::AssertRenderOptions, ViewLine},
+	view::ViewLine,
 };
 
 fn create_show_commit(config: &Config, repository: Repository, todo_file: TodoFile) -> ShowCommit {
