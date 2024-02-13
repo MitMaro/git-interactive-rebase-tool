@@ -5,13 +5,12 @@ use crate::{
 	assert_results,
 	process::Artifact,
 	render_line,
-	test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
-	testutil::module_test,
+	test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
 };
 
 #[test]
 fn start_edit() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa comment"],
 		&[Event::from(StandardEvent::SearchStart)],
 		|mut test_context| {
@@ -32,7 +31,7 @@ fn start_edit() {
 
 #[test]
 fn with_match_on_hash() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa comment1"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -58,7 +57,7 @@ fn with_match_on_hash() {
 
 #[test]
 fn with_no_match() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa comment1"],
 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
 		|mut test_context| {
@@ -79,7 +78,7 @@ fn with_no_match() {
 
 #[test]
 fn start_with_matches_and_with_term() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa comment1"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -104,7 +103,7 @@ fn start_with_matches_and_with_term() {
 
 #[test]
 fn start_with_no_matches_and_with_term() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa comment1"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -129,7 +128,7 @@ fn start_with_no_matches_and_with_term() {
 
 #[test]
 fn start_with_no_term() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa comment1"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -151,7 +150,7 @@ fn start_with_no_term() {
 
 #[test]
 fn normal_mode_next() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -179,7 +178,7 @@ fn normal_mode_next() {
 
 #[test]
 fn visual_mode_next() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -214,7 +213,7 @@ fn visual_mode_next() {
 
 #[test]
 fn normal_mode_next_with_wrap() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::MoveCursorDown),
@@ -244,7 +243,7 @@ fn normal_mode_next_with_wrap() {
 
 #[test]
 fn visual_mode_next_with_wrap() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::MoveCursorDown),
@@ -278,7 +277,7 @@ fn visual_mode_next_with_wrap() {
 
 #[test]
 fn normal_mode_previous() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::MoveCursorDown),
@@ -308,7 +307,7 @@ fn normal_mode_previous() {
 
 #[test]
 fn visual_mode_previous() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::MoveCursorDown),
@@ -345,7 +344,7 @@ fn visual_mode_previous() {
 
 #[test]
 fn normal_mode_previous_with_wrap() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -373,7 +372,7 @@ fn normal_mode_previous_with_wrap() {
 
 #[test]
 fn visual_mode_previous_with_wrap() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -405,7 +404,7 @@ fn visual_mode_previous_with_wrap() {
 
 #[test]
 fn cancel() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::SearchStart),
@@ -431,7 +430,7 @@ fn cancel() {
 
 #[test]
 fn set_search_start_hint() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaaaaaaa x1",
 			"pick aaaaaaaa a",
@@ -467,7 +466,7 @@ fn set_search_start_hint() {
 
 #[test]
 fn highlight_multiple() {
-	module_test(
+	testers::module(
 		&["pick 12345678 xaxxaxxx"],
 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
 		|mut test_context| {
@@ -488,7 +487,7 @@ fn highlight_multiple() {
 
 #[test]
 fn skip_no_content() {
-	module_test(
+	testers::module(
 		&["break"],
 		&[Event::from(StandardEvent::SearchStart), Event::from('x')],
 		|mut test_context| {
@@ -509,7 +508,7 @@ fn skip_no_content() {
 
 #[test]
 fn handle_other_event() {
-	module_test(
+	testers::module(
 		&["pick aaaaaaaa x1", "pick bbbbbbbb x2", "pick cccccccc x3"],
 		&[
 			Event::from(StandardEvent::SearchStart),

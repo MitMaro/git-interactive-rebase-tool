@@ -112,7 +112,7 @@ mod tests {
 	use anyhow::anyhow;
 
 	use super::*;
-	use crate::testutil::MockedSearchable;
+	use crate::test_helpers::mocks;
 
 	#[test]
 	fn empty() {
@@ -181,7 +181,7 @@ mod tests {
 
 	#[test]
 	fn searchable() {
-		let mocked_searchable: Box<dyn Searchable> = Box::new(MockedSearchable::new());
+		let mocked_searchable: Box<dyn Searchable> = Box::new(mocks::Searchable::new());
 		let mut results = Results::from(mocked_searchable);
 		assert!(matches!(results.artifact(), Some(Artifact::Searchable(_))));
 	}

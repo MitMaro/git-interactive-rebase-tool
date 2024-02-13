@@ -1,9 +1,9 @@
 use super::*;
-use crate::{assert_rendered_output, testutil::module_test};
+use crate::{assert_rendered_output, test_helpers::testers};
 
 #[test]
 fn empty_list() {
-	module_test(&[], &[], |mut test_context| {
+	testers::module(&[], &[], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -17,7 +17,7 @@ fn empty_list() {
 
 #[test]
 fn full() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaaaaaaa comment 1",
 			"drop bbbbbbbb comment 2",
@@ -63,7 +63,7 @@ fn full() {
 
 #[test]
 fn compact() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaaaaaaa comment 1",
 			"drop bbbbbbbb comment 2",
@@ -111,7 +111,7 @@ fn compact() {
 // this can technically never happen, but it's worth testing, just in case of an invalid state
 #[test]
 fn noop_list() {
-	module_test(&["break"], &[], |mut test_context| {
+	testers::module(&["break"], &[], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let mut todo_file = module.todo_file.lock();
 		todo_file.remove_lines(0, 0);
@@ -130,7 +130,7 @@ fn noop_list() {
 
 #[test]
 fn pinned_segments() {
-	module_test(
+	testers::module(
 		&[
 			"break",
 			"drop aaa c1",
@@ -172,7 +172,7 @@ fn pinned_segments() {
 
 #[test]
 fn full_with_short_actions() {
-	module_test(&["pick aaaaaaaa comment 1"], &[], |mut test_context| {
+	testers::module(&["pick aaaaaaaa comment 1"], &[], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(

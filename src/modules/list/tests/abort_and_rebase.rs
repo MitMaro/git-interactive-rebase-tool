@@ -1,9 +1,9 @@
 use super::*;
-use crate::{assert_results, process::Artifact, testutil::module_test};
+use crate::{assert_results, process::Artifact, test_helpers::testers};
 
 #[test]
 fn normal_mode_abort() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Abort)],
 		|mut test_context| {
@@ -19,7 +19,7 @@ fn normal_mode_abort() {
 
 #[test]
 fn visual_mode_abort() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -39,7 +39,7 @@ fn visual_mode_abort() {
 
 #[test]
 fn normal_mode_force_abort() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ForceAbort)],
 		|mut test_context| {
@@ -56,7 +56,7 @@ fn normal_mode_force_abort() {
 
 #[test]
 fn visual_mode_force_abort() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -77,7 +77,7 @@ fn visual_mode_force_abort() {
 
 #[test]
 fn normal_mode_rebase() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Rebase)],
 		|mut test_context| {
@@ -93,7 +93,7 @@ fn normal_mode_rebase() {
 
 #[test]
 fn visual_mode_rebase() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -113,7 +113,7 @@ fn visual_mode_rebase() {
 
 #[test]
 fn normal_mode_force_rebase() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ForceRebase)],
 		|mut test_context| {
@@ -130,7 +130,7 @@ fn normal_mode_force_rebase() {
 
 #[test]
 fn visual_mode_force_rebase() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),

@@ -1,9 +1,9 @@
 use super::*;
-use crate::{action_line, assert_rendered_output, testutil::module_test};
+use crate::{action_line, assert_rendered_output, test_helpers::testers};
 
 #[test]
 fn normal_mode_remove_line_first() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -28,7 +28,7 @@ fn normal_mode_remove_line_first() {
 
 #[test]
 fn normal_mode_remove_line_end() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -59,7 +59,7 @@ fn normal_mode_remove_line_end() {
 
 #[test]
 fn visual_mode_remove_lines_start_index_first() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -91,7 +91,7 @@ fn visual_mode_remove_lines_start_index_first() {
 
 #[test]
 fn visual_mode_remove_lines_end_index_first() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -125,7 +125,7 @@ fn visual_mode_remove_lines_end_index_first() {
 
 #[test]
 fn visual_mode_remove_lines_start_index_last() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",
@@ -161,7 +161,7 @@ fn visual_mode_remove_lines_start_index_last() {
 
 #[test]
 fn visual_mode_remove_lines_end_index_last() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick bbb c2",

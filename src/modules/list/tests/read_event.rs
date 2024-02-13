@@ -3,12 +3,12 @@ use rstest::rstest;
 use super::*;
 use crate::{
 	input::{KeyCode, KeyModifiers, MouseEvent},
-	testutil::read_event_test,
+	test_helpers::testers,
 };
 
 #[test]
 fn edit_mode_passthrough_event() {
-	read_event_test(Event::from('p'), |mut context| {
+	testers::read_event(Event::from('p'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.state = ListState::Edit;
 		assert_eq!(context.read_event(&module), Event::from('p'));
@@ -17,7 +17,7 @@ fn edit_mode_passthrough_event() {
 
 #[test]
 fn normal_mode_help() {
-	read_event_test(Event::from('?'), |mut context| {
+	testers::read_event(Event::from('?'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.normal_mode_help.set_active();
 		assert_eq!(context.read_event(&module), Event::from(StandardEvent::Help));
@@ -26,7 +26,7 @@ fn normal_mode_help() {
 
 #[test]
 fn visual_mode_help() {
-	read_event_test(Event::from('?'), |mut context| {
+	testers::read_event(Event::from('?'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.visual_mode_help.set_active();
 		assert_eq!(context.read_event(&module), Event::from(StandardEvent::Help));
@@ -35,7 +35,7 @@ fn visual_mode_help() {
 
 #[test]
 fn search() {
-	read_event_test(Event::from('p'), |mut context| {
+	testers::read_event(Event::from('p'), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.search_bar.start_search(Some(""));
 		assert_eq!(context.read_event(&module), Event::from('p'));
@@ -62,7 +62,7 @@ fn search() {
 #[case::showcommit('c', StandardEvent::ShowCommit)]
 #[case::togglevisualmode('v', StandardEvent::ToggleVisualMode)]
 fn default_events_single_char(#[case] binding: char, #[case] expected: StandardEvent) {
-	read_event_test(Event::from(binding), |mut context| {
+	testers::read_event(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
@@ -79,7 +79,7 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: StandardE
 #[case::movecursorpageup(KeyCode::PageUp, StandardEvent::MoveCursorPageUp)]
 #[case::delete(KeyCode::Delete, StandardEvent::Delete)]
 fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent) {
-	read_event_test(Event::from(code), |mut context| {
+	testers::read_event(Event::from(code), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
@@ -90,7 +90,7 @@ fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent
 #[case::abort('U', StandardEvent::FixupKeepMessageWithEditor)]
 #[case::abort('p', StandardEvent::ActionPick)]
 fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
-	read_event_test(Event::from(binding), |mut context| {
+	testers::read_event(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Fixup);
 		assert_eq!(context.read_event(&module), Event::from(expected));
@@ -101,7 +101,7 @@ fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
 #[case::abort('u')]
 #[case::abort('U')]
 fn fixup_events_with_non_fixpo_event(#[case] binding: char) {
-	read_event_test(Event::from(binding), |mut context| {
+	testers::read_event(Event::from(binding), |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Pick);
 		assert_eq!(context.read_event(&module), Event::from(binding));
@@ -110,7 +110,7 @@ fn fixup_events_with_non_fixpo_event(#[case] binding: char) {
 
 #[test]
 fn mouse_move_down() {
-	read_event_test(
+	testers::read_event(
 		Event::from(MouseEvent {
 			kind: MouseEventKind::ScrollDown,
 			column: 0,
@@ -126,7 +126,7 @@ fn mouse_move_down() {
 
 #[test]
 fn mouse_move_up() {
-	read_event_test(
+	testers::read_event(
 		Event::from(MouseEvent {
 			kind: MouseEventKind::ScrollUp,
 			column: 0,
@@ -148,7 +148,7 @@ fn mouse_other() {
 		row: 0,
 		modifiers: KeyModifiers::empty(),
 	});
-	read_event_test(mouse_event, |mut context| {
+	testers::read_event(mouse_event, |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), mouse_event);
 	});
@@ -156,7 +156,7 @@ fn mouse_other() {
 
 #[test]
 fn event_other() {
-	read_event_test(Event::None, |mut context| {
+	testers::read_event(Event::None, |mut context| {
 		let mut module = create_list(&Config::new(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::None);
 	});

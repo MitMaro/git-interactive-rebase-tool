@@ -54,7 +54,7 @@ mod tests {
 		assert_results,
 		input::{KeyCode, StandardEvent},
 		process::Artifact,
-		testutil::module_test,
+		test_helpers::testers,
 	};
 
 	fn create_confirm_rebase() -> ConfirmRebase {
@@ -63,7 +63,7 @@ mod tests {
 
 	#[test]
 	fn build_view_data() {
-		module_test(&["pick aaa comment"], &[], |test_context| {
+		testers::module(&["pick aaa comment"], &[], |test_context| {
 			let mut module = create_confirm_rebase();
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -78,7 +78,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_yes() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::Yes)],
 			|mut test_context| {
@@ -94,7 +94,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_no() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::No)],
 			|mut test_context| {
@@ -110,7 +110,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_no_match_key() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
 			|mut test_context| {

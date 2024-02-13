@@ -1,9 +1,9 @@
 use super::*;
-use crate::{action_line, assert_rendered_output, testutil::module_test};
+use crate::{action_line, assert_rendered_output, test_helpers::testers};
 
 #[test]
 fn normal_mode_change_swap_down() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(StandardEvent::SwapSelectedDown)],
 		|mut test_context| {
@@ -22,7 +22,7 @@ fn normal_mode_change_swap_down() {
 
 #[test]
 fn visual_mode_swap_down_from_top_to_bottom_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -55,7 +55,7 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_down_from_bottom_to_top_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -90,7 +90,7 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -126,7 +126,7 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -160,7 +160,7 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 
 #[test]
 fn normal_mode_change_swap_up() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(StandardEvent::MoveCursorDown),
@@ -183,7 +183,7 @@ fn normal_mode_change_swap_up() {
 
 #[test]
 fn visual_mode_swap_up_from_top_to_bottom_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -216,7 +216,7 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_up_from_bottom_to_top_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -251,7 +251,7 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 
 #[test]
 fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -285,7 +285,7 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 
 #[test]
 fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",

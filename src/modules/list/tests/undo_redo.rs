@@ -1,9 +1,9 @@
 use super::*;
-use crate::{action_line, assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
+use crate::{action_line, assert_rendered_output, assert_results, process::Artifact, test_helpers::testers};
 
 #[test]
 fn normal_mode_undo() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionDrop), Event::from(StandardEvent::Undo)],
 		|mut test_context| {
@@ -24,7 +24,7 @@ fn normal_mode_undo() {
 
 #[test]
 fn normal_mode_undo_visual_mode_change() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -48,7 +48,7 @@ fn normal_mode_undo_visual_mode_change() {
 
 #[test]
 fn normal_mode_redo() {
-	module_test(
+	testers::module(
 		&["drop aaa c1"],
 		&[
 			Event::from(StandardEvent::ActionPick),
@@ -73,7 +73,7 @@ fn normal_mode_redo() {
 
 #[test]
 fn normal_mode_redo_visual_mode_change() {
-	module_test(
+	testers::module(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -98,7 +98,7 @@ fn normal_mode_redo_visual_mode_change() {
 
 #[test]
 fn visual_mode_undo() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -124,7 +124,7 @@ fn visual_mode_undo() {
 
 #[test]
 fn visual_mode_undo_normal_mode_change() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick bbb c2"],
 		&[
 			Event::from(StandardEvent::ActionDrop),
@@ -151,7 +151,7 @@ fn visual_mode_undo_normal_mode_change() {
 
 #[test]
 fn visual_mode_redo() {
-	module_test(
+	testers::module(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -174,7 +174,7 @@ fn visual_mode_redo() {
 }
 #[test]
 fn visual_mode_redo_normal_mode_change() {
-	module_test(
+	testers::module(
 		&["drop aaa c1", "drop bbb c2"],
 		&[
 			Event::from(StandardEvent::ActionPick),

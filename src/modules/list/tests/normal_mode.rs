@@ -5,12 +5,12 @@ use crate::{
 	assert_results,
 	input::KeyCode,
 	process::Artifact,
-	testutil::module_test,
+	test_helpers::testers,
 };
 
 #[test]
 fn change_auto_select_next_with_next_line() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2"],
 		&[Event::from(StandardEvent::ActionSquash)],
 		|mut test_context| {
@@ -30,7 +30,7 @@ fn change_auto_select_next_with_next_line() {
 
 #[test]
 fn toggle_visual_mode() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ToggleVisualMode)],
 		|mut test_context| {
@@ -47,7 +47,7 @@ fn toggle_visual_mode() {
 
 #[test]
 fn other_event() {
-	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
+	testers::module(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),

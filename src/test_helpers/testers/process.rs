@@ -10,15 +10,16 @@ use crate::{
 	runtime::ThreadStatuses,
 	test_helpers::{
 		with_event_handler,
+		with_search,
 		with_todo_file,
 		with_view_state,
 		EventHandlerTestContext,
+		SearchTestContext,
 		ViewStateTestContext,
 	},
-	testutil::{with_search, SearchTestContext},
 };
 
-pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
+pub(crate) struct ProcessTestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
 	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) process: Process<ModuleProvider>,
 	pub(crate) search_context: SearchTestContext,
@@ -26,11 +27,11 @@ pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 's
 	pub(crate) view_context: ViewStateTestContext,
 }
 
-pub(crate) fn process_test<C, ModuleProvider: module::ModuleProvider + Send + 'static>(
+pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static>(
 	module_handler: ModuleHandler<ModuleProvider>,
 	callback: C,
 ) where
-	C: FnOnce(TestContext<ModuleProvider>),
+	C: FnOnce(ProcessTestContext<ModuleProvider>),
 {
 	with_event_handler(&[Event::from('a')], |event_handler_context| {
 		with_view_state(|view_context| {
@@ -41,7 +42,7 @@ pub(crate) fn process_test<C, ModuleProvider: module::ModuleProvider + Send + 's
 					let input_state = event_handler_context.state.clone();
 					let todo_file_path = PathBuf::from(todo_file_tmp_path.path());
 
-					callback(TestContext {
+					callback(ProcessTestContext {
 						event_handler_context,
 						process: Process::new(
 							Size::new(300, 120),

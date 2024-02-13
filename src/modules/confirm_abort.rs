@@ -63,8 +63,7 @@ mod tests {
 		assert_results,
 		input::{KeyCode, StandardEvent},
 		process::Artifact,
-		test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
-		testutil::module_test,
+		test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
 	};
 
 	fn create_confirm_abort(todo_file: TodoFile) -> ConfirmAbort {
@@ -77,7 +76,7 @@ mod tests {
 
 	#[test]
 	fn build_view_data() {
-		module_test(&["pick aaa comment"], &[], |mut test_context| {
+		testers::module(&["pick aaa comment"], &[], |mut test_context| {
 			let mut module = create_confirm_abort(test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -91,7 +90,7 @@ mod tests {
 	}
 	#[test]
 	fn handle_event_yes() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::Yes)],
 			|mut test_context| {
@@ -108,7 +107,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_no() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::No)],
 			|mut test_context| {
@@ -124,7 +123,7 @@ mod tests {
 
 	#[test]
 	fn handle_event_confirmed_other() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
 			|mut test_context| {

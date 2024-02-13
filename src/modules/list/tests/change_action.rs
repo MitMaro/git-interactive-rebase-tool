@@ -1,9 +1,9 @@
 use super::*;
-use crate::{action_line, assert_rendered_output, testutil::module_test};
+use crate::{action_line, assert_rendered_output, test_helpers::testers};
 
 #[test]
 fn normal_mode_action_change_to_drop() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionDrop)],
 		|mut test_context| {
@@ -17,7 +17,7 @@ fn normal_mode_action_change_to_drop() {
 
 #[test]
 fn visual_mode_action_change_to_drop() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -50,7 +50,7 @@ fn visual_mode_action_change_to_drop() {
 
 #[test]
 fn normal_mode_action_change_to_edit() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionEdit)],
 		|mut test_context| {
@@ -67,7 +67,7 @@ fn normal_mode_action_change_to_edit() {
 
 #[test]
 fn visual_mode_action_change_to_edit() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -100,7 +100,7 @@ fn visual_mode_action_change_to_edit() {
 
 #[test]
 fn normal_mode_action_change_to_fixup() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionFixup)],
 		|mut test_context| {
@@ -117,7 +117,7 @@ fn normal_mode_action_change_to_fixup() {
 
 #[test]
 fn visual_mode_action_change_to_fixup() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -150,7 +150,7 @@ fn visual_mode_action_change_to_fixup() {
 
 #[test]
 fn normal_mode_action_change_to_pick() {
-	module_test(
+	testers::module(
 		&["drop aaa c1"],
 		&[Event::from(StandardEvent::ActionPick)],
 		|mut test_context| {
@@ -167,7 +167,7 @@ fn normal_mode_action_change_to_pick() {
 
 #[test]
 fn visual_mode_action_change_to_pick() {
-	module_test(
+	testers::module(
 		&[
 			"drop aaa c1",
 			"drop aaa c2",
@@ -200,7 +200,7 @@ fn visual_mode_action_change_to_pick() {
 
 #[test]
 fn normal_mode_action_change_to_reword() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionReword)],
 		|mut test_context| {
@@ -217,7 +217,7 @@ fn normal_mode_action_change_to_reword() {
 
 #[test]
 fn visual_mode_action_change_to_reword() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -250,7 +250,7 @@ fn visual_mode_action_change_to_reword() {
 
 #[test]
 fn normal_mode_action_change_to_squash() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionSquash)],
 		|mut test_context| {
@@ -266,7 +266,7 @@ fn normal_mode_action_change_to_squash() {
 
 #[test]
 fn visual_mode_action_change_to_squash() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",

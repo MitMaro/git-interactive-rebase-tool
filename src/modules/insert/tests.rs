@@ -4,7 +4,7 @@ use crate::{
 	assert_results,
 	input::{Event, KeyCode},
 	process::Artifact,
-	testutil::module_test,
+	test_helpers::testers,
 };
 
 fn create_insert(todo_file: TodoFile) -> Insert {
@@ -13,7 +13,7 @@ fn create_insert(todo_file: TodoFile) -> Insert {
 
 #[test]
 fn activate() {
-	module_test(&[], &[], |mut test_context| {
+	testers::module(&[], &[], |mut test_context| {
 		let mut module = create_insert(test_context.take_todo_file());
 		assert_results!(test_context.activate(&mut module, State::List));
 	});
@@ -21,7 +21,7 @@ fn activate() {
 
 #[test]
 fn render_prompt() {
-	module_test(&[], &[], |mut test_context| {
+	testers::module(&[], &[], |mut test_context| {
 		let mut module = create_insert(test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -46,7 +46,7 @@ fn render_prompt() {
 
 #[test]
 fn prompt_cancel() {
-	module_test(&[], &[Event::from('q')], |mut test_context| {
+	testers::module(&[], &[Event::from('q')], |mut test_context| {
 		let mut module = create_insert(test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
@@ -58,7 +58,7 @@ fn prompt_cancel() {
 
 #[test]
 fn edit_render_exec() {
-	module_test(
+	testers::module(
 		&[],
 		&[
 			Event::from('e'),
@@ -94,7 +94,7 @@ fn edit_render_exec() {
 
 #[test]
 fn edit_render_pick() {
-	module_test(
+	testers::module(
 		&[],
 		&[
 			Event::from('p'),
@@ -130,7 +130,7 @@ fn edit_render_pick() {
 
 #[test]
 fn edit_render_label() {
-	module_test(
+	testers::module(
 		&[],
 		&[
 			Event::from('l'),
@@ -166,7 +166,7 @@ fn edit_render_label() {
 
 #[test]
 fn edit_render_reset() {
-	module_test(
+	testers::module(
 		&[],
 		&[
 			Event::from('r'),
@@ -202,7 +202,7 @@ fn edit_render_reset() {
 
 #[test]
 fn edit_render_merge() {
-	module_test(
+	testers::module(
 		&[],
 		&[
 			Event::from('m'),
@@ -238,7 +238,7 @@ fn edit_render_merge() {
 
 #[test]
 fn update_ref_render_merge() {
-	module_test(
+	testers::module(
 		&[],
 		&[
 			Event::from('u'),
@@ -274,7 +274,7 @@ fn update_ref_render_merge() {
 
 #[test]
 fn edit_select_next_index() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from('e'),
@@ -293,7 +293,7 @@ fn edit_select_next_index() {
 
 #[test]
 fn cancel_edit() {
-	module_test(
+	testers::module(
 		&[],
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
 		|mut test_context| {

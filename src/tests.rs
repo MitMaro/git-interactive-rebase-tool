@@ -1,7 +1,7 @@
 use std::{ffi::OsString, path::Path};
 
 use super::*;
-use crate::{module::ExitStatus, testutil::set_git_directory};
+use crate::{module::ExitStatus, test_helpers::set_git_directory};
 
 fn args(args: &[&str]) -> Vec<OsString> {
 	args.iter().map(OsString::from).collect::<Vec<OsString>>()
