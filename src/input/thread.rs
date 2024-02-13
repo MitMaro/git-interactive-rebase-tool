@@ -97,7 +97,7 @@ mod tests {
 	use crate::{
 		input::KeyEvent,
 		runtime::Status,
-		test_helpers::{create_event_reader, ThreadableTester},
+		test_helpers::{create_event_reader, testers},
 	};
 
 	#[test]
@@ -131,7 +131,7 @@ mod tests {
 		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		let event_received;
@@ -153,7 +153,7 @@ mod tests {
 		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Busy);
 		let event_received = state.read_event();
@@ -168,7 +168,7 @@ mod tests {
 		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Busy);
 		let event_received = state.read_event();
@@ -183,7 +183,7 @@ mod tests {
 		let thread: Thread<_> = Thread::new(event_provider);
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Busy);
 		state.pause();

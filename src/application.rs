@@ -197,16 +197,15 @@ mod tests {
 		input::{Event, KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
-		test_helpers::{create_event_reader, mocks::CrossTerm},
-		testutil::{set_git_directory, DefaultTestModule, TestModuleProvider},
+		test_helpers::{create_event_reader, mocks, set_git_directory, DefaultTestModule, TestModuleProvider},
 	};
 
 	fn args(args: &[&str]) -> Args {
 		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()
 	}
 
-	fn create_mocked_crossterm() -> CrossTerm {
-		let mut crossterm = CrossTerm::new();
+	fn create_mocked_crossterm() -> mocks::CrossTerm {
+		let mut crossterm = mocks::CrossTerm::new();
 		crossterm.set_size(Size::new(300, 120));
 		crossterm
 	}

@@ -79,11 +79,11 @@ mod tests {
 	use anyhow::anyhow;
 
 	use super::*;
-	use crate::{assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
+	use crate::{assert_rendered_output, assert_results, process::Artifact, test_helpers::testers};
 
 	#[test]
 	fn simple_error() {
-		module_test(&[], &[], |test_context| {
+		testers::module(&[], &[], |test_context| {
 			let mut module = Error::new();
 			_ = module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -100,7 +100,7 @@ mod tests {
 
 	#[test]
 	fn error_with_contest() {
-		module_test(&[], &[], |test_context| {
+		testers::module(&[], &[], |test_context| {
 			let mut module = Error::new();
 			_ = module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -114,7 +114,7 @@ mod tests {
 
 	#[test]
 	fn error_with_newlines() {
-		module_test(&[], &[], |test_context| {
+		testers::module(&[], &[], |test_context| {
 			let mut module = Error::new();
 			_ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -130,7 +130,7 @@ mod tests {
 
 	#[test]
 	fn return_state() {
-		module_test(&[], &[Event::from('a')], |mut test_context| {
+		testers::module(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = Error::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			_ = module.handle_error(&anyhow!("Test Error"));
@@ -144,7 +144,7 @@ mod tests {
 
 	#[test]
 	fn resize() {
-		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
+		testers::module(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = Error::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			_ = module.handle_error(&anyhow!("Test Error"));

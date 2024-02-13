@@ -19,14 +19,14 @@ const WAIT_TIME: Duration = Duration::from_millis(100);
 
 /// A tester utility for `Threadable`.
 #[derive(Clone, Debug)]
-pub(crate) struct ThreadableTester {
+pub(crate) struct Threadable {
 	receiver: Receiver<(String, Status)>,
 	sender: Sender<(String, Status)>,
 	statuses: Arc<Mutex<Vec<Status>>>,
 	ended: Arc<AtomicBool>,
 }
 
-impl ThreadableTester {
+impl Threadable {
 	/// Create a new instance of the test utility.
 	#[must_use]
 	pub(crate) fn new() -> Self {

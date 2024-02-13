@@ -73,7 +73,7 @@ mod tests {
 	use crate::{
 		input::StandardEvent,
 		module::Module,
-		testutil::{module_test, TestModuleProvider},
+		test_helpers::{testers, TestModuleProvider},
 	};
 
 	#[derive(Clone)]
@@ -124,7 +124,7 @@ mod tests {
 
 	#[test]
 	fn module_lifecycle() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::Standard(StandardEvent::Exit)],
 			|context| {
@@ -149,7 +149,7 @@ mod tests {
 
 	#[test]
 	fn error() {
-		module_test(
+		testers::module(
 			&["pick aaa comment"],
 			&[Event::Standard(StandardEvent::Exit)],
 			|context| {

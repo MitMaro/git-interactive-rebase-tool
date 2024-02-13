@@ -1,9 +1,9 @@
 use super::*;
-use crate::{assert_results, process::Artifact, testutil::module_test};
+use crate::{assert_results, process::Artifact, test_helpers::testers};
 
 #[test]
 fn normal_mode_open_external_editor() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::OpenInEditor)],
 		|mut test_context| {
@@ -19,7 +19,7 @@ fn normal_mode_open_external_editor() {
 
 #[test]
 fn visual_mode_open_external_editor() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -39,7 +39,7 @@ fn visual_mode_open_external_editor() {
 
 #[test]
 fn cancels_search() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::SearchStart),

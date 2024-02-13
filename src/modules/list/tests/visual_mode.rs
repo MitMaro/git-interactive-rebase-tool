@@ -6,8 +6,7 @@ use crate::{
 	input::KeyCode,
 	process::Artifact,
 	render_line,
-	test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
-	testutil::module_test,
+	test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
 };
 
 fn render_options() -> AssertRenderOptions {
@@ -16,7 +15,7 @@ fn render_options() -> AssertRenderOptions {
 
 #[test]
 fn start() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(StandardEvent::ToggleVisualMode)],
 		|mut test_context| {
@@ -36,7 +35,7 @@ fn start() {
 
 #[test]
 fn start_cursor_down_one() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -58,7 +57,7 @@ fn start_cursor_down_one() {
 
 #[test]
 fn start_cursor_page_down() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -89,7 +88,7 @@ fn start_cursor_page_down() {
 
 #[test]
 fn start_cursor_from_bottom_move_up() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -123,7 +122,7 @@ fn start_cursor_from_bottom_move_up() {
 
 #[test]
 fn start_cursor_from_bottom_to_top() {
-	module_test(
+	testers::module(
 		&[
 			"pick aaa c1",
 			"pick aaa c2",
@@ -160,7 +159,7 @@ fn start_cursor_from_bottom_to_top() {
 
 #[test]
 fn action_change_top_bottom() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -185,7 +184,7 @@ fn action_change_top_bottom() {
 
 #[test]
 fn action_change_bottom_top() {
-	module_test(
+	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[
 			Event::from(StandardEvent::MoveCursorDown),
@@ -211,7 +210,7 @@ fn action_change_bottom_top() {
 
 #[test]
 fn toggle_visual_mode() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[
 			Event::from(StandardEvent::ToggleVisualMode),
@@ -232,7 +231,7 @@ fn toggle_visual_mode() {
 
 #[test]
 fn other_event() {
-	module_test(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
+	testers::module(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),

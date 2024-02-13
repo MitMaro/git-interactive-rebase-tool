@@ -45,7 +45,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		search::{Interrupter, SearchResult},
-		testutil::MockedSearchable,
+		test_helpers::mocks,
 	};
 
 	#[rstest]
@@ -58,7 +58,7 @@ mod tests {
 	#[case::search_cancel(Artifact::SearchCancel, "SearchCancel")]
 	#[case::search_term(Artifact::SearchTerm(String::from("foo")), "SearchTerm(\"foo\")")]
 	#[case::searchable(
-		Artifact::Searchable(Box::new(MockedSearchable::new())),
+		Artifact::Searchable(Box::new(mocks::Searchable::new())),
 		"Searchable(dyn Searchable)"
 	)]
 	fn debug(#[case] artifact: Artifact, #[case] expected: &str) {

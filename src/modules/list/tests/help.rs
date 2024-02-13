@@ -1,9 +1,9 @@
 use super::*;
-use crate::{assert_rendered_output, input::KeyCode, testutil::module_test};
+use crate::{assert_rendered_output, input::KeyCode, test_helpers::testers};
 
 #[test]
 fn normal_mode_help() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
 		|mut test_context| {
@@ -56,7 +56,7 @@ fn normal_mode_help() {
 
 #[test]
 fn normal_mode_help_event() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from(KeyCode::Enter)],
 		|mut test_context| {
@@ -70,7 +70,7 @@ fn normal_mode_help_event() {
 
 #[test]
 fn visual_mode_help() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
 		|mut test_context| {
@@ -119,7 +119,7 @@ fn visual_mode_help() {
 
 #[test]
 fn visual_mode_help_event() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from(KeyCode::Enter)],
 		|mut test_context| {

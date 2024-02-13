@@ -12,9 +12,9 @@ use crate::{
 	test_helpers::{
 		assertions::assert_rendered_output::AssertRenderOptions,
 		builders::{CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
+		testers,
 		with_temp_repository,
 	},
-	testutil::module_test,
 	view::ViewLine,
 };
 
@@ -31,7 +31,7 @@ fn load_commit_during_activate() {
 	with_temp_repository(|repo| {
 		let oid = repo.head_id("main").unwrap();
 		let line = format!("pick {oid} comment1");
-		module_test(&[line.as_str()], &[], |mut test_context| {
+		testers::module(&[line.as_str()], &[], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(test_context.activate(&mut module, State::List));
 			assert!(module.diff.is_some());
@@ -44,7 +44,7 @@ fn cached_commit_in_activate() {
 	with_temp_repository(|repo| {
 		let oid = repo.head_id("main").unwrap();
 		let line = format!("pick {oid} comment1");
-		module_test(&[line.as_str()], &[], |mut test_context| {
+		testers::module(&[line.as_str()], &[], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			// would be nice to be able to test that a second call to load_commit_diff did not happen here
 			assert_results!(test_context.activate(&mut module, State::List));
@@ -56,7 +56,7 @@ fn cached_commit_in_activate() {
 #[test]
 fn no_selected_line_in_activate() {
 	with_temp_repository(|repo| {
-		module_test(&[], &[], |mut test_context| {
+		testers::module(&[], &[], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(
 				test_context.activate(&mut module, State::List),
@@ -69,7 +69,7 @@ fn no_selected_line_in_activate() {
 #[test]
 fn activate_error() {
 	with_temp_repository(|repo| {
-		module_test(&["pick aaaaaaaaaa comment1"], &[], |mut test_context| {
+		testers::module(&["pick aaaaaaaaaa comment1"], &[], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(
 				test_context.activate(&mut module, State::List),
@@ -88,7 +88,7 @@ fn activate_error() {
 #[test]
 fn render_overview_minimal_commit() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -117,7 +117,7 @@ fn render_overview_minimal_commit() {
 #[test]
 fn render_overview_minimal_commit_compact() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -146,7 +146,7 @@ fn render_overview_minimal_commit_compact() {
 #[test]
 fn render_overview_with_author() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -172,7 +172,7 @@ fn render_overview_with_author() {
 #[test]
 fn render_overview_with_author_compact() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -199,7 +199,7 @@ fn render_overview_with_author_compact() {
 #[test]
 fn render_overview_with_committer() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -225,7 +225,7 @@ fn render_overview_with_committer() {
 #[test]
 fn render_overview_with_committer_compact() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -252,7 +252,7 @@ fn render_overview_with_committer_compact() {
 #[test]
 fn render_overview_with_commit_summary() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -278,7 +278,7 @@ fn render_overview_with_commit_summary() {
 #[test]
 fn render_overview_with_commit_body() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -304,7 +304,7 @@ fn render_overview_with_commit_body() {
 #[test]
 fn render_overview_with_commit_summary_and_body() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -333,7 +333,7 @@ fn render_overview_with_commit_summary_and_body() {
 #[test]
 fn render_overview_with_file_stats() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -401,7 +401,7 @@ fn render_overview_with_file_stats() {
 #[test]
 fn render_overview_with_file_stats_compact() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -470,7 +470,7 @@ fn render_overview_with_file_stats_compact() {
 #[test]
 fn render_overview_single_file_changed() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -494,7 +494,7 @@ fn render_overview_single_file_changed() {
 #[test]
 fn render_overview_more_than_one_file_changed() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -519,7 +519,7 @@ fn render_overview_more_than_one_file_changed() {
 #[test]
 fn render_overview_single_insertion() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -544,7 +544,7 @@ fn render_overview_single_insertion() {
 #[test]
 fn render_overview_more_than_one_insertion() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -569,7 +569,7 @@ fn render_overview_more_than_one_insertion() {
 #[test]
 fn render_overview_single_deletion() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -594,7 +594,7 @@ fn render_overview_single_deletion() {
 #[test]
 fn render_overview_more_than_one_deletion() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -619,7 +619,7 @@ fn render_overview_more_than_one_deletion() {
 #[test]
 fn render_diff_minimal_commit() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -649,7 +649,7 @@ fn render_diff_minimal_commit() {
 #[test]
 fn render_diff_minimal_commit_compact() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -679,7 +679,7 @@ fn render_diff_minimal_commit_compact() {
 #[test]
 fn render_diff_basic_file_stats() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -756,7 +756,7 @@ fn render_diff_basic_file_stats() {
 #[test]
 fn render_diff_end_new_line_missing() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -802,7 +802,7 @@ fn render_diff_end_new_line_missing() {
 #[test]
 fn render_diff_add_line() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -846,7 +846,7 @@ fn render_diff_add_line() {
 #[test]
 fn render_diff_delete_line() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -890,7 +890,7 @@ fn render_diff_delete_line() {
 #[test]
 fn render_diff_context_add_remove_lines() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -963,7 +963,7 @@ fn generate_white_space_delta() -> Delta {
 #[test]
 fn render_diff_show_both_whitespace() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -1005,7 +1005,7 @@ fn render_diff_show_both_whitespace() {
 #[test]
 fn render_diff_show_leading_whitespace() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -1047,7 +1047,7 @@ fn render_diff_show_leading_whitespace() {
 #[test]
 fn render_diff_show_no_whitespace() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -1089,7 +1089,7 @@ fn render_diff_show_no_whitespace() {
 #[test]
 fn render_diff_show_whitespace_all_spaces() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef comment1"],
 			&[],
 			|mut test_context| {
@@ -1127,7 +1127,7 @@ fn render_diff_show_whitespace_all_spaces() {
 #[test]
 fn handle_event_toggle_diff_to_overview() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from(StandardEvent::ShowDiff)],
 			|mut test_context| {
@@ -1150,7 +1150,7 @@ fn handle_event_toggle_diff_to_overview() {
 #[test]
 fn handle_event_toggle_overview_to_diff() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from('d')],
 			|mut test_context| {
@@ -1173,7 +1173,7 @@ fn handle_event_toggle_overview_to_diff() {
 #[test]
 fn handle_event_resize() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::Resize(100, 100)],
 			|mut test_context| {
@@ -1190,7 +1190,7 @@ fn handle_event_resize() {
 #[test]
 fn render_help() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick aaa c1"],
 			&[Event::from(StandardEvent::Help)],
 			|mut test_context| {
@@ -1217,7 +1217,7 @@ fn render_help() {
 #[test]
 fn handle_help_event_show() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick aaa c1"],
 			&[Event::from(StandardEvent::Help)],
 			|mut test_context| {
@@ -1231,7 +1231,7 @@ fn handle_help_event_show() {
 #[test]
 fn handle_help_event_hide() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick aaa c1"],
 			&[Event::from(StandardEvent::Help), Event::from('?')],
 			|mut test_context| {
@@ -1246,7 +1246,7 @@ fn handle_help_event_hide() {
 #[test]
 fn handle_event_other_key_from_diff() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from('a')],
 			|mut test_context| {
@@ -1265,7 +1265,7 @@ fn handle_event_other_key_from_diff() {
 #[test]
 fn handle_event_other_key_from_overview() {
 	with_temp_repository(|repo| {
-		module_test(
+		testers::module(
 			&["pick 0123456789abcdef0123456789abcdef c1"],
 			&[Event::from('a')],
 			|mut test_context| {
@@ -1290,7 +1290,7 @@ fn handle_event_other_key_from_overview() {
 #[case::scroll_jump_up(StandardEvent::ScrollJumpUp)]
 fn scroll_events(#[case] event: StandardEvent) {
 	with_temp_repository(|repo| {
-		module_test(&[], &[Event::from(event)], |mut test_context| {
+		testers::module(&[], &[Event::from(event)], |mut test_context| {
 			let mut module = create_show_commit(&Config::new(), repo, test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),

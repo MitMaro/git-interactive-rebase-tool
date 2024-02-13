@@ -1,9 +1,9 @@
 use super::*;
-use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact, testutil::module_test};
+use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact, test_helpers::testers};
 
 #[test]
 fn edit_with_edit_content() {
-	module_test(
+	testers::module(
 		&["exec echo foo"],
 		&[Event::from(StandardEvent::Edit)],
 		|mut test_context| {
@@ -19,7 +19,7 @@ fn edit_with_edit_content() {
 
 #[test]
 fn edit_without_edit_content() {
-	module_test(
+	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Edit)],
 		|mut test_context| {
@@ -35,7 +35,7 @@ fn edit_without_edit_content() {
 
 #[test]
 fn edit_without_selected_line() {
-	module_test(&[], &[Event::from(StandardEvent::Edit)], |mut test_context| {
+	testers::module(&[], &[Event::from(StandardEvent::Edit)], |mut test_context| {
 		let mut module = create_list(&Config::new(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
@@ -47,7 +47,7 @@ fn edit_without_selected_line() {
 
 #[test]
 fn handle_event() {
-	module_test(
+	testers::module(
 		&["exec foo"],
 		&[
 			Event::from(StandardEvent::Edit),
@@ -66,7 +66,7 @@ fn handle_event() {
 
 #[test]
 fn render() {
-	module_test(
+	testers::module(
 		&["exec foo"],
 		&[Event::from(StandardEvent::Edit)],
 		|mut test_context| {

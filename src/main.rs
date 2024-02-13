@@ -141,8 +141,6 @@ mod search;
 mod test_helpers;
 #[cfg(test)]
 mod tests;
-#[cfg(test)]
-mod testutil;
 mod todo_file;
 mod util;
 mod version;

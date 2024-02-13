@@ -28,7 +28,7 @@ mod tests {
 	use std::{ffi::OsString, path::Path};
 
 	use super::*;
-	use crate::testutil::set_git_directory;
+	use crate::test_helpers::set_git_directory;
 
 	fn args(args: &[&str]) -> Args {
 		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()

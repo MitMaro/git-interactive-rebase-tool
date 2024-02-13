@@ -84,7 +84,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{assert_rendered_output, assert_results, process::Artifact, testutil::module_test};
+	use crate::{assert_rendered_output, assert_results, process::Artifact, test_helpers::testers};
 
 	const MINIMUM_WINDOW_HEIGHT: usize = 5;
 	const MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH: usize = 45;
@@ -107,7 +107,7 @@ mod tests {
 		"Window too small"
 	)]
 	fn build_view_data(#[case] width: usize, #[case] height: usize, #[case] expected: &str) {
-		module_test(&[], &[], |mut test_context| {
+		testers::module(&[], &[], |mut test_context| {
 			test_context.render_context.update(width as u16, height as u16);
 			let mut module = WindowSizeError::new();
 			let view_data = test_context.build_view_data(&mut module);
@@ -117,7 +117,7 @@ mod tests {
 
 	#[test]
 	fn event_resize_window_still_small() {
-		module_test(&[], &[Event::Resize(1, 1)], |mut test_context| {
+		testers::module(&[], &[Event::Resize(1, 1)], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
@@ -129,7 +129,7 @@ mod tests {
 
 	#[test]
 	fn event_resize_window_no_longer_too_small() {
-		module_test(&[], &[Event::Resize(100, 100)], |mut test_context| {
+		testers::module(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
@@ -142,7 +142,7 @@ mod tests {
 
 	#[test]
 	fn event_other_character() {
-		module_test(&[], &[Event::from('a')], |mut test_context| {
+		testers::module(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = WindowSizeError::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(

@@ -193,36 +193,25 @@ mod tests {
 	use testutils::assert_err_eq;
 
 	use super::*;
-	use crate::test_helpers::{create_commit, with_temp_bare_repository, with_temp_repository};
+	use crate::test_helpers::{create_commit, set_git_directory, with_temp_bare_repository, with_temp_repository};
 
 	#[test]
 	#[serial_test::serial]
 	fn open_from_env() {
-		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join("simple");
-		set_var("GIT_DIR", path.to_str().unwrap());
+		_ = set_git_directory("fixtures/simple");
 		assert_ok!(Repository::open_from_env());
 	}
 
 	#[test]
 	#[serial_test::serial]
 	fn open_from_env_error() {
-		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join("does-not-exist");
-		set_var("GIT_DIR", path.to_str().unwrap());
+		let path = set_git_directory("fixtures/does-not-exist");
 		assert_err_eq!(Repository::open_from_env(), GitError::RepositoryLoad {
 			kind: RepositoryLoadKind::Environment,
 			cause: git2::Error::new(
 				ErrorCode::NotFound,
 				ErrorClass::Os,
-				format!(
-					"failed to resolve path '{}': No such file or directory",
-					path.to_string_lossy()
-				)
+				format!("failed to resolve path '{path}': No such file or directory")
 			),
 		});
 	}

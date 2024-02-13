@@ -15,14 +15,14 @@ use crate::{
 	view::{RenderContext, ViewData},
 };
 
-pub(crate) struct TestContext {
+pub(crate) struct ModuleTestContext {
 	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) render_context: RenderContext,
 	pub(crate) view_context: ViewStateTestContext,
 	todo_file: Option<TodoFile>,
 }
 
-impl TestContext {
+impl ModuleTestContext {
 	fn get_build_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
 		module.build_view_data(&self.render_context)
 	}
@@ -76,13 +76,13 @@ impl TestContext {
 }
 
 pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
-where C: FnOnce(TestContext) {
+where C: FnOnce(ModuleTestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_state(|view_context| {
 			capture!(lines);
 			with_todo_file(lines, |todo_file_context| {
 				let (_git_todo_file, todo_file) = todo_file_context.to_owned();
-				callback(TestContext {
+				callback(ModuleTestContext {
 					event_handler_context,
 					render_context: RenderContext::new(300, 120),
 					todo_file: Some(todo_file),

@@ -164,10 +164,7 @@ mod tests {
 		config::Theme,
 		display::{Display, DisplayError},
 		runtime::Status,
-		test_helpers::{
-			mocks::{CrossTerm, MockableTui},
-			ThreadableTester,
-		},
+		test_helpers::{mocks, testers},
 		view::ViewData,
 	};
 
@@ -177,7 +174,7 @@ mod tests {
 		DisplayError::Unexpected(io::Error::from(io::ErrorKind::Other))
 	}
 
-	fn with_view<C, CT: MockableTui>(tui: CT, callback: C)
+	fn with_view<C, CT: mocks::MockableTui>(tui: CT, callback: C)
 	where C: FnOnce(View<CT>) {
 		let theme = Theme::new();
 		let display = Display::new(tui, &theme);
@@ -186,7 +183,7 @@ mod tests {
 
 	#[test]
 	fn set_pause_resume() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 			thread.pause();
@@ -198,7 +195,7 @@ mod tests {
 
 	#[test]
 	fn set_end() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 			thread.end();
@@ -208,11 +205,11 @@ mod tests {
 
 	#[test]
 	fn main_thread_end() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 
 			tester.wait_for_status(&Status::Waiting);
@@ -223,11 +220,11 @@ mod tests {
 
 	#[test]
 	fn main_thread_start() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
 			state.end();
@@ -239,7 +236,7 @@ mod tests {
 	fn main_thread_start_error() {
 		struct TestCrossTerm;
 
-		impl MockableTui for TestCrossTerm {
+		impl mocks::MockableTui for TestCrossTerm {
 			fn start(&mut self) -> Result<(), DisplayError> {
 				Err(create_unexpected_error())
 			}
@@ -248,7 +245,7 @@ mod tests {
 		with_view(TestCrossTerm {}, |view| {
 			let thread = Thread::new(view);
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_error_status();
 		});
@@ -256,11 +253,11 @@ mod tests {
 
 	#[test]
 	fn main_thread_stop() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
 			state.stop();
@@ -274,7 +271,7 @@ mod tests {
 	fn main_thread_stop_error() {
 		struct TestCrossTerm;
 
-		impl MockableTui for TestCrossTerm {
+		impl mocks::MockableTui for TestCrossTerm {
 			fn end(&mut self) -> Result<(), DisplayError> {
 				Err(create_unexpected_error())
 			}
@@ -284,7 +281,7 @@ mod tests {
 			let thread = Thread::new(view);
 			let state = thread.state();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
 			state.stop();
@@ -306,7 +303,7 @@ mod tests {
 			}
 		}
 
-		impl MockableTui for TestCrossTerm {
+		impl mocks::MockableTui for TestCrossTerm {
 			fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 				self.lines.lock().push(String::from(s));
 				Ok(())
@@ -324,7 +321,7 @@ mod tests {
 				updater.push_lines("foo");
 			});
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			state.render(&view_data);
 			tester.wait_for_status(&Status::Waiting);
@@ -345,7 +342,7 @@ mod tests {
 	fn main_thread_render_with_should_render_error() {
 		struct TestCrossTerm;
 
-		impl MockableTui for TestCrossTerm {
+		impl mocks::MockableTui for TestCrossTerm {
 			fn reset(&mut self) -> Result<(), DisplayError> {
 				Err(create_unexpected_error())
 			}
@@ -353,7 +350,7 @@ mod tests {
 
 		with_view(TestCrossTerm {}, |view| {
 			let thread = Thread::new(view);
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_error_status();
 		});
@@ -373,7 +370,7 @@ mod tests {
 			}
 		}
 
-		impl MockableTui for TestCrossTerm {
+		impl mocks::MockableTui for TestCrossTerm {
 			fn print(&mut self, s: &str) -> Result<(), DisplayError> {
 				self.lines.lock().push(String::from(s));
 				Ok(())
@@ -393,7 +390,7 @@ mod tests {
 			let render_slice = state.render_slice();
 			render_slice.lock().borrow_mut().sync_view_data(&view_data);
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, MAIN_THREAD_NAME);
 			tester.wait_for_status(&Status::Waiting);
 			sleep(MINIMUM_TICK_RATE); // give the refresh a chance to occur
@@ -414,12 +411,12 @@ mod tests {
 
 	#[test]
 	fn refresh_thread_receive_and_end() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 			let receiver = state.update_receiver();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
 
 			assert!(matches!(
@@ -434,12 +431,12 @@ mod tests {
 
 	#[test]
 	fn refresh_thread_stop_resume() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 			let receiver = state.update_receiver();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
 			_ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
 			state.stop();
@@ -455,12 +452,12 @@ mod tests {
 
 	#[test]
 	fn refresh_thread_stop_end() {
-		with_view(CrossTerm::new(), |view| {
+		with_view(mocks::CrossTerm::new(), |view| {
 			let thread = Thread::new(view);
 			let state = thread.state();
 			let receiver = state.update_receiver();
 
-			let tester = ThreadableTester::new();
+			let tester = testers::Threadable::new();
 			tester.start_threadable(&thread, REFRESH_THREAD_NAME);
 			_ = receiver.recv_timeout(READ_MESSAGE_TIMEOUT).unwrap();
 			state.stop();

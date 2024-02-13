@@ -1,11 +1,11 @@
 use claims::{assert_none, assert_some, assert_some_eq};
 
 use super::*;
-use crate::testutil::module_test;
+use crate::test_helpers::testers;
 
 #[test]
 fn on_fixup_keep_message() {
-	module_test(
+	testers::module(
 		&["fixup aaa c1"],
 		&[Event::from(StandardEvent::FixupKeepMessage)],
 		|mut test_context| {
@@ -21,7 +21,7 @@ fn on_fixup_keep_message() {
 
 #[test]
 fn on_fixup_keep_message_with_editor() {
-	module_test(
+	testers::module(
 		&["fixup aaa c1"],
 		&[Event::from(StandardEvent::FixupKeepMessageWithEditor)],
 		|mut test_context| {
@@ -37,7 +37,7 @@ fn on_fixup_keep_message_with_editor() {
 
 #[test]
 fn after_select_line() {
-	module_test(
+	testers::module(
 		&["fixup aaa c1", "fixup aaa c2", "fixup aaa c3"],
 		&[Event::from(StandardEvent::MoveCursorDown), Event::from('u')],
 		|mut test_context| {

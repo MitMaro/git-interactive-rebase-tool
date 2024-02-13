@@ -1,14 +1,14 @@
-use crate::search::{Interrupter, SearchResult, Searchable};
+use crate::search::{Interrupter, SearchResult};
 
-pub(crate) struct MockedSearchable;
+pub(crate) struct Searchable;
 
-impl MockedSearchable {
+impl Searchable {
 	pub(crate) const fn new() -> Self {
 		Self {}
 	}
 }
 
-impl Searchable for MockedSearchable {
+impl crate::search::Searchable for Searchable {
 	fn reset(&mut self) {}
 
 	fn search(&mut self, _: Interrupter, _: &str) -> SearchResult {

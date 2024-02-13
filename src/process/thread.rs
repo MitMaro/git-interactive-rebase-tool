@@ -79,15 +79,14 @@ mod tests {
 		input::{Event, StandardEvent},
 		module::Module,
 		runtime::Status,
-		test_helpers::ThreadableTester,
-		testutil::{create_default_test_module_handler, create_test_module_handler, process_test, ProcessTestContext},
+		test_helpers::{create_default_test_module_handler, create_test_module_handler, testers},
 	};
 
 	#[test]
 	fn end() {
-		process_test(
+		testers::process(
 			create_default_test_module_handler(),
-			|ProcessTestContext { process, .. }| {
+			|testers::ProcessTestContext { process, .. }| {
 				let thread = Thread::new(process);
 				thread.end();
 				assert!(thread.process.is_ended());
@@ -97,12 +96,12 @@ mod tests {
 
 	#[test]
 	fn start() {
-		process_test(
+		testers::process(
 			create_default_test_module_handler(),
-			|ProcessTestContext { process, .. }| {
+			|testers::ProcessTestContext { process, .. }| {
 				let thread = Thread::new(process);
 				thread.end();
-				let tester = ThreadableTester::new();
+				let tester = testers::Threadable::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
 
@@ -113,9 +112,9 @@ mod tests {
 
 	#[test]
 	fn render() {
-		process_test(
+		testers::process(
 			create_default_test_module_handler(),
-			|ProcessTestContext {
+			|testers::ProcessTestContext {
 			     process,
 			     event_handler_context,
 			     ..
@@ -124,7 +123,7 @@ mod tests {
 					.state
 					.enqueue_event(Event::from(StandardEvent::Exit));
 				let thread = Thread::new(process);
-				let tester = ThreadableTester::new();
+				let tester = testers::Threadable::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
 			},
@@ -144,11 +143,11 @@ mod tests {
 
 		let handle_called = Arc::new(AtomicBool::new(false));
 
-		process_test(
+		testers::process(
 			create_test_module_handler(TestModule(Arc::clone(&handle_called))),
-			|ProcessTestContext { process, .. }| {
+			|testers::ProcessTestContext { process, .. }| {
 				let thread = Thread::new(process.clone());
-				let tester = ThreadableTester::new();
+				let tester = testers::Threadable::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
 				assert!(handle_called.load(Ordering::Acquire));
@@ -168,9 +167,9 @@ mod tests {
 			}
 		}
 
-		process_test(
+		testers::process(
 			create_test_module_handler(TestModule {}),
-			|ProcessTestContext {
+			|testers::ProcessTestContext {
 			     process,
 			     todo_file_path,
 			     ..
@@ -181,7 +180,7 @@ mod tests {
 				todo_file.set_permissions(permissions).unwrap();
 
 				let thread = Thread::new(process.clone());
-				let tester = ThreadableTester::new();
+				let tester = testers::Threadable::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_error_status();
 				assert_eq!(process.exit_status(), ExitStatus::FileWriteError);
@@ -199,11 +198,11 @@ mod tests {
 			}
 		}
 
-		process_test(
+		testers::process(
 			create_test_module_handler(TestModule {}),
-			|ProcessTestContext { process, .. }| {
+			|testers::ProcessTestContext { process, .. }| {
 				let thread = Thread::new(process.clone());
-				let tester = ThreadableTester::new();
+				let tester = testers::Threadable::new();
 				tester.start_threadable(&thread, THEAD_NAME);
 				tester.wait_for_status(&Status::Ended);
 				assert_eq!(process.exit_status(), ExitStatus::Kill);

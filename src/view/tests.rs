@@ -1,9 +1,9 @@
 use super::*;
-use crate::{config::Theme, display::Size, test_helpers::mocks::CrossTerm};
+use crate::{config::Theme, display::Size, test_helpers::mocks};
 
 fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let theme = Theme::new();
-	let mut crossterm = CrossTerm::new();
+	let mut crossterm = mocks::CrossTerm::new();
 	let readonly_tui = crossterm.clone();
 	crossterm.set_size(Size::new(width, height));
 	let display = Display::new(crossterm, &theme);

@@ -130,7 +130,7 @@ mod tests {
 	use parking_lot::Mutex;
 
 	use super::*;
-	use crate::{runtime::Status, test_helpers::ThreadableTester};
+	use crate::{runtime::Status, test_helpers::testers};
 
 	#[derive(Clone)]
 	struct MockedSearchable {
@@ -162,7 +162,7 @@ mod tests {
 	fn set_pause_resume() {
 		let thread = Thread::new(|| {});
 		let state = thread.state();
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Waiting);
 		thread.pause();
@@ -189,7 +189,7 @@ mod tests {
 		let thread = Thread::new(|| {});
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Waiting);
 		state.end();
@@ -201,7 +201,7 @@ mod tests {
 		let thread = Thread::new(|| {});
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Waiting);
 		state.send_update(Action::End);
@@ -219,7 +219,7 @@ mod tests {
 
 		let searchable = MockedSearchable::new();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		tester.wait_for_status(&Status::Waiting);
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));
@@ -243,7 +243,7 @@ mod tests {
 
 		let searchable = MockedSearchable::new();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));
 		state.send_update(Action::Start(String::from("foo")));
@@ -266,7 +266,7 @@ mod tests {
 		let state = thread.state();
 
 		let searchable = MockedSearchable::new();
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));
@@ -290,7 +290,7 @@ mod tests {
 		let state = thread.state();
 
 		let searchable = MockedSearchable::new();
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));
@@ -315,7 +315,7 @@ mod tests {
 		let state = thread.state();
 
 		let searchable = MockedSearchable::new();
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));
@@ -338,7 +338,7 @@ mod tests {
 		let state = thread.state();
 
 		let searchable = MockedSearchable::new();
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));
@@ -361,7 +361,7 @@ mod tests {
 		});
 		let state = thread.state();
 
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		state.send_update(Action::Start(String::from("foo")));
@@ -381,7 +381,7 @@ mod tests {
 		let state = thread.state();
 
 		let searchable = MockedSearchable::new();
-		let tester = ThreadableTester::new();
+		let tester = testers::Threadable::new();
 		tester.start_threadable(&thread, THREAD_NAME);
 
 		state.send_update(Action::SetSearchable(Box::new(searchable.clone())));

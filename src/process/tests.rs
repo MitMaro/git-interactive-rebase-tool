@@ -9,14 +9,7 @@ use crate::{
 	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
 	runtime::Status,
 	search::{Interrupter, SearchResult},
-	test_helpers::mocks::Notifier,
-	testutil::{
-		create_default_test_module_handler,
-		create_test_module_handler,
-		process_test,
-		MockedSearchable,
-		ProcessTestContext,
-	},
+	test_helpers::{create_default_test_module_handler, create_test_module_handler, mocks, testers},
 	todo_file::Line,
 	view::{ViewData, REFRESH_THREAD_NAME},
 };
@@ -78,9 +71,9 @@ impl Module for TestModule {
 
 #[test]
 fn ended() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.end();
 			assert!(process.is_ended());
 		},
@@ -89,9 +82,9 @@ fn ended() {
 
 #[test]
 fn state() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::ShowCommit);
 			assert_eq!(process.state(), State::ShowCommit);
 		},
@@ -100,9 +93,9 @@ fn state() {
 
 #[test]
 fn exit_status() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::FileReadError);
 			assert_eq!(process.exit_status(), ExitStatus::FileReadError);
 		},
@@ -111,9 +104,9 @@ fn exit_status() {
 
 #[test]
 fn should_exit_none() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::None);
 			assert!(!process.should_exit());
 		},
@@ -122,9 +115,9 @@ fn should_exit_none() {
 
 #[test]
 fn should_exit_not_none() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::Good);
 			assert!(process.should_exit());
 		},
@@ -133,9 +126,9 @@ fn should_exit_not_none() {
 
 #[test]
 fn should_exit_ended() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::None);
 			process.end();
 			assert!(process.should_exit());
@@ -145,9 +138,9 @@ fn should_exit_ended() {
 
 #[test]
 fn is_exit_status_kill_without_kill() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::None);
 			assert!(!process.is_exit_status_kill());
 		},
@@ -156,9 +149,9 @@ fn is_exit_status_kill_without_kill() {
 
 #[test]
 fn is_exit_status_kill_with_kill() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::Kill);
 			assert!(process.is_exit_status_kill());
 		},
@@ -168,9 +161,9 @@ fn is_exit_status_kill_with_kill() {
 #[test]
 fn activate() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			assert_results!(process.activate(State::ShowCommit), Artifact::EnqueueResize);
 			module.assert_trace(&["activate(state = ShowCommit)"]);
 		},
@@ -179,9 +172,9 @@ fn activate() {
 
 #[test]
 fn render() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process, view_context, ..
 		 }| {
 			process.render();
@@ -192,9 +185,9 @@ fn render() {
 
 #[test]
 fn write_todo_file() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process
 				.todo_file
 				.lock()
@@ -212,9 +205,9 @@ fn write_todo_file() {
 #[test]
 fn deactivate() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.deactivate(State::List);
 			module.assert_trace(&["deactivate"]);
 		},
@@ -224,9 +217,9 @@ fn deactivate() {
 #[test]
 fn handle_event() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			let event = Event::from('a');
 			_ = process.handle_event();
 			module.assert_trace(&[
@@ -240,9 +233,9 @@ fn handle_event() {
 
 #[test]
 fn handle_event_artifact_exit_event() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			let event = Event::from(StandardEvent::Exit);
 			assert_results!(
 				process.handle_event_artifact(event),
@@ -254,9 +247,9 @@ fn handle_event_artifact_exit_event() {
 
 #[test]
 fn handle_event_artifact_kill_event() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			let event = Event::from(StandardEvent::Kill);
 			assert_results!(
 				process.handle_event_artifact(event),
@@ -268,9 +261,9 @@ fn handle_event_artifact_kill_event() {
 
 #[test]
 fn handle_event_artifact_resize_event() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process, view_context, ..
 		 }| {
 			let event = Event::Resize(100, 200);
@@ -282,9 +275,9 @@ fn handle_event_artifact_resize_event() {
 
 #[test]
 fn handle_event_artifact_resize_event_to_small() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process, view_context, ..
 		 }| {
 			process.set_state(State::List);
@@ -300,9 +293,9 @@ fn handle_event_artifact_resize_event_to_small() {
 
 #[test]
 fn handle_event_artifact_resize_event_to_small_already_window_size_error_state() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process, view_context, ..
 		 }| {
 			process.set_state(State::WindowSizeError);
@@ -315,9 +308,9 @@ fn handle_event_artifact_resize_event_to_small_already_window_size_error_state()
 
 #[test]
 fn handle_event_artifact_other_event() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			let event = Event::from('a');
 			assert_results!(process.handle_event_artifact(event));
 		},
@@ -327,9 +320,9 @@ fn handle_event_artifact_other_event() {
 #[test]
 fn handle_state_with_no_change() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			_ = process.handle_state(State::List);
 			module.assert_trace(&[]);
@@ -340,9 +333,9 @@ fn handle_state_with_no_change() {
 #[test]
 fn handle_state_with_change() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			_ = process.handle_state(State::ShowCommit);
 			assert_eq!(process.state(), State::ShowCommit);
@@ -354,9 +347,9 @@ fn handle_state_with_change() {
 #[test]
 fn handle_error_with_previous_state() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			_ = process.handle_error(&anyhow!("Error"), Some(State::ShowCommit));
 			assert_eq!(process.state(), State::Error);
@@ -368,9 +361,9 @@ fn handle_error_with_previous_state() {
 #[test]
 fn handle_error_with_no_previous_state() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module.clone()),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			_ = process.handle_error(&anyhow!("Error"), None);
 			assert_eq!(process.state(), State::Error);
@@ -381,9 +374,9 @@ fn handle_error_with_no_previous_state() {
 
 #[test]
 fn handle_exit_status() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_exit_status(ExitStatus::Abort);
 			assert_eq!(process.exit_status(), ExitStatus::Abort);
 		},
@@ -392,9 +385,9 @@ fn handle_exit_status() {
 
 #[test]
 fn handle_enqueue_resize() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // skip existing events
 			process.render_context.lock().update(120, 130);
 			_ = process.handle_enqueue_resize();
@@ -406,11 +399,11 @@ fn handle_enqueue_resize() {
 #[test]
 fn handle_external_command_success() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = Notifier::new(&process.thread_statuses);
+			let mut notifier = mocks::Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(process.handle_external_command(&(String::from("true"), vec![])));
@@ -425,11 +418,11 @@ fn handle_external_command_success() {
 #[test]
 fn handle_external_command_failure() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = Notifier::new(&process.thread_statuses);
+			let mut notifier = mocks::Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(process.handle_external_command(&(String::from("false"), vec![])));
@@ -452,11 +445,11 @@ fn handle_external_command_not_executable() {
 			.unwrap(),
 	);
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = Notifier::new(&process.thread_statuses);
+			let mut notifier = mocks::Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(
@@ -481,11 +474,11 @@ fn handle_external_command_not_found() {
 			.unwrap(),
 	);
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = Notifier::new(&process.thread_statuses);
+			let mut notifier = mocks::Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			assert_results!(
@@ -502,9 +495,9 @@ fn handle_external_command_not_found() {
 #[test]
 fn handle_results_change_state() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			let results = Results::from(State::ShowCommit);
 			process.handle_results(results);
@@ -515,9 +508,9 @@ fn handle_results_change_state() {
 
 #[test]
 fn handle_results_enqueue_resize() {
-	process_test(
+	testers::process(
 		create_default_test_module_handler(),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // skip existing events
 			process.render_context.lock().update(120, 130);
 			let mut results = Results::new();
@@ -531,9 +524,9 @@ fn handle_results_enqueue_resize() {
 #[test]
 fn handle_results_error() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			process.set_state(State::List);
 			let results = Results::from(anyhow!("Error"));
 			process.handle_results(results);
@@ -545,9 +538,9 @@ fn handle_results_error() {
 #[test]
 fn handle_results_event() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			let results = Results::from(Event::from(StandardEvent::Kill));
 			process.handle_results(results);
 			assert_eq!(process.exit_status(), ExitStatus::Kill);
@@ -558,9 +551,9 @@ fn handle_results_event() {
 #[test]
 fn handle_results_exit_status() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			let results = Results::from(ExitStatus::Abort);
 			process.handle_results(results);
 			assert_eq!(process.exit_status(), ExitStatus::Abort);
@@ -571,11 +564,11 @@ fn handle_results_exit_status() {
 #[test]
 fn handle_results_external_command_success() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext { process, .. }| {
+		|testers::ProcessTestContext { process, .. }| {
 			_ = process.input_state.read_event(); // clear existing event
-			let mut notifier = Notifier::new(&process.thread_statuses);
+			let mut notifier = mocks::Notifier::new(&process.thread_statuses);
 			notifier.register_thread(REFRESH_THREAD_NAME, Status::Waiting);
 			notifier.register_thread(crate::input::THREAD_NAME, Status::Waiting);
 			let mut results = Results::new();
@@ -592,9 +585,9 @@ fn handle_results_external_command_success() {
 #[test]
 fn handle_search_cancel() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process,
 		     search_context,
 		     ..
@@ -610,9 +603,9 @@ fn handle_search_cancel() {
 #[test]
 fn handle_search_term() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process,
 		     search_context,
 		     ..
@@ -632,14 +625,14 @@ fn handle_search_term() {
 #[test]
 fn handle_searchable() {
 	let module = TestModule::new();
-	process_test(
+	testers::process(
 		create_test_module_handler(module),
-		|ProcessTestContext {
+		|testers::ProcessTestContext {
 		     process,
 		     search_context,
 		     ..
 		 }| {
-			let searchable: Box<dyn Searchable> = Box::new(MockedSearchable {});
+			let searchable: Box<dyn Searchable> = Box::new(mocks::Searchable {});
 			let results = Results::from(searchable);
 			process.handle_results(results);
 			assert!(matches!(
