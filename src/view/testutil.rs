@@ -1,26 +1,7 @@
 //! Utilities for writing tests that interact with input events.
-mod assert_rendered_output;
-mod render_view_line;
 
 use std::time::Duration;
 
-pub(crate) use self::{
-	assert_rendered_output::{
-		_assert_rendered_output,
-		replace_invisibles,
-		AllPattern,
-		AnyLinePattern,
-		AnyPattern,
-		ContainsPattern,
-		EndsWithPattern,
-		ExactPattern,
-		LinePattern,
-		NotPattern,
-		StartsWithPattern,
-		_assert_rendered_output_from_view_data,
-	},
-	render_view_line::{render_view_data, render_view_line, AssertRenderOptions},
-};
 use crate::view::{RenderAction, State, ViewAction};
 
 #[allow(clippy::panic)]
@@ -99,12 +80,12 @@ fn action_to_string(action: ViewAction) -> String {
 /// Context for a view state test.
 #[derive(Debug)]
 #[non_exhaustive]
-pub(crate) struct TestContext {
+pub(crate) struct ViewStateTestContext {
 	/// The state instance.
 	pub(crate) state: State,
 }
 
-impl TestContext {
+impl ViewStateTestContext {
 	/// Assert that render actions were sent.
 	pub(crate) fn assert_render_action(&self, actions: &[&str]) {
 		assert_view_state_actions(
@@ -161,6 +142,6 @@ impl TestContext {
 
 /// Provide a `State` instance for use within a view test.
 pub(crate) fn with_view_state<C>(callback: C)
-where C: FnOnce(TestContext) {
-	callback(TestContext { state: State::new() });
+where C: FnOnce(ViewStateTestContext) {
+	callback(ViewStateTestContext { state: State::new() });
 }

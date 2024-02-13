@@ -63,8 +63,8 @@ mod tests {
 		assert_results,
 		input::{KeyCode, StandardEvent},
 		process::Artifact,
+		test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
 		testutil::module_test,
-		view::testutil::AssertRenderOptions,
 	};
 
 	fn create_confirm_abort(todo_file: TodoFile) -> ConfirmAbort {

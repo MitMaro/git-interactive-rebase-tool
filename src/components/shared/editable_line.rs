@@ -209,7 +209,8 @@ mod tests {
 	use super::*;
 	use crate::{
 		assert_rendered_output,
-		view::{testutil::AssertRenderOptions, ViewData, ViewLine},
+		test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
+		view::{ViewData, ViewLine},
 	};
 
 	macro_rules! view_data_from_editable_line {

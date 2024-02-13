@@ -4,7 +4,6 @@ use crate::{
 	assert_rendered_output,
 	testutil::module_test,
 	todo_file::{Action::Pick, ParseError},
-	view::testutil::LinePattern,
 };
 
 #[test]

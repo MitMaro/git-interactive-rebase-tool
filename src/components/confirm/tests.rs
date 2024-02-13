@@ -4,8 +4,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	input::StandardEvent,
-	test_helpers::create_test_keybindings,
-	view::testutil::AssertRenderOptions,
+	test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, create_test_keybindings},
 };
 
 #[test]

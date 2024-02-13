@@ -5,8 +5,8 @@ use crate::{
 	assert_results,
 	process::Artifact,
 	render_line,
+	test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
 	testutil::module_test,
-	view::testutil::AssertRenderOptions,
 };
 
 #[test]
