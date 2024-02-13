@@ -4,19 +4,21 @@ use crate::{
 	input::Event,
 	module::{Module, State},
 	process::Results,
-	test_helpers::{with_event_handler, with_todo_file, EventHandlerTestContext},
-	todo_file::TodoFile,
-	view::{
-		testutil::{with_view_state, ViewStateTestContext as ViewContext},
-		RenderContext,
-		ViewData,
+	test_helpers::{
+		with_event_handler,
+		with_todo_file,
+		with_view_state,
+		EventHandlerTestContext,
+		ViewStateTestContext,
 	},
+	todo_file::TodoFile,
+	view::{RenderContext, ViewData},
 };
 
 pub(crate) struct TestContext {
 	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) render_context: RenderContext,
-	pub(crate) view_context: ViewContext,
+	pub(crate) view_context: ViewStateTestContext,
 	todo_file: Option<TodoFile>,
 }
 

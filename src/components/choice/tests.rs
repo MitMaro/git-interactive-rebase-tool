@@ -4,8 +4,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	input::StandardEvent,
-	test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
-	view::testutil::with_view_state,
+	test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, with_view_state},
 };
 
 #[derive(Clone, Debug, PartialEq)]

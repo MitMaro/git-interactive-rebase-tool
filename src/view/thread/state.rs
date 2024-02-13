@@ -153,7 +153,10 @@ impl State {
 
 #[cfg(test)]
 mod tests {
-	use crate::view::{testutil::with_view_state, ViewData, ViewLine};
+	use crate::{
+		test_helpers::with_view_state,
+		view::{ViewData, ViewLine},
+	};
 
 	#[test]
 	fn start() {

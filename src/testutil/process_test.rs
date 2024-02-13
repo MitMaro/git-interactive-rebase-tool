@@ -8,9 +8,14 @@ use crate::{
 	module::{self, ModuleHandler},
 	process::Process,
 	runtime::ThreadStatuses,
-	test_helpers::{with_event_handler, with_todo_file, EventHandlerTestContext},
+	test_helpers::{
+		with_event_handler,
+		with_todo_file,
+		with_view_state,
+		EventHandlerTestContext,
+		ViewStateTestContext,
+	},
 	testutil::{with_search, SearchTestContext},
-	view::testutil::{with_view_state, ViewStateTestContext as ViewContext},
 };
 
 pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
@@ -18,7 +23,7 @@ pub(crate) struct TestContext<ModuleProvider: module::ModuleProvider + Send + 's
 	pub(crate) process: Process<ModuleProvider>,
 	pub(crate) search_context: SearchTestContext,
 	pub(crate) todo_file_path: PathBuf,
-	pub(crate) view_context: ViewContext,
+	pub(crate) view_context: ViewStateTestContext,
 }
 
 pub(crate) fn process_test<C, ModuleProvider: module::ModuleProvider + Send + 'static>(

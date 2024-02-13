@@ -21,8 +21,6 @@ mod view_line;
 
 #[cfg(test)]
 mod tests;
-#[cfg(test)]
-pub(crate) mod testutil;
 
 use anyhow::{Error, Result};
 

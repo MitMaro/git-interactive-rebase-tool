@@ -56,7 +56,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::view::testutil::with_view_state;
+	use crate::test_helpers::with_view_state;
 
 	#[rstest]
 	#[case::scroll_left(StandardEvent::ScrollLeft, "ScrollLeft")]

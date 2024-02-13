@@ -195,7 +195,7 @@ impl RenderSlice {
 	}
 
 	#[cfg(test)]
-	pub(super) const fn get_actions(&self) -> &VecDeque<RenderAction> {
+	pub(crate) const fn get_actions(&self) -> &VecDeque<RenderAction> {
 		&self.actions
 	}
 
