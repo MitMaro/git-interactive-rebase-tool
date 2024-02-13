@@ -1,5 +1,3 @@
-//! Utilities for writing tests that interact with input events.
-
 use std::time::Duration;
 
 use crate::view::{RenderAction, State, ViewAction};

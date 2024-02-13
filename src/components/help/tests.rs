@@ -4,7 +4,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	input::{KeyModifiers, MouseEvent, MouseEventKind, StandardEvent},
-	view::testutil::with_view_state,
+	test_helpers::with_view_state,
 };
 
 fn handle_event(help: &mut Help, event: Event) {
