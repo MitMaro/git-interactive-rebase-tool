@@ -176,7 +176,7 @@ mod tests {
 
 	fn with_view<C, CT: mocks::MockableTui>(tui: CT, callback: C)
 	where C: FnOnce(View<CT>) {
-		let theme = Theme::new();
+		let theme = Theme::new_with_config(None).unwrap();
 		let display = Display::new(tui, &theme);
 		callback(View::new(display, "~", "?"));
 	}

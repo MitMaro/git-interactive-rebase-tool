@@ -163,11 +163,6 @@ mod tests {
 	use crate::input::KeyEvent;
 
 	#[test]
-	fn new() {
-		let _key_bindings = KeyBindings::new(&crate::config::KeyBindings::new());
-	}
-
-	#[test]
 	fn map_keybindings_with_modifiers() {
 		assert_eq!(map_keybindings(&[String::from("ControlAltShiftUp")]), vec![Event::Key(
 			KeyEvent::new(

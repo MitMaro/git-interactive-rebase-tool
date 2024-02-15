@@ -369,16 +369,20 @@ mod tests {
 	use super::*;
 	use crate::test_helpers::mocks;
 
+	fn create_theme() -> Theme {
+		Theme::new_with_config(None).unwrap()
+	}
+
 	#[test]
 	fn draw_str() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.draw_str("Test String").unwrap();
 		assert_eq!(display.tui.get_output(), &["Test String"]);
 	}
 
 	#[test]
 	fn clear() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.draw_str("Test String").unwrap();
 		display.set_dim(true).unwrap();
 		display.set_reverse(true).unwrap();
@@ -392,7 +396,7 @@ mod tests {
 
 	#[test]
 	fn refresh() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.refresh().unwrap();
 		assert!(!display.tui.is_dirty());
 	}
@@ -532,7 +536,7 @@ mod tests {
 		#[case] expected_foreground: CrosstermColor,
 		#[case] expected_background: CrosstermColor,
 	) {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.color(display_color, selected).unwrap();
 		assert!(
 			display
@@ -551,7 +555,7 @@ mod tests {
 	#[case::dim_underline(true, true, false)]
 	#[case::all_on(true, true, true)]
 	fn style(#[case] dim: bool, #[case] underline: bool, #[case] reverse: bool) {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.set_style(dim, underline, reverse).unwrap();
 		assert_eq!(display.tui.is_dimmed(), dim);
 		assert_eq!(display.tui.is_underline(), underline);
@@ -560,21 +564,21 @@ mod tests {
 
 	#[test]
 	fn get_window_size() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.tui.set_size(Size::new(12, 10));
 		assert_eq!(display.get_window_size(), Size::new(12, 10));
 	}
 
 	#[test]
 	fn ensure_at_line_start() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.ensure_at_line_start().unwrap();
 		assert_eq!(display.tui.get_position(), (0, 0));
 	}
 
 	#[test]
 	fn move_from_end_of_line() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.tui.set_size(Size::new(20, 10));
 		display.move_from_end_of_line(5).unwrap();
 		// character after the 15th character (0-indexed)
@@ -583,14 +587,14 @@ mod tests {
 
 	#[test]
 	fn start() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.start().unwrap();
 		assert_eq!(display.tui.get_state(), mocks::CrosstermMockState::Normal);
 	}
 
 	#[test]
 	fn end() {
-		let mut display = Display::new(mocks::CrossTerm::new(), &Theme::new());
+		let mut display = Display::new(mocks::CrossTerm::new(), &create_theme());
 		display.end().unwrap();
 		assert_eq!(display.tui.get_state(), mocks::CrosstermMockState::Ended);
 	}

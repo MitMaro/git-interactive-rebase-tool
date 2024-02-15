@@ -74,15 +74,8 @@ pub(crate) struct Theme {
 }
 
 impl Theme {
-	/// Create a new configuration with default values.
-	#[must_use]
-	#[allow(clippy::missing_panics_doc)]
-	pub(crate) fn new() -> Self {
-		Self::new_with_config(None).unwrap() // should never error with None config
-	}
-
 	/// Create a new theme from a Git Config reference.
-	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
+	pub(crate) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
 		Ok(Self {
 			character_vertical_spacing: get_string(
 				git_config,
@@ -152,7 +145,7 @@ mod tests {
 
 	macro_rules! config_test {
 		($key:ident, $config_name:literal, $default:expr) => {
-			let config = Theme::new();
+			let config = Theme::new_with_config(None).unwrap();
 			let value = config.$key;
 			assert_eq!(
 				value,
@@ -180,11 +173,6 @@ mod tests {
 	}
 
 	#[test]
-	fn new() {
-		let _config = Theme::new();
-	}
-
-	#[test]
 	fn try_from_git_config() {
 		with_git_config(&[], |git_config| {
 			assert_ok!(Theme::try_from(&git_config));
@@ -200,7 +188,7 @@ mod tests {
 
 	#[test]
 	fn character_vertical_spacing() {
-		assert_eq!(Theme::new().character_vertical_spacing, "~");
+		assert_eq!(Theme::new_with_config(None).unwrap().character_vertical_spacing, "~");
 		with_git_config(
 			&["[interactive-rebase-tool]", "verticalSpacingCharacter = \"X\""],
 			|config| {
