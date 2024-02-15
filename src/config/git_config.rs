@@ -49,13 +49,6 @@ pub(crate) struct GitConfig {
 }
 
 impl GitConfig {
-	/// Create a new configuration with default values.
-	#[must_use]
-	#[allow(clippy::missing_panics_doc)]
-	pub(crate) fn new() -> Self {
-		Self::new_with_config(None).unwrap() // should never error with None config
-	}
-
 	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
 		let mut comment_char = get_string(git_config, "core.commentChar", "#")?;
 		if comment_char.as_str().eq("auto") {
@@ -106,7 +99,7 @@ mod tests {
 			default $default:literal,
 			$($value: literal => $expected: literal),*
 		) => {
-			let config = GitConfig::new();
+			let config = GitConfig::new_with_config(None).unwrap();
 			let value = config.$key;
 			assert_eq!(
 				value,
@@ -133,11 +126,6 @@ mod tests {
 				});
 			}
 		};
-	}
-
-	#[test]
-	fn new() {
-		let _config = GitConfig::new();
 	}
 
 	#[test]
@@ -170,7 +158,7 @@ mod tests {
 	fn git_editor_default_no_env() {
 		remove_var("VISUAL");
 		remove_var("EDITOR");
-		let config = GitConfig::new();
+		let config = GitConfig::new_with_config(None).unwrap();
 		assert_eq!(config.editor, "vi");
 	}
 
@@ -179,7 +167,7 @@ mod tests {
 	fn git_editor_default_visual_env() {
 		remove_var("EDITOR");
 		set_var("VISUAL", "visual-editor");
-		let config = GitConfig::new();
+		let config = GitConfig::new_with_config(None).unwrap();
 		assert_eq!(config.editor, "visual-editor");
 	}
 
@@ -189,7 +177,7 @@ mod tests {
 		remove_var("VISUAL");
 		set_var("EDITOR", "editor");
 
-		let config = GitConfig::new();
+		let config = GitConfig::new_with_config(None).unwrap();
 		assert_eq!(config.editor, "editor");
 	}
 
