@@ -5,16 +5,16 @@ use crate::git::{Delta, FileMode, Status};
 /// Represents a file change within a Git repository
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct FileStatus {
-	pub(crate) deltas: Vec<Delta>,
-	pub(crate) destination_is_binary: bool,
-	pub(crate) destination_mode: FileMode,
-	pub(crate) destination_path: PathBuf,
-	pub(crate) largest_new_line_number: u32,
-	pub(crate) largest_old_line_number: u32,
-	pub(crate) source_is_binary: bool,
-	pub(crate) source_mode: FileMode,
-	pub(crate) source_path: PathBuf,
-	pub(crate) status: Status,
+	deltas: Vec<Delta>,
+	destination_is_binary: bool,
+	destination_mode: FileMode,
+	destination_path: PathBuf,
+	largest_new_line_number: u32,
+	largest_old_line_number: u32,
+	source_is_binary: bool,
+	source_mode: FileMode,
+	source_path: PathBuf,
+	status: Status,
 }
 
 impl FileStatus {
@@ -70,12 +70,14 @@ impl FileStatus {
 
 	/// Get the destination file mode for this change.
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn destination_mode(&self) -> FileMode {
 		self.destination_mode
 	}
 
 	/// Is the destination file a binary file.
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn destination_is_binary(&self) -> bool {
 		self.destination_is_binary
 	}
@@ -88,12 +90,14 @@ impl FileStatus {
 
 	/// Get the source file mode for this change.
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn source_mode(&self) -> FileMode {
 		self.source_mode
 	}
 
 	/// Is the source file a binary file.
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn source_is_binary(&self) -> bool {
 		self.source_is_binary
 	}
