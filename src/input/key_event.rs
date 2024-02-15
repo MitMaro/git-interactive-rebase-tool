@@ -1,4 +1,4 @@
-use crossterm::event::{KeyCode, KeyModifiers};
+use crate::input::{KeyCode, KeyModifiers};
 
 /// Represents a key event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]

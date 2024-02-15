@@ -1,6 +1,4 @@
-use crossterm::event::{KeyCode, MouseEvent};
-
-use crate::input::{KeyEvent, StandardEvent};
+use crate::input::{KeyCode, KeyEvent, MouseEvent, StandardEvent};
 
 /// An event, either from an input device, system change or action event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]

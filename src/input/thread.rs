@@ -91,11 +91,10 @@ where EventProvider: EventReaderFn
 #[cfg(test)]
 mod tests {
 	use anyhow::anyhow;
-	use crossterm::event::{KeyCode, KeyModifiers};
 
 	use super::*;
 	use crate::{
-		input::KeyEvent,
+		input::{KeyCode, KeyEvent, KeyModifiers},
 		runtime::Status,
 		test_helpers::{create_event_reader, testers},
 	};

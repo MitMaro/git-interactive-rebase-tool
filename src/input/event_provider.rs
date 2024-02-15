@@ -3,11 +3,13 @@ use std::time::Duration;
 use anyhow::{anyhow, Result};
 #[cfg(not(test))]
 use crossterm::event::{poll, read};
-use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseEvent, MouseEventKind};
+use crossterm::event::{Event, KeyEvent};
 #[cfg(test)]
 use read_event_mocks::{poll, read};
 
-/// Function that returns a event
+use crate::input::{KeyEventKind, MouseEvent, MouseEventKind};
+
+/// Function that returns an event
 pub(crate) trait EventReaderFn: Fn() -> Result<Option<Event>> + Send + Sync + 'static {}
 
 impl<FN: Fn() -> Result<Option<Event>> + Send + Sync + 'static> EventReaderFn for FN {}
