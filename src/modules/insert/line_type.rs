@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum LineType {
 	Cancel,
@@ -9,16 +11,16 @@ pub(crate) enum LineType {
 	UpdateRef,
 }
 
-impl ToString for LineType {
-	fn to_string(&self) -> String {
+impl Display for LineType {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match *self {
-			Self::Cancel => String::from("<cancel>"),
-			Self::Pick => String::from("pick"),
-			Self::Exec => String::from("exec"),
-			Self::Label => String::from("label"),
-			Self::Merge => String::from("merge"),
-			Self::Reset => String::from("reset"),
-			Self::UpdateRef => String::from("update-ref"),
+			Self::Cancel => write!(f, "<cancel>"),
+			Self::Pick => write!(f, "pick"),
+			Self::Exec => write!(f, "exec"),
+			Self::Label => write!(f, "label"),
+			Self::Merge => write!(f, "merge"),
+			Self::Reset => write!(f, "reset"),
+			Self::UpdateRef => write!(f, "update-ref"),
 		}
 	}
 }
