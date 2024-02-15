@@ -109,7 +109,7 @@ mod tests {
 		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
 			.file_statuses(file_statuses)
 			.build();
-		assert_eq!(diff.file_statuses()[0].source_path.to_string_lossy(), "foo");
+		assert_eq!(diff.file_statuses()[0].source_path().to_string_lossy(), "foo");
 	}
 
 	#[test]
