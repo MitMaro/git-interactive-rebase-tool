@@ -145,14 +145,14 @@ impl<'options> CommitDiffLoader<'options> {
 
 		let fsb = file_stats_builder.into_inner();
 
-		Ok(CommitDiff {
-			commit: Commit::from(commit),
-			parent: parent.map(Commit::from),
-			file_statuses: fsb.build(),
+		Ok(CommitDiff::new(
+			Commit::from(commit),
+			parent.map(Commit::from),
+			fsb.build(),
 			number_files_changed,
 			number_insertions,
 			number_deletions,
-		})
+		))
 	}
 }
 

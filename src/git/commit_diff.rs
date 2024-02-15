@@ -3,15 +3,33 @@ use crate::git::{Commit, FileStatus};
 /// Represents a commit with a diff
 #[derive(Debug)]
 pub(crate) struct CommitDiff {
-	pub(crate) commit: Commit,
-	pub(crate) parent: Option<Commit>,
-	pub(crate) file_statuses: Vec<FileStatus>,
-	pub(crate) number_files_changed: usize,
-	pub(crate) number_insertions: usize,
-	pub(crate) number_deletions: usize,
+	commit: Commit,
+	parent: Option<Commit>,
+	file_statuses: Vec<FileStatus>,
+	number_files_changed: usize,
+	number_insertions: usize,
+	number_deletions: usize,
 }
 
 impl CommitDiff {
+	pub(crate) fn new(
+		commit: Commit,
+		parent: Option<Commit>,
+		file_statuses: Vec<FileStatus>,
+		number_files_changed: usize,
+		number_insertions: usize,
+		number_deletions: usize,
+	) -> Self {
+		CommitDiff {
+			commit,
+			parent,
+			file_statuses,
+			number_files_changed,
+			number_insertions,
+			number_deletions,
+		}
+	}
+
 	/// The commit of the diff
 	#[must_use]
 	pub(crate) const fn commit(&self) -> &Commit {
@@ -20,6 +38,7 @@ impl CommitDiff {
 
 	/// The parent commit for the diff
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn parent(&self) -> &Option<Commit> {
 		&self.parent
 	}

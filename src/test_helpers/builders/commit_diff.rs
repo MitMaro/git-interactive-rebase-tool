@@ -3,7 +3,12 @@ use crate::git::{Commit, CommitDiff, FileStatus};
 /// Builder for creating a new commit diff.
 #[derive(Debug)]
 pub(crate) struct CommitDiffBuilder {
-	commit_diff: CommitDiff,
+	commit: Commit,
+	parent: Option<Commit>,
+	file_statuses: Vec<FileStatus>,
+	number_files_changed: usize,
+	number_insertions: usize,
+	number_deletions: usize,
 }
 
 impl CommitDiffBuilder {
@@ -11,14 +16,12 @@ impl CommitDiffBuilder {
 	#[must_use]
 	pub(crate) const fn new(commit: Commit) -> Self {
 		Self {
-			commit_diff: CommitDiff {
-				commit,
-				parent: None,
-				file_statuses: vec![],
-				number_files_changed: 0,
-				number_insertions: 0,
-				number_deletions: 0,
-			},
+			commit,
+			parent: None,
+			file_statuses: vec![],
+			number_files_changed: 0,
+			number_insertions: 0,
+			number_deletions: 0,
 		}
 	}
 
@@ -26,7 +29,7 @@ impl CommitDiffBuilder {
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn commit(mut self, commit: Commit) -> Self {
-		self.commit_diff.commit = commit;
+		self.commit = commit;
 		self
 	}
 
@@ -34,35 +37,35 @@ impl CommitDiffBuilder {
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn parent(mut self, parent: Commit) -> Self {
-		self.commit_diff.parent = Some(parent);
+		self.parent = Some(parent);
 		self
 	}
 
 	/// Set the `FileStatus`es.
 	#[must_use]
 	pub(crate) fn file_statuses(mut self, statuses: Vec<FileStatus>) -> Self {
-		self.commit_diff.file_statuses = statuses;
+		self.file_statuses = statuses;
 		self
 	}
 
 	/// Set the number of files changed.
 	#[must_use]
 	pub(crate) const fn number_files_changed(mut self, count: usize) -> Self {
-		self.commit_diff.number_files_changed = count;
+		self.number_files_changed = count;
 		self
 	}
 
 	/// Set the number of line insertions.
 	#[must_use]
 	pub(crate) const fn number_insertions(mut self, count: usize) -> Self {
-		self.commit_diff.number_insertions = count;
+		self.number_insertions = count;
 		self
 	}
 
 	/// Set the number of line deletions.
 	#[must_use]
 	pub(crate) const fn number_deletions(mut self, count: usize) -> Self {
-		self.commit_diff.number_deletions = count;
+		self.number_deletions = count;
 		self
 	}
 
@@ -70,6 +73,13 @@ impl CommitDiffBuilder {
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> CommitDiff {
-		self.commit_diff
+		CommitDiff::new(
+			self.commit,
+			self.parent,
+			self.file_statuses,
+			self.number_files_changed,
+			self.number_insertions,
+			self.number_deletions,
+		)
 	}
 }
