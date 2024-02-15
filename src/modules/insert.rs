@@ -74,7 +74,7 @@ impl Module for Insert {
 					}
 					else {
 						self.line_type = action.clone();
-						self.edit.set_label(format!("{} ", action.to_string()).as_str());
+						self.edit.set_label(format!("{action} ").as_str());
 						self.state = InsertState::Edit;
 					}
 				}
