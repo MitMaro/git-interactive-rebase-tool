@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 /// Represents a user within a commit with a name and email address
 #[derive(Debug, Eq, PartialEq)]
 pub(crate) struct User {
@@ -32,33 +34,23 @@ impl User {
 	pub(crate) const fn is_some(&self) -> bool {
 		self.name.is_some() || self.email.is_some()
 	}
-
-	/// Returns `true` if both name and email is a `None` value.
-	#[must_use]
-	pub(crate) const fn is_none(&self) -> bool {
-		self.name.is_none() && self.email.is_none()
-	}
 }
 
-impl ToString for User {
-	/// Creates a formatted string of the user
-	///
-	/// The user if formatted with "Name &lt;Email&gt;", which matches the Git CLI. If name or email are
-	/// `None` then they are omitted from the result. If neither are set, and empty is returned.
-	fn to_string(&self) -> String {
-		if let Some(name) = self.name.as_ref() {
-			if let Some(email) = self.email.as_ref() {
-				format!("{name} <{email}>")
+impl Display for User {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		if let Some(name) = self.name() {
+			if let Some(email) = self.email() {
+				write!(f, "{name} <{email}>")
 			}
 			else {
-				String::from(name)
+				write!(f, "{name}")
 			}
 		}
-		else if let Some(email) = self.email.as_ref() {
-			format!("<{email}>")
+		else if let Some(email) = self.email() {
+			write!(f, "<{email}>")
 		}
 		else {
-			String::new()
+			write!(f, "")
 		}
 	}
 }
@@ -89,14 +81,12 @@ mod tests {
 	fn is_some_none_when_some(#[case] name: Option<&str>, #[case] email: Option<&str>) {
 		let user = User::new(name, email);
 		assert!(user.is_some());
-		assert!(!user.is_none());
 	}
 
 	#[test]
 	fn is_some_none_when_none() {
 		let user = User::new(None, None);
 		assert!(!user.is_some());
-		assert!(user.is_none());
 	}
 
 	#[test]
