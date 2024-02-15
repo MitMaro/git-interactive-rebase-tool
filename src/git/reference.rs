@@ -4,41 +4,56 @@ use crate::git::ReferenceKind;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Reference {
 	/// The object id
-	pub(crate) hash: String,
+	hash: String,
 	/// The reference full name
-	pub(crate) name: String,
+	name: String,
 	/// The reference shorthand name
-	pub(crate) shorthand: String,
+	shorthand: String,
 	/// The kind of reference
-	pub(crate) kind: ReferenceKind,
+	kind: ReferenceKind,
 }
 
 impl Reference {
+	pub(crate) fn new(hash: String, name: String, shorthand: String, kind: ReferenceKind) -> Self {
+		Self {
+			hash,
+			name,
+			shorthand,
+			kind,
+		}
+	}
+
 	/// Get the oid of the reference
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) fn hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
 	/// Get the name of the reference
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) fn name(&self) -> &str {
 		self.name.as_str()
 	}
 
 	/// Get the shorthand name of the reference
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) fn shortname(&self) -> &str {
 		self.shorthand.as_str()
 	}
 
 	/// Get the kind of the reference
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn kind(&self) -> ReferenceKind {
 		self.kind
 	}
+}
 
-	pub(crate) fn from(reference: &git2::Reference<'_>) -> Self {
+impl From<&git2::Reference<'_>> for Reference {
+	fn from(reference: &git2::Reference<'_>) -> Self {
 		let oid = reference
 			.peel(git2::ObjectType::Any)
 			.expect("Reference peel failed")
@@ -47,12 +62,7 @@ impl Reference {
 		let name = String::from(reference.name().unwrap_or("InvalidRef"));
 		let shorthand = String::from(reference.shorthand().unwrap_or("InvalidRef"));
 
-		Self {
-			hash: format!("{oid}"),
-			name,
-			shorthand,
-			kind,
-		}
+		Self::new(format!("{oid}"), name, shorthand, kind)
 	}
 }
 

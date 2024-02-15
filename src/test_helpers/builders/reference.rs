@@ -3,7 +3,10 @@ use crate::git::{Reference, ReferenceKind};
 /// Builder for creating a new reference.
 #[derive(Debug)]
 pub(crate) struct ReferenceBuilder {
-	reference: Reference,
+	hash: String,
+	name: String,
+	shorthand: String,
+	kind: ReferenceKind,
 }
 
 impl ReferenceBuilder {
@@ -12,36 +15,34 @@ impl ReferenceBuilder {
 	#[must_use]
 	pub(crate) fn new(hash: &str) -> Self {
 		Self {
-			reference: Reference {
-				hash: String::from(hash),
-				name: String::from("refs/heads/main"),
-				shorthand: String::from("main"),
-				kind: ReferenceKind::Branch,
-			},
+			hash: String::from(hash),
+			name: String::from("refs/heads/main"),
+			shorthand: String::from("main"),
+			kind: ReferenceKind::Branch,
 		}
 	}
 
 	/// Set the hash.
 	pub(crate) fn hash(&mut self, hash: &str) -> &mut Self {
-		self.reference.hash = String::from(hash);
+		self.hash = String::from(hash);
 		self
 	}
 
 	/// Set the name.
 	pub(crate) fn name(&mut self, name: &str) -> &mut Self {
-		self.reference.name = String::from(name);
+		self.name = String::from(name);
 		self
 	}
 
 	/// Set the shortname.
 	pub(crate) fn shorthand(&mut self, shorthand: &str) -> &mut Self {
-		self.reference.shorthand = String::from(shorthand);
+		self.shorthand = String::from(shorthand);
 		self
 	}
 
 	/// Set the kind.
 	pub(crate) fn kind(&mut self, kind: ReferenceKind) -> &mut Self {
-		self.reference.kind = kind;
+		self.kind = kind;
 		self
 	}
 
@@ -49,6 +50,6 @@ impl ReferenceBuilder {
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> Reference {
-		self.reference
+		Reference::new(self.hash, self.name, self.shorthand, self.kind)
 	}
 }
