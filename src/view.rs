@@ -24,12 +24,14 @@ mod tests;
 
 use anyhow::{Error, Result};
 
+#[cfg(test)]
+pub(crate) use self::render_slice::RenderAction;
 pub(crate) use self::{
 	line_segment::LineSegment,
 	render_context::RenderContext,
-	render_slice::{RenderAction, RenderSlice},
+	render_slice::RenderSlice,
 	scroll_position::ScrollPosition,
-	thread::{State, Thread, ViewAction, MAIN_THREAD_NAME, REFRESH_THREAD_NAME},
+	thread::{State, Thread, ViewAction, REFRESH_THREAD_NAME},
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,
