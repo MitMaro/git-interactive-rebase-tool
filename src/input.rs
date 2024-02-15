@@ -17,7 +17,7 @@ mod key_event;
 mod standard_event;
 mod thread;
 
-pub(crate) use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
+pub(crate) use crossterm::event::{KeyCode, KeyEventKind, KeyModifiers, MouseEvent, MouseEventKind};
 
 pub(crate) use self::{
 	event::Event,
