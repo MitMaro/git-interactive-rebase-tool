@@ -14,6 +14,7 @@ mod event_provider;
 mod input_options;
 mod key_bindings;
 mod key_event;
+mod map_keybindings;
 mod standard_event;
 mod thread;
 
@@ -24,8 +25,9 @@ pub(crate) use self::{
 	event_handler::EventHandler,
 	event_provider::{read_event, EventReaderFn},
 	input_options::InputOptions,
-	key_bindings::{map_keybindings, KeyBindings},
+	key_bindings::KeyBindings,
 	key_event::KeyEvent,
+	map_keybindings::map_keybindings,
 	standard_event::StandardEvent,
 	thread::{State, Thread, THREAD_NAME},
 };
