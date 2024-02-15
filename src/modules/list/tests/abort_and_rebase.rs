@@ -7,7 +7,7 @@ fn normal_mode_abort() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Abort)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Abort)),
@@ -26,7 +26,7 @@ fn visual_mode_abort() {
 			Event::from(StandardEvent::Abort),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -43,7 +43,7 @@ fn normal_mode_force_abort() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ForceAbort)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::ForceAbort)),
@@ -63,7 +63,7 @@ fn visual_mode_force_abort() {
 			Event::from(StandardEvent::ForceAbort),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -81,7 +81,7 @@ fn normal_mode_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Rebase)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Rebase)),
@@ -100,7 +100,7 @@ fn visual_mode_rebase() {
 			Event::from(StandardEvent::Rebase),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -117,7 +117,7 @@ fn normal_mode_force_rebase() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ForceRebase)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::ForceRebase)),
@@ -137,7 +137,7 @@ fn visual_mode_force_rebase() {
 			Event::from(StandardEvent::ForceRebase),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),

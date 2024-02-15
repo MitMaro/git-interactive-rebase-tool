@@ -7,7 +7,7 @@ fn edit_with_edit_content() {
 		&["exec echo foo"],
 		&[Event::from(StandardEvent::Edit)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Edit))
@@ -23,7 +23,7 @@ fn edit_without_edit_content() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Edit)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::Edit))
@@ -36,7 +36,7 @@ fn edit_without_edit_content() {
 #[test]
 fn edit_without_selected_line() {
 	testers::module(&[], &[Event::from(StandardEvent::Edit)], |mut test_context| {
-		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut module = create_list(&create_config(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from(StandardEvent::Edit))
@@ -55,7 +55,7 @@ fn handle_event() {
 			Event::from(KeyCode::Enter),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.build_view_data(&mut module);
 			_ = test_context.handle_all_events(&mut module);
 			assert_eq!(module.todo_file.lock().get_line(0).unwrap().get_content(), "fo");
@@ -70,7 +70,7 @@ fn render() {
 		&["exec foo"],
 		&[Event::from(StandardEvent::Edit)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(

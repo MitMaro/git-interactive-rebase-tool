@@ -18,7 +18,7 @@ mod undo_redo;
 mod visual_mode;
 
 use super::*;
-use crate::test_helpers::testers;
+use crate::test_helpers::{create_config, testers};
 
 pub(crate) fn create_list(config: &Config, todo_file: TodoFile) -> List {
 	List::new(config, Arc::new(Mutex::new(todo_file)))
@@ -27,7 +27,7 @@ pub(crate) fn create_list(config: &Config, todo_file: TodoFile) -> List {
 #[test]
 fn resize() {
 	testers::module(&["pick aaa c1"], &[Event::Resize(100, 200)], |mut test_context| {
-		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut module = create_list(&create_config(), test_context.take_todo_file());
 		_ = test_context.handle_all_events(&mut module);
 		assert_eq!(module.height, 200);
 	});

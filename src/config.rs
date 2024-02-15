@@ -67,14 +67,7 @@ pub(crate) struct Config {
 }
 
 impl Config {
-	/// Create a new configuration with default values.
-	#[must_use]
-	#[allow(clippy::missing_panics_doc)]
-	pub(crate) fn new() -> Self {
-		Self::new_with_config(None).unwrap() // should never error with None config
-	}
-
-	fn new_with_config(git_config: Option<&crate::git::Config>) -> Result<Self, ConfigError> {
+	pub(crate) fn new_with_config(git_config: Option<&crate::git::Config>) -> Result<Self, ConfigError> {
 		Ok(Self {
 			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
 			diff_ignore_whitespace: get_diff_ignore_whitespace(
@@ -136,11 +129,6 @@ mod tests {
 
 	use super::*;
 	use crate::test_helpers::{invalid_utf, with_git_config, with_temp_bare_repository};
-
-	#[test]
-	fn new() {
-		let _config = Config::new();
-	}
 
 	#[test]
 	fn try_from_repository() {

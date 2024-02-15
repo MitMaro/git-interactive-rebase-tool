@@ -9,7 +9,7 @@ use crate::{
 #[test]
 fn edit_mode_passthrough_event() {
 	testers::read_event(Event::from('p'), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		module.state = ListState::Edit;
 		assert_eq!(context.read_event(&module), Event::from('p'));
 	});
@@ -18,7 +18,7 @@ fn edit_mode_passthrough_event() {
 #[test]
 fn normal_mode_help() {
 	testers::read_event(Event::from('?'), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		module.normal_mode_help.set_active();
 		assert_eq!(context.read_event(&module), Event::from(StandardEvent::Help));
 	});
@@ -27,7 +27,7 @@ fn normal_mode_help() {
 #[test]
 fn visual_mode_help() {
 	testers::read_event(Event::from('?'), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		module.visual_mode_help.set_active();
 		assert_eq!(context.read_event(&module), Event::from(StandardEvent::Help));
 	});
@@ -36,7 +36,7 @@ fn visual_mode_help() {
 #[test]
 fn search() {
 	testers::read_event(Event::from('p'), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		module.search_bar.start_search(Some(""));
 		assert_eq!(context.read_event(&module), Event::from('p'));
 	});
@@ -63,7 +63,7 @@ fn search() {
 #[case::togglevisualmode('v', StandardEvent::ToggleVisualMode)]
 fn default_events_single_char(#[case] binding: char, #[case] expected: StandardEvent) {
 	testers::read_event(Event::from(binding), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
@@ -80,7 +80,7 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: StandardE
 #[case::delete(KeyCode::Delete, StandardEvent::Delete)]
 fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent) {
 	testers::read_event(Event::from(code), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
@@ -91,7 +91,7 @@ fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent
 #[case::abort('p', StandardEvent::ActionPick)]
 fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
 	testers::read_event(Event::from(binding), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Fixup);
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
@@ -102,7 +102,7 @@ fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
 #[case::abort('U')]
 fn fixup_events_with_non_fixpo_event(#[case] binding: char) {
 	testers::read_event(Event::from(binding), |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		module.selected_line_action = Some(Action::Pick);
 		assert_eq!(context.read_event(&module), Event::from(binding));
 	});
@@ -118,7 +118,7 @@ fn mouse_move_down() {
 			modifiers: KeyModifiers::empty(),
 		}),
 		|mut context| {
-			let mut module = create_list(&Config::new(), context.take_todo_file());
+			let mut module = create_list(&create_config(), context.take_todo_file());
 			assert_eq!(context.read_event(&module), Event::from(StandardEvent::MoveCursorDown));
 		},
 	);
@@ -134,7 +134,7 @@ fn mouse_move_up() {
 			modifiers: KeyModifiers::empty(),
 		}),
 		|mut context| {
-			let mut module = create_list(&Config::new(), context.take_todo_file());
+			let mut module = create_list(&create_config(), context.take_todo_file());
 			assert_eq!(context.read_event(&module), Event::from(StandardEvent::MoveCursorUp));
 		},
 	);
@@ -149,7 +149,7 @@ fn mouse_other() {
 		modifiers: KeyModifiers::empty(),
 	});
 	testers::read_event(mouse_event, |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), mouse_event);
 	});
 }
@@ -157,7 +157,7 @@ fn mouse_other() {
 #[test]
 fn event_other() {
 	testers::read_event(Event::None, |mut context| {
-		let mut module = create_list(&Config::new(), context.take_todo_file());
+		let mut module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::None);
 	});
 }

@@ -4,7 +4,7 @@ use crate::{assert_rendered_output, test_helpers::testers};
 #[test]
 fn empty_list() {
 	testers::module(&[], &[], |mut test_context| {
-		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut module = create_list(&create_config(), test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			Style view_data,
@@ -36,7 +36,7 @@ fn full() {
 		],
 		&[],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Style view_data,
@@ -83,7 +83,7 @@ fn compact() {
 		&[],
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Style view_data,
@@ -112,7 +112,7 @@ fn compact() {
 #[test]
 fn noop_list() {
 	testers::module(&["break"], &[], |mut test_context| {
-		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut module = create_list(&create_config(), test_context.take_todo_file());
 		let mut todo_file = module.todo_file.lock();
 		todo_file.remove_lines(0, 0);
 		todo_file.add_line(0, Line::parse("noop").unwrap());
@@ -146,7 +146,7 @@ fn pinned_segments() {
 		],
 		&[Event::from(StandardEvent::ActionDrop)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -173,7 +173,7 @@ fn pinned_segments() {
 #[test]
 fn full_with_short_actions() {
 	testers::module(&["pick aaaaaaaa comment 1"], &[], |mut test_context| {
-		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut module = create_list(&create_config(), test_context.take_todo_file());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			Style view_data,
