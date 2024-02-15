@@ -41,7 +41,7 @@ impl Confirm {
 	pub(crate) fn read_event(event: Event, key_bindings: &KeyBindings) -> Event {
 		if let Event::Key(key) = event {
 			if let KeyCode::Char(c) = key.code {
-				let mut event_lower_modifiers = key.modifiers;
+				let event_lower_modifiers = key.modifiers;
 				let event_lower = Event::Key(KeyEvent::new(
 					KeyCode::Char(c.to_ascii_lowercase()),
 					event_lower_modifiers,
