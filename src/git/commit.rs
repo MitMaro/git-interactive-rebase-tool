@@ -24,6 +24,7 @@ impl Commit {
 
 	/// Get the reference to the commit
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn reference(&self) -> &Option<Reference> {
 		&self.reference
 	}
@@ -36,6 +37,7 @@ impl Commit {
 
 	/// Get the author of the commit.
 	#[must_use]
+	#[allow(dead_code)]
 	pub(crate) const fn authored_date(&self) -> &Option<DateTime<Local>> {
 		&self.authored_date
 	}
