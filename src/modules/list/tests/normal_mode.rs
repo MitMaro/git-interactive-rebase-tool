@@ -14,7 +14,7 @@ fn change_auto_select_next_with_next_line() {
 		&["pick aaa c1", "pick aaa c2"],
 		&[Event::from(StandardEvent::ActionSquash)],
 		|mut test_context| {
-			let mut config = Config::new();
+			let mut config = create_config();
 			config.auto_select_next = true;
 			let mut module = create_list(&config, test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
@@ -34,7 +34,7 @@ fn toggle_visual_mode() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ToggleVisualMode)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::ToggleVisualMode))
@@ -48,7 +48,7 @@ fn toggle_visual_mode() {
 #[test]
 fn other_event() {
 	testers::module(&["pick aaa c1"], &[Event::from(KeyCode::Null)], |mut test_context| {
-		let mut module = create_list(&Config::new(), test_context.take_todo_file());
+		let mut module = create_list(&create_config(), test_context.take_todo_file());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from(KeyCode::Null))

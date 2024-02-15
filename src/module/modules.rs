@@ -69,14 +69,14 @@ impl ModuleProvider for Modules {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::test_helpers::{with_temp_repository, with_todo_file};
+	use crate::test_helpers::{create_config, with_temp_repository, with_todo_file};
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {
 		with_temp_repository(|repository| {
 			with_todo_file(&[], |todo_file_context| {
 				let (_todo_file_path, todo_file) = todo_file_context.to_owned();
-				let config = Config::new();
+				let config = create_config();
 				let modules = Modules::new(&config, repository, &Arc::new(Mutex::new(todo_file)));
 				callback(modules);
 			});

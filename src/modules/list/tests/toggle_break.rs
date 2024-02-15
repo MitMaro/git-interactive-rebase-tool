@@ -12,7 +12,7 @@ fn change_toggle_break_add() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionBreak)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -33,7 +33,7 @@ fn change_toggle_break_remove() {
 			Event::from(StandardEvent::ActionBreak),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -50,7 +50,7 @@ fn change_toggle_break_above_existing() {
 		&["pick aaa c1", "break"],
 		&[Event::from(StandardEvent::ActionBreak)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(

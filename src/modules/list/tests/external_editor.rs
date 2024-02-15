@@ -7,7 +7,7 @@ fn normal_mode_open_external_editor() {
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::OpenInEditor)],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::OpenInEditor)),
@@ -26,7 +26,7 @@ fn visual_mode_open_external_editor() {
 			Event::from(StandardEvent::OpenInEditor),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_event(&mut module);
 			assert_results!(
 				test_context.handle_event(&mut module),
@@ -48,7 +48,7 @@ fn cancels_search() {
 			Event::from(StandardEvent::OpenInEditor),
 		],
 		|mut test_context| {
-			let mut module = create_list(&Config::new(), test_context.take_todo_file());
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
 			assert!(!module.search_bar.is_searching());
 		},

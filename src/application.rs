@@ -197,7 +197,14 @@ mod tests {
 		input::{Event, KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
-		test_helpers::{create_event_reader, mocks, set_git_directory, DefaultTestModule, TestModuleProvider},
+		test_helpers::{
+			create_config,
+			create_event_reader,
+			mocks,
+			set_git_directory,
+			DefaultTestModule,
+			TestModuleProvider,
+		},
 	};
 
 	fn args(args: &[&str]) -> Args {
@@ -267,7 +274,7 @@ mod tests {
 
 	#[test]
 	fn todo_file_options_without_command() {
-		let mut config = Config::new();
+		let mut config = create_config();
 		config.undo_limit = 10;
 		config.git.comment_char = String::from("#");
 		config.post_modified_line_exec_command = None;
@@ -281,7 +288,7 @@ mod tests {
 
 	#[test]
 	fn todo_file_options_with_command() {
-		let mut config = Config::new();
+		let mut config = create_config();
 		config.undo_limit = 10;
 		config.git.comment_char = String::from("#");
 		config.post_modified_line_exec_command = Some(String::from("command"));
