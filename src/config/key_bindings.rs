@@ -114,13 +114,6 @@ pub(crate) struct KeyBindings {
 }
 
 impl KeyBindings {
-	/// Create a new configuration with default values.
-	#[must_use]
-	#[allow(clippy::missing_panics_doc)]
-	pub(crate) fn new() -> Self {
-		Self::new_with_config(None).unwrap() // should never error with None config
-	}
-
 	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
 		let confirm_no = get_input(git_config, "interactive-rebase-tool.inputConfirmNo", "n")?
 			.iter()
@@ -202,7 +195,7 @@ mod tests {
 
 	macro_rules! config_test {
 		($key:ident, $config_name:literal, $default:literal) => {
-			let config = KeyBindings::new();
+			let config = KeyBindings::new_with_config(None).unwrap();
 			let value = config.$key[0].as_str();
 			assert_eq!(
 				value,
@@ -227,11 +220,6 @@ mod tests {
 				},
 			);
 		};
-	}
-
-	#[test]
-	fn new() {
-		let _config = KeyBindings::new();
 	}
 
 	#[test]
