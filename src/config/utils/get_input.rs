@@ -76,9 +76,8 @@ pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> R
 
 #[cfg(test)]
 mod tests {
-	use claims::assert_ok_eq;
+	use claims::{assert_err_eq, assert_ok_eq};
 	use rstest::rstest;
-	use testutils::assert_err_eq;
 
 	use super::*;
 	use crate::test_helpers::{invalid_utf, with_git_config};

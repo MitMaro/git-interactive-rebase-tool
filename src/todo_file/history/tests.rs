@@ -1,7 +1,7 @@
 use claims::assert_some_eq;
-use testutils::assert_empty;
 
 use super::*;
+use crate::assert_empty;
 
 fn history_item_to_string(item: &HistoryItem) -> String {
 	let range = if item.start_index == item.end_index {

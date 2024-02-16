@@ -133,9 +133,8 @@ impl TryFrom<&Config> for Theme {
 
 #[cfg(test)]
 mod tests {
-	use claims::{assert_err, assert_ok};
+	use claims::{assert_err, assert_err_eq, assert_ok};
 	use rstest::rstest;
-	use testutils::assert_err_eq;
 
 	use super::*;
 	use crate::{

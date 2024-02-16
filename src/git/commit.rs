@@ -117,8 +117,7 @@ impl From<&git2::Commit<'_>> for Commit {
 
 #[cfg(test)]
 mod tests {
-	use claims::{assert_none, assert_some_eq};
-	use testutils::assert_err_eq;
+	use claims::{assert_err_eq, assert_none, assert_some_eq};
 
 	use super::*;
 	use crate::test_helpers::{

@@ -79,8 +79,7 @@ impl ThreadStatuses {
 mod tests {
 	use std::{ops::Mul, thread};
 
-	use claims::{assert_err, assert_ok, assert_some_eq};
-	use testutils::assert_err_eq;
+	use claims::{assert_err, assert_err_eq, assert_ok, assert_some_eq};
 
 	use super::*;
 

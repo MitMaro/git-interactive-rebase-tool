@@ -123,8 +123,7 @@ impl TryFrom<&crate::git::Config> for Config {
 mod tests {
 	use std::fmt::Debug;
 
-	use ::testutils::assert_err_eq;
-	use claims::assert_ok;
+	use claims::{assert_err_eq, assert_ok};
 	use rstest::rstest;
 
 	use super::*;

@@ -23,11 +23,6 @@ edition = "2021"
 name = "interactive-rebase-tool"
 path = "src/main.rs"
 
-[workspace]
-members = [
-    "src/packages/testutils",
-]
-
 [dependencies]
 anyhow = "1.0.72"
 bitflags = "2.4.2"
@@ -59,7 +54,6 @@ regex = "1.8.3"
 rstest = "0.18.1"
 serial_test = "2.0.0"
 tempfile = "3.7.0"
-girt-testutils = {version = "2.3.0", path = "src/packages/testutils"}
 
 [build-dependencies]
 chrono = "0.4.26"

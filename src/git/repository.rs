@@ -188,9 +188,8 @@ impl Debug for Repository {
 mod tests {
 	use std::env::set_var;
 
-	use claims::assert_ok;
+	use claims::{assert_err_eq, assert_ok};
 	use git2::{ErrorClass, ErrorCode};
-	use testutils::assert_err_eq;
 
 	use super::*;
 	use crate::test_helpers::{create_commit, set_git_directory, with_temp_bare_repository, with_temp_repository};

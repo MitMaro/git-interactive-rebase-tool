@@ -382,9 +382,9 @@ impl TodoFile {
 mod tests {
 	use claims::{assert_none, assert_some_eq};
 	use tempfile::{Builder, NamedTempFile};
-	use testutils::{assert_empty, assert_not_empty};
 
 	use super::*;
+	use crate::{assert_empty, assert_not_empty};
 
 	fn create_line(line: &str) -> Line {
 		Line::parse(line).unwrap()
