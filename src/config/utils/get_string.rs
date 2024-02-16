@@ -30,8 +30,7 @@ pub(crate) fn get_string(config: Option<&Config>, name: &str, default: &str) -> 
 
 #[cfg(test)]
 mod tests {
-	use claims::assert_ok_eq;
-	use testutils::assert_err_eq;
+	use claims::{assert_err_eq, assert_ok_eq};
 
 	use super::*;
 	use crate::test_helpers::{invalid_utf, with_git_config};

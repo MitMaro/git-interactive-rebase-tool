@@ -56,7 +56,7 @@ impl<'line> LineParser<'line> {
 
 #[cfg(test)]
 mod tests {
-	use testutils::assert_err_eq;
+	use claims::assert_err_eq;
 
 	use super::*;
 

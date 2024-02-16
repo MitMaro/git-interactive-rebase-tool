@@ -322,13 +322,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "girt-testutils"
-version = "2.3.0"
-dependencies = [
- "rustc_version",
-]
-
-[[package]]
 name = "git-interactive-rebase-tool"
 version = "2.3.0"
 dependencies = [
@@ -339,7 +332,6 @@ dependencies = [
  "claims",
  "crossbeam-channel",
  "crossterm",
- "girt-testutils",
  "git2",
  "if_chain",
  "itertools",

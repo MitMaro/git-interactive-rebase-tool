@@ -123,9 +123,8 @@ impl FileStatus {
 
 #[cfg(test)]
 mod tests {
-	use testutils::assert_empty;
-
 	use super::*;
+	use crate::assert_empty;
 
 	fn create_file_stat() -> FileStatus {
 		FileStatus::new(
