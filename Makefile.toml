@@ -57,7 +57,6 @@ condition = { platforms = ["linux"] }
 env = { "RUSTFLAGS" = "-C link-dead-code" }
 args = [
 	"tarpaulin",
-	"--workspace",
 	"--all-features",
 	"--ignore-tests",
 	"--line",
@@ -82,7 +81,6 @@ command = "cargo"
 args = [
 	"doc",
 	"--all-features",
-	"--workspace",
 	"${@}"
 ]
 
@@ -94,7 +92,6 @@ command = "cargo"
 args = [
 	"doc",
 	"--all-features",
-	"--workspace",
 	"${@}"
 ]
 
@@ -110,7 +107,6 @@ toolchain = "stable"
 command = "cargo"
 args = [
 	"clippy",
-	"--workspace",
 	"--all-targets",
 	"--all-features",
 	"${@}"
@@ -123,7 +119,6 @@ ignore_errors = true
 command = "cargo"
 args = [
 	"clippy",
-	"--workspace",
 	"--all-targets",
 	"--all-features",
 	"${@}"
@@ -160,15 +155,19 @@ script = ['''
 cargo +nightly about generate "docs/licenses.hbs" > "docs/licenses.html"
 ''']
 
-[tasks.publish]
-command = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/scripts/publish.bash"
-
 [tasks.test]
 dependencies = ["update-rust-stable"]
 toolchain = "stable"
 install_crate = false
 command = "cargo"
-args = ["test", "--workspace"]
+args = ["test"]
+
+[tasks.test-nightly]
+dependencies = ["update-rust-nightly"]
+toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
+install_crate = false
+command = "cargo"
+args = ["test"]
 
 [tasks.update-rust-stable]
 command = "rustup"
