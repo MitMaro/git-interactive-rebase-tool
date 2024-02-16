@@ -47,12 +47,9 @@ pub(crate) fn read_event() -> Result<Option<Event>> {
 
 #[cfg(test)]
 mod read_event_mocks {
-	use std::{mem, time::Duration};
+	use std::{io::Result, mem, time::Duration};
 
-	use crossterm::{
-		event::{Event, KeyCode, KeyEvent},
-		Result,
-	};
+	use crossterm::event::{Event, KeyCode, KeyEvent};
 	use lazy_static::lazy_static;
 	use parking_lot::Mutex;
 
