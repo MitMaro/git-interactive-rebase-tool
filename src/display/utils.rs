@@ -6,6 +6,13 @@ use crate::{
 };
 
 pub(super) fn detect_color_mode(number_of_colors: u16) -> ColorMode {
+	// respect the NO_COLOR env variable, and disable colors (https://no-color.org/)
+	if let Ok(no_color) = var("NO_COLOR") {
+		if !no_color.is_empty() {
+			return ColorMode::TwoTone;
+		}
+	}
+
 	// respect COLORTERM being truecolor or 24bit
 	if let Ok(color_term) = var("COLORTERM") {
 		if color_term == "truecolor" || color_term == "24bit" {
@@ -72,6 +79,10 @@ pub(super) fn register_selectable_color_pairs(
 // Copyright (c) 2015 Alexandre Bury - MIT License
 #[allow(clippy::integer_division)]
 fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
+	if color_mode == ColorMode::TwoTone {
+		return CrosstermColor::Reset;
+	}
+
 	match color {
 		Color::Default => CrosstermColor::Reset,
 		Color::LightBlack => CrosstermColor::DarkGrey,
@@ -195,6 +206,7 @@ mod tests {
 	use super::*;
 
 	fn clear_env() {
+		remove_var("NO_COLOR");
 		remove_var("COLORTERM");
 		remove_var("TERM");
 		remove_var("VTE_VERSION");
@@ -322,6 +334,22 @@ mod tests {
 
 	#[test]
 	#[serial]
+	fn detect_color_mode_no_color_with_value() {
+		clear_env();
+		set_var("NO_COLOR", "true");
+		assert_eq!(detect_color_mode(16), ColorMode::TwoTone);
+	}
+
+	#[test]
+	#[serial]
+	fn detect_color_mode_no_color_without_value() {
+		clear_env();
+		set_var("NO_COLOR", "");
+		assert_eq!(detect_color_mode(16), ColorMode::FourBit);
+	}
+
+	#[test]
+	#[serial]
 	fn detect_color_mode_colorterm_env_is_24bit() {
 		clear_env();
 		set_var("COLORTERM", "24bit");
@@ -344,6 +372,13 @@ mod tests {
 		set_var("WT_SESSION", "32a25081-6745-4b65-909d-e8257bdbe852");
 		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
 	}
+
+	#[test]
+	fn find_color_two_tone() {
+		let color = Color::DarkRed;
+		assert_eq!(find_color(ColorMode::TwoTone, color), CrosstermColor::Reset);
+	}
+
 	#[rstest]
 	#[case::black(0, 0, 0, 0)]
 	#[case::black(0, 0, 127, 0)]
@@ -509,7 +544,7 @@ mod tests {
 			Color::LightYellow,
 			Color::LightBlue,
 		);
-		assert_eq!(color, Colors::new(CrosstermColor::Red, CrosstermColor::Yellow));
-		assert_eq!(selected, Colors::new(CrosstermColor::Red, CrosstermColor::Yellow));
+		assert_eq!(color, Colors::new(CrosstermColor::Reset, CrosstermColor::Reset));
+		assert_eq!(selected, Colors::new(CrosstermColor::Reset, CrosstermColor::Reset));
 	}
 }
