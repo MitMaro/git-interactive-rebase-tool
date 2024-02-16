@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo doc --all-features --workspace
+      - run: cargo doc --all-features
   format:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -71,7 +71,7 @@ jobs:
           crate: cargo-tarpaulin
       - name: Run cargo-tarpaulin
         run: |
-          cargo +nightly tarpaulin --workspace --all-features --ignore-tests --line --output-dir coverage --timeout 10 --out Lcov
+          cargo +nightly tarpaulin --all-features --ignore-tests --line --output-dir coverage --timeout 10 --out Lcov
       - name: Post to Coveralls
         uses: coverallsapp/github-action@v2
         with:
@@ -105,7 +105,7 @@ jobs:
       - name: Test
         env:
           RUSTFLAGS: '--cap-lints warn'
-        run: cargo test --target x86_64-pc-windows-msvc --workspace
+        run: cargo test --target x86_64-pc-windows-msvc
       - name: Build and Run
         env:
           RUSTFLAGS: '--cap-lints warn'
