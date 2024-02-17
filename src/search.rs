@@ -1,9 +1,9 @@
 mod action;
 mod interrupter;
 mod search_result;
-mod search_state;
 mod searchable;
 mod state;
+mod status;
 mod thread;
 mod update_handler;
 
@@ -13,6 +13,7 @@ pub(crate) use self::{
 	search_result::SearchResult,
 	searchable::Searchable,
 	state::State,
+	status::Status,
 	thread::Thread,
 	update_handler::UpdateHandlerFn,
 };

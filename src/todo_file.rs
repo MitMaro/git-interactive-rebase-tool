@@ -9,7 +9,6 @@ mod errors;
 mod history;
 mod line;
 mod line_parser;
-mod search;
 mod todo_file_options;
 mod utils;
 
@@ -28,7 +27,6 @@ pub(crate) use self::{
 	errors::ParseError,
 	line::Line,
 	line_parser::LineParser,
-	search::Search,
 	todo_file_options::TodoFileOptions,
 };
 use self::{

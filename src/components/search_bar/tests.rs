@@ -87,10 +87,30 @@ fn read_event_searching() {
 }
 
 #[test]
-fn read_event_editing() {
+fn read_event_editing_other() {
 	let mut search_bar = SearchBar::new();
 	search_bar.state = State::Editing;
 	assert_some_eq!(search_bar.read_event(Event::from('a')), Event::from('a'));
+}
+
+#[test]
+fn read_event_editing_with_enter() {
+	let mut search_bar = SearchBar::new();
+	search_bar.state = State::Editing;
+	assert_some_eq!(
+		search_bar.read_event(Event::from(KeyCode::Enter)),
+		Event::from(StandardEvent::SearchFinish)
+	);
+}
+
+#[test]
+fn read_event_editing_ith_esc() {
+	let mut search_bar = SearchBar::new();
+	search_bar.state = State::Editing;
+	assert_some_eq!(
+		search_bar.read_event(Event::from(KeyCode::Esc)),
+		Event::from(StandardEvent::SearchCancel)
+	);
 }
 
 #[test]
@@ -137,21 +157,10 @@ fn handle_event_search_finish() {
 }
 
 #[test]
-fn handle_event_search_finish_with_enter() {
+fn handle_event_search_cancel_with_search_cancel() {
 	let mut search_bar = SearchBar::new();
 	search_bar.start_search(Some("foo"));
-	let event = Event::from(KeyCode::Enter);
-	assert_eq!(
-		search_bar.handle_event(event),
-		SearchBarAction::Start(String::from("foo"))
-	);
-}
-
-#[test]
-fn handle_event_search_cancel_with_esc() {
-	let mut search_bar = SearchBar::new();
-	search_bar.start_search(Some("foo"));
-	let event = Event::from(KeyCode::Esc);
+	let event = Event::from(StandardEvent::SearchCancel);
 	assert_eq!(search_bar.handle_event(event), SearchBarAction::Cancel);
 }
 
@@ -242,17 +251,6 @@ fn is_editing() {
 	assert!(!search_bar.is_editing());
 	search_bar.state = State::Searching;
 	assert!(!search_bar.is_editing());
-}
-
-#[test]
-fn is_searching() {
-	let mut search_bar = SearchBar::new();
-	search_bar.state = State::Editing;
-	assert!(!search_bar.is_searching());
-	search_bar.state = State::Deactivated;
-	assert!(!search_bar.is_searching());
-	search_bar.state = State::Searching;
-	assert!(search_bar.is_searching());
 }
 
 #[test]
