@@ -1,3 +1,4 @@
+#![cfg(not(tarpaulin_include))]
 use std::io::{stdout, BufWriter, Stdout, Write};
 
 use crossterm::{

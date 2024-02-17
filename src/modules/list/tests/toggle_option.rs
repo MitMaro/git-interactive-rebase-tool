@@ -36,6 +36,22 @@ fn on_fixup_keep_message_with_editor() {
 }
 
 #[test]
+fn on_existing_option_remove_option() {
+	testers::module(
+		&["fixup -c aaa c1"],
+		&[Event::from(StandardEvent::FixupKeepMessageWithEditor)],
+		|mut test_context| {
+			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			_ = test_context.activate(&mut module, State::List);
+			_ = test_context.handle_all_events(&mut module);
+			let todo_file = module.todo_file.lock();
+			let line = todo_file.get_line(0).unwrap();
+			assert_none!(line.option());
+		},
+	);
+}
+
+#[test]
 fn after_select_line() {
 	testers::module(
 		&["fixup aaa c1", "fixup aaa c2", "fixup aaa c3"],

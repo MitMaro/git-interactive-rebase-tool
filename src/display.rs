@@ -9,7 +9,6 @@
 //! performance should only be used in test code.
 
 mod color_mode;
-#[cfg(not(tarpaulin_include))]
 mod crossterm;
 mod display_color;
 mod error;

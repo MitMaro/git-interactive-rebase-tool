@@ -1,3 +1,4 @@
+#![cfg(not(tarpaulin_include))]
 use claims::assert_some_eq;
 
 use super::*;
