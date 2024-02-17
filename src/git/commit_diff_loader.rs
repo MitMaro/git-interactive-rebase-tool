@@ -167,6 +167,7 @@ mod tests {
 	use super::*;
 	use crate::{git::Origin, test_helpers::with_temp_repository};
 
+	#[cfg(not(tarpaulin_include))]
 	fn _format_status(status: &FileStatus) -> String {
 		let s = match status.status() {
 			Status::Added => "Added",
@@ -181,6 +182,7 @@ mod tests {
 		format!("Status {s}")
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn _format_file_mode(mode: FileMode) -> String {
 		String::from(match mode {
 			FileMode::Normal => "n",
@@ -190,6 +192,7 @@ mod tests {
 		})
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn _format_paths(status: &FileStatus) -> String {
 		let source_mode = _format_file_mode(status.source_mode());
 		let source_binary = if status.source_is_binary() { ",b" } else { "" };
@@ -211,6 +214,7 @@ mod tests {
 		}
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	#[allow(clippy::string_slice)]
 	fn _format_diff_line(line: &DiffLine) -> String {
 		let origin = match line.origin() {
@@ -240,6 +244,7 @@ mod tests {
 		}
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn _assert_commit_diff(diff: &CommitDiff, expected: &[String]) {
 		let mut actual = vec![];
 		for status in diff.file_statuses() {
@@ -274,6 +279,7 @@ mod tests {
 		};
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn write_normal_file(repository: &crate::git::Repository, name: &str, contents: &[&str]) {
 		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
@@ -285,6 +291,7 @@ mod tests {
 		repository.add_path_to_index(PathBuf::from(name).as_path()).unwrap();
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn remove_path(repository: &crate::git::Repository, name: &str) {
 		let root = repository.repo_path().parent().unwrap().to_path_buf();
 
@@ -296,6 +303,7 @@ mod tests {
 			.unwrap();
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn create_commit(repository: &crate::git::Repository) {
 		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1_609_459_200, 0)).unwrap();
 		repository
@@ -303,6 +311,7 @@ mod tests {
 			.unwrap();
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn diff_from_head(repository: &crate::git::Repository, options: &CommitDiffLoaderOptions) -> CommitDiff {
 		let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
 		let loader = CommitDiffLoader::new(repository.repository(), options);

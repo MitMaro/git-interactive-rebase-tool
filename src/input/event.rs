@@ -70,6 +70,13 @@ mod tests {
 	use super::*;
 
 	#[test]
+	fn from_key_event() {
+		let key_event = KeyEvent::new(KeyCode::Null, KeyModifiers::empty());
+		let event = Event::from(key_event);
+		assert_eq!(event, Event::Key(key_event));
+	}
+
+	#[test]
 	fn from_crossterm_key_event() {
 		let event = Event::from(ct_event::Event::Key(ct_event::KeyEvent::new(
 			KeyCode::Null,
