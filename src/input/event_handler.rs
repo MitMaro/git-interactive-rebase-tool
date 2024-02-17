@@ -120,6 +120,14 @@ impl EventHandler {
 			e if key_bindings.search_next.contains(&e) => Some(Event::from(StandardEvent::SearchNext)),
 			e if key_bindings.search_previous.contains(&e) => Some(Event::from(StandardEvent::SearchPrevious)),
 			e if key_bindings.search_start.contains(&e) => Some(Event::from(StandardEvent::SearchStart)),
+			Event::Key(KeyEvent {
+				code: KeyCode::Esc,
+				modifiers: KeyModifiers::NONE,
+			}) => Some(Event::from(StandardEvent::SearchCancel)),
+			Event::Key(KeyEvent {
+				code: KeyCode::Enter,
+				modifiers: KeyModifiers::NONE,
+			}) => Some(Event::from(StandardEvent::SearchFinish)),
 			_ => None,
 		}
 	}
@@ -256,6 +264,8 @@ mod tests {
 	#[case::search_next(Event::from('n'), Event::from(StandardEvent::SearchNext))]
 	#[case::search_previous(Event::from('N'), Event::from(StandardEvent::SearchPrevious))]
 	#[case::search_start(Event::from('/'), Event::from(StandardEvent::SearchStart))]
+	#[case::esc(Event::from(KeyCode::Esc), Event::from(StandardEvent::SearchCancel))]
+	#[case::enter(Event::from(KeyCode::Enter), Event::from(StandardEvent::SearchFinish))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn search_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());

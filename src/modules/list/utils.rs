@@ -1,10 +1,12 @@
 use std::cmp;
 
 use bitflags::bitflags;
+use if_chain::if_chain;
 
 use crate::{
 	config::KeyBindings,
 	display::DisplayColor,
+	modules::list::search::LineMatch,
 	todo_file::{Action, Line, TodoFile},
 	view::LineSegment,
 };
@@ -241,6 +243,7 @@ bitflags! {
 pub(super) fn get_todo_line_segments(
 	line: &Line,
 	search_term: Option<&str>,
+	search_match: Option<LineMatch>,
 	options: TodoLineSegmentsOptions,
 	maximum_action_width: usize,
 ) -> Vec<LineSegment> {
@@ -299,7 +302,7 @@ pub(super) fn get_todo_line_segments(
 		Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 			let action_width = if is_full_width { 8 } else { 3 };
 			let max_index = cmp::min(line.get_hash().len(), action_width);
-			let search_match = search_term.map_or(false, |term| line.get_hash().starts_with(term));
+			let search_hash_match = search_match.map_or(false, |m| m.hash());
 
 			segments.push(LineSegment::new_with_color_and_style(
 				format!(
@@ -308,14 +311,14 @@ pub(super) fn get_todo_line_segments(
 					width = action_width
 				)
 				.as_str(),
-				if search_match {
+				if search_hash_match {
 					DisplayColor::IndicatorColor
 				}
 				else {
 					DisplayColor::Normal
 				},
 				false,
-				search_match && is_search_index,
+				search_hash_match && is_search_index,
 				false,
 			));
 			segments.push(LineSegment::new(" "));
@@ -331,24 +334,29 @@ pub(super) fn get_todo_line_segments(
 
 	let content = line.get_content();
 	if !content.is_empty() {
-		if let Some(term) = search_term {
-			let mut split_iter = content.split(term);
-			segments.push(LineSegment::new(split_iter.next().unwrap()));
-			for split in split_iter {
-				segments.push(LineSegment::new_with_color_and_style(
-					term,
-					DisplayColor::IndicatorColor,
-					false,
-					is_search_index,
-					false,
-				));
-				if !split.is_empty() {
-					segments.push(LineSegment::new(split));
+		let search_content_match = search_match.map_or(false, |m| m.content());
+		if_chain! {
+			if search_content_match;
+			if let Some(term) = search_term;
+			then {
+				let mut split_iter = content.split(term);
+				segments.push(LineSegment::new(split_iter.next().unwrap()));
+				for split in split_iter {
+					segments.push(LineSegment::new_with_color_and_style(
+						term,
+						DisplayColor::IndicatorColor,
+						false,
+						is_search_index,
+						false,
+					));
+					if !split.is_empty() {
+						segments.push(LineSegment::new(split));
+					}
 				}
 			}
-		}
-		else {
-			segments.push(LineSegment::new(content));
+			else {
+				segments.push(LineSegment::new(content));
+			}
 		}
 	}
 	segments

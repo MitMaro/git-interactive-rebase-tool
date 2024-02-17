@@ -377,7 +377,7 @@ impl LinePattern for ActionPattern {
 			replace_invisibles(format!(">  {}", self.line.to_text()).as_str())
 		}
 		else {
-			replace_invisibles(format!("  {}", self.line.to_text()).as_str())
+			replace_invisibles(format!("   {}", self.line.to_text()).as_str())
 		}
 	}
 

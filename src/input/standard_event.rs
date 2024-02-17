@@ -34,6 +34,8 @@ pub(crate) enum StandardEvent {
 	SearchNext,
 	/// Previous search result meta event.
 	SearchPrevious,
+	/// Cancel search mode meta event.
+	SearchCancel,
 	/// Finish search mode meta event.
 	SearchFinish,
 	/// The abort meta event.

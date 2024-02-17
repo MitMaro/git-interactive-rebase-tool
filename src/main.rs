@@ -2,14 +2,13 @@
 #![cfg_attr(allow_unknown_lints, allow(unknown_lints))]
 #![cfg_attr(allow_unknown_lints, allow(renamed_and_removed_lints))]
 // enable all rustc's built-in lints
-#![deny(
+#![warn(
 	future_incompatible,
 	nonstandard_style,
 	rust_2018_compatibility,
 	rust_2018_idioms,
 	rust_2021_compatibility,
-	unused,
-	warnings
+	unused
 )]
 // rustc's additional allowed by default lints
 #![deny(
@@ -112,6 +111,7 @@
 		clippy::panic,
 		clippy::shadow_reuse,
 		clippy::shadow_unrelated,
+		clippy::struct_field_names,
 		clippy::undocumented_unsafe_blocks,
 		clippy::unimplemented,
 		clippy::unreachable

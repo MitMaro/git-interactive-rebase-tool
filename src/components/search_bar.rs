@@ -54,10 +54,23 @@ impl SearchBar {
 		}
 	}
 
-	pub(crate) const fn read_event(&self, event: Event) -> Option<Event> {
+	pub(crate) fn read_event(&self, event: Event) -> Option<Event> {
 		match self.state {
 			State::Deactivated | State::Searching => None,
-			State::Editing => Some(event),
+			State::Editing => {
+				let evt = match event {
+					Event::Key(KeyEvent {
+						code: KeyCode::Enter,
+						modifiers: KeyModifiers::NONE,
+					}) => Event::from(StandardEvent::SearchFinish),
+					Event::Key(KeyEvent {
+						code: KeyCode::Esc,
+						modifiers: KeyModifiers::NONE,
+					}) => Event::from(StandardEvent::SearchCancel),
+					_ => event,
+				};
+				Some(evt)
+			},
 		}
 	}
 
@@ -72,11 +85,7 @@ impl SearchBar {
 			Event::Standard(StandardEvent::SearchPrevious) => {
 				SearchBarAction::Previous(String::from(self.editable_line.get_content()))
 			},
-			Event::Standard(StandardEvent::SearchFinish)
-			| Event::Key(KeyEvent {
-				code: KeyCode::Enter,
-				modifiers: KeyModifiers::NONE,
-			}) => {
+			Event::Standard(StandardEvent::SearchFinish) => {
 				self.editable_line.set_read_only(true);
 				self.state = State::Searching;
 				SearchBarAction::Start(String::from(self.editable_line.get_content()))
@@ -85,10 +94,7 @@ impl SearchBar {
 				self.state = State::Deactivated;
 				SearchBarAction::Cancel
 			},
-			Event::Key(KeyEvent {
-				code: KeyCode::Esc,
-				modifiers: KeyModifiers::NONE,
-			}) => {
+			Event::Standard(StandardEvent::SearchCancel) => {
 				self.reset();
 				SearchBarAction::Cancel
 			},
@@ -119,10 +125,6 @@ impl SearchBar {
 
 	pub(crate) fn is_editing(&self) -> bool {
 		self.state == State::Editing
-	}
-
-	pub(crate) fn is_searching(&self) -> bool {
-		self.state == State::Searching
 	}
 
 	pub(crate) fn build_view_line(&self) -> ViewLine {

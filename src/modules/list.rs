@@ -1,3 +1,4 @@
+mod search;
 #[cfg(all(unix, test))]
 mod tests;
 mod utils;
@@ -5,20 +6,23 @@ mod utils;
 use std::{cmp::min, sync::Arc};
 
 use captur::capture;
-use if_chain::if_chain;
 use parking_lot::Mutex;
 
-use self::utils::{
-	get_list_normal_mode_help_lines,
-	get_list_visual_mode_help_lines,
-	get_todo_line_segments,
-	TodoLineSegmentsOptions,
+use self::{
+	search::Search,
+	utils::{
+		get_list_normal_mode_help_lines,
+		get_list_visual_mode_help_lines,
+		get_todo_line_segments,
+		TodoLineSegmentsOptions,
+	},
 };
 use crate::{
 	components::{
 		edit::Edit,
 		help::Help,
 		search_bar::{SearchBar, SearchBarAction},
+		spin_indicator::SpinIndicator,
 	},
 	config::Config,
 	display::DisplayColor,
@@ -26,8 +30,9 @@ use crate::{
 	module::{ExitStatus, Module, State},
 	modules::list::utils::get_line_action_maximum_width,
 	process::Results,
+	search::Searchable,
 	select,
-	todo_file::{Action, EditContext, Line, Search, TodoFile},
+	todo_file::{Action, EditContext, Line, TodoFile},
 	view::{LineSegment, RenderContext, ViewData, ViewLine},
 };
 
@@ -60,6 +65,7 @@ pub(crate) struct List {
 	search: Search,
 	search_bar: SearchBar,
 	selected_line_action: Option<Action>,
+	spin_indicator: SpinIndicator,
 	state: ListState,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_data: ViewData,
@@ -70,7 +76,12 @@ pub(crate) struct List {
 impl Module for List {
 	fn activate(&mut self, _: State) -> Results {
 		self.selected_line_action = self.todo_file.lock().get_selected_line().map(|line| *line.get_action());
-		Results::new()
+		let searchable: Box<dyn Searchable> = Box::new(self.search.clone());
+		let mut results = Results::from(searchable);
+		if let Some(term) = self.search_bar.search_value() {
+			results.search_term(term);
+		}
+		results
 	}
 
 	fn build_view_data(&mut self, context: &RenderContext) -> &ViewData {
@@ -140,14 +151,17 @@ impl List {
 			updater.set_show_help(true);
 		});
 
+		let search = Search::new(Arc::clone(&todo_file));
+
 		Self {
 			auto_select_next: config.auto_select_next,
 			edit: Edit::new(),
 			height: 0,
 			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
-			search: Search::new(),
+			search,
 			search_bar: SearchBar::new(),
 			selected_line_action: None,
+			spin_indicator: SpinIndicator::new(),
 			state: ListState::Normal,
 			todo_file,
 			view_data,
@@ -301,7 +315,7 @@ impl List {
 
 	#[allow(clippy::unused_self)]
 	fn open_in_editor(&mut self, results: &mut Results) {
-		self.search_bar.reset();
+		results.search_cancel();
 		results.state(State::ExternalEditor);
 	}
 
@@ -317,7 +331,20 @@ impl List {
 	}
 
 	fn search_start(&mut self) {
-		self.search_bar.start_search(None);
+		self.search_bar.start_search(Some(""));
+	}
+
+	fn search_update(&mut self) {
+		self.spin_indicator.refresh();
+		// select the first match, if it is available and has not been previously selected
+		if let Some(selected) = self.search.current_match() {
+			_ = self.update_cursor(CursorUpdate::Set(selected.index()));
+		}
+		else if !self.search_bar.is_editing() {
+			if let Some(selected) = self.search.next() {
+				_ = self.update_cursor(CursorUpdate::Set(selected));
+			}
+		}
 	}
 
 	fn help(&mut self) {
@@ -388,6 +415,7 @@ impl List {
 		if let Some(selected_line) = todo_file.get_selected_line() {
 			if selected_line.is_editable() {
 				self.state = ListState::Edit;
+				self.edit.reset();
 				self.edit.set_content(selected_line.get_content());
 				self.edit.set_label(format!("{} ", selected_line.get_action()).as_str());
 			}
@@ -405,10 +433,12 @@ impl List {
 		let selected_index = todo_file.get_selected_line_index();
 		let visual_index = self.visual_index_start.unwrap_or(selected_index);
 		let search_view_line = self.search_bar.is_editing().then(|| self.search_bar.build_view_line());
-		let search_results_total = self.search_bar.is_searching().then(|| self.search.total_results());
-		let search_results_current = self.search.current_result_selected();
+		let search_results_total = self.search.total_results();
+		let search_results_current = self.search.current_result_selected().unwrap_or(0);
 		let search_term = self.search_bar.search_value();
 		let search_index = self.search.current_match();
+		let search_active = self.search.is_active();
+		let spin_indicator = self.spin_indicator.indicator();
 
 		self.view_data.update_view_data(|updater| {
 			capture!(todo_file);
@@ -422,6 +452,7 @@ impl List {
 			else {
 				let maximum_action_width = get_line_action_maximum_width(&todo_file);
 				for (index, line) in todo_file.lines_iter().enumerate() {
+					let search_match = self.search.match_at_index(index);
 					let selected_line = is_visual_mode
 						&& ((visual_index <= selected_index && index >= visual_index && index <= selected_index)
 							|| (visual_index > selected_index && index >= selected_index && index <= visual_index));
@@ -435,11 +466,17 @@ impl List {
 					if context.is_full_width() {
 						todo_line_segment_options.insert(TodoLineSegmentsOptions::FULL_WIDTH);
 					}
-					if search_index.map_or(false, |v| v == index) {
+					if search_index.map_or(false, |v| v.index() == index) {
 						todo_line_segment_options.insert(TodoLineSegmentsOptions::SEARCH_LINE);
 					}
 					let mut view_line = ViewLine::new_with_pinned_segments(
-						get_todo_line_segments(line, search_term, todo_line_segment_options, maximum_action_width),
+						get_todo_line_segments(
+							line,
+							search_term,
+							search_match,
+							todo_line_segment_options,
+							maximum_action_width,
+						),
 						if line.has_reference() { 2 } else { 3 },
 					)
 					.set_selected(selected_index == index || selected_line);
@@ -456,16 +493,17 @@ impl List {
 				else if let Some(s_term) = search_term {
 					let mut search_line_segments = vec![];
 					search_line_segments.push(LineSegment::new(format!("[{s_term}]: ").as_str()));
-					if_chain! {
-						if let Some(s_total) = search_results_total;
-						if let Some(s_index) = search_results_current;
-						if s_total != 0;
-						then {
-							search_line_segments.push(LineSegment::new(format!("{}/{s_total}", s_index + 1).as_str()));
-						}
-						else {
-							search_line_segments.push(LineSegment::new("No Results"));
-						}
+					if search_results_total == 0 && !search_active {
+						search_line_segments.push(LineSegment::new("No Results"));
+					}
+					else {
+						search_line_segments.push(LineSegment::new(
+							format!("{}/{search_results_total}", search_results_current + 1).as_str(),
+						));
+					}
+
+					if search_active {
+						search_line_segments.push(LineSegment::new(format!(" Searching [{spin_indicator}]").as_str()));
 					}
 					updater.push_trailing_line(ViewLine::from(search_line_segments));
 				}
@@ -567,34 +605,48 @@ impl List {
 	}
 
 	fn handle_search_input(&mut self, event: Event) -> Option<Results> {
-		if self.search_bar.is_active() {
-			let todo_file = self.todo_file.lock();
-			match self.search_bar.handle_event(event) {
-				SearchBarAction::Start(term) => {
-					if term.is_empty() {
-						self.search.cancel();
-						self.search_bar.reset();
-					}
-					else {
-						self.search.next(&todo_file, term.as_str());
-					}
-				},
-				SearchBarAction::Next(term) => self.search.next(&todo_file, term.as_str()),
-				SearchBarAction::Previous(term) => self.search.previous(&todo_file, term.as_str()),
-				SearchBarAction::Cancel => {
-					self.search.cancel();
-					return Some(Results::from(event));
-				},
-				SearchBarAction::None | SearchBarAction::Update(_) => return None,
-			}
-			drop(todo_file);
-
-			if let Some(selected) = self.search.current_match() {
-				_ = self.update_cursor(CursorUpdate::Set(selected));
-			}
-			return Some(Results::from(event));
+		if !self.search_bar.is_active() {
+			return None;
 		}
-		None
+
+		let mut results = Results::from(event);
+		let todo_file = self.todo_file.lock();
+		match self.search_bar.handle_event(event) {
+			SearchBarAction::Update(term) => {
+				if term.is_empty() {
+					results.search_cancel();
+				}
+				else {
+					results.search_term(term.as_str());
+				}
+			},
+			SearchBarAction::Start(term) => {
+				if term.is_empty() {
+					results.search_cancel();
+					self.search_bar.reset();
+				}
+				else {
+					results.search_term(term.as_str());
+				}
+			},
+			SearchBarAction::Next(term) => {
+				results.search_term(term.as_str());
+				_ = self.search.next();
+			},
+			SearchBarAction::Previous(term) => {
+				results.search_term(term.as_str());
+				_ = self.search.previous();
+			},
+			SearchBarAction::Cancel => {
+				results.search_cancel();
+				return Some(results);
+			},
+			SearchBarAction::None => return None,
+		}
+		drop(todo_file);
+
+		self.search_update();
+		Some(results)
 	}
 
 	#[allow(clippy::integer_division)]
