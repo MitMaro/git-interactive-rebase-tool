@@ -82,3 +82,104 @@ assets = [
     ["CHANGELOG.md", "usr/share/doc/interactive-rebase-tool/", "644"],
     ["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
 ]
+
+[lints.rust]
+future_incompatible = {level = "warn", priority = -2}
+nonstandard_style = {level = "warn", priority = -2}
+rust_2018_compatibility = {level = "warn", priority = -2}
+rust_2018_idioms = {level = "warn", priority = -2}
+rust_2021_compatibility = {level = "warn", priority = -2}
+unused = {level = "warn", priority = -2}
+
+unknown_lints = {level = "warn", priority = -1}
+renamed_and_removed_lints = {level = "warn", priority = -1}
+
+absolute_paths_not_starting_with_crate = "warn"
+deprecated_in_future = "warn"
+dead_code = "warn"
+elided_lifetimes_in_paths = "warn"
+explicit_outlives_requirements = "warn"
+ffi_unwind_calls = "warn"
+keyword_idents = "warn"
+let_underscore_drop = "warn"
+macro_use_extern_crate = "warn"
+meta_variable_misuse = "warn"
+missing_abi = "warn"
+missing_copy_implementations = "warn"
+missing_debug_implementations = "warn"
+non_ascii_idents = "warn"
+noop_method_call = "warn"
+pointer_structural_match = "warn"
+rust_2021_incompatible_closure_captures = "warn"
+rust_2021_incompatible_or_patterns = "warn"
+rust_2021_prefixes_incompatible_syntax = "warn"
+rust_2021_prelude_collisions = "warn"
+single_use_lifetimes = "warn"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unreachable_pub = "warn"
+unsafe_code = "warn"
+unsafe_op_in_unsafe_fn = "warn"
+unused_crate_dependencies = "warn"
+unused_extern_crates = "warn"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"
+unused_macro_rules = "warn"
+unused_qualifications = "warn"
+unused_results = "warn"
+unused_tuple_struct_fields = "warn"
+variant_size_differences = "warn"
+
+[lints.clippy]
+all = {level = "warn", priority = -2}
+cargo = {level = "warn", priority = -2}
+pedantic = {level = "warn", priority = -2}
+restriction =  {level = "warn", priority = -2}
+
+blanket_clippy_restriction_lints = {level = "allow", priority = 5}
+absolute_paths = "allow"
+as_conversions = "allow"
+arithmetic_side_effects = "allow"
+bool_to_int_with_if = "allow"
+default_numeric_fallback = "allow"
+else_if_without_else = "allow"
+expect_used = "allow"
+float_arithmetic = "allow"
+implicit_return = "allow"
+indexing_slicing = "allow"
+map_err_ignore = "allow"
+min_ident_chars = "allow"
+missing_docs_in_private_items = "allow"
+missing_trait_methods = "allow"
+module_name_repetitions = "allow"
+needless_raw_string_hashes = "allow"
+needless_raw_strings = "allow"
+new_without_default = "allow"
+non_ascii_literal = "allow"
+option_if_let_else = "allow"
+pattern_type_mismatch = "allow"
+pub_use = "allow"
+pub_with_shorthand = "allow"
+question_mark_used = "allow"
+redundant_closure_call = "allow"
+redundant_closure_for_method_calls = "allow"
+redundant_pub_crate = "allow"
+ref_patterns = "allow"
+self_named_module_files = "allow"
+single_call_fn = "allow"
+std_instead_of_alloc = "allow"
+std_instead_of_core = "allow"
+tabs_in_doc_comments = "allow"
+tests_outside_test_module = "allow"
+too_many_lines = "allow"
+unwrap_used = "allow"
+wildcard_enum_match_arm = "allow"
+
+[lints.rustdoc]
+bare_urls = "warn"
+broken_intra_doc_links = "warn"
+invalid_codeblock_attributes = "warn"
+invalid_html_tags = "warn"
+missing_crate_level_docs = "allow"
+private_doc_tests = "warn"
+private_intra_doc_links = "warn"

@@ -35,7 +35,7 @@ jobs:
       - uses: baptiste0928/cargo-install@v2
         with:
           crate: cargo-make
-      - run: cargo make lint-stable
+      - run: cargo make lint-stable -- --deny warnings
   docs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
