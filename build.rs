@@ -30,7 +30,7 @@ fn git_revision_hash() -> Option<String> {
 		.args(["rev-parse", "--short=10", "HEAD"])
 		.output();
 	result.ok().and_then(|output| {
-		let v = String::from_utf8_lossy(&output.stdout).trim().to_string();
+		let v = String::from(String::from_utf8_lossy(&output.stdout).trim());
 		if v.is_empty() { None } else { Some(v) }
 	})
 }
