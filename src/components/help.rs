@@ -5,8 +5,9 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	display::DisplayColor,
-	first,
 	input::{Event, InputOptions, StandardEvent},
+	process::Results,
+	select,
 	util::handle_view_data_scroll,
 	view::{LineSegment, ViewData, ViewLine},
 };
@@ -87,15 +88,19 @@ impl Help {
 		(self.is_active() || event == Event::Standard(StandardEvent::Help)).then_some(event)
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event, view_state: &crate::view::State) {
-		let mut event_handler = || {
-			match event {
-				Event::Key(_) | Event::Standard(StandardEvent::Help) => self.active = false,
-				_ => {},
-			}
-			Some(())
-		};
-		first!(|| handle_view_data_scroll(event, view_state), event_handler);
+	pub(crate) fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
+		self.is_active().then(|| {
+			select!(
+				default || {
+					match event {
+						Event::Key(_) | Event::Standard(StandardEvent::Help) => self.active = false,
+						_ => {},
+					}
+					Results::new()
+				},
+				|| handle_view_data_scroll(event, view_state)
+			)
+		})
 	}
 
 	pub(crate) fn set_active(&mut self) {

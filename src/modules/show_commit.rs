@@ -136,42 +136,41 @@ impl Module for ShowCommit {
 	}
 
 	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
-		if self.help.is_active() {
-			self.help.handle_event(event, view_state);
-			return Results::new();
-		}
+		select!(
+			default || {
+				let mut results = Results::new();
 
-		let mut results = Results::new();
+				let active_view_data = match self.state {
+					ShowCommitState::Overview => &mut self.overview_view_data,
+					ShowCommitState::Diff => &mut self.diff_view_data,
+				};
 
-		let active_view_data = match self.state {
-			ShowCommitState::Overview => &mut self.overview_view_data,
-			ShowCommitState::Diff => &mut self.diff_view_data,
-		};
-
-		if handle_view_data_scroll(event, view_state).is_none() {
-			match event {
-				Event::Standard(StandardEvent::ShowDiff) => {
-					active_view_data.update_view_data(|updater| updater.clear());
-					self.state = match self.state {
-						ShowCommitState::Overview => ShowCommitState::Diff,
-						ShowCommitState::Diff => ShowCommitState::Overview,
-					}
-				},
-				Event::Standard(StandardEvent::Help) => self.help.set_active(),
-				Event::Key(_) => {
-					active_view_data.update_view_data(|updater| updater.clear());
-					if self.state == ShowCommitState::Diff {
-						self.state = ShowCommitState::Overview;
-					}
-					else {
-						results.state(State::List);
-					}
-				},
-				Event::Resize(..) => active_view_data.update_view_data(|updater| updater.clear()),
-				_ => {},
-			}
-		}
-		results
+				match event {
+					Event::Standard(StandardEvent::ShowDiff) => {
+						active_view_data.update_view_data(|updater| updater.clear());
+						self.state = match self.state {
+							ShowCommitState::Overview => ShowCommitState::Diff,
+							ShowCommitState::Diff => ShowCommitState::Overview,
+						}
+					},
+					Event::Standard(StandardEvent::Help) => self.help.set_active(),
+					Event::Key(_) => {
+						active_view_data.update_view_data(|updater| updater.clear());
+						if self.state == ShowCommitState::Diff {
+							self.state = ShowCommitState::Overview;
+						}
+						else {
+							results.state(State::List);
+						}
+					},
+					Event::Resize(..) => active_view_data.update_view_data(|updater| updater.clear()),
+					_ => {},
+				}
+				results
+			},
+			|| self.help.handle_event(event, view_state),
+			|| handle_view_data_scroll(event, view_state)
+		)
 	}
 }
 

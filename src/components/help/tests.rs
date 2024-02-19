@@ -9,7 +9,9 @@ use crate::{
 
 fn handle_event(help: &mut Help, event: Event) {
 	let evt = help.read_event(event).unwrap_or(event);
-	with_view_state(|context| help.handle_event(evt, &context.state));
+	with_view_state(|context| {
+		let _result = help.handle_event(evt, &context.state);
+	});
 }
 
 #[test]
