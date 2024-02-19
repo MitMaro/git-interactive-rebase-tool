@@ -6,7 +6,7 @@ use crate::{
 	input::KeyCode,
 	process::Artifact,
 	render_line,
-	test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
+	test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
 };
 
 fn render_options() -> AssertRenderOptions {
@@ -21,7 +21,6 @@ fn start() {
 		|mut test_context| {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options render_options(),
 				test_context.build_view_data(&mut module),
@@ -44,9 +43,9 @@ fn start_cursor_down_one() {
 		|mut test_context| {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options render_options(),test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
 				action_line!(Pick "aaa", "c3")
@@ -73,9 +72,9 @@ fn start_cursor_page_down() {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			module.height = 4;
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options render_options(),test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c3")),
@@ -107,9 +106,9 @@ fn start_cursor_from_bottom_move_up() {
 		|mut test_context| {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options render_options(),test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				action_line!(Pick "aaa", "c1"),
 				action_line!(Pick "aaa", "c2"),
 				action_line!(Pick "aaa", "c3"),
@@ -144,9 +143,9 @@ fn start_cursor_from_bottom_to_top() {
 		|mut test_context| {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options render_options(),test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Pick "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c2")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Pick "aaa", "c3")),
@@ -170,7 +169,6 @@ fn action_change_top_bottom() {
 		|mut test_context| {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Options render_options(),
 				test_context.build_view_data(&mut module),
@@ -197,9 +195,9 @@ fn action_change_bottom_top() {
 		|mut test_context| {
 			let mut module = create_list(&create_config(), test_context.take_todo_file());
 			_ = test_context.handle_all_events(&mut module);
-			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options render_options(),test_context.build_view_data(&mut module),
+				Options render_options(),
+				test_context.build_view_data(&mut module),
 				render_line!(All render_line!(Not Contains "Dimmed"), action_line!(Selected Reword "aaa", "c1")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c2")),
 				render_line!(All render_line!(Contains "Dimmed"), action_line!(Selected Reword "aaa", "c3"))

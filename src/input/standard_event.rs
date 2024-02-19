@@ -2,6 +2,7 @@
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 #[non_exhaustive]
 pub(crate) enum StandardEvent {
+	#[allow(unused)]
 	/// The exit meta event.
 	Exit,
 	/// The kill meta event.

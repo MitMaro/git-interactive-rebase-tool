@@ -27,12 +27,10 @@ impl ModuleTestContext {
 		module.build_view_data(&self.render_context)
 	}
 
-	#[allow(clippy::unused_self)]
 	pub(crate) fn activate(&self, module: &'_ mut dyn Module, state: State) -> Results {
 		module.activate(state)
 	}
 
-	#[allow(clippy::unused_self)]
 	pub(crate) fn deactivate(&mut self, module: &'_ mut dyn Module) -> Results {
 		module.deactivate()
 	}

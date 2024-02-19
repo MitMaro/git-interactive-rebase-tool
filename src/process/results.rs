@@ -112,63 +112,57 @@ mod tests {
 	use anyhow::anyhow;
 
 	use super::*;
-	use crate::test_helpers::mocks;
+	use crate::{assert_results, test_helpers::mocks};
 
 	#[test]
 	fn empty() {
-		let mut results = Results::new();
-		assert!(results.artifact().is_none());
+		let results = Results::new();
+		assert_results!(results);
 	}
 
 	#[test]
 	fn event() {
-		let mut results = Results::from(Event::from('a'));
-		assert!(matches!(results.artifact(), Some(Artifact::Event(_))));
+		let results = Results::from(Event::from('a'));
+		assert_results!(results, Artifact::Event(Event::from('a')));
 	}
 
 	#[test]
 	fn error() {
 		let mut results = Results::new();
 		results.error(anyhow!("Test Error"));
-		assert!(matches!(results.artifact(), Some(Artifact::Error(_, None))));
+		assert_results!(results, Artifact::Error(anyhow!("Test Error"), None));
 	}
 
 	#[test]
 	fn error_from() {
-		let mut results = Results::from(anyhow!("Test Error"));
-		assert!(matches!(results.artifact(), Some(Artifact::Error(_, None))));
+		let results = Results::from(anyhow!("Test Error"));
+		assert_results!(results, Artifact::Error(anyhow!("Test Error"), None));
 	}
 
 	#[test]
 	fn error_with_return() {
 		let mut results = Results::new();
 		results.error_with_return(anyhow!("Test Error"), State::List);
-		assert!(matches!(
-			results.artifact(),
-			Some(Artifact::Error(_, Some(State::List)))
-		));
+		assert_results!(results, Artifact::Error(anyhow!("Test Error"), Some(State::List)));
 	}
 
 	#[test]
 	fn exit_status() {
-		let mut results = Results::from(ExitStatus::Good);
-		assert!(matches!(
-			results.artifact(),
-			Some(Artifact::ExitStatus(ExitStatus::Good))
-		));
+		let results = Results::from(ExitStatus::Good);
+		assert_results!(results, Artifact::ExitStatus(ExitStatus::Good));
 	}
 
 	#[test]
 	fn state() {
-		let mut results = Results::from(State::List);
-		assert!(matches!(results.artifact(), Some(Artifact::ChangeState(State::List))));
+		let results = Results::from(State::List);
+		assert_results!(results, Artifact::ChangeState(State::List));
 	}
 
 	#[test]
 	fn search_cancel() {
 		let mut results = Results::new();
 		results.search_cancel();
-		assert!(matches!(results.artifact(), Some(Artifact::SearchCancel)));
+		assert_results!(results, Artifact::SearchCancel);
 	}
 
 	#[test]
@@ -176,28 +170,31 @@ mod tests {
 		let mut results = Results::new();
 		let search_term = String::from("foo");
 		results.search_term(search_term.as_str());
-		assert!(matches!(results.artifact(), Some(Artifact::SearchTerm(search_term))));
+		assert_results!(results, Artifact::SearchTerm(search_term));
 	}
 
 	#[test]
 	fn searchable() {
 		let mocked_searchable: Box<dyn Searchable> = Box::new(mocks::Searchable::new());
-		let mut results = Results::from(mocked_searchable);
-		assert!(matches!(results.artifact(), Some(Artifact::Searchable(_))));
+		let results = Results::from(mocked_searchable);
+		assert_results!(results, Artifact::Searchable(Box::new(mocks::Searchable::new())));
 	}
 
 	#[test]
 	fn external_command() {
 		let mut results = Results::new();
 		results.external_command(String::from("editor"), vec![String::from("arg1"), String::from("arg2")]);
-		assert!(matches!(results.artifact(), Some(Artifact::ExternalCommand(_))));
+		assert_results!(
+			results,
+			Artifact::ExternalCommand((String::from("editor"), vec![String::from("arg1"), String::from("arg2")]))
+		);
 	}
 
 	#[test]
 	fn enqueue_resize() {
 		let mut results = Results::new();
 		results.enqueue_resize();
-		assert!(matches!(results.artifact(), Some(Artifact::EnqueueResize)));
+		assert_results!(results, Artifact::EnqueueResize);
 	}
 
 	#[test]
@@ -207,7 +204,6 @@ mod tests {
 		let mut results_2 = Results::new();
 		results_2.state(State::List);
 		results_1.append(results_2);
-		assert!(matches!(results_1.artifact(), Some(Artifact::EnqueueResize)));
-		assert!(matches!(results_1.artifact(), Some(Artifact::ChangeState(State::List))));
+		assert_results!(results_1, Artifact::EnqueueResize, Artifact::ChangeState(State::List));
 	}
 }

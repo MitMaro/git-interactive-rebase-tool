@@ -287,7 +287,7 @@ fn search_indicator_refresh_on_update() {
 
 #[test]
 fn start_edit() {
-	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |mut test_context| {
+	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |test_context| {
 		assert!(test_context.list.search_bar.is_active());
 	});
 }

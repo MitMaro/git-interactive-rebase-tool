@@ -13,8 +13,10 @@ pub(crate) enum Status {
 	Waiting,
 	/// The thread is finished. This is a final state.
 	Ended,
+	#[allow(unused)]
 	/// The thread has requested all threads pause.
 	RequestPause,
+	#[allow(unused)]
 	/// The thread has requested all threads resume.
 	RequestResume,
 	/// The thread has requested all threads end.

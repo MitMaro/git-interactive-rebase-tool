@@ -27,7 +27,6 @@ impl CommitDiffBuilder {
 
 	/// Set the commit.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn commit(mut self, commit: Commit) -> Self {
 		self.commit = commit;
 		self
@@ -35,7 +34,6 @@ impl CommitDiffBuilder {
 
 	/// Set the parent commit.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn parent(mut self, parent: Commit) -> Self {
 		self.parent = Some(parent);
 		self
@@ -71,7 +69,6 @@ impl CommitDiffBuilder {
 
 	/// Return the built `CommitDiff`
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> CommitDiff {
 		CommitDiff::new(
 			self.commit,

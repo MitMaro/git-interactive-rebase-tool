@@ -47,7 +47,6 @@ impl Threadable {
 	}
 
 	/// Start a `Threadable` running the thread specified by the name, to completion in a separate thread.
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn start_threadable<Threadable: crate::runtime::Threadable>(
 		&self,
 		theadable: &Threadable,

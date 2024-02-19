@@ -54,7 +54,7 @@ mod tests {
 		assert_results,
 		input::{KeyCode, StandardEvent},
 		process::Artifact,
-		test_helpers::testers,
+		test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
 	};
 
 	fn create_confirm_rebase() -> ConfirmRebase {

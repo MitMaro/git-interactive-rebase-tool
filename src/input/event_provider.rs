@@ -74,7 +74,7 @@ mod read_event_mocks {
 mod tests {
 	use std::{io, io::ErrorKind};
 
-	use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton};
+	use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 
 	use super::*;
 

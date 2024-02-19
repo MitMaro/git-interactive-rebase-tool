@@ -1,7 +1,6 @@
 use claims::{assert_none, assert_some, assert_some_eq};
 
 use super::*;
-use crate::test_helpers::testers;
 
 #[test]
 fn on_fixup_keep_message() {

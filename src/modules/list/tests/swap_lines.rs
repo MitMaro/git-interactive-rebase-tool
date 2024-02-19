@@ -1,5 +1,5 @@
 use super::*;
-use crate::{action_line, assert_rendered_output, test_helpers::testers};
+use crate::{action_line, assert_rendered_output};
 
 #[test]
 fn normal_mode_change_swap_down() {

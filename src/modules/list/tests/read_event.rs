@@ -1,10 +1,7 @@
 use rstest::rstest;
 
 use super::*;
-use crate::{
-	input::{KeyCode, KeyModifiers, MouseEvent},
-	test_helpers::testers,
-};
+use crate::input::{KeyCode, KeyModifiers, MouseEvent};
 
 #[test]
 fn edit_mode_passthrough_event() {
@@ -63,7 +60,7 @@ fn search() {
 #[case::togglevisualmode('v', StandardEvent::ToggleVisualMode)]
 fn default_events_single_char(#[case] binding: char, #[case] expected: StandardEvent) {
 	testers::read_event(Event::from(binding), |mut context| {
-		let mut module = create_list(&create_config(), context.take_todo_file());
+		let module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
@@ -80,7 +77,7 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: StandardE
 #[case::delete(KeyCode::Delete, StandardEvent::Delete)]
 fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent) {
 	testers::read_event(Event::from(code), |mut context| {
-		let mut module = create_list(&create_config(), context.take_todo_file());
+		let module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::from(expected));
 	});
 }
@@ -118,7 +115,7 @@ fn mouse_move_down() {
 			modifiers: KeyModifiers::empty(),
 		}),
 		|mut context| {
-			let mut module = create_list(&create_config(), context.take_todo_file());
+			let module = create_list(&create_config(), context.take_todo_file());
 			assert_eq!(context.read_event(&module), Event::from(StandardEvent::MoveCursorDown));
 		},
 	);
@@ -134,7 +131,7 @@ fn mouse_move_up() {
 			modifiers: KeyModifiers::empty(),
 		}),
 		|mut context| {
-			let mut module = create_list(&create_config(), context.take_todo_file());
+			let module = create_list(&create_config(), context.take_todo_file());
 			assert_eq!(context.read_event(&module), Event::from(StandardEvent::MoveCursorUp));
 		},
 	);
@@ -149,7 +146,7 @@ fn mouse_other() {
 		modifiers: KeyModifiers::empty(),
 	});
 	testers::read_event(mouse_event, |mut context| {
-		let mut module = create_list(&create_config(), context.take_todo_file());
+		let module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), mouse_event);
 	});
 }
@@ -157,7 +154,7 @@ fn mouse_other() {
 #[test]
 fn event_other() {
 	testers::read_event(Event::None, |mut context| {
-		let mut module = create_list(&create_config(), context.take_todo_file());
+		let module = create_list(&create_config(), context.take_todo_file());
 		assert_eq!(context.read_event(&module), Event::None);
 	});
 }

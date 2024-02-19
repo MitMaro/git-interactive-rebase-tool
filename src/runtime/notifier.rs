@@ -26,7 +26,7 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread pause processing.
-	#[allow(clippy::missing_panics_doc)]
+	#[allow(clippy::missing_panics_doc, unused)]
 	pub(crate) fn request_pause(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestPause))
@@ -34,7 +34,7 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread resume processing.
-	#[allow(clippy::missing_panics_doc)]
+	#[allow(clippy::missing_panics_doc, unused)]
 	pub(crate) fn request_resume(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestResume))

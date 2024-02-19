@@ -48,7 +48,6 @@ impl ReferenceBuilder {
 
 	/// Build the `Reference`.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> Reference {
 		Reference::new(self.hash, self.name, self.shorthand, self.kind)
 	}

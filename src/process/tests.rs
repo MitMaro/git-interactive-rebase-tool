@@ -8,7 +8,6 @@ use crate::{
 	input::{InputOptions, KeyBindings},
 	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
 	runtime::Status,
-	search::{Interrupter, SearchResult},
 	test_helpers::{create_default_test_module_handler, create_test_module_handler, mocks, testers},
 	todo_file::Line,
 	view::{ViewData, REFRESH_THREAD_NAME},
@@ -614,10 +613,7 @@ fn handle_search_term() {
 			let search_term = String::from("foo");
 			results.search_term(search_term.as_str());
 			process.handle_results(results);
-			assert!(matches!(
-				search_context.state.receive_update(),
-				Action::Start(search_term)
-			));
+			assert!(matches!(search_context.state.receive_update(), Action::Start(_)));
 		},
 	);
 }

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub(crate) mod assertions;
 pub(crate) mod builders;
 mod create_commit;
@@ -36,6 +37,6 @@ pub(crate) use self::{
 	with_search::{with_search, SearchTestContext},
 	with_temp_bare_repository::with_temp_bare_repository,
 	with_temp_repository::with_temp_repository,
-	with_todo_file::{with_todo_file, TodoFileTestContext},
+	with_todo_file::with_todo_file,
 	with_view_state::{with_view_state, ViewStateTestContext},
 };

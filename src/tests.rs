@@ -1,4 +1,4 @@
-use std::{ffi::OsString, path::Path};
+use std::path::Path;
 
 use super::*;
 use crate::{module::ExitStatus, test_helpers::set_git_directory};

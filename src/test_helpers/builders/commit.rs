@@ -15,7 +15,6 @@ impl CommitBuilder {
 	/// Create a new instance of the builder with the provided hash. The new instance will default
 	/// to a committed date of Jan 1, 2021 UTC. All other fields are `None`.
 	#[must_use]
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn new(hash: &str) -> Self {
 		Self {
 			commit: Commit {
@@ -40,7 +39,6 @@ impl CommitBuilder {
 
 	/// Set the reference, use `create::testutil::ReferenceBuilder` to build a `Reference`.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn reference(mut self, reference: Reference) -> Self {
 		self.commit.reference = Some(reference);
 		self
@@ -48,7 +46,6 @@ impl CommitBuilder {
 
 	/// Set the author name and related email address.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn author(mut self, author: User) -> Self {
 		self.commit.author = author;
 		self
@@ -63,7 +60,6 @@ impl CommitBuilder {
 
 	/// Set the committer name and related email address.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn committer(mut self, committer: User) -> Self {
 		self.commit.committer = Some(committer);
 		self
@@ -92,7 +88,6 @@ impl CommitBuilder {
 
 	/// Build the `Commit`.
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> Commit {
 		self.commit
 	}

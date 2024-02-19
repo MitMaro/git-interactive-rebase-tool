@@ -1,12 +1,5 @@
 use super::*;
-use crate::{
-	action_line,
-	assert_rendered_output,
-	assert_results,
-	input::KeyCode,
-	process::Artifact,
-	test_helpers::testers,
-};
+use crate::{action_line, assert_rendered_output, assert_results, input::KeyCode, process::Artifact};
 
 #[test]
 fn change_auto_select_next_with_next_line() {

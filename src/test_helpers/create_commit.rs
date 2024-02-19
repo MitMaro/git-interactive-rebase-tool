@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use lazy_static::lazy_static;
 
 use crate::{git::Repository, test_helpers::JAN_2021_EPOCH};

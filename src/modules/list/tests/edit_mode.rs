@@ -1,5 +1,5 @@
 use super::*;
-use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact, test_helpers::testers};
+use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact};
 
 #[test]
 fn edit_with_edit_content() {

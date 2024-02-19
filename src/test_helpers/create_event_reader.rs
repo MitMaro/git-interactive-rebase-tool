@@ -13,7 +13,6 @@ use crate::input::{Event, EventReaderFn};
 ///
 /// # Panics
 /// If provided an event generator that returns a `Event::MetaEvent` or `Event::StandardEvent` event type.
-#[allow(clippy::panic)]
 pub(crate) fn create_event_reader<EventGeneratorFunction>(
 	event_generator: EventGeneratorFunction,
 ) -> impl EventReaderFn

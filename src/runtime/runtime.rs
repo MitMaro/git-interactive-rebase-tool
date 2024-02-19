@@ -1,4 +1,4 @@
-use std::{clone::Clone, sync::Arc, thread};
+use std::{sync::Arc, thread};
 
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use parking_lot::Mutex;
@@ -31,12 +31,6 @@ impl<'runtime> Runtime<'runtime> {
 			thread_statuses,
 			threadables: Arc::new(Mutex::new(vec![])),
 		}
-	}
-
-	/// Get a cloned copy of the `ThreadStatuses`.
-	#[must_use]
-	pub(crate) fn statuses(&self) -> ThreadStatuses {
-		self.thread_statuses.clone()
 	}
 
 	/// Register a new `Threadable`.
@@ -139,6 +133,14 @@ mod tests {
 	use claims::assert_err;
 
 	use super::*;
+
+	impl Runtime<'_> {
+		/// Get a cloned copy of the `ThreadStatuses`.
+		#[must_use]
+		pub(crate) fn statuses(&self) -> ThreadStatuses {
+			self.thread_statuses.clone()
+		}
+	}
 
 	#[test]
 	fn run_thread_finish() {

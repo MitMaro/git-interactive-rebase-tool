@@ -8,7 +8,6 @@ use crate::{
 /// # Panics
 ///
 /// If the repository cannot be created for any reason, this function will panic.
-#[allow(clippy::panic)]
 pub(crate) fn with_temp_bare_repository<F>(callback: F)
 where F: FnOnce(Repository) {
 	with_temporary_path(|path| {

@@ -4,11 +4,13 @@
 #![cfg_attr(
 	test,
 	allow(
-		let_underscore_drop,
 		clippy::cast_possible_truncation,
 		clippy::cognitive_complexity,
 		clippy::let_underscore_must_use,
 		clippy::let_underscore_untyped,
+		clippy::missing_const_for_fn,
+		clippy::missing_errors_doc,
+		clippy::multiple_inherent_impl,
 		clippy::needless_pass_by_value,
 		clippy::panic,
 		clippy::shadow_reuse,
@@ -16,12 +18,14 @@
 		clippy::struct_field_names,
 		clippy::undocumented_unsafe_blocks,
 		clippy::unimplemented,
-		clippy::unreachable
+		clippy::unreachable,
+		clippy::unused_self,
+		let_underscore_drop,
+		missing_docs
 	)
 )]
 // allowable upcoming nightly lints
 #![cfg_attr(include_nightly_lints, allow(clippy::arc_with_non_send_sync))]
-#![allow(unused)]
 
 mod application;
 mod arguments;

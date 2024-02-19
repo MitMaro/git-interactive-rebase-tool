@@ -13,6 +13,7 @@ use thiserror::Error;
 pub(crate) enum RepositoryLoadKind {
 	/// Repository was loaded from the path provided through an environment variable
 	Environment,
+	#[cfg(test)]
 	/// Repository was loaded from a direct path
 	Path,
 }
@@ -21,6 +22,7 @@ impl Display for RepositoryLoadKind {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match *self {
 			Self::Environment => write!(f, "environment"),
+			#[cfg(test)]
 			Self::Path => write!(f, "path"),
 		}
 	}
@@ -29,6 +31,7 @@ impl Display for RepositoryLoadKind {
 /// Git errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
+#[allow(clippy::enum_variant_names)]
 pub(crate) enum GitError {
 	/// The repository could not be loaded
 	#[error("Could not open repository from {kind}")]
@@ -47,6 +50,7 @@ pub(crate) enum GitError {
 		cause: git2::Error,
 	},
 	/// The configuration could not be loaded
+	#[cfg(test)]
 	#[error("Could not load configuration")]
 	ReferenceNotFound {
 		/// The internal cause of the load error.

@@ -40,7 +40,6 @@ impl FileStatusBuilder {
 
 	/// Set if the destination is binary.
 	#[must_use]
-	#[allow(dead_code)]
 	pub(crate) const fn destination_is_binary(mut self, binary: bool) -> Self {
 		self.destination_is_binary = binary;
 		self
@@ -62,7 +61,6 @@ impl FileStatusBuilder {
 
 	/// Set if the source is binary.
 	#[must_use]
-	#[allow(dead_code)]
 	pub(crate) const fn source_is_binary(mut self, binary: bool) -> Self {
 		self.source_is_binary = binary;
 		self
@@ -70,7 +68,6 @@ impl FileStatusBuilder {
 
 	/// Set if the source file mode.
 	#[must_use]
-	#[allow(dead_code)]
 	pub(crate) const fn source_mode(mut self, mode: FileMode) -> Self {
 		self.source_mode = mode;
 		self
@@ -92,7 +89,6 @@ impl FileStatusBuilder {
 
 	/// Build the `FileStatus`
 	#[must_use]
-	#[allow(clippy::missing_const_for_fn)]
 	pub(crate) fn build(self) -> FileStatus {
 		let mut file_status = FileStatus::new(
 			self.source_path,

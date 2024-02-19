@@ -194,7 +194,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		display::Size,
-		input::{Event, KeyCode, KeyEvent, KeyModifiers},
+		input::{KeyCode, KeyEvent, KeyModifiers},
 		module::Modules,
 		runtime::{Installer, RuntimeError},
 		test_helpers::{
