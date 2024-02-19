@@ -1,4 +1,7 @@
-use crate::input::{Event, StandardEvent};
+use crate::{
+	input::{Event, StandardEvent},
+	process::Results,
+};
 
 #[macro_export]
 macro_rules! select {
@@ -23,19 +26,9 @@ macro_rules! select {
 	};
 }
 
-#[macro_export]
-macro_rules! first {
-	($first: expr, $($arg:expr),*) => {
-		if $first().is_some() {
-		}
-		$(else if $arg().is_some() {
-		})*
-	};
-}
-
 /// Utility function to handle scroll events.
 #[must_use]
-pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::State) -> Option<Event> {
+pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::State) -> Option<Results> {
 	match event {
 		Event::Standard(StandardEvent::ScrollLeft) => view_state.scroll_left(),
 		Event::Standard(StandardEvent::ScrollRight) => view_state.scroll_right(),
@@ -47,12 +40,13 @@ pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::St
 		Event::Standard(StandardEvent::ScrollJumpUp) => view_state.scroll_page_up(),
 		_ => return None,
 	};
-	Some(event)
+	Some(Results::new())
 }
 
 #[cfg(test)]
 mod tests {
 	use captur::capture;
+	use claims::{assert_none, assert_some};
 	use rstest::rstest;
 
 	use super::*;
@@ -71,7 +65,7 @@ mod tests {
 		with_view_state(|context| {
 			capture!(action);
 			let event = Event::from(meta_event);
-			assert_eq!(handle_view_data_scroll(event, &context.state), Some(event));
+			assert_some!(handle_view_data_scroll(event, &context.state));
 			context.assert_render_action(&[action]);
 		});
 	}
@@ -80,7 +74,7 @@ mod tests {
 	fn handle_view_data_scroll_event_other() {
 		with_view_state(|context| {
 			let event = Event::from('a');
-			assert!(handle_view_data_scroll(event, &context.state).is_none());
+			assert_none!(handle_view_data_scroll(event, &context.state));
 			context.assert_render_action(&[]);
 		});
 	}

@@ -6,6 +6,7 @@ use crate::{
 	input::{Event, InputOptions},
 	module::{Module, State},
 	process::Results,
+	select,
 	util::handle_view_data_scroll,
 	view::{LineSegment, RenderContext, ViewData, ViewLine},
 };
@@ -34,13 +35,16 @@ impl Module for Error {
 	}
 
 	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
-		let mut results = Results::new();
-		if handle_view_data_scroll(event, view_state).is_none() {
-			if let Event::Key(_) = event {
-				results.state(self.return_state);
-			}
-		}
-		results
+		select!(
+			default || {
+				let mut results = Results::new();
+				if let Event::Key(_) = event {
+					results.state(self.return_state);
+				}
+				results
+			},
+			|| handle_view_data_scroll(event, view_state)
+		)
 	}
 
 	fn handle_error(&mut self, error: &anyhow::Error) -> Results {

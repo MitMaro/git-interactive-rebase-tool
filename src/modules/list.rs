@@ -117,8 +117,8 @@ impl Module for List {
 					ListState::Edit => self.handle_edit_mode_input(event),
 				}
 			},
-			|| self.handle_normal_help_input(event, view_state),
-			|| self.handle_visual_help_input(event, view_state),
+			|| self.normal_mode_help.handle_event(event, view_state),
+			|| self.visual_mode_help.handle_event(event, view_state),
 			|| self.handle_search_input(event)
 		)
 	}
@@ -588,20 +588,6 @@ impl List {
 			},
 			_ => event,
 		}
-	}
-
-	fn handle_normal_help_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
-		self.normal_mode_help.is_active().then(|| {
-			self.normal_mode_help.handle_event(event, view_state);
-			Results::new()
-		})
-	}
-
-	fn handle_visual_help_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
-		self.visual_mode_help.is_active().then(|| {
-			self.visual_mode_help.handle_event(event, view_state);
-			Results::new()
-		})
 	}
 
 	fn handle_search_input(&mut self, event: Event) -> Option<Results> {
