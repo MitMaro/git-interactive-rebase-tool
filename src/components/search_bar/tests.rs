@@ -1,7 +1,11 @@
 use claims::{assert_none, assert_some_eq};
 
 use super::*;
-use crate::{assert_rendered_output, view::ViewData};
+use crate::{
+	assert_rendered_output,
+	test_helpers::assertions::assert_rendered_output::AssertRenderOptions,
+	view::ViewData,
+};
 
 fn create_view_data(search_bar: &SearchBar) -> ViewData {
 	let view_line = search_bar.build_view_line();

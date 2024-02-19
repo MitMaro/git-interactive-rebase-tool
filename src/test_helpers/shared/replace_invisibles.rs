@@ -1,10 +1,3 @@
-use bitflags::bitflags;
-
-use crate::{
-	display::DisplayColor,
-	view::{LineSegment, ViewData, ViewLine},
-};
-
 const VISIBLE_SPACE_REPLACEMENT: &str = "\u{b7}"; // "·"
 const VISIBLE_TAB_REPLACEMENT: &str = "   \u{2192}"; // "   →"
 

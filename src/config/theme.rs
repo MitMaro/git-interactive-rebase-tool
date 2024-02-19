@@ -138,7 +138,7 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		config::{ConfigErrorCause, InvalidColorError},
+		config::InvalidColorError,
 		test_helpers::{invalid_utf, with_git_config},
 	};
 

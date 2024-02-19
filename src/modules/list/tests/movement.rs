@@ -2,8 +2,7 @@ use super::*;
 use crate::{
 	action_line,
 	assert_rendered_output,
-	input::{KeyModifiers, MouseEvent, MouseEventKind},
-	test_helpers::testers,
+	input::{KeyModifiers, MouseEvent},
 };
 
 #[test]

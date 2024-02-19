@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use crate::view::{RenderAction, State, ViewAction};
 
-#[allow(clippy::panic)]
 fn assert_view_state_actions(state: &State, expected_actions: &[String]) {
 	let actions = state
 		.render_slice()
@@ -97,7 +96,6 @@ impl ViewStateTestContext {
 	}
 
 	/// Assert that certain messages were sent by the `State`.
-	#[allow(clippy::missing_panics_doc, clippy::panic)]
 	pub(crate) fn assert_sent_messages(&self, messages: Vec<&str>) {
 		let mut mismatch = false;
 		let mut error_output = vec![

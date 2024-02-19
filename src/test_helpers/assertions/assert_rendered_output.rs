@@ -3,11 +3,11 @@ mod render_style;
 mod render_view_data;
 mod render_view_line;
 
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 
 use bitflags::bitflags;
-use itertools::Itertools;
 
+#[allow(unused_imports)]
 pub(crate) use self::{
 	patterns::{
 		ActionPattern,
@@ -19,16 +19,12 @@ pub(crate) use self::{
 		ExactPattern,
 		LinePattern,
 		NotPattern,
-		StartsWithPattern,
 	},
 	render_style::render_style,
 	render_view_data::render_view_data,
 	render_view_line::render_view_line,
 };
-use crate::{
-	test_helpers::shared::replace_invisibles,
-	view::{ViewData, ViewLine},
-};
+use crate::{test_helpers::shared::replace_invisibles, view::ViewData};
 
 bitflags! {
 	/// Options for the `assert_rendered_output!` macro
@@ -45,7 +41,7 @@ bitflags! {
 	}
 }
 
-#[allow(clippy::string_slice, clippy::panic)]
+#[allow(clippy::string_slice)]
 pub(crate) fn _assert_rendered_output(
 	options: AssertRenderOptions,
 	actual: &[String],
@@ -270,26 +266,31 @@ macro_rules! action_line {
 #[macro_export]
 macro_rules! assert_rendered_output {
 	($view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::default(), None, None, $view_data, $($arg),*
 		)
 	};
 	(Body $view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::BODY_ONLY, None, None, $view_data, $($arg),*
 		)
 	};
 	(Style $view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::INCLUDE_STYLE, None, None, $view_data, $($arg),*
 		)
 	};
 	(Skip $start:expr, $view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::default(), Some($start), None, $view_data, $($arg),*
 		)
 	};
 	(Skip $start:expr;$end:expr, $view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::default(), Some($start), Some($end), $view_data, $($arg),*
 		)
@@ -300,11 +301,13 @@ macro_rules! assert_rendered_output {
 		)
 	};
 	(Body, Skip $start:expr, $view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::BODY_ONLY, Some($start), None, $view_data, $($arg),*
 		)
 	};
 	(Body, Skip $start:expr;$end:expr, $view_data:expr, $($arg:expr),*) => {
+		use $crate::test_helpers::assertions::assert_rendered_output::AssertRenderOptions;
 		assert_rendered_output!(
 			@base AssertRenderOptions::BODY_ONLY, Some($start), Some($end), $view_data, $($arg),*
 		)
@@ -322,7 +325,7 @@ macro_rules! assert_rendered_output {
 	(@base $options:expr, $start:expr, $end:expr, $view_data:expr, $($arg:expr),*) => {
 		use $crate::test_helpers::assertions::assert_rendered_output::{
 			_assert_rendered_output_from_view_data,
-			AssertRenderOptions,LinePattern
+			LinePattern,
 		};
 		let expected: Vec<Box<dyn LinePattern>> = vec![$( Box::new($arg), )*];
 		_assert_rendered_output_from_view_data($view_data, &expected, $options, $start, $end);

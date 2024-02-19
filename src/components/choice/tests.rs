@@ -1,11 +1,7 @@
 use rstest::rstest;
 
 use super::*;
-use crate::{
-	assert_rendered_output,
-	input::StandardEvent,
-	test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, with_view_state},
-};
+use crate::{assert_rendered_output, input::StandardEvent, test_helpers::with_view_state};
 
 #[derive(Clone, Debug, PartialEq)]
 enum TestAction {

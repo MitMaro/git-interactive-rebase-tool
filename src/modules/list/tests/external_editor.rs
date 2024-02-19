@@ -1,5 +1,5 @@
 use super::*;
-use crate::{assert_results, process::Artifact, test_helpers::testers};
+use crate::{assert_results, process::Artifact};
 
 #[test]
 fn normal_mode_open_external_editor() {

@@ -1,11 +1,5 @@
 use super::*;
-use crate::{
-	assert_rendered_output,
-	assert_results,
-	input::{Event, KeyCode},
-	process::Artifact,
-	test_helpers::testers,
-};
+use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact, test_helpers::testers};
 
 fn create_insert(todo_file: TodoFile) -> Insert {
 	Insert::new(Arc::new(Mutex::new(todo_file)))

@@ -1,5 +1,3 @@
-use std::iter::Iterator;
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum State {
 	Normal,

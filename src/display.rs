@@ -1,3 +1,4 @@
+#![cfg_attr(test, allow(dead_code, unused_imports))]
 //! Git Interactive Rebase Tool - Display Module
 //!
 //! # Description

@@ -73,15 +73,6 @@ impl PartialEq for ArtifactCompareWrapper {
 	}
 }
 
-// impl PartialEq<Artifact> for ArtifactCompareWrapper {
-// 	fn eq(&self, other: &Artifact) -> bool {
-// 		match self {
-// 			ArtifactCompareWrapper::Any => true,
-// 			ArtifactCompareWrapper::Artifact(a) => compare_artifact(a, other),
-// 		}
-// 	}
-// }
-
 impl Debug for ArtifactCompareWrapper {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		match self {
@@ -98,7 +89,7 @@ impl From<Artifact> for ArtifactCompareWrapper {
 }
 
 impl From<AnyArtifact> for ArtifactCompareWrapper {
-	fn from(value: AnyArtifact) -> Self {
+	fn from(_: AnyArtifact) -> Self {
 		Self::Any
 	}
 }

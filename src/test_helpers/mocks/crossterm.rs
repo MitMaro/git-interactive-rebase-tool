@@ -1,4 +1,4 @@
-use std::{io, ops::Deref, sync::Arc};
+use std::sync::Arc;
 
 use ::crossterm::style::{Attribute, Attributes, Color, Colors};
 use parking_lot::RwLock;
@@ -20,7 +20,6 @@ pub(crate) enum CrosstermMockState {
 /// A version of the `TUI` that provides defaults for all trait methods. This can be used to create
 /// mocked versions of the `TUI` interface, without needing to define all methods provided by the
 /// interface.
-#[allow(missing_docs, clippy::missing_errors_doc)]
 pub(crate) trait MockableTui: Tui {
 	fn get_color_mode(&self) -> ColorMode {
 		ColorMode::TwoTone

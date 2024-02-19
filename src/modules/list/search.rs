@@ -258,7 +258,7 @@ mod tests {
 	fn search_empty_rebase_file() {
 		with_todo_file(&[], |context| {
 			let (_todo_file_path, todo_file) = context.to_owned();
-			let mut search = create_and_run_search(todo_file, "foo", SearchResult::Complete);
+			let search = create_and_run_search(todo_file, "foo", SearchResult::Complete);
 			assert_eq!(search.total_results(), 0);
 		});
 	}

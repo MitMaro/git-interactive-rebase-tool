@@ -1,5 +1,5 @@
 use super::*;
-use crate::{assert_rendered_output, test_helpers::testers};
+use crate::{assert_rendered_output, test_helpers::assertions::assert_rendered_output::AssertRenderOptions};
 
 #[test]
 fn empty_list() {

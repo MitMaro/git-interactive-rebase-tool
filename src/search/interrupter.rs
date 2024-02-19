@@ -21,10 +21,9 @@ impl Interrupter {
 
 #[cfg(test)]
 mod test {
-	use std::{ops::Sub, time::Duration};
+	use std::ops::Sub;
 
 	use super::*;
-	use crate::search::Interrupter;
 
 	#[test]
 	fn should_continue_before_finish() {

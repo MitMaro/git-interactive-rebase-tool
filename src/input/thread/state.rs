@@ -122,7 +122,6 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::input::Event;
 
 	fn create_state() -> State {
 		State::new()

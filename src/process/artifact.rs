@@ -43,10 +43,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{
-		search::{Interrupter, SearchResult},
-		test_helpers::mocks,
-	};
+	use crate::test_helpers::mocks;
 
 	#[rstest]
 	#[case::change_state(Artifact::ChangeState(State::List), "ChangeState(List)")]

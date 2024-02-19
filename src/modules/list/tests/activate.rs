@@ -4,8 +4,7 @@ use super::*;
 use crate::{
 	assert_results,
 	process::Artifact,
-	search::{Interrupter, SearchResult, Searchable},
-	test_helpers::{create_config, testers},
+	search::{Interrupter, SearchResult},
 };
 
 #[derive(Clone)]
@@ -14,7 +13,7 @@ struct MockedSearchable;
 impl Searchable for MockedSearchable {
 	fn reset(&mut self) {}
 
-	fn search(&mut self, _: Interrupter, term: &str) -> SearchResult {
+	fn search(&mut self, _: Interrupter, _: &str) -> SearchResult {
 		SearchResult::None
 	}
 }
