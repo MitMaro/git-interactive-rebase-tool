@@ -119,25 +119,25 @@ impl Module for ShowCommit {
 	}
 
 	fn input_options(&self) -> &InputOptions {
-		select!(default || &INPUT_OPTIONS, || self.help.input_options())
+		select!(default & INPUT_OPTIONS, self.help.input_options())
 	}
 
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
 		select!(
-			default || {
+			default {
 				key_bindings
 					.show_diff
 					.contains(&event)
 					.then(|| Event::from(StandardEvent::ShowDiff))
 					.unwrap_or(event)
 			},
-			|| { self.help.read_event(event) }
+			self.help.read_event(event)
 		)
 	}
 
 	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		select!(
-			default || {
+			default {
 				let mut results = Results::new();
 
 				let active_view_data = match self.state {
@@ -168,8 +168,8 @@ impl Module for ShowCommit {
 				}
 				results
 			},
-			|| self.help.handle_event(event, view_state),
-			|| handle_view_data_scroll(event, view_state)
+			self.help.handle_event(event, view_state),
+			handle_view_data_scroll(event, view_state)
 		)
 	}
 }
