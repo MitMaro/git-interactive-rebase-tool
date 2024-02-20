@@ -110,36 +110,36 @@ impl Module for List {
 
 	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		select!(
-			default || {
+			default {
 				match self.state {
 					ListState::Normal => self.handle_normal_mode_event(event, view_state),
 					ListState::Visual => self.handle_visual_mode_input(event, view_state),
 					ListState::Edit => self.handle_edit_mode_input(event),
 				}
 			},
-			|| self.normal_mode_help.handle_event(event, view_state),
-			|| self.visual_mode_help.handle_event(event, view_state),
-			|| self.handle_search_input(event)
+			self.normal_mode_help.handle_event(event, view_state),
+			self.visual_mode_help.handle_event(event, view_state),
+			self.handle_search_input(event)
 		)
 	}
 
 	fn input_options(&self) -> &InputOptions {
 		select!(
-			default || &INPUT_OPTIONS,
-			|| (self.state == ListState::Edit).then(|| self.edit.input_options()),
-			|| self.normal_mode_help.input_options(),
-			|| self.visual_mode_help.input_options(),
-			|| self.search_bar.input_options()
+			default & INPUT_OPTIONS,
+			(self.state == ListState::Edit).then(|| self.edit.input_options()),
+			self.normal_mode_help.input_options(),
+			self.visual_mode_help.input_options(),
+			self.search_bar.input_options()
 		)
 	}
 
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
 		select!(
-			default || self.read_event_default(event, key_bindings),
-			|| (self.state == ListState::Edit).then_some(event),
-			|| self.normal_mode_help.read_event(event),
-			|| self.visual_mode_help.read_event(event),
-			|| self.search_bar.read_event(event)
+			default self.read_event_default(event, key_bindings),
+			(self.state == ListState::Edit).then_some(event),
+			self.normal_mode_help.read_event(event),
+			self.visual_mode_help.read_event(event),
+			self.search_bar.read_event(event)
 		)
 	}
 }

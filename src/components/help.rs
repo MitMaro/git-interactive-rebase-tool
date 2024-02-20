@@ -91,14 +91,14 @@ impl Help {
 	pub(crate) fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
 		self.is_active().then(|| {
 			select!(
-				default || {
+				default {
 					match event {
 						Event::Key(_) | Event::Standard(StandardEvent::Help) => self.active = false,
 						_ => {},
 					}
 					Results::new()
 				},
-				|| handle_view_data_scroll(event, view_state)
+				handle_view_data_scroll(event, view_state)
 			)
 		})
 	}

@@ -36,14 +36,14 @@ impl Module for Error {
 
 	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		select!(
-			default || {
+			default {
 				let mut results = Results::new();
 				if let Event::Key(_) = event {
 					results.state(self.return_state);
 				}
 				results
 			},
-			|| handle_view_data_scroll(event, view_state)
+			handle_view_data_scroll(event, view_state)
 		)
 	}
 

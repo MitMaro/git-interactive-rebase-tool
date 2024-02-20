@@ -6,22 +6,22 @@ use crate::{
 #[macro_export]
 macro_rules! select {
 	(default $default: expr, $first: expr) => {
-		if let Some(value) = $first() {
+		if let Some(value) = $first {
 			value
 		}
 		else {
-			$default()
+			$default
 		}
 	};
 	(default $default: expr, $first: expr, $($arg:expr),*) => {
-		if let Some(value) = $first() {
+		if let Some(value) = $first {
 			value
 		}
-		$(else if let Some(value) = $arg() {
+		$(else if let Some(value) = $arg {
 			value
 		})*
 		else {
-			$default()
+			$default
 		}
 	};
 }
