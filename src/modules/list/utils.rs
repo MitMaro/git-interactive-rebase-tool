@@ -8,7 +8,7 @@ use crate::{
 	display::DisplayColor,
 	modules::list::search::LineMatch,
 	todo_file::{Action, Line, TodoFile},
-	view::LineSegment,
+	view::{LineSegment, LineSegmentOptions},
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -269,9 +269,7 @@ pub(super) fn get_todo_line_segments(
 	segments.push(LineSegment::new_with_color_and_style(
 		indicator,
 		DisplayColor::Normal,
-		!is_cursor_line && selected,
-		false,
-		false,
+		LineSegmentOptions::conditional(!is_cursor_line && selected, LineSegmentOptions::DIMMED),
 	));
 
 	let action_padding = cmp::max(maximum_action_width, 6);
@@ -317,9 +315,7 @@ pub(super) fn get_todo_line_segments(
 				else {
 					DisplayColor::Normal
 				},
-				false,
-				search_hash_match && is_search_index,
-				false,
+				LineSegmentOptions::conditional(search_hash_match && is_search_index, LineSegmentOptions::UNDERLINED),
 			));
 			segments.push(LineSegment::new(" "));
 		},
@@ -345,9 +341,7 @@ pub(super) fn get_todo_line_segments(
 					segments.push(LineSegment::new_with_color_and_style(
 						term,
 						DisplayColor::IndicatorColor,
-						false,
-						is_search_index,
-						false,
+						LineSegmentOptions::conditional(is_search_index, LineSegmentOptions::UNDERLINED),
 					));
 					if !split.is_empty() {
 						segments.push(LineSegment::new(split));

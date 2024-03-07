@@ -7,7 +7,7 @@ use crate::{
 	components::shared::EditableLine,
 	display::DisplayColor,
 	input::{Event, InputOptions, KeyCode, KeyEvent, KeyModifiers},
-	view::{LineSegment, ViewData, ViewDataUpdater, ViewLine},
+	view::{LineSegment, LineSegmentOptions, ViewData, ViewDataUpdater, ViewLine},
 };
 
 lazy_static! {
@@ -74,9 +74,7 @@ impl Edit {
 		self.editable_line.set_label(LineSegment::new_with_color_and_style(
 			label,
 			DisplayColor::Normal,
-			true,
-			false,
-			false,
+			LineSegmentOptions::DIMMED,
 		));
 	}
 

@@ -6,7 +6,7 @@ use crate::{
 		get_partition_index_on_whitespace_for_line,
 		get_stat_item_segments,
 	},
-	view::{LineSegment, ViewDataUpdater, ViewLine},
+	view::{LineSegment, LineSegmentOptions, ViewDataUpdater, ViewLine},
 };
 
 const PADDING_CHARACTER: char = '\u{2015}'; // '―'
@@ -253,7 +253,7 @@ impl ViewBuilder {
 			for delta in status.deltas() {
 				updater.push_line(ViewLine::new_empty_line());
 				updater.push_line(ViewLine::from(vec![
-					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, true, false, false),
+					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, LineSegmentOptions::DIMMED),
 					LineSegment::new_with_color(
 						format!(
 							" -{},{} +{},{} ",
@@ -265,7 +265,7 @@ impl ViewBuilder {
 						.as_str(),
 						DisplayColor::DiffContextColor,
 					),
-					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, true, false, false),
+					LineSegment::new_with_color_and_style("@@", DisplayColor::Normal, LineSegmentOptions::DIMMED),
 					LineSegment::new_with_color(
 						format!(" {}", delta.context()).as_str(),
 						DisplayColor::DiffContextColor,
@@ -274,9 +274,7 @@ impl ViewBuilder {
 				updater.push_line(ViewLine::new_pinned(vec![]).set_padding_with_color_and_style(
 					PADDING_CHARACTER,
 					DisplayColor::Normal,
-					true,
-					false,
-					false,
+					LineSegmentOptions::DIMMED,
 				));
 
 				for line in delta.lines() {

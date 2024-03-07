@@ -1,4 +1,7 @@
-use crate::{display::DisplayColor, view::LineSegment};
+use crate::{
+	display::DisplayColor,
+	view::{LineSegment, LineSegmentOptions},
+};
 
 /// Represents a line in the view.
 #[derive(Debug)]
@@ -54,16 +57,12 @@ impl ViewLine {
 		mut self,
 		c: char,
 		color: DisplayColor,
-		dim: bool,
-		underline: bool,
-		reverse: bool,
+		options: LineSegmentOptions,
 	) -> Self {
 		self.padding = Some(LineSegment::new_with_color_and_style(
 			String::from(c).as_str(),
 			color,
-			dim,
-			underline,
-			reverse,
+			options,
 		));
 		self
 	}
@@ -202,8 +201,11 @@ mod tests {
 
 	#[test]
 	fn set_padding_with_color_and_style() {
-		let view_line =
-			ViewLine::from("foo").set_padding_with_color_and_style(' ', DisplayColor::IndicatorColor, true, true, true);
+		let view_line = ViewLine::from("foo").set_padding_with_color_and_style(
+			' ',
+			DisplayColor::IndicatorColor,
+			LineSegmentOptions::all(),
+		);
 
 		let padding = view_line.get_padding().as_ref().unwrap();
 		assert_eq!(padding.get_content(), " ");

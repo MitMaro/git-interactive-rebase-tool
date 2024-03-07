@@ -3,7 +3,7 @@ use unicode_segmentation::UnicodeSegmentation;
 use crate::{
 	display::DisplayColor,
 	input::{Event, KeyCode, KeyEvent, KeyModifiers},
-	view::LineSegment,
+	view::{LineSegment, LineSegmentOptions},
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -79,10 +79,14 @@ impl EditableLine {
 		}
 		segments.push(
 			if indicator.is_empty() {
-				LineSegment::new_with_color_and_style(" ", DisplayColor::Normal, false, true, false)
+				LineSegment::new_with_color_and_style(" ", DisplayColor::Normal, LineSegmentOptions::UNDERLINED)
 			}
 			else {
-				LineSegment::new_with_color_and_style(indicator.as_str(), DisplayColor::Normal, false, true, false)
+				LineSegment::new_with_color_and_style(
+					indicator.as_str(),
+					DisplayColor::Normal,
+					LineSegmentOptions::UNDERLINED,
+				)
 			},
 		);
 		if !end.is_empty() {

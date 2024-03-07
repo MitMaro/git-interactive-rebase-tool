@@ -422,13 +422,7 @@ impl RenderSlice {
 					let partial = segment.get_partial_segment(left_start, window_width - cursor);
 
 					if partial.get_length() > 0 {
-						segments.push(LineSegment::new_with_color_and_style(
-							partial.get_content(),
-							segment.get_color(),
-							segment.is_dimmed(),
-							segment.is_underlined(),
-							segment.is_reversed(),
-						));
+						segments.push(LineSegment::new_copy_style(partial.get_content(), segment));
 
 						cursor += partial.get_length();
 						if cursor >= window_width {
@@ -443,12 +437,9 @@ impl RenderSlice {
 
 				if cursor < window_width {
 					if let Some(padding) = line.get_padding().as_ref() {
-						segments.push(LineSegment::new_with_color_and_style(
+						segments.push(LineSegment::new_copy_style(
 							padding.get_content().repeat(window_width - cursor).as_str(),
-							padding.get_color(),
-							padding.is_dimmed(),
-							padding.is_underlined(),
-							padding.is_reversed(),
+							padding,
 						));
 					}
 				}
