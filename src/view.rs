@@ -27,7 +27,7 @@ use anyhow::{Error, Result};
 #[cfg(test)]
 pub(crate) use self::render_slice::RenderAction;
 pub(crate) use self::{
-	line_segment::LineSegment,
+	line_segment::{LineSegment, LineSegmentOptions},
 	render_context::RenderContext,
 	render_slice::RenderSlice,
 	scroll_position::ScrollPosition,

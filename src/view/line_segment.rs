@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 
+use bitflags::bitflags;
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 use xi_unicode::EmojiExt;
@@ -41,46 +42,63 @@ impl SegmentPartial {
 	}
 }
 
+bitflags! {
+	/// Options for the `LineSegment` formatting
+	#[derive(Default, PartialEq, Eq, Debug, Clone, Copy)]
+	pub(crate) struct LineSegmentOptions: u8 {
+		/// None
+		const NONE = 0b0000_0000;
+		/// Dimmed
+		const DIMMED = 0b0000_0001;
+		/// Dimmed
+		const REVERSED = 0b0000_0010;
+		/// Dimmed
+		const UNDERLINED = 0b0000_0100;
+	}
+}
+
+impl LineSegmentOptions {
+	pub(crate) fn conditional(condition: bool, options: Self) -> Self {
+		if condition { options } else { LineSegmentOptions::NONE }
+	}
+}
+
 /// Represents a segment in a larger line.
 #[derive(Clone, Debug)]
 pub(crate) struct LineSegment {
 	color: DisplayColor,
-	dim: bool,
-	reverse: bool,
+	options: LineSegmentOptions,
 	text: String,
 	length: usize,
-	underline: bool,
 }
 
 impl LineSegment {
 	/// Create a new instance with just the content.
 	#[must_use]
 	pub(crate) fn new(text: &str) -> Self {
-		Self::new_with_color_and_style(text, DisplayColor::Normal, false, false, false)
+		Self::new_with_color_and_style(text, DisplayColor::Normal, LineSegmentOptions::NONE)
+	}
+
+	/// Create a new instance with just the content.
+	#[must_use]
+	pub(crate) fn new_copy_style(text: &str, segment: &Self) -> Self {
+		Self::new_with_color_and_style(text, segment.color, segment.options)
 	}
 
 	/// Create a new instance with added color.
 	#[must_use]
 	pub(crate) fn new_with_color(text: &str, color: DisplayColor) -> Self {
-		Self::new_with_color_and_style(text, color, false, false, false)
+		Self::new_with_color_and_style(text, color, LineSegmentOptions::NONE)
 	}
 
 	/// Create a new instance with added color and style.
 	#[must_use]
-	pub(crate) fn new_with_color_and_style(
-		text: &str,
-		color: DisplayColor,
-		dim: bool,
-		underline: bool,
-		reverse: bool,
-	) -> Self {
+	pub(crate) fn new_with_color_and_style(text: &str, color: DisplayColor, options: LineSegmentOptions) -> Self {
 		Self {
 			text: String::from(text),
+			options,
 			color,
-			reverse,
-			dim,
 			length: unicode_column_width(text),
-			underline,
 		}
 	}
 
@@ -93,15 +111,15 @@ impl LineSegment {
 	}
 
 	pub(crate) const fn is_dimmed(&self) -> bool {
-		self.dim
+		self.options.contains(LineSegmentOptions::DIMMED)
 	}
 
 	pub(crate) const fn is_underlined(&self) -> bool {
-		self.underline
+		self.options.contains(LineSegmentOptions::UNDERLINED)
 	}
 
 	pub(crate) const fn is_reversed(&self) -> bool {
-		self.reverse
+		self.options.contains(LineSegmentOptions::REVERSED)
 	}
 
 	pub(crate) const fn get_length(&self) -> usize {
@@ -187,9 +205,7 @@ mod tests {
 		let line_segment = LineSegment::new_with_color_and_style(
 			"Sævör grét áðan því úlpan var ónýt",
 			DisplayColor::IndicatorColor,
-			true,
-			true,
-			true,
+			LineSegmentOptions::all(),
 		);
 
 		assert_eq!(line_segment.get_color(), DisplayColor::IndicatorColor);
@@ -204,9 +220,7 @@ mod tests {
 		let line_segment = LineSegment::new_with_color_and_style(
 			"? דג סקרן שט בים מאוכזב ולפתע מצא לו חברה איך הקליטה",
 			DisplayColor::IndicatorColor,
-			false,
-			false,
-			false,
+			LineSegmentOptions::NONE,
 		);
 
 		assert_eq!(line_segment.get_color(), DisplayColor::IndicatorColor);
@@ -218,8 +232,11 @@ mod tests {
 
 	#[test]
 	fn line_segment_case_new_with_color_and_style_all_styles_dimmed() {
-		let line_segment =
-			LineSegment::new_with_color_and_style("Test String", DisplayColor::IndicatorColor, true, false, false);
+		let line_segment = LineSegment::new_with_color_and_style(
+			"Test String",
+			DisplayColor::IndicatorColor,
+			LineSegmentOptions::DIMMED,
+		);
 
 		assert!(line_segment.is_dimmed());
 		assert!(!line_segment.is_underlined());
@@ -228,8 +245,11 @@ mod tests {
 
 	#[test]
 	fn line_segment_case_new_with_color_and_style_all_styles_underlined() {
-		let line_segment =
-			LineSegment::new_with_color_and_style("Test String", DisplayColor::IndicatorColor, false, true, false);
+		let line_segment = LineSegment::new_with_color_and_style(
+			"Test String",
+			DisplayColor::IndicatorColor,
+			LineSegmentOptions::UNDERLINED,
+		);
 
 		assert!(!line_segment.is_dimmed());
 		assert!(line_segment.is_underlined());
@@ -238,8 +258,11 @@ mod tests {
 
 	#[test]
 	fn line_segment_case_new_with_color_and_style_all_styles_reversed() {
-		let line_segment =
-			LineSegment::new_with_color_and_style("Test String", DisplayColor::IndicatorColor, false, false, true);
+		let line_segment = LineSegment::new_with_color_and_style(
+			"Test String",
+			DisplayColor::IndicatorColor,
+			LineSegmentOptions::REVERSED,
+		);
 
 		assert!(!line_segment.is_dimmed());
 		assert!(!line_segment.is_underlined());

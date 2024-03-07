@@ -9,7 +9,7 @@ use crate::{
 	process::Results,
 	select,
 	util::handle_view_data_scroll,
-	view::{LineSegment, ViewData, ViewLine},
+	view::{LineSegment, LineSegmentOptions, ViewData, ViewLine},
 };
 
 const INPUT_OPTIONS: InputOptions = InputOptions::RESIZE
@@ -44,11 +44,9 @@ impl Help {
 				ViewLine::new_pinned(vec![LineSegment::new_with_color_and_style(
 					format!(" {0:width$} Action", "Key", width = max_key_length).as_str(),
 					DisplayColor::Normal,
-					false,
-					true,
-					false,
+					LineSegmentOptions::UNDERLINED,
 				)])
-				.set_padding_with_color_and_style(' ', DisplayColor::Normal, false, true, false),
+				.set_padding_with_color_and_style(' ', DisplayColor::Normal, LineSegmentOptions::UNDERLINED),
 			);
 
 			for line in keybindings {
@@ -58,7 +56,7 @@ impl Help {
 							format!(" {0:width$}", line.0.join(", "), width = max_key_length).as_str(),
 							DisplayColor::IndicatorColor,
 						),
-						LineSegment::new_with_color_and_style("|", DisplayColor::Normal, true, false, false),
+						LineSegment::new_with_color_and_style("|", DisplayColor::Normal, LineSegmentOptions::DIMMED),
 						LineSegment::new(line.1.as_str()),
 					],
 					2,

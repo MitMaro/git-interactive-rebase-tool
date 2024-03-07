@@ -8,6 +8,7 @@ use crate::{
 		ExactPattern,
 		LinePattern,
 	},
+	view::LineSegmentOptions,
 };
 
 fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
@@ -850,9 +851,7 @@ fn with_padding() {
 		updater.push_line(ViewLine::from("Foo").set_padding_with_color_and_style(
 			'*',
 			DisplayColor::ActionPick,
-			true,
-			true,
-			true,
+			LineSegmentOptions::all(),
 		));
 	});
 	let render_slice = create_render_slice(8, 1, &view_data);
@@ -868,9 +867,7 @@ fn with_padding_no_width() {
 		updater.push_line(ViewLine::from("Foo").set_padding_with_color_and_style(
 			'*',
 			DisplayColor::ActionPick,
-			true,
-			true,
-			true,
+			LineSegmentOptions::all(),
 		));
 	});
 	let render_slice = create_render_slice(3, 1, &view_data);
