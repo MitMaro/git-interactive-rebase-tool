@@ -69,7 +69,7 @@ Some values from your Git Config are directly used by this application.
 
 ## Colors
 
-The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `black`, `blue`, `cyan`, `green`, `magenta`, `red`, `white` and `yellow`. Dimmed versions of the 8 ANSI colors can be used by prefixing the color  with `dark`, for example `dark red`. Each terminal controls the exact color for these color names. On terminals that support 256 colors, a color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to 255 with `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use the default terminal color.
+The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `black`, `blue`, `cyan`, `green`, `magenta`, `red`, `white` and `yellow`. Dimmed versions of the 8 ANSI colors can be used by prefixing the color with `dark`, for example `dark red`. Each terminal controls the exact color for these color names. On terminals that support 256 colors, a color triplet with the format `<red>,<green>,<blue>` can be used. Each color has a range of 0 to 255 with `255, 255, 255` resulting in white and `0,0,0` resulting in black. A value of `-1` or `transparent` can be used to use the default terminal color.
 
 [ANSIColors]:https://en.wikipedia.org/wiki/ANSI_escape_code#3-bit_and_4-bit
 
@@ -101,7 +101,7 @@ The valid colors are the [eight original 8 ANSI colors][ANSIColors]. They are `b
 
 ## Key Bindings
 
-Most keys can be changed to any printable character or supported special character. It is possible to provide conflicting bindings, which will result in undefined behaviour. The `inputConfirmYes` binding has a special behaviour in that it responds to both the uppercase and lowercase letter of the value set, if the variant exist.
+Most keys can be changed to any printable character or supported special character. It is possible to provide conflicting bindings, which will result in undefined behavior. The `inputConfirmYes` binding has a special behavior in that it responds to both the uppercase and lowercase letter of the value set, if the variant exist.
 
 | Key                         | Default   | Type   | Description                                         |
 |-----------------------------|-----------|--------|-----------------------------------------------------|
@@ -128,7 +128,7 @@ Most keys can be changed to any printable character or supported special charact
 | `inputMoveSelectionDown`    | j         | String | Key for moving the selected line(s) down            |
 | `inputMoveSelectionUp`      | k         | String | Key for moving the selected line(s) up              |
 | `inputMoveStepDown`         | PageDown  | String | Key for moving the cursor down by a large step      |
-| `inputMoveStepUp`           | PageUp    | String | Key for moving the cursor up  by a large step       |
+| `inputMoveStepUp`           | PageUp    | String | Key for moving the cursor up by a large step        |
 | `inputMoveUp`               | Up        | String | Key for moving the cursor up                        |
 | `inputOpenInExternalEditor` | !         | String | Key for opening the external editor                 |
 | `inputRebase`               | w         | String | Key for rebasing with confirmation                  |

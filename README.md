@@ -26,7 +26,7 @@ Native cross-platform full feature terminal based [sequence editor][git-sequence
 
 ### Cross-platform
 
-Built and works on Linux, macOS, Windows and many others.
+Built and works on Linux, macOS, Windows, and many others.
 
 ### Set action
 

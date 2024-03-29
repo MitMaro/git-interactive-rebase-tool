@@ -70,7 +70,7 @@ The executable will be installed to `/usr/bin`.
 
     guix shell git-interactive-rebase-tool
     
-### In a temporary container (linux namespace)
+### In a temporary container (Linux namespace)
 
     guix shell --container git-interactive-rebase-tool
 
