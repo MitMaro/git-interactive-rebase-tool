@@ -6,7 +6,7 @@ license = "GPL-3.0-or-later"
 description = "Full feature terminal based sequence editor for git interactive rebase."
 homepage = "https://gitrebasetool.mitmaro.ca/"
 repository = "https://github.com/MitMaro/git-interactive-rebase-tool"
-keywords = [ "git", "editor", "tool", "rebase", "cli" ]
+keywords = ["git", "editor", "tool", "rebase", "cli"]
 categories = ["command-line-interface", "command-line-utilities", "text-editors"]
 readme = "README.md"
 include = [
@@ -30,7 +30,7 @@ captur = "0.1.0"
 chrono = "0.4.26"
 crossbeam-channel = "0.5.8"
 crossterm = "0.27.0"
-git2 = { version = "0.18.2", default-features = false, features = []}
+git2 = { version = "0.18.2", default-features = false, features = [] }
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
 num-format = "0.4.4"
@@ -84,15 +84,15 @@ assets = [
 ]
 
 [lints.rust]
-future_incompatible = {level = "warn", priority = -2}
-nonstandard_style = {level = "warn", priority = -2}
-rust_2018_compatibility = {level = "warn", priority = -2}
-rust_2018_idioms = {level = "warn", priority = -2}
-rust_2021_compatibility = {level = "warn", priority = -2}
-unused = {level = "warn", priority = -2}
+future_incompatible = { level = "warn", priority = -2 }
+nonstandard_style = { level = "warn", priority = -2 }
+rust_2018_compatibility = { level = "warn", priority = -2 }
+rust_2018_idioms = { level = "warn", priority = -2 }
+rust_2021_compatibility = { level = "warn", priority = -2 }
+unused = { level = "warn", priority = -2 }
 
-unknown_lints = {level = "warn", priority = -1}
-renamed_and_removed_lints = {level = "warn", priority = -1}
+unknown_lints = { level = "warn", priority = -1 }
+renamed_and_removed_lints = { level = "warn", priority = -1 }
 
 absolute_paths_not_starting_with_crate = "warn"
 deprecated_in_future = "warn"
@@ -127,16 +127,15 @@ unused_lifetimes = "warn"
 unused_macro_rules = "warn"
 unused_qualifications = "warn"
 unused_results = "warn"
-unused_tuple_struct_fields = "warn"
 variant_size_differences = "warn"
 
 [lints.clippy]
-all = {level = "warn", priority = -2}
-cargo = {level = "warn", priority = -2}
-pedantic = {level = "warn", priority = -2}
-restriction =  {level = "warn", priority = -2}
+all = { level = "warn", priority = -2 }
+cargo = { level = "warn", priority = -2 }
+pedantic = { level = "warn", priority = -2 }
+restriction = { level = "warn", priority = -2 }
 
-blanket_clippy_restriction_lints = {level = "allow", priority = 5}
+blanket_clippy_restriction_lints = { level = "allow", priority = 5 }
 absolute_paths = "allow"
 as_conversions = "allow"
 arithmetic_side_effects = "allow"
