@@ -74,7 +74,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## [1.2.1] - 2020-01-26
 
 ### Fixed
-- ANSI color support broken on MacOS ([#219](https://github.com/MitMaro/git-interactive-rebase-tool/issues/219)) 
+- ANSI color support broken on macOS ([#219](https://github.com/MitMaro/git-interactive-rebase-tool/issues/219))
 
 ## [1.2.0] - 2020-01-11
 
@@ -110,7 +110,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## [1.0.0] - 2019-04-10
 
 ### Added
-- Support for unicode characters
+- Support for Unicode characters
 - Horizontal and vertical overflow support
 
 ### Changed
