@@ -189,7 +189,8 @@ Key bindings can be customized, see [configuration](readme/customization.md#key-
 | `e`         | Normal/Diff | Set selected commit(s) to be edited       |
 | `s`         | Normal/Diff | Set selected commit(s) to be squashed     |
 | `f`         | Normal/Diff | Set selected commit(s) to be fixed-up     |
-| `d`         | Normal/Diff | Set selected commit(s) to be dropped      |
+| `d`         | Normal      | Set selected commit(s) to be dropped      |
+| `d`         | Diff        | Show full commit diff                     |
 | `E`         | Normal      | Edit the command of an editable action    |
 | `v`         | Normal/Diff | Enter and exit visual mode (for selection)|
 | `I`         | Normal      | Insert a new line                         |
@@ -206,7 +207,6 @@ Key bindings can be customized, see [configuration](readme/customization.md#key-
 | End         | Diff        | Scroll view to the end                    |
 | PageUp      | Diff        | Scroll view a step up                     |
 | PageDown    | Diff        | Scroll view a step down                   |
-| `d`         | Diff        | Show full commit diff                     |
 
 ## Supported Platforms
 
