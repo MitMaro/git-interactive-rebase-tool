@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ExitStatus {
+pub(crate) enum ExitStatus {
 	None,
 	Abort,
 	ConfigError,
@@ -11,7 +11,7 @@ pub enum ExitStatus {
 }
 
 impl ExitStatus {
-	pub const fn to_code(self) -> i32 {
+	pub(crate) const fn to_code(self) -> i32 {
 		match self {
 			Self::Abort => 5,
 			Self::ConfigError => 1,

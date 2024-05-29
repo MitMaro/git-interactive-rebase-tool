@@ -85,46 +85,64 @@ assets = [
 
 [lints.rust]
 future_incompatible = { level = "warn", priority = -2 }
+keyword_idents = { level = "warn", priority = -3 }
+let_underscore = { level = "warn", priority = -2 }
 nonstandard_style = { level = "warn", priority = -2 }
+# refiing_impl_trait - Not needed for this project
 rust_2018_compatibility = { level = "warn", priority = -2 }
 rust_2018_idioms = { level = "warn", priority = -2 }
 rust_2021_compatibility = { level = "warn", priority = -2 }
+rust_2024_compatibility = { level = "warn", priority = -2 }
 unused = { level = "warn", priority = -2 }
 
 unknown_lints = { level = "warn", priority = -1 }
 renamed_and_removed_lints = { level = "warn", priority = -1 }
 
-absolute_paths_not_starting_with_crate = "warn"
+# Allow certain configs in the check-cfg linting
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
+
+# absolute_paths_not_starting_with_crate - group rust_2018_compatibility
+# box-pointers - used in project, and is safe to do so
 deprecated_in_future = "warn"
-dead_code = "warn"
-elided_lifetimes_in_paths = "warn"
-explicit_outlives_requirements = "warn"
+# elided_lifetimes_in_paths - group: rust_2018_idioms
+# explicit_outlives_requirements - group: rust_2018_idioms
 ffi_unwind_calls = "warn"
-keyword_idents = "warn"
-let_underscore_drop = "warn"
+# fuzzy_provenance_casts - unstable
+# impl_trait_overcaptures - unstable
+# keyword_idents_2018 - group: rust_2018_compatibility
+# keyword_idents_2024 - group: rust_2024_compatibility
+# let_underscore_drop - group: let_underscore
+# lossy_provenance_casts - unstable
 macro_use_extern_crate = "warn"
 meta_variable_misuse = "warn"
 missing_abi = "warn"
 missing_copy_implementations = "warn"
 missing_debug_implementations = "warn"
+# missing_docs - not requiring docs in this project
+# multiple_supertrait_upcastable - unstable
+# must_not_suspend - unstable
 non_ascii_idents = "warn"
-noop_method_call = "warn"
-pointer_structural_match = "warn"
-rust_2021_incompatible_closure_captures = "warn"
-rust_2021_incompatible_or_patterns = "warn"
-rust_2021_prefixes_incompatible_syntax = "warn"
-rust_2021_prelude_collisions = "warn"
+# non_exhaustive_omitted_patterns - unstable
+redundant_lifetimes = "warn"
+# rust_2021_incompatible_closure_captures - group: rust_2021_compatibility
+# rust_2021_incompatible_or_patterns - group: rust_2021_compatibility
+# rust_2021_prefixes_incompatible_syntax - group: rust_2021_compatibility
+# rust_2021_prelude_collisions - group: rust_2021_compatibility
+# rust_2024_incompatible_pat - unstable
 single_use_lifetimes = "warn"
 trivial_casts = "warn"
 trivial_numeric_casts = "warn"
+unit-bindings = "warn"
+unnameable_types = "warn"
 unreachable_pub = "warn"
 unsafe_code = "warn"
-unsafe_op_in_unsafe_fn = "warn"
+# unsafe_op_in_unsafe_fn - group: rust_2024_compatibility
+# unstable_features - deprecated
 unused_crate_dependencies = "warn"
-unused_extern_crates = "warn"
+# unused_extern_crates - group: unused, rust_2018_idioms
 unused_import_braces = "warn"
 unused_lifetimes = "warn"
-unused_macro_rules = "warn"
+# unused_macro_rules - group: unused
 unused_qualifications = "warn"
 unused_results = "warn"
 variant_size_differences = "warn"
@@ -135,7 +153,9 @@ cargo = { level = "warn", priority = -2 }
 pedantic = { level = "warn", priority = -2 }
 restriction = { level = "warn", priority = -2 }
 
+# Clippy restricts enabling restricted lints
 blanket_clippy_restriction_lints = { level = "allow", priority = 5 }
+
 absolute_paths = "allow"
 as_conversions = "allow"
 arithmetic_side_effects = "allow"
@@ -146,6 +166,7 @@ expect_used = "allow"
 float_arithmetic = "allow"
 implicit_return = "allow"
 indexing_slicing = "allow"
+integer_division_remainder_used = "allow"
 map_err_ignore = "allow"
 min_ident_chars = "allow"
 missing_docs_in_private_items = "allow"
