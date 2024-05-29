@@ -1,24 +1,24 @@
 use crate::module::ExitStatus;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Exit {
+pub(crate) struct Exit {
 	message: Option<String>,
 	status: ExitStatus,
 }
 
 impl Exit {
-	pub fn new(status: ExitStatus, message: &str) -> Self {
+	pub(crate) fn new(status: ExitStatus, message: &str) -> Self {
 		Self {
 			message: Some(String::from(message)),
 			status,
 		}
 	}
 
-	pub const fn get_message(&self) -> &Option<String> {
+	pub(crate) const fn get_message(&self) -> &Option<String> {
 		&self.message
 	}
 
-	pub const fn get_status(&self) -> &ExitStatus {
+	pub(crate) const fn get_status(&self) -> &ExitStatus {
 		&self.status
 	}
 }

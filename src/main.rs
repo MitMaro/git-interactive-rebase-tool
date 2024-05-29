@@ -60,7 +60,7 @@ use crate::{
 };
 
 #[must_use]
-pub fn run(os_args: Vec<OsString>) -> Exit {
+fn run(os_args: Vec<OsString>) -> Exit {
 	match Args::try_from(os_args) {
 		Err(err) => err,
 		Ok(args) => {

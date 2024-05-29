@@ -4,6 +4,8 @@ use chrono::{TimeZone, Utc};
 use rustc_version::{version_meta, Channel};
 
 fn main() {
+	println!("cargo::rustc-check-cfg=cfg(allow_unknown_lints)");
+	println!("cargo::rustc-check-cfg=cfg(include_nightly_lints)");
 	// allow unknown lints in nightly builds
 	if let Ok(meta) = version_meta() {
 		if meta.channel == Channel::Nightly {
