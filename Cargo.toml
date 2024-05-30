@@ -24,22 +24,22 @@ name = "interactive-rebase-tool"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0.72"
-bitflags = "2.4.2"
+anyhow = "1.0.86"
+bitflags = "2.5.0"
 captur = "0.1.0"
-chrono = "0.4.26"
-crossbeam-channel = "0.5.8"
+chrono = "0.4.38"
+crossbeam-channel = "0.5.13"
 crossterm = "0.27.0"
-git2 = { version = "0.18.2", default-features = false, features = [] }
+git2 = { version = "0.18.3", default-features = false, features = [] }
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
 num-format = "0.4.4"
-parking_lot = "0.12.1"
+parking_lot = "0.12.3"
 pico-args = "0.5.0"
-thiserror = "1.0.56"
+thiserror = "1.0.61"
 unicode-segmentation = "1.10.1"
-unicode-width = "0.1.10"
-uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
+unicode-width = "0.1.12"
+uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
 version-track = "0.1.0"
 xi-unicode = "0.3.0"
 
@@ -48,15 +48,15 @@ crossterm = { version = "0.27.0", features = ["use-dev-tty"] }
 
 [dev-dependencies]
 claims = "0.7.1"
-itertools = "0.12.1"
+itertools = "0.13.0"
 pretty_assertions = "1.4.0"
-regex = "1.8.3"
-rstest = "0.18.1"
-serial_test = "3.0.0"
-tempfile = "3.7.0"
+regex = "1.8.4"
+rstest = "0.19.0"
+serial_test = "3.1.1"
+tempfile = "3.10.1"
 
 [build-dependencies]
-chrono = "0.4.26"
+chrono = "0.4.38"
 rustc_version = "0.4.0"
 
 [features]
