@@ -3,11 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [2.4.0] - 2024-06-01
 ### Added
+- Add support for `NO_COLOR` environment
+  variable  ([#896](https://github.com/MitMaro/git-interactive-rebase-tool/pull/896))
 - Post modified line exec command ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/890))
 
+### Changed
+- List search now uses a shared search thread ([#900](https://github.com/MitMaro/git-interactive-rebase-tool/pull/900))
+
 ### Fixed
+- Fixed TTY support on macOS ([#874](https://github.com/MitMaro/git-interactive-rebase-tool/pull/874))
 - Flicker when action width changes ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/891))
 
 ## [2.3.0] - 2023-07-19
