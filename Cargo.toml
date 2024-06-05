@@ -62,6 +62,8 @@ rustc_version = "0.4.0"
 [features]
 default = []
 dev = []
+# Mostly used for some arm systems
+zlib-ng-compat = ["git2/zlib-ng-compat"]
 
 [profile.release]
 incremental = true
@@ -81,6 +83,15 @@ assets = [
     ["readme/**/*.md", "usr/share/doc/interactive-rebase-tool/readme/", "644"],
     ["CHANGELOG.md", "usr/share/doc/interactive-rebase-tool/", "644"],
     ["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
+]
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/interactive-rebase-tool", dest = "/usr/bin/interactive-rebase-tool", mode = "755" },
+    { source = "README.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
+    { source = "readme/*.md", dest = "/usr/share/doc/interactive-rebase-tool/readme/", mode = "644" },
+    { source = "CHANGELOG.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
+    { source = "src/interactive-rebase-tool.1", dest = "/usr/share/man/man1/interactive-rebase-tool.1", mode = "644" },
 ]
 
 [lints.rust]

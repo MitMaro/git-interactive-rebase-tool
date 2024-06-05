@@ -7,12 +7,12 @@ default_to_workspace = false
 
 [tasks.dev]
 dependencies = [
-	"build",
-	"build-nightly",
-	"test",
-	"docs",
-	"lint",
-	"format",
+    "build",
+    "build-nightly",
+    "test",
+    "docs",
+    "lint",
+    "format",
 ]
 
 [tasks.build]
@@ -56,22 +56,21 @@ command = "cargo"
 condition = { platforms = ["linux"] }
 env = { "RUSTFLAGS" = "-C link-dead-code" }
 args = [
-	"tarpaulin",
-	"--all-features",
-	"--ignore-tests",
-	"--line",
-	"--verbose",
-	"--out", "Html",
-	"--out", "Lcov",
-	"--output-dir",
-	"coverage",
-	"${@}"
+    "tarpaulin",
+    "--ignore-tests",
+    "--line",
+    "--verbose",
+    "--out", "Html",
+    "--out", "Lcov",
+    "--output-dir",
+    "coverage",
+    "${@}"
 ]
 
 [tasks.docs]
 dependencies = [
-	"docs-nightly",
-	"docs-stable"
+    "docs-nightly",
+    "docs-stable"
 ]
 
 [tasks.docs-stable]
@@ -79,9 +78,8 @@ dependencies = ["update-rust-stable"]
 toolchain = "stable"
 command = "cargo"
 args = [
-	"doc",
-	"--all-features",
-	"${@}"
+    "doc",
+    "${@}"
 ]
 
 [tasks.docs-nightly]
@@ -90,15 +88,14 @@ toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 ignore_errors = true
 command = "cargo"
 args = [
-	"doc",
-	"--all-features",
-	"${@}"
+    "doc",
+    "${@}"
 ]
 
 [tasks.lint]
 dependencies = [
-	"lint-nightly",
-	"lint-stable"
+    "lint-nightly",
+    "lint-stable"
 ]
 
 [tasks.lint-stable]
@@ -106,10 +103,9 @@ dependencies = ["update-rust-stable"]
 toolchain = "stable"
 command = "cargo"
 args = [
-	"clippy",
-	"--all-targets",
-	"--all-features",
-	"${@}"
+    "clippy",
+    "--all-targets",
+    "${@}"
 ]
 
 [tasks.lint-nightly]
@@ -118,10 +114,9 @@ toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 ignore_errors = true
 command = "cargo"
 args = [
-	"clippy",
-	"--all-targets",
-	"--all-features",
-	"${@}"
+    "clippy",
+    "--all-targets",
+    "${@}"
 ]
 
 [tasks.format]
@@ -129,11 +124,11 @@ dependencies = ["update-rust-nightly"]
 toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 command = "cargo"
 args = [
-	"fmt",
-	"--all",
-	"--",
-	"--check",
-	"${@}"
+    "fmt",
+    "--all",
+    "--",
+    "--check",
+    "${@}"
 ]
 
 [tasks.format-apply]
@@ -141,11 +136,11 @@ dependencies = ["update-rust-nightly"]
 toolchain = "nightly${RUST_NIGHTLY_VERSION_PREFIX}"
 command = "cargo"
 args = [
-	"fmt",
-	"--all",
-	"--",
-	"--emit", "files",
-	"${@}"
+    "fmt",
+    "--all",
+    "--",
+    "--emit", "files",
+    "${@}"
 ]
 
 [tasks.licenses]
