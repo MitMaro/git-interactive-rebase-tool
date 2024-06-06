@@ -274,7 +274,7 @@ impl RenderSlice {
 			self.padding_height < self.height && lines_length > (self.height - self.padding_height);
 
 		self.scroll_position.set_lines_length(lines_length);
-		if let Some(row) = view_data.get_visible_row().as_ref() {
+		for row in view_data.visible_rows() {
 			self.scroll_position.ensure_line_visible(*row);
 		}
 

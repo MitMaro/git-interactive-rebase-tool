@@ -103,7 +103,7 @@ nonstandard_style = { level = "warn", priority = -2 }
 rust_2018_compatibility = { level = "warn", priority = -2 }
 rust_2018_idioms = { level = "warn", priority = -2 }
 rust_2021_compatibility = { level = "warn", priority = -2 }
-rust_2024_compatibility = { level = "warn", priority = -2 }
+# rust_2024_compatibility = { level = "warn", priority = -2 } - requires some significant changes
 unused = { level = "warn", priority = -2 }
 
 unknown_lints = { level = "warn", priority = -1 }
