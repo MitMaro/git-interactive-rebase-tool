@@ -182,3 +182,56 @@ fn render_with_scroll_bar() {
 		],
 	);
 }
+
+#[test]
+fn render_ensure_visible_row_single() {
+	assert_render(
+		30,
+		3,
+		&ViewData::new(|updater| {
+			updater.push_line(ViewLine::from("This is line 1"));
+			updater.push_line(ViewLine::from("This is line 2"));
+			updater.push_line(ViewLine::from("This is line 3"));
+			updater.push_line(ViewLine::from("This is line 4"));
+			updater.push_line(ViewLine::from("This is line 5"));
+			updater.ensure_line_visible(3);
+		}),
+		&["This is line 2 ", "This is line 3 ", "This is line 4█"],
+	);
+}
+
+#[test]
+fn render_ensure_visible_multiple_rows_increasing_order() {
+	assert_render(
+		30,
+		3,
+		&ViewData::new(|updater| {
+			updater.push_line(ViewLine::from("This is line 1"));
+			updater.push_line(ViewLine::from("This is line 2"));
+			updater.push_line(ViewLine::from("This is line 3"));
+			updater.push_line(ViewLine::from("This is line 4"));
+			updater.push_line(ViewLine::from("This is line 5"));
+			updater.ensure_line_visible(3);
+			updater.ensure_line_visible(4);
+		}),
+		&["This is line 3 ", "This is line 4 ", "This is line 5█"],
+	);
+}
+
+#[test]
+fn render_ensure_visible_multiple_rows_decreasing_order() {
+	assert_render(
+		30,
+		3,
+		&ViewData::new(|updater| {
+			updater.push_line(ViewLine::from("This is line 1"));
+			updater.push_line(ViewLine::from("This is line 2"));
+			updater.push_line(ViewLine::from("This is line 3"));
+			updater.push_line(ViewLine::from("This is line 4"));
+			updater.push_line(ViewLine::from("This is line 5"));
+			updater.ensure_line_visible(4);
+			updater.ensure_line_visible(3);
+		}),
+		&["This is line 3 ", "This is line 4 ", "This is line 5█"],
+	);
+}

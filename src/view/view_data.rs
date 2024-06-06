@@ -15,7 +15,7 @@ pub(crate) struct ViewData {
 	show_title: bool,
 	version: u32,
 	visible_column: Option<usize>,
-	visible_row: Option<usize>,
+	visible_rows: Vec<usize>,
 }
 
 impl ViewData {
@@ -33,7 +33,7 @@ impl ViewData {
 			show_title: false,
 			version: 0,
 			visible_column: None,
-			visible_row: None,
+			visible_rows: vec![],
 		};
 		let mut view_data_updater = ViewDataUpdater::new(&mut view_data);
 		callback(&mut view_data_updater);
@@ -69,8 +69,12 @@ impl ViewData {
 		self.lines.clear();
 	}
 
+	pub(crate) fn clear_visible_lines(&mut self) {
+		self.visible_rows.clear();
+	}
+
 	pub(crate) fn ensure_line_visible(&mut self, row_index: usize) {
-		self.visible_row = Some(row_index);
+		self.visible_rows.push(row_index);
 	}
 
 	pub(crate) fn ensure_column_visible(&mut self, column_index: usize) {
@@ -129,8 +133,8 @@ impl ViewData {
 		&self.visible_column
 	}
 
-	pub(crate) const fn get_visible_row(&self) -> &Option<usize> {
-		&self.visible_row
+	pub(crate) const fn visible_rows(&self) -> &Vec<usize> {
+		&self.visible_rows
 	}
 
 	pub(crate) fn get_name(&self) -> &str {
@@ -210,7 +214,16 @@ mod tests {
 	fn ensure_line_visible() {
 		let mut view_data = ViewData::new(|_| {});
 		view_data.ensure_line_visible(10);
-		assert_eq!(view_data.get_visible_row().unwrap(), 10);
+		view_data.ensure_line_visible(11);
+		assert_eq!(view_data.visible_rows(), &vec![10, 11]);
+	}
+
+	#[test]
+	fn clear_visible_lines() {
+		let mut view_data = ViewData::new(|_| {});
+		view_data.ensure_line_visible(10);
+		view_data.clear_visible_lines();
+		assert_eq!(view_data.visible_rows().len(), 0);
 	}
 
 	#[test]

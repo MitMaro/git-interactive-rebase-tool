@@ -18,6 +18,7 @@ impl<'view_data> ViewDataUpdater<'view_data> {
 	/// Clear content of the view data.
 	pub(crate) fn clear(&mut self) {
 		self.modified = true;
+		self.view_data.clear_visible_lines();
 		self.view_data.clear();
 	}
 
@@ -127,7 +128,7 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.ensure_line_visible(10);
 		assert!(updater.is_modified());
-		assert_eq!(view_data.get_visible_row().unwrap(), 10);
+		assert_eq!(view_data.visible_rows(), &vec![10]);
 	}
 
 	#[test]

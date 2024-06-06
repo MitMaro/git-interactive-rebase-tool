@@ -5,8 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [2.4.0] - 2024-06-01
 ### Added
-- Add support for `NO_COLOR` environment
-  variable  ([#896](https://github.com/MitMaro/git-interactive-rebase-tool/pull/896))
+- Add support for `NO_COLOR` environment variable  ([#896](https://github.com/MitMaro/git-interactive-rebase-tool/pull/896))
 - Post modified line exec command ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/890))
 
 ### Changed
@@ -15,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 - Fixed TTY support on macOS ([#874](https://github.com/MitMaro/git-interactive-rebase-tool/pull/874))
 - Flicker when action width changes ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/891))
+- Selected line was not always visible when multiple lines were selected ([#918](https://github.com/MitMaro/git-interactive-rebase-tool/pull/918))
 
 ## [2.3.0] - 2023-07-19
 ### Added
@@ -183,7 +183,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 - Initial project release
 
-[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.3.0...HEAD
+[Unreleased]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.4.0...HEAD
+[2.4.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.3.0...2.4.0
 [2.3.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.1...2.3.0
 [2.2.1]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/MitMaro/git-interactive-rebase-tool/compare/2.1.0...2.2.0
