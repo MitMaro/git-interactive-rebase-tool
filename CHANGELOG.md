@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Fixed TTY support on macOS ([#874](https://github.com/MitMaro/git-interactive-rebase-tool/pull/874))
 - Flicker when action width changes ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/891))
 - Selected line was not always visible when multiple lines were selected ([#918](https://github.com/MitMaro/git-interactive-rebase-tool/pull/918))
+- Selected line hidden by added trailing, leading or header line when view was not resized ([#919](https://github.com/MitMaro/git-interactive-rebase-tool/pull/919))
 
 ## [2.3.0] - 2023-07-19
 ### Added
