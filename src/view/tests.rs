@@ -1,7 +1,7 @@
 use super::*;
 use crate::{config::Theme, display::Size, test_helpers::mocks};
 
-fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
+fn assert_render_slice(width: usize, height: usize, render_slice: &RenderSlice, expected: &[&str]) {
 	let theme = Theme::new_with_config(None).unwrap();
 	let mut crossterm = mocks::CrossTerm::new();
 	let readonly_tui = crossterm.clone();
@@ -9,11 +9,15 @@ fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[
 	let display = Display::new(crossterm, &theme);
 	let mut view = View::new(display, "~", "?");
 
+	view.render(render_slice).unwrap();
+	assert_eq!(readonly_tui.get_output().join(""), format!("{}\n", expected.join("\n")));
+}
+
+fn assert_render(width: usize, height: usize, view_data: &ViewData, expected: &[&str]) {
 	let mut render_slice = RenderSlice::new();
 	render_slice.record_resize(width, height);
 	render_slice.sync_view_data(view_data);
-	view.render(&render_slice).unwrap();
-	assert_eq!(readonly_tui.get_output().join(""), format!("{}\n", expected.join("\n")));
+	assert_render_slice(width, height, &render_slice, expected);
 }
 
 #[test]
@@ -234,4 +238,67 @@ fn render_ensure_visible_multiple_rows_decreasing_order() {
 		}),
 		&["This is line 3 ", "This is line 4 ", "This is line 5█"],
 	);
+}
+
+#[test]
+fn render_after_leading_lines_change() {
+	let width = 30;
+	let height = 2;
+	let mut render_slice = RenderSlice::new();
+	render_slice.record_resize(width, height);
+	let mut view_data = ViewData::new(|updater| {
+		updater.push_line(ViewLine::from("This is line 1"));
+		updater.push_line(ViewLine::from("This is line 2"));
+		updater.push_line(ViewLine::from("This is line 3"));
+		updater.ensure_line_visible(2);
+	});
+	render_slice.sync_view_data(&view_data);
+	view_data.update_view_data(|updater| {
+		updater.push_leading_line(ViewLine::from("This is line 0"));
+	});
+	render_slice.sync_view_data(&view_data);
+	assert_render_slice(width, height, &render_slice, &["This is line 0", "This is line 3█"]);
+}
+
+#[test]
+fn render_after_title_show() {
+	let width = 30;
+	let height = 2;
+	let mut render_slice = RenderSlice::new();
+	render_slice.record_resize(width, height);
+	let mut view_data = ViewData::new(|updater| {
+		updater.push_line(ViewLine::from("This is line 1"));
+		updater.push_line(ViewLine::from("This is line 2"));
+		updater.push_line(ViewLine::from("This is line 3"));
+		updater.ensure_line_visible(2);
+	});
+	render_slice.sync_view_data(&view_data);
+	view_data.update_view_data(|updater| {
+		updater.set_show_title(true);
+	});
+	render_slice.sync_view_data(&view_data);
+	assert_render_slice(width, height, &render_slice, &[
+		"Git Interactive Rebase Tool   ",
+		"This is line 3█",
+	]);
+}
+
+#[test]
+fn render_after_trailing_lines_change() {
+	let width = 30;
+	let height = 2;
+	let mut render_slice = RenderSlice::new();
+	render_slice.record_resize(width, height);
+	let mut view_data = ViewData::new(|updater| {
+		updater.push_line(ViewLine::from("This is line 1"));
+		updater.push_line(ViewLine::from("This is line 2"));
+		updater.push_line(ViewLine::from("This is line 3"));
+		updater.ensure_line_visible(2);
+	});
+	render_slice.sync_view_data(&view_data);
+	view_data.update_view_data(|updater| {
+		updater.push_trailing_line(ViewLine::from("This is line 4"));
+	});
+	render_slice.sync_view_data(&view_data);
+	assert_render_slice(width, height, &render_slice, &["This is line 3█", "This is line 4"]);
 }

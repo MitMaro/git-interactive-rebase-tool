@@ -218,6 +218,7 @@ impl RenderSlice {
 
 		if self.padding_height != padding_height {
 			self.padding_height = padding_height;
+			self.update_scroll_position_size();
 		}
 	}
 
