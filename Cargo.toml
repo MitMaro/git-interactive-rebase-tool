@@ -10,12 +10,12 @@ keywords = ["git", "editor", "tool", "rebase", "cli"]
 categories = ["command-line-interface", "command-line-utilities", "text-editors"]
 readme = "README.md"
 include = [
-    "**/*.rs",
-    "/Cargo.toml",
-    "/CHANGELOG.md",
-    "/LICENSE",
-    "/readme",
-    "/README.md"
+	"**/*.rs",
+	"/Cargo.toml",
+	"/CHANGELOG.md",
+	"/LICENSE",
+	"/readme",
+	"/README.md"
 ]
 edition = "2021"
 
@@ -78,20 +78,20 @@ Full feature terminal based sequence editor for git interactive rebase."""
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
-    ["README.md", "usr/share/doc/interactive-rebase-tool/", "644"],
-    ["readme/**/*.md", "usr/share/doc/interactive-rebase-tool/readme/", "644"],
-    ["CHANGELOG.md", "usr/share/doc/interactive-rebase-tool/", "644"],
-    ["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
+	["target/release/interactive-rebase-tool", "usr/bin/interactive-rebase-tool", "755"],
+	["README.md", "usr/share/doc/interactive-rebase-tool/", "644"],
+	["readme/**/*.md", "usr/share/doc/interactive-rebase-tool/readme/", "644"],
+	["CHANGELOG.md", "usr/share/doc/interactive-rebase-tool/", "644"],
+	["src/interactive-rebase-tool.1", "usr/share/man/man1/interactive-rebase-tool.1", "644"]
 ]
 
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/interactive-rebase-tool", dest = "/usr/bin/interactive-rebase-tool", mode = "755" },
-    { source = "README.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
-    { source = "readme/*.md", dest = "/usr/share/doc/interactive-rebase-tool/readme/", mode = "644" },
-    { source = "CHANGELOG.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
-    { source = "src/interactive-rebase-tool.1", dest = "/usr/share/man/man1/interactive-rebase-tool.1", mode = "644" },
+	{ source = "target/release/interactive-rebase-tool", dest = "/usr/bin/interactive-rebase-tool", mode = "755" },
+	{ source = "README.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
+	{ source = "readme/*.md", dest = "/usr/share/doc/interactive-rebase-tool/readme/", mode = "644" },
+	{ source = "CHANGELOG.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
+	{ source = "src/interactive-rebase-tool.1", dest = "/usr/share/man/man1/interactive-rebase-tool.1", mode = "644" },
 ]
 
 [lints.rust]
@@ -103,7 +103,7 @@ nonstandard_style = { level = "warn", priority = -2 }
 rust_2018_compatibility = { level = "warn", priority = -2 }
 rust_2018_idioms = { level = "warn", priority = -2 }
 rust_2021_compatibility = { level = "warn", priority = -2 }
-# rust_2024_compatibility = { level = "warn", priority = -2 } - requires some significant changes
+rust_2024_compatibility = { level = "warn", priority = -2 }
 unused = { level = "warn", priority = -2 }
 
 unknown_lints = { level = "warn", priority = -1 }

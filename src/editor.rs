@@ -28,31 +28,31 @@ mod tests {
 	use std::{ffi::OsString, path::Path};
 
 	use super::*;
-	use crate::test_helpers::set_git_directory;
+	use crate::test_helpers::with_git_directory;
 
 	fn args(args: &[&str]) -> Args {
 		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn successful_run() {
-		let path = set_git_directory("fixtures/simple");
-		let todo_file = Path::new(path.as_str()).join("rebase-todo-empty");
-		assert_eq!(
-			run(&args(&[todo_file.to_str().unwrap()])).get_status(),
-			&ExitStatus::Good
-		);
+		with_git_directory("fixtures/simple", |path| {
+			let todo_file = Path::new(path).join("rebase-todo-empty");
+			assert_eq!(
+				run(&args(&[todo_file.to_str().unwrap()])).get_status(),
+				&ExitStatus::Good
+			);
+		});
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn error_on_application_create() {
-		let path = set_git_directory("fixtures/simple");
-		let todo_file = Path::new(path.as_str()).join("does-not-exist");
-		assert_eq!(
-			run(&args(&[todo_file.to_str().unwrap()])).get_status(),
-			&ExitStatus::FileReadError
-		);
+		with_git_directory("fixtures/simple", |path| {
+			let todo_file = Path::new(path).join("does-not-exist");
+			assert_eq!(
+				run(&args(&[todo_file.to_str().unwrap()])).get_status(),
+				&ExitStatus::FileReadError
+			);
+		});
 	}
 }

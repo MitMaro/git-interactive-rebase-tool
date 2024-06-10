@@ -201,7 +201,7 @@ mod tests {
 			create_config,
 			create_event_reader,
 			mocks,
-			set_git_directory,
+			with_git_directory,
 			DefaultTestModule,
 			TestModuleProvider,
 		},
@@ -245,31 +245,31 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn load_repository_failure() {
-		_ = set_git_directory("fixtures/not-a-repository");
-		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-			Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
-		let exit = application_error!(application);
-		assert_eq!(exit.get_status(), &ExitStatus::StateError);
-		assert!(
-			exit.get_message()
-				.as_ref()
-				.unwrap()
-				.contains("Unable to load Git repository: ")
-		);
+		with_git_directory("fixtures/not-a-repository", |_| {
+			let event_provider = create_event_reader(|| Ok(None));
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
+				Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
+			let exit = application_error!(application);
+			assert_eq!(exit.get_status(), &ExitStatus::StateError);
+			assert!(
+				exit.get_message()
+					.as_ref()
+					.unwrap()
+					.contains("Unable to load Git repository: ")
+			);
+		});
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn load_config_failure() {
-		_ = set_git_directory("fixtures/invalid-config");
-		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-			Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
-		let exit = application_error!(application);
-		assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
+		with_git_directory("fixtures/invalid-config", |_| {
+			let event_provider = create_event_reader(|| Ok(None));
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
+				Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
+			let exit = application_error!(application);
+			assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
+		});
 	}
 
 	#[test]
@@ -303,50 +303,50 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn load_todo_file_load_error() {
-		_ = set_git_directory("fixtures/simple");
-		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-			Application::new(&args(&["does-not-exist"]), event_provider, create_mocked_crossterm());
-		let exit = application_error!(application);
-		assert_eq!(exit.get_status(), &ExitStatus::FileReadError);
+		with_git_directory("fixtures/simple", |_| {
+			let event_provider = create_event_reader(|| Ok(None));
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
+				Application::new(&args(&["does-not-exist"]), event_provider, create_mocked_crossterm());
+			let exit = application_error!(application);
+			assert_eq!(exit.get_status(), &ExitStatus::FileReadError);
+		});
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn load_todo_file_noop() {
-		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{git_dir}/rebase-todo-noop");
-		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
-			&args(&[rebase_todo.as_str()]),
-			event_provider,
-			create_mocked_crossterm(),
-		);
-		let exit = application_error!(application);
-		assert_eq!(exit.get_status(), &ExitStatus::Good);
+		with_git_directory("fixtures/simple", |git_dir| {
+			let rebase_todo = format!("{git_dir}/rebase-todo-noop");
+			let event_provider = create_event_reader(|| Ok(None));
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				&args(&[rebase_todo.as_str()]),
+				event_provider,
+				create_mocked_crossterm(),
+			);
+			let exit = application_error!(application);
+			assert_eq!(exit.get_status(), &ExitStatus::Good);
+		});
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn load_todo_file_empty() {
-		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{git_dir}/rebase-todo-empty");
-		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
-			&args(&[rebase_todo.as_str()]),
-			event_provider,
-			create_mocked_crossterm(),
-		);
-		let exit = application_error!(application);
-		assert_eq!(exit.get_status(), &ExitStatus::Good);
-		assert!(
-			exit.get_message()
-				.as_ref()
-				.unwrap()
-				.contains("An empty rebase was provided, nothing to edit")
-		);
+		with_git_directory("fixtures/simple", |git_dir| {
+			let rebase_todo = format!("{git_dir}/rebase-todo-empty");
+			let event_provider = create_event_reader(|| Ok(None));
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				&args(&[rebase_todo.as_str()]),
+				event_provider,
+				create_mocked_crossterm(),
+			);
+			let exit = application_error!(application);
+			assert_eq!(exit.get_status(), &ExitStatus::Good);
+			assert!(
+				exit.get_message()
+					.as_ref()
+					.unwrap()
+					.contains("An empty rebase was provided, nothing to edit")
+			);
+		});
 	}
 
 	#[test]
@@ -363,22 +363,21 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn run_until_finished_success() {
-		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{git_dir}/rebase-todo");
-		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
-		let mut application: Application<Modules> = Application::new(
-			&args(&[rebase_todo.as_str()]),
-			event_provider,
-			create_mocked_crossterm(),
-		)
-		.unwrap();
-		assert_ok!(application.run_until_finished());
+		with_git_directory("fixtures/simple", |git_dir| {
+			let rebase_todo = format!("{git_dir}/rebase-todo");
+			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
+			let mut application: Application<Modules> = Application::new(
+				&args(&[rebase_todo.as_str()]),
+				event_provider,
+				create_mocked_crossterm(),
+			)
+			.unwrap();
+			assert_ok!(application.run_until_finished());
+		});
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn run_join_error() {
 		struct FailingThread;
 		impl Threadable for FailingThread {
@@ -391,67 +390,68 @@ mod tests {
 			}
 		}
 
-		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{git_dir}/rebase-todo");
-		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
-		let mut application: Application<Modules> = Application::new(
-			&args(&[rebase_todo.as_str()]),
-			event_provider,
-			create_mocked_crossterm(),
-		)
-		.unwrap();
+		with_git_directory("fixtures/simple", |git_dir| {
+			let rebase_todo = format!("{git_dir}/rebase-todo");
+			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
+			let mut application: Application<Modules> = Application::new(
+				&args(&[rebase_todo.as_str()]),
+				event_provider,
+				create_mocked_crossterm(),
+			)
+			.unwrap();
 
-		application.threads = Some(vec![Box::new(FailingThread {})]);
+			application.threads = Some(vec![Box::new(FailingThread {})]);
 
-		let exit = application.run_until_finished().unwrap_err();
-		assert_eq!(exit.get_status(), &ExitStatus::StateError);
-		assert!(
-			exit.get_message()
-				.as_ref()
-				.unwrap()
-				.starts_with("Failed to join runtime:")
-		);
-	}
-
-	#[test]
-	#[serial_test::serial]
-	fn run_until_finished_kill() {
-		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{git_dir}/rebase-todo");
-		let event_provider = create_event_reader(|| {
-			Ok(Some(Event::Key(KeyEvent::new(
-				KeyCode::Char('c'),
-				KeyModifiers::CONTROL,
-			))))
+			let exit = application.run_until_finished().unwrap_err();
+			assert_eq!(exit.get_status(), &ExitStatus::StateError);
+			assert!(
+				exit.get_message()
+					.as_ref()
+					.unwrap()
+					.starts_with("Failed to join runtime:")
+			);
 		});
-		let mut application: Application<Modules> = Application::new(
-			&args(&[rebase_todo.as_str()]),
-			event_provider,
-			create_mocked_crossterm(),
-		)
-		.unwrap();
-		let exit = application.run_until_finished().unwrap_err();
-		assert_eq!(exit.get_status(), &ExitStatus::Kill);
 	}
 
 	#[test]
-	#[serial_test::serial]
+	fn run_until_finished_kill() {
+		with_git_directory("fixtures/simple", |git_dir| {
+			let rebase_todo = format!("{git_dir}/rebase-todo");
+			let event_provider = create_event_reader(|| {
+				Ok(Some(Event::Key(KeyEvent::new(
+					KeyCode::Char('c'),
+					KeyModifiers::CONTROL,
+				))))
+			});
+			let mut application: Application<Modules> = Application::new(
+				&args(&[rebase_todo.as_str()]),
+				event_provider,
+				create_mocked_crossterm(),
+			)
+			.unwrap();
+			let exit = application.run_until_finished().unwrap_err();
+			assert_eq!(exit.get_status(), &ExitStatus::Kill);
+		});
+	}
+
+	#[test]
 	fn run_error_on_second_attempt() {
-		let git_dir = set_git_directory("fixtures/simple");
-		let rebase_todo = format!("{git_dir}/rebase-todo");
-		let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
-		let mut application: Application<Modules> = Application::new(
-			&args(&[rebase_todo.as_str()]),
-			event_provider,
-			create_mocked_crossterm(),
-		)
-		.unwrap();
-		assert_ok!(application.run_until_finished());
-		let exit = application.run_until_finished().unwrap_err();
-		assert_eq!(exit.get_status(), &ExitStatus::StateError);
-		assert_eq!(
-			exit.get_message().as_ref().unwrap(),
-			"Attempt made to run application a second time"
-		);
+		with_git_directory("fixtures/simple", |git_dir| {
+			let rebase_todo = format!("{git_dir}/rebase-todo");
+			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
+			let mut application: Application<Modules> = Application::new(
+				&args(&[rebase_todo.as_str()]),
+				event_provider,
+				create_mocked_crossterm(),
+			)
+			.unwrap();
+			assert_ok!(application.run_until_finished());
+			let exit = application.run_until_finished().unwrap_err();
+			assert_eq!(exit.get_status(), &ExitStatus::StateError);
+			assert_eq!(
+				exit.get_message().as_ref().unwrap(),
+				"Attempt made to run application a second time"
+			);
+		});
 	}
 }

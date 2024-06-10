@@ -198,179 +198,346 @@ fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 
 #[cfg(test)]
 mod tests {
-	use std::env::{remove_var, set_var};
-
 	use rstest::rstest;
-	use serial_test::serial;
 
 	use super::*;
-
-	fn clear_env() {
-		remove_var("NO_COLOR");
-		remove_var("COLORTERM");
-		remove_var("TERM");
-		remove_var("VTE_VERSION");
-		remove_var("WT_SESSION");
-	}
+	use crate::test_helpers::{with_env_var, EnvVarAction};
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_2_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(2), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(2), ColorMode::TwoTone);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_8_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(8), ColorMode::ThreeBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(8), ColorMode::ThreeBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_less_8_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(7), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(7), ColorMode::TwoTone);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_16_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(16), ColorMode::FourBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(16), ColorMode::FourBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_less_16_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(15), ColorMode::ThreeBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(15), ColorMode::ThreeBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_256_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(256), ColorMode::EightBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(256), ColorMode::EightBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_less_256_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(255), ColorMode::FourBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(255), ColorMode::FourBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_env_more_256_colors() {
-		clear_env();
-		assert_eq!(detect_color_mode(257), ColorMode::EightBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(257), ColorMode::EightBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_term_env_no_256() {
-		clear_env();
-		set_var("TERM", "XTERM");
-		assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Set("TERM", String::from("XTERM")),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_term_env_with_256() {
-		clear_env();
-		set_var("TERM", "XTERM-256");
-		assert_eq!(detect_color_mode(0), ColorMode::EightBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Set("TERM", String::from("XTERM-256")),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::EightBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_vte_version_0_36_00() {
-		clear_env();
-		set_var("VTE_VERSION", "3600");
-		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Set("VTE_VERSION", String::from("3600")),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_vte_version_greater_0_36_00() {
-		clear_env();
-		set_var("VTE_VERSION", "3601");
-		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Set("VTE_VERSION", String::from("3601")),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_vte_version_less_0_36_00() {
-		clear_env();
-		set_var("VTE_VERSION", "1");
-		assert_eq!(detect_color_mode(0), ColorMode::EightBit);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Set("VTE_VERSION", String::from("1")),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::EightBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_vte_version_0() {
-		clear_env();
-		set_var("VTE_VERSION", "0");
-		assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Set("VTE_VERSION", String::from("0")),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+			},
+		);
 	}
+
 	#[test]
-	#[serial]
 	fn detect_color_mode_vte_version_invalid() {
-		clear_env();
-		set_var("VTE_VERSION", "invalid");
-		assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Set("VTE_VERSION", String::from("invalid")),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_colorterm_env_is_truecolor() {
-		clear_env();
-		set_var("COLORTERM", "truecolor");
-		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Set("COLORTERM", String::from("truecolor")),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_color_with_value() {
-		clear_env();
-		set_var("NO_COLOR", "true");
-		assert_eq!(detect_color_mode(16), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Set("NO_COLOR", String::from("true")),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(16), ColorMode::TwoTone);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_no_color_without_value() {
-		clear_env();
-		set_var("NO_COLOR", "");
-		assert_eq!(detect_color_mode(16), ColorMode::FourBit);
+		with_env_var(
+			&[
+				EnvVarAction::Set("NO_COLOR", String::new()),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(16), ColorMode::FourBit);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_colorterm_env_is_24bit() {
-		clear_env();
-		set_var("COLORTERM", "24bit");
-		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Set("COLORTERM", String::from("24bit")),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_colorterm_env_is_other() {
-		clear_env();
-		set_var("COLORTERM", "other");
-		assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Set("COLORTERM", String::from("other")),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				EnvVarAction::Remove("WT_SESSION"),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TwoTone);
+			},
+		);
 	}
 
 	#[test]
-	#[serial]
 	fn detect_color_mode_wt_session_env_iterm() {
-		clear_env();
-		// WT_SESSION is generally a GUID of some sort
-		set_var("WT_SESSION", "32a25081-6745-4b65-909d-e8257bdbe852");
-		assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+		with_env_var(
+			&[
+				EnvVarAction::Remove("NO_COLOR"),
+				EnvVarAction::Remove("COLORTERM"),
+				EnvVarAction::Remove("TERM"),
+				EnvVarAction::Remove("VTE_VERSION"),
+				// WT_SESSION is generally a GUID of some sort
+				EnvVarAction::Set("WT_SESSION", String::from("32a25081-6745-4b65-909d-e8257bdbe852")),
+			],
+			|| {
+				assert_eq!(detect_color_mode(0), ColorMode::TrueColor);
+			},
+		);
 	}
 
 	#[test]
