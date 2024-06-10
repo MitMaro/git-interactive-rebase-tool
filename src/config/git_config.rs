@@ -79,15 +79,13 @@ impl TryFrom<&Config> for GitConfig {
 
 #[cfg(test)]
 mod tests {
-	use std::env::{remove_var, set_var};
-
 	use claims::{assert_err_eq, assert_ok};
 	use rstest::rstest;
 
 	use super::*;
 	use crate::{
 		config::ConfigErrorCause,
-		test_helpers::{invalid_utf, with_git_config},
+		test_helpers::{invalid_utf, with_env_var, with_git_config, EnvVarAction},
 	};
 
 	macro_rules! config_test {
@@ -153,42 +151,55 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn git_editor_default_no_env() {
-		remove_var("VISUAL");
-		remove_var("EDITOR");
-		let config = GitConfig::new_with_config(None).unwrap();
-		assert_eq!(config.editor, "vi");
+		with_env_var(
+			&[EnvVarAction::Remove("VISUAL"), EnvVarAction::Remove("EDITOR")],
+			|| {
+				let config = GitConfig::new_with_config(None).unwrap();
+				assert_eq!(config.editor, "vi");
+			},
+		);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn git_editor_default_visual_env() {
-		remove_var("EDITOR");
-		set_var("VISUAL", "visual-editor");
-		let config = GitConfig::new_with_config(None).unwrap();
-		assert_eq!(config.editor, "visual-editor");
+		with_env_var(
+			&[
+				EnvVarAction::Remove("EDITOR"),
+				EnvVarAction::Set("VISUAL", String::from("visual-editor")),
+			],
+			|| {
+				let config = GitConfig::new_with_config(None).unwrap();
+				assert_eq!(config.editor, "visual-editor");
+			},
+		);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn git_editor_default_editor_env() {
-		remove_var("VISUAL");
-		set_var("EDITOR", "editor");
-
-		let config = GitConfig::new_with_config(None).unwrap();
-		assert_eq!(config.editor, "editor");
+		with_env_var(
+			&[
+				EnvVarAction::Remove("VISUAL"),
+				EnvVarAction::Set("EDITOR", String::from("editor")),
+			],
+			|| {
+				let config = GitConfig::new_with_config(None).unwrap();
+				assert_eq!(config.editor, "editor");
+			},
+		);
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn git_editor() {
-		remove_var("VISUAL");
-		remove_var("EDITOR");
-		with_git_config(&["[core]", "editor = custom"], |git_config| {
-			let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
-			assert_eq!(config.editor, "custom");
-		});
+		with_env_var(
+			&[EnvVarAction::Remove("VISUAL"), EnvVarAction::Remove("EDITOR")],
+			|| {
+				with_git_config(&["[core]", "editor = custom"], |git_config| {
+					let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
+					assert_eq!(config.editor, "custom");
+				});
+			},
+		);
 	}
 
 	#[test]
@@ -222,16 +233,18 @@ mod tests {
 	}
 
 	#[test]
-	#[serial_test::serial]
 	fn git_editor_invalid() {
-		remove_var("VISUAL");
-		remove_var("EDITOR");
-		with_git_config(
-			&["[core]", format!("editor = {}", invalid_utf()).as_str()],
-			|git_config| {
-				assert_err_eq!(
-					GitConfig::new_with_config(Some(&git_config)),
-					ConfigError::new_read_error("core.editor", ConfigErrorCause::InvalidUtf),
+		with_env_var(
+			&[EnvVarAction::Remove("VISUAL"), EnvVarAction::Remove("EDITOR")],
+			|| {
+				with_git_config(
+					&["[core]", format!("editor = {}", invalid_utf()).as_str()],
+					|git_config| {
+						assert_err_eq!(
+							GitConfig::new_with_config(Some(&git_config)),
+							ConfigError::new_read_error("core.editor", ConfigErrorCause::InvalidUtf),
+						);
+					},
 				);
 			},
 		);

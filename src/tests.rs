@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use super::*;
-use crate::{module::ExitStatus, test_helpers::set_git_directory};
+use crate::{module::ExitStatus, test_helpers::with_git_directory};
 
 fn args(args: &[&str]) -> Vec<OsString> {
 	args.iter().map(OsString::from).collect::<Vec<OsString>>()
@@ -42,14 +42,14 @@ fn successful_run_license() {
 }
 
 #[test]
-#[serial_test::serial]
 fn successful_run_editor() {
-	let path = set_git_directory("fixtures/simple");
-	let todo_file = Path::new(path.as_str()).join("rebase-todo-empty");
-	assert_eq!(
-		run(args(&[todo_file.to_str().unwrap()])).get_status(),
-		&ExitStatus::Good
-	);
+	with_git_directory("fixtures/simple", |path| {
+		let todo_file = Path::new(path).join("rebase-todo-empty");
+		assert_eq!(
+			run(args(&[todo_file.to_str().unwrap()])).get_status(),
+			&ExitStatus::Good
+		);
+	});
 }
 
 #[cfg(unix)]

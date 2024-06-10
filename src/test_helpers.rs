@@ -9,11 +9,12 @@ mod create_invalid_utf;
 mod create_test_keybindings;
 mod create_test_module_handler;
 pub(crate) mod mocks;
-mod set_git_directory;
 mod shared;
 pub(crate) mod testers;
+mod with_env_var;
 mod with_event_handler;
 mod with_git_config;
+mod with_git_directory;
 mod with_search;
 mod with_temp_bare_repository;
 mod with_temp_repository;
@@ -30,10 +31,11 @@ pub(crate) use self::{
 	create_invalid_utf::invalid_utf,
 	create_test_keybindings::create_test_keybindings,
 	create_test_module_handler::create_test_module_handler,
-	set_git_directory::set_git_directory,
 	shared::TestModuleProvider,
+	with_env_var::{with_env_var, EnvVarAction},
 	with_event_handler::{with_event_handler, EventHandlerTestContext},
 	with_git_config::with_git_config,
+	with_git_directory::with_git_directory,
 	with_search::{with_search, SearchTestContext},
 	with_temp_bare_repository::with_temp_bare_repository,
 	with_temp_repository::with_temp_repository,
