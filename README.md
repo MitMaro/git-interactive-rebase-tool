@@ -9,8 +9,6 @@ Native cross-platform full feature terminal based [sequence editor][git-sequence
 
 [![Git Interactive Rebase Tool](/docs/assets/images/girt-demo.gif?raw=true)](https://youtu.be/q3tzb-gQC0w)
 
-**This is the documentation for the development build. For the current stable release, please use the [2.3.x documentation](https://github.com/MitMaro/git-interactive-rebase-tool/tree/2.3.0/README.md).**
-
 ## Table of Contents
 
 * [Features](./README.md#features)
@@ -145,7 +143,6 @@ GitBash requires the use of `winpty` in order to work correctly, so to set the e
 
 Windows before version 10 has [serious rendering issues with saturated darker colors](https://devblogs.microsoft.com/commandline/updating-the-windows-console-colors/), such as the blue color that is entirely illegible on modern displays. While it is possible to avoid using saturated colors, a better option is to update the theme using Microsoft's [ColorTool](https://github.com/Microsoft/Terminal/tree/master/src/tools/ColorTool).
 
-
 ### Temporary Override
 
 You can temporarily use a different sequence editor by using the `GIT_SEQUENCE_EDITOR` environment variable:
@@ -224,9 +221,9 @@ The tool is tested in [iTerm2](https://www.iterm2.com/) and [Terminal](https://s
 
 ### Windows
 
-Supported on the latest versions of Windows 8.1 and Windows 10 and Windows 11.
+Supported on the latest versions of Windows 10 and Windows 11.
 
-The tool is tested on Windows 10 in [PowerShell](https://docs.microsoft.com/powershell/) and Command Prompt inside [Windows Console](https://docs.microsoft.com/windows/console/) and [Windows Terminal](https://docs.microsoft.com/windows/terminal/). The latest version of Git Bash provided from [Git for Windows](https://gitforwindows.org/) is also supported.
+The tool is tested on Windows 11 in [PowerShell](https://docs.microsoft.com/powershell/) and Command Prompt inside [Windows Console](https://docs.microsoft.com/windows/console/) and [Windows Terminal](https://docs.microsoft.com/windows/terminal/). The latest version of Git Bash provided from [Git for Windows](https://gitforwindows.org/) is also supported.
 
 Windows Console and Git Bash are only minimally supported, and some features or graphical glitches may occur. Windows Console running in [legacy mode](https://docs.microsoft.com/windows/console/legacymode) is not supported.
 
@@ -303,11 +300,17 @@ An addition to the report printed to the CLI, an HTML report can be found in the
 
 ### Release
 
-#### Debian Building
+#### Debian Packaging Building
 
-    cargo make deb
+    cargo make build-deb
 
-A deb file will be written to `target/debian/interactive-rebase-tool_*.deb`.
+A deb file will be written to `target/debian/git-interactive-rebase-tool_*.deb`.
+
+#### RPM Building
+
+    cargo make build-rpm
+
+A rpm file will be written to `target/generate-rpm/git-interactive-rebase-tool-*.deb`.
 
 #### Reproducible Builds
 
@@ -317,6 +320,7 @@ Providing a [`SOURCE_DATE_EPOCH`](https://reproducible-builds.org/specs/source-d
 
 * [rebase-editor](https://github.com/sjurba/rebase-editor) is a very similar project written in Node.js.
 * [cj-git-patchtool](https://github.com/pflanze/cj-git-patchtool) is another tool for doing git rebase en masse.
+* [andrewshadura/git-crecord](https://github.com/andrewshadura/git-crecord) provides interactive selection of changes to a commit.
 
 ## License
 
