@@ -42,6 +42,12 @@ command = "cargo"
 dependencies = ["update-rust-stable", "build-release"]
 args = ["deb"]
 
+[tasks.build-rpm]
+toolchain = "stable"
+command = "cargo"
+dependencies = ["update-rust-stable", "build-release"]
+args = ["generate-rpm"]
+
 [tasks.clean]
 dependencies = ["update-rust-stable"]
 toolchain = "stable"
