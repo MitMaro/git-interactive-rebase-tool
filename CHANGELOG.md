@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [2.4.0] - 2024-06-01
+## [2.4.0] - 2024-06-13
 ### Added
 - Add support for `NO_COLOR` environment variable  ([#896](https://github.com/MitMaro/git-interactive-rebase-tool/pull/896))
 - Post modified line exec command ([#888](https://github.com/MitMaro/git-interactive-rebase-tool/pull/890))
