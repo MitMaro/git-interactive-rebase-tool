@@ -1,6 +1,6 @@
 [package]
 name = "git-interactive-rebase-tool"
-version = "2.4.0"
+version = "2.4.1"
 authors = ["Tim Oram <dev@mitmaro.ca>"]
 license = "GPL-3.0-or-later"
 description = "Full feature terminal based sequence editor for git interactive rebase."

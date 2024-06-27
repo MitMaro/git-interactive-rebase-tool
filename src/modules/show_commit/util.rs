@@ -84,17 +84,17 @@ pub(super) fn get_stat_item_segments(
 		Status::Copied => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
-				LineSegment::new_with_color(to_name.to_str().unwrap_or("invalid"), DisplayColor::Normal),
+				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), DisplayColor::Normal),
 				LineSegment::new(to_file_indicator),
-				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), DisplayColor::DiffAddColor),
+				LineSegment::new_with_color(to_name.to_str().unwrap_or("invalid"), DisplayColor::DiffAddColor),
 			]
 		},
 		Status::Renamed => {
 			vec![
 				LineSegment::new_with_color(status_name.as_str(), color),
-				LineSegment::new_with_color(to_name.to_str().unwrap_or("invalid"), DisplayColor::DiffRemoveColor),
+				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), DisplayColor::DiffRemoveColor),
 				LineSegment::new(to_file_indicator),
-				LineSegment::new_with_color(from_name.to_str().unwrap_or("invalid"), DisplayColor::DiffAddColor),
+				LineSegment::new_with_color(to_name.to_str().unwrap_or("invalid"), DisplayColor::DiffAddColor),
 			]
 		},
 		_ => {

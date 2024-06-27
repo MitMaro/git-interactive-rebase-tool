@@ -319,7 +319,7 @@ dependencies = [
 
 [[package]]
 name = "git-interactive-rebase-tool"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
  "anyhow",
  "bitflags 2.5.0",
