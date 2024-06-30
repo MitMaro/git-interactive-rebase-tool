@@ -16,7 +16,8 @@ include = [
 	"/LICENSE",
 	"/readme",
 	"/README.md",
-	"/src/interactive-rebase-tool.1"
+	"/src/interactive-rebase-tool.1",
+	"/test"
 ]
 edition = "2021"
 
