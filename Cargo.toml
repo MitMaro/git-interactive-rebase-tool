@@ -15,7 +15,8 @@ include = [
 	"/CHANGELOG.md",
 	"/LICENSE",
 	"/readme",
-	"/README.md"
+	"/README.md",
+	"/src/interactive-rebase-tool.1"
 ]
 edition = "2021"
 
