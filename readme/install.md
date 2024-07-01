@@ -12,6 +12,7 @@
 * [Community Supported Repositories](#community-supported-repositories)
     * [Alpine Linux](#alpine-linux)
     * [Arch Linux](#arch-linux)
+    * [Fedora Linux](#fedora-linux)
     * [FreeBSD](#freebsd)
     * [GNU Guix Package Manager](#gnu-guix-package-manager)
     * [Windows](#windows-1)
@@ -100,6 +101,12 @@ yay -S git-interactive-rebase-tool
 1. Download the [package snapshot](https://aur.archlinux.org/packages/git-interactive-rebase-tool/)
 2. Extract to a known location
 3. Run `makepkg -si` from the extracted location
+
+### Fedora Linux
+
+```shell
+dnf install git-interactive-rebase-tool
+```
 
 ### FreeBSD
 
