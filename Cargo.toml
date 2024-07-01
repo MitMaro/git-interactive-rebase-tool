@@ -15,7 +15,8 @@ include = [
 	"/CHANGELOG.md",
 	"/LICENSE",
 	"/readme",
-	"/README.md"
+	"/README.md",
+	"/test"
 ]
 edition = "2021"
 
