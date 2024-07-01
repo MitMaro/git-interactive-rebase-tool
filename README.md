@@ -5,7 +5,7 @@
 
 # Git Interactive Rebase Tool
 
-Native cross-platform full feature terminal based [sequence editor][git-sequence-editor] for interactive rebase in Git 1.7.8+.
+Native cross-platform full-featured terminal-based [sequence editor][git-sequence-editor] for interactive rebase in Git 1.7.8+.
 
 [![Git Interactive Rebase Tool](/docs/assets/images/girt-demo.gif?raw=true)](https://youtu.be/q3tzb-gQC0w)
 
