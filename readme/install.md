@@ -12,6 +12,7 @@
 * [Community Supported Repositories](#community-supported-repositories)
     * [Alpine Linux](#alpine-linux)
     * [Arch Linux](#arch-linux)
+    * [Fedora Linux](#fedora-linux)
     * [Gnu Guix Package Manager](#gnu-guix-package-manager)
     * [FreeBSD](#freebsd)
     * [Windows](#windows-1)
@@ -88,6 +89,10 @@ With your [AUR](https://aur.archlinux.org/) helper of choice:
 1. Download the [package snapshot](https://aur.archlinux.org/packages/git-interactive-rebase-tool/)
 2. Extract to a known location
 3. Run `makepkg -si` from the extracted location
+
+### Fedora Linux
+
+    dnf install git-interactive-rebase-tool
 
 ### Gnu Guix Package Manager
 
