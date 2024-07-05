@@ -125,19 +125,25 @@ exec script.sh "exec" "command" "new-command"
 
 ### Most systems
 
-    git config --global sequence.editor interactive-rebase-tool
+```shell
+git config --global sequence.editor interactive-rebase-tool
+```
 
 ### Windows
 
 #### Standard Command Prompt and Windows Terminal
 
-    git config --global sequence.editor "'C:/path/to/interactive-rebase-tool.exe'"
+```shell
+git config --global sequence.editor "'C:/path/to/interactive-rebase-tool.exe'"
+```
 
 #### GitBash
 
 GitBash requires the use of `winpty` in order to work correctly, so to set the editor use:
 
-    git config --global sequence.editor "winpty /c/path/to/interactive-rebase-tool.exe"
+```shell
+git config --global sequence.editor "winpty /c/path/to/interactive-rebase-tool.exe"
+```
 
 #### Notes
 
@@ -147,7 +153,9 @@ Windows before version 10 has [serious rendering issues with saturated darker co
 
 You can temporarily use a different sequence editor by using the `GIT_SEQUENCE_EDITOR` environment variable:
 
-    GIT_SEQUENCE_EDITOR=emacs git rebase -i [<upstream> [<branch>]]
+```shell
+GIT_SEQUENCE_EDITOR=emacs git rebase -i [<upstream> [<branch>]]
+```
 
 ## Direct Usage
 
@@ -245,22 +253,28 @@ To start developing the project, you will need to [install Rust][install-rust], 
 
 This project uses [cargo-make](https://github.com/sagiegurari/cargo-make) as a task runner. To install:
 
-    cargo install --force cargo-make
+```shell
+cargo install --force cargo-make
+```
 
 #### Debian and derivatives
 
 If you plan to build a release package you will need `pkg-config` and `liblzma-dev`. They can be installed using `apt`:
 
-    sudo apt install pkg-config liblzma-dev
+```shell
+sudo apt install pkg-config liblzma-dev
+```
 
 ### Build and run
 
 To build or run the project, from the project root run:
 
-    # only build
-    cargo make build --release
-    # build and run
-    cargo run -- <path-to-git-rebase-todo-file>
+```shell
+# only build
+cargo make build --release
+# build and run
+cargo run -- <path-to-git-rebase-todo-file>
+```
 
 Sample rebase todo files can be found in ./test/fixtures.
 
@@ -268,33 +282,43 @@ Sample rebase todo files can be found in ./test/fixtures.
 
 Automated tests are available for all features and can be run with:
 
-    cargo make test
+```shell
+cargo make test
+```
 
 ### Docs
 
 API docs for the project are generated using Rust Doc:
 
-    cargo make docs
+```shell
+cargo make docs
+```
 
 ### Linting
 
-An addition to the lints provided by rustc, this project uses Clippy to provide additional linting, run with:
+An addition to the lints provided by `rustc`, this project uses `Clippy` to provide additional linting, run with:
 
-    cargo make lint
+```shell
+cargo make lint
+```
 
 This will run lints using stable and nightly. The nightly lints may show errors, but will not result in a failure.
 
 ### Format
 
-This project uses rust-fmt to provide a consistent format. A helpful script will ensure that all files are formatted correctly:
+This project uses `rust-fmt` to provide a consistent format. A helpful script will ensure that all files are formatted correctly:
 
-    cargo make format
+```shell
+cargo make format
+```
 
 ### Coverage
 
 The project use [Tarpaulin](https://github.com/xd009642/tarpaulin) to generate coverage reports. Coverage reports are used to find gaps in tests. To generate the coverage report:
 
-    cargo make coverage
+```shell
+cargo make coverage
+```
 
 An addition to the report printed to the CLI, an HTML report can be found in the `coverage` directory.
 

@@ -22,7 +22,9 @@
 
 Download the `.deb` file from the [releases page][releases] and install with:
 
-    sudo dpkg -i /path/to/git-interactive-rebase-tool-*.deb
+```shell
+sudo dpkg -i /path/to/git-interactive-rebase-tool-*.deb
+```
 
 The executable will be installed to `/usr/bin`.
 
@@ -30,15 +32,19 @@ The executable will be installed to `/usr/bin`.
 
 Download the `.rpm` file from the [releases page][releases] and install with your package manager of choice:
 
-    sudo rpm -i /path/to/git-interactive-rebase-tool-*.rpm
-    sudo yum localinstall /path/to/git-interactive-rebase-tool-*.rpm
-    sudo dnf localinstall /path/to/git-interactive-rebase-tool-*.rpm
+```shell
+sudo rpm -i /path/to/git-interactive-rebase-tool-*.rpm
+sudo yum localinstall /path/to/git-interactive-rebase-tool-*.rpm
+sudo dnf localinstall /path/to/git-interactive-rebase-tool-*.rpm
+```
 
 ### macOS
 
 #### With [Homebrew](https://brew.sh/)
 
-    brew install git-interactive-rebase-tool
+```shell
+brew install git-interactive-rebase-tool
+```
 
 #### Manual install
 
@@ -65,7 +71,9 @@ Download the binary from the [releases page][releases] and copy it as `interacti
 
 The project can be installed directly from [crates.io](https://crates.io/crates/git-interactive-rebase-tool) via cargo.
 
-    cargo install git-interactive-rebase-tool
+```shell
+cargo install git-interactive-rebase-tool
+```
 
 ## Community Supported Repositories
 
@@ -75,13 +83,17 @@ Community supported repositories are not officially supported, as they are maint
 
 Install the [git-interactive-rebase-tool](https://pkgs.alpinelinux.org/packages?name=git-interactive-rebase-tool) package from the community repository (since Alpine v3.14):
 
-    apk add git-interactive-rebase-tool
+```shell
+apk add git-interactive-rebase-tool
+```
 
 ### Arch Linux
 
 With your [AUR](https://aur.archlinux.org/) helper of choice:
 
-    yay -S git-interactive-rebase-tool
+```shell
+yay -S git-interactive-rebase-tool
+```
 
 #### Manual Install
 
@@ -89,17 +101,23 @@ With your [AUR](https://aur.archlinux.org/) helper of choice:
 2. Extract to a known location
 3. Run `makepkg -si` from the extracted location
 
-### Gnu Guix Package Manager
+### GNU Guix Package Manager
 
-    guix install git-interactive-rebase-tool
+```shell
+guix install git-interactive-rebase-tool
+```
 
 #### In a temporary environment
 
-    guix shell git-interactive-rebase-tool
+```shell
+guix shell git-interactive-rebase-tool
+```
 
 #### In a temporary container (Linux namespace)
 
-    guix shell --container git-interactive-rebase-tool
+```shell
+guix shell --container git-interactive-rebase-tool
+```
 
 ### FreeBSD
 
@@ -107,20 +125,28 @@ FreeBSD support is provided by the community, and while attempts are made to ens
 
 With [Ports](https://www.freebsd.org/ports/) using `pkg`
 
-    pkg install interactive_rebase_tool
+```shell
+pkg install interactive_rebase_tool
+```
 
 #### Manual
 
-    cd /usr/ports/devel/interactive_rebase_tool && make install clean
+```shell
+cd /usr/ports/devel/interactive_rebase_tool && make install clean
+```
 
 ### Windows
 
 #### With [Chocolatey](https://chocolatey.org/)
 
-    choco install git-interactive-rebase-tool
+```shell
+choco install git-interactive-rebase-tool
+```
 
 #### With [Scoop](https://scoop.sh/)
 
-    scoop install git-interactive-rebase-tool
+```shell
+scoop install git-interactive-rebase-tool
+```
 
 [releases]:https://github.com/MitMaro/git-interactive-rebase-tool/releases

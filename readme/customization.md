@@ -15,7 +15,9 @@ The tool can be customized using the [git config](https://git-scm.com/docs/git-c
 
 ### Example
 
-    git config --global interactive-rebase-tool.foregroundColor black
+```shell
+git config --global interactive-rebase-tool.foregroundColor black
+```
 
 ## Git Configuration
 
@@ -149,10 +151,12 @@ Most keys can be changed to any printable character or supported special charact
 
 ### Example
 
-    # single value
-    git config --global interactive-rebase-tool.inputRebase S
-    # multiple values
-    git config --global interactive-rebase-tool.inputRebase "S L K"
+```shell
+# single value
+git config --global interactive-rebase-tool.inputRebase S
+# multiple values
+git config --global interactive-rebase-tool.inputRebase "S L K"
+```
 
 ### Supported Special Keys
 
