@@ -183,7 +183,7 @@ Keys that do not have easily printable characters, such as the arrow keys, are s
 
 ### Modifier Keys
 
-Most bindings can be prefixed with `Shift`, `Control` or `Alt`, followed by a `+`. These bindings can also be combined in any order, for example `Alt+Control+Delete`. `Shift` combined with any ASCII alphabetic character will not work and the uppercase character must be used instead.
+Most bindings can be prefixed with `Shift`, `Control` or `Alt`, followed by a `+`. These bindings can also be combined in any order, for example `Alt+Control+Delete`. `Shift` combined with any ASCII alphabetical character will not work, and the uppercase character must be used instead.
 
 ### Multiple Key Bindings
 

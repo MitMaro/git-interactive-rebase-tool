@@ -137,9 +137,9 @@ git config --global sequence.editor interactive-rebase-tool
 git config --global sequence.editor "'C:/path/to/interactive-rebase-tool.exe'"
 ```
 
-#### GitBash
+#### Git Bash
 
-GitBash requires the use of `winpty` in order to work correctly, so to set the editor use:
+Git Bash requires the use of `winpty` in order to work correctly, so to set the editor use:
 
 ```shell
 git config --global sequence.editor "winpty /c/path/to/interactive-rebase-tool.exe"
@@ -326,24 +326,28 @@ An addition to the report printed to the CLI, an HTML report can be found in the
 
 #### Debian Packaging Building
 
-    cargo make build-deb
+```shell
+cargo make build-deb
+```
 
 A deb file will be written to `target/debian/git-interactive-rebase-tool_*.deb`.
 
 #### RPM Building
 
-    cargo make build-rpm
+```shell
+cargo make build-rpm
+```
 
 A rpm file will be written to `target/generate-rpm/git-interactive-rebase-tool-*.deb`.
 
 #### Reproducible Builds
 
-Providing a [`SOURCE_DATE_EPOCH`](https://reproducible-builds.org/specs/source-date-epoch/#idm55) environment variable with a valid UNIX timestamp, defined in seconds, will ensure a reproducible build.
+Providing a [`SOURCE_DATE_EPOCH`](https://reproducible-builds.org/specs/source-date-epoch/#idm55) environment variable with a valid Unix timestamp, defined in seconds, will ensure a reproducible build.
 
 ## Related Projects
 
 * [rebase-editor](https://github.com/sjurba/rebase-editor) is a very similar project written in Node.js.
-* [cj-git-patchtool](https://github.com/pflanze/cj-git-patchtool) is another tool for doing git rebase en masse.
+* [cj-git-patchtool](https://github.com/pflanze/cj-git-patchtool) is another tool for doing `git rebase` en masse.
 * [andrewshadura/git-crecord](https://github.com/andrewshadura/git-crecord) provides interactive selection of changes to a commit.
 
 ## License
