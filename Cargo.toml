@@ -14,7 +14,6 @@ include = [
 	"/Cargo.toml",
 	"/CHANGELOG.md",
 	"/COPYING",
-	"/LICENSE",
 	"/readme",
 	"/README.md",
 	"/src/interactive-rebase-tool.1",

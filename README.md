@@ -352,7 +352,21 @@ Providing a [`SOURCE_DATE_EPOCH`](https://reproducible-builds.org/specs/source-d
 
 ## License
 
-Git Interactive Rebase Tool is released under the GPLv3 license. See [LICENSE](LICENSE).
+Sequence Editor for Git Interactive Rebase
+Copyright (C) 2017-2020 Tim Oram and Contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 See [Third Party Licenses](https://gitrebasetool.mitmaro.ca/licenses.html) for licenses of the third-party libraries used by this project.
 
