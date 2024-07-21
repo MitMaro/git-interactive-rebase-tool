@@ -40,7 +40,7 @@ use crate::{
 const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
 	.union(InputOptions::RESIZE)
 	.union(InputOptions::HELP)
-	.union(InputOptions::SEARCH);
+	.union(InputOptions::SEARCH_START);
 
 #[derive(Debug, PartialEq, Eq)]
 enum ListState {
