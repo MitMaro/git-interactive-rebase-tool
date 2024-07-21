@@ -74,7 +74,7 @@ lto = true
 codegen-units = 1
 
 [package.metadata.deb]
-license-file = ["LICENSE"]
+license-file = ["COPYING"]
 extended-description = """\
 Full feature terminal based sequence editor for git interactive rebase."""
 section = "utility"
