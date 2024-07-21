@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [Unreleased]
+### Fixed
+- Fix issue with search input handling that blocked setting `Esc` and `Enter` in keybindings ([#935](https://github.com/MitMaro/git-interactive-rebase-tool/pull/935))
+
 ## [2.4.1] - 2024-06-26
 ### Fixed
 - Renamed and copied file order reversed in show commit view ([#926](https://github.com/MitMaro/git-interactive-rebase-tool/pull/926))

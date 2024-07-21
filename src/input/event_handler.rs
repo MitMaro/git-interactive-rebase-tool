@@ -37,6 +37,11 @@ impl EventHandler {
 			}
 		}
 
+		if input_options.contains(InputOptions::SEARCH_START) {
+			if let Some(evt) = Self::handle_search_start(&self.key_bindings, event) {
+				return evt;
+			}
+		}
 		if input_options.contains(InputOptions::SEARCH) {
 			if let Some(evt) = Self::handle_search(&self.key_bindings, event) {
 				return evt;
@@ -113,6 +118,13 @@ impl EventHandler {
 			}) => Event::from(StandardEvent::ScrollBottom),
 			_ => return None,
 		})
+	}
+
+	fn handle_search_start(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
+		key_bindings
+			.search_start
+			.contains(&event)
+			.then(|| Event::from(StandardEvent::SearchStart))
 	}
 
 	fn handle_search(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
@@ -270,6 +282,15 @@ mod tests {
 	fn search_inputs(#[case] event: Event, #[case] expected: Event) {
 		let event_handler = EventHandler::new(create_test_keybindings());
 		let result = event_handler.read_event(event, &InputOptions::SEARCH, |_, _| Event::from(KeyCode::Null));
+		assert_eq!(result, expected);
+	}
+
+	#[rstest]
+	#[case::search_start(Event::from('/'), Event::from(StandardEvent::SearchStart))]
+	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
+	fn search_start(#[case] event: Event, #[case] expected: Event) {
+		let event_handler = EventHandler::new(create_test_keybindings());
+		let result = event_handler.read_event(event, &InputOptions::SEARCH_START, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}
 
