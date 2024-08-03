@@ -8,10 +8,17 @@ use crate::{
 	git::Config,
 };
 
-fn editor_from_env() -> String {
-	env::var("VISUAL")
-		.or_else(|_| env::var("EDITOR"))
-		.unwrap_or_else(|_| String::from("vi"))
+fn get_default_editor(git_config: Option<&Config>) -> Result<String, ConfigError> {
+	env::var("GIT_EDITOR").or_else(|_| {
+		get_string(
+			git_config,
+			"core.editor",
+			(env::var("VISUAL")
+				.or_else(|_| env::var("EDITOR"))
+				.unwrap_or_else(|_| String::from("vi")))
+			.as_str(),
+		)
+	})
 }
 
 /// Represents the git configuration options.
@@ -64,7 +71,7 @@ impl GitConfig {
 			diff_rename_limit: get_unsigned_integer(git_config, "diff.renameLimit", 200)?,
 			diff_renames,
 			diff_copies,
-			editor: get_string(git_config, "core.editor", editor_from_env().as_str())?,
+			editor: get_default_editor(git_config)?,
 		})
 	}
 }
@@ -153,7 +160,11 @@ mod tests {
 	#[test]
 	fn git_editor_default_no_env() {
 		with_env_var(
-			&[EnvVarAction::Remove("VISUAL"), EnvVarAction::Remove("EDITOR")],
+			&[
+				EnvVarAction::Remove("GIT_EDITOR"),
+				EnvVarAction::Remove("VISUAL"),
+				EnvVarAction::Remove("EDITOR"),
+			],
 			|| {
 				let config = GitConfig::new_with_config(None).unwrap();
 				assert_eq!(config.editor, "vi");
@@ -162,9 +173,25 @@ mod tests {
 	}
 
 	#[test]
+	fn git_editor_default_git_editor_env() {
+		with_env_var(
+			&[
+				EnvVarAction::Remove("VISUAL"),
+				EnvVarAction::Remove("EDITOR"),
+				EnvVarAction::Set("GIT_EDITOR", String::from("git-editor")),
+			],
+			|| {
+				let config = GitConfig::new_with_config(None).unwrap();
+				assert_eq!(config.editor, "git-editor");
+			},
+		);
+	}
+
+	#[test]
 	fn git_editor_default_visual_env() {
 		with_env_var(
 			&[
+				EnvVarAction::Remove("GIT_EDITOR"),
 				EnvVarAction::Remove("EDITOR"),
 				EnvVarAction::Set("VISUAL", String::from("visual-editor")),
 			],
@@ -179,6 +206,7 @@ mod tests {
 	fn git_editor_default_editor_env() {
 		with_env_var(
 			&[
+				EnvVarAction::Remove("GIT_EDITOR"),
 				EnvVarAction::Remove("VISUAL"),
 				EnvVarAction::Set("EDITOR", String::from("editor")),
 			],
@@ -192,7 +220,11 @@ mod tests {
 	#[test]
 	fn git_editor() {
 		with_env_var(
-			&[EnvVarAction::Remove("VISUAL"), EnvVarAction::Remove("EDITOR")],
+			&[
+				EnvVarAction::Remove("GIT_EDITOR"),
+				EnvVarAction::Remove("VISUAL"),
+				EnvVarAction::Remove("EDITOR"),
+			],
 			|| {
 				with_git_config(&["[core]", "editor = custom"], |git_config| {
 					let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
@@ -235,7 +267,11 @@ mod tests {
 	#[test]
 	fn git_editor_invalid() {
 		with_env_var(
-			&[EnvVarAction::Remove("VISUAL"), EnvVarAction::Remove("EDITOR")],
+			&[
+				EnvVarAction::Remove("GIT_EDITOR"),
+				EnvVarAction::Remove("VISUAL"),
+				EnvVarAction::Remove("EDITOR"),
+			],
 			|| {
 				with_git_config(
 					&["[core]", format!("editor = {}", invalid_utf()).as_str()],
