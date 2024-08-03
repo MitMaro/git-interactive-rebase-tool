@@ -11,14 +11,14 @@ Native cross-platform full-featured terminal-based [sequence editor][git-sequenc
 
 ## Table of Contents
 
-* [Features](./README.md#features)
+* [Features](#features)
 * [Install](./readme/install.md)
-* [Setup](./README.md#setup)
-* [Usage](./README.md#usage)
+* [Setup](#setup)
+* [Usage](#direct-usage)
 * [Customization](./readme/customization.md)
-* [Development](./README.md#development)
-* [Related Projects](./README.md#related-projects)
-* [License](./README.md#license)
+* [Development](#development)
+* [Related Projects](#related-projects)
+* [License](#license)
 
 ## Features
 
