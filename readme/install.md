@@ -12,8 +12,8 @@
 * [Community Supported Repositories](#community-supported-repositories)
     * [Alpine Linux](#alpine-linux)
     * [Arch Linux](#arch-linux)
-    * [Gnu Guix Package Manager](#gnu-guix-package-manager)
     * [FreeBSD](#freebsd)
+    * [GNU Guix Package Manager](#gnu-guix-package-manager)
     * [Windows](#windows-1)
 
 ## Official Installation Methods
@@ -101,6 +101,22 @@ yay -S git-interactive-rebase-tool
 2. Extract to a known location
 3. Run `makepkg -si` from the extracted location
 
+### FreeBSD
+
+FreeBSD support is provided by the community, and while attempts are made to ensure everything works on the platform, it is not officially supported. If you run into problems please [create an issue](https://github.com/MitMaro/git-interactive-rebase-tool/issues/new) describing the problem.
+
+With [Ports](https://www.freebsd.org/ports/) using `pkg`
+
+```shell
+pkg install interactive_rebase_tool
+```
+
+#### Manual
+
+```shell
+cd /usr/ports/devel/interactive_rebase_tool && make install clean
+```
+
 ### GNU Guix Package Manager
 
 ```shell
@@ -117,22 +133,6 @@ guix shell git-interactive-rebase-tool
 
 ```shell
 guix shell --container git-interactive-rebase-tool
-```
-
-### FreeBSD
-
-FreeBSD support is provided by the community, and while attempts are made to ensure everything works on the platform, it is not officially supported. If you run into problems please [create an issue](https://github.com/MitMaro/git-interactive-rebase-tool/issues/new) describing the problem.
-
-With [Ports](https://www.freebsd.org/ports/) using `pkg`
-
-```shell
-pkg install interactive_rebase_tool
-```
-
-#### Manual
-
-```shell
-cd /usr/ports/devel/interactive_rebase_tool && make install clean
 ```
 
 ### Windows
