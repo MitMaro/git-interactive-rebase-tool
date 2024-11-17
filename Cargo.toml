@@ -32,7 +32,7 @@ bitflags = "2.5.0"
 captur = "1.0.0"
 chrono = "0.4.38"
 crossbeam-channel = "0.5.13"
-crossterm = "0.27.0"
+crossterm = "0.28.0"
 git2 = { version = "0.19.0", default-features = false, features = [] }
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
@@ -47,7 +47,7 @@ version-track = "1.0.0"
 xi-unicode = "0.3.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-crossterm = { version = "0.27.0", features = ["use-dev-tty"] }
+crossterm = { version = "0.28.0", features = ["use-dev-tty"] }
 
 [dev-dependencies]
 claims = "0.8.0"
