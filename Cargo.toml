@@ -33,7 +33,7 @@ captur = "0.1.0"
 chrono = "0.4.38"
 crossbeam-channel = "0.5.13"
 crossterm = "0.27.0"
-git2 = { version = "0.18.3", default-features = false, features = [] }
+git2 = { version = "0.19.0", default-features = false, features = [] }
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
 num-format = "0.4.4"
