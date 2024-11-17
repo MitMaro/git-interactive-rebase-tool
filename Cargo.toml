@@ -50,7 +50,7 @@ xi-unicode = "0.3.0"
 crossterm = { version = "0.27.0", features = ["use-dev-tty"] }
 
 [dev-dependencies]
-claims = "0.7.1"
+claims = "0.8.0"
 itertools = "0.13.0"
 pretty_assertions = "1.4.0"
 regex = "1.8.4"
