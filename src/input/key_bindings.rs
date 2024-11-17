@@ -1,4 +1,4 @@
-use crate::input::{map_keybindings, Event};
+use crate::input::{Event, map_keybindings};
 
 /// Represents a mapping between an input event and an action.
 #[derive(Debug)]

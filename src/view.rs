@@ -31,7 +31,7 @@ pub(crate) use self::{
 	render_context::RenderContext,
 	render_slice::RenderSlice,
 	scroll_position::ScrollPosition,
-	thread::{State, Thread, ViewAction, REFRESH_THREAD_NAME},
+	thread::{REFRESH_THREAD_NAME, State, Thread, ViewAction},
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,

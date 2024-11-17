@@ -7,7 +7,7 @@ mod tests;
 
 use std::sync::Arc;
 
-use anyhow::{anyhow, Error};
+use anyhow::{Error, anyhow};
 use captur::capture;
 use parking_lot::Mutex;
 

@@ -1,4 +1,4 @@
-use crate::input::{map_keybindings, KeyBindings};
+use crate::input::{KeyBindings, map_keybindings};
 
 /// Create a mocked version of `KeyBindings`.
 #[must_use]

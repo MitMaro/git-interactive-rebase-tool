@@ -23,11 +23,11 @@ pub(crate) use crossterm::event::{KeyCode, KeyEventKind, KeyModifiers, MouseEven
 pub(crate) use self::{
 	event::Event,
 	event_handler::EventHandler,
-	event_provider::{read_event, EventReaderFn},
+	event_provider::{EventReaderFn, read_event},
 	input_options::InputOptions,
 	key_bindings::KeyBindings,
 	key_event::KeyEvent,
 	map_keybindings::map_keybindings,
 	standard_event::StandardEvent,
-	thread::{State, Thread, THREAD_NAME},
+	thread::{State, THREAD_NAME, Thread},
 };

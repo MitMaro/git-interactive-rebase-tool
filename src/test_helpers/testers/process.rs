@@ -9,13 +9,13 @@ use crate::{
 	process::Process,
 	runtime::ThreadStatuses,
 	test_helpers::{
+		EventHandlerTestContext,
+		SearchTestContext,
+		ViewStateTestContext,
 		with_event_handler,
 		with_search,
 		with_todo_file,
 		with_view_state,
-		EventHandlerTestContext,
-		SearchTestContext,
-		ViewStateTestContext,
 	},
 };
 

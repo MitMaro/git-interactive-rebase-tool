@@ -1,5 +1,5 @@
 use crate::{
-	config::{get_string, ConfigError, ConfigErrorCause, DiffShowWhitespaceSetting},
+	config::{ConfigError, ConfigErrorCause, DiffShowWhitespaceSetting, get_string},
 	git::Config,
 };
 

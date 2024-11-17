@@ -3,10 +3,10 @@ use crate::{
 	display::DisplayColor,
 	test_helpers::assertions::assert_rendered_output::{
 		_assert_rendered_output,
-		render_view_line,
 		AssertRenderOptions,
 		ExactPattern,
 		LinePattern,
+		render_view_line,
 	},
 	view::LineSegmentOptions,
 };

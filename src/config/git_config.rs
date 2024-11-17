@@ -2,8 +2,8 @@ use std::env;
 
 use crate::{
 	config::{
-		utils::{get_string, get_unsigned_integer, git_diff_renames},
 		ConfigError,
+		utils::{get_string, get_unsigned_integer, git_diff_renames},
 	},
 	git::Config,
 };
@@ -92,7 +92,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		config::ConfigErrorCause,
-		test_helpers::{invalid_utf, with_env_var, with_git_config, EnvVarAction},
+		test_helpers::{EnvVarAction, invalid_utf, with_env_var, with_git_config},
 	};
 
 	macro_rules! config_test {

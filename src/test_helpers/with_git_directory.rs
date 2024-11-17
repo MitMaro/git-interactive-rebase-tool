@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::test_helpers::{with_env_var, EnvVarAction};
+use crate::test_helpers::{EnvVarAction, with_env_var};
 
 pub(crate) fn with_git_directory<C>(repo: &str, callback: C)
 where C: FnOnce(&str) {

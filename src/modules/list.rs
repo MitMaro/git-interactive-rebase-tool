@@ -11,10 +11,10 @@ use parking_lot::Mutex;
 use self::{
 	search::Search,
 	utils::{
+		TodoLineSegmentsOptions,
 		get_list_normal_mode_help_lines,
 		get_list_visual_mode_help_lines,
 		get_todo_line_segments,
-		TodoLineSegmentsOptions,
 	},
 };
 use crate::{

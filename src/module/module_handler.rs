@@ -66,14 +66,14 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 mod tests {
 	use std::sync::Arc;
 
-	use anyhow::{anyhow, Error};
+	use anyhow::{Error, anyhow};
 	use parking_lot::Mutex;
 
 	use super::*;
 	use crate::{
 		input::StandardEvent,
 		module::Module,
-		test_helpers::{testers, TestModuleProvider},
+		test_helpers::{TestModuleProvider, testers},
 	};
 
 	#[derive(Clone)]

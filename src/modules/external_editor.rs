@@ -7,7 +7,7 @@ mod tests;
 
 use std::sync::Arc;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 
