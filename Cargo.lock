@@ -64,9 +64,9 @@ checksum = "7f30e7476521f6f8af1a1c4c0b8cc94f0bee37d91763d0ca2665f299b6cd8aec"
 
 [[package]]
 name = "captur"
-version = "0.1.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70fab32548d14602e13307a86c41b2dc2fc2ef19c2881bf63598275a7e45b182"
+checksum = "c9a14cdf43feefc0ce44a775cd4e0c0fc68da9b82b2a3162f3d565aa38fed6ed"
 
 [[package]]
 name = "cc"
