@@ -20,6 +20,7 @@ include = [
 	"/test"
 ]
 edition = "2021"
+rust-version = "1.77.0"
 
 [[bin]]
 name = "interactive-rebase-tool"
