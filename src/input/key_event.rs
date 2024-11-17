@@ -5,9 +5,9 @@ use crate::input::{KeyCode, KeyModifiers};
 #[allow(clippy::exhaustive_structs)]
 pub(crate) struct KeyEvent {
 	/// The key itself.
-	pub(crate) code: KeyCode,
+	pub code: KeyCode,
 	/// Additional key modifiers.
-	pub(crate) modifiers: KeyModifiers,
+	pub modifiers: KeyModifiers,
 }
 
 impl KeyEvent {

@@ -1,5 +1,5 @@
 use crate::{
-	test_helpers::assertions::assert_rendered_output::{render_view_line, AssertRenderOptions},
+	test_helpers::assertions::assert_rendered_output::{AssertRenderOptions, render_view_line},
 	view::ViewData,
 };
 

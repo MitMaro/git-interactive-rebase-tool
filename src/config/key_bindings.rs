@@ -1,5 +1,5 @@
 use crate::{
-	config::{utils::get_input, ConfigError},
+	config::{ConfigError, utils::get_input},
 	git::Config,
 };
 
@@ -17,100 +17,100 @@ fn map_single_ascii_to_lower(s: &str) -> String {
 #[non_exhaustive]
 pub(crate) struct KeyBindings {
 	/// Key bindings for aborting.
-	pub(crate) abort: Vec<String>,
+	pub abort: Vec<String>,
 	/// Key bindings for the break action.
-	pub(crate) action_break: Vec<String>,
+	pub action_break: Vec<String>,
 	/// Key bindings for the drop action.
-	pub(crate) action_drop: Vec<String>,
+	pub action_drop: Vec<String>,
 	/// Key bindings for the edit action.
-	pub(crate) action_edit: Vec<String>,
+	pub action_edit: Vec<String>,
 	/// Key bindings for the fixup action.
-	pub(crate) action_fixup: Vec<String>,
+	pub action_fixup: Vec<String>,
 	/// Key bindings for the pick action.
-	pub(crate) action_pick: Vec<String>,
+	pub action_pick: Vec<String>,
 	/// Key bindings for the reword action.
-	pub(crate) action_reword: Vec<String>,
+	pub action_reword: Vec<String>,
 	/// Key bindings for the squash action.
-	pub(crate) action_squash: Vec<String>,
+	pub action_squash: Vec<String>,
 	/// Key bindings for negative confirmation.
-	pub(crate) confirm_no: Vec<String>,
+	pub confirm_no: Vec<String>,
 	/// Key bindings for positive confirmation.
-	pub(crate) confirm_yes: Vec<String>,
+	pub confirm_yes: Vec<String>,
 	/// Key bindings for editing.
-	pub(crate) edit: Vec<String>,
+	pub edit: Vec<String>,
 	/// Key bindings for forcing a abort.
-	pub(crate) force_abort: Vec<String>,
+	pub force_abort: Vec<String>,
 	/// Key bindings for forcing a rebase.
-	pub(crate) force_rebase: Vec<String>,
+	pub force_rebase: Vec<String>,
 	/// Key bindings for showing help.
-	pub(crate) help: Vec<String>,
+	pub help: Vec<String>,
 	/// Key bindings for inserting a line.
-	pub(crate) insert_line: Vec<String>,
+	pub insert_line: Vec<String>,
 
 	/// Key bindings for moving down.
-	pub(crate) move_down: Vec<String>,
+	pub move_down: Vec<String>,
 	/// Key bindings for moving to the end.
-	pub(crate) move_end: Vec<String>,
+	pub move_end: Vec<String>,
 	/// Key bindings for moving to the start.
-	pub(crate) move_home: Vec<String>,
+	pub move_home: Vec<String>,
 	/// Key bindings for moving to the left.
-	pub(crate) move_left: Vec<String>,
+	pub move_left: Vec<String>,
 	/// Key bindings for moving to the right.
-	pub(crate) move_right: Vec<String>,
+	pub move_right: Vec<String>,
 	/// Key bindings for moving up.
-	pub(crate) move_up: Vec<String>,
+	pub move_up: Vec<String>,
 	/// Key bindings for moving down a step.
-	pub(crate) move_down_step: Vec<String>,
+	pub move_down_step: Vec<String>,
 	/// Key bindings for moving up a step.
-	pub(crate) move_up_step: Vec<String>,
+	pub move_up_step: Vec<String>,
 	/// Key bindings for moving the selection down.
-	pub(crate) move_selection_down: Vec<String>,
+	pub move_selection_down: Vec<String>,
 	/// Key bindings for moving the selection up.
-	pub(crate) move_selection_up: Vec<String>,
+	pub move_selection_up: Vec<String>,
 
 	/// Key bindings for scrolling down.
-	pub(crate) scroll_down: Vec<String>,
+	pub scroll_down: Vec<String>,
 	/// Key bindings for scrolling to the end.
-	pub(crate) scroll_end: Vec<String>,
+	pub scroll_end: Vec<String>,
 	/// Key bindings for scrolling to the start.
-	pub(crate) scroll_home: Vec<String>,
+	pub scroll_home: Vec<String>,
 	/// Key bindings for scrolling to the left.
-	pub(crate) scroll_left: Vec<String>,
+	pub scroll_left: Vec<String>,
 	/// Key bindings for scrolling to the right.
-	pub(crate) scroll_right: Vec<String>,
+	pub scroll_right: Vec<String>,
 	/// Key bindings for scrolling up.
-	pub(crate) scroll_up: Vec<String>,
+	pub scroll_up: Vec<String>,
 	/// Key bindings for scrolling down a step.
-	pub(crate) scroll_step_down: Vec<String>,
+	pub scroll_step_down: Vec<String>,
 	/// Key bindings for scrolling up a step.
-	pub(crate) scroll_step_up: Vec<String>,
+	pub scroll_step_up: Vec<String>,
 
 	/// Key bindings for opening the external editor.
-	pub(crate) open_in_external_editor: Vec<String>,
+	pub open_in_external_editor: Vec<String>,
 	/// Key bindings for rebasing.
-	pub(crate) rebase: Vec<String>,
+	pub rebase: Vec<String>,
 	/// Key bindings for redoing a change.
-	pub(crate) redo: Vec<String>,
+	pub redo: Vec<String>,
 	/// Key bindings for removing a line.
-	pub(crate) remove_line: Vec<String>,
+	pub remove_line: Vec<String>,
 	/// Key bindings for starting search.
-	pub(crate) search_start: Vec<String>,
+	pub search_start: Vec<String>,
 	/// Key bindings for next search match.
-	pub(crate) search_next: Vec<String>,
+	pub search_next: Vec<String>,
 	/// Key bindings for previous search match.
-	pub(crate) search_previous: Vec<String>,
+	pub search_previous: Vec<String>,
 	/// Key bindings for showing a commit.
-	pub(crate) show_commit: Vec<String>,
+	pub show_commit: Vec<String>,
 	/// Key bindings for showing a diff.
-	pub(crate) show_diff: Vec<String>,
+	pub show_diff: Vec<String>,
 	/// Key bindings for toggling visual mode.
-	pub(crate) toggle_visual_mode: Vec<String>,
+	pub toggle_visual_mode: Vec<String>,
 	/// Key bindings for undoing a change.
-	pub(crate) undo: Vec<String>,
+	pub undo: Vec<String>,
 	/// Key bindings for the fixup specific action to toggle the c option.
-	pub(crate) fixup_keep_message_with_editor: Vec<String>,
+	pub fixup_keep_message_with_editor: Vec<String>,
 	/// Key bindings for the fixup specific action to toggle the c option.
-	pub(crate) fixup_keep_message: Vec<String>,
+	pub fixup_keep_message: Vec<String>,
 }
 
 impl KeyBindings {

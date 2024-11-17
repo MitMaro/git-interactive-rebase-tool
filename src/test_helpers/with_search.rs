@@ -1,7 +1,7 @@
 use crate::search::State;
 
 pub(crate) struct SearchTestContext {
-	pub(crate) state: State,
+	pub state: State,
 }
 
 pub(crate) fn with_search<C>(callback: C)

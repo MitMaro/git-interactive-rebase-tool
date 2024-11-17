@@ -1,7 +1,7 @@
 use crate::{
 	input::EventHandler,
 	module::{Module, ModuleHandler},
-	test_helpers::{create_test_keybindings, TestModuleProvider},
+	test_helpers::{TestModuleProvider, create_test_keybindings},
 };
 
 pub(crate) struct DefaultTestModule;

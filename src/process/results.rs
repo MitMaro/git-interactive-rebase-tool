@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(Debug)]
 pub(crate) struct Results {
-	pub(crate) artifacts: VecDeque<Artifact>,
+	pub artifacts: VecDeque<Artifact>,
 }
 
 impl Results {

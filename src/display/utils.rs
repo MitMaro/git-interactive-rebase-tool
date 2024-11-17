@@ -201,7 +201,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::test_helpers::{with_env_var, EnvVarAction};
+	use crate::test_helpers::{EnvVarAction, with_env_var};
 
 	#[test]
 	fn detect_color_mode_no_env_2_colors() {

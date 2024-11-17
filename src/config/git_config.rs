@@ -2,8 +2,8 @@ use std::env;
 
 use crate::{
 	config::{
-		utils::{get_string, get_unsigned_integer, git_diff_renames},
 		ConfigError,
+		utils::{get_string, get_unsigned_integer, git_diff_renames},
 	},
 	git::Config,
 };
@@ -28,31 +28,31 @@ pub(crate) struct GitConfig {
 	/// The Git comment character, from [`core.commentChar`](
 	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-corecommentChar
 	/// ).
-	pub(crate) comment_char: String,
+	pub comment_char: String,
 	/// Number of context lines, from [`diff.context`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffcontext
 	/// ).
-	pub(crate) diff_context: u32,
+	pub diff_context: u32,
 	/// Number of interhunk lines, from [`diff.interhunk_lines`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffinterHunkContext
 	/// ).
-	pub(crate) diff_interhunk_lines: u32,
+	pub diff_interhunk_lines: u32,
 	/// The limit for detecting renames, from [`diff.renameLimit`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenameLimit
 	/// ).
-	pub(crate) diff_rename_limit: u32,
+	pub diff_rename_limit: u32,
 	/// If to detect renames, from [`diff.renames`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
 	/// ).
-	pub(crate) diff_renames: bool,
+	pub diff_renames: bool,
 	/// If to detect copies, from [`diff.renames`](
 	///     https://git-scm.com/docs/diff-config/#Documentation/diff-config.txt-diffrenames
 	/// ).
-	pub(crate) diff_copies: bool,
+	pub diff_copies: bool,
 	/// The Git editor, from [`core.editor`](
 	///     https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreeditor
 	/// ).
-	pub(crate) editor: String,
+	pub editor: String,
 }
 
 impl GitConfig {
@@ -92,7 +92,7 @@ mod tests {
 	use super::*;
 	use crate::{
 		config::ConfigErrorCause,
-		test_helpers::{invalid_utf, with_env_var, with_git_config, EnvVarAction},
+		test_helpers::{EnvVarAction, invalid_utf, with_env_var, with_git_config},
 	};
 
 	macro_rules! config_test {

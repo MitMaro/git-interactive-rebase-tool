@@ -1,8 +1,8 @@
 use std::{
 	borrow::BorrowMut,
 	sync::{
-		atomic::{AtomicBool, Ordering},
 		Arc,
+		atomic::{AtomicBool, Ordering},
 	},
 };
 
@@ -13,11 +13,12 @@ use crate::view::{RenderSlice, ViewAction, ViewData};
 
 /// Represents a message sender and receiver for passing actions between threads.
 #[derive(Clone, Debug)]
+#[allow(clippy::partial_pub_fields)]
 pub(crate) struct State {
 	ended: Arc<AtomicBool>,
 	paused: Arc<AtomicBool>,
 	render_slice: Arc<Mutex<RenderSlice>>,
-	pub(crate) update_receiver: crossbeam_channel::Receiver<ViewAction>,
+	pub update_receiver: crossbeam_channel::Receiver<ViewAction>,
 	update_sender: crossbeam_channel::Sender<ViewAction>,
 }
 

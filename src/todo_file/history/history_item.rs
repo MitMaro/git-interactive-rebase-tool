@@ -2,10 +2,10 @@ use crate::todo_file::{Line, Operation};
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct HistoryItem {
-	pub(crate) start_index: usize,
-	pub(crate) end_index: usize,
-	pub(crate) operation: Operation,
-	pub(crate) lines: Vec<Line>,
+	pub start_index: usize,
+	pub end_index: usize,
+	pub operation: Operation,
+	pub lines: Vec<Line>,
 }
 
 impl HistoryItem {

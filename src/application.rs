@@ -4,6 +4,8 @@ use anyhow::Result;
 use parking_lot::Mutex;
 
 use crate::{
+	Args,
+	Exit,
 	config::Config,
 	display::Display,
 	git::Repository,
@@ -15,8 +17,6 @@ use crate::{
 	search,
 	todo_file::{TodoFile, TodoFileOptions},
 	view::View,
-	Args,
-	Exit,
 };
 
 pub(crate) struct Application<ModuleProvider>
@@ -198,12 +198,12 @@ mod tests {
 		module::Modules,
 		runtime::{Installer, RuntimeError},
 		test_helpers::{
+			DefaultTestModule,
+			TestModuleProvider,
 			create_config,
 			create_event_reader,
 			mocks,
 			with_git_directory,
-			DefaultTestModule,
-			TestModuleProvider,
 		},
 	};
 

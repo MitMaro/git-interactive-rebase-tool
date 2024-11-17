@@ -1,9 +1,9 @@
 /// Options for `TodoFile`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct TodoFileOptions {
-	pub(crate) comment_prefix: String,
-	pub(crate) line_changed_command: Option<String>,
-	pub(crate) undo_limit: u32,
+	pub comment_prefix: String,
+	pub line_changed_command: Option<String>,
+	pub undo_limit: u32,
 }
 
 impl TodoFileOptions {

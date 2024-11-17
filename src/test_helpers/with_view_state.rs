@@ -79,7 +79,7 @@ fn action_to_string(action: ViewAction) -> String {
 #[non_exhaustive]
 pub(crate) struct ViewStateTestContext {
 	/// The state instance.
-	pub(crate) state: State,
+	pub state: State,
 }
 
 impl ViewStateTestContext {

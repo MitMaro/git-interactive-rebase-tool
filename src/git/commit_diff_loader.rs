@@ -159,7 +159,7 @@ impl<'options> CommitDiffLoader<'options> {
 #[cfg(all(unix, test))]
 mod tests {
 	use std::{
-		fs::{remove_file, File},
+		fs::{File, remove_file},
 		io::Write,
 		os::unix::fs::symlink,
 	};

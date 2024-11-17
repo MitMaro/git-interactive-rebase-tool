@@ -26,7 +26,7 @@ enum Action<'action> {
 }
 
 struct TestContext {
-	pub(crate) list: List,
+	list: List,
 	module_test_context: ModuleTestContext,
 	results: Vec<Results>,
 	key_bindings: KeyBindings,

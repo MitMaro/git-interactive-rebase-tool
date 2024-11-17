@@ -8,11 +8,11 @@ use crate::{
 #[non_exhaustive]
 pub(crate) struct EventHandlerTestContext {
 	/// The `EventHandler` instance.
-	pub(crate) event_handler: EventHandler,
+	pub event_handler: EventHandler,
 	/// The sender instance.
-	pub(crate) state: State,
+	pub state: State,
 	/// The number of known available events.
-	pub(crate) number_events: usize,
+	pub number_events: usize,
 }
 
 /// Provide an `EventHandler` instance for use within a test.

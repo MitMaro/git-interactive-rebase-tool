@@ -5,20 +5,21 @@ use crate::{
 	module::{Module, State},
 	process::Results,
 	test_helpers::{
+		EventHandlerTestContext,
+		ViewStateTestContext,
 		with_event_handler,
 		with_todo_file,
 		with_view_state,
-		EventHandlerTestContext,
-		ViewStateTestContext,
 	},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData},
 };
 
+#[allow(clippy::partial_pub_fields)]
 pub(crate) struct ModuleTestContext {
-	pub(crate) event_handler_context: EventHandlerTestContext,
-	pub(crate) render_context: RenderContext,
-	pub(crate) view_context: ViewStateTestContext,
+	pub event_handler_context: EventHandlerTestContext,
+	pub render_context: RenderContext,
+	pub view_context: ViewStateTestContext,
 	todo_file: Option<TodoFile>,
 }
 

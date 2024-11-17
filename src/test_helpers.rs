@@ -24,21 +24,21 @@ mod with_view_state;
 pub(crate) static JAN_2021_EPOCH: i64 = 1_609_459_200;
 
 pub(crate) use self::{
-	create_commit::{create_commit, CreateCommitOptions},
+	create_commit::{CreateCommitOptions, create_commit},
 	create_config::create_config,
-	create_default_test_module_handler::{create_default_test_module_handler, DefaultTestModule},
+	create_default_test_module_handler::{DefaultTestModule, create_default_test_module_handler},
 	create_event_reader::create_event_reader,
 	create_invalid_utf::invalid_utf,
 	create_test_keybindings::create_test_keybindings,
 	create_test_module_handler::create_test_module_handler,
 	shared::TestModuleProvider,
-	with_env_var::{with_env_var, EnvVarAction},
-	with_event_handler::{with_event_handler, EventHandlerTestContext},
+	with_env_var::{EnvVarAction, with_env_var},
+	with_event_handler::{EventHandlerTestContext, with_event_handler},
 	with_git_config::with_git_config,
 	with_git_directory::with_git_directory,
-	with_search::{with_search, SearchTestContext},
+	with_search::{SearchTestContext, with_search},
 	with_temp_bare_repository::with_temp_bare_repository,
 	with_temp_repository::with_temp_repository,
 	with_todo_file::with_todo_file,
-	with_view_state::{with_view_state, ViewStateTestContext},
+	with_view_state::{ViewStateTestContext, with_view_state},
 };

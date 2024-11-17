@@ -20,6 +20,7 @@ include = [
 	"/test"
 ]
 edition = "2021"
+rust-version = "1.77.0"
 
 [[bin]]
 name = "interactive-rebase-tool"
@@ -28,11 +29,11 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0.86"
 bitflags = "2.5.0"
-captur = "0.1.0"
+captur = "1.0.0"
 chrono = "0.4.38"
 crossbeam-channel = "0.5.13"
-crossterm = "0.27.0"
-git2 = { version = "0.18.3", default-features = false, features = [] }
+crossterm = "0.28.0"
+git2 = { version = "0.19.0", default-features = false, features = [] }
 if_chain = "1.0.2"
 lazy_static = "1.4.0"
 num-format = "0.4.4"
@@ -40,16 +41,16 @@ parking_lot = "0.12.3"
 pico-args = "0.5.0"
 thiserror = "1.0.61"
 unicode-segmentation = "1.10.1"
-unicode-width = "0.1.12"
+unicode-width = "0.2.0"
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
-version-track = "0.1.0"
+version-track = "1.0.0"
 xi-unicode = "0.3.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-crossterm = { version = "0.27.0", features = ["use-dev-tty"] }
+crossterm = { version = "0.28.0", features = ["use-dev-tty"] }
 
 [dev-dependencies]
-claims = "0.7.1"
+claims = "0.8.0"
 itertools = "0.13.0"
 pretty_assertions = "1.4.0"
 regex = "1.8.4"
@@ -117,6 +118,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
 # absolute_paths_not_starting_with_crate - group rust_2018_compatibility
 # box-pointers - used in project, and is safe to do so
 deprecated_in_future = "warn"
+edition_2024_expr_fragment_specifier = "allow"
 # elided_lifetimes_in_paths - group: rust_2018_idioms
 # explicit_outlives_requirements - group: rust_2018_idioms
 ffi_unwind_calls = "warn"
@@ -173,6 +175,7 @@ absolute_paths = "allow"
 as_conversions = "allow"
 arithmetic_side_effects = "allow"
 bool_to_int_with_if = "allow"
+cfg_not_test = "allow"
 default_numeric_fallback = "allow"
 else_if_without_else = "allow"
 expect_used = "allow"

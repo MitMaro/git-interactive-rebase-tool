@@ -6,11 +6,11 @@ use super::*;
 use crate::{
 	assert_results,
 	input::{InputOptions, KeyBindings},
-	module::{Module, DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA},
+	module::{DEFAULT_INPUT_OPTIONS, DEFAULT_VIEW_DATA, Module},
 	runtime::Status,
 	test_helpers::{create_default_test_module_handler, create_test_module_handler, mocks, testers},
 	todo_file::Line,
-	view::{ViewData, REFRESH_THREAD_NAME},
+	view::{REFRESH_THREAD_NAME, ViewData},
 };
 
 #[derive(Clone)]
