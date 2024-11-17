@@ -20,11 +20,11 @@ use crate::{
 };
 
 pub(crate) struct ProcessTestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
-	pub(crate) event_handler_context: EventHandlerTestContext,
-	pub(crate) process: Process<ModuleProvider>,
-	pub(crate) search_context: SearchTestContext,
-	pub(crate) todo_file_path: PathBuf,
-	pub(crate) view_context: ViewStateTestContext,
+	pub event_handler_context: EventHandlerTestContext,
+	pub process: Process<ModuleProvider>,
+	pub search_context: SearchTestContext,
+	pub todo_file_path: PathBuf,
+	pub view_context: ViewStateTestContext,
 }
 
 pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static>(

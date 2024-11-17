@@ -15,10 +15,11 @@ use crate::{
 	view::{RenderContext, ViewData},
 };
 
+#[allow(clippy::partial_pub_fields)]
 pub(crate) struct ModuleTestContext {
-	pub(crate) event_handler_context: EventHandlerTestContext,
-	pub(crate) render_context: RenderContext,
-	pub(crate) view_context: ViewStateTestContext,
+	pub event_handler_context: EventHandlerTestContext,
+	pub render_context: RenderContext,
+	pub view_context: ViewStateTestContext,
 	todo_file: Option<TodoFile>,
 }
 

@@ -5,14 +5,14 @@ use crate::git::{GitError, Reference, User};
 /// Represents a commit.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct Commit {
-	pub(crate) hash: String,
-	pub(crate) reference: Option<Reference>,
-	pub(crate) author: User,
-	pub(crate) authored_date: Option<DateTime<Local>>,
-	pub(crate) message: Option<String>,
-	pub(crate) committer: Option<User>,
-	pub(crate) committed_date: DateTime<Local>,
-	pub(crate) summary: Option<String>,
+	pub hash: String,
+	pub reference: Option<Reference>,
+	pub author: User,
+	pub authored_date: Option<DateTime<Local>>,
+	pub message: Option<String>,
+	pub committer: Option<User>,
+	pub committed_date: DateTime<Local>,
+	pub summary: Option<String>,
 }
 
 impl Commit {

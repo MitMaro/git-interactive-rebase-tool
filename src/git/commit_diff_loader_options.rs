@@ -2,14 +2,14 @@
 #[derive(Copy, Clone, Debug)]
 #[allow(clippy::struct_excessive_bools)]
 pub(crate) struct CommitDiffLoaderOptions {
-	pub(crate) context_lines: u32,
-	pub(crate) copies: bool,
-	pub(crate) ignore_whitespace: bool,
-	pub(crate) ignore_whitespace_change: bool,
-	pub(crate) ignore_blank_lines: bool,
-	pub(crate) interhunk_context: u32,
-	pub(crate) rename_limit: u32,
-	pub(crate) renames: bool,
+	pub context_lines: u32,
+	pub copies: bool,
+	pub ignore_whitespace: bool,
+	pub ignore_whitespace_change: bool,
+	pub ignore_blank_lines: bool,
+	pub interhunk_context: u32,
+	pub rename_limit: u32,
+	pub renames: bool,
 }
 
 impl CommitDiffLoaderOptions {

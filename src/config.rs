@@ -41,29 +41,29 @@ const DEFAULT_TAB_SYMBOL: &str = "\u{2192}"; // →
 #[non_exhaustive]
 pub(crate) struct Config {
 	/// If to select the next line in the list after performing an action.
-	pub(crate) auto_select_next: bool,
+	pub auto_select_next: bool,
 	/// How to handle whitespace when calculating diffs.
-	pub(crate) diff_ignore_whitespace: DiffIgnoreWhitespaceSetting,
+	pub diff_ignore_whitespace: DiffIgnoreWhitespaceSetting,
 	/// If to ignore blank lines when calculating diffs.
-	pub(crate) diff_ignore_blank_lines: bool,
+	pub diff_ignore_blank_lines: bool,
 	/// How to show whitespace in diffs.
-	pub(crate) diff_show_whitespace: DiffShowWhitespaceSetting,
+	pub diff_show_whitespace: DiffShowWhitespaceSetting,
 	/// The symbol used to replace space characters.
-	pub(crate) diff_space_symbol: String,
+	pub diff_space_symbol: String,
 	/// The symbol used to replace tab characters.
-	pub(crate) diff_tab_symbol: String,
+	pub diff_tab_symbol: String,
 	/// The display width of the tab character.
-	pub(crate) diff_tab_width: u32,
+	pub diff_tab_width: u32,
 	/// If set, automatically add an exec line with the command after every modified line
-	pub(crate) post_modified_line_exec_command: Option<String>,
+	pub post_modified_line_exec_command: Option<String>,
 	/// The maximum number of undo steps.
-	pub(crate) undo_limit: u32,
+	pub undo_limit: u32,
 	/// Configuration options loaded directly from Git.
-	pub(crate) git: GitConfig,
+	pub git: GitConfig,
 	/// Key binding configuration.
-	pub(crate) key_bindings: KeyBindings,
+	pub key_bindings: KeyBindings,
 	/// Theme configuration.
-	pub(crate) theme: Theme,
+	pub theme: Theme,
 }
 
 impl Config {
