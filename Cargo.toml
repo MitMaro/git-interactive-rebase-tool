@@ -117,6 +117,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
 # absolute_paths_not_starting_with_crate - group rust_2018_compatibility
 # box-pointers - used in project, and is safe to do so
 deprecated_in_future = "warn"
+edition_2024_expr_fragment_specifier = "allow"
 # elided_lifetimes_in_paths - group: rust_2018_idioms
 # explicit_outlives_requirements - group: rust_2018_idioms
 ffi_unwind_calls = "warn"
