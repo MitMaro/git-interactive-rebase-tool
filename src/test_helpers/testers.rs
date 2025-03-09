@@ -5,8 +5,8 @@ mod searchable;
 mod threadable;
 
 pub(crate) use self::{
-	module::{module_test as module, ModuleTestContext},
-	process::{process, ProcessTestContext},
+	module::{ModuleTestContext, module_test as module},
+	process::{ProcessTestContext, process},
 	read_event::read_event,
 	searchable::SearchableRunner,
 	threadable::Threadable,

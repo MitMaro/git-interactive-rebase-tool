@@ -121,11 +121,11 @@ mod tests {
 
 	use super::*;
 	use crate::test_helpers::{
+		CreateCommitOptions,
+		JAN_2021_EPOCH,
 		builders::{CommitBuilder, ReferenceBuilder},
 		create_commit,
 		with_temp_repository,
-		CreateCommitOptions,
-		JAN_2021_EPOCH,
 	};
 
 	#[test]

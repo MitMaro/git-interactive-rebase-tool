@@ -1,9 +1,9 @@
 use crate::{
 	config::{
-		utils::{get_optional_string, get_string},
 		Color,
 		ConfigError,
 		ConfigErrorCause,
+		utils::{get_optional_string, get_string},
 	},
 	git::Config,
 };

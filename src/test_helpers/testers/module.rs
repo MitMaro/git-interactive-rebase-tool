@@ -5,11 +5,11 @@ use crate::{
 	module::{Module, State},
 	process::Results,
 	test_helpers::{
+		EventHandlerTestContext,
+		ViewStateTestContext,
 		with_event_handler,
 		with_todo_file,
 		with_view_state,
-		EventHandlerTestContext,
-		ViewStateTestContext,
 	},
 	todo_file::TodoFile,
 	view::{RenderContext, ViewData},

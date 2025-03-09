@@ -1,7 +1,7 @@
 use std::{env, process};
 
 use chrono::{TimeZone, Utc};
-use rustc_version::{version_meta, Channel};
+use rustc_version::{Channel, version_meta};
 
 fn main() {
 	println!("cargo::rustc-check-cfg=cfg(allow_unknown_lints)");

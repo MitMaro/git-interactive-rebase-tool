@@ -1,7 +1,9 @@
 #![cfg(not(tarpaulin_include))]
-use std::io::{stdout, BufWriter, Stdout, Write};
+use std::io::{BufWriter, Stdout, Write, stdout};
 
 use crossterm::{
+	Command,
+	QueueableCommand,
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
 	event::{
 		DisableMouseCapture,
@@ -10,23 +12,21 @@ use crossterm::{
 		PopKeyboardEnhancementFlags,
 		PushKeyboardEnhancementFlags,
 	},
-	style::{available_color_count, Attribute, Colors, Print, ResetColor, SetAttribute, SetColors},
+	style::{Attribute, Colors, Print, ResetColor, SetAttribute, SetColors, available_color_count},
 	terminal::{
-		disable_raw_mode,
-		enable_raw_mode,
-		size,
 		Clear,
 		ClearType,
 		DisableLineWrap,
 		EnableLineWrap,
 		EnterAlternateScreen,
 		LeaveAlternateScreen,
+		disable_raw_mode,
+		enable_raw_mode,
+		size,
 	},
-	Command,
-	QueueableCommand,
 };
 
-use crate::display::{utils::detect_color_mode, ColorMode, DisplayError, Size, Tui};
+use crate::display::{ColorMode, DisplayError, Size, Tui, utils::detect_color_mode};
 
 /// A thin wrapper over the [Crossterm library](https://github.com/crossterm-rs/crossterm).
 #[derive(Debug)]

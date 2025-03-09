@@ -2,8 +2,8 @@ use std::{
 	collections::VecDeque,
 	mem,
 	sync::{
-		atomic::{AtomicBool, Ordering},
 		Arc,
+		atomic::{AtomicBool, Ordering},
 	},
 	time::Duration,
 };
