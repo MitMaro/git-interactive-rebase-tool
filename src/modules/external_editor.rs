@@ -7,7 +7,7 @@ mod tests;
 
 use std::sync::{Arc, LazyLock};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use parking_lot::Mutex;
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};

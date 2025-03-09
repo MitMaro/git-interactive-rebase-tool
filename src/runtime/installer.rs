@@ -57,8 +57,8 @@ impl Debug for Installer {
 #[cfg(test)]
 mod tests {
 	use std::sync::{
-		atomic::{AtomicBool, Ordering},
 		Arc,
+		atomic::{AtomicBool, Ordering},
 	};
 
 	use crossbeam_channel::unbounded;

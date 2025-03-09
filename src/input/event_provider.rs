@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
+use crossterm::event::{Event, KeyEvent};
 #[cfg(not(test))]
 use crossterm::event::{poll, read};
-use crossterm::event::{Event, KeyEvent};
 #[cfg(test)]
 use read_event_mocks::{poll, read};
 

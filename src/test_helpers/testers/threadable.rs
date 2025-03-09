@@ -3,14 +3,14 @@ use std::{
 	borrow::BorrowMut,
 	mem,
 	sync::{
-		atomic::{AtomicBool, Ordering},
 		Arc,
+		atomic::{AtomicBool, Ordering},
 	},
 	thread::{sleep, spawn},
 	time::Duration,
 };
 
-use crossbeam_channel::{bounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, bounded};
 use parking_lot::Mutex;
 
 use crate::runtime::{Installer, Status, ThreadStatuses};

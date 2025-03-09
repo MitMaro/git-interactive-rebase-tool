@@ -1,8 +1,8 @@
 use std::{
 	borrow::BorrowMut,
 	sync::{
-		atomic::{AtomicBool, Ordering},
 		Arc,
+		atomic::{AtomicBool, Ordering},
 	},
 };
 
