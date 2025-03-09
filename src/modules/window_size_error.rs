@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 
 use crate::{
 	input::{Event, InputOptions},
@@ -11,9 +11,7 @@ const HEIGHT_ERROR_MESSAGE: &str = "Window too small, increase height to continu
 const SHORT_ERROR_MESSAGE: &str = "Window too small";
 const SIZE_ERROR_MESSAGE: &str = "Size!";
 
-lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::MOVEMENT;
-}
+static INPUT_OPTIONS: LazyLock<InputOptions> = LazyLock::new(|| InputOptions::MOVEMENT);
 
 pub(crate) struct WindowSizeError {
 	return_state: State,

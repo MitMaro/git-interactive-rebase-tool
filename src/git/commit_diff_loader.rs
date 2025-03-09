@@ -1,7 +1,9 @@
-use std::{path::PathBuf, sync::Arc};
+use std::{
+	path::PathBuf,
+	sync::{Arc, LazyLock},
+};
 
 use git2::{DiffFindOptions, DiffOptions, Oid, Repository};
-use lazy_static::lazy_static;
 use parking_lot::{Mutex, MutexGuard};
 
 use crate::git::{
@@ -16,9 +18,7 @@ use crate::git::{
 	Status,
 };
 
-lazy_static! {
-	static ref UNKNOWN_PATH: PathBuf = PathBuf::from("unknown");
-}
+static UNKNOWN_PATH: LazyLock<PathBuf> = LazyLock::new(|| PathBuf::from("unknown"));
 
 pub(crate) struct CommitDiffLoader<'options> {
 	config: &'options CommitDiffLoaderOptions,

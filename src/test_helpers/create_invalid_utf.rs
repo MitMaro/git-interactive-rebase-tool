@@ -1,8 +1,6 @@
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 
-lazy_static! {
-	static ref INVALID_UTF_STRING: String = create_invalid_utf();
-}
+static INVALID_UTF_STRING: LazyLock<String> = LazyLock::new(create_invalid_utf);
 
 #[allow(unsafe_code)]
 fn create_invalid_utf() -> String {

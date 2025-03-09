@@ -2,8 +2,9 @@ mod confirmed;
 #[cfg(test)]
 mod tests;
 
+use std::sync::LazyLock;
+
 use captur::capture;
-use lazy_static::lazy_static;
 
 pub(crate) use self::confirmed::Confirmed;
 use crate::{
@@ -11,9 +12,8 @@ use crate::{
 	view::{ViewData, ViewLine},
 };
 
-lazy_static! {
-	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
-}
+pub(crate) static INPUT_OPTIONS: LazyLock<InputOptions> =
+	LazyLock::new(|| InputOptions::RESIZE | InputOptions::MOVEMENT);
 
 pub(crate) struct Confirm {
 	view_data: ViewData,
