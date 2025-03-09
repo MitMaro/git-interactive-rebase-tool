@@ -125,11 +125,13 @@ impl Module for ShowCommit {
 	fn read_event(&self, event: Event, key_bindings: &KeyBindings) -> Event {
 		select!(
 			default {
-				key_bindings
-					.show_diff
-					.contains(&event)
-					.then(|| Event::from(StandardEvent::ShowDiff))
-					.unwrap_or(event)
+				let has_event = key_bindings.show_diff.contains(&event);
+				if has_event {
+					Event::from(StandardEvent::ShowDiff)
+				}
+				else {
+					event
+				}
 			},
 			self.help.read_event(event)
 		)
