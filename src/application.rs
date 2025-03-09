@@ -138,10 +138,10 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 	fn open_repository() -> Result<Repository, Exit> {
 		Repository::open_from_env().map_err(|err| {
-			return Exit::new(
+			Exit::new(
 				ExitStatus::StateError,
 				format!("Unable to load Git repository: {err}").as_str(),
-			);
+			)
 		})
 	}
 
