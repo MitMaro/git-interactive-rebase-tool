@@ -39,7 +39,7 @@ pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::St
 		Event::Standard(StandardEvent::ScrollJumpDown) => view_state.scroll_page_down(),
 		Event::Standard(StandardEvent::ScrollJumpUp) => view_state.scroll_page_up(),
 		_ => return None,
-	};
+	}
 	Some(Results::new())
 }
 

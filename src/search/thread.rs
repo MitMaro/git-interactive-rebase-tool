@@ -54,7 +54,7 @@ where UpdateHandler: UpdateHandlerFn + 'static
 						Action::Cancel => {
 							if let Some(searchable) = active_searchable.as_mut() {
 								searchable.reset();
-							};
+							}
 							search_complete = true;
 							search_term.clear();
 						},

@@ -170,7 +170,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 				}
 			},
 			_ => {},
-		};
+		}
 		results
 	}
 
