@@ -5,10 +5,9 @@ mod external_editor_state;
 #[cfg(all(unix, test))]
 mod tests;
 
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use anyhow::{anyhow, Result};
-use lazy_static::lazy_static;
 use parking_lot::Mutex;
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
@@ -21,9 +20,7 @@ use crate::{
 	view::{RenderContext, ViewData, ViewLine},
 };
 
-lazy_static! {
-	static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
-}
+static INPUT_OPTIONS: LazyLock<InputOptions> = LazyLock::new(|| InputOptions::RESIZE);
 
 pub(crate) struct ExternalEditor {
 	editor: String,

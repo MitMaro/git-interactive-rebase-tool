@@ -1,10 +1,8 @@
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 
 use crate::{git::Repository, test_helpers::JAN_2021_EPOCH};
 
-lazy_static! {
-	static ref DEFAULT_COMMIT_OPTIONS: CreateCommitOptions = CreateCommitOptions::new();
-}
+static DEFAULT_COMMIT_OPTIONS: LazyLock<CreateCommitOptions> = LazyLock::new(CreateCommitOptions::new);
 
 /// Options for creating a new commit.
 #[derive(Debug)]

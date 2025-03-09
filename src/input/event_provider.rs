@@ -47,17 +47,14 @@ pub(crate) fn read_event() -> Result<Option<Event>> {
 
 #[cfg(test)]
 mod read_event_mocks {
-	use std::{io::Result, mem, time::Duration};
+	use std::{io::Result, mem, sync::LazyLock, time::Duration};
 
 	use crossterm::event::{Event, KeyCode, KeyEvent};
-	use lazy_static::lazy_static;
 	use parking_lot::Mutex;
 
-	lazy_static! {
-		pub(crate) static ref HAS_POLLED_EVENT: Mutex<Result<bool>> = Mutex::new(Ok(true));
-		pub(crate) static ref NEXT_EVENT: Mutex<Result<Event>> =
-			Mutex::new(Ok(Event::Key(KeyEvent::from(KeyCode::Null))));
-	}
+	pub(crate) static HAS_POLLED_EVENT: LazyLock<Mutex<Result<bool>>> = LazyLock::new(|| Mutex::new(Ok(true)));
+	pub(crate) static NEXT_EVENT: LazyLock<Mutex<Result<Event>>> =
+		LazyLock::new(|| Mutex::new(Ok(Event::Key(KeyEvent::from(KeyCode::Null)))));
 
 	pub(crate) fn poll(_: Duration) -> Result<bool> {
 		let mut lock = HAS_POLLED_EVENT.lock();

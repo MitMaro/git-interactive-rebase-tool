@@ -1,7 +1,9 @@
-use std::fmt::{Debug, Formatter};
+use std::{
+	fmt::{Debug, Formatter},
+	sync::LazyLock,
+};
 
 use itertools::Itertools;
-use lazy_static::lazy_static;
 use regex::Regex;
 
 use crate::{
@@ -271,9 +273,7 @@ impl Debug for AnyPattern {
 	}
 }
 
-lazy_static! {
-	pub(crate) static ref FORMAT_REGEX: Regex = Regex::new(r"\{.*?}").unwrap();
-}
+pub(crate) static FORMAT_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\{.*?}").unwrap());
 
 fn parse_rendered_action_line(rendered: &str) -> Result<Line, ParseError> {
 	let cleaned_line = FORMAT_REGEX.replace_all(rendered, "").replace(" > ", "");

@@ -6,8 +6,9 @@ mod state;
 #[cfg(test)]
 mod tests;
 
+use std::sync::LazyLock;
+
 use anyhow::Error;
-use lazy_static::lazy_static;
 
 pub(crate) use self::{
 	exit_status::ExitStatus,
@@ -22,10 +23,8 @@ use crate::{
 	view::{RenderContext, ViewData},
 };
 
-lazy_static! {
-	pub(crate) static ref DEFAULT_INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
-	pub(crate) static ref DEFAULT_VIEW_DATA: ViewData = ViewData::new(|_| {});
-}
+pub(crate) static DEFAULT_INPUT_OPTIONS: LazyLock<InputOptions> = LazyLock::new(|| InputOptions::RESIZE);
+pub(crate) static DEFAULT_VIEW_DATA: LazyLock<ViewData> = LazyLock::new(|| ViewData::new(|_| {}));
 
 pub(crate) trait Module: Send {
 	fn activate(&mut self, _previous_state: State) -> Results {

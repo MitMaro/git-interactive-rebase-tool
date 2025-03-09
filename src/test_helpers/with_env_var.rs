@@ -1,11 +1,11 @@
-use std::env::{remove_var, set_var, var};
+use std::{
+	env::{remove_var, set_var, var},
+	sync::LazyLock,
+};
 
-use lazy_static::lazy_static;
 use parking_lot::Mutex;
 
-lazy_static! {
-	static ref ENV_CHANGE_LOCK: Mutex<()> = Mutex::new(());
-}
+static ENV_CHANGE_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 #[derive(Debug, Clone)]
 pub(crate) enum EnvVarAction<'var> {

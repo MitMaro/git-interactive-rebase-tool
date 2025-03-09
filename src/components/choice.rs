@@ -1,9 +1,7 @@
 #[cfg(test)]
 mod tests;
 
-use std::collections::HashMap;
-
-use lazy_static::lazy_static;
+use std::{collections::HashMap, sync::LazyLock};
 
 use crate::{
 	display::DisplayColor,
@@ -12,9 +10,8 @@ use crate::{
 	view::{LineSegment, ViewData, ViewLine},
 };
 
-lazy_static! {
-	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE | InputOptions::MOVEMENT;
-}
+pub(crate) static INPUT_OPTIONS: LazyLock<InputOptions> =
+	LazyLock::new(|| InputOptions::RESIZE | InputOptions::MOVEMENT);
 
 pub(crate) struct Choice<T> {
 	map: HashMap<char, T>,

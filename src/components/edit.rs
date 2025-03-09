@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests;
 
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 
 use crate::{
 	components::shared::EditableLine,
@@ -10,9 +10,7 @@ use crate::{
 	view::{LineSegment, LineSegmentOptions, ViewData, ViewDataUpdater, ViewLine},
 };
 
-lazy_static! {
-	pub(crate) static ref INPUT_OPTIONS: InputOptions = InputOptions::RESIZE;
-}
+pub(crate) static INPUT_OPTIONS: LazyLock<InputOptions> = LazyLock::new(|| InputOptions::RESIZE);
 
 const FINISH_EVENT: Event = Event::Key(KeyEvent {
 	code: KeyCode::Enter,
