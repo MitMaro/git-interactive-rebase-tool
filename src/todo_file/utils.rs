@@ -36,7 +36,7 @@ pub(crate) fn remove_range(lines: &mut Vec<Line>, start_index: usize, end_index:
 		for _ in start_index..=end_index {
 			removed_lines.push(lines.remove(start_index));
 		}
-	};
+	}
 
 	removed_lines
 }
