@@ -153,7 +153,7 @@ impl LinePattern for EndsWithPattern {
 		format!("EndsWith {}", replace_invisibles(self.0.as_str()))
 	}
 
-	#[allow(clippy::string_slice)]
+	#[expect(clippy::string_slice, reason = "Shortcut for test utilities")]
 	fn actual(&self, rendered: &str) -> String {
 		format!(
 			"         {}",
@@ -189,7 +189,6 @@ impl LinePattern for ContainsPattern {
 		format!("Contains {}", replace_invisibles(self.0.as_str()))
 	}
 
-	#[allow(clippy::string_slice)]
 	fn actual(&self, rendered: &str) -> String {
 		format!("         {}", replace_invisibles(rendered))
 	}

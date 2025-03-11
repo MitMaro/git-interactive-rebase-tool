@@ -50,7 +50,8 @@ impl<'options> CommitDiffLoader<'options> {
 		Ok(diffs)
 	}
 
-	#[allow(clippy::as_conversions, clippy::unwrap_in_result)]
+	#[expect(clippy::as_conversions, reason = "Mostly safe difference between APIs.")]
+	#[expect(clippy::unwrap_in_result, reason = "Unwrap usage failure considered a bug.")]
 	fn load_diff(
 		&self,
 		repo: &MutexGuard<'_, Repository>,
@@ -215,7 +216,7 @@ mod tests {
 	}
 
 	#[cfg(not(tarpaulin_include))]
-	#[allow(clippy::string_slice)]
+	#[expect(clippy::string_slice, reason = "Slice on safe range.")]
 	fn _format_diff_line(line: &DiffLine) -> String {
 		let origin = match line.origin() {
 			Origin::Addition => "+",

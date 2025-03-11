@@ -49,7 +49,7 @@ fn successful_run_editor() {
 #[cfg(unix)]
 #[test]
 #[serial_test::serial]
-#[allow(unsafe_code)]
+#[expect(unsafe_code)]
 fn error() {
 	let args = unsafe { vec![OsString::from(String::from_utf8_unchecked(vec![0xC3, 0x28]))] };
 	assert_eq!(run(args).get_status(), &ExitStatus::StateError);

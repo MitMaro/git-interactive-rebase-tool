@@ -61,7 +61,6 @@ impl Confirm {
 		event
 	}
 
-	#[allow(clippy::unused_self)]
 	pub(crate) const fn handle_event(&self, event: Event) -> Confirmed {
 		if let Event::Standard(standard_event) = event {
 			match standard_event {

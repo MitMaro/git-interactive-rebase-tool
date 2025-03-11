@@ -11,7 +11,10 @@
 mod errors;
 mod installer;
 mod notifier;
-#[allow(clippy::module_inception)]
+#[expect(
+	clippy::module_inception,
+	reason = "This is from a past refactor and should be updated."
+)]
 mod runtime;
 mod status;
 

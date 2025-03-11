@@ -14,7 +14,7 @@ impl EventHandler {
 	}
 
 	/// Read and handle an event.
-	#[allow(clippy::trivially_copy_pass_by_ref)]
+	#[expect(clippy::trivially_copy_pass_by_ref, reason = "Legacy, needs refactor.")]
 	pub(crate) fn read_event<F>(&self, event: Event, input_options: &InputOptions, callback: F) -> Event
 	where F: FnOnce(Event, &KeyBindings) -> Event {
 		if event == Event::None {
@@ -61,7 +61,7 @@ impl EventHandler {
 		callback(event, &self.key_bindings)
 	}
 
-	#[allow(clippy::wildcard_enum_match_arm)]
+	#[expect(clippy::wildcard_enum_match_arm, reason = "Pattern makes sense in this case")]
 	fn handle_standard_inputs(event: Event) -> Option<Event> {
 		match event {
 			Event::Key(KeyEvent {
@@ -72,7 +72,7 @@ impl EventHandler {
 		}
 	}
 
-	#[allow(clippy::wildcard_enum_match_arm)]
+	#[expect(clippy::wildcard_enum_match_arm, reason = "Pattern makes sense in this case")]
 	fn handle_movement_inputs(key_bindings: &KeyBindings, event: Event) -> Option<Event> {
 		Some(match event {
 			e if key_bindings.scroll_down.contains(&e) => Event::from(StandardEvent::ScrollDown),

@@ -86,7 +86,6 @@ impl Edit {
 		self.finished = false;
 	}
 
-	#[allow(clippy::unused_self)]
 	pub(crate) fn input_options(&self) -> &InputOptions {
 		&INPUT_OPTIONS
 	}

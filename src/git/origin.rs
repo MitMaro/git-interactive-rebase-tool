@@ -1,5 +1,4 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 /// The origin of a diff line
 pub(crate) enum Origin {
 	/// A diff line that has been added

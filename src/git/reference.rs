@@ -25,28 +25,28 @@ impl Reference {
 
 	/// Get the oid of the reference
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(unused, reason = "Available for future use")]
 	pub(crate) fn hash(&self) -> &str {
 		self.hash.as_str()
 	}
 
 	/// Get the name of the reference
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(unused, reason = "Available for future use")]
 	pub(crate) fn name(&self) -> &str {
 		self.name.as_str()
 	}
 
 	/// Get the shorthand name of the reference
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(unused, reason = "Available for future use")]
 	pub(crate) fn shortname(&self) -> &str {
 		self.shorthand.as_str()
 	}
 
 	/// Get the kind of the reference
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(unused, reason = "Available for future use")]
 	pub(crate) const fn kind(&self) -> ReferenceKind {
 		self.kind
 	}

@@ -4,7 +4,7 @@ use crate::input::{Event, KeyEvent};
 
 /// Map a keybinding to a list of events.
 #[must_use]
-#[allow(clippy::string_slice, clippy::missing_panics_doc)]
+#[expect(clippy::string_slice, reason = "Slice usage is guarded.")]
 pub(crate) fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 	bindings
 		.iter()
@@ -41,7 +41,7 @@ pub(crate) fn map_keybindings(bindings: &[String]) -> Vec<Event> {
 				"Tab" => KeyCode::Tab,
 				"Up" => KeyCode::Up,
 				// assume that this is an F key
-				k if k.len() > 1 => {
+				k if k.len() > 1 && k.to_ascii_lowercase().starts_with('f') => {
 					let key_number = k[1..].parse::<u8>().unwrap_or(1);
 					KeyCode::F(key_number)
 				},

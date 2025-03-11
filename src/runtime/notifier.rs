@@ -18,7 +18,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread is busy processing.
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn busy(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Busy))
@@ -26,7 +25,7 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread pause processing.
-	#[allow(clippy::missing_panics_doc, unused)]
+	#[expect(unused, reason = "Available for future use")]
 	pub(crate) fn request_pause(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestPause))
@@ -34,7 +33,7 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread resume processing.
-	#[allow(clippy::missing_panics_doc, unused)]
+	#[expect(unused, reason = "Available for future use")]
 	pub(crate) fn request_resume(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestResume))
@@ -42,7 +41,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` to request that the `Runtime` and all other registered thread end processing.
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn request_end(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::RequestEnd))
@@ -50,7 +48,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread is waiting for new data or messages to process.
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn wait(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Waiting))
@@ -58,7 +55,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread is in a permanent error state.
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn error(&self, err: RuntimeError) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Error(err)))
@@ -66,7 +62,6 @@ impl Notifier {
 	}
 
 	/// Notify the `Runtime` that the thread has ended processing.
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn end(&self) {
 		self.sender
 			.send((String::from(&self.thread_name), Status::Ended))

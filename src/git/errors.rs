@@ -31,7 +31,7 @@ impl Display for RepositoryLoadKind {
 /// Git errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
-#[allow(clippy::enum_variant_names)]
+#[expect(clippy::enum_variant_names, reason = "'Load' postfix is by chance")]
 pub(crate) enum GitError {
 	/// The repository could not be loaded
 	#[error("Could not open repository from {kind}")]

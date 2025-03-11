@@ -200,7 +200,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		Results::new()
 	}
 
-	#[allow(clippy::cast_possible_truncation)]
+	#[expect(clippy::cast_possible_truncation, reason = "Resize events are safe to cast to u16")]
 	fn handle_enqueue_resize(&self) -> Results {
 		let render_context = self.render_context.lock();
 		self.input_state.enqueue_event(Event::Resize(

@@ -1,6 +1,5 @@
 /// Represents the type of change of a diff entry
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum Status {
 	/// Entry does not exist in old version
 	Added,

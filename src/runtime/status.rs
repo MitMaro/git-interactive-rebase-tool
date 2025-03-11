@@ -2,8 +2,6 @@ use crate::runtime::RuntimeError;
 
 /// The threads status.
 #[derive(Debug, PartialEq, Eq)]
-#[allow(variant_size_differences)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum Status {
 	/// Thread is new, and hasn't yet started. This is the initial status of all threads.
 	New,
@@ -13,10 +11,8 @@ pub(crate) enum Status {
 	Waiting,
 	/// The thread is finished. This is a final state.
 	Ended,
-	#[allow(unused)]
 	/// The thread has requested all threads pause.
 	RequestPause,
-	#[allow(unused)]
 	/// The thread has requested all threads resume.
 	RequestResume,
 	/// The thread has requested all threads end.

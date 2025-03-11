@@ -1,10 +1,17 @@
-// nightly sometimes removes/renames lints
-#![cfg_attr(allow_unknown_lints, allow(unknown_lints, renamed_and_removed_lints))]
-// allow some things in tests
+#![cfg_attr(
+	allow_unknown_lints,
+	allow(
+		unknown_lints,
+		renamed_and_removed_lints,
+		reason = "Nightly sometimes removes/renames lints."
+	)
+)]
 #![cfg_attr(
 	test,
 	allow(
+		clippy::allow_attributes_without_reason,
 		clippy::arbitrary_source_item_ordering,
+		clippy::as_conversions,
 		clippy::cast_possible_truncation,
 		clippy::cognitive_complexity,
 		clippy::let_underscore_must_use,
@@ -20,13 +27,16 @@
 		clippy::undocumented_unsafe_blocks,
 		clippy::unimplemented,
 		clippy::unreachable,
-		clippy::unused_self,
 		let_underscore_drop,
-		missing_docs
+		missing_docs,
+		unfulfilled_lint_expectations,
+		reason = "Relaxed for tests"
 	)
 )]
-// allowable upcoming nightly lints
-#![cfg_attr(include_nightly_lints, allow(clippy::arc_with_non_send_sync))]
+// #![cfg_attr(
+// 	include_nightly_lints,
+// 	expect(.., reason = "Upcoming lints, only in nightly")
+// )]
 
 mod application;
 mod arguments;
@@ -76,7 +86,13 @@ fn run(os_args: Vec<OsString>) -> Exit {
 }
 
 // TODO use the termination trait once rust-lang/rust#43301 is stable
-#[allow(clippy::exit, clippy::print_stderr)]
+// allow_attributes added due to a problem on clippy::exit
+#[allow(
+	clippy::allow_attributes,
+	clippy::exit,
+	clippy::print_stderr,
+	reason = "While not allowed in other locations, these are needed here"
+)]
 #[cfg(not(tarpaulin_include))]
 fn main() {
 	let exit = run(env::args_os().skip(1).collect());

@@ -2,7 +2,6 @@ use crate::config::InvalidColorError;
 
 /// Represents a color.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum Color {
 	/// The default terminal color.
 	Default,
@@ -58,7 +57,7 @@ pub(crate) enum Color {
 impl TryFrom<&str> for Color {
 	type Error = InvalidColorError;
 
-	#[allow(clippy::unwrap_in_result)]
+	#[expect(clippy::unwrap_in_result, reason = "Cast to u8 is safe.")]
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
 			"black" | "light black" => Ok(Self::LightBlack),

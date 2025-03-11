@@ -77,7 +77,10 @@ pub(super) fn register_selectable_color_pairs(
 
 // Modified version from gyscos/cursive (https://github.com/gyscos/cursive)
 // Copyright (c) 2015 Alexandre Bury - MIT License
-#[allow(clippy::integer_division)]
+#[expect(
+	clippy::integer_division,
+	reason = "This contains low level math, the depends on integer division"
+)]
 fn find_color(color_mode: ColorMode, color: Color) -> CrosstermColor {
 	if color_mode == ColorMode::TwoTone {
 		return CrosstermColor::Reset;

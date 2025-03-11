@@ -2,7 +2,6 @@ use crate::input::{KeyCode, KeyModifiers};
 
 /// Represents a key event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
-#[allow(clippy::exhaustive_structs)]
 pub(crate) struct KeyEvent {
 	/// The key itself.
 	pub(crate) code: KeyCode,

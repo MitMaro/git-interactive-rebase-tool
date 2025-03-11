@@ -4,7 +4,6 @@ use crate::todo_file::ParseError;
 
 /// Describes an rebase action.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum Action {
 	/// A break action.
 	Break,

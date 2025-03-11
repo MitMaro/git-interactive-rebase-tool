@@ -119,10 +119,11 @@ impl RenderSlice {
 		self.should_show_scrollbar
 	}
 
-	#[allow(
+	#[expect(
 		clippy::cast_precision_loss,
 		clippy::cast_possible_truncation,
-		clippy::cast_sign_loss
+		clippy::cast_sign_loss,
+		reason = "Integer values expected."
 	)]
 	pub(crate) fn get_scroll_index(&self) -> usize {
 		if self.lines_count == 0 || self.scroll_position.get_top_position() == 0 {
@@ -260,7 +261,7 @@ impl RenderSlice {
 		);
 	}
 
-	#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
+	#[expect(clippy::too_many_lines, reason = "Legacy, needs refactor")]
 	fn rebuild(&mut self, view_data: &ViewData) {
 		let leading_lines_length = view_data.get_leading_lines().len();
 		let trailing_lines_length = view_data.get_trailing_lines().len();

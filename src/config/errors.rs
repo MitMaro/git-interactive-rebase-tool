@@ -15,7 +15,6 @@ pub(crate) use self::{config_error_cause::ConfigErrorCause, invalid_color::Inval
 /// Config errors
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
-#[allow(clippy::module_name_repetitions)]
 pub(crate) struct ConfigError {
 	name: String,
 	input: Option<String>,

@@ -2,7 +2,6 @@ use std::fmt::{Debug, Formatter};
 
 use crate::search::Searchable;
 
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum Action {
 	Cancel,
 	Continue,

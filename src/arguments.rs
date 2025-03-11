@@ -102,7 +102,7 @@ mod tests {
 
 	#[cfg(unix)]
 	#[test]
-	#[allow(unsafe_code)]
+	#[expect(unsafe_code)]
 	fn todo_file_invalid() {
 		let args = unsafe { vec![OsString::from(String::from_utf8_unchecked(vec![0xC3, 0x28]))] };
 		_ = Args::try_from(args).unwrap_err();

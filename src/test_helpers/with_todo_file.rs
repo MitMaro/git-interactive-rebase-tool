@@ -41,7 +41,7 @@ impl TodoFileTestContext {
 	}
 
 	/// Get the todo file instance
-	#[allow(clippy::wrong_self_convention)]
+	#[expect(clippy::wrong_self_convention)]
 	pub(crate) fn to_owned(self) -> (NamedTempFile, TodoFile) {
 		(self.git_todo_file.into_inner(), self.todo_file)
 	}

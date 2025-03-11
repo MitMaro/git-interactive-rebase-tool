@@ -1,4 +1,8 @@
-use std::{sync::Arc, thread};
+use std::{
+	fmt::{Debug, Formatter},
+	sync::Arc,
+	thread,
+};
 
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use parking_lot::Mutex;
@@ -9,7 +13,6 @@ const RUNTIME_THREAD_NAME: &str = "runtime";
 
 /// A system the manages the lifetime of threads. This includes ensuring errors are handled, threads are paused and
 /// resumed on request and that once the main application is completed, all threads complete and end.
-#[allow(missing_debug_implementations)]
 pub(crate) struct Runtime<'runtime> {
 	receiver: Receiver<(String, Status)>,
 	sender: Sender<(String, Status)>,
@@ -42,7 +45,10 @@ impl<'runtime> Runtime<'runtime> {
 	///
 	/// # Errors
 	/// Returns and error if any of the threads registered to the runtime produce an error.
-	#[allow(clippy::iter_over_hash_type)]
+	#[expect(
+		clippy::iter_over_hash_type,
+		reason = "Iteration order does not matter in this situation."
+	)]
 	pub(crate) fn join(&self) -> Result<(), RuntimeError> {
 		let installer = Installer::new(self.thread_statuses.clone(), self.sender.clone());
 		{
@@ -119,6 +125,12 @@ impl<'runtime> Runtime<'runtime> {
 		self.sender
 			.send((String::from(RUNTIME_THREAD_NAME), Status::Ended))
 			.map_err(|_err| RuntimeError::SendError)
+	}
+}
+
+impl Debug for Runtime<'_> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		f.write_str("Runtime {{ ... }}")
 	}
 }
 
@@ -408,5 +420,33 @@ mod tests {
 		runtime.register(&mut thread2);
 		runtime.join().unwrap();
 		assert!(thread2.ended.load(Ordering::Acquire));
+	}
+
+	#[test]
+	fn runnable_debug() {
+		struct Thread;
+
+		impl Thread {
+			const fn new() -> Self {
+				Self {}
+			}
+		}
+
+		impl Threadable for Thread {
+			fn install(&self, installer: &Installer) {
+				installer.spawn("name", |notifier| {
+					move || {
+						notifier.end();
+						notifier.request_end();
+					}
+				});
+			}
+		}
+
+		let runtime = Runtime::new(ThreadStatuses::new());
+		let mut thread = Thread::new();
+		runtime.register(&mut thread);
+		runtime.join().unwrap();
+		assert_eq!(format!("{runtime:?}"), "Runtime {{ ... }}");
 	}
 }

@@ -238,8 +238,10 @@ bitflags! {
 	}
 }
 
-// safe slice, as it is only on the hash, which is hexadecimal
-#[allow(clippy::string_slice)]
+#[expect(
+	clippy::string_slice,
+	reason = "Safe slice, as it is only on the hash, which is hexadecimal"
+)]
 pub(super) fn get_todo_line_segments(
 	line: &Line,
 	search_term: Option<&str>,
