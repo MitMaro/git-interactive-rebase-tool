@@ -1,3 +1,5 @@
+use std::process::{ExitCode, Termination};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ExitStatus {
 	None,
@@ -11,7 +13,7 @@ pub(crate) enum ExitStatus {
 }
 
 impl ExitStatus {
-	pub(crate) const fn to_code(self) -> i32 {
+	pub(crate) const fn to_code(self) -> u8 {
 		match self {
 			Self::Abort => 5,
 			Self::ConfigError => 1,
@@ -21,6 +23,12 @@ impl ExitStatus {
 			Self::StateError => 4,
 			Self::Kill => 6,
 		}
+	}
+}
+
+impl Termination for ExitStatus {
+	fn report(self) -> ExitCode {
+		ExitCode::from(self.to_code())
 	}
 }
 
@@ -39,7 +47,12 @@ mod tests {
 	#[case::good(ExitStatus::Good, 0)]
 	#[case::state_error(ExitStatus::StateError, 4)]
 	#[case::kill(ExitStatus::Kill, 6)]
-	fn to_code(#[case] input: ExitStatus, #[case] expected: i32) {
+	fn to_code(#[case] input: ExitStatus, #[case] expected: u8) {
 		assert_eq!(ExitStatus::to_code(input), expected);
+	}
+
+	#[test]
+	fn termination() {
+		assert_eq!(ExitStatus::ConfigError.report(), ExitCode::from(1));
 	}
 }
