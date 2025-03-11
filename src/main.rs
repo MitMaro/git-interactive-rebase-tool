@@ -4,6 +4,7 @@
 #![cfg_attr(
 	test,
 	allow(
+		clippy::arbitrary_source_item_ordering,
 		clippy::cast_possible_truncation,
 		clippy::cognitive_complexity,
 		clippy::let_underscore_must_use,
