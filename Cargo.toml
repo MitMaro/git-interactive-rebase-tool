@@ -96,6 +96,7 @@ assets = [
 ]
 
 [lints.rust]
+deprecated_safe = { level = "warn", priority = -2 }
 future_incompatible = { level = "warn", priority = -2 }
 keyword_idents = { level = "warn", priority = -3 }
 let_underscore = { level = "warn", priority = -2 }
@@ -114,13 +115,18 @@ renamed_and_removed_lints = { level = "warn", priority = -1 }
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
 
 # absolute_paths_not_starting_with_crate - group rust_2018_compatibility
-# box-pointers - used in project, and is safe to do so
-deprecated_in_future = "warn"
+ambiguous_negative_literals = "warn"
+closure_returning_async_block = "warn"
+# deprecated_in_future - internal lint, not for user code
+# deprecated_safe_2024 - group: deprecated_safe
+edition-2024-expr-fragment-specifier = "allow" # migration not needed
 # elided_lifetimes_in_paths - group: rust_2018_idioms
 # explicit_outlives_requirements - group: rust_2018_idioms
 ffi_unwind_calls = "warn"
 # fuzzy_provenance_casts - unstable
-# impl_trait_overcaptures - unstable
+if_let_rescope = "allow" # migration not needed
+impl_trait_overcaptures = "warn"
+impl_trait_redundant_captures = "warn"
 # keyword_idents_2018 - group: rust_2018_compatibility
 # keyword_idents_2024 - group: rust_2024_compatibility
 # let_underscore_drop - group: let_underscore
@@ -131,22 +137,29 @@ missing_abi = "warn"
 missing_copy_implementations = "warn"
 missing_debug_implementations = "warn"
 # missing_docs - not requiring docs in this project
+# missing-unsafe-on-extern - group: rust_2024_compatibility
 # multiple_supertrait_upcastable - unstable
 # must_not_suspend - unstable
 non_ascii_idents = "warn"
 # non_exhaustive_omitted_patterns - unstable
+redundant_imports = "warn"
 redundant_lifetimes = "warn"
 # rust_2021_incompatible_closure_captures - group: rust_2021_compatibility
 # rust_2021_incompatible_or_patterns - group: rust_2021_compatibility
 # rust_2021_prefixes_incompatible_syntax - group: rust_2021_compatibility
 # rust_2021_prelude_collisions - group: rust_2021_compatibility
-# rust_2024_incompatible_pat - unstable
+# rust_2024_guarded_string_incompatible_syntax - group: rust_2024_compatibility
+# rust_2024_incompatible_pat - group: rust_2024_compatibility
+# rust_2024_prelude_collisions - group: rust_2024_compatibility
 single_use_lifetimes = "warn"
+tail_expr_drop_order = "allow" # migration not needed
 trivial_casts = "warn"
 trivial_numeric_casts = "warn"
 unit-bindings = "warn"
 unnameable_types = "warn"
+# unqualified_local_imports = "warn" - unstable
 unreachable_pub = "warn"
+# unsafe_attr_outside_unsafe - group: rust_2024_compatibility
 unsafe_code = "warn"
 # unsafe_op_in_unsafe_fn - group: rust_2024_compatibility
 # unstable_features - deprecated
@@ -188,6 +201,7 @@ needless_raw_string_hashes = "allow"
 needless_raw_strings = "allow"
 new_without_default = "allow"
 non_ascii_literal = "allow"
+cfg_not_test = "allow"
 option_if_let_else = "allow"
 pattern_type_mismatch = "allow"
 pub_use = "allow"
