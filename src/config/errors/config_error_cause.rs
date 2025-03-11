@@ -5,7 +5,6 @@ use crate::{config::InvalidColorError, git::GitError};
 /// The kind of config error that occurred.
 #[derive(Error, Debug, PartialEq)]
 #[non_exhaustive]
-#[allow(variant_size_differences)]
 pub(crate) enum ConfigErrorCause {
 	/// The input provided is not a valid color
 	#[error(transparent)]

@@ -47,12 +47,12 @@ impl ScrollPosition {
 		self.update_top(ScrollDirection::Down(1));
 	}
 
-	#[allow(clippy::integer_division)]
+	#[expect(clippy::integer_division, reason = "Integer division desired.")]
 	pub(crate) fn page_up(&mut self) {
 		self.update_top(ScrollDirection::Up(self.view_height / 2));
 	}
 
-	#[allow(clippy::integer_division)]
+	#[expect(clippy::integer_division, reason = "Integer division desired.")]
 	pub(crate) fn page_down(&mut self) {
 		self.update_top(ScrollDirection::Down(self.view_height / 2));
 	}

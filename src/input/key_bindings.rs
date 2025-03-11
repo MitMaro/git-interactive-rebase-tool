@@ -188,6 +188,7 @@ mod tests {
 	#[case::right("Right", KeyCode::Right)]
 	#[case::tab("Tab", KeyCode::Tab)]
 	#[case::up("Up", KeyCode::Up)]
+	#[case::function_lowercase("f10", KeyCode::F(10))]
 	#[case::function_in_range("F10", KeyCode::F(10))]
 	#[case::function_out_of_range("F10000", KeyCode::F(1))]
 	#[case::char("a", KeyCode::Char('a'))]

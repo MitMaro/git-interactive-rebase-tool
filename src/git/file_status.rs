@@ -70,14 +70,14 @@ impl FileStatus {
 
 	/// Get the destination file mode for this change.
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn destination_mode(&self) -> FileMode {
 		self.destination_mode
 	}
 
 	/// Is the destination file a binary file.
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn destination_is_binary(&self) -> bool {
 		self.destination_is_binary
 	}
@@ -90,14 +90,14 @@ impl FileStatus {
 
 	/// Get the source file mode for this change.
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn source_mode(&self) -> FileMode {
 		self.source_mode
 	}
 
 	/// Is the source file a binary file.
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn source_is_binary(&self) -> bool {
 		self.source_is_binary
 	}

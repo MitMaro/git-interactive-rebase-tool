@@ -116,7 +116,6 @@ impl Search {
 
 	/// Select the next search result
 	#[inline]
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn next(&mut self) -> Option<usize> {
 		let mut state = self.state.write();
 
@@ -148,7 +147,6 @@ impl Search {
 
 	/// Select the previous search result
 	#[inline]
-	#[allow(clippy::missing_panics_doc)]
 	pub(crate) fn previous(&mut self) -> Option<usize> {
 		let mut state = self.state.write();
 		if state.matches().is_empty() {

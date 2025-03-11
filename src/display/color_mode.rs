@@ -1,6 +1,5 @@
 /// Represents the color mode of a terminal interface.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum ColorMode {
 	/// Supports 2 colors.
 	TwoTone,

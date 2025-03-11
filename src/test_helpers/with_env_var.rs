@@ -19,7 +19,7 @@ pub(crate) enum EnvVarAction<'var> {
 // the confines of the tests for this project, this is safe enough.
 //
 // The wrapper will attempt to restore all values back to their previous value, cleaning up any changes made.
-#[allow(unsafe_code, unused_unsafe)] // unused unsafe until Rust 2024
+#[expect(unsafe_code, reason = "See comment.")] // unused unsafe until Rust 2024
 pub(crate) fn with_env_var<C>(actions: &[EnvVarAction<'_>], callback: C)
 where C: FnOnce() {
 	let lock = ENV_CHANGE_LOCK.lock();

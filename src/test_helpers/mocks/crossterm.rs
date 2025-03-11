@@ -7,7 +7,6 @@ use crate::display::{ColorMode, DisplayError, Size, Tui};
 
 /// The state of the `CrossTerm` instance.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum CrosstermMockState {
 	/// The TUI is new and unchanged.
 	New,

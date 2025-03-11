@@ -2,7 +2,7 @@
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy)]
 #[non_exhaustive]
 pub(crate) enum StandardEvent {
-	#[allow(unused)]
+	#[expect(unused, reason = "Used in testing to trigger an exit.")]
 	/// The exit meta event.
 	Exit,
 	/// The kill meta event.

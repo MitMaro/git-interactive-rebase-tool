@@ -13,7 +13,7 @@ use crate::todo_file::{
 };
 
 #[derive(Debug)]
-#[allow(clippy::struct_field_names)]
+#[expect(clippy::struct_field_names, reason = "Field clarity.")]
 pub(crate) struct History {
 	redo_history: VecDeque<HistoryItem>,
 	undo_history: VecDeque<HistoryItem>,

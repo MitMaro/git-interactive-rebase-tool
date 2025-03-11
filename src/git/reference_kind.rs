@@ -1,6 +1,5 @@
 /// Represents the kind of a reference
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum ReferenceKind {
 	/// Reference is a branch.
 	Branch,

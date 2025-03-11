@@ -23,7 +23,7 @@ pub(crate) struct Choice<T> {
 impl<T> Choice<T>
 where T: Clone
 {
-	#[allow(clippy::pattern_type_mismatch)]
+	#[expect(clippy::pattern_type_mismatch, reason = "Legacy, needs refactor.")]
 	pub(crate) fn new(options: Vec<(T, char, String)>) -> Self {
 		let map = options
 			.iter()
@@ -54,7 +54,7 @@ where T: Clone
 		});
 	}
 
-	#[allow(clippy::pattern_type_mismatch)]
+	#[expect(clippy::pattern_type_mismatch, reason = "Legacy, needs refactor.")]
 	pub(crate) fn get_view_data(&mut self) -> &ViewData {
 		let options = &self.options;
 		let invalid_selection = self.invalid_selection;

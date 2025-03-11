@@ -184,34 +184,28 @@ impl List {
 		selected_line_index
 	}
 
-	#[allow(clippy::unused_self)]
 	fn move_cursor_left(&self, view_state: &crate::view::State) {
 		view_state.scroll_left();
 	}
 
-	#[allow(clippy::unused_self)]
 	fn move_cursor_right(&self, view_state: &crate::view::State) {
 		view_state.scroll_right();
 	}
 
-	#[allow(clippy::unused_self)]
 	fn abort(&self, results: &mut Results) {
 		results.state(State::ConfirmAbort);
 	}
 
-	#[allow(clippy::unused_self)]
 	fn force_abort(&self, results: &mut Results) {
 		let mut todo_file = self.todo_file.lock();
 		todo_file.set_lines(vec![]);
 		results.exit_status(ExitStatus::Good);
 	}
 
-	#[allow(clippy::unused_self)]
 	fn rebase(&self, results: &mut Results) {
 		results.state(State::ConfirmRebase);
 	}
 
-	#[allow(clippy::unused_self)]
 	fn force_rebase(&self, results: &mut Results) {
 		results.exit_status(ExitStatus::Good);
 	}
@@ -313,7 +307,6 @@ impl List {
 		}
 	}
 
-	#[allow(clippy::unused_self)]
 	fn open_in_editor(&mut self, results: &mut Results) {
 		results.search_cancel();
 		results.state(State::ExternalEditor);
@@ -399,7 +392,6 @@ impl List {
 		_ = self.update_cursor(cursor_update);
 	}
 
-	#[allow(clippy::unused_self)]
 	fn toggle_option(&mut self, option: &str) {
 		let mut todo_file = self.todo_file.lock();
 		let selected_line_index = todo_file.get_selected_line_index();
@@ -422,7 +414,6 @@ impl List {
 		}
 	}
 
-	#[allow(clippy::unused_self)]
 	fn insert_line(&mut self, results: &mut Results) {
 		results.state(State::Insert);
 	}
@@ -534,7 +525,7 @@ impl List {
 		}
 	}
 
-	#[allow(clippy::cognitive_complexity)]
+	#[expect(clippy::cognitive_complexity, reason = "Legacy: needs refactor")]
 	fn read_event_default(&self, event: Event, key_bindings: &KeyBindings) -> Event {
 		// handle action level events
 		if let Some(action) = self.selected_line_action {
@@ -635,7 +626,7 @@ impl List {
 		Some(results)
 	}
 
-	#[allow(clippy::integer_division)]
+	#[expect(clippy::integer_division, reason = "Truncation desired")]
 	fn handle_common_list_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
 		let mut results = Results::new();
 		match event {

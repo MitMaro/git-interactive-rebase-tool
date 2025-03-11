@@ -18,7 +18,7 @@ impl<'line> LineParser<'line> {
 		self.index < self.input.len()
 	}
 
-	#[allow(clippy::unwrap_in_result)]
+	#[expect(clippy::unwrap_in_result, reason = "Guarded unwrap")]
 	fn scan(&mut self) -> Result<(&'line str, usize), ParseError> {
 		let mut new_index = self.index;
 		if !self.has_more() {

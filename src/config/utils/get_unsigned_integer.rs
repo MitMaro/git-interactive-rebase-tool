@@ -59,7 +59,6 @@ mod tests {
 	}
 
 	#[test]
-	#[allow(clippy::as_conversions)]
 	fn read_value_max() {
 		with_git_config(&["[test]", format!("value = {}", i32::MAX).as_str()], |git_config| {
 			assert_ok_eq!(

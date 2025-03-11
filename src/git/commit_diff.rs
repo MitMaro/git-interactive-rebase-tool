@@ -38,7 +38,7 @@ impl CommitDiff {
 
 	/// The parent commit for the diff
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn parent(&self) -> Option<&Commit> {
 		self.parent.as_ref()
 	}

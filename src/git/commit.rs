@@ -24,7 +24,7 @@ impl Commit {
 
 	/// Get the reference to the commit
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn reference(&self) -> Option<&Reference> {
 		self.reference.as_ref()
 	}
@@ -37,7 +37,7 @@ impl Commit {
 
 	/// Get the author of the commit.
 	#[must_use]
-	#[allow(dead_code)]
+	#[expect(dead_code, reason = "Available for future use.")]
 	pub(crate) const fn authored_date(&self) -> Option<&DateTime<Local>> {
 		self.authored_date.as_ref()
 	}

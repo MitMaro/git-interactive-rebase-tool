@@ -22,7 +22,7 @@ pub(crate) struct Help {
 }
 
 impl Help {
-	#[allow(clippy::pattern_type_mismatch)]
+	#[expect(clippy::pattern_type_mismatch, reason = "Legacy, needs refactor.")]
 	fn get_max_help_key_length(lines: &[(Vec<String>, String)]) -> usize {
 		let mut max_length = 0;
 		for (key, _) in lines {

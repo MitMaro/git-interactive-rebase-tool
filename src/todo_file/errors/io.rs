@@ -7,7 +7,6 @@ use crate::todo_file::ParseError;
 /// The cause of a `FileRead` error
 #[derive(Error, Debug)]
 #[non_exhaustive]
-#[allow(variant_size_differences)]
 pub(crate) enum FileReadErrorCause {
 	/// Caused by an io error
 	#[error(transparent)]
@@ -18,7 +17,7 @@ pub(crate) enum FileReadErrorCause {
 }
 
 impl PartialEq for FileReadErrorCause {
-	#[allow(clippy::pattern_type_mismatch)]
+	#[expect(clippy::pattern_type_mismatch, reason = "Legacy, needs update")]
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
 			(Self::IoError(self_err), Self::IoError(other_err)) => self_err.kind() == other_err.kind(),

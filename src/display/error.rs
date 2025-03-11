@@ -12,7 +12,7 @@ pub(crate) enum DisplayError {
 }
 
 impl PartialEq for DisplayError {
-	#[allow(clippy::pattern_type_mismatch)]
+	#[expect(clippy::pattern_type_mismatch, reason = "Legacy, needs refactor")]
 	fn eq(&self, other: &Self) -> bool {
 		match (self, other) {
 			(Self::Unexpected(self_io_error), Self::Unexpected(other_io_error)) => {

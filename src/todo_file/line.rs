@@ -2,7 +2,7 @@ use crate::todo_file::{Action, LineParser, ParseError};
 
 /// Represents a line in the rebase file.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[allow(clippy::struct_field_names)]
+#[expect(clippy::struct_field_names, reason = "Clarity")]
 pub(crate) struct Line {
 	action: Action,
 	content: String,

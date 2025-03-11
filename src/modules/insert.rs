@@ -62,7 +62,7 @@ impl Module for Insert {
 		}
 	}
 
-	#[allow(clippy::unreachable)]
+	#[expect(clippy::unreachable, reason = "False positive.")]
 	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
 		let mut results = Results::new();
 		match self.state {

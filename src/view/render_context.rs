@@ -4,6 +4,7 @@ const MINIMUM_FULL_WINDOW_WIDTH: usize = 34; // " > squash cccccccc mmmmmmmmmmmm
 
 /// Represents data associated with rendering content.
 #[derive(Debug, Copy, Clone)]
+// TODO make height and width u16 and cast where needed
 pub(crate) struct RenderContext {
 	height: usize,
 	width: usize,

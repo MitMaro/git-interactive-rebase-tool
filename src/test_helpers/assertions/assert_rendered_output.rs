@@ -7,7 +7,7 @@ use std::fmt::Debug;
 
 use bitflags::bitflags;
 
-#[allow(unused_imports)]
+#[expect(unused_imports, reason = "Allowed for future use.")]
 pub(crate) use self::{
 	patterns::{
 		ActionPattern,
@@ -41,7 +41,6 @@ bitflags! {
 	}
 }
 
-#[allow(clippy::string_slice)]
 pub(crate) fn _assert_rendered_output(
 	options: AssertRenderOptions,
 	actual: &[String],

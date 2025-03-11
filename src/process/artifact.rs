@@ -8,7 +8,6 @@ use crate::{
 	search::Searchable,
 };
 
-#[allow(variant_size_differences)]
 pub(crate) enum Artifact {
 	ChangeState(State),
 	EnqueueResize,

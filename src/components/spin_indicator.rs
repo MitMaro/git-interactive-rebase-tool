@@ -54,7 +54,6 @@ mod tests {
 		assert_eq!(indicator.indicator(), "(\\)");
 	}
 
-	const INDICATOR_CHARACTERS: [&str; 4] = ["-", "\\", "|", "/"];
 	#[test]
 	fn full_animation() {
 		let mut indicator = SpinIndicator::new();

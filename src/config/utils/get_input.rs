@@ -3,7 +3,7 @@ use crate::{
 	git::Config,
 };
 
-#[allow(clippy::string_slice)]
+#[expect(clippy::string_slice, reason = "Slice usage is guarded.")]
 pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
 	let mut values = vec![];
 	let input = get_string(config, name, default)?;

@@ -68,8 +68,10 @@ impl ViewBuilder {
 		.replace('\n', "")
 	}
 
-	// safe slice, as it is only on the hash, which is hexadecimal
-	#[allow(clippy::string_slice)]
+	#[expect(
+		clippy::string_slice,
+		reason = "Safe slice, as it is only on the hash, which is hexadecimal"
+	)]
 	fn build_leading_summary(commit: &Commit, is_full_width: bool) -> ViewLine {
 		let mut segments = vec![];
 		if is_full_width {
@@ -89,7 +91,6 @@ impl ViewBuilder {
 		ViewLine::from(segments)
 	}
 
-	#[allow(clippy::unused_self)]
 	pub(super) fn build_view_data_for_overview(
 		&self,
 		updater: &mut ViewDataUpdater<'_>,
@@ -160,8 +161,7 @@ impl ViewBuilder {
 		})
 	}
 
-	// safe slice, only slices across graphemes whitespace
-	#[allow(clippy::string_slice)]
+	#[expect(clippy::string_slice, reason = "Safe slice, only slices across graphemes whitespace")]
 	fn get_diff_line_segments(
 		&self,
 		diff_line: &DiffLine,

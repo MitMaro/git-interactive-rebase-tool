@@ -1,6 +1,5 @@
 /// Represents the mode of a file
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[allow(clippy::exhaustive_enums)]
 pub(crate) enum FileMode {
 	/// A normal type of file
 	Normal,
