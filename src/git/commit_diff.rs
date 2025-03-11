@@ -39,8 +39,8 @@ impl CommitDiff {
 	/// The parent commit for the diff
 	#[must_use]
 	#[allow(dead_code)]
-	pub(crate) const fn parent(&self) -> &Option<Commit> {
-		&self.parent
+	pub(crate) const fn parent(&self) -> Option<&Commit> {
+		self.parent.as_ref()
 	}
 
 	/// The file statuses

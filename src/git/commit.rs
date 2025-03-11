@@ -25,8 +25,8 @@ impl Commit {
 	/// Get the reference to the commit
 	#[must_use]
 	#[allow(dead_code)]
-	pub(crate) const fn reference(&self) -> &Option<Reference> {
-		&self.reference
+	pub(crate) const fn reference(&self) -> Option<&Reference> {
+		self.reference.as_ref()
 	}
 
 	/// Get the author of the commit.
@@ -38,14 +38,14 @@ impl Commit {
 	/// Get the author of the commit.
 	#[must_use]
 	#[allow(dead_code)]
-	pub(crate) const fn authored_date(&self) -> &Option<DateTime<Local>> {
-		&self.authored_date
+	pub(crate) const fn authored_date(&self) -> Option<&DateTime<Local>> {
+		self.authored_date.as_ref()
 	}
 
 	/// Get the committer of the commit.
 	#[must_use]
-	pub(crate) const fn committer(&self) -> &Option<User> {
-		&self.committer
+	pub(crate) const fn committer(&self) -> Option<&User> {
+		self.committer.as_ref()
 	}
 
 	/// Get the committed date of the commit.

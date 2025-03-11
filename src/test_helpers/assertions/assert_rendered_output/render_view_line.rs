@@ -32,7 +32,7 @@ pub(crate) fn render_view_line(view_line: &ViewLine, options: Option<AssertRende
 		}
 		line.push_str(segment.get_content());
 	}
-	if let Some(padding) = view_line.get_padding().as_ref() {
+	if let Some(padding) = view_line.get_padding() {
 		if opts.contains(AssertRenderOptions::INCLUDE_STYLE) {
 			let style = render_style(padding);
 			if style != last_style {

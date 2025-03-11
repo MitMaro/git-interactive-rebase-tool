@@ -367,8 +367,8 @@ impl RenderSlice {
 				.max(max_leading_line_length)
 				.max(max_trailing_line_length),
 		);
-		if let Some(column) = view_data.get_visible_column().as_ref() {
-			self.scroll_position.ensure_column_visible(*column);
+		if let Some(column) = view_data.get_visible_column() {
+			self.scroll_position.ensure_column_visible(column);
 		}
 
 		self.lines.clear();
@@ -437,7 +437,7 @@ impl RenderSlice {
 				}
 
 				if cursor < window_width {
-					if let Some(padding) = line.get_padding().as_ref() {
+					if let Some(padding) = line.get_padding() {
 						segments.push(LineSegment::new_copy_style(
 							padding.get_content().repeat(window_width - cursor).as_str(),
 							padding,

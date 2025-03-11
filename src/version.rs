@@ -28,13 +28,7 @@ mod tests {
 	#[test]
 	#[serial_test::serial]
 	fn test_run() {
-		assert!(
-			run()
-				.get_message()
-				.as_ref()
-				.unwrap()
-				.starts_with("interactive-rebase-tool")
-		);
+		assert!(run().get_message().unwrap().starts_with("interactive-rebase-tool"));
 	}
 
 	#[test]

@@ -39,7 +39,6 @@ mod tests {
 		assert!(
 			run()
 				.get_message()
-				.as_ref()
 				.unwrap()
 				.contains("Full feature terminal based sequence editor for git interactive rebase.")
 		);

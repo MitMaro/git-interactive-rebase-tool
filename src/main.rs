@@ -79,7 +79,7 @@ fn run(os_args: Vec<OsString>) -> Exit {
 #[cfg(not(tarpaulin_include))]
 fn main() {
 	let exit = run(env::args_os().skip(1).collect());
-	if let Some(message) = exit.get_message().as_ref() {
+	if let Some(message) = exit.get_message() {
 		eprintln!("{message}");
 	}
 	std::process::exit(exit.get_status().to_code());

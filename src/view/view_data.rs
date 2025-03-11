@@ -129,8 +129,8 @@ impl ViewData {
 		&self.lines_trailing
 	}
 
-	pub(crate) const fn get_visible_column(&self) -> &Option<usize> {
-		&self.visible_column
+	pub(crate) const fn get_visible_column(&self) -> Option<usize> {
+		self.visible_column
 	}
 
 	pub(crate) const fn visible_rows(&self) -> &Vec<usize> {

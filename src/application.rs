@@ -128,7 +128,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	}
 
 	fn filepath_from_args(args: &Args) -> Result<String, Exit> {
-		args.todo_file_path().as_ref().map(String::from).ok_or_else(|| {
+		args.todo_file_path().map(String::from).ok_or_else(|| {
 			Exit::new(
 				ExitStatus::StateError,
 				build_help(Some(String::from("A todo file path must be provided."))).as_str(),
@@ -238,7 +238,6 @@ mod tests {
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
 		assert!(
 			exit.get_message()
-				.as_ref()
 				.unwrap()
 				.contains("A todo file path must be provided")
 		);
@@ -252,12 +251,7 @@ mod tests {
 				Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::StateError);
-			assert!(
-				exit.get_message()
-					.as_ref()
-					.unwrap()
-					.contains("Unable to load Git repository: ")
-			);
+			assert!(exit.get_message().unwrap().contains("Unable to load Git repository: "));
 		});
 	}
 
@@ -342,7 +336,6 @@ mod tests {
 			assert_eq!(exit.get_status(), &ExitStatus::Good);
 			assert!(
 				exit.get_message()
-					.as_ref()
 					.unwrap()
 					.contains("An empty rebase was provided, nothing to edit")
 			);
@@ -404,12 +397,7 @@ mod tests {
 
 			let exit = application.run_until_finished().unwrap_err();
 			assert_eq!(exit.get_status(), &ExitStatus::StateError);
-			assert!(
-				exit.get_message()
-					.as_ref()
-					.unwrap()
-					.starts_with("Failed to join runtime:")
-			);
+			assert!(exit.get_message().unwrap().starts_with("Failed to join runtime:"));
 		});
 	}
 
@@ -449,7 +437,7 @@ mod tests {
 			let exit = application.run_until_finished().unwrap_err();
 			assert_eq!(exit.get_status(), &ExitStatus::StateError);
 			assert_eq!(
-				exit.get_message().as_ref().unwrap(),
+				exit.get_message().unwrap(),
 				"Attempt made to run application a second time"
 			);
 		});

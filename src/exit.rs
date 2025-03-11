@@ -14,8 +14,8 @@ impl Exit {
 		}
 	}
 
-	pub(crate) const fn get_message(&self) -> &Option<String> {
-		&self.message
+	pub(crate) fn get_message(&self) -> Option<&str> {
+		self.message.as_deref()
 	}
 
 	pub(crate) const fn get_status(&self) -> &ExitStatus {
@@ -51,14 +51,14 @@ mod tests {
 	#[test]
 	fn exit_new() {
 		let exit = Exit::new(ExitStatus::StateError, "This is an error");
-		assert_eq!(exit.get_message(), &Some(String::from("This is an error")));
+		assert_eq!(exit.get_message(), Some("This is an error"));
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
 	}
 
 	#[test]
 	fn exit_from_exit_status() {
 		let exit = Exit::from(ExitStatus::Kill);
-		assert_eq!(exit.get_message(), &None);
+		assert_eq!(exit.get_message(), None);
 		assert_eq!(exit.get_status(), &ExitStatus::Kill);
 	}
 }
