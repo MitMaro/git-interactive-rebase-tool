@@ -23,8 +23,8 @@ impl Args {
 		&self.mode
 	}
 
-	pub(crate) const fn todo_file_path(&self) -> &Option<String> {
-		&self.todo_file_path
+	pub(crate) fn todo_file_path(&self) -> Option<&str> {
+		self.todo_file_path.as_deref()
 	}
 }
 
@@ -90,7 +90,7 @@ mod tests {
 	fn todo_file_ok() {
 		let args = Args::try_from(create_args(&["todofile"])).unwrap();
 		assert_eq!(args.mode(), &Mode::Editor);
-		assert_eq!(args.todo_file_path(), &Some(String::from("todofile")));
+		assert_eq!(args.todo_file_path(), Some("todofile"));
 	}
 
 	#[test]

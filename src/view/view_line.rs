@@ -85,8 +85,8 @@ impl ViewLine {
 		self.selected
 	}
 
-	pub(crate) const fn get_padding(&self) -> &Option<LineSegment> {
-		&self.padding
+	pub(crate) const fn get_padding(&self) -> Option<&LineSegment> {
+		self.padding.as_ref()
 	}
 }
 
@@ -207,7 +207,7 @@ mod tests {
 			LineSegmentOptions::all(),
 		);
 
-		let padding = view_line.get_padding().as_ref().unwrap();
+		let padding = view_line.get_padding().unwrap();
 		assert_eq!(padding.get_content(), " ");
 		assert_eq!(padding.get_color(), DisplayColor::IndicatorColor);
 		assert!(padding.is_dimmed());
@@ -219,6 +219,6 @@ mod tests {
 	fn set_padding() {
 		let view_line = ViewLine::from("foo").set_padding('@');
 
-		assert_eq!(view_line.get_padding().as_ref().unwrap().get_content(), "@");
+		assert_eq!(view_line.get_padding().unwrap().get_content(), "@");
 	}
 }

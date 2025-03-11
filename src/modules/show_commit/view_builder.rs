@@ -117,7 +117,7 @@ impl ViewBuilder {
 			]));
 		}
 
-		if let Some(committer) = commit.committer().as_ref() {
+		if let Some(committer) = commit.committer() {
 			updater.push_line(ViewLine::from(vec![
 				LineSegment::new_with_color(
 					if is_full_width { "Committer: " } else { "C: " },
