@@ -374,7 +374,7 @@ impl List {
 		let selected_line_index = todo_file.get_selected_line_index();
 		let next_action_is_break = todo_file
 			.get_line(selected_line_index + 1)
-			.map_or(false, |line| line.get_action() == &Action::Break);
+			.is_some_and(|line| line.get_action() == &Action::Break);
 
 		// no need to add an additional break when the next line is already a break
 		if next_action_is_break {
@@ -383,7 +383,7 @@ impl List {
 
 		let selected_action_is_break = todo_file
 			.get_line(selected_line_index)
-			.map_or(false, |line| line.get_action() == &Action::Break);
+			.is_some_and(|line| line.get_action() == &Action::Break);
 
 		let cursor_update = if selected_action_is_break {
 			todo_file.remove_lines(selected_line_index, selected_line_index);
@@ -466,7 +466,7 @@ impl List {
 					if context.is_full_width() {
 						todo_line_segment_options.insert(TodoLineSegmentsOptions::FULL_WIDTH);
 					}
-					if search_index.map_or(false, |v| v.index() == index) {
+					if search_index.is_some_and(|v| v.index() == index) {
 						todo_line_segment_options.insert(TodoLineSegmentsOptions::SEARCH_LINE);
 					}
 					let mut view_line = ViewLine::new_with_pinned_segments(
