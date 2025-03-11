@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use num_format::{Locale, ToFormattedString};
+use num_format::{Locale, ToFormattedString as _};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{

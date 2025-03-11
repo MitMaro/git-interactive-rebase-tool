@@ -14,7 +14,7 @@ mod utils;
 
 use std::{
 	fs::{File, read_to_string},
-	io::Write,
+	io::Write as _,
 	path::{Path, PathBuf},
 	slice::Iter,
 };

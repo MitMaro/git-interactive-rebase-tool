@@ -3,7 +3,7 @@ use std::{
 	sync::LazyLock,
 };
 
-use itertools::Itertools;
+use itertools::Itertools as _;
 use regex::Regex;
 
 use crate::{

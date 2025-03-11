@@ -1,5 +1,5 @@
 use std::{
-	ops::Add,
+	ops::Add as _,
 	time::{Duration, Instant},
 };
 
@@ -21,7 +21,7 @@ impl Interrupter {
 
 #[cfg(test)]
 mod test {
-	use std::ops::Sub;
+	use std::ops::Sub as _;
 
 	use super::*;
 

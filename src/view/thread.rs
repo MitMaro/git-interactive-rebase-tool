@@ -155,7 +155,7 @@ impl<ViewTui: Tui + Send + 'static> Thread<ViewTui> {
 
 #[cfg(test)]
 mod tests {
-	use std::{borrow::BorrowMut, io};
+	use std::{borrow::BorrowMut as _, io};
 
 	use claims::assert_ok;
 
