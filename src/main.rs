@@ -63,7 +63,7 @@ mod util;
 mod version;
 mod view;
 
-use std::{env, ffi::OsString};
+use std::{env, ffi::OsString, process::Termination};
 
 use crate::{
 	arguments::{Args, Mode},
@@ -85,19 +85,12 @@ fn run(os_args: Vec<OsString>) -> Exit {
 	}
 }
 
-// TODO use the termination trait once rust-lang/rust#43301 is stable
-// allow_attributes added due to a problem on clippy::exit
-#[allow(
-	clippy::allow_attributes,
-	clippy::exit,
-	clippy::print_stderr,
-	reason = "While not allowed in other locations, these are needed here"
-)]
+#[expect(clippy::print_stderr, reason = "Required to print error message.")]
 #[cfg(not(tarpaulin_include))]
-fn main() {
+fn main() -> impl Termination {
 	let exit = run(env::args_os().skip(1).collect());
 	if let Some(message) = exit.get_message() {
 		eprintln!("{message}");
 	}
-	std::process::exit(exit.get_status().to_code());
+	*exit.get_status()
 }
