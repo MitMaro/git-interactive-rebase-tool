@@ -300,7 +300,7 @@ pub(super) fn get_todo_line_segments(
 		Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
 			let action_width = if is_full_width { 8 } else { 3 };
 			let max_index = cmp::min(line.get_hash().len(), action_width);
-			let search_hash_match = search_match.map_or(false, |m| m.hash());
+			let search_hash_match = search_match.is_some_and(|m| m.hash());
 
 			segments.push(LineSegment::new_with_color_and_style(
 				format!(
@@ -330,7 +330,7 @@ pub(super) fn get_todo_line_segments(
 
 	let content = line.get_content();
 	if !content.is_empty() {
-		let search_content_match = search_match.map_or(false, |m| m.content());
+		let search_content_match = search_match.is_some_and(|m| m.content());
 		if_chain! {
 			if search_content_match;
 			if let Some(term) = search_term;
