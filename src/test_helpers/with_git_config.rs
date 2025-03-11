@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::Write as _;
 
 use tempfile::NamedTempFile;
 

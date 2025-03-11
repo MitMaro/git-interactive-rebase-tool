@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local, TimeZone};
+use chrono::{DateTime, Local, TimeZone as _};
 
 use crate::git::{GitError, Reference, User};
 

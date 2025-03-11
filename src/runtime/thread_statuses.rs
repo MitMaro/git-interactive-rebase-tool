@@ -77,7 +77,7 @@ impl ThreadStatuses {
 
 #[cfg(test)]
 mod tests {
-	use std::{ops::Mul, thread};
+	use std::{ops::Mul as _, thread};
 
 	use claims::{assert_err, assert_err_eq, assert_ok, assert_some_eq};
 

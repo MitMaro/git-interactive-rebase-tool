@@ -1,4 +1,4 @@
-use chrono::{Local, TimeZone};
+use chrono::{Local, TimeZone as _};
 
 use crate::{
 	git::{Commit, Reference, User},

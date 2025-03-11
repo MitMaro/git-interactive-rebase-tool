@@ -1,6 +1,6 @@
 use std::{env, process};
 
-use chrono::{TimeZone, Utc};
+use chrono::{TimeZone as _, Utc};
 use rustc_version::{Channel, version_meta};
 
 fn main() {

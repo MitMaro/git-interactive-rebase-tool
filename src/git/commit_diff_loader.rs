@@ -160,7 +160,7 @@ impl<'options> CommitDiffLoader<'options> {
 mod tests {
 	use std::{
 		fs::{File, remove_file},
-		io::Write,
+		io::Write as _,
 		os::unix::fs::symlink,
 	};
 
@@ -557,7 +557,8 @@ mod tests {
 	#[test]
 	fn load_from_hash_file_mode_executable() {
 		with_temp_repository(|repo| {
-			use std::os::unix::fs::PermissionsExt;
+			use std::os::unix::fs::PermissionsExt as _;
+
 			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
 			write_normal_file(&repo, "a", &["line0"]);

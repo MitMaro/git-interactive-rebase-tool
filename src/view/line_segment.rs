@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use bitflags::bitflags;
 use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
-use xi_unicode::EmojiExt;
+use xi_unicode::EmojiExt as _;
 
 use crate::display::DisplayColor;
 

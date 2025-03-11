@@ -29,7 +29,7 @@ impl SpinIndicator {
 }
 #[cfg(test)]
 mod tests {
-	use std::ops::{Add, Sub};
+	use std::ops::{Add as _, Sub as _};
 
 	const SAFE_TEST_DURATION: Duration = Duration::from_secs(60);
 

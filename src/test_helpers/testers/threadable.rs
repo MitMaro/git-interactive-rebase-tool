@@ -1,6 +1,6 @@
 //! Utilities for writing tests that interact with the runtime.
 use std::{
-	borrow::BorrowMut,
+	borrow::BorrowMut as _,
 	mem,
 	sync::{
 		Arc,

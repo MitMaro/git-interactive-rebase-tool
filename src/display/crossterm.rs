@@ -1,9 +1,9 @@
 #![cfg(not(tarpaulin_include))]
-use std::io::{BufWriter, Stdout, Write, stdout};
+use std::io::{BufWriter, Stdout, Write as _, stdout};
 
 use crossterm::{
 	Command,
-	QueueableCommand,
+	QueueableCommand as _,
 	cursor::{Hide, MoveTo, MoveToColumn, MoveToNextLine, Show},
 	event::{
 		DisableMouseCapture,

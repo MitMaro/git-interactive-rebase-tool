@@ -1,5 +1,5 @@
 use std::{
-	borrow::BorrowMut,
+	borrow::BorrowMut as _,
 	sync::{
 		Arc,
 		atomic::{AtomicBool, Ordering},
