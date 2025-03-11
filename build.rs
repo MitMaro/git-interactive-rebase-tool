@@ -3,6 +3,15 @@ use std::{env, process};
 use chrono::{TimeZone as _, Utc};
 use rustc_version::{Channel, version_meta};
 
+fn git_revision_hash() -> Option<String> {
+	let result = process::Command::new("git")
+		.args(["rev-parse", "--short=10", "HEAD"])
+		.output();
+	let output = result.ok()?;
+	let v = String::from(String::from_utf8_lossy(&output.stdout).trim());
+	if v.is_empty() { None } else { Some(v) }
+}
+
 fn main() {
 	println!("cargo::rustc-check-cfg=cfg(allow_unknown_lints)");
 	println!("cargo::rustc-check-cfg=cfg(include_nightly_lints)");
@@ -25,13 +34,4 @@ fn main() {
 		Err(_) => Utc::now(),
 	};
 	println!("cargo:rustc-env=GIRT_BUILD_DATE={}", build_date.format("%Y-%m-%d"));
-}
-
-fn git_revision_hash() -> Option<String> {
-	let result = process::Command::new("git")
-		.args(["rev-parse", "--short=10", "HEAD"])
-		.output();
-	let output = result.ok()?;
-	let v = String::from(String::from_utf8_lossy(&output.stdout).trim());
-	if v.is_empty() { None } else { Some(v) }
 }
