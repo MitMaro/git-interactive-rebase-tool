@@ -1,3 +1,4 @@
+# Last Updated Version: 1.8.0
 # array_width - allow use_small_heuristics
 # attr_fn_like_width - allow use_small_heuristics
 binop_separator = "Front"
@@ -25,13 +26,15 @@ force_multiline_blocks = true
 format_code_in_doc_comments = true
 doc_comment_code_block_width = 120
 format_generated_files = false
+# generated_marker_line_search_limit - Allow default
 format_macro_matchers = true
 format_macro_bodies = true
 skip_macro_invocations = []
 format_strings = true
 hard_tabs = true
 hex_literal_case = "Upper"
-hide_parse_errors = false
+# hide_parse_errors - Deprecated, see show_parse_errors
+show_parse_errors = true
 ignore = []
 imports_indent = "Block"
 imports_layout = "HorizontalVertical"
@@ -65,6 +68,7 @@ struct_field_align_threshold = 0
 struct_lit_single_line = true
 # struct_lit_width - allow use_small_heuristics
 # struct_variant_width - allow use_small_heuristics
+style_edition = "2024"
 tab_spaces = 4
 trailing_comma = "Vertical"
 trailing_semicolon = true
@@ -73,6 +77,6 @@ unstable_features = true
 use_field_init_shorthand = true
 use_small_heuristics = "Default"
 use_try_shorthand = true
-version = "Two"
+# version = "Two" - Deprecated, see style_edition
 where_single_line = true
 wrap_comments = true
