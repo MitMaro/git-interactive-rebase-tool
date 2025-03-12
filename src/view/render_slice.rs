@@ -9,13 +9,13 @@ use std::{
 };
 
 pub(crate) use self::render_action::RenderAction;
-use crate::view::{LineSegment, ScrollPosition, ViewData, ViewLine};
+use crate::view::{LineSegment, ScrollPosition, ViewData, ViewLine, ViewLines};
 
 #[derive(Debug)]
 pub(crate) struct RenderSlice {
 	actions: VecDeque<RenderAction>,
 	height: usize,
-	lines: Vec<ViewLine>,
+	lines: ViewLines,
 	lines_count: usize,
 	lines_leading_count: usize,
 	lines_trailing_count: usize,
@@ -36,7 +36,7 @@ impl RenderSlice {
 		Self {
 			actions: VecDeque::new(),
 			height: 0,
-			lines: vec![],
+			lines: ViewLines::new(),
 			lines_count: 0,
 			lines_leading_count: 0,
 			lines_trailing_count: 0,
@@ -187,7 +187,7 @@ impl RenderSlice {
 		self.lines_trailing_count
 	}
 
-	pub(crate) const fn get_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn view_lines(&self) -> &ViewLines {
 		&self.lines
 	}
 
@@ -214,8 +214,8 @@ impl RenderSlice {
 
 	fn set_padding_height(&mut self, view_data: &ViewData) {
 		let padding_height = if view_data.show_title() { 1 } else { 0 }
-			+ view_data.get_leading_lines().len()
-			+ view_data.get_trailing_lines().len();
+			+ view_data.leading_lines().count() as usize
+			+ view_data.trailing_lines().count() as usize;
 
 		if self.padding_height != padding_height {
 			self.padding_height = padding_height;
@@ -261,11 +261,10 @@ impl RenderSlice {
 		);
 	}
 
-	#[expect(clippy::too_many_lines, reason = "Legacy, needs refactor")]
 	fn rebuild(&mut self, view_data: &ViewData) {
-		let leading_lines_length = view_data.get_leading_lines().len();
-		let trailing_lines_length = view_data.get_trailing_lines().len();
-		let lines_length = view_data.get_lines().len();
+		let leading_lines_length = view_data.leading_lines().count() as usize;
+		let trailing_lines_length = view_data.trailing_lines().count() as usize;
+		let lines_length = view_data.lines().count() as usize;
 
 		self.version += 1;
 		self.view_data_name = String::from(view_data.get_name());
@@ -301,7 +300,7 @@ impl RenderSlice {
 
 			(
 				leading_lines_end,
-				Self::calculate_max_line_length(view_data.get_leading_lines(), 0, leading_lines_end),
+				Self::calculate_max_line_length(view_data.leading_lines(), 0, leading_lines_end),
 			)
 		};
 
@@ -327,7 +326,7 @@ impl RenderSlice {
 
 			(
 				trailing_lines_end,
-				Self::calculate_max_line_length(view_data.get_trailing_lines(), 0, trailing_lines_end),
+				Self::calculate_max_line_length(view_data.trailing_lines(), 0, trailing_lines_end),
 			)
 		};
 
@@ -352,7 +351,7 @@ impl RenderSlice {
 				available_height
 			};
 
-			let max_line_length = Self::calculate_max_line_length(view_data.get_lines(), lines_start, lines_end);
+			let max_line_length = Self::calculate_max_line_length(view_data.lines(), lines_start, lines_end);
 			(
 				lines_start,
 				lines_end,
@@ -373,17 +372,12 @@ impl RenderSlice {
 		}
 
 		self.lines.clear();
-		self.push_lines(view_data.get_leading_lines(), 0, leading_lines_end, false);
-		self.push_lines(
-			view_data.get_lines(),
-			lines_start,
-			lines_end,
-			self.should_show_scrollbar,
-		);
-		self.push_lines(view_data.get_trailing_lines(), 0, trailing_lines_end, false);
+		self.push_lines(view_data.leading_lines(), 0, leading_lines_end, false);
+		self.push_lines(view_data.lines(), lines_start, lines_end, self.should_show_scrollbar);
+		self.push_lines(view_data.trailing_lines(), 0, trailing_lines_end, false);
 	}
 
-	fn calculate_max_line_length(view_lines: &[ViewLine], start: usize, length: usize) -> usize {
+	fn calculate_max_line_length(view_lines: &ViewLines, start: usize, length: usize) -> usize {
 		view_lines
 			.iter()
 			.skip(start)
@@ -400,7 +394,7 @@ impl RenderSlice {
 			})
 	}
 
-	fn push_lines(&mut self, view_lines: &[ViewLine], start: usize, end: usize, scroll_bar: bool) {
+	fn push_lines(&mut self, view_lines: &ViewLines, start: usize, end: usize, scroll_bar: bool) {
 		let window_width = if scroll_bar && self.width > 0 {
 			self.width - 1
 		}

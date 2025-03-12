@@ -20,30 +20,30 @@ pub(crate) fn render_view_data(view_data: &ViewData, options: AssertRenderOption
 	}
 
 	if !body_only {
-		let leading_lines = view_data.get_leading_lines();
+		let leading_lines = view_data.leading_lines();
 		if !leading_lines.is_empty() {
 			lines.push(String::from("{LEADING}"));
-			for line in leading_lines {
+			for line in leading_lines.iter() {
 				lines.push(render_view_line(line, Some(options)));
 			}
 		}
 	}
 
-	let body_lines = view_data.get_lines();
+	let body_lines = view_data.lines();
 	if !body_lines.is_empty() {
 		if !body_only {
 			lines.push(String::from("{BODY}"));
 		}
-		for line in body_lines {
+		for line in body_lines.iter() {
 			lines.push(render_view_line(line, Some(options)));
 		}
 	}
 
 	if !body_only {
-		let trailing_lines = view_data.get_trailing_lines();
+		let trailing_lines = view_data.trailing_lines();
 		if !trailing_lines.is_empty() {
 			lines.push(String::from("{TRAILING}"));
-			for line in trailing_lines {
+			for line in trailing_lines.iter() {
 				lines.push(render_view_line(line, Some(options)));
 			}
 		}

@@ -118,8 +118,8 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.clear_body();
 		assert!(updater.is_modified());
-		assert!(view_data.get_lines().is_empty());
-		assert_eq!(view_data.get_leading_lines().len(), 1);
+		assert!(view_data.lines().is_empty());
+		assert_eq!(view_data.leading_lines().count(), 1);
 	}
 
 	#[test]
@@ -164,7 +164,7 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.push_leading_line(ViewLine::new_empty_line());
 		assert!(updater.is_modified());
-		assert_eq!(view_data.get_leading_lines().len(), 1);
+		assert_eq!(view_data.leading_lines().count(), 1);
 	}
 
 	#[test]
@@ -173,7 +173,7 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.push_line(ViewLine::new_empty_line());
 		assert!(updater.is_modified());
-		assert_eq!(view_data.get_lines().len(), 1);
+		assert_eq!(view_data.lines().count(), 1);
 	}
 
 	#[test]
@@ -182,7 +182,7 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.push_trailing_line(ViewLine::new_empty_line());
 		assert!(updater.is_modified());
-		assert_eq!(view_data.get_trailing_lines().len(), 1);
+		assert_eq!(view_data.trailing_lines().count(), 1);
 	}
 
 	#[test]

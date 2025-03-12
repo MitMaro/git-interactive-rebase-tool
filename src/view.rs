@@ -18,6 +18,7 @@ mod thread;
 mod view_data;
 mod view_data_updater;
 mod view_line;
+mod view_lines;
 
 #[cfg(test)]
 mod tests;
@@ -35,6 +36,7 @@ pub(crate) use self::{
 	view_data::ViewData,
 	view_data_updater::ViewDataUpdater,
 	view_line::ViewLine,
+	view_lines::ViewLines,
 };
 use crate::display::{Display, DisplayColor, Tui};
 
@@ -101,17 +103,17 @@ impl<C: Tui> View<C> {
 			self.display.next_line()?;
 		}
 
-		let lines = render_slice.get_lines();
+		let view_lines = render_slice.view_lines();
 		let leading_line_count = render_slice.get_leading_lines_count();
 		let trailing_line_count = render_slice.get_trailing_lines_count();
-		let lines_count = lines.len() - leading_line_count - trailing_line_count;
+		let lines_count = view_lines.count() as usize - leading_line_count - trailing_line_count;
 		let show_scroll_bar = render_slice.should_show_scroll_bar();
 		let scroll_indicator_index = render_slice.get_scroll_index();
 		let view_height = window_height - leading_line_count - trailing_line_count;
 
-		let leading_lines_iter = lines.iter().take(leading_line_count);
-		let lines_iter = lines.iter().skip(leading_line_count).take(lines_count);
-		let trailing_lines_iter = lines.iter().skip(leading_line_count + lines_count);
+		let leading_lines_iter = view_lines.iter().take(leading_line_count);
+		let lines_iter = view_lines.iter().skip(leading_line_count).take(lines_count);
+		let trailing_lines_iter = view_lines.iter().skip(leading_line_count + lines_count);
 
 		for line in leading_lines_iter {
 			self.display.ensure_at_line_start()?;

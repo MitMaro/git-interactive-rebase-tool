@@ -1,13 +1,13 @@
 use uuid::Uuid;
 
-use crate::view::{ViewDataUpdater, ViewLine};
+use crate::view::{ViewDataUpdater, ViewLine, ViewLines};
 
 /// Represents the content to be rendered to the `View`.
 #[derive(Debug)]
 pub(crate) struct ViewData {
-	lines: Vec<ViewLine>,
-	lines_leading: Vec<ViewLine>,
-	lines_trailing: Vec<ViewLine>,
+	lines: ViewLines,
+	lines_leading: ViewLines,
+	lines_trailing: ViewLines,
 	name: String,
 	retain_scroll_position: bool,
 	scroll_version: u32,
@@ -23,9 +23,9 @@ impl ViewData {
 	pub(crate) fn new<C>(callback: C) -> Self
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
 		let mut view_data = Self {
-			lines: vec![],
-			lines_leading: vec![],
-			lines_trailing: vec![],
+			lines: ViewLines::new(),
+			lines_leading: ViewLines::new(),
+			lines_trailing: ViewLines::new(),
 			name: Uuid::new_v4().hyphenated().to_string(),
 			retain_scroll_position: true,
 			scroll_version: 0,
@@ -117,15 +117,15 @@ impl ViewData {
 		self.show_help
 	}
 
-	pub(crate) const fn get_leading_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn leading_lines(&self) -> &ViewLines {
 		&self.lines_leading
 	}
 
-	pub(crate) const fn get_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn lines(&self) -> &ViewLines {
 		&self.lines
 	}
 
-	pub(crate) const fn get_trailing_lines(&self) -> &Vec<ViewLine> {
+	pub(crate) const fn trailing_lines(&self) -> &ViewLines {
 		&self.lines_trailing
 	}
 
@@ -193,9 +193,9 @@ mod tests {
 		view_data.push_leading_line(ViewLine::new_empty_line());
 		view_data.push_trailing_line(ViewLine::new_empty_line());
 		view_data.clear();
-		assert!(view_data.get_leading_lines().is_empty());
-		assert!(view_data.get_lines().is_empty());
-		assert!(view_data.get_trailing_lines().is_empty());
+		assert!(view_data.leading_lines().is_empty());
+		assert!(view_data.lines().is_empty());
+		assert!(view_data.trailing_lines().is_empty());
 	}
 
 	#[test]
@@ -205,9 +205,9 @@ mod tests {
 		view_data.push_leading_line(ViewLine::new_empty_line());
 		view_data.push_trailing_line(ViewLine::new_empty_line());
 		view_data.clear_body();
-		assert!(!view_data.get_leading_lines().is_empty());
-		assert!(view_data.get_lines().is_empty());
-		assert!(!view_data.get_trailing_lines().is_empty());
+		assert!(!view_data.leading_lines().is_empty());
+		assert!(view_data.lines().is_empty());
+		assert!(!view_data.trailing_lines().is_empty());
 	}
 
 	#[test]
@@ -251,21 +251,21 @@ mod tests {
 	fn push_leading_line() {
 		let mut view_data = ViewData::new(|_| {});
 		view_data.push_leading_line(ViewLine::new_empty_line());
-		assert_eq!(view_data.get_leading_lines().len(), 1);
+		assert_eq!(view_data.leading_lines().count(), 1);
 	}
 
 	#[test]
 	fn push_line() {
 		let mut view_data = ViewData::new(|_| {});
 		view_data.push_line(ViewLine::new_empty_line());
-		assert_eq!(view_data.get_lines().len(), 1);
+		assert_eq!(view_data.lines().count(), 1);
 	}
 
 	#[test]
 	fn push_trailing_line() {
 		let mut view_data = ViewData::new(|_| {});
 		view_data.push_trailing_line(ViewLine::new_empty_line());
-		assert_eq!(view_data.get_trailing_lines().len(), 1);
+		assert_eq!(view_data.trailing_lines().count(), 1);
 	}
 
 	#[test]

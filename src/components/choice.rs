@@ -7,7 +7,7 @@ use crate::{
 	display::DisplayColor,
 	input::{Event, InputOptions, KeyCode},
 	util::handle_view_data_scroll,
-	view::{LineSegment, ViewData, ViewLine},
+	view::{LineSegment, ViewData, ViewLine, ViewLines},
 };
 
 pub(crate) static INPUT_OPTIONS: LazyLock<InputOptions> =
@@ -44,7 +44,7 @@ where T: Clone
 		}
 	}
 
-	pub(crate) fn set_prompt(&mut self, prompt_lines: Vec<ViewLine>) {
+	pub(crate) fn set_prompt(&mut self, prompt_lines: ViewLines) {
 		self.view_data.update_view_data(|updater| {
 			updater.clear();
 			for line in prompt_lines {

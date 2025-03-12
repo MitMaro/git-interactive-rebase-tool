@@ -36,7 +36,7 @@ fn render_options_no_prompt() {
 #[test]
 fn render_options_prompt() {
 	let mut module = Choice::new(create_choices());
-	module.set_prompt(vec![ViewLine::from("Prompt")]);
+	module.set_prompt(ViewLines::from([ViewLine::from("Prompt")]));
 	assert_rendered_output!(
 		Style module.get_view_data(),
 		"{TITLE}",
