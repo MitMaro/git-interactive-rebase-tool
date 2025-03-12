@@ -23,17 +23,17 @@ fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 		}
 	}
 
-	let lines = render_slice.get_lines();
-	if lines.is_empty() {
+	let view_lines = render_slice.view_lines();
+	if view_lines.is_empty() {
 		output.push(String::from("{EMPTY}"));
 	}
 	else {
 		let leading_line_count = render_slice.get_leading_lines_count();
 		let trailing_line_count = render_slice.get_trailing_lines_count();
-		let lines_count = lines.len() - leading_line_count - trailing_line_count;
-		let leading_lines = lines.iter().take(leading_line_count);
-		let body_lines = lines.iter().skip(leading_line_count).take(lines_count);
-		let trailing_lines = lines.iter().skip(leading_line_count + lines_count);
+		let lines_count = view_lines.count() as usize - leading_line_count - trailing_line_count;
+		let leading_lines = view_lines.iter().take(leading_line_count);
+		let body_lines = view_lines.iter().skip(leading_line_count).take(lines_count);
+		let trailing_lines = view_lines.iter().skip(leading_line_count + lines_count);
 
 		if leading_line_count > 0 {
 			output.push(String::from("{LEADING}"));
@@ -1237,40 +1237,40 @@ fn scroll_horizontal_with_segments() {
 
 #[test]
 fn calculate_max_line_length_max_first() {
-	let view_lines = [
+	let view_lines = ViewLines::from([
 		ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
 		ViewLine::from("012345"),
-	];
+	]);
 	assert_eq!(RenderSlice::calculate_max_line_length(&view_lines, 0, 1), 16);
 }
 
 #[test]
 fn calculate_max_line_length_max_last() {
-	let view_lines = [
+	let view_lines = ViewLines::from([
 		ViewLine::from("012345"),
 		ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
-	];
+	]);
 	assert_eq!(RenderSlice::calculate_max_line_length(&view_lines, 0, 2), 16);
 }
 
 #[test]
 fn calculate_max_line_length_with_slice() {
-	let view_lines = [
+	let view_lines = ViewLines::from([
 		ViewLine::from("012345"),
 		ViewLine::from("012345"),
 		ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
 		ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("01234567")]),
-	];
+	]);
 	assert_eq!(RenderSlice::calculate_max_line_length(&view_lines, 1, 2), 16);
 }
 
 #[test]
 fn calculate_max_line_length_ignore_pinned() {
-	let view_lines = [
+	let view_lines = ViewLines::from([
 		ViewLine::from("012345"),
 		ViewLine::from("012345"),
 		ViewLine::from(vec![LineSegment::new("0123456789"), LineSegment::new("012345")]),
 		ViewLine::new_pinned(vec![LineSegment::new("0123456789"), LineSegment::new("01234567")]),
-	];
+	]);
 	assert_eq!(RenderSlice::calculate_max_line_length(&view_lines, 0, 4), 16);
 }

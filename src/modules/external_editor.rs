@@ -17,7 +17,7 @@ use crate::{
 	module::{ExitStatus, Module, State},
 	process::Results,
 	todo_file::{Line, TodoFile},
-	view::{RenderContext, ViewData, ViewLine},
+	view::{RenderContext, ViewData, ViewLine, ViewLines},
 };
 
 static INPUT_OPTIONS: LazyLock<InputOptions> = LazyLock::new(|| InputOptions::RESIZE);
@@ -181,7 +181,7 @@ impl ExternalEditor {
 				String::from("Undo modifications and edit rebase file"),
 			),
 		]);
-		empty_choice.set_prompt(vec![ViewLine::from("The rebase file is empty.")]);
+		empty_choice.set_prompt(ViewLines::from([ViewLine::from("The rebase file is empty.")]));
 
 		let error_choice = Choice::new(vec![
 			(Action::AbortRebase, '1', String::from("Abort rebase")),

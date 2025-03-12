@@ -276,8 +276,10 @@ mod tests {
 					.state
 					.render_slice()
 					.lock()
-					.get_lines()
-					.first()
+					.view_lines()
+					.iter()
+					.take(1)
+					.next()
 					.unwrap()
 					.get_segments()
 					.first()

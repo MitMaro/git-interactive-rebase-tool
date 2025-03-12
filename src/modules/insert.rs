@@ -19,7 +19,7 @@ use crate::{
 	module::{Module, State},
 	process::Results,
 	todo_file::{Line, TodoFile},
-	view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine},
+	view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewLines},
 };
 
 pub(crate) struct Insert {
@@ -122,7 +122,7 @@ impl Insert {
 			(LineType::UpdateRef, 'u', String::from("update-ref <reference>")),
 			(LineType::Cancel, 'q', String::from("Cancel add line")),
 		]);
-		action_choices.set_prompt(vec![ViewLine::from("Select the type of line to insert:")]);
+		action_choices.set_prompt(ViewLines::from([ViewLine::from("Select the type of line to insert:")]));
 
 		Self {
 			action_choices,
