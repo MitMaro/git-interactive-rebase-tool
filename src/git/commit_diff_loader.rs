@@ -30,24 +30,14 @@ impl<'options> CommitDiffLoader<'options> {
 		Self { config, repo }
 	}
 
-	pub(crate) fn load_from_hash(&self, oid: Oid) -> Result<Vec<CommitDiff>, git2::Error> {
+	pub(crate) fn load_from_hash(&self, oid: Oid) -> Result<CommitDiff, git2::Error> {
 		let repo = self.repo.lock();
 		let commit = repo.find_commit(oid)?;
-		let no_parents = commit.parent_ids().count() == 0;
+		// only the first parent matter for the diff, the second parent, if it exists, was only used
+		// for conflict resolution
+		let parent = commit.parents().next();
 
-		// some commits do not have parents, and can't have file stats
-		let diffs = if no_parents {
-			vec![self.load_diff(&repo, None, &commit)?]
-		}
-		else {
-			//
-			let mut diffs = vec![];
-			for parent in commit.parents() {
-				diffs.push(self.load_diff(&repo, Some(&parent), &commit)?);
-			}
-			diffs
-		};
-		Ok(diffs)
+		self.load_diff(&repo, parent, &commit)
 	}
 
 	#[expect(clippy::as_conversions, reason = "Mostly safe difference between APIs.")]
@@ -55,9 +45,11 @@ impl<'options> CommitDiffLoader<'options> {
 	fn load_diff(
 		&self,
 		repo: &MutexGuard<'_, Repository>,
-		parent: Option<&git2::Commit<'_>>,
+		parent: Option<git2::Commit<'_>>,
 		commit: &git2::Commit<'_>,
 	) -> Result<CommitDiff, git2::Error> {
+		let parent_commit = parent.as_ref().map(Commit::from);
+
 		let mut diff_options = DiffOptions::new();
 		// include_unmodified added to find copies from unmodified files
 		_ = diff_options
@@ -148,7 +140,7 @@ impl<'options> CommitDiffLoader<'options> {
 
 		Ok(CommitDiff::new(
 			Commit::from(commit),
-			parent.map(Commit::from),
+			parent_commit,
 			fsb.build(),
 			number_files_changed,
 			number_insertions,
@@ -316,7 +308,7 @@ mod tests {
 	fn diff_from_head(repository: &crate::git::Repository, options: &CommitDiffLoaderOptions) -> CommitDiff {
 		let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
 		let loader = CommitDiffLoader::new(repository.repository(), options);
-		loader.load_from_hash(id).unwrap().remove(0)
+		loader.load_from_hash(id).unwrap()
 	}
 
 	#[test]
