@@ -60,11 +60,10 @@ impl Repository {
 			.id();
 		let diff_loader_repository = Arc::clone(&self.repository);
 		let loader = CommitDiffLoader::new(diff_loader_repository, config);
-		// TODO this is ugly because it assumes one parent
-		Ok(loader
+
+		loader
 			.load_from_hash(oid)
-			.map_err(|e| GitError::CommitLoad { cause: e })?
-			.remove(0))
+			.map_err(|e| GitError::CommitLoad { cause: e })
 	}
 }
 
