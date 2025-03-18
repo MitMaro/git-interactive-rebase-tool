@@ -1,22 +1,18 @@
 use super::*;
 use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Artifact, test_helpers::testers};
 
-fn create_insert(todo_file: TodoFile) -> Insert {
-	Insert::new(Arc::new(Mutex::new(todo_file)))
-}
-
 #[test]
 fn activate() {
-	testers::module(&[], &[], |mut test_context| {
-		let mut module = create_insert(test_context.take_todo_file());
+	testers::module(&[], &[], None, |test_context| {
+		let mut module = Insert::new(&test_context.app_data());
 		assert_results!(test_context.activate(&mut module, State::List));
 	});
 }
 
 #[test]
 fn render_prompt() {
-	testers::module(&[], &[], |mut test_context| {
-		let mut module = create_insert(test_context.take_todo_file());
+	testers::module(&[], &[], None, |test_context| {
+		let mut module = Insert::new(&test_context.app_data());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
 			view_data,
@@ -40,8 +36,8 @@ fn render_prompt() {
 
 #[test]
 fn prompt_cancel() {
-	testers::module(&[], &[Event::from('q')], |mut test_context| {
-		let mut module = create_insert(test_context.take_todo_file());
+	testers::module(&[], &[Event::from('q')], None, |mut test_context| {
+		let mut module = Insert::new(&test_context.app_data());
 		assert_results!(
 			test_context.handle_event(&mut module),
 			Artifact::Event(Event::from('q')),
@@ -61,8 +57,9 @@ fn edit_render_exec() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -97,8 +94,9 @@ fn edit_render_pick() {
 			Event::from('c'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -133,8 +131,9 @@ fn edit_render_label() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -169,8 +168,9 @@ fn edit_render_reset() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -205,8 +205,9 @@ fn edit_render_merge() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -241,8 +242,9 @@ fn update_ref_render_merge() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -277,8 +279,9 @@ fn edit_select_next_index() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			assert_eq!(module.todo_file.lock().get_selected_line_index(), 1);
 		},
@@ -290,8 +293,9 @@ fn cancel_edit() {
 	testers::module(
 		&[],
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
+		None,
 		|mut test_context| {
-			let mut module = create_insert(test_context.take_todo_file());
+			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			assert!(module.todo_file.lock().is_empty());
 		},

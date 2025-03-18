@@ -1,17 +1,17 @@
-use std::{path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
 use parking_lot::Mutex;
 
 use crate::{
+	application::AppData,
 	display::Size,
 	input::Event,
-	module::{self, ModuleHandler},
+	module::{self, ModuleHandler, State},
 	process::Process,
 	runtime::ThreadStatuses,
 	test_helpers::{
-		EventHandlerTestContext,
-		SearchTestContext,
 		ViewStateTestContext,
+		create_config,
 		with_event_handler,
 		with_search,
 		with_todo_file,
@@ -20,11 +20,9 @@ use crate::{
 };
 
 pub(crate) struct ProcessTestContext<ModuleProvider: module::ModuleProvider + Send + 'static> {
-	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) process: Process<ModuleProvider>,
-	pub(crate) search_context: SearchTestContext,
-	pub(crate) todo_file_path: PathBuf,
 	pub(crate) view_context: ViewStateTestContext,
+	pub(crate) app_data: AppData,
 }
 
 pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static>(
@@ -37,25 +35,22 @@ pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static
 		with_view_state(|view_context| {
 			with_todo_file(&[], |todo_file_context| {
 				with_search(|search_context| {
-					let (todo_file_tmp_path, todo_file) = todo_file_context.to_owned();
+					let (_todo_file_tmp_path, todo_file) = todo_file_context.to_owned();
 					let view_state = view_context.state.clone();
 					let input_state = event_handler_context.state.clone();
-					let todo_file_path = PathBuf::from(todo_file_tmp_path.path());
+					let app_data = AppData::new(
+						Arc::new(create_config()),
+						State::WindowSizeError,
+						Arc::new(Mutex::new(todo_file)),
+						view_state,
+						input_state,
+						search_context.state.clone(),
+					);
 
 					callback(ProcessTestContext {
-						event_handler_context,
-						process: Process::new(
-							Size::new(300, 120),
-							Arc::new(Mutex::new(todo_file)),
-							module_handler,
-							input_state,
-							view_state,
-							search_context.state.clone(),
-							ThreadStatuses::new(),
-						),
-						search_context,
-						todo_file_path,
+						process: Process::new(&app_data, Size::new(300, 120), module_handler, ThreadStatuses::new()),
 						view_context,
+						app_data,
 					});
 				});
 			});

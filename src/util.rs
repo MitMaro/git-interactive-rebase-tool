@@ -1,6 +1,7 @@
 use crate::{
 	input::{Event, StandardEvent},
 	process::Results,
+	view,
 };
 
 #[macro_export]
@@ -28,7 +29,7 @@ macro_rules! select {
 
 /// Utility function to handle scroll events.
 #[must_use]
-pub(crate) fn handle_view_data_scroll(event: Event, view_state: &crate::view::State) -> Option<Results> {
+pub(crate) fn handle_view_data_scroll(event: Event, view_state: &view::State) -> Option<Results> {
 	match event {
 		Event::Standard(StandardEvent::ScrollLeft) => view_state.scroll_left(),
 		Event::Standard(StandardEvent::ScrollRight) => view_state.scroll_right(),

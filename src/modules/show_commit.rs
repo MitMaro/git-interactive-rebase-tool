@@ -17,8 +17,9 @@ use self::{
 	view_builder::{ViewBuilder, ViewBuilderOptions},
 };
 use crate::{
+	application::AppData,
 	components::help::Help,
-	config::{Config, DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
+	config::{DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
 	git::{CommitDiff, CommitDiffLoaderOptions, Repository},
 	input::{Event, InputOptions, KeyBindings, StandardEvent},
 	module::{Module, State},
@@ -26,7 +27,7 @@ use crate::{
 	select,
 	todo_file::TodoFile,
 	util::handle_view_data_scroll,
-	view::{RenderContext, ViewData},
+	view::{self, RenderContext, ViewData},
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
@@ -42,6 +43,7 @@ pub(crate) struct ShowCommit {
 	overview_view_data: ViewData,
 	repository: Repository,
 	state: ShowCommitState,
+	view_state: view::State,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_builder: ViewBuilder,
 }
@@ -137,7 +139,7 @@ impl Module for ShowCommit {
 		)
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		select!(
 			default {
 				let mut results = Results::new();
@@ -170,14 +172,14 @@ impl Module for ShowCommit {
 				}
 				results
 			},
-			self.help.handle_event(event, view_state),
-			handle_view_data_scroll(event, view_state)
+			self.help.handle_event(event, &self.view_state),
+			handle_view_data_scroll(event, &self.view_state)
 		)
 	}
 }
 
 impl ShowCommit {
-	pub(crate) fn new(config: &Config, repository: Repository, todo_file: Arc<Mutex<TodoFile>>) -> Self {
+	pub(crate) fn new(app_data: &AppData, repository: Repository) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -186,6 +188,7 @@ impl ShowCommit {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
 		});
+		let config = app_data.config();
 		let view_builder_options = ViewBuilderOptions::new(
 			config.diff_tab_width as usize,
 			config.diff_tab_symbol.as_str(),
@@ -213,7 +216,8 @@ impl ShowCommit {
 			overview_view_data,
 			repository,
 			state: ShowCommitState::Overview,
-			todo_file,
+			view_state: app_data.view_state(),
+			todo_file: app_data.todo_file(),
 			view_builder: ViewBuilder::new(view_builder_options),
 		}
 	}

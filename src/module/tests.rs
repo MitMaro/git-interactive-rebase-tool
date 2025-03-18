@@ -23,7 +23,7 @@ fn default_trait_method_deactivate() {
 
 #[test]
 fn default_trait_method_build_view_data() {
-	testers::module(&[], &[], |context| {
+	testers::module(&[], &[], None, |context| {
 		let mut module = TestModule {};
 		let view_data = module.build_view_data(&context.render_context);
 		assert!(view_data.is_empty());
@@ -45,11 +45,9 @@ fn default_trait_method_read_event() {
 
 #[test]
 fn default_trait_method_handle_event() {
-	testers::module(&[], &[], |context| {
-		let mut module = TestModule {};
-		let mut result = module.handle_event(Event::from('a'), &context.view_context.state);
-		assert!(result.artifact().is_none());
-	});
+	let mut module = TestModule {};
+	let mut result = module.handle_event(Event::from('a'));
+	assert!(result.artifact().is_none());
 }
 
 #[test]
