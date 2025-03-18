@@ -1,12 +1,7 @@
-use std::sync::Arc;
-
-use parking_lot::Mutex;
-
 use crate::{
-	config::Config,
+	application::AppData,
 	git::Repository,
 	module::{Module, ModuleProvider, State},
-	todo_file::TodoFile,
 };
 
 pub(crate) struct TestModuleProvider<M: Module> {
@@ -20,7 +15,7 @@ impl<M: Module> From<M> for TestModuleProvider<M> {
 }
 
 impl<M: Module> ModuleProvider for TestModuleProvider<M> {
-	fn new(_: &Config, _: Repository, _: &Arc<Mutex<TodoFile>>) -> Self {
+	fn new(_: Repository, _: &AppData) -> Self {
 		unimplemented!("Not implemented for the TestModuleProvider");
 	}
 

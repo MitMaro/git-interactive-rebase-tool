@@ -21,15 +21,16 @@ mod visual_mode;
 use super::*;
 use crate::test_helpers::{create_config, testers};
 
-pub(crate) fn create_list(config: &Config, todo_file: TodoFile) -> List {
-	List::new(config, Arc::new(Mutex::new(todo_file)))
-}
-
 #[test]
 fn resize() {
-	testers::module(&["pick aaa c1"], &[Event::Resize(100, 200)], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
-		_ = test_context.handle_all_events(&mut module);
-		assert_eq!(module.height, 200);
-	});
+	testers::module(
+		&["pick aaa c1"],
+		&[Event::Resize(100, 200)],
+		None,
+		|mut test_context| {
+			let mut module = List::new(&test_context.app_data());
+			_ = test_context.handle_all_events(&mut module);
+			assert_eq!(module.height, 200);
+		},
+	);
 }

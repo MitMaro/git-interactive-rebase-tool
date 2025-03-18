@@ -3,15 +3,17 @@ use std::{path::PathBuf, sync::Arc};
 use parking_lot::Mutex;
 
 use crate::{
+	application::AppData,
 	display::Size,
 	input::Event,
-	module::{self, ModuleHandler},
+	module::{self, ModuleHandler, State},
 	process::Process,
 	runtime::ThreadStatuses,
 	test_helpers::{
 		EventHandlerTestContext,
 		SearchTestContext,
 		ViewStateTestContext,
+		create_config,
 		with_event_handler,
 		with_search,
 		with_todo_file,
@@ -45,12 +47,16 @@ pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static
 					callback(ProcessTestContext {
 						event_handler_context,
 						process: Process::new(
+							&AppData::new(
+								Arc::new(create_config()),
+								State::WindowSizeError,
+								Arc::new(Mutex::new(todo_file)),
+								view_state,
+								input_state,
+								search_context.state.clone(),
+							),
 							Size::new(300, 120),
-							Arc::new(Mutex::new(todo_file)),
 							module_handler,
-							input_state,
-							view_state,
-							search_context.state.clone(),
 							ThreadStatuses::new(),
 						),
 						search_context,

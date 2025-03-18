@@ -10,6 +10,7 @@ use parking_lot::Mutex;
 
 use self::{insert_state::InsertState, line_type::LineType};
 use crate::{
+	application::AppData,
 	components::{
 		choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
 		edit::{Edit, INPUT_OPTIONS as EDIT_INPUT_OPTIONS},
@@ -19,7 +20,7 @@ use crate::{
 	module::{Module, State},
 	process::Results,
 	todo_file::{Line, TodoFile},
-	view::{LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewLines},
+	view::{self, LineSegment, RenderContext, ViewData, ViewDataUpdater, ViewLine, ViewLines},
 };
 
 pub(crate) struct Insert {
@@ -28,6 +29,7 @@ pub(crate) struct Insert {
 	line_type: LineType,
 	state: InsertState,
 	todo_file: Arc<Mutex<TodoFile>>,
+	view_state: view::State,
 }
 
 impl Module for Insert {
@@ -63,11 +65,11 @@ impl Module for Insert {
 	}
 
 	#[expect(clippy::unreachable, reason = "False positive.")]
-	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			InsertState::Prompt => {
-				let choice = self.action_choices.handle_event(event, view_state);
+				let choice = self.action_choices.handle_event(event, &self.view_state);
 				if let Some(action) = choice {
 					if action == &LineType::Cancel {
 						results.state(State::List);
@@ -108,7 +110,7 @@ impl Module for Insert {
 }
 
 impl Insert {
-	pub(crate) fn new(todo_file: Arc<Mutex<TodoFile>>) -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
 		let mut action_choices = Choice::new(vec![
 			(LineType::Exec, 'e', String::from("exec <command>")),
 			(LineType::Pick, 'p', String::from("pick <hash>")),
@@ -129,7 +131,8 @@ impl Insert {
 			edit: Edit::new(),
 			line_type: LineType::Exec,
 			state: InsertState::Prompt,
-			todo_file,
+			todo_file: app_data.todo_file(),
+			view_state: app_data.view_state(),
 		}
 	}
 }

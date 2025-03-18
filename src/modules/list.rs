@@ -18,13 +18,13 @@ use self::{
 	},
 };
 use crate::{
+	application::AppData,
 	components::{
 		edit::Edit,
 		help::Help,
 		search_bar::{SearchBar, SearchBarAction},
 		spin_indicator::SpinIndicator,
 	},
-	config::Config,
 	display::DisplayColor,
 	input::{Event, InputOptions, KeyBindings, MouseEventKind, StandardEvent},
 	module::{ExitStatus, Module, State},
@@ -33,6 +33,7 @@ use crate::{
 	search::Searchable,
 	select,
 	todo_file::{Action, EditContext, Line, TodoFile},
+	view,
 	view::{LineSegment, RenderContext, ViewData, ViewLine},
 };
 
@@ -69,6 +70,7 @@ pub(crate) struct List {
 	state: ListState,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_data: ViewData,
+	view_state: view::State,
 	visual_index_start: Option<usize>,
 	visual_mode_help: Help,
 }
@@ -108,17 +110,17 @@ impl Module for List {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		select!(
 			default {
 				match self.state {
-					ListState::Normal => self.handle_normal_mode_event(event, view_state),
-					ListState::Visual => self.handle_visual_mode_input(event, view_state),
+					ListState::Normal => self.handle_normal_mode_event(event),
+					ListState::Visual => self.handle_visual_mode_input(event),
 					ListState::Edit => self.handle_edit_mode_input(event),
 				}
 			},
-			self.normal_mode_help.handle_event(event, view_state),
-			self.visual_mode_help.handle_event(event, view_state),
+			self.normal_mode_help.handle_event(event, &self.view_state),
+			self.visual_mode_help.handle_event(event, &self.view_state),
 			self.handle_search_input(event)
 		)
 	}
@@ -145,26 +147,27 @@ impl Module for List {
 }
 
 impl List {
-	pub(crate) fn new(config: &Config, todo_file: Arc<Mutex<TodoFile>>) -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
 		});
 
-		let search = Search::new(Arc::clone(&todo_file));
+		let config = app_data.config();
 
 		Self {
 			auto_select_next: config.auto_select_next,
 			edit: Edit::new(),
 			height: 0,
 			normal_mode_help: Help::new_from_keybindings(&get_list_normal_mode_help_lines(&config.key_bindings)),
-			search,
+			search: Search::new(app_data.todo_file()),
 			search_bar: SearchBar::new(),
 			selected_line_action: None,
 			spin_indicator: SpinIndicator::new(),
 			state: ListState::Normal,
-			todo_file,
+			todo_file: app_data.todo_file(),
 			view_data,
+			view_state: app_data.view_state(),
 			visual_index_start: None,
 			visual_mode_help: Help::new_from_keybindings(&get_list_visual_mode_help_lines(&config.key_bindings)),
 		}
@@ -184,12 +187,12 @@ impl List {
 		selected_line_index
 	}
 
-	fn move_cursor_left(&self, view_state: &crate::view::State) {
-		view_state.scroll_left();
+	fn move_cursor_left(&self) {
+		self.view_state.scroll_left();
 	}
 
-	fn move_cursor_right(&self, view_state: &crate::view::State) {
-		view_state.scroll_right();
+	fn move_cursor_right(&self) {
+		self.view_state.scroll_right();
 	}
 
 	fn abort(&self, results: &mut Results) {
@@ -627,7 +630,7 @@ impl List {
 	}
 
 	#[expect(clippy::integer_division, reason = "Truncation desired")]
-	fn handle_common_list_input(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
+	fn handle_common_list_input(&mut self, event: Event) -> Option<Results> {
 		let mut results = Results::new();
 		match event {
 			Event::Standard(standard_event) => {
@@ -651,14 +654,14 @@ impl List {
 					StandardEvent::MoveCursorHome => {
 						_ = self.update_cursor(CursorUpdate::Set(0));
 					},
-					StandardEvent::MoveCursorLeft => self.move_cursor_left(view_state),
+					StandardEvent::MoveCursorLeft => self.move_cursor_left(),
 					StandardEvent::MoveCursorPageDown => {
 						_ = self.update_cursor(CursorUpdate::Down(self.height / 2));
 					},
 					StandardEvent::MoveCursorPageUp => {
 						_ = self.update_cursor(CursorUpdate::Up(self.height / 2));
 					},
-					StandardEvent::MoveCursorRight => self.move_cursor_right(view_state),
+					StandardEvent::MoveCursorRight => self.move_cursor_right(),
 					StandardEvent::MoveCursorUp => {
 						_ = self.update_cursor(CursorUpdate::Up(1));
 					},
@@ -681,8 +684,8 @@ impl List {
 		Some(results)
 	}
 
-	fn handle_normal_mode_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
-		if let Some(results) = self.handle_common_list_input(event, view_state) {
+	fn handle_normal_mode_event(&mut self, event: Event) -> Results {
+		if let Some(results) = self.handle_common_list_input(event) {
 			results
 		}
 		else {
@@ -702,9 +705,8 @@ impl List {
 		}
 	}
 
-	fn handle_visual_mode_input(&mut self, event: Event, view_state: &crate::view::State) -> Results {
-		self.handle_common_list_input(event, view_state)
-			.unwrap_or_else(Results::new)
+	fn handle_visual_mode_input(&mut self, event: Event) -> Results {
+		self.handle_common_list_input(event).unwrap_or_else(Results::new)
 	}
 
 	fn handle_edit_mode_input(&mut self, event: Event) -> Results {

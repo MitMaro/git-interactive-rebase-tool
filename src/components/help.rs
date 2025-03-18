@@ -9,7 +9,7 @@ use crate::{
 	process::Results,
 	select,
 	util::handle_view_data_scroll,
-	view::{LineSegment, LineSegmentOptions, ViewData, ViewLine},
+	view::{self, LineSegment, LineSegmentOptions, ViewData, ViewLine},
 };
 
 const INPUT_OPTIONS: InputOptions = InputOptions::RESIZE
@@ -86,7 +86,7 @@ impl Help {
 		(self.is_active() || event == Event::Standard(StandardEvent::Help)).then_some(event)
 	}
 
-	pub(crate) fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Option<Results> {
+	pub(crate) fn handle_event(&mut self, event: Event, view_state: &view::State) -> Option<Results> {
 		self.is_active().then(|| {
 			select!(
 				default {

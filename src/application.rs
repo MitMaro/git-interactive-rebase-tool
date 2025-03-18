@@ -1,8 +1,11 @@
+mod app_data;
+
 use std::sync::Arc;
 
 use anyhow::Result;
 use parking_lot::Mutex;
 
+pub(crate) use crate::application::app_data::AppData;
 use crate::{
 	Args,
 	Exit,
@@ -11,7 +14,7 @@ use crate::{
 	git::Repository,
 	help::build_help,
 	input::{Event, EventHandler, EventReaderFn, KeyBindings, StandardEvent},
-	module::{self, ExitStatus, ModuleHandler},
+	module::{self, ExitStatus, ModuleHandler, State},
 	process::{self, Process},
 	runtime::{Runtime, ThreadStatuses, Threadable},
 	search,
@@ -22,7 +25,6 @@ use crate::{
 pub(crate) struct Application<ModuleProvider>
 where ModuleProvider: module::ModuleProvider + Send + 'static
 {
-	_config: Config,
 	process: Process<ModuleProvider>,
 	threads: Option<Vec<Box<dyn Threadable>>>,
 	thread_statuses: ThreadStatuses,
@@ -38,13 +40,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
-		let config = Self::load_config(&repository)?;
+		let config = Arc::new(Self::load_config(&repository)?);
 		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
-
-		let module_handler = ModuleHandler::new(
-			EventHandler::new(KeyBindings::new(&config.key_bindings)),
-			ModuleProvider::new(&config, repository, &todo_file),
-		);
 
 		let display = Display::new(tui, &config.theme);
 		let initial_display_size = display.get_window_size();
@@ -75,20 +72,24 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let search_state = search_threads.state();
 		threads.push(Box::new(search_threads));
 
-		let process = Process::new(
-			initial_display_size,
-			todo_file,
-			module_handler,
-			input_state,
-			view_state,
-			search_state,
-			thread_statuses.clone(),
+		let app_data = AppData::new(
+			Arc::clone(&config),
+			State::WindowSizeError,
+			Arc::clone(&todo_file),
+			view_state.clone(),
+			input_state.clone(),
+			search_state.clone(),
 		);
+
+		let module_handler = ModuleHandler::new(
+			EventHandler::new(KeyBindings::new(&config.key_bindings)),
+			ModuleProvider::new(repository, &app_data),
+		);
+		let process = Process::new(&app_data, initial_display_size, module_handler, thread_statuses.clone());
 		let process_threads = process::Thread::new(process.clone());
 		threads.push(Box::new(process_threads));
 
 		Ok(Self {
-			_config: config,
 			process,
 			threads: Some(threads),
 			thread_statuses,
