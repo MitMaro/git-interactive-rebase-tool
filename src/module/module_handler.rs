@@ -32,27 +32,18 @@ impl<ModuleProvider: crate::module::ModuleProvider> ModuleHandler<ModuleProvider
 			.build_view_data(render_context)
 	}
 
-	pub(crate) fn handle_event(
-		&mut self,
-		state: State,
-		input_state: &crate::input::State,
-		view_state: &crate::view::State,
-	) -> Option<Results> {
+	pub(crate) fn handle_event(&mut self, state: State, event: Event) -> Option<Results> {
 		let module = self.module_provider.get_module(state);
 		let input_options = module.input_options();
-		let event = self
+		let evt = self
 			.event_handler
-			.read_event(input_state.read_event(), input_options, |event, key_bindings| {
-				module.read_event(event, key_bindings)
+			.read_event(event, input_options, |evt, key_bindings| {
+				module.read_event(evt, key_bindings)
 			});
-		(event != Event::None).then(|| {
+		(evt != Event::None).then(|| {
 			let mut results = Results::new();
-			results.event(event);
-			results.append(
-				self.module_provider
-					.get_mut_module(state)
-					.handle_event(event, view_state),
-			);
+			results.event(evt);
+			results.append(self.module_provider.get_mut_module(state).handle_event(evt));
 			results
 		})
 	}
@@ -111,7 +102,7 @@ mod tests {
 			&self.view_data
 		}
 
-		fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+		fn handle_event(&mut self, _: Event) -> Results {
 			self.trace.lock().push(String::from("Handle Events"));
 			Results::new()
 		}
@@ -124,43 +115,31 @@ mod tests {
 
 	#[test]
 	fn module_lifecycle() {
-		testers::module(
-			&["pick aaa comment"],
-			&[Event::Standard(StandardEvent::Exit)],
-			|context| {
-				let test_module = TestModule::new();
-				let mut module_handler = ModuleHandler::new(
-					context.event_handler_context.event_handler,
-					TestModuleProvider::from(test_module.clone()),
-				);
-				_ = module_handler.activate(State::List, State::Insert);
-				_ = module_handler.handle_event(
-					State::List,
-					&context.event_handler_context.state,
-					&context.view_context.state,
-				);
+		testers::module(&["pick aaa comment"], &[], None, |context| {
+			let test_module = TestModule::new();
+			let mut module_handler = ModuleHandler::new(
+				context.event_handler_context.event_handler,
+				TestModuleProvider::from(test_module.clone()),
+			);
+			_ = module_handler.activate(State::List, State::Insert);
+			_ = module_handler.handle_event(State::List, Event::Standard(StandardEvent::Yes));
 
-				_ = module_handler.build_view_data(State::List, &RenderContext::new(100, 100));
-				_ = module_handler.deactivate(State::List);
-				assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
-			},
-		);
+			_ = module_handler.build_view_data(State::List, &RenderContext::new(100, 100));
+			_ = module_handler.deactivate(State::List);
+			assert_eq!(test_module.trace(), "Activate,Handle Events,Build View Data,Deactivate");
+		});
 	}
 
 	#[test]
 	fn error() {
-		testers::module(
-			&["pick aaa comment"],
-			&[Event::Standard(StandardEvent::Exit)],
-			|context| {
-				let test_module = TestModule::new();
-				let mut module_handler = ModuleHandler::new(
-					context.event_handler_context.event_handler,
-					TestModuleProvider::from(test_module.clone()),
-				);
-				_ = module_handler.error(State::Error, &anyhow!("Test Error"));
-				assert_eq!(test_module.trace(), "Test Error");
-			},
-		);
+		testers::module(&["pick aaa comment"], &[], None, |context| {
+			let test_module = TestModule::new();
+			let mut module_handler = ModuleHandler::new(
+				context.event_handler_context.event_handler,
+				TestModuleProvider::from(test_module.clone()),
+			);
+			_ = module_handler.error(State::Error, &anyhow!("Test Error"));
+			assert_eq!(test_module.trace(), "Test Error");
+		});
 	}
 }

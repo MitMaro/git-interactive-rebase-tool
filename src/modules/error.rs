@@ -3,13 +3,14 @@ use std::sync::LazyLock;
 use captur::capture;
 
 use crate::{
+	application::AppData,
 	display::DisplayColor,
 	input::{Event, InputOptions},
 	module::{Module, State},
 	process::Results,
 	select,
 	util::handle_view_data_scroll,
-	view::{LineSegment, RenderContext, ViewData, ViewLine},
+	view::{self, LineSegment, RenderContext, ViewData, ViewLine},
 };
 
 pub(crate) static INPUT_OPTIONS: LazyLock<InputOptions> =
@@ -18,6 +19,7 @@ pub(crate) static INPUT_OPTIONS: LazyLock<InputOptions> =
 pub(crate) struct Error {
 	return_state: State,
 	view_data: ViewData,
+	view_state: view::State,
 }
 
 impl Module for Error {
@@ -34,7 +36,7 @@ impl Module for Error {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		select!(
 			default {
 				let mut results = Results::new();
@@ -43,7 +45,7 @@ impl Module for Error {
 				}
 				results
 			},
-			handle_view_data_scroll(event, view_state)
+			handle_view_data_scroll(event, &self.view_state)
 		)
 	}
 
@@ -67,13 +69,14 @@ impl Module for Error {
 }
 
 impl Error {
-	pub(crate) fn new() -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
 		Self {
 			return_state: State::List,
 			view_data: ViewData::new(|updater| {
 				updater.set_show_title(true);
 				updater.set_retain_scroll_position(false);
 			}),
+			view_state: app_data.view_state(),
 		}
 	}
 }
@@ -87,8 +90,8 @@ mod tests {
 
 	#[test]
 	fn simple_error() {
-		testers::module(&[], &[], |test_context| {
-			let mut module = Error::new();
+		testers::module(&[], &[], None, |test_context| {
+			let mut module = Error::new(&test_context.app_data());
 			_ = module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -104,8 +107,8 @@ mod tests {
 
 	#[test]
 	fn error_with_contest() {
-		testers::module(&[], &[], |test_context| {
-			let mut module = Error::new();
+		testers::module(&[], &[], None, |test_context| {
+			let mut module = Error::new(&test_context.app_data());
 			_ = module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -118,8 +121,8 @@ mod tests {
 
 	#[test]
 	fn error_with_newlines() {
-		testers::module(&[], &[], |test_context| {
-			let mut module = Error::new();
+		testers::module(&[], &[], None, |test_context| {
+			let mut module = Error::new(&test_context.app_data());
 			_ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -134,8 +137,8 @@ mod tests {
 
 	#[test]
 	fn return_state() {
-		testers::module(&[], &[Event::from('a')], |mut test_context| {
-			let mut module = Error::new();
+		testers::module(&[], &[Event::from('a')], None, |mut test_context| {
+			let mut module = Error::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			_ = module.handle_error(&anyhow!("Test Error"));
 			assert_results!(
@@ -148,8 +151,8 @@ mod tests {
 
 	#[test]
 	fn resize() {
-		testers::module(&[], &[Event::Resize(100, 100)], |mut test_context| {
-			let mut module = Error::new();
+		testers::module(&[], &[Event::Resize(100, 100)], None, |mut test_context| {
+			let mut module = Error::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			_ = module.handle_error(&anyhow!("Test Error"));
 			assert_results!(

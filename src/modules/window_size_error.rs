@@ -54,7 +54,7 @@ impl Module for WindowSizeError {
 		&INPUT_OPTIONS
 	}
 
-	fn handle_event(&mut self, event: Event, _: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		let mut results = Results::new();
 
 		if let Event::Resize(width, height) = event {
@@ -92,8 +92,9 @@ mod tests {
 		SHORT_ERROR_MESSAGE.len(),
 		MINIMUM_WINDOW_HEIGHT + 1,
 		"Window too small"
-	)]
-	#[case::width_too_small_short_message(SHORT_ERROR_MESSAGE.len() - 1, MINIMUM_WINDOW_HEIGHT + 1, "Size!")]
+    )]
+	#[case::width_too_small_short_message(SHORT_ERROR_MESSAGE.len() - 1, MINIMUM_WINDOW_HEIGHT + 1, "Size!"
+    )]
 	#[case::height_too_small_long_message(
 		MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH,
 		MINIMUM_WINDOW_HEIGHT,
@@ -103,19 +104,20 @@ mod tests {
 		MINIMUM_WINDOW_HEIGHT_ERROR_WIDTH - 1,
 		MINIMUM_WINDOW_HEIGHT,
 		"Window too small"
-	)]
+    )]
 	fn build_view_data(#[case] width: usize, #[case] height: usize, #[case] expected: &str) {
-		testers::module(&[], &[], |mut test_context| {
+		testers::module(&[], &[], None, |mut test_context| {
 			test_context.render_context.update(width as u16, height as u16);
 			let mut module = WindowSizeError::new();
 			let view_data = test_context.build_view_data(&mut module);
-			assert_rendered_output!(Body view_data, String::from(expected));
+			assert_rendered_output!(Body view_data,
+            String::from(expected));
 		});
 	}
 
 	#[test]
 	fn event_resize_window_still_small() {
-		testers::module(&[], &[Event::Resize(1, 1)], |mut test_context| {
+		testers::module(&[], &[Event::Resize(1, 1)], None, |mut test_context| {
 			let mut module = WindowSizeError::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
@@ -127,7 +129,7 @@ mod tests {
 
 	#[test]
 	fn event_resize_window_no_longer_too_small() {
-		testers::module(&[], &[Event::Resize(100, 100)], |mut test_context| {
+		testers::module(&[], &[Event::Resize(100, 100)], None, |mut test_context| {
 			let mut module = WindowSizeError::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(
@@ -140,7 +142,7 @@ mod tests {
 
 	#[test]
 	fn event_other_character() {
-		testers::module(&[], &[Event::from('a')], |mut test_context| {
+		testers::module(&[], &[Event::from('a')], None, |mut test_context| {
 			let mut module = WindowSizeError::new();
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			assert_results!(

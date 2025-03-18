@@ -1,28 +1,41 @@
+use std::sync::Arc;
+
 use captur::capture;
+use parking_lot::Mutex;
 
 use crate::{
+	application::AppData,
+	config::Config,
 	input::Event,
 	module::{Module, State},
 	process::Results,
 	test_helpers::{
 		EventHandlerTestContext,
 		ViewStateTestContext,
+		create_config,
 		with_event_handler,
 		with_todo_file,
 		with_view_state,
 	},
-	todo_file::TodoFile,
 	view::{RenderContext, ViewData},
 };
 
 pub(crate) struct ModuleTestContext {
+	app_data: AppData,
 	pub(crate) event_handler_context: EventHandlerTestContext,
 	pub(crate) render_context: RenderContext,
 	pub(crate) view_context: ViewStateTestContext,
-	todo_file: Option<TodoFile>,
 }
 
 impl ModuleTestContext {
+	pub(crate) fn app_data(&self) -> AppData {
+		self.app_data.clone()
+	}
+
+	pub(crate) fn config(&self) -> Arc<Config> {
+		self.app_data.config()
+	}
+
 	fn get_build_data<'tc>(&self, module: &'tc mut dyn Module) -> &'tc ViewData {
 		module.build_view_data(&self.render_context)
 	}
@@ -52,7 +65,7 @@ impl ModuleTestContext {
 		let event = self.read_event(module);
 		let mut results = Results::new();
 		results.event(event);
-		results.append(module.handle_event(event, &self.view_context.state));
+		results.append(module.handle_event(event));
 		results
 	}
 
@@ -67,23 +80,28 @@ impl ModuleTestContext {
 	pub(crate) fn handle_all_events(&mut self, module: &'_ mut dyn Module) -> Vec<Results> {
 		self.handle_n_events(module, self.event_handler_context.number_events)
 	}
-
-	pub(crate) fn take_todo_file(&mut self) -> TodoFile {
-		self.todo_file.take().expect("Cannot take the TodoFile more than once")
-	}
 }
 
-pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
+pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], config: Option<Config>, callback: C)
 where C: FnOnce(ModuleTestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_state(|view_context| {
 			capture!(lines);
 			with_todo_file(lines, |todo_file_context| {
 				let (_git_todo_file, todo_file) = todo_file_context.to_owned();
+				let app_data = AppData::new(
+					Arc::new(config.unwrap_or_else(create_config)),
+					State::WindowSizeError,
+					Arc::new(Mutex::new(todo_file)),
+					view_context.state.clone(),
+					event_handler_context.state.clone(),
+					crate::search::State::new(),
+				);
+
 				callback(ModuleTestContext {
+					app_data,
 					event_handler_context,
 					render_context: RenderContext::new(300, 120),
-					todo_file: Some(todo_file),
 					view_context,
 				});
 			});

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 
 use crate::{
+	application::AppData,
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	input::{Event, InputOptions, KeyBindings},
 	module::{ExitStatus, Module, State},
@@ -29,7 +30,7 @@ impl Module for ConfirmAbort {
 		Confirm::read_event(event, key_bindings)
 	}
 
-	fn handle_event(&mut self, event: Event, _: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		let confirmed = self.dialog.handle_event(event);
 		let mut results = Results::new();
 		match confirmed {
@@ -47,10 +48,15 @@ impl Module for ConfirmAbort {
 }
 
 impl ConfirmAbort {
-	pub(crate) fn new(confirm_yes: &[String], confirm_no: &[String], todo_file: Arc<Mutex<TodoFile>>) -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
+		let config = app_data.config();
 		Self {
-			dialog: Confirm::new("Are you sure you want to abort", confirm_yes, confirm_no),
-			todo_file,
+			dialog: Confirm::new(
+				"Are you sure you want to abort",
+				&config.key_bindings.confirm_yes,
+				&config.key_bindings.confirm_no,
+			),
+			todo_file: app_data.todo_file(),
 		}
 	}
 }
@@ -66,25 +72,17 @@ mod tests {
 		test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
 	};
 
-	fn create_confirm_abort(todo_file: TodoFile) -> ConfirmAbort {
-		ConfirmAbort::new(
-			&[String::from("y")],
-			&[String::from("n")],
-			Arc::new(Mutex::new(todo_file)),
-		)
-	}
-
 	#[test]
 	fn build_view_data() {
-		testers::module(&["pick aaa comment"], &[], |mut test_context| {
-			let mut module = create_confirm_abort(test_context.take_todo_file());
+		testers::module(&["pick aaa comment"], &[], None, |test_context| {
+			let mut module = ConfirmAbort::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::INCLUDE_STYLE,
-				view_data,
-				"{TITLE}",
-				"{BODY}",
-				"{Normal}Are you sure you want to abort (y/n)? "
+			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::INCLUDE_STYLE,
+			view_data,
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}Are you sure you want to abort (y/n)? "
 			);
 		});
 	}
@@ -93,8 +91,9 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::Yes)],
+			None,
 			|mut test_context| {
-				let mut module = create_confirm_abort(test_context.take_todo_file());
+				let mut module = ConfirmAbort::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::from(StandardEvent::Yes)),
@@ -110,8 +109,9 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::No)],
+			None,
 			|mut test_context| {
-				let mut module = create_confirm_abort(test_context.take_todo_file());
+				let mut module = ConfirmAbort::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::from(StandardEvent::No)),
@@ -126,8 +126,9 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
+			None,
 			|mut test_context| {
-				let mut module = create_confirm_abort(test_context.take_todo_file());
+				let mut module = ConfirmAbort::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::from(KeyCode::Null))

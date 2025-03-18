@@ -26,7 +26,7 @@ enum Action<'action> {
 }
 
 struct TestContext {
-	pub(crate) list: List,
+	pub(crate) module: List,
 	module_test_context: ModuleTestContext,
 	results: Vec<Results>,
 	key_bindings: KeyBindings,
@@ -34,24 +34,24 @@ struct TestContext {
 
 impl TestContext {
 	fn build_view_data(&mut self) -> &ViewData {
-		self.module_test_context.build_view_data(&mut self.list)
+		self.module_test_context.build_view_data(&mut self.module)
 	}
 
 	fn handle_event(&mut self, event: Event) {
-		self.results.push(self.list.handle_event(
-			self.list.read_event(event, &self.key_bindings),
-			&self.module_test_context.view_context.state,
-		));
+		self.results.push(
+			self.module
+				.handle_event(self.module.read_event(event, &self.key_bindings)),
+		);
 	}
 }
 
 fn search_test<C>(actions: &[Action<'_>], lines: &[&str], callback: C)
 where C: FnOnce(TestContext) {
-	testers::module(lines, &[], |mut context| {
-		let list = create_list(&create_config(), context.take_todo_file());
+	testers::module(lines, &[], None, |test_context| {
+		let module = List::new(&test_context.app_data());
 		let mut search_context = TestContext {
-			list,
-			module_test_context: context,
+			module,
+			module_test_context: test_context,
 			results: vec![],
 			key_bindings: create_test_keybindings(),
 		};
@@ -68,9 +68,9 @@ where C: FnOnce(TestContext) {
 					}
 				},
 				Action::Search => {
-					if let Some(term) = search_context.list.search_bar.search_value() {
+					if let Some(term) = search_context.module.search_bar.search_value() {
 						_ = search_context
-							.list
+							.module
 							.search
 							.search(Interrupter::new(Duration::from_secs(5)), term);
 						search_context.handle_event(Event::from(StandardEvent::SearchUpdate));
@@ -278,17 +278,17 @@ fn render_no_results() {
 #[test]
 fn search_indicator_refresh_on_update() {
 	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |mut test_context| {
-		let cur_indicator = test_context.list.spin_indicator.indicator();
+		let cur_indicator = test_context.module.spin_indicator.indicator();
 		sleep(Duration::from_millis(200)); // indicator only changes every 100 ms
-		test_context.list.search_update();
-		assert_ne!(test_context.list.spin_indicator.indicator(), cur_indicator);
+		test_context.module.search_update();
+		assert_ne!(test_context.module.spin_indicator.indicator(), cur_indicator);
 	});
 }
 
 #[test]
 fn start_edit() {
 	search_test(&[Action::Start("")], &["pick aaaaaaaa comment"], |test_context| {
-		assert!(test_context.list.search_bar.is_active());
+		assert!(test_context.module.search_bar.is_active());
 	});
 }
 
@@ -325,7 +325,7 @@ fn start_search_with_empty_term() {
 		&["pick aaaaaaaa comment"],
 		|mut test_context| {
 			assert_results!(test_context.results.pop().unwrap(), AnyArtifact, Artifact::SearchCancel);
-			assert!(!test_context.list.search_bar.is_active());
+			assert!(!test_context.module.search_bar.is_active());
 		},
 	);
 }
@@ -341,7 +341,10 @@ fn start_search_with_term() {
 				AnyArtifact,
 				Artifact::SearchTerm(String::from("aaa"))
 			);
-			assert_some_eq!(test_context.list.search.current_match(), LineMatch::new(0, true, false));
+			assert_some_eq!(
+				test_context.module.search.current_match(),
+				LineMatch::new(0, true, false)
+			);
 		},
 	);
 }
@@ -361,7 +364,10 @@ fn next() {
 				AnyArtifact,
 				Artifact::SearchTerm(String::from("aaa"))
 			);
-			assert_some_eq!(test_context.list.search.current_match(), LineMatch::new(1, true, false));
+			assert_some_eq!(
+				test_context.module.search.current_match(),
+				LineMatch::new(1, true, false)
+			);
 		},
 	);
 }
@@ -381,7 +387,10 @@ fn previous() {
 				AnyArtifact,
 				Artifact::SearchTerm(String::from("aaa"))
 			);
-			assert_some_eq!(test_context.list.search.current_match(), LineMatch::new(2, true, false));
+			assert_some_eq!(
+				test_context.module.search.current_match(),
+				LineMatch::new(2, true, false)
+			);
 		},
 	);
 }

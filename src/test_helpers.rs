@@ -36,7 +36,7 @@ pub(crate) use self::{
 	with_event_handler::{EventHandlerTestContext, with_event_handler},
 	with_git_config::with_git_config,
 	with_git_directory::with_git_directory,
-	with_search::{SearchTestContext, with_search},
+	with_search::with_search,
 	with_temp_bare_repository::with_temp_bare_repository,
 	with_temp_repository::with_temp_repository,
 	with_todo_file::with_todo_file,

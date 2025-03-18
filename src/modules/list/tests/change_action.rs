@@ -6,8 +6,9 @@ fn normal_mode_action_change_to_drop() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionDrop)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(Body view_data, action_line!(Selected Drop "aaa", "c1"));
@@ -32,8 +33,9 @@ fn visual_mode_action_change_to_drop() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionDrop),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -53,8 +55,9 @@ fn normal_mode_action_change_to_edit() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionEdit)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -82,8 +85,9 @@ fn visual_mode_action_change_to_edit() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionEdit),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -103,8 +107,9 @@ fn normal_mode_action_change_to_fixup() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionFixup)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -132,8 +137,9 @@ fn visual_mode_action_change_to_fixup() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionFixup),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -153,8 +159,9 @@ fn normal_mode_action_change_to_pick() {
 	testers::module(
 		&["drop aaa c1"],
 		&[Event::from(StandardEvent::ActionPick)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -182,8 +189,9 @@ fn visual_mode_action_change_to_pick() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionPick),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -203,8 +211,9 @@ fn normal_mode_action_change_to_reword() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionReword)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -232,8 +241,9 @@ fn visual_mode_action_change_to_reword() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionReword),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -253,8 +263,9 @@ fn normal_mode_action_change_to_squash() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionSquash)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -281,8 +292,9 @@ fn visual_mode_action_change_to_squash() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionSquash),
 		],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(

@@ -114,14 +114,8 @@ mod tests {
 	fn render() {
 		testers::process(
 			create_default_test_module_handler(),
-			|testers::ProcessTestContext {
-			     process,
-			     event_handler_context,
-			     ..
-			 }| {
-				event_handler_context
-					.state
-					.enqueue_event(Event::from(StandardEvent::Exit));
+			|testers::ProcessTestContext { process, app_data, .. }| {
+				app_data.input_state().enqueue_event(Event::from(StandardEvent::Exit));
 				let thread = Thread::new(process);
 				let tester = testers::Threadable::new();
 				tester.start_threadable(&thread, THEAD_NAME);
@@ -135,7 +129,7 @@ mod tests {
 		struct TestModule(Arc<AtomicBool>);
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+			fn handle_event(&mut self, _: Event) -> Results {
 				self.0.store(true, Ordering::Release);
 				Results::from(ExitStatus::Good)
 			}
@@ -162,19 +156,16 @@ mod tests {
 		struct TestModule;
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+			fn handle_event(&mut self, _: Event) -> Results {
 				Results::from(ExitStatus::Good)
 			}
 		}
 
 		testers::process(
 			create_test_module_handler(TestModule {}),
-			|testers::ProcessTestContext {
-			     process,
-			     todo_file_path,
-			     ..
-			 }| {
-				let todo_file = File::open(todo_file_path.as_path()).unwrap();
+			|testers::ProcessTestContext { process, app_data, .. }| {
+				let todo_file = app_data.todo_file();
+				let todo_file = File::open(todo_file.lock().get_filepath()).unwrap();
 				let mut permissions = todo_file.metadata().unwrap().permissions();
 				permissions.set_readonly(true);
 				todo_file.set_permissions(permissions).unwrap();
@@ -193,7 +184,7 @@ mod tests {
 		struct TestModule;
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+			fn handle_event(&mut self, _: Event) -> Results {
 				Results::from(ExitStatus::Kill)
 			}
 		}

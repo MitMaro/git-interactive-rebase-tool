@@ -57,7 +57,7 @@ impl Module for TestModule {
 		event
 	}
 
-	fn handle_event(&mut self, event: Event, _view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		self.trace.lock().push(format!("handle_event(event = {event:?})"));
 		Results::new()
 	}
@@ -586,15 +586,11 @@ fn handle_search_cancel() {
 	let module = TestModule::new();
 	testers::process(
 		create_test_module_handler(module),
-		|testers::ProcessTestContext {
-		     process,
-		     search_context,
-		     ..
-		 }| {
+		|testers::ProcessTestContext { process, app_data, .. }| {
 			let mut results = Results::new();
 			results.search_cancel();
 			process.handle_results(results);
-			assert!(matches!(search_context.state.receive_update(), Action::Cancel));
+			assert!(matches!(app_data.search_state().receive_update(), Action::Cancel));
 		},
 	);
 }
@@ -604,16 +600,12 @@ fn handle_search_term() {
 	let module = TestModule::new();
 	testers::process(
 		create_test_module_handler(module),
-		|testers::ProcessTestContext {
-		     process,
-		     search_context,
-		     ..
-		 }| {
+		|testers::ProcessTestContext { process, app_data, .. }| {
 			let mut results = Results::new();
 			let search_term = String::from("foo");
 			results.search_term(search_term.as_str());
 			process.handle_results(results);
-			assert!(matches!(search_context.state.receive_update(), Action::Start(_)));
+			assert!(matches!(app_data.search_state().receive_update(), Action::Start(_)));
 		},
 	);
 }
@@ -623,16 +615,12 @@ fn handle_searchable() {
 	let module = TestModule::new();
 	testers::process(
 		create_test_module_handler(module),
-		|testers::ProcessTestContext {
-		     process,
-		     search_context,
-		     ..
-		 }| {
+		|testers::ProcessTestContext { process, app_data, .. }| {
 			let searchable: Box<dyn Searchable> = Box::new(mocks::Searchable {});
 			let results = Results::from(searchable);
 			process.handle_results(results);
 			assert!(matches!(
-				search_context.state.receive_update(),
+				app_data.search_state().receive_update(),
 				Action::SetSearchable(_)
 			));
 		},

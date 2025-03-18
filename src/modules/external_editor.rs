@@ -12,12 +12,13 @@ use parking_lot::Mutex;
 
 use self::{action::Action, argument_tokenizer::tokenize, external_editor_state::ExternalEditorState};
 use crate::{
+	application::AppData,
 	components::choice::{Choice, INPUT_OPTIONS as CHOICE_INPUT_OPTIONS},
 	input::{Event, InputOptions, StandardEvent},
 	module::{ExitStatus, Module, State},
 	process::Results,
 	todo_file::{Line, TodoFile},
-	view::{RenderContext, ViewData, ViewLine, ViewLines},
+	view::{self, RenderContext, ViewData, ViewLine, ViewLines},
 };
 
 static INPUT_OPTIONS: LazyLock<InputOptions> = LazyLock::new(|| InputOptions::RESIZE);
@@ -31,6 +32,7 @@ pub(crate) struct ExternalEditor {
 	state: ExternalEditorState,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_data: ViewData,
+	view_state: view::State,
 }
 
 impl Module for ExternalEditor {
@@ -89,7 +91,7 @@ impl Module for ExternalEditor {
 		}
 	}
 
-	fn handle_event(&mut self, event: Event, view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		let mut results = Results::new();
 		match self.state {
 			ExternalEditorState::Active => {
@@ -126,7 +128,7 @@ impl Module for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Empty => {
-				let choice = self.empty_choice.handle_event(event, view_state);
+				let choice = self.empty_choice.handle_event(event, &self.view_state);
 				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => results.exit_status(ExitStatus::Good),
@@ -139,7 +141,7 @@ impl Module for ExternalEditor {
 				}
 			},
 			ExternalEditorState::Error(_) => {
-				let choice = self.error_choice.handle_event(event, view_state);
+				let choice = self.error_choice.handle_event(event, &self.view_state);
 				if let Some(action) = choice {
 					match *action {
 						Action::AbortRebase => {
@@ -167,7 +169,7 @@ impl Module for ExternalEditor {
 }
 
 impl ExternalEditor {
-	pub(crate) fn new(editor: &str, todo_file: Arc<Mutex<TodoFile>>) -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
 		let view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 		});
@@ -199,14 +201,15 @@ impl ExternalEditor {
 		]);
 
 		Self {
-			editor: String::from(editor),
+			editor: String::from(app_data.config().git.editor.as_str()),
 			empty_choice,
 			error_choice,
 			external_command: (String::new(), vec![]),
 			lines: vec![],
 			state: ExternalEditorState::Active,
-			todo_file,
+			todo_file: app_data.todo_file(),
 			view_data,
+			view_state: app_data.view_state(),
 		}
 	}
 

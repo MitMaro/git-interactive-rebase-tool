@@ -6,8 +6,9 @@ fn when_hash_available() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ShowCommit)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::ShowCommit)),
@@ -19,13 +20,18 @@ fn when_hash_available() {
 
 #[test]
 fn when_no_selected_line() {
-	testers::module(&[], &[Event::from(StandardEvent::ShowCommit)], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
-		assert_results!(
-			test_context.handle_event(&mut module),
-			Artifact::Event(Event::from(StandardEvent::ShowCommit))
-		);
-	});
+	testers::module(
+		&[],
+		&[Event::from(StandardEvent::ShowCommit)],
+		None,
+		|mut test_context| {
+			let mut module = List::new(&test_context.app_data());
+			assert_results!(
+				test_context.handle_event(&mut module),
+				Artifact::Event(Event::from(StandardEvent::ShowCommit))
+			);
+		},
+	);
 }
 
 #[test]
@@ -33,8 +39,9 @@ fn do_not_when_hash_not_available() {
 	testers::module(
 		&["exec echo foo"],
 		&[Event::from(StandardEvent::ShowCommit)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			assert_results!(
 				test_context.handle_event(&mut module),
 				Artifact::Event(Event::from(StandardEvent::ShowCommit))
