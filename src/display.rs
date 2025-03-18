@@ -34,10 +34,12 @@ use crate::config::Theme;
 #[derive(Debug)]
 pub(crate) struct Display<T: Tui> {
 	action_break: (Colors, Colors),
+	action_cut: (Colors, Colors),
 	action_drop: (Colors, Colors),
 	action_edit: (Colors, Colors),
 	action_exec: (Colors, Colors),
 	action_fixup: (Colors, Colors),
+	action_index: (Colors, Colors),
 	action_label: (Colors, Colors),
 	action_merge: (Colors, Colors),
 	action_pick: (Colors, Colors),
@@ -77,6 +79,12 @@ impl<T: Tui> Display<T> {
 			theme.color_background,
 			theme.color_selected_background,
 		);
+		let action_cut = register_selectable_color_pairs(
+			color_mode,
+			theme.color_action_cut,
+			theme.color_background,
+			theme.color_selected_background,
+		);
 		let action_drop = register_selectable_color_pairs(
 			color_mode,
 			theme.color_action_drop,
@@ -98,6 +106,12 @@ impl<T: Tui> Display<T> {
 		let action_fixup = register_selectable_color_pairs(
 			color_mode,
 			theme.color_action_fixup,
+			theme.color_background,
+			theme.color_selected_background,
+		);
+		let action_index = register_selectable_color_pairs(
+			color_mode,
+			theme.color_action_index,
 			theme.color_background,
 			theme.color_selected_background,
 		);
@@ -176,10 +190,12 @@ impl<T: Tui> Display<T> {
 
 		Self {
 			action_break,
+			action_cut,
 			action_drop,
 			action_edit,
 			action_exec,
 			action_fixup,
+			action_index,
 			action_label,
 			action_merge,
 			action_pick,
@@ -236,10 +252,12 @@ impl<T: Tui> Display<T> {
 			if selected {
 				match color {
 					DisplayColor::ActionBreak => self.action_break.1,
+					DisplayColor::ActionCut => self.action_cut.1,
 					DisplayColor::ActionDrop => self.action_drop.1,
 					DisplayColor::ActionEdit => self.action_edit.1,
 					DisplayColor::ActionExec => self.action_exec.1,
 					DisplayColor::ActionFixup => self.action_fixup.1,
+					DisplayColor::ActionIndex => self.action_index.1,
 					DisplayColor::ActionPick => self.action_pick.1,
 					DisplayColor::ActionReword => self.action_reword.1,
 					DisplayColor::ActionSquash => self.action_squash.1,
@@ -259,10 +277,12 @@ impl<T: Tui> Display<T> {
 			else {
 				match color {
 					DisplayColor::ActionBreak => self.action_break.0,
+					DisplayColor::ActionCut => self.action_cut.0,
 					DisplayColor::ActionDrop => self.action_drop.0,
 					DisplayColor::ActionEdit => self.action_edit.0,
 					DisplayColor::ActionExec => self.action_exec.0,
 					DisplayColor::ActionFixup => self.action_fixup.0,
+					DisplayColor::ActionIndex => self.action_index.0,
 					DisplayColor::ActionPick => self.action_pick.0,
 					DisplayColor::ActionReword => self.action_reword.0,
 					DisplayColor::ActionSquash => self.action_squash.0,
@@ -425,6 +445,13 @@ mod tests {
 		DisplayColor::ActionFixup,
 		true,
 		CrosstermColor::Magenta,
+		CrosstermColor::AnsiValue(237)
+	)]
+	#[case::action_index(DisplayColor::ActionIndex, false, CrosstermColor::DarkGreen, CrosstermColor::Reset)]
+	#[case::action_index_selected(
+		DisplayColor::ActionIndex,
+		true,
+		CrosstermColor::DarkGreen,
 		CrosstermColor::AnsiValue(237)
 	)]
 	#[case::action_pick(DisplayColor::ActionPick, false, CrosstermColor::Green, CrosstermColor::Reset)]
