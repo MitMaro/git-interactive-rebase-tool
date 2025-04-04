@@ -228,9 +228,7 @@ mod tests {
 	#[test]
 	fn try_from_success() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
-			let repo_lock = repo.lock();
-			let reference = repo_lock.find_reference("refs/heads/main").unwrap();
+			let reference = repository.repository().find_reference("refs/heads/main").unwrap();
 			let commit = Commit::try_from(&reference).unwrap();
 
 			assert_eq!(commit.reference.unwrap().shortname(), "main");
@@ -241,11 +239,10 @@ mod tests {
 	fn try_from_error() {
 		with_temp_repository(|repository| {
 			let repo = repository.repository();
-			let repo_lock = repo.lock();
-			let blob = repo_lock.blob(b"foo").unwrap();
-			_ = repo_lock.reference("refs/blob", blob, false, "blob").unwrap();
+			let blob = repo.blob(b"foo").unwrap();
+			_ = repo.reference("refs/blob", blob, false, "blob").unwrap();
 
-			let reference = repo_lock.find_reference("refs/blob").unwrap();
+			let reference = repo.find_reference("refs/blob").unwrap();
 			assert_err_eq!(Commit::try_from(&reference), GitError::CommitLoad {
 				cause: git2::Error::new(
 					git2::ErrorCode::InvalidSpec,

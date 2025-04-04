@@ -1,10 +1,7 @@
-use std::{
-	path::PathBuf,
-	sync::{Arc, LazyLock},
-};
+use std::{path::PathBuf, sync::LazyLock};
 
 use git2::{DiffFindOptions, DiffOptions, Oid, Repository};
-use parking_lot::{Mutex, MutexGuard};
+use parking_lot::Mutex;
 
 use crate::git::{
 	Commit,
@@ -20,31 +17,29 @@ use crate::git::{
 
 static UNKNOWN_PATH: LazyLock<PathBuf> = LazyLock::new(|| PathBuf::from("unknown"));
 
-pub(crate) struct CommitDiffLoader<'options> {
+pub(crate) struct CommitDiffLoader<'options, 'repo> {
 	config: &'options CommitDiffLoaderOptions,
-	repo: Arc<Mutex<Repository>>,
+	repository: &'repo Repository,
 }
 
-impl<'options> CommitDiffLoader<'options> {
-	pub(crate) const fn new(repo: Arc<Mutex<Repository>>, config: &'options CommitDiffLoaderOptions) -> Self {
-		Self { config, repo }
+impl<'options, 'repo> CommitDiffLoader<'options, 'repo> {
+	pub(crate) const fn new(repository: &'repo Repository, config: &'options CommitDiffLoaderOptions) -> Self {
+		Self { config, repository }
 	}
 
 	pub(crate) fn load_from_hash(&self, oid: Oid) -> Result<CommitDiff, git2::Error> {
-		let repo = self.repo.lock();
-		let commit = repo.find_commit(oid)?;
+		let commit = self.repository.find_commit(oid)?;
 		// only the first parent matter for the diff, the second parent, if it exists, was only used
 		// for conflict resolution
 		let parent = commit.parents().next();
 
-		self.load_diff(&repo, parent, &commit)
+		self.load_diff(parent, &commit)
 	}
 
 	#[expect(clippy::as_conversions, reason = "Mostly safe difference between APIs.")]
 	#[expect(clippy::unwrap_in_result, reason = "Unwrap usage failure considered a bug.")]
 	fn load_diff(
 		&self,
-		repo: &MutexGuard<'_, Repository>,
 		parent: Option<git2::Commit<'_>>,
 		commit: &git2::Commit<'_>,
 	) -> Result<CommitDiff, git2::Error> {
@@ -75,10 +70,12 @@ impl<'options> CommitDiffLoader<'options> {
 			.copies_from_unmodified(self.config.copies);
 
 		let mut diff = if let Some(p) = parent {
-			repo.diff_tree_to_tree(Some(&p.tree()?), Some(&commit.tree()?), Some(&mut diff_options))?
+			self.repository
+				.diff_tree_to_tree(Some(&p.tree()?), Some(&commit.tree()?), Some(&mut diff_options))?
 		}
 		else {
-			repo.diff_tree_to_tree(None, Some(&commit.tree()?), Some(&mut diff_options))?
+			self.repository
+				.diff_tree_to_tree(None, Some(&commit.tree()?), Some(&mut diff_options))?
 		};
 
 		diff.find_similar(Some(&mut diff_find_options))?;

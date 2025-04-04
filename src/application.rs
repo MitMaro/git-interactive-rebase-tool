@@ -23,7 +23,6 @@ pub(crate) struct Application<ModuleProvider>
 where ModuleProvider: module::ModuleProvider + Send + 'static
 {
 	_config: Config,
-	_repository: Repository,
 	process: Process<ModuleProvider>,
 	threads: Option<Vec<Box<dyn Threadable>>>,
 	thread_statuses: ThreadStatuses,
@@ -44,7 +43,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 		let module_handler = ModuleHandler::new(
 			EventHandler::new(KeyBindings::new(&config.key_bindings)),
-			ModuleProvider::new(&config, repository.clone(), &todo_file),
+			ModuleProvider::new(&config, repository, &todo_file),
 		);
 
 		let display = Display::new(tui, &config.theme);
@@ -90,7 +89,6 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 		Ok(Self {
 			_config: config,
-			_repository: repository,
 			process,
 			threads: Some(threads),
 			thread_statuses,
