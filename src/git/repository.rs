@@ -1,16 +1,10 @@
-use std::{
-	fmt::{Debug, Formatter},
-	sync::Arc,
-};
-
-use parking_lot::Mutex;
+use std::fmt::{Debug, Formatter};
 
 use crate::git::{CommitDiff, CommitDiffLoader, CommitDiffLoaderOptions, Config, GitError, RepositoryLoadKind};
 
 /// A light cloneable, simple wrapper around the `git2::Repository` struct
-#[derive(Clone)]
 pub(crate) struct Repository {
-	repository: Arc<Mutex<git2::Repository>>,
+	repository: git2::Repository,
 }
 
 impl Repository {
@@ -27,9 +21,7 @@ impl Repository {
 				cause: e,
 			}
 		})?;
-		Ok(Self {
-			repository: Arc::new(Mutex::new(repository)),
-		})
+		Ok(Self { repository })
 	}
 
 	/// Load the git configuration for the repository.
@@ -37,10 +29,7 @@ impl Repository {
 	/// # Errors
 	/// Will result in an error if the configuration is invalid.
 	pub(crate) fn load_config(&self) -> Result<Config, GitError> {
-		self.repository
-			.lock()
-			.config()
-			.map_err(|e| GitError::ConfigLoad { cause: e })
+		self.repository.config().map_err(|e| GitError::ConfigLoad { cause: e })
 	}
 
 	/// Load a diff for a commit hash
@@ -54,12 +43,10 @@ impl Repository {
 	) -> Result<CommitDiff, GitError> {
 		let oid = self
 			.repository
-			.lock()
 			.revparse_single(hash)
 			.map_err(|e| GitError::CommitLoad { cause: e })?
 			.id();
-		let diff_loader_repository = Arc::clone(&self.repository);
-		let loader = CommitDiffLoader::new(diff_loader_repository, config);
+		let loader = CommitDiffLoader::new(&self.repository, config);
 
 		loader
 			.load_from_hash(oid)
@@ -69,29 +56,23 @@ impl Repository {
 
 impl From<git2::Repository> for Repository {
 	fn from(repository: git2::Repository) -> Self {
-		Self {
-			repository: Arc::new(Mutex::new(repository)),
-		}
+		Self { repository }
 	}
 }
 
 impl Debug for Repository {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
 		f.debug_struct("Repository")
-			.field("[path]", &self.repository.lock().path())
+			.field("[path]", &self.repository.path())
 			.finish()
 	}
 }
 
 #[cfg(test)]
 mod tests {
-	use std::{
-		path::{Path, PathBuf},
-		sync::Arc,
-	};
+	use std::path::{Path, PathBuf};
 
 	use git2::{Oid, Signature};
-	use parking_lot::Mutex;
 
 	use crate::git::{Commit, GitError, Reference, Repository, RepositoryLoadKind};
 
@@ -107,9 +88,7 @@ mod tests {
 					cause: e,
 				}
 			})?;
-			Ok(Self {
-				repository: Arc::new(Mutex::new(repository)),
-			})
+			Ok(Self { repository })
 		}
 
 		/// Find a reference by the reference name.
@@ -117,8 +96,8 @@ mod tests {
 		/// # Errors
 		/// Will result in an error if the reference cannot be found.
 		pub(crate) fn find_reference(&self, reference: &str) -> Result<Reference, GitError> {
-			let repo = self.repository.lock();
-			let git2_reference = repo
+			let git2_reference = self
+				.repository
 				.find_reference(reference)
 				.map_err(|e| GitError::ReferenceNotFound { cause: e })?;
 			Ok(Reference::from(&git2_reference))
@@ -129,39 +108,35 @@ mod tests {
 		/// # Errors
 		/// Will result in an error if the reference cannot be found or is not a commit.
 		pub(crate) fn find_commit(&self, reference: &str) -> Result<Commit, GitError> {
-			let repo = self.repository.lock();
-			let git2_reference = repo
+			let reference = self
+				.repository
 				.find_reference(reference)
 				.map_err(|e| GitError::ReferenceNotFound { cause: e })?;
-			Commit::try_from(&git2_reference)
+			Commit::try_from(&reference)
 		}
 
 		pub(crate) fn repo_path(&self) -> PathBuf {
-			self.repository.lock().path().to_path_buf()
+			self.repository.path().to_path_buf()
 		}
 
 		pub(crate) fn head_id(&self, head_name: &str) -> Result<Oid, git2::Error> {
-			let repo = self.repository.lock();
 			let ref_name = format!("refs/heads/{head_name}");
-			let revision = repo.revparse_single(ref_name.as_str())?;
+			let revision = self.repository.revparse_single(ref_name.as_str())?;
 			Ok(revision.id())
 		}
 
 		pub(crate) fn commit_id_from_ref(&self, reference: &str) -> Result<Oid, git2::Error> {
-			let repo = self.repository.lock();
-			let commit = repo.find_reference(reference)?.peel_to_commit()?;
+			let commit = self.repository.find_reference(reference)?.peel_to_commit()?;
 			Ok(commit.id())
 		}
 
 		pub(crate) fn add_path_to_index(&self, path: &Path) -> Result<(), git2::Error> {
-			let repo = self.repository.lock();
-			let mut index = repo.index()?;
+			let mut index = self.repository.index()?;
 			index.add_path(path)
 		}
 
 		pub(crate) fn remove_path_from_index(&self, path: &Path) -> Result<(), git2::Error> {
-			let repo = self.repository.lock();
-			let mut index = repo.index()?;
+			let mut index = self.repository.index()?;
 			index.remove_path(path)
 		}
 
@@ -172,15 +147,16 @@ mod tests {
 			committer: &Signature<'_>,
 			message: &str,
 		) -> Result<(), git2::Error> {
-			let repo = self.repository.lock();
-			let tree = repo.find_tree(repo.index()?.write_tree()?)?;
-			let head = repo.find_reference(reference)?.peel_to_commit()?;
-			_ = repo.commit(Some("HEAD"), author, committer, message, &tree, &[&head])?;
+			let tree = self.repository.find_tree(self.repository.index()?.write_tree()?)?;
+			let head = self.repository.find_reference(reference)?.peel_to_commit()?;
+			_ = self
+				.repository
+				.commit(Some("HEAD"), author, committer, message, &tree, &[&head])?;
 			Ok(())
 		}
 
-		pub(crate) fn repository(&self) -> Arc<Mutex<git2::Repository>> {
-			Arc::clone(&self.repository)
+		pub(crate) fn repository(&self) -> &git2::Repository {
+			&self.repository
 		}
 	}
 }
@@ -267,10 +243,11 @@ mod unix_tests {
 	fn load_commit_diff_with_non_commit() {
 		with_temp_repository(|repository| {
 			let blob_ref = {
-				let git2_repository = repository.repository();
-				let git2_lock = git2_repository.lock();
-				let blob = git2_lock.blob(b"foo").unwrap();
-				_ = git2_lock.reference("refs/blob", blob, false, "blob").unwrap();
+				let blob = repository.repository().blob(b"foo").unwrap();
+				_ = repository
+					.repository()
+					.reference("refs/blob", blob, false, "blob")
+					.unwrap();
 				blob.to_string()
 			};
 
