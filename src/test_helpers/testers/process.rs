@@ -48,7 +48,7 @@ pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static
 						event_handler_context,
 						process: Process::new(
 							&AppData::new(
-								Arc::new(create_config()),
+								create_config(),
 								State::WindowSizeError,
 								Arc::new(Mutex::new(todo_file)),
 								view_state,

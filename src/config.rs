@@ -8,6 +8,7 @@
 //! these utilities are not tested, and often are optimized for developer experience than
 //! performance should only be used in test code.
 mod color;
+mod config_loader;
 mod diff_ignore_whitespace_setting;
 mod diff_show_whitespace_setting;
 mod errors;
@@ -19,18 +20,16 @@ mod utils;
 use self::utils::{get_bool, get_diff_ignore_whitespace, get_diff_show_whitespace, get_string, get_unsigned_integer};
 pub(crate) use self::{
 	color::Color,
+	config_loader::ConfigLoader,
 	diff_ignore_whitespace_setting::DiffIgnoreWhitespaceSetting,
 	diff_show_whitespace_setting::DiffShowWhitespaceSetting,
 	git_config::GitConfig,
 	key_bindings::KeyBindings,
 	theme::Theme,
 };
-use crate::{
-	config::{
-		errors::{ConfigError, ConfigErrorCause, InvalidColorError},
-		utils::get_optional_string,
-	},
-	git::Repository,
+use crate::config::{
+	errors::{ConfigError, ConfigErrorCause, InvalidColorError},
+	utils::get_optional_string,
 };
 
 const DEFAULT_SPACE_SYMBOL: &str = "\u{b7}"; // ·
@@ -95,7 +94,7 @@ impl Config {
 	}
 }
 
-impl TryFrom<&Repository> for Config {
+impl TryFrom<&ConfigLoader> for Config {
 	type Error = ConfigError;
 
 	/// Creates a new Config instance loading the Git Config using [`crate::git::Repository`].
@@ -103,8 +102,8 @@ impl TryFrom<&Repository> for Config {
 	/// # Errors
 	///
 	/// Will return an `Err` if there is a problem loading the configuration.
-	fn try_from(repo: &Repository) -> Result<Self, Self::Error> {
-		let config = repo
+	fn try_from(config_loader: &ConfigLoader) -> Result<Self, Self::Error> {
+		let config = config_loader
 			.load_config()
 			.map_err(|e| ConfigError::new_read_error("", ConfigErrorCause::GitError(e)))?;
 		Self::new_with_config(Some(&config))
@@ -130,9 +129,10 @@ mod tests {
 	use crate::test_helpers::{invalid_utf, with_git_config, with_temp_bare_repository};
 
 	#[test]
-	fn try_from_repository() {
+	fn try_from_config_loader() {
 		with_temp_bare_repository(|repository| {
-			assert_ok!(Config::try_from(&repository));
+			let loader = ConfigLoader::from(repository);
+			assert_ok!(Config::try_from(&loader));
 		});
 	}
 

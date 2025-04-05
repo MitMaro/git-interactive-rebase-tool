@@ -310,7 +310,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_commit_no_parents() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
 			assert_eq!(diff.number_files_changed(), 0);
 			assert_eq!(diff.number_insertions(), 0);
@@ -320,7 +321,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_added_file() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line1"]);
 			create_commit(&repo);
 			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
@@ -333,7 +335,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_removed_file() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line1"]);
 			create_commit(&repo);
 			remove_path(&repo, "a");
@@ -354,7 +357,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_modified_file() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line1"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["line2"]);
@@ -376,7 +380,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_with_context() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3-m", "line4", "line5"]);
@@ -399,7 +404,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_ignore_white_space_change() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &[" line0", "line1"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["  line0", " line1-m"]);
@@ -418,7 +424,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_ignore_white_space() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0", "line1"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["  line0", " line1-m"]);
@@ -437,7 +444,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_copies() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "b", &["line0"]);
@@ -452,7 +460,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_copies_modified_source() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["line0", "a"]);
@@ -476,7 +485,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_interhunk_context() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["line0", "line1-m", "line2", "line3", "line4-m", "line5"]);
@@ -499,7 +509,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_rename_source_not_modified() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0"]);
 			create_commit(&repo);
 			remove_path(&repo, "a");
@@ -516,12 +527,13 @@ mod tests {
 	#[test]
 	fn load_from_hash_rename_source_modified() {
 		// this test can be confusing to follow, here is how it is created:
-		// - starting with am existing tracked file "a"
+		// - starting with an existing tracked file "a"
 		// - move "a" and call it "b"
 		// - create a new file "a" with different contents
 		// this creates a situation where git detects the rename from the original unmodified
 		// version of "a" before a new file called "a" was created
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			write_normal_file(&repo, "a", &["line0"]);
 			create_commit(&repo);
 			write_normal_file(&repo, "a", &["other0"]);
@@ -546,8 +558,10 @@ mod tests {
 	#[cfg(unix)]
 	#[test]
 	fn load_from_hash_file_mode_executable() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
 			use std::os::unix::fs::PermissionsExt as _;
+
+			let repo = crate::git::Repository::from(repository);
 
 			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
@@ -570,7 +584,8 @@ mod tests {
 	#[cfg(unix)]
 	#[test]
 	fn load_from_hash_type_changed() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			let root = repo.repo_path().parent().unwrap().to_path_buf();
 
 			write_normal_file(&repo, "a", &["line0"]);
@@ -591,7 +606,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_binary_added_file() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			// treat all files as binary
 			write_normal_file(&repo, ".gitattributes", &["a binary"]);
 			create_commit(&repo);
@@ -607,7 +623,8 @@ mod tests {
 
 	#[test]
 	fn load_from_hash_binary_modified_file() {
-		with_temp_repository(|repo| {
+		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			// treat all files as binary
 			write_normal_file(&repo, ".gitattributes", &["a binary"]);
 			write_normal_file(&repo, "a", &["line1"]);

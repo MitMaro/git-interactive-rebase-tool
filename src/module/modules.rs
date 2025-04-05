@@ -78,14 +78,14 @@ mod tests {
 				let (_todo_file_path, todo_file) = todo_file_context.to_owned();
 				let config = create_config();
 				let app_data = AppData::new(
-					Arc::new(config),
+					config,
 					State::WindowSizeError,
 					Arc::new(Mutex::new(todo_file)),
 					view::State::new(),
 					input::State::new(),
 					search::State::new(),
 				);
-				let modules = Modules::new(repository, &app_data);
+				let modules = Modules::new(Repository::from(repository), &app_data);
 				callback(modules);
 			});
 		});

@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Formatter};
 
-use crate::git::{CommitDiff, CommitDiffLoader, CommitDiffLoaderOptions, Config, GitError, RepositoryLoadKind};
+use crate::git::{CommitDiff, CommitDiffLoader, CommitDiffLoaderOptions, GitError};
 
 /// A light cloneable, simple wrapper around the `git2::Repository` struct
 pub(crate) struct Repository {
@@ -8,30 +8,6 @@ pub(crate) struct Repository {
 }
 
 impl Repository {
-	/// Find and open an existing repository, respecting git environment variables. This will check
-	/// for and use `$GIT_DIR`, and if unset will search for a repository starting in the current
-	/// directory, walking to the root.
-	///
-	/// # Errors
-	/// Will result in an error if the repository cannot be opened.
-	pub(crate) fn open_from_env() -> Result<Self, GitError> {
-		let repository = git2::Repository::open_from_env().map_err(|e| {
-			GitError::RepositoryLoad {
-				kind: RepositoryLoadKind::Environment,
-				cause: e,
-			}
-		})?;
-		Ok(Self { repository })
-	}
-
-	/// Load the git configuration for the repository.
-	///
-	/// # Errors
-	/// Will result in an error if the configuration is invalid.
-	pub(crate) fn load_config(&self) -> Result<Config, GitError> {
-		self.repository.config().map_err(|e| GitError::ConfigLoad { cause: e })
-	}
-
 	/// Load a diff for a commit hash
 	///
 	/// # Errors
@@ -74,23 +50,9 @@ mod tests {
 
 	use git2::{Oid, Signature};
 
-	use crate::git::{Commit, GitError, Reference, Repository, RepositoryLoadKind};
+	use crate::git::{Commit, GitError, Reference, Repository};
 
 	impl Repository {
-		/// Attempt to open an already-existing repository at `path`.
-		///
-		/// # Errors
-		/// Will result in an error if the repository cannot be opened.
-		pub(crate) fn open_from_path(path: &Path) -> Result<Self, GitError> {
-			let repository = git2::Repository::open(path).map_err(|e| {
-				GitError::RepositoryLoad {
-					kind: RepositoryLoadKind::Path,
-					cause: e,
-				}
-			})?;
-			Ok(Self { repository })
-		}
-
 		/// Find a reference by the reference name.
 		///
 		/// # Errors
@@ -161,78 +123,19 @@ mod tests {
 	}
 }
 
-// Paths in Windows makes these tests difficult, so disable
+// Paths in Windows make these tests difficult, so disable
 #[cfg(all(unix, test))]
 mod unix_tests {
-	use std::path::Path;
-
 	use claims::{assert_err_eq, assert_ok};
 	use git2::{ErrorClass, ErrorCode};
 
 	use super::*;
-	use crate::test_helpers::{create_commit, with_git_directory, with_temp_bare_repository, with_temp_repository};
-
-	#[test]
-	fn open_from_env() {
-		with_git_directory("fixtures/simple", |_| {
-			assert_ok!(Repository::open_from_env());
-		});
-	}
-
-	#[test]
-	fn open_from_env_error() {
-		with_git_directory("fixtures/does-not-exist", |path| {
-			assert_err_eq!(Repository::open_from_env(), GitError::RepositoryLoad {
-				kind: RepositoryLoadKind::Environment,
-				cause: git2::Error::new(
-					ErrorCode::NotFound,
-					ErrorClass::Os,
-					format!("failed to resolve path '{path}': No such file or directory")
-				),
-			});
-		});
-	}
-
-	#[test]
-	fn open_from_path() {
-		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("test")
-			.join("fixtures")
-			.join("simple");
-		assert_ok!(Repository::open_from_path(&path));
-	}
-
-	#[test]
-	fn open_from_path_error() {
-		let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-			.join("..")
-			.join("..")
-			.join("test")
-			.join("fixtures")
-			.join("does-not-exist");
-		assert_err_eq!(Repository::open_from_path(&path), GitError::RepositoryLoad {
-			kind: RepositoryLoadKind::Path,
-			cause: git2::Error::new(
-				ErrorCode::NotFound,
-				ErrorClass::Os,
-				format!(
-					"failed to resolve path '{}': No such file or directory",
-					path.to_string_lossy()
-				)
-			),
-		});
-	}
-
-	#[test]
-	fn load_config() {
-		with_temp_bare_repository(|repo| {
-			assert_ok!(repo.load_config());
-		});
-	}
+	use crate::test_helpers::{create_commit, with_temp_repository};
 
 	#[test]
 	fn load_commit_diff() {
-		with_temp_repository(|repository| {
+		with_temp_repository(|repo| {
+			let repository = Repository::from(repo);
 			create_commit(&repository, None);
 			let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
 			assert_ok!(repository.load_commit_diff(id.to_string().as_str(), &CommitDiffLoaderOptions::new()));
@@ -241,15 +144,13 @@ mod unix_tests {
 
 	#[test]
 	fn load_commit_diff_with_non_commit() {
-		with_temp_repository(|repository| {
+		with_temp_repository(|repo| {
 			let blob_ref = {
-				let blob = repository.repository().blob(b"foo").unwrap();
-				_ = repository
-					.repository()
-					.reference("refs/blob", blob, false, "blob")
-					.unwrap();
+				let blob = repo.blob(b"foo").unwrap();
+				_ = repo.reference("refs/blob", blob, false, "blob").unwrap();
 				blob.to_string()
 			};
+			let repository = Repository::from(repo);
 
 			assert_err_eq!(
 				repository.load_commit_diff(blob_ref.as_str(), &CommitDiffLoaderOptions::new()),
@@ -265,54 +166,9 @@ mod unix_tests {
 	}
 
 	#[test]
-	fn find_reference() {
-		with_temp_repository(|repository| {
-			assert_ok!(repository.find_reference("refs/heads/main"));
-		});
-	}
-
-	#[test]
-	fn find_reference_error() {
-		with_temp_repository(|repository| {
-			assert_err_eq!(
-				repository.find_reference("refs/heads/invalid"),
-				GitError::ReferenceNotFound {
-					cause: git2::Error::new(
-						ErrorCode::NotFound,
-						ErrorClass::Reference,
-						"reference 'refs/heads/invalid' not found",
-					),
-				}
-			);
-		});
-	}
-
-	#[test]
-	fn find_commit() {
-		with_temp_repository(|repository| {
-			assert_ok!(repository.find_commit("refs/heads/main"));
-		});
-	}
-
-	#[test]
-	fn find_commit_error() {
-		with_temp_repository(|repository| {
-			assert_err_eq!(
-				repository.find_commit("refs/heads/invalid"),
-				GitError::ReferenceNotFound {
-					cause: git2::Error::new(
-						ErrorCode::NotFound,
-						ErrorClass::Reference,
-						"reference 'refs/heads/invalid' not found",
-					),
-				}
-			);
-		});
-	}
-
-	#[test]
 	fn fmt() {
-		with_temp_bare_repository(|repository| {
+		with_temp_repository(|repo| {
+			let repository = Repository::from(repo);
 			let formatted = format!("{repository:?}");
 			let path = repository.repo_path().canonicalize().unwrap();
 			assert_eq!(

@@ -9,9 +9,9 @@ pub(crate) use crate::application::app_data::AppData;
 use crate::{
 	Args,
 	Exit,
-	config::Config,
+	config::{Config, ConfigLoader},
 	display::Display,
-	git::Repository,
+	git::{Repository, open_repository_from_env},
 	help::build_help,
 	input::{Event, EventHandler, EventReaderFn, KeyBindings, StandardEvent},
 	module::{self, ExitStatus, ModuleHandler, State},
@@ -40,7 +40,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
-		let config = Arc::new(Self::load_config(&repository)?);
+		let config_loader = ConfigLoader::from(repository);
+		let config = Self::load_config(&config_loader)?;
 		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
 
 		let display = Display::new(tui, &config.theme);
@@ -72,8 +73,9 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let search_state = search_threads.state();
 		threads.push(Box::new(search_threads));
 
+		let keybindings = KeyBindings::new(&config.key_bindings);
 		let app_data = AppData::new(
-			Arc::clone(&config),
+			config,
 			State::WindowSizeError,
 			Arc::clone(&todo_file),
 			view_state.clone(),
@@ -82,8 +84,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		);
 
 		let module_handler = ModuleHandler::new(
-			EventHandler::new(KeyBindings::new(&config.key_bindings)),
-			ModuleProvider::new(repository, &app_data),
+			EventHandler::new(keybindings),
+			ModuleProvider::new(Repository::from(config_loader.eject_repository()), &app_data),
 		);
 		let process = Process::new(&app_data, initial_display_size, module_handler, thread_statuses.clone());
 		let process_threads = process::Thread::new(process.clone());
@@ -135,8 +137,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		})
 	}
 
-	fn open_repository() -> Result<Repository, Exit> {
-		Repository::open_from_env().map_err(|err| {
+	fn open_repository() -> Result<git2::Repository, Exit> {
+		open_repository_from_env().map_err(|err| {
 			Exit::new(
 				ExitStatus::StateError,
 				format!("Unable to load Git repository: {err}").as_str(),
@@ -144,8 +146,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		})
 	}
 
-	fn load_config(repo: &Repository) -> Result<Config, Exit> {
-		Config::try_from(repo).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
+	fn load_config(config_loader: &ConfigLoader) -> Result<Config, Exit> {
+		Config::try_from(config_loader).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
 	}
 
 	fn todo_file_options(config: &Config) -> TodoFileOptions {
