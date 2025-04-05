@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::git::{Delta, FileMode, FileStatus, Status};
+use crate::diff::{Delta, FileMode, FileStatus, Status};
 
 /// Builder for creating a new reference.
 #[derive(Debug)]

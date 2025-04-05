@@ -1,6 +1,9 @@
 use chrono::{DateTime, Local, TimeZone as _};
 
-use crate::git::{GitError, Reference, User};
+use crate::{
+	diff::{Reference, User},
+	git::GitError,
+};
 
 /// Represents a commit.
 #[derive(Debug, PartialEq, Eq)]

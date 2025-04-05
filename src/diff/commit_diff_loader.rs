@@ -3,7 +3,7 @@ use std::{path::PathBuf, sync::LazyLock};
 use git2::{DiffFindOptions, DiffOptions, Oid, Repository};
 use parking_lot::Mutex;
 
-use crate::git::{
+use crate::diff::{
 	Commit,
 	CommitDiff,
 	CommitDiffLoaderOptions,
@@ -155,7 +155,7 @@ mod tests {
 	};
 
 	use super::*;
-	use crate::{git::Origin, test_helpers::with_temp_repository};
+	use crate::{diff::Origin, test_helpers::with_temp_repository};
 
 	#[cfg(not(tarpaulin_include))]
 	fn _format_status(status: &FileStatus) -> String {

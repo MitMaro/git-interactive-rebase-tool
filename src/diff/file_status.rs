@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::git::{Delta, FileMode, Status};
+use crate::diff::{Delta, FileMode, Status};
 
 /// Represents a file change within a Git repository
 #[derive(Debug, Clone, PartialEq, Eq)]

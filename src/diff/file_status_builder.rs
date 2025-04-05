@@ -1,4 +1,4 @@
-use crate::git::{Delta, DiffLine, FileStatus};
+use crate::diff::{Delta, DiffLine, FileStatus};
 
 #[derive(Debug, Clone)]
 pub(crate) struct FileStatusBuilder {
@@ -62,7 +62,7 @@ mod tests {
 	use std::path::PathBuf;
 
 	use super::*;
-	use crate::git::{FileMode, Origin, Status};
+	use crate::diff::{FileMode, Origin, Status};
 
 	#[test]
 	fn build_file_stat_with_file_stat_without_delta() {

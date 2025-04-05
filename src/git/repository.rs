@@ -1,6 +1,9 @@
 use std::fmt::{Debug, Formatter};
 
-use crate::git::{CommitDiff, CommitDiffLoader, CommitDiffLoaderOptions, GitError};
+use crate::{
+	diff::{CommitDiff, CommitDiffLoader, CommitDiffLoaderOptions},
+	git::GitError,
+};
 
 /// A light cloneable, simple wrapper around the `git2::Repository` struct
 pub(crate) struct Repository {
@@ -50,7 +53,10 @@ mod tests {
 
 	use git2::{Oid, Signature};
 
-	use crate::git::{Commit, GitError, Reference, Repository};
+	use crate::{
+		diff::{Commit, Reference},
+		git::{GitError, Repository},
+	};
 
 	impl Repository {
 		/// Find a reference by the reference name.

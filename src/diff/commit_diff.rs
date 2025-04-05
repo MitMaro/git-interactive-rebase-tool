@@ -1,4 +1,4 @@
-use crate::git::{Commit, FileStatus};
+use crate::diff::{Commit, FileStatus};
 
 /// Represents a commit with a diff
 #[derive(Debug)]
@@ -73,7 +73,7 @@ mod tests {
 	use claims::assert_some_eq;
 
 	use crate::{
-		git::{Delta, DiffLine, FileMode, FileStatus, FileStatusBuilder, Origin, Status},
+		diff::{Delta, DiffLine, FileMode, FileStatus, FileStatusBuilder, Origin, Status},
 		test_helpers::builders::{CommitBuilder, CommitDiffBuilder},
 	};
 
