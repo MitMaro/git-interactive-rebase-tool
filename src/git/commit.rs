@@ -177,11 +177,9 @@ mod tests {
 	#[test]
 	fn new_authored_date_same_committed_date() {
 		with_temp_repository(|repository| {
-			create_commit(
-				&repository,
-				Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)),
-			);
-			let commit = repository.find_commit("refs/heads/main").unwrap();
+			let repo = crate::git::Repository::from(repository);
+			create_commit(&repo, Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)));
+			let commit = repo.find_commit("refs/heads/main").unwrap();
 			assert_none!(commit.authored_date());
 		});
 	}
@@ -189,15 +187,16 @@ mod tests {
 	#[test]
 	fn new_authored_date_different_than_committed() {
 		with_temp_repository(|repository| {
+			let repo = crate::git::Repository::from(repository);
 			create_commit(
-				&repository,
+				&repo,
 				Some(
 					CreateCommitOptions::new()
 						.commit_time(JAN_2021_EPOCH)
 						.author_time(JAN_2021_EPOCH + 1),
 				),
 			);
-			let commit = repository.find_commit("refs/heads/main").unwrap();
+			let commit = repo.find_commit("refs/heads/main").unwrap();
 			assert_some_eq!(
 				commit.authored_date(),
 				&DateTime::parse_from_rfc3339("2021-01-01T00:00:01Z").unwrap()
@@ -208,8 +207,9 @@ mod tests {
 	#[test]
 	fn new_committer_different_than_author() {
 		with_temp_repository(|repository| {
-			create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
-			let commit = repository.find_commit("refs/heads/main").unwrap();
+			let repo = crate::git::Repository::from(repository);
+			create_commit(&repo, Some(CreateCommitOptions::new().committer("Committer")));
+			let commit = repo.find_commit("refs/heads/main").unwrap();
 			assert_some_eq!(
 				commit.committer(),
 				&User::new(Some("Committer"), Some("committer@example.com"))
@@ -220,7 +220,8 @@ mod tests {
 	#[test]
 	fn new_committer_same_as_author() {
 		with_temp_repository(|repository| {
-			let commit = repository.find_commit("refs/heads/main").unwrap();
+			let repo = crate::git::Repository::from(repository);
+			let commit = repo.find_commit("refs/heads/main").unwrap();
 			assert_none!(commit.committer());
 		});
 	}
@@ -228,7 +229,7 @@ mod tests {
 	#[test]
 	fn try_from_success() {
 		with_temp_repository(|repository| {
-			let reference = repository.repository().find_reference("refs/heads/main").unwrap();
+			let reference = repository.find_reference("refs/heads/main").unwrap();
 			let commit = Commit::try_from(&reference).unwrap();
 
 			assert_eq!(commit.reference.unwrap().shortname(), "main");
@@ -238,11 +239,10 @@ mod tests {
 	#[test]
 	fn try_from_error() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
-			let blob = repo.blob(b"foo").unwrap();
-			_ = repo.reference("refs/blob", blob, false, "blob").unwrap();
+			let blob = repository.blob(b"foo").unwrap();
+			_ = repository.reference("refs/blob", blob, false, "blob").unwrap();
 
-			let reference = repo.find_reference("refs/blob").unwrap();
+			let reference = repository.find_reference("refs/blob").unwrap();
 			assert_err_eq!(Commit::try_from(&reference), GitError::CommitLoad {
 				cause: git2::Error::new(
 					git2::ErrorCode::InvalidSpec,

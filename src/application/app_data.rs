@@ -16,7 +16,7 @@ pub(crate) struct AppData {
 
 impl AppData {
 	pub(crate) fn new(
-		config: Arc<Config>,
+		config: Config,
 		active_module: module::State,
 		todo_file: Arc<Mutex<TodoFile>>,
 		view_state: view::State,
@@ -24,7 +24,7 @@ impl AppData {
 		search_state: search::State,
 	) -> Self {
 		Self {
-			config,
+			config: Arc::new(config),
 			active_module: Arc::new(Mutex::new(active_module)),
 			todo_file,
 			view_state,

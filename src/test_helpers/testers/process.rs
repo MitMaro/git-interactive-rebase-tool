@@ -39,7 +39,7 @@ pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static
 					let view_state = view_context.state.clone();
 					let input_state = event_handler_context.state.clone();
 					let app_data = AppData::new(
-						Arc::new(create_config()),
+						create_config(),
 						State::WindowSizeError,
 						Arc::new(Mutex::new(todo_file)),
 						view_state,

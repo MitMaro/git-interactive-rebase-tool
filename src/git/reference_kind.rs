@@ -42,7 +42,7 @@ mod tests {
 	fn from_git2_reference_branch() {
 		with_temp_repository(|repository| {
 			assert_eq!(
-				ReferenceKind::from(&repository.repository().find_reference("refs/heads/main").unwrap()),
+				ReferenceKind::from(&repository.find_reference("refs/heads/main").unwrap()),
 				ReferenceKind::Branch
 			);
 		});
@@ -51,12 +51,11 @@ mod tests {
 	#[test]
 	fn from_git2_reference_note() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
 			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0)).unwrap();
-			let head_id = repo.refname_to_id("HEAD").unwrap();
-			_ = repo.note(&sig, &sig, None, head_id, "note", false).unwrap();
+			let head_id = repository.refname_to_id("HEAD").unwrap();
+			_ = repository.note(&sig, &sig, None, head_id, "note", false).unwrap();
 			assert_eq!(
-				ReferenceKind::from(&repo.find_reference("refs/notes/commits").unwrap()),
+				ReferenceKind::from(&repository.find_reference("refs/notes/commits").unwrap()),
 				ReferenceKind::Note
 			);
 		});
@@ -65,11 +64,12 @@ mod tests {
 	#[test]
 	fn from_git2_reference_remote() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
-			let mut remote = repo.remote("origin", repo.path().to_str().unwrap()).unwrap();
+			let mut remote = repository
+				.remote("origin", repository.path().to_str().unwrap())
+				.unwrap();
 			remote.fetch(&["main"], None, None).unwrap();
 			assert_eq!(
-				ReferenceKind::from(&repo.find_reference("refs/remotes/origin/main").unwrap()),
+				ReferenceKind::from(&repository.find_reference("refs/remotes/origin/main").unwrap()),
 				ReferenceKind::Remote
 			);
 		});
@@ -78,12 +78,11 @@ mod tests {
 	#[test]
 	fn from_git2_reference_tag() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
 			let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(JAN_2021_EPOCH, 0)).unwrap();
-			let head_id = repo.revparse_single("HEAD").unwrap();
-			_ = repo.tag("tag", &head_id, &sig, "note", false).unwrap();
+			let head_id = repository.revparse_single("HEAD").unwrap();
+			_ = repository.tag("tag", &head_id, &sig, "note", false).unwrap();
 			assert_eq!(
-				ReferenceKind::from(&repo.find_reference("refs/tags/tag").unwrap()),
+				ReferenceKind::from(&repository.find_reference("refs/tags/tag").unwrap()),
 				ReferenceKind::Tag
 			);
 		});
@@ -92,11 +91,10 @@ mod tests {
 	#[test]
 	fn from_git2_reference_other() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
-			let blob = repo.blob(b"foo").unwrap();
-			_ = repo.reference("refs/blob", blob, false, "blob").unwrap();
+			let blob = repository.blob(b"foo").unwrap();
+			_ = repository.reference("refs/blob", blob, false, "blob").unwrap();
 			assert_eq!(
-				ReferenceKind::from(&repo.find_reference("refs/blob").unwrap()),
+				ReferenceKind::from(&repository.find_reference("refs/blob").unwrap()),
 				ReferenceKind::Other
 			);
 		});

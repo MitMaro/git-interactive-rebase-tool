@@ -90,7 +90,7 @@ where C: FnOnce(ModuleTestContext) {
 			with_todo_file(lines, |todo_file_context| {
 				let (_git_todo_file, todo_file) = todo_file_context.to_owned();
 				let app_data = AppData::new(
-					Arc::new(config.unwrap_or_else(create_config)),
+					config.unwrap_or_else(create_config),
 					State::WindowSizeError,
 					Arc::new(Mutex::new(todo_file)),
 					view_context.state.clone(),

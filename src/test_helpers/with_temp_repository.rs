@@ -1,7 +1,6 @@
-use crate::{
-	git::Repository,
-	test_helpers::shared::{create_repository, with_temporary_path},
-};
+use git2::Repository;
+
+use crate::test_helpers::shared::{create_repository, with_temporary_path};
 
 /// Provides a new repository instance in a temporary directory for testing that contains an initial
 /// empty commit.
@@ -14,7 +13,8 @@ where F: FnOnce(Repository) {
 	with_temporary_path(|path| {
 		let mut opts = git2::RepositoryInitOptions::new();
 		_ = opts.initial_head("main");
-		let repo = create_repository(git2::Repository::init_opts(path, &opts).unwrap());
+		let repo = Repository::init_opts(path, &opts).unwrap();
+		create_repository(&repo);
 		callback(repo);
 	});
 }
