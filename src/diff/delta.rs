@@ -1,4 +1,4 @@
-use crate::git::DiffLine;
+use crate::diff::DiffLine;
 
 /// Represents a single set of changes
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -89,7 +89,7 @@ mod tests {
 	use claims::assert_err;
 
 	use super::*;
-	use crate::git::Origin;
+	use crate::diff::Origin;
 
 	#[test]
 	fn new_with_correctly_formatted_context() {

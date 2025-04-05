@@ -1,7 +1,7 @@
 use chrono::{Local, TimeZone as _};
 
 use crate::{
-	git::{Commit, Reference, User},
+	diff::{Commit, Reference, User},
 	test_helpers::JAN_2021_EPOCH,
 };
 

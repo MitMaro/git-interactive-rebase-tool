@@ -42,6 +42,7 @@ mod application;
 mod arguments;
 mod components;
 mod config;
+mod diff;
 mod display;
 mod editor;
 mod exit;

@@ -1,4 +1,4 @@
-use crate::git::Origin;
+use crate::diff::Origin;
 
 /// Represents a single line in a diff
 #[derive(Debug, Clone, PartialEq, Eq)]
