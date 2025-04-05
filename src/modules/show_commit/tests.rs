@@ -5,7 +5,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
-	git::{Delta, DiffLine, FileMode, Origin, Status, User},
+	diff::{Delta, DiffLine, FileMode, Origin, Status, User},
 	input::StandardEvent,
 	process::Artifact,
 	render_line,

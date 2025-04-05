@@ -1,4 +1,4 @@
-use crate::git::{Commit, CommitDiff, FileStatus};
+use crate::diff::{Commit, CommitDiff, FileStatus};
 
 /// Builder for creating a new commit diff.
 #[derive(Debug)]
