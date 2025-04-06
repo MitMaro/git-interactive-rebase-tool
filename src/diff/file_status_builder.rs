@@ -17,17 +17,17 @@ impl FileStatusBuilder {
 	}
 
 	fn close_delta(&mut self) {
-		if let Some(d) = self.delta.as_ref() {
+		if let Some(d) = self.delta.take() {
 			self.file_stat
 				.as_mut()
 				.expect("add_file_stat must be called once before adding a delta")
-				.add_delta(d.clone());
+				.add_delta(d);
 		}
 	}
 
 	fn close_file_stat(&mut self) {
-		if let Some(fs) = self.file_stat.as_ref() {
-			self.file_stats.push(fs.clone());
+		if let Some(fs) = self.file_stat.take() {
+			self.file_stats.push(fs);
 		}
 	}
 
