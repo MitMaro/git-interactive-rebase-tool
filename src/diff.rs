@@ -1,3 +1,4 @@
+mod action;
 mod commit;
 mod commit_diff;
 mod commit_diff_loader;
@@ -13,7 +14,12 @@ mod reference_kind;
 mod status;
 mod user;
 
+mod state;
+mod thread;
+mod update_handler;
+
 pub(crate) use self::{
+	action::Action,
 	commit::Commit,
 	commit_diff::CommitDiff,
 	commit_diff_loader::CommitDiffLoader,
@@ -26,6 +32,9 @@ pub(crate) use self::{
 	origin::Origin,
 	reference::Reference,
 	reference_kind::ReferenceKind,
+	state::{LoadStatus, State},
 	status::Status,
+	thread::Thread,
+	update_handler::UpdateHandlerFn,
 	user::User,
 };

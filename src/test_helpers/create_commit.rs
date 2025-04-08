@@ -1,6 +1,8 @@
 use std::sync::LazyLock;
 
-use crate::{git::Repository, test_helpers::JAN_2021_EPOCH};
+use git2::{Repository, Signature};
+
+use crate::{diff::Commit, test_helpers::JAN_2021_EPOCH};
 
 static DEFAULT_COMMIT_OPTIONS: LazyLock<CreateCommitOptions> = LazyLock::new(CreateCommitOptions::new);
 
@@ -96,21 +98,35 @@ impl CreateCommitOptions {
 	}
 }
 
+fn create_commit_on_index(
+	repository: &Repository,
+	reference: &str,
+	author: &Signature<'_>,
+	committer: &Signature<'_>,
+	message: &str,
+) -> Result<Commit, git2::Error> {
+	let tree = repository.find_tree(repository.index()?.write_tree()?)?;
+	let head = repository.find_reference(reference)?.peel_to_commit()?;
+	_ = repository.commit(Some("HEAD"), author, committer, message, &tree, &[&head])?;
+
+	Ok(Commit::from(&repository.find_reference(reference)?.peel_to_commit()?))
+}
+
 /// Create a commit based on the provided options. If `options` is not provided, will create a
 /// commit using the default options. This function does not add modified or new files to the stage
 /// before creating a commit.
 ///
 /// # Panics
 /// If any Git operation cannot be performed.
-pub(crate) fn create_commit(repository: &Repository, options: Option<&CreateCommitOptions>) {
+pub(crate) fn create_commit(repository: &Repository, options: Option<&CreateCommitOptions>) -> Commit {
 	let opts = options.unwrap_or(&DEFAULT_COMMIT_OPTIONS);
-	let author_sig = git2::Signature::new(
+	let author_sig = Signature::new(
 		opts.author_name.as_str(),
 		opts.author_email.as_str(),
 		&git2::Time::new(opts.author_time.unwrap_or(opts.committer_time), 0),
 	)
 	.unwrap();
-	let committer_sig = git2::Signature::new(
+	let committer_sig = Signature::new(
 		opts.committer_name.as_ref().unwrap_or(&opts.author_name).as_str(),
 		opts.committer_email.as_ref().unwrap_or(&opts.author_email).as_str(),
 		&git2::Time::new(opts.committer_time, 0),
@@ -118,7 +134,12 @@ pub(crate) fn create_commit(repository: &Repository, options: Option<&CreateComm
 	.unwrap();
 	let ref_name = format!("refs/heads/{}", opts.head_name);
 
-	repository
-		.create_commit_on_index(ref_name.as_str(), &author_sig, &committer_sig, opts.message.as_str())
-		.unwrap();
+	create_commit_on_index(
+		repository,
+		ref_name.as_str(),
+		&author_sig,
+		&committer_sig,
+		opts.message.as_str(),
+	)
+	.unwrap()
 }
