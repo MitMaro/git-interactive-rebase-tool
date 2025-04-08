@@ -21,10 +21,6 @@ impl ViewLines {
 		self.lines.len() as u16
 	}
 
-	pub(crate) fn is_empty(&self) -> bool {
-		self.lines.is_empty()
-	}
-
 	pub(crate) fn iter(&self) -> Iter<'_, ViewLine> {
 		self.lines.iter()
 	}
@@ -69,7 +65,7 @@ mod tests {
 
 	#[test]
 	fn new() {
-		assert!(ViewLines::new().is_empty());
+		assert!(ViewLines::new().lines.is_empty());
 	}
 
 	#[test]
@@ -84,7 +80,7 @@ mod tests {
 		let mut view_lines = ViewLines::new();
 		view_lines.push(ViewLine::new_empty_line());
 		view_lines.clear();
-		assert!(view_lines.is_empty());
+		assert!(view_lines.lines.is_empty());
 	}
 
 	#[test]

@@ -9,9 +9,10 @@ pub(crate) use crate::application::app_data::AppData;
 use crate::{
 	Args,
 	Exit,
-	config::{Config, ConfigLoader},
+	config::{Config, ConfigLoader, DiffIgnoreWhitespaceSetting},
+	diff::{self, CommitDiffLoader, CommitDiffLoaderOptions},
 	display::Display,
-	git::{Repository, open_repository_from_env},
+	git::open_repository_from_env,
 	help::build_help,
 	input::{Event, EventHandler, EventReaderFn, KeyBindings, StandardEvent},
 	module::{self, ExitStatus, ModuleHandler, State},
@@ -73,20 +74,35 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let search_state = search_threads.state();
 		threads.push(Box::new(search_threads));
 
+		let commit_diff_loader_options = CommitDiffLoaderOptions::new()
+			.context_lines(config.git.diff_context)
+			.copies(config.git.diff_copies)
+			.ignore_whitespace(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All)
+			.ignore_whitespace_change(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change)
+			.ignore_blank_lines(config.diff_ignore_blank_lines)
+			.interhunk_context(config.git.diff_interhunk_lines)
+			.renames(config.git.diff_renames, config.git.diff_rename_limit);
+		let commit_diff_loader = CommitDiffLoader::new(config_loader.eject_repository(), commit_diff_loader_options);
+
+		let diff_update_handler = Self::create_diff_update_handler(input_state.clone());
+		let diff_thread = diff::thread::Thread::new(commit_diff_loader, diff_update_handler);
+		let diff_state = diff_thread.state();
+		threads.push(Box::new(diff_thread));
+
 		let keybindings = KeyBindings::new(&config.key_bindings);
+
 		let app_data = AppData::new(
 			config,
 			State::WindowSizeError,
 			Arc::clone(&todo_file),
+			diff_state.clone(),
 			view_state.clone(),
 			input_state.clone(),
 			search_state.clone(),
 		);
 
-		let module_handler = ModuleHandler::new(
-			EventHandler::new(keybindings),
-			ModuleProvider::new(Repository::from(config_loader.eject_repository()), &app_data),
-		);
+		let module_handler = ModuleHandler::new(EventHandler::new(keybindings), ModuleProvider::new(&app_data));
+
 		let process = Process::new(&app_data, initial_display_size, module_handler, thread_statuses.clone());
 		let process_threads = process::Thread::new(process.clone());
 		threads.push(Box::new(process_threads));
@@ -183,6 +199,10 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 	fn create_search_update_handler(input_state: crate::input::State) -> impl Fn() + Send + Sync {
 		move || input_state.push_event(Event::Standard(StandardEvent::SearchUpdate))
+	}
+
+	fn create_diff_update_handler(input_state: crate::input::State) -> impl Fn() + Send + Sync {
+		move || input_state.push_event(Event::Standard(StandardEvent::DiffUpdate))
 	}
 }
 

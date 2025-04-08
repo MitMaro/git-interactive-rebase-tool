@@ -5,6 +5,7 @@
 
 use std::fmt::{Display, Formatter};
 
+use git2::ErrorCode;
 use thiserror::Error;
 
 /// The kind of repository load kind.
@@ -49,14 +50,6 @@ pub(crate) enum GitError {
 		#[source]
 		cause: git2::Error,
 	},
-	/// The configuration could not be loaded
-	#[cfg(test)]
-	#[error("Could not load configuration")]
-	ReferenceNotFound {
-		/// The internal cause of the load error.
-		#[source]
-		cause: git2::Error,
-	},
 	/// The commit could not be loaded
 	#[error("Could not load commit")]
 	CommitLoad {
@@ -64,6 +57,24 @@ pub(crate) enum GitError {
 		#[source]
 		cause: git2::Error,
 	},
+	/// The diff could not be loaded
+	#[error("Could not load diff")]
+	DiffLoad {
+		/// The internal cause of the load error.
+		#[source]
+		cause: git2::Error,
+	},
+}
+
+impl GitError {
+	pub(crate) fn code(&self) -> ErrorCode {
+		match self {
+			GitError::RepositoryLoad { cause, .. }
+			| GitError::ConfigLoad { cause, .. }
+			| GitError::CommitLoad { cause, .. }
+			| GitError::DiffLoad { cause, .. } => cause.code(),
+		}
+	}
 }
 
 #[cfg(test)]
@@ -78,5 +89,38 @@ mod tests {
 	#[test]
 	fn repository_load_kind_display_path() {
 		assert_eq!(format!("{}", RepositoryLoadKind::Path), "path");
+	}
+
+	#[test]
+	fn code_repository_load() {
+		let error = GitError::RepositoryLoad {
+			kind: RepositoryLoadKind::Environment,
+			cause: git2::Error::from_str("main"),
+		};
+		assert_eq!(error.code(), ErrorCode::GenericError);
+	}
+
+	#[test]
+	fn code_config_load() {
+		let error = GitError::ConfigLoad {
+			cause: git2::Error::from_str("main"),
+		};
+		assert_eq!(error.code(), ErrorCode::GenericError);
+	}
+
+	#[test]
+	fn code_commit_load() {
+		let error = GitError::CommitLoad {
+			cause: git2::Error::from_str("main"),
+		};
+		assert_eq!(error.code(), ErrorCode::GenericError);
+	}
+
+	#[test]
+	fn code_diff_load() {
+		let error = GitError::DiffLoad {
+			cause: git2::Error::from_str("main"),
+		};
+		assert_eq!(error.code(), ErrorCode::GenericError);
 	}
 }

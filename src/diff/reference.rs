@@ -74,9 +74,13 @@ mod tests {
 	#[test]
 	fn test() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			let oid = repo.head_id("main").unwrap();
-			let reference = repo.find_reference("refs/heads/main").unwrap();
+			let revision = repository.revparse_single("refs/heads/main").unwrap();
+			let oid = revision.id().to_string();
+			let reference = repository
+				.find_reference("refs/heads/main")
+				.map(|r| Reference::from(&r))
+				.unwrap();
+
 			assert_eq!(reference.hash(), format!("{oid}"));
 			assert_eq!(reference.name(), "refs/heads/main");
 			assert_eq!(reference.shortname(), "main");

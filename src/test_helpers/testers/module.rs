@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
 use captur::capture;
-use parking_lot::Mutex;
+use parking_lot::{Mutex, lock_api::RwLock};
 
 use crate::{
 	application::AppData,
 	config::Config,
+	diff,
+	diff::CommitDiff,
 	input::Event,
 	module::{Module, State},
 	process::Results,
@@ -88,11 +90,13 @@ where C: FnOnce(ModuleTestContext) {
 		with_view_state(|view_context| {
 			capture!(lines);
 			with_todo_file(lines, |todo_file_context| {
+				let commit_diff = CommitDiff::new();
 				let (_git_todo_file, todo_file) = todo_file_context.to_owned();
 				let app_data = AppData::new(
 					config.unwrap_or_else(create_config),
 					State::WindowSizeError,
 					Arc::new(Mutex::new(todo_file)),
+					diff::thread::State::new(Arc::new(RwLock::new(commit_diff))),
 					view_context.state.clone(),
 					event_handler_context.state.clone(),
 					crate::search::State::new(),

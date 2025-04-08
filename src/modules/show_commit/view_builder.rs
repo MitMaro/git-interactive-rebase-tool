@@ -1,5 +1,8 @@
+use git2::ErrorCode;
+
 use crate::{
-	diff::{Commit, CommitDiff, DiffLine, Origin},
+	components::spin_indicator::SpinIndicator,
+	diff::{Commit, CommitDiff, DiffLine, Origin, thread::LoadStatus},
 	display::DisplayColor,
 	modules::show_commit::util::{
 		get_files_changed_summary,
@@ -43,6 +46,7 @@ pub(super) struct ViewBuilder {
 	visible_space_string: String,
 	show_leading_whitespace: bool,
 	show_trailing_whitespace: bool,
+	spin_indicator: SpinIndicator,
 }
 
 impl ViewBuilder {
@@ -53,6 +57,7 @@ impl ViewBuilder {
 			visible_space_string: options.space_character,
 			show_leading_whitespace: options.show_leading_whitespace,
 			show_trailing_whitespace: options.show_trailing_whitespace,
+			spin_indicator: SpinIndicator::new(),
 		}
 	}
 
@@ -91,12 +96,69 @@ impl ViewBuilder {
 		ViewLine::from(segments)
 	}
 
+	fn build_progress(spin: &mut SpinIndicator, msg: &str, progress: Option<(usize, usize)>) -> ViewLine {
+		if let Some((c, t)) = progress {
+			spin.refresh();
+			ViewLine::from(LineSegment::new_with_color(
+				format!("{msg} {} [{}/{}]", spin.indicator(), c, t).as_str(),
+				DisplayColor::IndicatorColor,
+			))
+		}
+		else {
+			ViewLine::from(LineSegment::new_with_color(msg, DisplayColor::IndicatorColor))
+		}
+	}
+
+	fn build_loading_status(&mut self, updater: &mut ViewDataUpdater<'_>, load_status: &LoadStatus) -> bool {
+		if load_status == &LoadStatus::DiffComplete {
+			return true;
+		}
+
+		updater.push_trailing_line(ViewBuilder::build_progress(
+			&mut self.spin_indicator,
+			match load_status {
+				LoadStatus::New | LoadStatus::QuickDiff(..) | LoadStatus::DiffComplete | LoadStatus::Error { .. } => {
+					"Loading Diff"
+				},
+				LoadStatus::CompleteQuickDiff | LoadStatus::Diff(..) => "Detecting renames and copies",
+			},
+			match load_status {
+				LoadStatus::New
+				| LoadStatus::CompleteQuickDiff
+				| LoadStatus::DiffComplete
+				| LoadStatus::Error { .. } => None,
+				LoadStatus::QuickDiff(c, t) | LoadStatus::Diff(c, t) => Some((*c, *t)),
+			},
+		));
+
+		load_status != &LoadStatus::New
+	}
+
+	pub(super) fn build_diff_error(&mut self, updater: &mut ViewDataUpdater<'_>, code: ErrorCode, msg: &str) {
+		updater.push_line(ViewLine::from(LineSegment::new_with_color(
+			"Error loading diff. Press any key to return.",
+			DisplayColor::IndicatorColor,
+		)));
+		updater.push_line(ViewLine::from(""));
+		updater.push_line(ViewLine::from("Reason:"));
+		updater.push_line(ViewLine::from(match code {
+			ErrorCode::NotFound => "Commit not found",
+			_ => msg,
+		}));
+	}
+
 	pub(super) fn build_view_data_for_overview(
-		&self,
+		&mut self,
 		updater: &mut ViewDataUpdater<'_>,
 		diff: &CommitDiff,
+		load_status: &LoadStatus,
 		is_full_width: bool,
 	) {
+		updater.clear();
+		if !self.build_loading_status(updater, load_status) {
+			return;
+		}
+
 		let commit = diff.commit();
 		updater.push_leading_line(Self::build_leading_summary(commit, is_full_width));
 		// TODO handle authored date
@@ -230,11 +292,18 @@ impl ViewBuilder {
 	}
 
 	pub(super) fn build_view_data_diff(
-		&self,
+		&mut self,
 		updater: &mut ViewDataUpdater<'_>,
 		diff: &CommitDiff,
+		load_status: &LoadStatus,
 		is_full_width: bool,
 	) {
+		updater.clear();
+
+		if !self.build_loading_status(updater, load_status) {
+			return;
+		}
+
 		updater.push_leading_line(Self::build_leading_summary(diff.commit(), is_full_width));
 		updater.push_leading_line(get_files_changed_summary(diff, is_full_width));
 		updater.push_line(ViewLine::new_empty_line().set_padding(PADDING_CHARACTER));

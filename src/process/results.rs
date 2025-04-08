@@ -49,6 +49,14 @@ impl Results {
 		self.artifacts.push_back(Artifact::SearchTerm(String::from(term)));
 	}
 
+	pub(crate) fn load_diff(&mut self, hash: &str) {
+		self.artifacts.push_back(Artifact::LoadDiff(String::from(hash)));
+	}
+
+	pub(crate) fn cancel_diff(&mut self) {
+		self.artifacts.push_back(Artifact::CancelDiff);
+	}
+
 	pub(crate) fn external_command(&mut self, command: String, arguments: Vec<String>) {
 		self.artifacts
 			.push_back(Artifact::ExternalCommand((command, arguments)));
@@ -178,6 +186,20 @@ mod tests {
 		let mocked_searchable: Box<dyn Searchable> = Box::new(mocks::Searchable::new());
 		let results = Results::from(mocked_searchable);
 		assert_results!(results, Artifact::Searchable(Box::new(mocks::Searchable::new())));
+	}
+
+	#[test]
+	fn load_diff() {
+		let mut results = Results::new();
+		results.load_diff("term");
+		assert_results!(results, Artifact::LoadDiff(String::from("term")));
+	}
+
+	#[test]
+	fn cancel_diff() {
+		let mut results = Results::new();
+		results.cancel_diff();
+		assert_results!(results, Artifact::CancelDiff);
 	}
 
 	#[test]

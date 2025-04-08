@@ -1,6 +1,5 @@
 use crate::{
 	application::AppData,
-	git::Repository,
 	module::{Module, ModuleProvider, State},
 };
 
@@ -15,7 +14,7 @@ impl<M: Module> From<M> for TestModuleProvider<M> {
 }
 
 impl<M: Module> ModuleProvider for TestModuleProvider<M> {
-	fn new(_: Repository, _: &AppData) -> Self {
+	fn new(_: &AppData) -> Self {
 		unimplemented!("Not implemented for the TestModuleProvider");
 	}
 

@@ -109,4 +109,6 @@ pub(crate) enum StandardEvent {
 	ExternalCommandError,
 	/// Search was updated
 	SearchUpdate,
+	/// Diff was updated
+	DiffUpdate,
 }

@@ -97,7 +97,7 @@ impl Config {
 impl TryFrom<&ConfigLoader> for Config {
 	type Error = ConfigError;
 
-	/// Creates a new Config instance loading the Git Config using [`crate::git::Repository`].
+	/// Creates a new Config instance loading the Git Config.
 	///
 	/// # Errors
 	///
