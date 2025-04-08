@@ -24,7 +24,7 @@ fn assert_rendered(render_slice: &RenderSlice, expected: &[&str]) {
 	}
 
 	let view_lines = render_slice.view_lines();
-	if view_lines.is_empty() {
+	if view_lines.count() == 0 {
 		output.push(String::from("{EMPTY}"));
 	}
 	else {

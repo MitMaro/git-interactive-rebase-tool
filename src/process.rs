@@ -39,6 +39,7 @@ pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
 	thread_statuses: ThreadStatuses,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_state: crate::view::State,
+	diff_state: crate::diff::thread::State,
 	search_state: search::State,
 }
 
@@ -55,6 +56,7 @@ impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
 			thread_statuses: self.thread_statuses.clone(),
 			todo_file: Arc::clone(&self.todo_file),
 			view_state: self.view_state.clone(),
+			diff_state: self.diff_state.clone(),
 			search_state: self.search_state.clone(),
 		}
 	}
@@ -82,6 +84,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 			thread_statuses,
 			todo_file: app_data.todo_file(),
 			view_state: app_data.view_state(),
+			diff_state: app_data.diff_state(),
 		}
 	}
 
@@ -283,6 +286,17 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		Results::new()
 	}
 
+	fn handle_diff_load(&self, hash: &str) -> Results {
+		self.diff_state.cancel();
+		self.diff_state.start_load(hash);
+		Results::new()
+	}
+
+	fn handle_diff_cancel(&self) -> Results {
+		self.diff_state.cancel();
+		Results::new()
+	}
+
 	fn handle_results(&self, mut results: Results) {
 		while let Some(artifact) = results.artifact() {
 			results.append(match artifact {
@@ -295,6 +309,8 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 				Artifact::SearchCancel => self.handle_search_cancel(),
 				Artifact::SearchTerm(search_term) => self.handle_search_term(search_term),
 				Artifact::Searchable(searchable) => self.handle_searchable(searchable),
+				Artifact::LoadDiff(hash) => self.handle_diff_load(hash.as_str()),
+				Artifact::CancelDiff => self.handle_diff_cancel(),
 			});
 		}
 	}

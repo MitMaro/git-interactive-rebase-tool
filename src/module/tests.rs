@@ -26,7 +26,7 @@ fn default_trait_method_build_view_data() {
 	testers::module(&[], &[], None, |context| {
 		let mut module = TestModule {};
 		let view_data = module.build_view_data(&context.render_context);
-		assert!(view_data.is_empty());
+		assert!(!view_data.get_name().is_empty());
 	});
 }
 

@@ -626,3 +626,40 @@ fn handle_searchable() {
 		},
 	);
 }
+
+#[test]
+fn handle_diff_load() {
+	let module = TestModule::new();
+	testers::process(
+		create_test_module_handler(module),
+		|testers::ProcessTestContext { process, app_data, .. }| {
+			let mut results = Results::new();
+			results.load_diff("term");
+			process.handle_results(results);
+
+			let diff_state = app_data.diff_state();
+
+			assert!(diff_state.is_cancelled());
+			assert_eq!(diff_state.receive_update(), crate::diff::thread::Action::StatusChange); // cancel
+			assert_eq!(
+				diff_state.receive_update(),
+				crate::diff::thread::Action::Load(String::from("term"))
+			);
+		},
+	);
+}
+
+#[test]
+fn handle_diff_cancel() {
+	let module = TestModule::new();
+	testers::process(
+		create_test_module_handler(module),
+		|testers::ProcessTestContext { process, app_data, .. }| {
+			let mut results = Results::new();
+			results.cancel_diff();
+			process.handle_results(results);
+
+			assert!(app_data.diff_state().is_cancelled());
+		},
+	);
+}

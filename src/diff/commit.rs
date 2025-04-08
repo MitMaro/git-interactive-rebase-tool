@@ -1,3 +1,5 @@
+use std::time::UNIX_EPOCH;
+
 use chrono::{DateTime, Local, TimeZone as _};
 
 use crate::{
@@ -6,7 +8,7 @@ use crate::{
 };
 
 /// Represents a commit.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Commit {
 	pub(crate) hash: String,
 	pub(crate) reference: Option<Reference>,
@@ -19,6 +21,20 @@ pub(crate) struct Commit {
 }
 
 impl Commit {
+	#[must_use]
+	pub(crate) fn empty() -> Self {
+		Self {
+			hash: String::from("0000000000000000000000000000000000000000"),
+			reference: None,
+			author: User::new(None, None),
+			authored_date: None,
+			message: None,
+			committer: None,
+			committed_date: DateTime::from(UNIX_EPOCH),
+			summary: None,
+		}
+	}
+
 	/// Get the hash of the commit
 	#[must_use]
 	pub(crate) fn hash(&self) -> &str {
@@ -131,6 +147,34 @@ mod tests {
 		with_temp_repository,
 	};
 
+	impl Commit {
+		pub(crate) fn new_with_hash(hash: &str) -> Self {
+			Self {
+				hash: String::from(hash),
+				reference: None,
+				author: User::new(None, None),
+				authored_date: None,
+				message: None,
+				committer: None,
+				committed_date: DateTime::from(UNIX_EPOCH),
+				summary: None,
+			}
+		}
+	}
+
+	#[test]
+	fn empty() {
+		let commit = Commit::empty();
+		assert_eq!(commit.hash(), "0000000000000000000000000000000000000000");
+		assert_none!(commit.reference());
+		assert_eq!(commit.author(), &User::new(None, None));
+		assert_none!(commit.authored_date());
+		assert_none!(commit.message());
+		assert_none!(commit.committer());
+		assert_eq!(commit.committed_date().timestamp(), 0);
+		assert_none!(commit.summary());
+	}
+
 	#[test]
 	fn hash() {
 		let commit = CommitBuilder::new("0123456789ABCDEF").build();
@@ -180,9 +224,10 @@ mod tests {
 	#[test]
 	fn new_authored_date_same_committed_date() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			create_commit(&repo, Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)));
-			let commit = repo.find_commit("refs/heads/main").unwrap();
+			let commit = create_commit(
+				&repository,
+				Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)),
+			);
 			assert_none!(commit.authored_date());
 		});
 	}
@@ -190,16 +235,14 @@ mod tests {
 	#[test]
 	fn new_authored_date_different_than_committed() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			create_commit(
-				&repo,
+			let commit = create_commit(
+				&repository,
 				Some(
 					CreateCommitOptions::new()
 						.commit_time(JAN_2021_EPOCH)
 						.author_time(JAN_2021_EPOCH + 1),
 				),
 			);
-			let commit = repo.find_commit("refs/heads/main").unwrap();
 			assert_some_eq!(
 				commit.authored_date(),
 				&DateTime::parse_from_rfc3339("2021-01-01T00:00:01Z").unwrap()
@@ -210,9 +253,7 @@ mod tests {
 	#[test]
 	fn new_committer_different_than_author() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			create_commit(&repo, Some(CreateCommitOptions::new().committer("Committer")));
-			let commit = repo.find_commit("refs/heads/main").unwrap();
+			let commit = create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
 			assert_some_eq!(
 				commit.committer(),
 				&User::new(Some("Committer"), Some("committer@example.com"))
@@ -223,8 +264,7 @@ mod tests {
 	#[test]
 	fn new_committer_same_as_author() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			let commit = repo.find_commit("refs/heads/main").unwrap();
+			let commit = create_commit(&repository, None);
 			assert_none!(commit.committer());
 		});
 	}

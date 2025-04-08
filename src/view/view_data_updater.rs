@@ -107,7 +107,7 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.clear();
 		assert!(updater.is_modified());
-		assert!(view_data.is_empty());
+		assert_eq!(view_data.lines().count(), 0);
 	}
 
 	#[test]
@@ -118,7 +118,7 @@ mod tests {
 		let mut updater = ViewDataUpdater::new(&mut view_data);
 		updater.clear_body();
 		assert!(updater.is_modified());
-		assert!(view_data.lines().is_empty());
+		assert_eq!(view_data.lines().count(), 0);
 		assert_eq!(view_data.leading_lines().count(), 1);
 	}
 

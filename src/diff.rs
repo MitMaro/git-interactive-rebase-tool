@@ -13,6 +13,8 @@ mod reference_kind;
 mod status;
 mod user;
 
+pub(crate) mod thread;
+
 pub(crate) use self::{
 	commit::Commit,
 	commit_diff::CommitDiff,

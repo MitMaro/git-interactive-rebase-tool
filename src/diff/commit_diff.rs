@@ -1,7 +1,7 @@
 use crate::diff::{Commit, FileStatus};
 
 /// Represents a commit with a diff
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct CommitDiff {
 	commit: Commit,
 	parent: Option<Commit>,
@@ -12,21 +12,14 @@ pub(crate) struct CommitDiff {
 }
 
 impl CommitDiff {
-	pub(crate) fn new(
-		commit: Commit,
-		parent: Option<Commit>,
-		file_statuses: Vec<FileStatus>,
-		number_files_changed: usize,
-		number_insertions: usize,
-		number_deletions: usize,
-	) -> Self {
+	pub(crate) fn new() -> Self {
 		CommitDiff {
-			commit,
-			parent,
-			file_statuses,
-			number_files_changed,
-			number_insertions,
-			number_deletions,
+			commit: Commit::empty(),
+			parent: None,
+			file_statuses: vec![],
+			number_files_changed: 0,
+			number_insertions: 0,
+			number_deletions: 0,
 		}
 	}
 
@@ -66,73 +59,112 @@ impl CommitDiff {
 	pub(crate) const fn number_deletions(&self) -> usize {
 		self.number_deletions
 	}
+
+	/// Update the details of the diff
+	pub(crate) fn update(
+		&mut self,
+		file_statuses: Vec<FileStatus>,
+		number_files_changed: usize,
+		number_insertions: usize,
+		number_deletions: usize,
+	) {
+		self.file_statuses = file_statuses;
+		self.number_files_changed = number_files_changed;
+		self.number_insertions = number_insertions;
+		self.number_deletions = number_deletions;
+	}
+
+	/// Reset the diff back to an empty state
+	pub(crate) fn reset(&mut self, commit: Commit, parent: Option<Commit>) {
+		self.commit = commit;
+		self.parent = parent;
+		self.file_statuses.clear();
+		self.number_files_changed = 0;
+		self.number_insertions = 0;
+		self.number_deletions = 0;
+	}
+
+	pub(crate) fn clear(&mut self) {
+		self.commit = Commit::empty();
+		self.parent = None;
+		self.file_statuses.clear();
+		self.number_files_changed = 0;
+		self.number_insertions = 0;
+		self.number_deletions = 0;
+	}
 }
 
 #[cfg(test)]
 mod tests {
-	use claims::assert_some_eq;
+	use claims::{assert_none, assert_some_eq};
 
 	use crate::{
-		diff::{Delta, DiffLine, FileMode, FileStatus, FileStatusBuilder, Origin, Status},
-		test_helpers::builders::{CommitBuilder, CommitDiffBuilder},
+		assert_empty,
+		assert_not_empty,
+		diff::{Commit, CommitDiff, FileMode, FileStatus, Status},
 	};
 
 	#[test]
-	fn commit() {
-		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build()).build();
-		assert_eq!(diff.commit(), &CommitBuilder::new("0123456789ABCDEF").build());
+	fn new() {
+		let diff = CommitDiff::new();
+		assert_eq!(diff.commit(), &Commit::empty());
+		assert_none!(diff.parent());
+		assert_empty!(diff.file_statuses());
+		assert_eq!(diff.number_files_changed(), 0);
+		assert_eq!(diff.number_insertions(), 0);
+		assert_eq!(diff.number_deletions(), 0);
 	}
 
 	#[test]
-	fn parent() {
-		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
-			.parent(CommitBuilder::new("ABCDEF0123456789").build())
-			.build();
-		assert_some_eq!(diff.parent(), &CommitBuilder::new("ABCDEF0123456789").build());
+	fn reset_update() {
+		let mut diff = CommitDiff::new();
+		diff.reset(Commit::new_with_hash("abc123"), Some(Commit::new_with_hash("def456")));
+		diff.update(
+			vec![FileStatus::new(
+				"foo",
+				FileMode::Normal,
+				false,
+				"foo",
+				FileMode::Normal,
+				false,
+				Status::Modified,
+			)],
+			11,
+			22,
+			33,
+		);
+		assert_eq!(diff.commit().hash(), "abc123");
+		assert_some_eq!(diff.parent().map(|d| d.hash()), "def456");
+		assert_not_empty!(diff.file_statuses());
+		assert_eq!(diff.number_files_changed(), 11);
+		assert_eq!(diff.number_insertions(), 22);
+		assert_eq!(diff.number_deletions(), 33);
 	}
 
 	#[test]
-	fn file_statuses() {
-		let mut builder = FileStatusBuilder::new();
-		builder.add_file_stat(FileStatus::new(
-			"foo",
-			FileMode::Normal,
-			false,
-			"foo",
-			FileMode::Normal,
-			false,
-			Status::Modified,
-		));
-		builder.add_delta(Delta::new("name", 0, 0, 0, 1));
-		builder.add_diff_line(DiffLine::new(Origin::Addition, "line", None, Some(1), false));
-		let file_statuses = builder.build();
-		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
-			.file_statuses(file_statuses)
-			.build();
-		assert_eq!(diff.file_statuses()[0].source_path().to_string_lossy(), "foo");
-	}
-
-	#[test]
-	fn number_files_changed() {
-		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
-			.number_files_changed(1)
-			.build();
-		assert_eq!(diff.number_files_changed(), 1);
-	}
-
-	#[test]
-	fn number_insertions() {
-		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
-			.number_insertions(2)
-			.build();
-		assert_eq!(diff.number_insertions(), 2);
-	}
-
-	#[test]
-	fn number_deletions() {
-		let diff = CommitDiffBuilder::new(CommitBuilder::new("0123456789ABCDEF").build())
-			.number_deletions(3)
-			.build();
-		assert_eq!(diff.number_deletions(), 3);
+	fn reset_clear() {
+		let mut diff = CommitDiff::new();
+		diff.reset(Commit::new_with_hash("abc123"), Some(Commit::new_with_hash("def456")));
+		diff.update(
+			vec![FileStatus::new(
+				"foo",
+				FileMode::Normal,
+				false,
+				"foo",
+				FileMode::Normal,
+				false,
+				Status::Modified,
+			)],
+			11,
+			22,
+			33,
+		);
+		diff.clear();
+		assert_eq!(diff.commit(), &Commit::empty());
+		assert_none!(diff.parent());
+		assert_empty!(diff.file_statuses());
+		assert_eq!(diff.number_files_changed(), 0);
+		assert_eq!(diff.number_insertions(), 0);
+		assert_eq!(diff.number_deletions(), 0);
 	}
 }

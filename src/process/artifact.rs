@@ -18,6 +18,8 @@ pub(crate) enum Artifact {
 	SearchCancel,
 	SearchTerm(String),
 	Searchable(Box<dyn Searchable>),
+	LoadDiff(String),
+	CancelDiff,
 }
 
 impl Debug for Artifact {
@@ -32,6 +34,8 @@ impl Debug for Artifact {
 			Self::SearchCancel => write!(f, "SearchCancel"),
 			Self::SearchTerm(ref term) => write!(f, "SearchTerm({term:?})"),
 			Self::Searchable(_) => write!(f, "Searchable(dyn Searchable)"),
+			Self::LoadDiff(ref hash) => write!(f, "LoadDiff({hash:?})"),
+			Self::CancelDiff => write!(f, "CancelDiff"),
 		}
 	}
 }
@@ -57,6 +61,8 @@ mod tests {
 		Artifact::Searchable(Box::new(mocks::Searchable::new())),
 		"Searchable(dyn Searchable)"
 	)]
+	#[case::diff_load(Artifact::LoadDiff(String::from("hash")), "LoadDiff(\"hash\")")]
+	#[case::diff_cancel(Artifact::CancelDiff, "CancelDiff")]
 	fn debug(#[case] artifact: Artifact, #[case] expected: &str) {
 		assert_eq!(format!("{artifact:?}"), expected);
 	}

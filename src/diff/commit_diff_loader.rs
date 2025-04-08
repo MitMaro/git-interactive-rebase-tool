@@ -1,64 +1,138 @@
-use std::{path::PathBuf, sync::LazyLock};
+use std::{
+	fmt::{Debug, Formatter},
+	path::PathBuf,
+	sync::{Arc, LazyLock},
+	time::{Duration, Instant},
+};
 
-use git2::{DiffFindOptions, DiffOptions, Oid, Repository};
-use parking_lot::Mutex;
+use git2::{Diff, DiffFindOptions, DiffOptions, Repository};
+use parking_lot::{Mutex, RwLock};
 
-use crate::diff::{
-	Commit,
-	CommitDiff,
-	CommitDiffLoaderOptions,
-	Delta,
-	DiffLine,
-	FileMode,
-	FileStatus,
-	FileStatusBuilder,
-	Status,
+use crate::{
+	diff::{
+		Commit,
+		CommitDiff,
+		CommitDiffLoaderOptions,
+		Delta,
+		DiffLine,
+		FileMode,
+		FileStatus,
+		FileStatusBuilder,
+		Status,
+		thread::LoadStatus,
+	},
+	git::GitError,
 };
 
 static UNKNOWN_PATH: LazyLock<PathBuf> = LazyLock::new(|| PathBuf::from("unknown"));
 
-pub(crate) struct CommitDiffLoader<'options, 'repo> {
-	config: &'options CommitDiffLoaderOptions,
-	repository: &'repo Repository,
+pub(crate) trait DiffUpdateHandlerFn: Fn(LoadStatus) -> bool + Sync + Send {}
+
+impl<FN: Fn(LoadStatus) -> bool + Sync + Send> DiffUpdateHandlerFn for FN {}
+
+fn create_status_update(quick: bool, processed_files: usize, total_files: usize) -> LoadStatus {
+	if quick {
+		LoadStatus::QuickDiff(processed_files, total_files)
+	}
+	else {
+		LoadStatus::Diff(processed_files, total_files)
+	}
 }
 
-impl<'options, 'repo> CommitDiffLoader<'options, 'repo> {
-	pub(crate) const fn new(repository: &'repo Repository, config: &'options CommitDiffLoaderOptions) -> Self {
-		Self { config, repository }
+pub(crate) struct CommitDiffLoader {
+	config: CommitDiffLoaderOptions,
+	repository: Repository,
+	commit_diff: Arc<RwLock<CommitDiff>>,
+}
+
+impl CommitDiffLoader {
+	pub(crate) fn new(repository: Repository, config: CommitDiffLoaderOptions) -> Self {
+		Self {
+			repository,
+			config,
+			commit_diff: Arc::new(RwLock::new(CommitDiff::new())),
+		}
 	}
 
-	pub(crate) fn load_from_hash(&self, oid: Oid) -> Result<CommitDiff, git2::Error> {
-		let commit = self.repository.find_commit(oid)?;
-		// only the first parent matter for the diff, the second parent, if it exists, was only used
-		// for conflict resolution
-		let parent = commit.parents().next();
-
-		self.load_diff(parent, &commit)
+	pub(crate) fn reset(&mut self) {
+		self.commit_diff.write().clear();
 	}
 
-	#[expect(clippy::as_conversions, reason = "Mostly safe difference between APIs.")]
-	#[expect(clippy::unwrap_in_result, reason = "Unwrap usage failure considered a bug.")]
-	fn load_diff(
-		&self,
-		parent: Option<git2::Commit<'_>>,
+	pub(crate) fn commit_diff(&self) -> Arc<RwLock<CommitDiff>> {
+		Arc::clone(&self.commit_diff)
+	}
+
+	fn diff<'repo>(
+		repository: &'repo Repository,
+		config: &CommitDiffLoaderOptions,
 		commit: &git2::Commit<'_>,
-	) -> Result<CommitDiff, git2::Error> {
-		let parent_commit = parent.as_ref().map(Commit::from);
+		diff_options: &mut DiffOptions,
+	) -> Result<Diff<'repo>, GitError> {
+		_ = diff_options
+			.context_lines(config.context_lines)
+			.ignore_filemode(false)
+			.ignore_whitespace(config.ignore_whitespace)
+			.ignore_whitespace_change(config.ignore_whitespace_change)
+			.ignore_blank_lines(config.ignore_blank_lines)
+			.include_typechange(true)
+			.include_typechange_trees(true)
+			.indent_heuristic(true)
+			.interhunk_lines(config.interhunk_context)
+			.minimal(true);
+
+		let commit_tree = commit.tree().map_err(|e| GitError::DiffLoad { cause: e })?;
+
+		if let Some(p) = commit.parents().next() {
+			let parent_tree = p.tree().map_err(|e| GitError::DiffLoad { cause: e })?;
+			repository.diff_tree_to_tree(Some(&parent_tree), Some(&commit_tree), Some(diff_options))
+		}
+		else {
+			repository.diff_tree_to_tree(None, Some(&commit_tree), Some(diff_options))
+		}
+		.map_err(|e| GitError::DiffLoad { cause: e })
+	}
+
+	pub(crate) fn load_diff(&mut self, hash: &str, update_notifier: impl DiffUpdateHandlerFn) -> Result<(), GitError> {
+		let oid = self
+			.repository
+			.revparse_single(hash)
+			.map_err(|e| GitError::DiffLoad { cause: e })?
+			.id();
+		let commit = self
+			.repository
+			.find_commit(oid)
+			.map_err(|e| GitError::DiffLoad { cause: e })?;
+
+		{
+			// only the first parent matter for things like diffs, the second parent, if it exists,
+			// is only used for conflict resolution, and has no use
+			let parent = commit.parents().next().map(|c| Commit::from(&c));
+			let mut commit_diff = self.commit_diff.write();
+			commit_diff.reset(Commit::from(&commit), parent);
+			if update_notifier(LoadStatus::New) {
+				return Ok(());
+			}
+		}
+
+		// when a diff contains a lot of untracked files, collecting the diff information can take
+		// upwards of a minute. This performs a quicker diff, that does not detect copies and
+		// renames against unmodified files.
+		if self.config.copies {
+			let should_continue = self.collect(
+				&Self::diff(&self.repository, &self.config, &commit, &mut DiffOptions::new())?,
+				&update_notifier,
+				true,
+			)?;
+
+			if !should_continue || update_notifier(LoadStatus::CompleteQuickDiff) {
+				return Ok(());
+			}
+		}
 
 		let mut diff_options = DiffOptions::new();
 		// include_unmodified added to find copies from unmodified files
-		_ = diff_options
-			.context_lines(self.config.context_lines)
-			.ignore_filemode(false)
-			.ignore_whitespace(self.config.ignore_whitespace)
-			.ignore_whitespace_change(self.config.ignore_whitespace_change)
-			.ignore_blank_lines(self.config.ignore_blank_lines)
-			.include_typechange(true)
-			.include_typechange_trees(true)
-			.include_unmodified(self.config.copies)
-			.indent_heuristic(true)
-			.interhunk_lines(self.config.interhunk_context)
-			.minimal(true);
+		_ = diff_options.include_unmodified(self.config.copies);
+		let mut diff = Self::diff(&self.repository, &self.config, &commit, &mut diff_options)?;
 
 		let mut diff_find_options = DiffFindOptions::new();
 		_ = diff_find_options
@@ -69,30 +143,64 @@ impl<'options, 'repo> CommitDiffLoader<'options, 'repo> {
 			.copies(self.config.copies)
 			.copies_from_unmodified(self.config.copies);
 
-		let mut diff = if let Some(p) = parent {
-			self.repository
-				.diff_tree_to_tree(Some(&p.tree()?), Some(&commit.tree()?), Some(&mut diff_options))?
+		diff.find_similar(Some(&mut diff_find_options))
+			.map_err(|e| GitError::DiffLoad { cause: e })?;
+		let should_continue = self.collect(&diff, &update_notifier, false)?;
+
+		if should_continue {
+			_ = update_notifier(LoadStatus::DiffComplete);
+			return Ok(());
 		}
-		else {
-			self.repository
-				.diff_tree_to_tree(None, Some(&commit.tree()?), Some(&mut diff_options))?
-		};
+		Ok(())
+	}
 
-		diff.find_similar(Some(&mut diff_find_options))?;
-
-		let mut unmodified_file_count: usize = 0;
-
+	pub(crate) fn collect(
+		&self,
+		diff: &Diff<'_>,
+		update_handler: &impl DiffUpdateHandlerFn,
+		quick: bool,
+	) -> Result<bool, GitError> {
 		let file_stats_builder = Mutex::new(FileStatusBuilder::new());
+		let mut unmodified_file_count: usize = 0;
+		let mut change_count: usize = 0;
 
-		diff.foreach(
+		let stats = diff.stats().map_err(|e| GitError::DiffLoad { cause: e })?;
+		let total_files_changed = stats.files_changed();
+
+		if update_handler(create_status_update(quick, 0, total_files_changed)) {
+			return Ok(false);
+		}
+		let mut time = Instant::now();
+
+		let collect_result = diff.foreach(
 			&mut |diff_delta, _| {
+				change_count += 1;
+
+				#[cfg(test)]
+				{
+					// this is needed to test timing in tests, the other option would be to mock
+					// Instant, but that's more effort than is worth the value.
+					// Since this adds 10ms of delay for each delta, each file added to the diff
+					// will add ~10ms of delay.
+					//
+					// this may be flaky, due to the Diff progress being based on time. However,
+					// the added thread sleep during tests should make the diff progress very
+					// stable, as the diff processing can process the files much faster than a
+					// fraction of a millisecond.
+					std::thread::sleep(Duration::from_millis(10));
+				}
+				if time.elapsed() > Duration::from_millis(25) {
+					if update_handler(create_status_update(quick, change_count, total_files_changed)) {
+						return false;
+					}
+					time = Instant::now();
+				}
+
 				// unmodified files are included for copy detection, so ignore
 				if diff_delta.status() == git2::Delta::Unmodified {
 					unmodified_file_count += 1;
 					return true;
 				}
-
-				let mut fsb = file_stats_builder.lock();
 
 				let source_file = diff_delta.old_file();
 				let source_file_mode = FileMode::from(source_file.mode());
@@ -102,6 +210,7 @@ impl<'options, 'repo> CommitDiffLoader<'options, 'repo> {
 				let destination_file_mode = FileMode::from(destination_file.mode());
 				let destination_file_path = destination_file.path().unwrap_or(UNKNOWN_PATH.as_path());
 
+				let mut fsb = file_stats_builder.lock();
 				fsb.add_file_stat(FileStatus::new(
 					source_file_path,
 					source_file_mode,
@@ -125,24 +234,33 @@ impl<'options, 'repo> CommitDiffLoader<'options, 'repo> {
 				fsb.add_diff_line(DiffLine::from(&diff_line));
 				true
 			}),
-		)
-		.expect("diff.foreach failed. Please report this as a bug.");
+		);
 
-		let stats = diff.stats()?;
-		let number_files_changed = stats.files_changed() - unmodified_file_count;
+		// error caused by early return
+		if collect_result.is_err() {
+			return Ok(false);
+		}
+
+		let mut commit_diff = self.commit_diff.write();
+
+		let number_files_changed = total_files_changed - unmodified_file_count;
 		let number_insertions = stats.insertions();
 		let number_deletions = stats.deletions();
 
 		let fsb = file_stats_builder.into_inner();
+		commit_diff.update(fsb.build(), number_files_changed, number_insertions, number_deletions);
+		Ok(true)
+	}
+}
 
-		Ok(CommitDiff::new(
-			Commit::from(commit),
-			parent_commit,
-			fsb.build(),
-			number_files_changed,
-			number_insertions,
-			number_deletions,
-		))
+impl Debug for CommitDiffLoader {
+	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("CommitDiffLoader")
+			.field(
+				"repository",
+				&format!("Repository({})", &self.repository.path().display()),
+			)
+			.finish_non_exhaustive()
 	}
 }
 
@@ -154,8 +272,17 @@ mod tests {
 		os::unix::fs::symlink,
 	};
 
+	use git2::Index;
+
 	use super::*;
 	use crate::{diff::Origin, test_helpers::with_temp_repository};
+
+	impl CommitDiffLoader {
+		fn take_diff(mut self) -> CommitDiff {
+			let diff = std::mem::replace(&mut self.commit_diff, Arc::new(RwLock::new(CommitDiff::new())));
+			Arc::try_unwrap(diff).unwrap().into_inner()
+		}
+	}
 
 	#[cfg(not(tarpaulin_include))]
 	fn _format_status(status: &FileStatus) -> String {
@@ -270,49 +397,84 @@ mod tests {
 	}
 
 	#[cfg(not(tarpaulin_include))]
-	fn write_normal_file(repository: &crate::git::Repository, name: &str, contents: &[&str]) {
-		let root = repository.repo_path().parent().unwrap().to_path_buf();
+	fn index(repository: &Repository) -> Index {
+		repository.index().unwrap()
+	}
 
-		let file_path = root.join(name);
+	#[cfg(not(tarpaulin_include))]
+	fn root_path(repository: &Repository) -> PathBuf {
+		repository.path().to_path_buf().parent().unwrap().to_path_buf()
+	}
+
+	#[cfg(not(tarpaulin_include))]
+	fn commit_from_ref<'repo>(repository: &'repo Repository, reference: &str) -> git2::Commit<'repo> {
+		repository.find_reference(reference).unwrap().peel_to_commit().unwrap()
+	}
+
+	#[cfg(not(tarpaulin_include))]
+	fn add_path(repository: &Repository, name: &str) {
+		index(repository).add_path(PathBuf::from(name).as_path()).unwrap();
+	}
+
+	#[cfg(not(tarpaulin_include))]
+	fn write_normal_file(repository: &Repository, name: &str, contents: &[&str]) {
+		let file_path = root_path(repository).join(name);
 		let mut file = File::create(file_path.as_path()).unwrap();
 		if !contents.is_empty() {
 			writeln!(file, "{}", contents.join("\n")).unwrap();
 		}
-		repository.add_path_to_index(PathBuf::from(name).as_path()).unwrap();
+
+		index(repository).add_path(PathBuf::from(name).as_path()).unwrap();
 	}
 
 	#[cfg(not(tarpaulin_include))]
-	fn remove_path(repository: &crate::git::Repository, name: &str) {
-		let root = repository.repo_path().parent().unwrap().to_path_buf();
+	fn remove_path(repository: &Repository, name: &str) {
+		let file_path = root_path(repository).join(name);
+		_ = remove_file(file_path.as_path());
 
-		let file_path = root.join(name);
-		_ = remove_file(file_path);
-
-		repository
-			.remove_path_from_index(PathBuf::from(name).as_path())
-			.unwrap();
+		index(repository).remove_path(PathBuf::from(name).as_path()).unwrap();
 	}
 
 	#[cfg(not(tarpaulin_include))]
-	fn create_commit(repository: &crate::git::Repository) {
+	fn create_commit(repository: &Repository) {
 		let sig = git2::Signature::new("name", "name@example.com", &git2::Time::new(1_609_459_200, 0)).unwrap();
-		repository
-			.create_commit_on_index("refs/heads/main", &sig, &sig, "title")
+		let tree = repository.find_tree(index(repository).write_tree().unwrap()).unwrap();
+		let head = commit_from_ref(repository, "refs/heads/main");
+		_ = repository
+			.commit(Some("HEAD"), &sig, &sig, "title", &tree, &[&head])
 			.unwrap();
 	}
 
 	#[cfg(not(tarpaulin_include))]
-	fn diff_from_head(repository: &crate::git::Repository, options: &CommitDiffLoaderOptions) -> CommitDiff {
-		let id = repository.commit_id_from_ref("refs/heads/main").unwrap();
-		let loader = CommitDiffLoader::new(repository.repository(), options);
-		loader.load_from_hash(id).unwrap()
+	fn diff_from_head(repository: Repository, options: CommitDiffLoaderOptions) -> Result<CommitDiffLoader, GitError> {
+		let commit = commit_from_ref(&repository, "refs/heads/main");
+		let hash = commit.id().to_string();
+		drop(commit);
+		let mut loader = CommitDiffLoader::new(repository, options);
+		loader.load_diff(hash.as_str(), |_| false)?;
+		Ok(loader)
+	}
+
+	#[cfg(not(tarpaulin_include))]
+	fn diff_with_notifier(
+		repository: Repository,
+		options: CommitDiffLoaderOptions,
+		update_notifier: impl DiffUpdateHandlerFn,
+	) -> Result<CommitDiffLoader, GitError> {
+		let commit = commit_from_ref(&repository, "refs/heads/main");
+		let hash = commit.id().to_string();
+		drop(commit);
+		let mut loader = CommitDiffLoader::new(repository, options);
+		loader.load_diff(hash.as_str(), update_notifier)?;
+		Ok(loader)
 	}
 
 	#[test]
 	fn load_from_hash_commit_no_parents() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 0);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
@@ -322,10 +484,11 @@ mod tests {
 	#[test]
 	fn load_from_hash_added_file() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line1"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 1);
 			assert_eq!(diff.number_deletions(), 0);
@@ -336,12 +499,14 @@ mod tests {
 	#[test]
 	fn load_from_hash_removed_file() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line1"]);
-			create_commit(&repo);
-			remove_path(&repo, "a");
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+			remove_path(&repository, "a");
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 1);
@@ -358,12 +523,14 @@ mod tests {
 	#[test]
 	fn load_from_hash_modified_file() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line1"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["line2"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &["line2"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 1);
 			assert_eq!(diff.number_deletions(), 1);
@@ -381,12 +548,23 @@ mod tests {
 	#[test]
 	fn load_from_hash_with_context() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3-m", "line4", "line5"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().context_lines(2));
+			write_normal_file(&repository, "a", &[
+				"line0", "line1", "line2", "line3", "line4", "line5",
+			]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &[
+				"line0",
+				"line1",
+				"line2",
+				"line3-m",
+				"line4",
+				"line5",
+			]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().context_lines(2)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_commit_diff!(
 				&diff,
 				"a (n)",
@@ -405,12 +583,18 @@ mod tests {
 	#[test]
 	fn load_from_hash_ignore_white_space_change() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &[" line0", "line1"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["  line0", " line1-m"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().ignore_whitespace_change(true));
+			write_normal_file(&repository, "a", &[" line0", "line1"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &["  line0", " line1-m"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(
+				repository,
+				CommitDiffLoaderOptions::new().ignore_whitespace_change(true),
+			)
+			.unwrap();
+			let diff = loader.take_diff();
+
 			assert_commit_diff!(
 				&diff,
 				"a (n)",
@@ -425,12 +609,14 @@ mod tests {
 	#[test]
 	fn load_from_hash_ignore_white_space() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0", "line1"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["  line0", " line1-m"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().ignore_whitespace(true));
+			write_normal_file(&repository, "a", &["line0", "line1"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &["  line0", " line1-m"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().ignore_whitespace(true)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_commit_diff!(
 				&diff,
 				"a (n)",
@@ -445,12 +631,14 @@ mod tests {
 	#[test]
 	fn load_from_hash_copies() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "b", &["line0"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().copies(true));
+			write_normal_file(&repository, "a", &["line0"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "b", &["line0"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().copies(true)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
@@ -461,13 +649,15 @@ mod tests {
 	#[test]
 	fn load_from_hash_copies_modified_source() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["line0", "a"]);
-			write_normal_file(&repo, "b", &["line0"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().copies(true));
+			write_normal_file(&repository, "a", &["line0"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &["line0", "a"]);
+			write_normal_file(&repository, "b", &["line0"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().copies(true)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 2);
 			assert_eq!(diff.number_insertions(), 1);
 			assert_eq!(diff.number_deletions(), 0);
@@ -486,12 +676,23 @@ mod tests {
 	#[test]
 	fn load_from_hash_interhunk_context() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0", "line1", "line2", "line3", "line4", "line5"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["line0", "line1-m", "line2", "line3", "line4-m", "line5"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().interhunk_context(2));
+			write_normal_file(&repository, "a", &[
+				"line0", "line1", "line2", "line3", "line4", "line5",
+			]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &[
+				"line0",
+				"line1-m",
+				"line2",
+				"line3",
+				"line4-m",
+				"line5",
+			]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().interhunk_context(2)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_commit_diff!(
 				&diff,
 				"a (n)",
@@ -510,13 +711,15 @@ mod tests {
 	#[test]
 	fn load_from_hash_rename_source_not_modified() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0"]);
-			create_commit(&repo);
-			remove_path(&repo, "a");
-			write_normal_file(&repo, "b", &["line0"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
+			write_normal_file(&repository, "a", &["line0"]);
+			create_commit(&repository);
+			remove_path(&repository, "a");
+			write_normal_file(&repository, "b", &["line0"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().renames(true, 100)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
@@ -533,13 +736,15 @@ mod tests {
 		// this creates a situation where git detects the rename from the original unmodified
 		// version of "a" before a new file called "a" was created
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			write_normal_file(&repo, "a", &["line0"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["other0"]);
-			write_normal_file(&repo, "b", &["line0"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
+			write_normal_file(&repository, "a", &["line0"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &["other0"]);
+			write_normal_file(&repository, "b", &["line0"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().renames(true, 100)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 2);
 			assert_eq!(diff.number_insertions(), 1);
 			assert_eq!(diff.number_deletions(), 0);
@@ -561,19 +766,21 @@ mod tests {
 		with_temp_repository(|repository| {
 			use std::os::unix::fs::PermissionsExt as _;
 
-			let repo = crate::git::Repository::from(repository);
+			let root = root_path(&repository);
 
-			let root = repo.repo_path().parent().unwrap().to_path_buf();
-
-			write_normal_file(&repo, "a", &["line0"]);
-			create_commit(&repo);
+			write_normal_file(&repository, "a", &["line0"]);
+			create_commit(&repository);
 			let file = File::open(root.join("a")).unwrap();
 			let mut permissions = file.metadata().unwrap().permissions();
 			permissions.set_mode(0o755);
 			file.set_permissions(permissions).unwrap();
-			repo.add_path_to_index(PathBuf::from("a").as_path()).unwrap();
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new().renames(true, 100));
+
+			add_path(&repository, "a");
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new().renames(true, 100)).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
@@ -585,18 +792,19 @@ mod tests {
 	#[test]
 	fn load_from_hash_type_changed() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			let root = repo.repo_path().parent().unwrap().to_path_buf();
-
-			write_normal_file(&repo, "a", &["line0"]);
-			write_normal_file(&repo, "b", &["line0"]);
-			create_commit(&repo);
-			remove_path(&repo, "a");
+			write_normal_file(&repository, "a", &["line0"]);
+			write_normal_file(&repository, "b", &["line0"]);
+			create_commit(&repository);
+			remove_path(&repository, "a");
+			let root = root_path(&repository);
 			symlink(root.join("b"), root.join("a")).unwrap();
-			repo.add_path_to_index(PathBuf::from("a").as_path()).unwrap();
-			repo.add_path_to_index(PathBuf::from("b").as_path()).unwrap();
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			add_path(&repository, "a");
+			add_path(&repository, "b");
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
@@ -607,35 +815,242 @@ mod tests {
 	#[test]
 	fn load_from_hash_binary_added_file() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			// treat all files as binary
-			write_normal_file(&repo, ".gitattributes", &["a binary"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["line1"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
-			assert_eq!(diff.number_insertions(), 0);
+			assert_eq!(diff.number_insertions(), 1);
 			assert_eq!(diff.number_deletions(), 0);
-			assert_commit_diff!(&diff, "a (o,b) > a (n,b)", "Status Added");
+			assert_commit_diff!(&diff, "a (o) > a (n)", "Status Added", "@@ -0,0 +1,1 @@", "+  1| line1");
 		});
 	}
 
 	#[test]
 	fn load_from_hash_binary_modified_file() {
 		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
 			// treat all files as binary
-			write_normal_file(&repo, ".gitattributes", &["a binary"]);
-			write_normal_file(&repo, "a", &["line1"]);
-			create_commit(&repo);
-			write_normal_file(&repo, "a", &["line2"]);
-			create_commit(&repo);
-			let diff = diff_from_head(&repo, &CommitDiffLoaderOptions::new());
+			write_normal_file(&repository, ".gitattributes", &["a binary"]);
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+			write_normal_file(&repository, "a", &["line2"]);
+			create_commit(&repository);
+
+			let loader = diff_from_head(repository, CommitDiffLoaderOptions::new()).unwrap();
+			let diff = loader.take_diff();
+
 			assert_eq!(diff.number_files_changed(), 1);
 			assert_eq!(diff.number_insertions(), 0);
 			assert_eq!(diff.number_deletions(), 0);
 			assert_commit_diff!(&diff, "a (n,b)", "Status Modified");
+		});
+	}
+
+	#[test]
+	fn diff_notifier() {
+		with_temp_repository(|repository| {
+			for i in 0..10 {
+				write_normal_file(&repository, format!("a-{i}").as_str(), &["line"]);
+			}
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				c.push(status);
+				false
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new(), notifier).unwrap();
+
+			let c = calls.lock();
+			assert_eq!(c.first().unwrap(), &LoadStatus::New);
+			assert_eq!(c.get(1).unwrap(), &LoadStatus::Diff(0, 10));
+			assert!(matches!(c.get(2).unwrap(), &LoadStatus::Diff(_, 10)));
+			assert!(matches!(c.last().unwrap(), &LoadStatus::DiffComplete));
+		});
+	}
+
+	#[test]
+	fn diff_notifier_with_copies() {
+		with_temp_repository(|repository| {
+			for i in 0..10 {
+				write_normal_file(&repository, format!("a-{i}").as_str(), &["line"]);
+			}
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				c.push(status);
+				false
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new().copies(true), notifier).unwrap();
+
+			// Since the exact emitted statues are based on time, this matches a dynamic pattern of:
+			// 		- New
+			// 		- QuickDiff(0, 10)
+			// 		- QuickDiff(>0, 10)
+			// 		- CompleteQuickDiff
+			// 		- Diff(0, 10)
+			// 		- Diff(>0, 10)
+			// 		- DiffComplete
+			let mut pass = false;
+			let mut expected = LoadStatus::New;
+			for c in calls.lock().clone() {
+				match (&expected, c) {
+					(&LoadStatus::New, LoadStatus::New) => {
+						expected = LoadStatus::QuickDiff(0, 10);
+					},
+					(&LoadStatus::QuickDiff(0, 10), LoadStatus::QuickDiff(0, 10)) => {
+						expected = LoadStatus::QuickDiff(1, 10);
+					},
+					(&LoadStatus::QuickDiff(1, 10), LoadStatus::QuickDiff(p, 10)) => {
+						assert!(p > 0);
+						expected = LoadStatus::CompleteQuickDiff;
+					},
+					(&LoadStatus::CompleteQuickDiff, LoadStatus::CompleteQuickDiff) => {
+						expected = LoadStatus::Diff(0, 10);
+					},
+					(&LoadStatus::Diff(0, 10), LoadStatus::Diff(0, 10)) => {
+						expected = LoadStatus::Diff(1, 10);
+					},
+					(&LoadStatus::Diff(1, 10), LoadStatus::Diff(p, 10)) => {
+						assert!(p > 0);
+						expected = LoadStatus::DiffComplete;
+					},
+					(&LoadStatus::DiffComplete, LoadStatus::DiffComplete) => {
+						pass = true;
+					},
+					(..) => {},
+				}
+			}
+
+			assert!(pass);
+		});
+	}
+
+	#[test]
+	fn cancel_diff_after_setting_commit() {
+		with_temp_repository(|repository| {
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				c.push(status);
+				true
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new(), notifier).unwrap();
+
+			let c = calls.lock();
+			assert_eq!(c.len(), 1);
+			assert_eq!(c.first().unwrap(), &LoadStatus::New);
+		});
+	}
+
+	#[test]
+	fn cancel_diff_after_collect_load_stats() {
+		with_temp_repository(|repository| {
+			write_normal_file(&repository, "a", &["line1"]);
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				c.push(status);
+				c.len() == 2
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new(), notifier).unwrap();
+
+			let c = calls.lock();
+			assert_eq!(c.len(), 2);
+			assert_eq!(c.first().unwrap(), &LoadStatus::New);
+			assert_eq!(c.get(1).unwrap(), &LoadStatus::Diff(0, 1));
+		});
+	}
+
+	#[test]
+	fn cancel_diff_during_diff_collect() {
+		with_temp_repository(|repository| {
+			for i in 0..10 {
+				write_normal_file(&repository, format!("a-{i}").as_str(), &["line"]);
+			}
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				c.push(status);
+				c.len() == 4
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new(), notifier).unwrap();
+			let c = calls.lock();
+			assert_eq!(c.first().unwrap(), &LoadStatus::New);
+			assert_eq!(c.get(1).unwrap(), &LoadStatus::Diff(0, 10));
+			assert!(matches!(c.last().unwrap(), &LoadStatus::Diff(_, 10)));
+		});
+	}
+
+	#[test]
+	fn cancel_diff_during_quick_diff_collect() {
+		with_temp_repository(|repository| {
+			for i in 0..10 {
+				write_normal_file(&repository, format!("a-{i}").as_str(), &["line"]);
+			}
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				c.push(status);
+				c.len() == 3
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new().copies(true), notifier).unwrap();
+			let c = calls.lock();
+			assert_eq!(c.first().unwrap(), &LoadStatus::New);
+			assert_eq!(c.get(1).unwrap(), &LoadStatus::QuickDiff(0, 10));
+			assert!(matches!(c.last().unwrap(), &LoadStatus::QuickDiff(_, 10)));
+		});
+	}
+
+	#[test]
+	fn cancel_diff_during_quick_diff_complete() {
+		with_temp_repository(|repository| {
+			for i in 0..10 {
+				write_normal_file(&repository, format!("a-{i}").as_str(), &["line"]);
+			}
+			create_commit(&repository);
+
+			let calls = Arc::new(Mutex::new(Vec::new()));
+			let notifier_calls = Arc::clone(&calls);
+			let notifier = move |status| {
+				let mut c = notifier_calls.lock();
+				let rtn = status == LoadStatus::CompleteQuickDiff;
+				c.push(status);
+				rtn
+			};
+
+			_ = diff_with_notifier(repository, CommitDiffLoaderOptions::new().copies(true), notifier).unwrap();
+			let c = calls.lock();
+			assert_eq!(c.first().unwrap(), &LoadStatus::New);
+			assert_eq!(c.get(1).unwrap(), &LoadStatus::QuickDiff(0, 10));
+			assert!(matches!(c.get(2).unwrap(), &LoadStatus::QuickDiff(_, 10)));
+			assert_eq!(c.last().unwrap(), &LoadStatus::CompleteQuickDiff);
 		});
 	}
 }

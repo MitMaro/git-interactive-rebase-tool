@@ -15,22 +15,22 @@ pub(crate) fn render_view_data(view_data: &ViewData, options: AssertRenderOption
 		}
 	}
 
-	if view_data.is_empty() {
+	let leading_lines = view_data.leading_lines();
+	let body_lines = view_data.lines();
+	let trailing_lines = view_data.trailing_lines();
+
+	if leading_lines.count() == 0 && body_lines.count() == 0 && trailing_lines.count() == 0 {
 		lines.push(String::from("{EMPTY}"));
 	}
 
-	if !body_only {
-		let leading_lines = view_data.leading_lines();
-		if !leading_lines.is_empty() {
-			lines.push(String::from("{LEADING}"));
-			for line in leading_lines.iter() {
-				lines.push(render_view_line(line, Some(options)));
-			}
+	if !body_only && leading_lines.count() != 0 {
+		lines.push(String::from("{LEADING}"));
+		for line in leading_lines.iter() {
+			lines.push(render_view_line(line, Some(options)));
 		}
 	}
 
-	let body_lines = view_data.lines();
-	if !body_lines.is_empty() {
+	if body_lines.count() != 0 {
 		if !body_only {
 			lines.push(String::from("{BODY}"));
 		}
@@ -39,13 +39,10 @@ pub(crate) fn render_view_data(view_data: &ViewData, options: AssertRenderOption
 		}
 	}
 
-	if !body_only {
-		let trailing_lines = view_data.trailing_lines();
-		if !trailing_lines.is_empty() {
-			lines.push(String::from("{TRAILING}"));
-			for line in trailing_lines.iter() {
-				lines.push(render_view_line(line, Some(options)));
-			}
+	if !body_only && trailing_lines.count() != 0 {
+		lines.push(String::from("{TRAILING}"));
+		for line in trailing_lines.iter() {
+			lines.push(render_view_line(line, Some(options)));
 		}
 	}
 	lines

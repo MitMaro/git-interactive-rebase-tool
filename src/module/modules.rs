@@ -1,6 +1,5 @@
 use crate::{
 	application::AppData,
-	git::Repository,
 	module::{Module, ModuleProvider, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
 };
@@ -17,11 +16,11 @@ pub(crate) struct Modules {
 }
 
 impl ModuleProvider for Modules {
-	fn new(repository: Repository, app_data: &AppData) -> Self {
+	fn new(app_data: &AppData) -> Self {
 		Self {
 			error: Error::new(app_data),
 			list: List::new(app_data),
-			show_commit: ShowCommit::new(app_data, repository),
+			show_commit: ShowCommit::new(app_data),
 			window_size_error: WindowSizeError::new(),
 			confirm_abort: ConfirmAbort::new(app_data),
 			confirm_rebase: ConfirmRebase::new(app_data),
@@ -61,33 +60,35 @@ impl ModuleProvider for Modules {
 mod tests {
 	use std::sync::Arc;
 
-	use parking_lot::Mutex;
+	use parking_lot::{Mutex, lock_api::RwLock};
 
 	use super::*;
 	use crate::{
+		diff,
+		diff::CommitDiff,
 		input,
 		search,
-		test_helpers::{create_config, with_temp_repository, with_todo_file},
+		test_helpers::{create_config, with_todo_file},
 		view,
 	};
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {
-		with_temp_repository(|repository| {
-			with_todo_file(&[], |todo_file_context| {
-				let (_todo_file_path, todo_file) = todo_file_context.to_owned();
-				let config = create_config();
-				let app_data = AppData::new(
-					config,
-					State::WindowSizeError,
-					Arc::new(Mutex::new(todo_file)),
-					view::State::new(),
-					input::State::new(),
-					search::State::new(),
-				);
-				let modules = Modules::new(Repository::from(repository), &app_data);
-				callback(modules);
-			});
+		with_todo_file(&[], |todo_file_context| {
+			let commit_diff = CommitDiff::new();
+			let (_todo_file_path, todo_file) = todo_file_context.to_owned();
+			let config = create_config();
+			let app_data = AppData::new(
+				config,
+				State::WindowSizeError,
+				Arc::new(Mutex::new(todo_file)),
+				diff::thread::State::new(Arc::new(RwLock::new(commit_diff))),
+				view::State::new(),
+				input::State::new(),
+				search::State::new(),
+			);
+			let modules = Modules::new(&app_data);
+			callback(modules);
 		});
 	}
 

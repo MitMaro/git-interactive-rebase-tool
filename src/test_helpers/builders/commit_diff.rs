@@ -70,13 +70,15 @@ impl CommitDiffBuilder {
 	/// Return the built `CommitDiff`
 	#[must_use]
 	pub(crate) fn build(self) -> CommitDiff {
-		CommitDiff::new(
-			self.commit,
-			self.parent,
+		let mut diff = CommitDiff::new();
+		diff.reset(self.commit, self.parent);
+		diff.update(
 			self.file_statuses,
 			self.number_files_changed,
 			self.number_insertions,
 			self.number_deletions,
-		)
+		);
+
+		diff
 	}
 }

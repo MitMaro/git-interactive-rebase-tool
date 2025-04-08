@@ -40,12 +40,6 @@ impl ViewData {
 		view_data
 	}
 
-	/// Does the instance contain any content.
-	#[must_use]
-	pub(crate) fn is_empty(&self) -> bool {
-		self.lines.is_empty() && self.lines_leading.is_empty() && self.lines_trailing.is_empty()
-	}
-
 	/// Update the view data using a `ViewDataUpdater`. This allows for batch updating of the `ViewData`.
 	pub(crate) fn update_view_data<C>(&mut self, callback: C)
 	where C: FnOnce(&mut ViewDataUpdater<'_>) {
@@ -165,12 +159,6 @@ mod tests {
 	}
 
 	#[test]
-	fn is_empty() {
-		let view_data = ViewData::new(|_| {});
-		assert!(view_data.is_empty());
-	}
-
-	#[test]
 	fn update_view_data_without_modifications() {
 		let mut view_data = ViewData::new(|_| {});
 		let current_version = view_data.get_version();
@@ -193,9 +181,9 @@ mod tests {
 		view_data.push_leading_line(ViewLine::new_empty_line());
 		view_data.push_trailing_line(ViewLine::new_empty_line());
 		view_data.clear();
-		assert!(view_data.leading_lines().is_empty());
-		assert!(view_data.lines().is_empty());
-		assert!(view_data.trailing_lines().is_empty());
+		assert_eq!(view_data.leading_lines().count(), 0);
+		assert_eq!(view_data.lines().count(), 0);
+		assert_eq!(view_data.trailing_lines().count(), 0);
 	}
 
 	#[test]
@@ -205,9 +193,9 @@ mod tests {
 		view_data.push_leading_line(ViewLine::new_empty_line());
 		view_data.push_trailing_line(ViewLine::new_empty_line());
 		view_data.clear_body();
-		assert!(!view_data.leading_lines().is_empty());
-		assert!(view_data.lines().is_empty());
-		assert!(!view_data.trailing_lines().is_empty());
+		assert_ne!(view_data.leading_lines().count(), 0);
+		assert_eq!(view_data.lines().count(), 0);
+		assert_ne!(view_data.trailing_lines().count(), 0);
 	}
 
 	#[test]
