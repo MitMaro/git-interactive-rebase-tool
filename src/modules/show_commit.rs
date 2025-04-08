@@ -7,7 +7,7 @@ mod tests;
 
 use std::sync::Arc;
 
-use anyhow::{Error, anyhow};
+use anyhow::anyhow;
 use captur::capture;
 use parking_lot::Mutex;
 
@@ -19,16 +19,15 @@ use self::{
 use crate::{
 	application::AppData,
 	components::help::Help,
-	config::{DiffIgnoreWhitespaceSetting, DiffShowWhitespaceSetting},
-	diff::{CommitDiff, CommitDiffLoaderOptions},
-	git::Repository,
+	config::DiffShowWhitespaceSetting,
+	diff,
 	input::{Event, InputOptions, KeyBindings, StandardEvent},
 	module::{Module, State},
 	process::Results,
 	select,
 	todo_file::TodoFile,
 	util::handle_view_data_scroll,
-	view::{self, RenderContext, ViewData},
+	view::{self, RenderContext, ViewData, ViewLine},
 };
 
 // TODO Remove `union` call when bitflags/bitflags#180 is resolved
@@ -37,12 +36,10 @@ const INPUT_OPTIONS: InputOptions = InputOptions::UNDO_REDO
 	.union(InputOptions::HELP);
 
 pub(crate) struct ShowCommit {
-	commit_diff_loader_options: CommitDiffLoaderOptions,
-	diff: Option<CommitDiff>,
+	diff_state: diff::State,
 	diff_view_data: ViewData,
 	help: Help,
 	overview_view_data: ViewData,
-	repository: Repository,
 	state: ShowCommitState,
 	view_state: view::State,
 	todo_file: Arc<Mutex<TodoFile>>,
@@ -53,13 +50,15 @@ impl Module for ShowCommit {
 	fn activate(&mut self, _: State) -> Results {
 		let mut results = Results::new();
 		if let Some(selected_line) = self.todo_file.lock().get_selected_line() {
-			// skip loading commit data if the currently loaded commit has not changed, this retains
-			// position after returning to the list view or help
-			if let Some(diff) = self.diff.as_ref() {
-				if diff.commit().hash() == selected_line.get_hash() {
+			{
+				// skip loading commit data if the currently loaded commit has not changed, this retains
+				// position after returning to the list view or help
+				let diff = self.diff_state.diff();
+				if diff.read().commit().hash() == selected_line.get_hash() {
 					return results;
 				}
 			}
+
 			self.overview_view_data.update_view_data(|updater| {
 				updater.clear();
 				updater.reset_scroll_position();
@@ -70,18 +69,7 @@ impl Module for ShowCommit {
 				updater.reset_scroll_position();
 			});
 
-			let new_diff = self
-				.repository
-				.load_commit_diff(selected_line.get_hash(), &self.commit_diff_loader_options);
-
-			match new_diff {
-				Ok(diff) => {
-					self.diff = Some(diff);
-				},
-				Err(e) => {
-					results.error_with_return(Error::from(e), State::List);
-				},
-			}
+			results.load_diff(selected_line.get_hash())
 		}
 		else {
 			results.error_with_return(anyhow!("No valid commit to show"), State::List);
@@ -94,9 +82,24 @@ impl Module for ShowCommit {
 			return self.help.get_view_data();
 		}
 
-		let diff = self.diff.as_ref().unwrap(); // will only fail on programmer error
+		let diff_arc = self.diff_state.diff();
+		let diff = diff_arc.read();
+
+		// There is a small race condition where sometimes the diff loader is still in the process
+		// of cancelling the previous diff and still has that diff loaded. In that case, we want to
+		// show a general loading diff.
+		let todo_line = self.todo_file.lock();
+		let selected_line = todo_line.get_selected_line().map(|l| l.get_hash()).unwrap_or("");
+		if self.diff_state.is_cancelled() || selected_line == "" || selected_line != diff.commit().hash() {
+			self.overview_view_data.update_view_data(|updater| {
+				updater.clear();
+				updater.push_line(ViewLine::from("Loading Diff"));
+			});
+		}
+
+		let load_status = self.diff_state.load_status().read().clone();
 		let state = &self.state;
-		let view_builder = &self.view_builder;
+		let view_builder = &mut self.view_builder;
 		let is_full_width = context.is_full_width();
 
 		match *state {
@@ -104,7 +107,7 @@ impl Module for ShowCommit {
 				if self.overview_view_data.is_empty() {
 					self.overview_view_data.update_view_data(|updater| {
 						capture!(view_builder, diff);
-						view_builder.build_view_data_for_overview(updater, diff, is_full_width);
+						view_builder.build_view_data_for_overview(updater, &diff, load_status, is_full_width);
 					});
 				}
 				&self.overview_view_data
@@ -113,7 +116,7 @@ impl Module for ShowCommit {
 				if self.diff_view_data.is_empty() {
 					self.diff_view_data.update_view_data(|updater| {
 						capture!(view_builder, diff);
-						view_builder.build_view_data_diff(updater, diff, is_full_width);
+						view_builder.build_view_data_diff(updater, &diff, load_status, is_full_width);
 					});
 				}
 				&self.diff_view_data
@@ -158,6 +161,10 @@ impl Module for ShowCommit {
 							ShowCommitState::Diff => ShowCommitState::Overview,
 						}
 					},
+					Event::Standard(StandardEvent::DiffUpdate) => {
+						self.diff_view_data.clear();
+						self.overview_view_data.clear();
+					}
 					Event::Standard(StandardEvent::Help) => self.help.set_active(),
 					Event::Key(_) => {
 						active_view_data.update_view_data(|updater| updater.clear());
@@ -165,6 +172,7 @@ impl Module for ShowCommit {
 							self.state = ShowCommitState::Overview;
 						}
 						else {
+							results.cancel_diff();
 							results.state(State::List);
 						}
 					},
@@ -180,7 +188,7 @@ impl Module for ShowCommit {
 }
 
 impl ShowCommit {
-	pub(crate) fn new(app_data: &AppData, repository: Repository) -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
 		let overview_view_data = ViewData::new(|updater| {
 			updater.set_show_title(true);
 			updater.set_show_help(true);
@@ -200,22 +208,11 @@ impl ShowCommit {
 				|| config.diff_show_whitespace == DiffShowWhitespaceSetting::Trailing,
 		);
 
-		let commit_diff_loader_options = CommitDiffLoaderOptions::new()
-			.context_lines(config.git.diff_context)
-			.copies(config.git.diff_copies)
-			.ignore_whitespace(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All)
-			.ignore_whitespace_change(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change)
-			.ignore_blank_lines(config.diff_ignore_blank_lines)
-			.interhunk_context(config.git.diff_interhunk_lines)
-			.renames(config.git.diff_renames, config.git.diff_rename_limit);
-
 		Self {
-			commit_diff_loader_options,
-			diff: None,
+			diff_state: app_data.diff_state(),
 			diff_view_data,
 			help: Help::new_from_keybindings(&get_show_commit_help_lines(&config.key_bindings)),
 			overview_view_data,
-			repository,
 			state: ShowCommitState::Overview,
 			view_state: app_data.view_state(),
 			todo_file: app_data.todo_file(),

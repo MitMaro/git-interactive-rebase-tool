@@ -64,6 +64,13 @@ pub(crate) enum GitError {
 		#[source]
 		cause: git2::Error,
 	},
+	/// The diff could not be loaded
+	#[error("Could not load diff")]
+	DiffLoad {
+		/// The internal cause of the load error.
+		#[source]
+		cause: git2::Error,
+	},
 }
 
 #[cfg(test)]

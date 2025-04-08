@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 /// Represents a user within a commit with a name and email address
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) struct User {
 	name: Option<String>,
 	email: Option<String>,

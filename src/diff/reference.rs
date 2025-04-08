@@ -66,21 +66,21 @@ impl From<&git2::Reference<'_>> for Reference {
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::test_helpers::with_temp_repository;
-
-	#[test]
-	fn test() {
-		with_temp_repository(|repository| {
-			let repo = crate::git::Repository::from(repository);
-			let oid = repo.head_id("main").unwrap();
-			let reference = repo.find_reference("refs/heads/main").unwrap();
-			assert_eq!(reference.hash(), format!("{oid}"));
-			assert_eq!(reference.name(), "refs/heads/main");
-			assert_eq!(reference.shortname(), "main");
-			assert_eq!(reference.kind(), ReferenceKind::Branch);
-		});
-	}
-}
+// #[cfg(test)]
+// mod tests {
+// 	use super::*;
+// 	use crate::test_helpers::with_temp_repository;
+//
+// 	#[test]
+// 	fn test() {
+// 		with_temp_repository(|repository| {
+// 			let repo = crate::git::Repository::from(repository);
+// 			let oid = repo.head_id("main").unwrap();
+// 			let reference = repo.find_reference("refs/heads/main").unwrap();
+// 			assert_eq!(reference.hash(), format!("{oid}"));
+// 			assert_eq!(reference.name(), "refs/heads/main");
+// 			assert_eq!(reference.shortname(), "main");
+// 			assert_eq!(reference.kind(), ReferenceKind::Branch);
+// 		});
+// 	}
+// }

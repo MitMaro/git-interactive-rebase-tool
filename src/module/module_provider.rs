@@ -1,11 +1,10 @@
 use crate::{
 	application::AppData,
-	git::Repository,
 	module::{Module, State},
 };
 
 pub(crate) trait ModuleProvider {
-	fn new(repository: Repository, app_data: &AppData) -> Self;
+	fn new(app_data: &AppData) -> Self;
 
 	fn get_mut_module(&mut self, _state: State) -> &mut dyn Module;
 

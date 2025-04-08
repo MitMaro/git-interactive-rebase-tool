@@ -25,6 +25,8 @@ fn _assert_results_format(artifacts: &[Artifact]) -> String {
 				Artifact::SearchCancel => String::from("SearchCancel"),
 				Artifact::SearchTerm(ref term) => format!("SearchTerm({term})"),
 				Artifact::Searchable(ref _searchable) => String::from("SearchCancel(_)"),
+				Artifact::LoadDiff(ref hash) => format!("LoadDiff({hash:?})"),
+				Artifact::CancelDiff => String::from("CancelDiff"),
 			}
 		})
 		.collect::<Vec<String>>()
@@ -45,7 +47,9 @@ fn compare_artifact(a: &Artifact, b: &Artifact) -> bool {
 			self_command == other_command
 		},
 		(Artifact::SearchTerm(self_term), Artifact::SearchTerm(other_term)) => self_term == other_term,
+		(Artifact::LoadDiff(self_hash), Artifact::LoadDiff(other_hash)) => self_hash == other_hash,
 		(Artifact::SearchCancel, Artifact::SearchCancel)
+		| (Artifact::CancelDiff, Artifact::CancelDiff)
 		| (Artifact::EnqueueResize, Artifact::EnqueueResize)
 		| (Artifact::Searchable(_), Artifact::Searchable(_)) => true,
 		_ => false,
