@@ -1,9 +1,14 @@
+use std::time::UNIX_EPOCH;
+
 use chrono::{DateTime, Local, TimeZone as _};
 
-use crate::git::{GitError, Reference, User};
+use crate::{
+	diff::{Reference, User},
+	git::GitError,
+};
 
 /// Represents a commit.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Commit {
 	pub(crate) hash: String,
 	pub(crate) reference: Option<Reference>,
@@ -16,6 +21,20 @@ pub(crate) struct Commit {
 }
 
 impl Commit {
+	#[must_use]
+	pub(crate) fn empty() -> Self {
+		Self {
+			hash: String::from("0000000000000000000000000000000000000000"),
+			reference: None,
+			author: User::new(None, None),
+			authored_date: None,
+			message: None,
+			committer: None,
+			committed_date: DateTime::from(UNIX_EPOCH),
+			summary: None,
+		}
+	}
+
 	/// Get the hash of the commit
 	#[must_use]
 	pub(crate) fn hash(&self) -> &str {
@@ -128,6 +147,34 @@ mod tests {
 		with_temp_repository,
 	};
 
+	impl Commit {
+		pub(crate) fn new_with_hash(hash: &str) -> Self {
+			Self {
+				hash: String::from(hash),
+				reference: None,
+				author: User::new(None, None),
+				authored_date: None,
+				message: None,
+				committer: None,
+				committed_date: DateTime::from(UNIX_EPOCH),
+				summary: None,
+			}
+		}
+	}
+
+	#[test]
+	fn empty() {
+		let commit = Commit::empty();
+		assert_eq!(commit.hash(), "0000000000000000000000000000000000000000");
+		assert_none!(commit.reference());
+		assert_eq!(commit.author(), &User::new(None, None));
+		assert_none!(commit.authored_date());
+		assert_none!(commit.message());
+		assert_none!(commit.committer());
+		assert_eq!(commit.committed_date().timestamp(), 0);
+		assert_none!(commit.summary());
+	}
+
 	#[test]
 	fn hash() {
 		let commit = CommitBuilder::new("0123456789ABCDEF").build();
@@ -177,11 +224,10 @@ mod tests {
 	#[test]
 	fn new_authored_date_same_committed_date() {
 		with_temp_repository(|repository| {
-			create_commit(
+			let commit = create_commit(
 				&repository,
 				Some(CreateCommitOptions::new().author_time(JAN_2021_EPOCH)),
 			);
-			let commit = repository.find_commit("refs/heads/main").unwrap();
 			assert_none!(commit.authored_date());
 		});
 	}
@@ -189,7 +235,7 @@ mod tests {
 	#[test]
 	fn new_authored_date_different_than_committed() {
 		with_temp_repository(|repository| {
-			create_commit(
+			let commit = create_commit(
 				&repository,
 				Some(
 					CreateCommitOptions::new()
@@ -197,7 +243,6 @@ mod tests {
 						.author_time(JAN_2021_EPOCH + 1),
 				),
 			);
-			let commit = repository.find_commit("refs/heads/main").unwrap();
 			assert_some_eq!(
 				commit.authored_date(),
 				&DateTime::parse_from_rfc3339("2021-01-01T00:00:01Z").unwrap()
@@ -208,8 +253,7 @@ mod tests {
 	#[test]
 	fn new_committer_different_than_author() {
 		with_temp_repository(|repository| {
-			create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
-			let commit = repository.find_commit("refs/heads/main").unwrap();
+			let commit = create_commit(&repository, Some(CreateCommitOptions::new().committer("Committer")));
 			assert_some_eq!(
 				commit.committer(),
 				&User::new(Some("Committer"), Some("committer@example.com"))
@@ -220,7 +264,7 @@ mod tests {
 	#[test]
 	fn new_committer_same_as_author() {
 		with_temp_repository(|repository| {
-			let commit = repository.find_commit("refs/heads/main").unwrap();
+			let commit = create_commit(&repository, None);
 			assert_none!(commit.committer());
 		});
 	}
@@ -228,9 +272,7 @@ mod tests {
 	#[test]
 	fn try_from_success() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
-			let repo_lock = repo.lock();
-			let reference = repo_lock.find_reference("refs/heads/main").unwrap();
+			let reference = repository.find_reference("refs/heads/main").unwrap();
 			let commit = Commit::try_from(&reference).unwrap();
 
 			assert_eq!(commit.reference.unwrap().shortname(), "main");
@@ -240,12 +282,10 @@ mod tests {
 	#[test]
 	fn try_from_error() {
 		with_temp_repository(|repository| {
-			let repo = repository.repository();
-			let repo_lock = repo.lock();
-			let blob = repo_lock.blob(b"foo").unwrap();
-			_ = repo_lock.reference("refs/blob", blob, false, "blob").unwrap();
+			let blob = repository.blob(b"foo").unwrap();
+			_ = repository.reference("refs/blob", blob, false, "blob").unwrap();
 
-			let reference = repo_lock.find_reference("refs/blob").unwrap();
+			let reference = repository.find_reference("refs/blob").unwrap();
 			assert_err_eq!(Commit::try_from(&reference), GitError::CommitLoad {
 				cause: git2::Error::new(
 					git2::ErrorCode::InvalidSpec,

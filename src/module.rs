@@ -47,7 +47,7 @@ pub(crate) trait Module: Send {
 		event
 	}
 
-	fn handle_event(&mut self, _event: Event, _view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, _event: Event) -> Results {
 		Results::new()
 	}
 

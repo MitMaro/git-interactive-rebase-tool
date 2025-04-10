@@ -5,8 +5,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
 	config::KeyBindings,
+	diff::{CommitDiff, Status},
 	display::DisplayColor,
-	git::{CommitDiff, Status},
 	view::{LineSegment, ViewLine},
 };
 

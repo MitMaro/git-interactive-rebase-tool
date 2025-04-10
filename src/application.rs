@@ -1,17 +1,21 @@
+mod app_data;
+
 use std::sync::Arc;
 
 use anyhow::Result;
 use parking_lot::Mutex;
 
+pub(crate) use crate::application::app_data::AppData;
 use crate::{
 	Args,
 	Exit,
-	config::Config,
+	config::{Config, ConfigLoader, DiffIgnoreWhitespaceSetting},
+	diff::{self, CommitDiffLoader, CommitDiffLoaderOptions},
 	display::Display,
-	git::Repository,
+	git::open_repository_from_env,
 	help::build_help,
 	input::{Event, EventHandler, EventReaderFn, KeyBindings, StandardEvent},
-	module::{self, ExitStatus, ModuleHandler},
+	module::{self, ExitStatus, ModuleHandler, State},
 	process::{self, Process},
 	runtime::{Runtime, ThreadStatuses, Threadable},
 	search,
@@ -22,8 +26,6 @@ use crate::{
 pub(crate) struct Application<ModuleProvider>
 where ModuleProvider: module::ModuleProvider + Send + 'static
 {
-	_config: Config,
-	_repository: Repository,
 	process: Process<ModuleProvider>,
 	threads: Option<Vec<Box<dyn Threadable>>>,
 	thread_statuses: ThreadStatuses,
@@ -39,13 +41,9 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
-		let config = Self::load_config(&repository)?;
+		let config_loader = ConfigLoader::from(repository);
+		let config = Self::load_config(&config_loader)?;
 		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
-
-		let module_handler = ModuleHandler::new(
-			EventHandler::new(KeyBindings::new(&config.key_bindings)),
-			ModuleProvider::new(&config, repository.clone(), &todo_file),
-		);
 
 		let display = Display::new(tui, &config.theme);
 		let initial_display_size = display.get_window_size();
@@ -76,21 +74,40 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let search_state = search_threads.state();
 		threads.push(Box::new(search_threads));
 
-		let process = Process::new(
-			initial_display_size,
-			todo_file,
-			module_handler,
-			input_state,
-			view_state,
-			search_state,
-			thread_statuses.clone(),
+		let commit_diff_loader_options = CommitDiffLoaderOptions::new()
+			.context_lines(config.git.diff_context)
+			.copies(config.git.diff_copies)
+			.ignore_whitespace(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::All)
+			.ignore_whitespace_change(config.diff_ignore_whitespace == DiffIgnoreWhitespaceSetting::Change)
+			.ignore_blank_lines(config.diff_ignore_blank_lines)
+			.interhunk_context(config.git.diff_interhunk_lines)
+			.renames(config.git.diff_renames, config.git.diff_rename_limit);
+		let commit_diff_loader = CommitDiffLoader::new(config_loader.eject_repository(), commit_diff_loader_options);
+
+		let diff_update_handler = Self::create_diff_update_handler(input_state.clone());
+		let diff_thread = diff::Thread::new(commit_diff_loader, diff_update_handler);
+		let diff_state = diff_thread.state();
+		threads.push(Box::new(diff_thread));
+
+		let keybindings = KeyBindings::new(&config.key_bindings);
+
+		let app_data = AppData::new(
+			config,
+			State::WindowSizeError,
+			Arc::clone(&todo_file),
+			diff_state.clone(),
+			view_state.clone(),
+			input_state.clone(),
+			search_state.clone(),
 		);
+
+		let module_handler = ModuleHandler::new(EventHandler::new(keybindings), ModuleProvider::new(&app_data));
+
+		let process = Process::new(&app_data, initial_display_size, module_handler, thread_statuses.clone());
 		let process_threads = process::Thread::new(process.clone());
 		threads.push(Box::new(process_threads));
 
 		Ok(Self {
-			_config: config,
-			_repository: repository,
 			process,
 			threads: Some(threads),
 			thread_statuses,
@@ -136,8 +153,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		})
 	}
 
-	fn open_repository() -> Result<Repository, Exit> {
-		Repository::open_from_env().map_err(|err| {
+	fn open_repository() -> Result<git2::Repository, Exit> {
+		open_repository_from_env().map_err(|err| {
 			Exit::new(
 				ExitStatus::StateError,
 				format!("Unable to load Git repository: {err}").as_str(),
@@ -145,8 +162,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		})
 	}
 
-	fn load_config(repo: &Repository) -> Result<Config, Exit> {
-		Config::try_from(repo).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
+	fn load_config(config_loader: &ConfigLoader) -> Result<Config, Exit> {
+		Config::try_from(config_loader).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
 	}
 
 	fn todo_file_options(config: &Config) -> TodoFileOptions {
@@ -182,6 +199,10 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 	fn create_search_update_handler(input_state: crate::input::State) -> impl Fn() + Send + Sync {
 		move || input_state.push_event(Event::Standard(StandardEvent::SearchUpdate))
+	}
+
+	fn create_diff_update_handler(input_state: crate::input::State) -> impl Fn() + Send + Sync {
+		move || input_state.push_event(Event::Standard(StandardEvent::DiffUpdate))
 	}
 }
 

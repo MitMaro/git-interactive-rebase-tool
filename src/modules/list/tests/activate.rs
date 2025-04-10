@@ -20,8 +20,8 @@ impl Searchable for MockedSearchable {
 
 #[test]
 fn sets_selected_line_action() {
-	testers::module(&["pick aaa c1"], &[], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
+	testers::module(&["pick aaa c1"], &[], None, |test_context| {
+		let mut module = List::new(&test_context.app_data());
 		_ = test_context.activate(&mut module, State::List);
 		assert_some_eq!(module.selected_line_action, Action::Pick);
 	});
@@ -29,11 +29,13 @@ fn sets_selected_line_action() {
 
 #[test]
 fn sets_selected_line_action_none_selected() {
-	testers::module(&["pick aaa c1", "pick bbb c2"], &[], |mut test_context| {
-		let mut todo_file = test_context.take_todo_file();
-		todo_file.set_lines(vec![]);
+	testers::module(&["pick aaa c1", "pick bbb c2"], &[], None, |test_context| {
+		let app_data = test_context.app_data();
 
-		let mut module = create_list(&create_config(), todo_file);
+		let todo_file = app_data.todo_file();
+		todo_file.lock().set_lines(vec![]);
+
+		let mut module = List::new(&app_data);
 		_ = test_context.activate(&mut module, State::List);
 		assert_none!(module.selected_line_action);
 	});
@@ -41,8 +43,8 @@ fn sets_selected_line_action_none_selected() {
 
 #[test]
 fn result() {
-	testers::module(&["pick aaa c1", "pick bbb c2"], &[], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
+	testers::module(&["pick aaa c1", "pick bbb c2"], &[], None, |test_context| {
+		let mut module = List::new(&test_context.app_data());
 		assert_results!(
 			test_context.activate(&mut module, State::List),
 			Artifact::Searchable(Box::new(MockedSearchable {}))
@@ -52,8 +54,8 @@ fn result() {
 
 #[test]
 fn result_with_serach_term() {
-	testers::module(&["pick aaa c1", "pick bbb c2"], &[], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
+	testers::module(&["pick aaa c1", "pick bbb c2"], &[], None, |test_context| {
+		let mut module = List::new(&test_context.app_data());
 		module.search_bar.start_search(Some("foo"));
 		assert_results!(
 			test_context.activate(&mut module, State::List),

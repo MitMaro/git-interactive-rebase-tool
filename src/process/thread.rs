@@ -135,7 +135,7 @@ mod tests {
 		struct TestModule(Arc<AtomicBool>);
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+			fn handle_event(&mut self, _: Event) -> Results {
 				self.0.store(true, Ordering::Release);
 				Results::from(ExitStatus::Good)
 			}
@@ -162,7 +162,7 @@ mod tests {
 		struct TestModule;
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+			fn handle_event(&mut self, _: Event) -> Results {
 				Results::from(ExitStatus::Good)
 			}
 		}
@@ -193,7 +193,7 @@ mod tests {
 		struct TestModule;
 
 		impl Module for TestModule {
-			fn handle_event(&mut self, _: Event, _: &crate::view::State) -> Results {
+			fn handle_event(&mut self, _: Event) -> Results {
 				Results::from(ExitStatus::Kill)
 			}
 		}

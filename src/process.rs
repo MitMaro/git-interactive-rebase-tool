@@ -18,6 +18,7 @@ use parking_lot::Mutex;
 
 pub(crate) use self::{artifact::Artifact, results::Results, thread::Thread};
 use crate::{
+	application::AppData,
 	display::Size,
 	input::{Event, StandardEvent},
 	module::{self, ExitStatus, ModuleHandler, State},
@@ -38,6 +39,7 @@ pub(crate) struct Process<ModuleProvider: module::ModuleProvider> {
 	thread_statuses: ThreadStatuses,
 	todo_file: Arc<Mutex<TodoFile>>,
 	view_state: crate::view::State,
+	diff_state: crate::diff::State,
 	search_state: search::State,
 }
 
@@ -54,6 +56,7 @@ impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
 			thread_statuses: self.thread_statuses.clone(),
 			todo_file: Arc::clone(&self.todo_file),
 			view_state: self.view_state.clone(),
+			diff_state: self.diff_state.clone(),
 			search_state: self.search_state.clone(),
 		}
 	}
@@ -61,29 +64,27 @@ impl<ModuleProvider: module::ModuleProvider> Clone for Process<ModuleProvider> {
 
 impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 	pub(crate) fn new(
+		app_data: &AppData,
 		initial_display_size: Size,
-		todo_file: Arc<Mutex<TodoFile>>,
 		module_handler: ModuleHandler<ModuleProvider>,
-		input_state: crate::input::State,
-		view_state: crate::view::State,
-		search_state: search::State,
 		thread_statuses: ThreadStatuses,
 	) -> Self {
 		Self {
 			ended: Arc::new(AtomicBool::from(false)),
 			exit_status: Arc::new(Mutex::new(ExitStatus::None)),
-			input_state,
+			input_state: app_data.input_state(),
 			module_handler: Arc::new(Mutex::new(module_handler)),
 			paused: Arc::new(AtomicBool::from(false)),
 			render_context: Arc::new(Mutex::new(RenderContext::new(
 				initial_display_size.width(),
 				initial_display_size.height(),
 			))),
-			search_state,
-			state: Arc::new(Mutex::new(State::WindowSizeError)),
+			search_state: app_data.search_state(),
+			state: app_data.active_module(),
 			thread_statuses,
-			todo_file,
-			view_state,
+			todo_file: app_data.todo_file(),
+			view_state: app_data.view_state(),
+			diff_state: app_data.diff_state(),
 		}
 	}
 
@@ -148,7 +149,7 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 	pub(crate) fn handle_event(&self) -> Option<Results> {
 		self.module_handler
 			.lock()
-			.handle_event(self.state(), &self.input_state.clone(), &self.view_state.clone())
+			.handle_event(self.state(), self.input_state.read_event())
 	}
 
 	fn handle_event_artifact(&self, event: Event) -> Results {
@@ -285,6 +286,17 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 		Results::new()
 	}
 
+	fn handle_diff_load(&self, hash: String) -> Results {
+		self.diff_state.cancel();
+		self.diff_state.send_update(crate::diff::Action::Load(hash));
+		Results::new()
+	}
+
+	fn handle_diff_cancel(&self) -> Results {
+		self.diff_state.cancel();
+		Results::new()
+	}
+
 	fn handle_results(&self, mut results: Results) {
 		while let Some(artifact) = results.artifact() {
 			results.append(match artifact {
@@ -297,6 +309,8 @@ impl<ModuleProvider: module::ModuleProvider> Process<ModuleProvider> {
 				Artifact::SearchCancel => self.handle_search_cancel(),
 				Artifact::SearchTerm(search_term) => self.handle_search_term(search_term),
 				Artifact::Searchable(searchable) => self.handle_searchable(searchable),
+				Artifact::LoadDiff(hash) => self.handle_diff_load(hash),
+				Artifact::CancelDiff => self.handle_diff_cancel(),
 			});
 		}
 	}

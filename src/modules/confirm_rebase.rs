@@ -1,4 +1,5 @@
 use crate::{
+	application::AppData,
 	components::confirm::{Confirm, Confirmed, INPUT_OPTIONS},
 	input::{Event, InputOptions, KeyBindings},
 	module::{ExitStatus, Module, State},
@@ -23,7 +24,7 @@ impl Module for ConfirmRebase {
 		Confirm::read_event(event, key_bindings)
 	}
 
-	fn handle_event(&mut self, event: Event, _: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		let confirmed = self.dialog.handle_event(event);
 		let mut results = Results::new();
 		match confirmed {
@@ -40,9 +41,14 @@ impl Module for ConfirmRebase {
 }
 
 impl ConfirmRebase {
-	pub(crate) fn new(confirm_yes: &[String], confirm_no: &[String]) -> Self {
+	pub(crate) fn new(app_data: &AppData) -> Self {
+		let config = app_data.config();
 		Self {
-			dialog: Confirm::new("Are you sure you want to rebase", confirm_yes, confirm_no),
+			dialog: Confirm::new(
+				"Are you sure you want to rebase",
+				&config.key_bindings.confirm_yes,
+				&config.key_bindings.confirm_no,
+			),
 		}
 	}
 }
@@ -57,21 +63,17 @@ mod tests {
 		test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
 	};
 
-	fn create_confirm_rebase() -> ConfirmRebase {
-		ConfirmRebase::new(&[String::from("y")], &[String::from("n")])
-	}
-
 	#[test]
 	fn build_view_data() {
-		testers::module(&["pick aaa comment"], &[], |test_context| {
-			let mut module = create_confirm_rebase();
+		testers::module(&["pick aaa comment"], &[], None, |test_context| {
+			let mut module = ConfirmRebase::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
-				Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::INCLUDE_STYLE,
-				view_data,
-				"{TITLE}",
-				"{BODY}",
-				"{Normal}Are you sure you want to rebase (y/n)? "
+			Options AssertRenderOptions::INCLUDE_TRAILING_WHITESPACE | AssertRenderOptions::INCLUDE_STYLE,
+			view_data,
+			"{TITLE}",
+			"{BODY}",
+			"{Normal}Are you sure you want to rebase (y/n)? "
 			);
 		});
 	}
@@ -81,8 +83,9 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::Yes)],
+			None,
 			|mut test_context| {
-				let mut module = create_confirm_rebase();
+				let mut module = ConfirmRebase::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::from(StandardEvent::Yes)),
@@ -97,8 +100,9 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::No)],
+			None,
 			|mut test_context| {
-				let mut module = create_confirm_rebase();
+				let mut module = ConfirmRebase::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::from(StandardEvent::No)),
@@ -113,8 +117,9 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
+			None,
 			|mut test_context| {
-				let mut module = create_confirm_rebase();
+				let mut module = ConfirmRebase::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
 					Artifact::Event(Event::from(KeyCode::Null))

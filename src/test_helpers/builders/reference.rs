@@ -1,4 +1,4 @@
-use crate::git::{Reference, ReferenceKind};
+use crate::diff::{Reference, ReferenceKind};
 
 /// Builder for creating a new reference.
 #[derive(Debug)]

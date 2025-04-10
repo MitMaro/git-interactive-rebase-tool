@@ -49,6 +49,14 @@ impl Results {
 		self.artifacts.push_back(Artifact::SearchTerm(String::from(term)));
 	}
 
+	pub(crate) fn load_diff(&mut self, hash: &str) {
+		self.artifacts.push_back(Artifact::LoadDiff(String::from(hash)));
+	}
+
+	pub(crate) fn cancel_diff(&mut self) {
+		self.artifacts.push_back(Artifact::CancelDiff);
+	}
+
 	pub(crate) fn external_command(&mut self, command: String, arguments: Vec<String>) {
 		self.artifacts
 			.push_back(Artifact::ExternalCommand((command, arguments)));

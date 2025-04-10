@@ -57,61 +57,55 @@ impl<'runtime> Runtime<'runtime> {
 				threadable.install(&installer);
 			}
 		}
-		let mut handles = vec![];
 
-		for (name, op) in installer.into_ops().drain() {
-			handles.push(
-				thread::Builder::new()
+		thread::scope(|scope| {
+			for (name, op) in installer.into_ops().drain() {
+				let _handle = thread::Builder::new()
 					.name(String::from(name.as_str()))
-					.spawn(op)
-					.map_err(|_err| RuntimeError::ThreadSpawnError(name))?,
-			);
-		}
+					.spawn_scoped(scope, op)
+					.map_err(|_err| RuntimeError::ThreadSpawnError(name))?;
+			}
 
-		let mut result = Ok(());
+			let mut result = Ok(());
 
-		for (name, status) in &self.receiver {
-			match status {
-				Status::Error(err) => {
-					// since we entered an error state, we attempt to shutdown the other threads, but
-					// they could fail due to the error state, but keeping the shutdown error is less
-					// important than the original error.
-					let _result = self.shutdown();
-					result = Err(err);
+			for (name, status) in &self.receiver {
+				match status {
+					Status::Error(err) => {
+						// since we entered an error state, we attempt to shutdown the other threads, but
+						// they could fail due to the error state, but keeping the shutdown error is less
+						// important than the original error.
+						let _result = self.shutdown();
+						result = Err(err);
+						break;
+					},
+					Status::RequestPause => {
+						for threadable in self.threadables.lock().iter() {
+							threadable.pause();
+						}
+					},
+					Status::RequestResume => {
+						for threadable in self.threadables.lock().iter() {
+							threadable.resume();
+						}
+					},
+					Status::RequestEnd => {
+						self.thread_statuses.update_thread(RUNTIME_THREAD_NAME, Status::Ended);
+						for threadable in self.threadables.lock().iter() {
+							threadable.end();
+						}
+					},
+					Status::New | Status::Busy | Status::Waiting | Status::Ended => {},
+				}
+
+				self.thread_statuses.update_thread(name.as_str(), status);
+
+				if self.thread_statuses.all_ended() {
+					result = self.shutdown();
 					break;
-				},
-				Status::RequestPause => {
-					for threadable in self.threadables.lock().iter() {
-						threadable.pause();
-					}
-				},
-				Status::RequestResume => {
-					for threadable in self.threadables.lock().iter() {
-						threadable.resume();
-					}
-				},
-				Status::RequestEnd => {
-					self.thread_statuses.update_thread(RUNTIME_THREAD_NAME, Status::Ended);
-					for threadable in self.threadables.lock().iter() {
-						threadable.end();
-					}
-				},
-				Status::New | Status::Busy | Status::Waiting | Status::Ended => {},
+				}
 			}
-
-			self.thread_statuses.update_thread(name.as_str(), status);
-
-			if self.thread_statuses.all_ended() {
-				result = self.shutdown();
-				break;
-			}
-		}
-
-		while let Some(handle) = handles.pop() {
-			let _result = handle.join();
-		}
-
-		result
+			result
+		})
 	}
 
 	fn shutdown(&self) -> Result<(), RuntimeError> {

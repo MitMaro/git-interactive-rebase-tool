@@ -57,7 +57,7 @@ impl Module for TestModule {
 		event
 	}
 
-	fn handle_event(&mut self, event: Event, _view_state: &crate::view::State) -> Results {
+	fn handle_event(&mut self, event: Event) -> Results {
 		self.trace.lock().push(format!("handle_event(event = {event:?})"));
 		Results::new()
 	}

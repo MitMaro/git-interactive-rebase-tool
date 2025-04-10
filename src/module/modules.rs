@@ -1,13 +1,7 @@
-use std::sync::Arc;
-
-use parking_lot::Mutex;
-
 use crate::{
-	config::Config,
-	git::Repository,
+	application::AppData,
 	module::{Module, ModuleProvider, State},
 	modules::{ConfirmAbort, ConfirmRebase, Error, ExternalEditor, Insert, List, ShowCommit, WindowSizeError},
-	todo_file::TodoFile,
 };
 
 pub(crate) struct Modules {
@@ -22,20 +16,16 @@ pub(crate) struct Modules {
 }
 
 impl ModuleProvider for Modules {
-	fn new(config: &Config, repository: Repository, todo_file: &Arc<Mutex<TodoFile>>) -> Self {
+	fn new(app_data: &AppData) -> Self {
 		Self {
-			error: Error::new(),
-			list: List::new(config, Arc::clone(todo_file)),
-			show_commit: ShowCommit::new(config, repository, Arc::clone(todo_file)),
+			error: Error::new(app_data),
+			list: List::new(app_data),
+			show_commit: ShowCommit::new(app_data),
 			window_size_error: WindowSizeError::new(),
-			confirm_abort: ConfirmAbort::new(
-				&config.key_bindings.confirm_yes,
-				&config.key_bindings.confirm_no,
-				Arc::clone(todo_file),
-			),
-			confirm_rebase: ConfirmRebase::new(&config.key_bindings.confirm_yes, &config.key_bindings.confirm_no),
-			external_editor: ExternalEditor::new(config.git.editor.as_str(), Arc::clone(todo_file)),
-			insert: Insert::new(Arc::clone(todo_file)),
+			confirm_abort: ConfirmAbort::new(app_data),
+			confirm_rebase: ConfirmRebase::new(app_data),
+			external_editor: ExternalEditor::new(app_data),
+			insert: Insert::new(app_data),
 		}
 	}
 
@@ -68,18 +58,37 @@ impl ModuleProvider for Modules {
 
 #[cfg(test)]
 mod tests {
+	use std::sync::Arc;
+
+	use parking_lot::{Mutex, lock_api::RwLock};
+
 	use super::*;
-	use crate::test_helpers::{create_config, with_temp_repository, with_todo_file};
+	use crate::{
+		diff,
+		diff::CommitDiff,
+		input,
+		search,
+		test_helpers::{create_config, with_todo_file},
+		view,
+	};
 
 	pub(crate) fn modules_test<C>(callback: C)
 	where C: FnOnce(Modules) {
-		with_temp_repository(|repository| {
-			with_todo_file(&[], |todo_file_context| {
-				let (_todo_file_path, todo_file) = todo_file_context.to_owned();
-				let config = create_config();
-				let modules = Modules::new(&config, repository, &Arc::new(Mutex::new(todo_file)));
-				callback(modules);
-			});
+		with_todo_file(&[], |todo_file_context| {
+			let commit_diff = CommitDiff::new();
+			let (_todo_file_path, todo_file) = todo_file_context.to_owned();
+			let config = create_config();
+			let app_data = AppData::new(
+				config,
+				State::WindowSizeError,
+				Arc::new(Mutex::new(todo_file)),
+				diff::State::new(Arc::new(RwLock::new(commit_diff))),
+				view::State::new(),
+				input::State::new(),
+				search::State::new(),
+			);
+			let modules = Modules::new(&app_data);
+			callback(modules);
 		});
 	}
 

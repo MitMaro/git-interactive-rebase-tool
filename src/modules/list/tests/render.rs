@@ -3,14 +3,14 @@ use crate::{assert_rendered_output, test_helpers::assertions::assert_rendered_ou
 
 #[test]
 fn empty_list() {
-	testers::module(&[], &[], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
+	testers::module(&[], &[], None, |test_context| {
+		let mut module = List::new(&test_context.app_data());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
-			Style view_data,
-			"{TITLE}{HELP}",
-			"{LEADING}",
-			"{IndicatorColor}Rebase todo file is empty"
+		Style view_data,
+		"{TITLE}{HELP}",
+		"{LEADING}",
+		"{IndicatorColor}Rebase todo file is empty"
 		);
 	});
 }
@@ -35,8 +35,9 @@ fn full() {
 			"update-ref reference",
 		],
 		&[],
-		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+		None,
+		|test_context| {
+			let mut module = List::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Style view_data,
@@ -81,9 +82,10 @@ fn compact() {
 			"update-ref reference",
 		],
 		&[],
+		None,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
 				Style view_data,
@@ -111,8 +113,8 @@ fn compact() {
 // this can technically never happen, but it's worth testing, just in case of an invalid state
 #[test]
 fn noop_list() {
-	testers::module(&["break"], &[], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
+	testers::module(&["break"], &[], None, |test_context| {
+		let mut module = List::new(&test_context.app_data());
 		let mut todo_file = module.todo_file.lock();
 		todo_file.remove_lines(0, 0);
 		todo_file.add_line(0, Line::parse("noop").unwrap());
@@ -120,10 +122,10 @@ fn noop_list() {
 
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
-			Style view_data,
-			"{TITLE}{HELP}",
-			"{BODY}",
-			"{Selected}{Normal} > noop   {Pad( )}"
+		Style view_data,
+		"{TITLE}{HELP}",
+		"{BODY}",
+		"{Selected}{Normal} > noop   {Pad( )}"
 		);
 	});
 }
@@ -145,8 +147,9 @@ fn pinned_segments() {
 			"merge command",
 		],
 		&[Event::from(StandardEvent::ActionDrop)],
+		None,
 		|mut test_context| {
-			let mut module = create_list(&create_config(), test_context.take_todo_file());
+			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -172,14 +175,14 @@ fn pinned_segments() {
 
 #[test]
 fn full_with_short_actions() {
-	testers::module(&["pick aaaaaaaa comment 1"], &[], |mut test_context| {
-		let mut module = create_list(&create_config(), test_context.take_todo_file());
+	testers::module(&["pick aaaaaaaa comment 1"], &[], None, |test_context| {
+		let mut module = List::new(&test_context.app_data());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
-			Style view_data,
-			"{TITLE}{HELP}",
-			"{BODY}",
-			"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa comment 1{Pad( )}"
+		Style view_data,
+		"{TITLE}{HELP}",
+		"{BODY}",
+		"{Selected}{Normal} > {ActionPick}pick   {Normal}aaaaaaaa comment 1{Pad( )}"
 		);
 	});
 }
