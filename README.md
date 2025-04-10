@@ -372,7 +372,7 @@ See [Third Party Licenses](https://gitrebasetool.mitmaro.ca/licenses.html) for l
 [appveyor-build]:https://ci.appveyor.com/project/MitMaro/git-interactive-rebase-tool/branch/master
 [cargo]:https://github.com/rust-lang/cargo
 [crates-io]:https://crates.io/crates/git-interactive-rebase-tool
-[git-sequence-editor]:https://git-scm.com/docs/git-config#git-config-sequenceeditor
+[git-sequence-editor]:https://git-scm.com/docs/git-config#Documentation/git-config.txt-sequenceeditor
 [install-rust]:https://doc.rust-lang.org/book/getting-started.html
 [license]:https://raw.githubusercontent.com/MitMaro/git-interactive-rebase-tool/master/LICENSE
 [releases]:https://github.com/MitMaro/git-interactive-rebase-tool/releases
