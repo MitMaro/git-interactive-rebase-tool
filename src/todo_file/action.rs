@@ -7,6 +7,8 @@ use crate::todo_file::ParseError;
 pub(crate) enum Action {
 	/// A break action.
 	Break,
+	/// A cut action for git-revise.
+	Cut,
 	/// A drop action.
 	Drop,
 	/// An edit action.
@@ -15,6 +17,8 @@ pub(crate) enum Action {
 	Exec,
 	/// A fixup action.
 	Fixup,
+	/// A index action for git-revise.
+	Index,
 	/// A noop action.
 	Noop,
 	/// A pick action.
@@ -40,9 +44,11 @@ impl Action {
 		String::from(match self {
 			Self::Break => "b",
 			Self::Drop => "d",
+			Self::Cut => "c",
 			Self::Edit => "e",
 			Self::Exec => "x",
 			Self::Fixup => "f",
+			Self::Index => "i",
 			Self::Label => "l",
 			Self::Merge => "m",
 			Self::Noop => "n",
@@ -59,7 +65,7 @@ impl Action {
 	pub(crate) const fn is_static(self) -> bool {
 		match self {
 			Self::Break | Self::Exec | Self::Noop | Self::Reset | Self::Label | Self::Merge | Self::UpdateRef => true,
-			Self::Drop | Self::Edit | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
+			Self::Cut | Self::Drop | Self::Edit | Self::Index | Self::Fixup | Self::Pick | Self::Reword | Self::Squash => false,
 		}
 	}
 }
@@ -68,10 +74,12 @@ impl Display for Action {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		write!(f, "{}", match *self {
 			Self::Break => "break",
+			Self::Cut => "cut",
 			Self::Drop => "drop",
 			Self::Edit => "edit",
 			Self::Exec => "exec",
 			Self::Fixup => "fixup",
+			Self::Index => "index",
 			Self::Label => "label",
 			Self::Merge => "merge",
 			Self::Noop => "noop",
@@ -90,10 +98,12 @@ impl TryFrom<&str> for Action {
 	fn try_from(s: &str) -> Result<Self, Self::Error> {
 		match s {
 			"break" | "b" => Ok(Self::Break),
+			// "cut" => Ok(Self::Cut),
 			"drop" | "d" => Ok(Self::Drop),
 			"edit" | "e" => Ok(Self::Edit),
 			"exec" | "x" => Ok(Self::Exec),
 			"fixup" | "f" => Ok(Self::Fixup),
+			"index" => Ok(Self::Index),
 			"noop" | "n" => Ok(Self::Noop),
 			"pick" | "p" => Ok(Self::Pick),
 			"reword" | "r" => Ok(Self::Reword),
