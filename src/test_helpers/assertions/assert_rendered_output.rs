@@ -6,6 +6,7 @@ mod render_view_line;
 use std::fmt::Debug;
 
 use bitflags::bitflags;
+use crossterm::style::Stylize as _;
 
 #[expect(unused_imports, reason = "Allowed for future use.")]
 pub(crate) use self::{
@@ -49,8 +50,8 @@ pub(crate) fn _assert_rendered_output(
 	let mut mismatch = false;
 	let mut error_output = vec![
 		String::from("\nUnexpected output!"),
-		String::from("--- Expected"),
-		String::from("+++ Actual"),
+		"--- Expected".red().to_string(),
+		"+++ Actual".green().to_string(),
 		String::from("=========="),
 	];
 
@@ -63,12 +64,12 @@ pub(crate) fn _assert_rendered_output(
 		};
 
 		if expected_pattern.matches(output) {
-			error_output.push(format!(" {}", expected_pattern.expected()));
+			error_output.push(format!(" {}", expected_pattern.expected()).white().to_string());
 		}
 		else {
 			mismatch = true;
-			error_output.push(format!("-{}", expected_pattern.expected()));
-			error_output.push(format!("+{}", expected_pattern.actual(output)));
+			error_output.push(format!("-{}", expected_pattern.expected()).red().to_string());
+			error_output.push(format!("+{}", expected_pattern.actual(output)).green().to_string());
 		}
 	}
 
@@ -76,13 +77,13 @@ pub(crate) fn _assert_rendered_output(
 		a if a > actual.len() => {
 			mismatch = true;
 			for expected_pattern in expected_patterns.iter().skip(actual.len()) {
-				error_output.push(format!("-{}", expected_pattern.expected().as_str()));
+				error_output.push(format!("-{}", expected_pattern.expected().as_str()).red().to_string());
 			}
 		},
 		a if a < actual.len() => {
 			mismatch = true;
 			for line in actual.iter().skip(expected_patterns.len()) {
-				error_output.push(format!("+{}", replace_invisibles(line)));
+				error_output.push(format!("+{}", replace_invisibles(line)).green().to_string());
 			}
 		},
 		_ => {},
