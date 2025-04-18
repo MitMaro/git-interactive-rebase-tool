@@ -59,9 +59,11 @@ impl Searchable for Search {
 
 			let has_hash_match = match action {
 				Action::Break | Action::Noop | Action::Label | Action::Reset | Action::Merge | Action::Exec => false,
-				Action::Drop
+				Action::Cut
+				| Action::Drop
 				| Action::Edit
 				| Action::Fixup
+				| Action::Index
 				| Action::Pick
 				| Action::Reword
 				| Action::Squash
@@ -69,9 +71,11 @@ impl Searchable for Search {
 			};
 			let has_content_match = match action {
 				Action::Break | Action::Noop => false,
-				Action::Drop
+				Action::Cut
+				| Action::Drop
 				| Action::Edit
 				| Action::Fixup
+				| Action::Index
 				| Action::Pick
 				| Action::Reword
 				| Action::Squash
