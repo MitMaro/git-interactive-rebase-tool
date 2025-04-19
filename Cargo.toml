@@ -30,7 +30,7 @@ anyhow = "1.0.86"
 bitflags = "2.5.0"
 captur = "1.0.1"
 chrono = "0.4.38"
-crossbeam-channel = "0.5.13"
+crossbeam-channel = "0.5.15"
 crossterm = "0.28.1"
 git2 = { version = "0.20.0", default-features = false, features = [] }
 if_chain = "1.0.2"
