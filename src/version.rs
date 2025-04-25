@@ -27,7 +27,7 @@ mod tests {
 
 	#[test]
 	#[serial_test::serial]
-	fn test_run() {
+	fn run_success() {
 		assert!(run().get_message().unwrap().starts_with("interactive-rebase-tool"));
 	}
 
