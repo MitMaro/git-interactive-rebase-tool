@@ -31,7 +31,7 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn test_run() {
+	fn run_success() {
 		assert!(
 			run()
 				.get_message()
