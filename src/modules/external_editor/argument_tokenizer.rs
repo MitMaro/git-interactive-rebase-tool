@@ -19,7 +19,7 @@ pub(super) fn tokenize(input: &str) -> Option<Vec<String>> {
 	let mut force_value = false;
 
 	let mut tokens = vec![];
-	for (i, c) in input.chars().enumerate() {
+	for (i, c) in input.char_indices() {
 		match state {
 			State::Normal => {
 				if c == '\\' {
