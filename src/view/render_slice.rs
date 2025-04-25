@@ -130,12 +130,7 @@ impl RenderSlice {
 			return 0;
 		}
 
-		let view_height = if self.padding_height < self.height {
-			self.height - self.padding_height
-		}
-		else {
-			0
-		};
+		let view_height = self.height.saturating_sub(self.padding_height);
 
 		if view_height <= 1 || view_height > self.lines_count {
 			return 0;
@@ -285,12 +280,8 @@ impl RenderSlice {
 		else {
 			// trailing lines have precedence over leading lines, title always has precedence
 			let padding_height = if self.show_title { 1 } else { 0 } + trailing_lines_length;
-			let available_height = if padding_height < self.height {
-				self.height - padding_height
-			}
-			else {
-				0
-			};
+			let available_height = self.height.saturating_sub(padding_height);
+
 			let leading_lines_end = if leading_lines_length < available_height {
 				leading_lines_length
 			}
@@ -310,12 +301,7 @@ impl RenderSlice {
 		else {
 			// title always has precedence
 			let padding_height = if self.show_title { 1 } else { 0 };
-			let available_height = if padding_height < self.height {
-				self.height - padding_height
-			}
-			else {
-				0
-			};
+			let available_height = self.height.saturating_sub(padding_height);
 
 			let trailing_lines_end = if trailing_lines_length < available_height {
 				trailing_lines_length
@@ -335,12 +321,7 @@ impl RenderSlice {
 		}
 		else {
 			// all other lines take precedence over regular lines
-			let available_height = if self.padding_height < self.height {
-				self.height - self.padding_height
-			}
-			else {
-				0
-			};
+			let available_height = self.height.saturating_sub(self.padding_height);
 
 			let lines_start = self.scroll_position.get_top_position();
 
