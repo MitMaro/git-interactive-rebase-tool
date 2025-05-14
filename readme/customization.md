@@ -122,6 +122,7 @@ Most keys can be changed to any printable character or supported special charact
 | `inputForceRebase`          | W         | String | Key for forcing a rebase                            |
 | `inputHelp`                 | ?         | String | Key for showing the help                            |
 | `inputInsertLine`           | I         | String | Key for inserting a new line                        |
+| `inputDuplicateLine`        | Control+d | String | Key for duplicating the selected line               |
 | `inputMoveDown`             | Down      | String | Key for moving the cursor down                      |
 | `inputMoveEnd`              | End       | String | Key for moving the cursor to the end of the list    |
 | `inputMoveHome`             | Home      | String | Key for moving the cursor to the top of the list    |

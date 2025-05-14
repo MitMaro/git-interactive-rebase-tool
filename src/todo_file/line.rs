@@ -202,6 +202,25 @@ impl Line {
 		}
 	}
 
+	/// Can this line be duplicated.
+	#[must_use]
+	pub(crate) const fn is_duplicatable(&self) -> bool {
+		match self.action {
+			Action::Exec
+			| Action::Label
+			| Action::Reset
+			| Action::Merge
+			| Action::UpdateRef
+			| Action::Drop
+			| Action::Edit
+			| Action::Fixup
+			| Action::Pick
+			| Action::Reword
+			| Action::Squash => true,
+			Action::Break | Action::Noop => false,
+		}
+	}
+
 	/// Has this line been modified
 	#[must_use]
 	pub(crate) fn is_modified(&self) -> bool {
@@ -561,6 +580,25 @@ mod tests {
 	fn is_editable(#[case] from: Action, #[case] editable: bool) {
 		let line = Line::parse(format!("{from} aaa bbb").as_str()).unwrap();
 		assert_eq!(line.is_editable(), editable);
+	}
+
+	#[rstest]
+	#[case::drop(Action::Break, false)]
+	#[case::drop(Action::Drop, true)]
+	#[case::edit(Action::Edit, true)]
+	#[case::exec(Action::Exec, true)]
+	#[case::fixup(Action::Fixup, true)]
+	#[case::pick(Action::Noop, false)]
+	#[case::pick(Action::Pick, true)]
+	#[case::reword(Action::Reword, true)]
+	#[case::squash(Action::Squash, true)]
+	#[case::label(Action::Label, true)]
+	#[case::reset(Action::Reset, true)]
+	#[case::merge(Action::Merge, true)]
+	#[case::update_ref(Action::UpdateRef, true)]
+	fn is_duplicatable(#[case] from: Action, #[case] duplicatable: bool) {
+		let line = Line::parse(format!("{from} aaa bbb").as_str()).unwrap();
+		assert_eq!(line.is_duplicatable(), duplicatable);
 	}
 
 	#[rstest]

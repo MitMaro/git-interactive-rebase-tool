@@ -31,6 +31,7 @@ pub(crate) fn create_test_keybindings() -> KeyBindings {
 		force_abort: map_keybindings(&[String::from("Q")]),
 		force_rebase: map_keybindings(&[String::from("W")]),
 		insert_line: map_keybindings(&[String::from("I")]),
+		duplicate_line: map_keybindings(&[String::from("ControlD")]),
 		move_down: map_keybindings(&[String::from("Down")]),
 		move_down_step: map_keybindings(&[String::from("PageDown")]),
 		move_end: map_keybindings(&[String::from("End")]),
