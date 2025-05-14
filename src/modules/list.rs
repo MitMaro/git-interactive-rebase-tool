@@ -421,6 +421,18 @@ impl List {
 		results.state(State::Insert);
 	}
 
+	fn duplicate_line(&mut self) {
+		let mut todo_file = self.todo_file.lock();
+
+		if let Some(selected_line) = todo_file.get_selected_line() {
+			if selected_line.is_duplicatable() {
+				let new_line = selected_line.clone();
+				let selected_line_index = todo_file.get_selected_line_index();
+				todo_file.add_line(selected_line_index + 1, new_line);
+			}
+		}
+	}
+
 	fn update_list_view_data(&mut self, context: &RenderContext) -> &ViewData {
 		let todo_file = self.todo_file.lock();
 		let is_visual_mode = self.state == ListState::Visual;
@@ -558,6 +570,7 @@ impl List {
 			e if key_bindings.force_abort.contains(&e) => Event::from(StandardEvent::ForceAbort),
 			e if key_bindings.force_rebase.contains(&e) => Event::from(StandardEvent::ForceRebase),
 			e if key_bindings.insert_line.contains(&e) => Event::from(StandardEvent::InsertLine),
+			e if key_bindings.duplicate_line.contains(&e) => Event::from(StandardEvent::DuplicateLine),
 			e if key_bindings.move_down.contains(&e) => Event::from(StandardEvent::MoveCursorDown),
 			e if key_bindings.move_down_step.contains(&e) => Event::from(StandardEvent::MoveCursorPageDown),
 			e if key_bindings.move_end.contains(&e) => Event::from(StandardEvent::MoveCursorEnd),
@@ -695,6 +708,7 @@ impl List {
 					StandardEvent::ActionBreak => self.action_break(),
 					StandardEvent::Edit => self.edit(),
 					StandardEvent::InsertLine => self.insert_line(&mut results),
+					StandardEvent::DuplicateLine => self.duplicate_line(),
 					StandardEvent::ShowCommit => self.show_commit(&mut results),
 					StandardEvent::FixupKeepMessage => self.toggle_option("-C"),
 					StandardEvent::FixupKeepMessageWithEditor => self.toggle_option("-c"),

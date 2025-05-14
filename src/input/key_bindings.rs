@@ -62,6 +62,8 @@ pub(crate) struct KeyBindings {
 	pub(crate) force_rebase: Vec<Event>,
 	/// Key bindings for inserting a line.
 	pub(crate) insert_line: Vec<Event>,
+	/// Key bindings for inserting a line.
+	pub(crate) duplicate_line: Vec<Event>,
 	/// Key bindings for moving down.
 	pub(crate) move_down: Vec<Event>,
 	/// Key bindings for moving down a step.
@@ -131,6 +133,7 @@ impl KeyBindings {
 			force_abort: map_keybindings(&key_bindings.force_abort),
 			force_rebase: map_keybindings(&key_bindings.force_rebase),
 			insert_line: map_keybindings(&key_bindings.insert_line),
+			duplicate_line: map_keybindings(&key_bindings.duplicate_line),
 			move_down: map_keybindings(&key_bindings.move_down),
 			move_down_step: map_keybindings(&key_bindings.move_down_step),
 			move_end: map_keybindings(&key_bindings.move_end),

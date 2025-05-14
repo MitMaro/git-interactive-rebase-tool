@@ -95,6 +95,8 @@ pub(crate) enum StandardEvent {
 	ToggleVisualMode,
 	/// The insert line meta event.
 	InsertLine,
+	/// The duplicate line meta event.
+	DuplicateLine,
 	/// Fixup specific action to toggle the c option.
 	FixupKeepMessage,
 	/// Fixup specific action to toggle the C option.

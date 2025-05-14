@@ -46,6 +46,8 @@ pub(crate) struct KeyBindings {
 	pub(crate) help: Vec<String>,
 	/// Key bindings for inserting a line.
 	pub(crate) insert_line: Vec<String>,
+	/// Key bindings for duplicating a line.
+	pub(crate) duplicate_line: Vec<String>,
 
 	/// Key bindings for moving down.
 	pub(crate) move_down: Vec<String>,
@@ -139,6 +141,7 @@ impl KeyBindings {
 			force_rebase: get_input(git_config, "interactive-rebase-tool.inputForceRebase", "W")?,
 			help: get_input(git_config, "interactive-rebase-tool.inputHelp", "?")?,
 			insert_line: get_input(git_config, "interactive-rebase-tool.insertLine", "I")?,
+			duplicate_line: get_input(git_config, "interactive-rebase-tool.inputDuplicateLine", "control+d")?,
 			move_down: get_input(git_config, "interactive-rebase-tool.inputMoveDown", "Down")?,
 			move_end: get_input(git_config, "interactive-rebase-tool.inputMoveEnd", "End")?,
 			move_home: get_input(git_config, "interactive-rebase-tool.inputMoveHome", "Home")?,
@@ -253,6 +256,7 @@ mod tests {
 		config_test!(force_rebase, "inputForceRebase", "W");
 		config_test!(help, "inputHelp", "?");
 		config_test!(insert_line, "insertLine", "I");
+		config_test!(duplicate_line, "inputDuplicateLine", "Controld");
 		config_test!(move_down, "inputMoveDown", "Down");
 		config_test!(move_end, "inputMoveEnd", "End");
 		config_test!(move_home, "inputMoveHome", "Home");

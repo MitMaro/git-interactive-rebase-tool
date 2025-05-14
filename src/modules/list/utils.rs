@@ -138,6 +138,11 @@ fn build_help_lines(key_bindings: &KeyBindings, selector: HelpLinesSelector) -> 
 			HelpLinesSelector::Normal,
 		),
 		(
+			&key_bindings.duplicate_line,
+			"Duplicate selected line",
+			HelpLinesSelector::Normal,
+		),
+		(
 			&key_bindings.remove_line,
 			"Completely remove the selected lines",
 			HelpLinesSelector::Common,

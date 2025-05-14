@@ -43,6 +43,7 @@ fn normal_mode_help() {
 				" d       |Set selected commits to be dropped",
 				" E       |Edit an exec, label, reset or merge action's content",
 				" I       |Insert a new line",
+				" Controld|Duplicate selected line",
 				" Delete  |Completely remove the selected lines",
 				" Controlz|Undo the last change",
 				" Controly|Redo the previous undone change",
