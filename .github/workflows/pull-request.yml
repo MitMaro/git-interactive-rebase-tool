@@ -8,7 +8,12 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-latest
+          - runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
