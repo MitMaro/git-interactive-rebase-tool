@@ -63,16 +63,16 @@ rustc_version = "0.4.0"
 [features]
 default = []
 dev = []
-# Mostly used for some arm systems
-zlib-ng-compat = ["git2/zlib-ng-compat"]
 
 [profile.release]
+strip = true
 incremental = true
 debug = 0
 lto = true
 codegen-units = 1
 
 [package.metadata.deb]
+name = "interactive-rebase-tool"
 license-file = ["COPYING"]
 extended-description = """\
 Full feature terminal based sequence editor for git interactive rebase."""
@@ -87,11 +87,13 @@ assets = [
 ]
 
 [package.metadata.generate-rpm]
+name = "interactive-rebase-tool"
 assets = [
 	{ source = "target/release/interactive-rebase-tool", dest = "/usr/bin/interactive-rebase-tool", mode = "755" },
 	{ source = "README.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
 	{ source = "readme/*.md", dest = "/usr/share/doc/interactive-rebase-tool/readme/", mode = "644" },
 	{ source = "CHANGELOG.md", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
+	{ source = "COPYING", dest = "/usr/share/doc/interactive-rebase-tool/", mode = "644" },
 	{ source = "src/interactive-rebase-tool.1", dest = "/usr/share/man/man1/interactive-rebase-tool.1", mode = "644" },
 ]
 

@@ -3,283 +3,322 @@ name: Release Packages
 on:
   release:
     types: [ published ]
+  push:
+    branches:
+      - master
 
 jobs:
-  build_tag:
-    name: "Build Tag Name"
+  update-latest-release:
+    name: Update Latest
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
       release_version: ${{ steps.ref.outputs.version }}
     steps:
-      - name: " Build Tag"
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh api \
+            -X PATCH \
+            --field sha=$(git rev-parse master) \
+            --field force=true \
+            repos/{owner}/{repo}/git/refs/tags/latest
+
+          gh release edit latest \
+            --tag latest \
+            --title "Latest Release ($(git rev-parse --short master))" \
+            --prerelease
+
+  build-tag:
+    name: Tag Name
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      release_version: ${{ steps.ref.outputs.version }}
+    steps:
+      - name: Set Tag
         id: ref
         shell: bash
         run: |
-          ref="${{ github.ref }}";
-          ref="${ref//refs\/heads\//}";
-          ref="${ref//refs\/tags\//}";
-          ref="${ref//master/dev}";
-          echo "$ref";
-          echo "version=$ref" >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref }}" == 'refs/heads/master' ]]; then
+            echo "version=latest" >> "$GITHUB_OUTPUT"
+          else
+            ref="${{ github.ref }}";
+            ref="${ref//refs\/heads\//}";
+            ref="${ref//refs\/tags\//}";
+            ref="${ref//master/dev}";
+            echo "version=$ref" >> "$GITHUB_OUTPUT"
+          fi
 
-
-
-  build-deb:
-    name: "Release ${{ matrix.platform.name }}"
-    strategy:
-      matrix:
-        platform:
-          - name: ubuntu-20.04_arm64
-            target: aarch64-unknown-linux-gnu
-            image: ubuntu:20.04
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: ubuntu-20.04_amd64
-            target: x86_64-unknown-linux-gnu
-            image: ubuntu:20.04
-
-          - name: ubuntu-22.04_arm64
-            target: aarch64-unknown-linux-gnu
-            image: ubuntu:22.04
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: ubuntu-22.04_amd64
-            target: x86_64-unknown-linux-gnu
-            image: ubuntu:22.04
-
-          - name: ubuntu-24.04_arm64
-            target: aarch64-unknown-linux-gnu
-            image: ubuntu:24.04
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: ubuntu-24.04_amd64
-            target: x86_64-unknown-linux-gnu
-            image: ubuntu:24.04
-
-          - name: debian-10_arm64
-            target: aarch64-unknown-linux-gnu
-            image: debian:10-slim
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: debian-10_amd64
-            target: x86_64-unknown-linux-gnu
-            image: debian:10-slim
-
-          - name: debian-11_arm64
-            target: aarch64-unknown-linux-gnu
-            image: debian:11-slim
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: debian-11_amd64
-            target: x86_64-unknown-linux-gnu
-            image: debian:11-slim
-
-          - name: debian-12_arm64
-            target: aarch64-unknown-linux-gnu
-            image: debian:12-slim
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: debian-12_amd64
-            target: x86_64-unknown-linux-gnu
-            image: debian:12-slim
-
-          - name: debian-sid_arm64
-            target: aarch64-unknown-linux-gnu
-            image: debian:sid-slim
-            build-args: "--features zlib-ng-compat"
-            pkg-args: --no-strip
-          - name: debian-sid_amd64
-            target: x86_64-unknown-linux-gnu
-            image: debian:sid-slim
-    runs-on: ubuntu-latest
+  build-linux:
+    name: "Release Linux (${{ matrix.name }})"
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 10
-    needs: [ build_tag ]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      - uses: baptiste0928/cargo-install@v2
-        with:
-          crate: cargo-deb
-      - name: Build
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: build
-          target: ${{ matrix.platform.target }}
-          toolchain: stable
-          args: "--release ${{ matrix.platform.build-args }}"
-      - name: "Build Deb"
-        run: $HOME/.cargo/bin/cargo +stable deb ${{ matrix.platform.pkg-args }} --no-build --target ${{ matrix.platform.target }} --output "target/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-${{ matrix.platform.name }}.deb"
-      - name: "Upload Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            target/*.deb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-rpm:
-    name: "Release ${{ matrix.platform.name }}"
+    needs: [ build-tag ]
     strategy:
       matrix:
-        platform:
-          - name: fedora-39_arm64
+        include:
+          # GNU - aarch64
+          - name: gnu-aarch64
+            runner: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            image: fedora:39
-            build-args: "--features zlib-ng-compat"
-          - name: fedora-39_amd64
-            target: x86_64-unknown-linux-gnu
-            image: fedora:39
-          - name: fedora-40_arm64
-            target: aarch64-unknown-linux-gnu
-            image: fedora:40
-            build-args: "--features zlib-ng-compat"
-          - name: fedora-40_amd64
-            target: x86_64-unknown-linux-gnu
-            image: fedora:40
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [ build_tag ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      - uses: baptiste0928/cargo-install@v2
-        with:
-          crate: cargo-generate-rpm
-      - name: Build
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: build
-          target: ${{ matrix.platform.target }}
-          toolchain: stable
-          args: "--release ${{ matrix.platform.build-args }}"
-      - name: "Build RPM"
-        run: $HOME/.cargo/bin/cargo +stable generate-rpm --target ${{ matrix.platform.target }} --output "target/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-${{ matrix.platform.name }}.rpm"
-      - name: "Upload Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            target/*.rpm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            strip-bin: aarch64-linux-gnu-strip
+            deb: true
+            rpm: true
 
-  linux-other:
-    name: "Release ${{ matrix.platform.name }}"
-    continue-on-error: true
-    strategy:
-      matrix:
-        platform:
-          # Alpine
-          - name: alpine_arm64
-            target: aarch64-unknown-linux-gnu
-            build-args: "--features zlib-ng-compat"
-          - name: alpine_amd64
-            target: x86_64-unknown-linux-gnu
-          # Arch
-          - name: arch_arm64
-            target: aarch64-unknown-linux-gnu
-            build-args: "--features zlib-ng-compat"
-          - name: arch_amd64
-            target: x86_64-unknown-linux-gnu
-          # Raspberry PI
-          - name: pi0-1_arm
-            target: arm-unknown-linux-gnueabihf
-          - name: pi2-4_armv7
+          # musl - x86_64
+          - name: musl-x86_64
+            runner: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            strip-bin: x86_64-linux-musl-strip
+            deb: true
+            rpm: true
+
+          # GNU - embedded abi - hard float
+          - name: arm-gnueabihf
+            runner: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
-            build-args: "--features zlib-ng-compat"
-          - name: pi5_arm64
-            target: aarch64-unknown-linux-gnu
-            build-args: "--features zlib-ng-compat"
-    needs: [ build_tag ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-      - name: Build
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: build
-          target: ${{ matrix.platform.target }}
-          toolchain: stable
-          args: "--release ${{ matrix.platform.build-args }}"
-      - name: "Copy"
-        run: cp target/${{ matrix.platform.target }}/release/interactive-rebase-tool target/release/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-${{ matrix.platform.name }}
-      - name: "Upload Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: target/release/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-${{ matrix.platform.name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            strip-bin: arm-linux-gnueabihf-strip
 
-  build-macos:
-    name: "Release macOS-${{ matrix.platform.macos }}_${{ matrix.platform.name }}"
-    strategy:
-      matrix:
-        platform:
-          - name: macos-12_arm
-            target: aarch64-apple-darwin
-            macos: 12
-          - name: macos-12_intel
-            target: x86_64-apple-darwin
-            macos: 12
-          - name: macos-13_arm
-            target: aarch64-apple-darwin
-            macos: 13
-          - name: macos-13_intel
-            target: x86_64-apple-darwin
-            macos: 13
-          - name: macos-14_arm
-            target: aarch64-apple-darwin
-            macos: 14
-          - name: macos-14_intel
-            target: x86_64-apple-darwin
-            macos: 14
-    runs-on: macos-${{ matrix.platform.macos }}
-    timeout-minutes: 5
-    needs: [ build_tag ]
+          # musl - embedded abi - hard float
+          - name: arm-musleabihf
+            runner: ubuntu-latest
+            target: armv7-unknown-linux-musleabihf
+            strip-bin: arm-linux-musleabihf-strip
+
+          # musl - embedded abi - soft float
+          - name: arm-musleabi
+            runner: ubuntu-latest
+            target: armv7-unknown-linux-musleabi
+            strip-bin: arm-linux-musleabi-strip
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          targets: ${{ matrix.platform.target }}
-      - name: "Build"
-        run: "cargo +stable build --release --target ${{ matrix.platform.target }}"
-      - name: "Rename"
-        run: "cp target/${{ matrix.platform.target }}/release/interactive-rebase-tool target/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-${{ matrix.platform.name }}"
-      - name: "Upload Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: target/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-${{ matrix.platform.name }}
+          target: ${{ matrix.target }}
+
+      - name: Install Packages
+        shell: bash
+        run: .github/scripts/ubuntu-packages-install.bash
+
+      - name: Install Cross
+        shell: bash
+        run: .github/scripts/cross-install.bash
+
+      - name: Set Rust Target Variables
+        shell: bash
+        run: |
+          echo "TARGET_DIR=target/cross/${{ matrix.name }}" >> "$GITHUB_ENV"
+
+      - name: Set Rust Feature Variables
+        if: github.ref == 'refs/heads/master'
+        shell: bash
+        run: |
+          echo "FEATURES=--features dev" >> "$GITHUB_ENV"
+
+      - name: Build Binary
+        shell: bash
+        run: |
+          cross build --verbose --release --target-dir ${{ env.TARGET_DIR }} --target ${{ matrix.target }} ${{ env.FEATURES }}
+
+      - name: Build Binary Name
+        shell: bash
+        run: |
+          echo "BIN=${{ env.TARGET_DIR }}/${{ matrix.target }}/release/interactive-rebase-tool" >> $GITHUB_ENV
+
+      - name: Strip Release Binary
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$PWD/target:/target:Z" \
+            "ghcr.io/cross-rs/${{ matrix.target }}:main" \
+            "${{ matrix.strip-bin }}" \
+            "/$BIN"
+
+      - name: Build Archive Name
+        shell: bash
+        run: |
+          echo "ARCHIVE=linux-girt-${{ needs.build-tag.outputs.release_version }}-${{ matrix.name }}" >> $GITHUB_ENV
+
+      - name: Build Archive
+        if: matrix.runner != 'windows-latest'
+        shell: bash
+        run: .github/scripts/build-archive-unix.bash
+
+      - name: Upload Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload \
+            "${{ needs.build-tag.outputs.release_version }}" \
+            ${{ env.ASSET }} \
+            --clobber
+
+      - name: Install cargo-deb
+        if: matrix.deb
+        shell: bash
+        run: |
+          cargo install cargo-deb
+
+      - name: Build Deb
+        if: matrix.deb
+        env:
+          CARGO_TARGET_DIR: ${{ env.TARGET_DIR }}
+        run: |
+          cargo +stable deb \
+            --no-strip \
+            --no-build \
+            --target ${{ matrix.target }} \
+            --output "target/deb-girt-${{ needs.build-tag.outputs.release_version }}-${{ matrix.name }}.deb"
+
+      - name: Upload Deb
+        if: matrix.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload \
+            "${{ needs.build-tag.outputs.release_version }}" \
+            "target/deb-girt-${{ needs.build-tag.outputs.release_version }}-${{ matrix.name }}.deb" \
+            --clobber
+
+      - name: Install cargo-generate-rpm
+        if: matrix.rpm
+        shell: bash
+        run: |
+          cargo install cargo-generate-rpm
+
+      - name: Build RPM
+        if: matrix.rpm
+        run: |
+          cargo +stable generate-rpm \
+            --target-dir ${{ env.TARGET_DIR }} \
+            --target ${{ matrix.target }} \
+            --output "target/rpm-girt-${{ needs.build_tag.outputs.release_version }}-${{ matrix.name }}.rpm"
+
+      - name: Upload RPM
+        if: matrix.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload \
+            "${{ needs.build-tag.outputs.release_version }}" \
+            "target/rpm-girt-${{ needs.build_tag.outputs.release_version }}-${{ matrix.name }}.rpm" \
+            --clobber
 
   build-windows:
-    name: "Release Windows_${{ matrix.target }}"
-    strategy:
-      matrix:
-        target: [ 'aarch64', 'x86_64' ]
+    name: "Release Windows (${{ matrix.name }})"
     runs-on: windows-latest
     timeout-minutes: 10
-    needs: [ build_tag ]
+    needs: [ build-tag ]
+    strategy:
+      matrix:
+        include:
+          - name: "msvc-aarch64"
+            target: "aarch64-pc-windows-msvc"
+          - name: "msvc-x86_64"
+            target: "x86_64-pc-windows-msvc"
+          - name: "gnu-x86_64"
+            target: "x86_64-pc-windows-gnu"
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          targets: "${{ matrix.target }}-pc-windows-msvc"
-      - name: "Build"
-        run: "cargo rustc --target ${{ matrix.target }}-pc-windows-msvc --release --bin interactive-rebase-tool"
-      - name: "Rename"
-        run: "copy target/${{ matrix.target }}-pc-windows-msvc/release/interactive-rebase-tool.exe target/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-windows-${{ matrix.version }}_${{ matrix.target }}.exe"
-      - name: "Upload Release"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: target/git-interactive-rebase-tool-${{ needs.build_tag.outputs.release_version }}-windows-${{ matrix.version }}_${{ matrix.target }}.exe
+          targets: ${{ matrix.target }}
+
+      - name: Set Rust Feature Variables
+        if: github.ref == 'refs/heads/master'
+        shell: bash
+        run: |
+          echo "FEATURES=--features dev" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          cargo rustc --target ${{ matrix.target }} --release --bin interactive-rebase-tool ${{ env.FEATURES }}
+
+      - name: Build Archive
+        shell: bash
+        env:
+          ARCHIVE: windows-girt-${{ needs.build-tag.outputs.release_version }}-${{ matrix.name }}
+          BIN: target/${{ matrix.target }}/release/interactive-rebase-tool
+        run: .github/scripts/build-archive-windows.bash
+
+      - name: Upload Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload \
+            "${{ needs.build-tag.outputs.release_version }}" \
+            ${{ env.ASSET }} \
+            --clobber
+
+  build-macos:
+    name: "Release macOS"
+    runs-on: macos-latest
+    timeout-minutes: 5
+    needs: [ build-tag ]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Set Rust Feature Variables
+        if: github.ref == 'refs/heads/master'
+        shell: bash
+        run: |
+          echo "FEATURES=--features dev" >> "$GITHUB_ENV"
+
+      - name: Build (aarch64)
+        run: |
+          cargo +stable build --release --target aarch64-apple-darwin ${{ env.FEATURES }}
+          strip target/aarch64-apple-darwin/release/interactive-rebase-tool
+
+      - name: Build (x86_64)
+        run: |
+          cargo +stable build --release --target x86_64-apple-darwin ${{ env.FEATURES }}
+          strip target/x86_64-apple-darwin/release/interactive-rebase-tool
+
+      - name: Universal Binary
+        run: |
+          mkdir -p target/universal/
+          lipo -create -output target/universal/interactive-rebase-tool target/aarch64-apple-darwin/release/interactive-rebase-tool target/x86_64-apple-darwin/release/interactive-rebase-tool
+
+      - name: Build Archive
+        shell: bash
+        env:
+          ARCHIVE: macos-girt-${{ needs.build-tag.outputs.release_version }}-universal
+          BIN: target/universal/interactive-rebase-tool
+        run: .github/scripts/build-archive-macos.bash
+
+      - name: Upload Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload \
+            "${{ needs.build-tag.outputs.release_version }}" \
+            ${{ env.ASSET }} \
+            --clobber
