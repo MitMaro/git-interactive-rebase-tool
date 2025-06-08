@@ -31,6 +31,8 @@ pub(crate) struct Theme {
 	pub(crate) character_vertical_spacing: String,
 	/// The color for the break action.
 	pub(crate) color_action_break: Color,
+	/// The color for the cut action.
+	pub(crate) color_action_cut: Color,
 	/// The color for the drop action.
 	pub(crate) color_action_drop: Color,
 	/// The color for the edit action.
@@ -39,6 +41,8 @@ pub(crate) struct Theme {
 	pub(crate) color_action_exec: Color,
 	/// The color for the fixup action.
 	pub(crate) color_action_fixup: Color,
+	/// The color for the fixup action.
+	pub(crate) color_action_index: Color,
 	/// The color for the pick action.
 	pub(crate) color_action_pick: Color,
 	/// The color for the reword action.
@@ -83,10 +87,12 @@ impl Theme {
 				"~",
 			)?,
 			color_action_break: get_color(git_config, "interactive-rebase-tool.breakColor", Color::LightWhite)?,
+			color_action_cut: get_color(git_config, "interactive-rebase-tool.cutColor", Color::DarkRed)?,
 			color_action_drop: get_color(git_config, "interactive-rebase-tool.dropColor", Color::LightRed)?,
 			color_action_edit: get_color(git_config, "interactive-rebase-tool.editColor", Color::LightBlue)?,
 			color_action_exec: get_color(git_config, "interactive-rebase-tool.execColor", Color::LightWhite)?,
 			color_action_fixup: get_color(git_config, "interactive-rebase-tool.fixupColor", Color::LightMagenta)?,
+			color_action_index: get_color(git_config, "interactive-rebase-tool.indexColor", Color::DarkGreen)?,
 			color_action_pick: get_color(git_config, "interactive-rebase-tool.pickColor", Color::LightGreen)?,
 			color_action_reword: get_color(git_config, "interactive-rebase-tool.rewordColor", Color::LightYellow)?,
 			color_action_squash: get_color(git_config, "interactive-rebase-tool.squashColor", Color::LightCyan)?,
@@ -204,6 +210,7 @@ mod tests {
 		config_test!(color_action_edit, "editColor", Color::LightBlue);
 		config_test!(color_action_exec, "execColor", Color::LightWhite);
 		config_test!(color_action_fixup, "fixupColor", Color::LightMagenta);
+		config_test!(color_action_index, "indexColor", Color::DarkGreen);
 		config_test!(color_action_pick, "pickColor", Color::LightGreen);
 		config_test!(color_action_reword, "rewordColor", Color::LightYellow);
 		config_test!(color_action_squash, "squashColor", Color::LightCyan);

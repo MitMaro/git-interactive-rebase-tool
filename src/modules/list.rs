@@ -560,9 +560,11 @@ impl List {
 		match event {
 			e if key_bindings.abort.contains(&e) => Event::from(StandardEvent::Abort),
 			e if key_bindings.action_break.contains(&e) => Event::from(StandardEvent::ActionBreak),
+			e if key_bindings.action_cut.contains(&e) => Event::from(StandardEvent::ActionCut),
 			e if key_bindings.action_drop.contains(&e) => Event::from(StandardEvent::ActionDrop),
 			e if key_bindings.action_edit.contains(&e) => Event::from(StandardEvent::ActionEdit),
 			e if key_bindings.action_fixup.contains(&e) => Event::from(StandardEvent::ActionFixup),
+			e if key_bindings.action_index.contains(&e) => Event::from(StandardEvent::ActionIndex),
 			e if key_bindings.action_pick.contains(&e) => Event::from(StandardEvent::ActionPick),
 			e if key_bindings.action_reword.contains(&e) => Event::from(StandardEvent::ActionReword),
 			e if key_bindings.action_squash.contains(&e) => Event::from(StandardEvent::ActionSquash),
@@ -649,9 +651,11 @@ impl List {
 			Event::Standard(standard_event) => {
 				match standard_event {
 					StandardEvent::Abort => self.abort(&mut results),
+					StandardEvent::ActionCut => self.set_selected_line_action(Action::Cut),
 					StandardEvent::ActionDrop => self.set_selected_line_action(Action::Drop),
 					StandardEvent::ActionEdit => self.set_selected_line_action(Action::Edit),
 					StandardEvent::ActionFixup => self.set_selected_line_action(Action::Fixup),
+					StandardEvent::ActionIndex => self.set_selected_line_action(Action::Index),
 					StandardEvent::ActionPick => self.set_selected_line_action(Action::Pick),
 					StandardEvent::ActionReword => self.set_selected_line_action(Action::Reword),
 					StandardEvent::ActionSquash => self.set_selected_line_action(Action::Squash),

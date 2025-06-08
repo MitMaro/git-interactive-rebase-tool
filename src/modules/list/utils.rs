@@ -128,6 +128,16 @@ fn build_help_lines(key_bindings: &KeyBindings, selector: HelpLinesSelector) -> 
 			HelpLinesSelector::Common,
 		),
 		(
+			&key_bindings.action_cut,
+			"Set selected commits to be cut / split (git-revise)",
+			HelpLinesSelector::Common,
+		),
+		(
+			&key_bindings.action_index,
+			"Set selected commits to be staged in the index (git-revise)",
+			HelpLinesSelector::Common,
+		),
+		(
 			&key_bindings.edit,
 			"Edit an exec, label, reset or merge action's content",
 			HelpLinesSelector::Normal,
@@ -190,10 +200,12 @@ pub(super) fn get_list_visual_mode_help_lines(key_bindings: &KeyBindings) -> Vec
 const fn get_action_color(action: Action) -> DisplayColor {
 	match action {
 		Action::Break => DisplayColor::ActionBreak,
+		Action::Cut => DisplayColor::ActionCut,
 		Action::Drop => DisplayColor::ActionDrop,
 		Action::Edit => DisplayColor::ActionEdit,
 		Action::Exec => DisplayColor::ActionExec,
 		Action::Fixup => DisplayColor::ActionFixup,
+		Action::Index => DisplayColor::ActionIndex,
 		Action::Pick => DisplayColor::ActionPick,
 		Action::Reword => DisplayColor::ActionReword,
 		Action::Squash => DisplayColor::ActionSquash,
@@ -213,8 +225,8 @@ pub(super) fn get_line_action_maximum_width(todo_file: &TodoFile) -> usize {
 		let action_length = match line.get_action() {
 			// allow these to overflow their bounds
 			&Action::Exec | &Action::UpdateRef => 0,
-			&Action::Drop | &Action::Edit | &Action::Noop | &Action::Pick => 4,
-			&Action::Break | &Action::Label | &Action::Reset | &Action::Merge => 5,
+			&Action::Cut | &Action::Drop | &Action::Edit | &Action::Noop | &Action::Pick => 4,
+			&Action::Break | &Action::Label | &Action::Reset | &Action::Merge | &Action::Index => 5,
 			&Action::Fixup => {
 				if line.option().is_some() {
 					8 // "fixup -C" = 8
@@ -304,7 +316,7 @@ pub(super) fn get_todo_line_segments(
 
 	// render hash
 	match *action {
-		Action::Drop | Action::Edit | Action::Fixup | Action::Pick | Action::Reword | Action::Squash => {
+		Action::Cut | Action::Drop | Action::Edit | Action::Fixup | Action::Index | Action::Pick | Action::Reword | Action::Squash => {
 			let action_width = if is_full_width { 8 } else { 3 };
 			let max_index = cmp::min(line.get_hash().len(), action_width);
 			let search_hash_match = search_match.is_some_and(|m| m.hash());

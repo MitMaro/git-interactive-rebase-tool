@@ -9,6 +9,7 @@ mod errors;
 mod history;
 mod line;
 mod line_parser;
+mod state;
 mod todo_file_options;
 mod utils;
 
@@ -19,6 +20,7 @@ use std::{
 	slice::Iter,
 };
 
+use state::detect_state;
 use version_track::Version;
 
 pub(crate) use self::{
@@ -27,6 +29,7 @@ pub(crate) use self::{
 	errors::ParseError,
 	line::Line,
 	line_parser::LineParser,
+	state::State,
 	todo_file_options::TodoFileOptions,
 };
 use self::{
@@ -48,6 +51,7 @@ pub(crate) struct TodoFile {
 	options: TodoFileOptions,
 	selected_line_index: usize,
 	version: Version,
+	state: State,
 }
 
 impl TodoFile {
@@ -64,6 +68,7 @@ impl TodoFile {
 			options,
 			selected_line_index: 0,
 			version: Version::new(),
+			state: State::Initial,
 		}
 	}
 
@@ -81,6 +86,12 @@ impl TodoFile {
 		}
 		self.version.reset();
 		self.history.reset();
+	}
+
+	/// Set the rebase todo file state.
+	#[inline]
+	pub fn set_state(&mut self, state: State) {
+		self.state = state;
 	}
 
 	/// Load the rebase file from disk.
@@ -112,6 +123,7 @@ impl TodoFile {
 			})
 			.collect();
 		self.set_lines(lines?);
+		self.set_state(detect_state(&self.filepath)?);
 		Ok(())
 	}
 
@@ -140,9 +152,11 @@ impl TodoFile {
 
 							match *action {
 								Action::Break | Action::Noop => {},
-								Action::Drop
+								Action::Cut
+								| Action::Drop
 								| Action::Fixup
 								| Action::Edit
+								| Action::Index
 								| Action::Pick
 								| Action::Reword
 								| Action::Squash => {
@@ -319,6 +333,13 @@ impl TodoFile {
 	#[must_use]
 	pub(crate) const fn version(&self) -> &Version {
 		&self.version
+	}
+
+	/// Get the current state
+	#[must_use]
+	#[inline]
+	pub const fn state(&self) -> &State {
+		&self.state
 	}
 
 	/// Get the selected line.

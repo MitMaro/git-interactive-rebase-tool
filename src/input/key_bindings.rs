@@ -40,12 +40,16 @@ pub(crate) struct KeyBindings {
 	pub(crate) abort: Vec<Event>,
 	/// Key bindings for the break action.
 	pub(crate) action_break: Vec<Event>,
+	/// Key bindings for the cut action.
+	pub(crate) action_cut: Vec<Event>,
 	/// Key bindings for the drop action.
 	pub(crate) action_drop: Vec<Event>,
 	/// Key bindings for the edit action.
 	pub(crate) action_edit: Vec<Event>,
 	/// Key bindings for the fixup action.
 	pub(crate) action_fixup: Vec<Event>,
+	/// Key bindings for the index action.
+	pub(crate) action_index: Vec<Event>,
 	/// Key bindings for the pick action.
 	pub(crate) action_pick: Vec<Event>,
 	/// Key bindings for the reword action.
@@ -123,9 +127,11 @@ impl KeyBindings {
 			search_previous: map_keybindings(&key_bindings.search_previous),
 			abort: map_keybindings(&key_bindings.abort),
 			action_break: map_keybindings(&key_bindings.action_break),
+			action_cut: map_keybindings(&key_bindings.action_cut),
 			action_drop: map_keybindings(&key_bindings.action_drop),
 			action_edit: map_keybindings(&key_bindings.action_edit),
 			action_fixup: map_keybindings(&key_bindings.action_fixup),
+			action_index: map_keybindings(&key_bindings.action_index),
 			action_pick: map_keybindings(&key_bindings.action_pick),
 			action_reword: map_keybindings(&key_bindings.action_reword),
 			action_squash: map_keybindings(&key_bindings.action_squash),
