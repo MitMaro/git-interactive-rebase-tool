@@ -13,3 +13,14 @@ pub(crate) enum DiffIgnoreWhitespaceSetting {
 	/// ) flag.
 	Change,
 }
+
+impl DiffIgnoreWhitespaceSetting {
+	pub(crate) fn parse(s: &str) -> Option<Self> {
+		match s.to_lowercase().as_str() {
+			"true" | "on" | "all" => Some(DiffIgnoreWhitespaceSetting::All),
+			"change" => Some(DiffIgnoreWhitespaceSetting::Change),
+			"false" | "off" | "none" => Some(DiffIgnoreWhitespaceSetting::None),
+			_ => None,
+		}
+	}
+}

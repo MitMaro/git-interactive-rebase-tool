@@ -157,6 +157,13 @@ impl KeyBindings {
 	}
 }
 
+impl Default for KeyBindings {
+	fn default() -> Self {
+		let default_config = crate::config::KeyBindings::default();
+		Self::new(&default_config)
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use crossterm::event::{KeyCode, KeyModifiers};

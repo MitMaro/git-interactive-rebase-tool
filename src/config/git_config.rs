@@ -3,22 +3,33 @@ use std::env;
 use crate::{
 	config::{
 		ConfigError,
-		utils::{get_string, get_unsigned_integer, git_diff_renames},
+		utils::{get_optional_string, get_unsigned_integer, git_diff_renames},
 	},
 	git::Config,
 };
 
-fn get_default_editor(git_config: Option<&Config>) -> Result<String, ConfigError> {
-	env::var("GIT_EDITOR").or_else(|_| {
-		get_string(
-			git_config,
-			"core.editor",
-			(env::var("VISUAL")
-				.or_else(|_| env::var("EDITOR"))
-				.unwrap_or_else(|_| String::from("vi")))
-			.as_str(),
-		)
-	})
+fn get_default_editor() -> String {
+	["GIT_EDITOR", "VISUAL", "EDITOR"]
+		.into_iter()
+		.find_map(|var| env::var(var).ok())
+		.unwrap_or_else(|| String::from("vi"))
+}
+
+/// XXX: this logic is duplicated in [`get_default_editor`]
+fn get_default_editor_with_config(git_config: &Config) -> Result<String, ConfigError> {
+	let editor = if let Ok(editor) = env::var("GIT_EDITOR") {
+		editor
+	} else if let Some(editor) = get_optional_string(git_config, "core.editor")? {
+		editor
+	} else if let Ok(editor) = env::var("VISUAL") {
+		editor
+	} else if let Ok(editor) = env::var("EDITOR") {
+		editor
+	} else {
+		String::from("vi")
+	};
+
+	Ok(editor)
 }
 
 /// Represents the git configuration options.
@@ -56,11 +67,13 @@ pub(crate) struct GitConfig {
 }
 
 impl GitConfig {
-	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
-		let mut comment_char = get_string(git_config, "core.commentChar", "#")?;
-		if comment_char.as_str().eq("auto") {
-			comment_char = String::from("#");
-		}
+	pub(super) fn new_with_config(git_config: &Config) -> Result<Self, ConfigError> {
+		let comment_char = match get_optional_string(git_config, "core.commentChar") {
+			Ok(None) => "#".to_owned(),
+			Ok(Some(s)) if s == "auto" => "#".to_owned(),
+			Ok(Some(s)) => s,
+			Err(e) => return Err(e),
+		};
 
 		let (diff_renames, diff_copies) = git_diff_renames(git_config, "diff.renames")?;
 
@@ -71,7 +84,7 @@ impl GitConfig {
 			diff_rename_limit: get_unsigned_integer(git_config, "diff.renameLimit", 200)?,
 			diff_renames,
 			diff_copies,
-			editor: get_default_editor(git_config)?,
+			editor: get_default_editor_with_config(git_config)?,
 		})
 	}
 }
@@ -80,7 +93,21 @@ impl TryFrom<&Config> for GitConfig {
 	type Error = ConfigError;
 
 	fn try_from(config: &Config) -> Result<Self, Self::Error> {
-		Self::new_with_config(Some(config))
+		Self::new_with_config(config)
+	}
+}
+
+impl Default for GitConfig {
+	fn default() -> Self {
+		Self {
+			comment_char: "#".to_owned(),
+			diff_context: 3,
+			diff_interhunk_lines: 0,
+			diff_rename_limit: 200,
+			diff_renames: true,
+			diff_copies: false,
+			editor: get_default_editor(),
+		}
 	}
 }
 
@@ -103,7 +130,7 @@ mod tests {
 			default $default:literal,
 			$($value: literal => $expected: literal),*
 		) => {
-			let config = GitConfig::new_with_config(None).unwrap();
+			let config = GitConfig::default();
 			let value = config.$key;
 			assert_eq!(
 				value,
@@ -118,7 +145,7 @@ mod tests {
 				let config_parent = format!("[{}]", $config_parent);
 				let config_value = format!("{} = \"{value}\"", $config_name);
 				with_git_config(&[config_parent.as_str(), config_value.as_str()], |git_config| {
-					let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
+					let config = GitConfig::new_with_config(&git_config).unwrap();
 					assert_eq!(
 						config.$key,
 						expected,
@@ -166,7 +193,7 @@ mod tests {
 				EnvVarAction::Remove("EDITOR"),
 			],
 			|| {
-				let config = GitConfig::new_with_config(None).unwrap();
+				let config = GitConfig::default();
 				assert_eq!(config.editor, "vi");
 			},
 		);
@@ -181,7 +208,7 @@ mod tests {
 				EnvVarAction::Set("GIT_EDITOR", String::from("git-editor")),
 			],
 			|| {
-				let config = GitConfig::new_with_config(None).unwrap();
+				let config = GitConfig::default();
 				assert_eq!(config.editor, "git-editor");
 			},
 		);
@@ -196,7 +223,7 @@ mod tests {
 				EnvVarAction::Set("VISUAL", String::from("visual-editor")),
 			],
 			|| {
-				let config = GitConfig::new_with_config(None).unwrap();
+				let config = GitConfig::default();
 				assert_eq!(config.editor, "visual-editor");
 			},
 		);
@@ -211,7 +238,7 @@ mod tests {
 				EnvVarAction::Set("EDITOR", String::from("editor")),
 			],
 			|| {
-				let config = GitConfig::new_with_config(None).unwrap();
+				let config = GitConfig::default();
 				assert_eq!(config.editor, "editor");
 			},
 		);
@@ -227,7 +254,7 @@ mod tests {
 			],
 			|| {
 				with_git_config(&["[core]", "editor = custom"], |git_config| {
-					let config = GitConfig::new_with_config(Some(&git_config)).unwrap();
+					let config = GitConfig::new_with_config(&git_config).unwrap();
 					assert_eq!(config.editor, "custom");
 				});
 			},
@@ -238,7 +265,7 @@ mod tests {
 	fn diff_rename_limit_invalid() {
 		with_git_config(&["[diff]", "renameLimit = invalid"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new("diff.renameLimit", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
@@ -248,7 +275,7 @@ mod tests {
 	fn diff_rename_limit_invalid_range() {
 		with_git_config(&["[diff]", "renameLimit = -100"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new("diff.renameLimit", "-100", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
@@ -258,7 +285,7 @@ mod tests {
 	fn diff_renames_invalid() {
 		with_git_config(&["[diff]", "renames = invalid"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new("diff.renames", "invalid", ConfigErrorCause::InvalidDiffRenames),
 			);
 		});
@@ -277,7 +304,7 @@ mod tests {
 					&["[core]", format!("editor = {}", invalid_utf()).as_str()],
 					|git_config| {
 						assert_err_eq!(
-							GitConfig::new_with_config(Some(&git_config)),
+							GitConfig::new_with_config(&git_config),
 							ConfigError::new_read_error("core.editor", ConfigErrorCause::InvalidUtf),
 						);
 					},
@@ -292,7 +319,7 @@ mod tests {
 			&["[core]", format!("commentChar = {}", invalid_utf()).as_str()],
 			|git_config| {
 				assert_err_eq!(
-					GitConfig::new_with_config(Some(&git_config)),
+					GitConfig::new_with_config(&git_config),
 					ConfigError::new_read_error("core.commentChar", ConfigErrorCause::InvalidUtf),
 				);
 			},
@@ -303,7 +330,7 @@ mod tests {
 	fn diff_context_invalid() {
 		with_git_config(&["[diff]", "context = invalid"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new("diff.context", "invalid", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
@@ -313,7 +340,7 @@ mod tests {
 	fn diff_context_invalid_range() {
 		with_git_config(&["[diff]", "context = -100"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new("diff.context", "-100", ConfigErrorCause::InvalidUnsignedInteger),
 			);
 		});
@@ -323,7 +350,7 @@ mod tests {
 	fn diff_interhunk_lines_invalid() {
 		with_git_config(&["[diff]", "interHunkContext = invalid"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new(
 					"diff.interHunkContext",
 					"invalid",
@@ -337,7 +364,7 @@ mod tests {
 	fn diff_interhunk_lines_invalid_range() {
 		with_git_config(&["[diff]", "interHunkContext = -100"], |git_config| {
 			assert_err_eq!(
-				GitConfig::new_with_config(Some(&git_config)),
+				GitConfig::new_with_config(&git_config),
 				ConfigError::new(
 					"diff.interHunkContext",
 					"-100",

@@ -66,7 +66,7 @@ pub(crate) struct Config {
 }
 
 impl Config {
-	pub(crate) fn new_with_config(git_config: Option<&crate::git::Config>) -> Result<Self, ConfigError> {
+	pub(crate) fn new_with_config(git_config: &crate::git::Config) -> Result<Self, ConfigError> {
 		Ok(Self {
 			auto_select_next: get_bool(git_config, "interactive-rebase-tool.autoSelectNext", false)?,
 			diff_ignore_whitespace: get_diff_ignore_whitespace(
@@ -94,6 +94,25 @@ impl Config {
 	}
 }
 
+impl Default for Config {
+	fn default() -> Self {
+		Self {
+			auto_select_next: false,
+			diff_ignore_whitespace: DiffIgnoreWhitespaceSetting::None,
+			diff_ignore_blank_lines: false,
+			diff_show_whitespace: DiffShowWhitespaceSetting::Both,
+			diff_space_symbol: DEFAULT_SPACE_SYMBOL.to_owned(),
+			diff_tab_symbol: DEFAULT_TAB_SYMBOL.to_owned(),
+			diff_tab_width: 4,
+			undo_limit: 5000,
+			post_modified_line_exec_command: None,
+			git: GitConfig::default(),
+			key_bindings: KeyBindings::default(),
+			theme: Theme::default(),
+		}
+	}
+}
+
 impl TryFrom<&ConfigLoader> for Config {
 	type Error = ConfigError;
 
@@ -106,7 +125,7 @@ impl TryFrom<&ConfigLoader> for Config {
 		let config = config_loader
 			.load_config()
 			.map_err(|e| ConfigError::new_read_error("", ConfigErrorCause::GitError(e)))?;
-		Self::new_with_config(Some(&config))
+		Self::new_with_config(&config)
 	}
 }
 
@@ -114,7 +133,7 @@ impl TryFrom<&crate::git::Config> for Config {
 	type Error = ConfigError;
 
 	fn try_from(config: &crate::git::Config) -> Result<Self, Self::Error> {
-		Self::new_with_config(Some(config))
+		Self::new_with_config(config)
 	}
 }
 
@@ -331,7 +350,7 @@ mod tests {
 			vec!["[interactive-rebase-tool]", value.as_str()]
 		};
 		with_git_config(&lines, |config| {
-			let config = Config::new_with_config(Some(&config)).unwrap();
+			let config = Config::new_with_config(&config).unwrap();
 			assert_eq!(access(config), expected);
 		});
 	}
@@ -353,7 +372,7 @@ mod tests {
 			],
 			|git_config| {
 				assert_err_eq!(
-					Config::new_with_config(Some(&git_config)),
+					Config::new_with_config(&git_config),
 					ConfigError::new(
 						format!("interactive-rebase-tool.{config_name}").as_str(),
 						config_value,
@@ -378,7 +397,7 @@ mod tests {
 			],
 			|git_config| {
 				assert_err_eq!(
-					Config::new_with_config(Some(&git_config)),
+					Config::new_with_config(&git_config),
 					ConfigError::new_read_error(
 						format!("interactive-rebase-tool.{config_name}").as_str(),
 						ConfigErrorCause::InvalidUtf
