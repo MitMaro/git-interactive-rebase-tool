@@ -6,7 +6,6 @@ fn normal_mode_abort() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Abort)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -26,7 +25,6 @@ fn visual_mode_abort() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::Abort),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);
@@ -44,7 +42,6 @@ fn normal_mode_force_abort() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ForceAbort)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -65,7 +62,6 @@ fn visual_mode_force_abort() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::ForceAbort),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);
@@ -84,7 +80,6 @@ fn normal_mode_rebase() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Rebase)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -104,7 +99,6 @@ fn visual_mode_rebase() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::Rebase),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);
@@ -122,7 +116,6 @@ fn normal_mode_force_rebase() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ForceRebase)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -143,7 +136,6 @@ fn visual_mode_force_rebase() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::ForceRebase),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);

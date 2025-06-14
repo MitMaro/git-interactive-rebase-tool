@@ -83,7 +83,13 @@ impl ModuleTestContext {
 	}
 }
 
-pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], config: Config, callback: C)
+pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], callback: C)
+where C: FnOnce(ModuleTestContext) {
+	let config = Config::default();
+	module_test_with_config(lines, events, config, callback)
+}
+
+pub(crate) fn module_test_with_config<C>(lines: &[&str], events: &[Event], config: Config, callback: C)
 where C: FnOnce(ModuleTestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_state(|view_context| {

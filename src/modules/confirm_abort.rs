@@ -69,12 +69,12 @@ mod tests {
 		assert_results,
 		input::{KeyCode, StandardEvent},
 		process::Artifact,
-		test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers},
+		test_helpers::{assertions::assert_rendered_output::AssertRenderOptions, testers}
 	};
 
 	#[test]
 	fn build_view_data() {
-		testers::module(&["pick aaa comment"], &[], None, |test_context| {
+		testers::module(&["pick aaa comment"], &[], |test_context| {
 			let mut module = ConfirmAbort::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -91,7 +91,6 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::Yes)],
-			None,
 			|mut test_context| {
 				let mut module = ConfirmAbort::new(&test_context.app_data());
 				assert_results!(
@@ -109,7 +108,6 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(StandardEvent::No)],
-			None,
 			|mut test_context| {
 				let mut module = ConfirmAbort::new(&test_context.app_data());
 				assert_results!(
@@ -126,7 +124,6 @@ mod tests {
 		testers::module(
 			&["pick aaa comment"],
 			&[Event::from(KeyCode::Null)],
-			None,
 			|mut test_context| {
 				let mut module = ConfirmAbort::new(&test_context.app_data());
 				assert_results!(

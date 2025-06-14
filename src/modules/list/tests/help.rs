@@ -6,7 +6,6 @@ fn normal_mode_help() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			module.state = ListState::Normal;
@@ -61,7 +60,6 @@ fn normal_mode_help_event() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from(KeyCode::Enter)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			module.state = ListState::Normal;
@@ -76,7 +74,6 @@ fn visual_mode_help() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			module.state = ListState::Visual;
@@ -126,7 +123,6 @@ fn visual_mode_help_event() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from(KeyCode::Enter)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			module.state = ListState::Visual;

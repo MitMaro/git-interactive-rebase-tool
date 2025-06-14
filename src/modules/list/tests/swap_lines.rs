@@ -6,7 +6,6 @@ fn normal_mode_change_swap_down() {
 	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(StandardEvent::SwapSelectedDown)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -38,7 +37,6 @@ fn visual_mode_swap_down_from_top_to_bottom_selection() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::SwapSelectedDown),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -74,7 +72,6 @@ fn visual_mode_swap_down_from_bottom_to_top_selection() {
 			Event::from(StandardEvent::MoveCursorUp),
 			Event::from(StandardEvent::SwapSelectedDown),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -111,7 +108,6 @@ fn visual_mode_swap_down_to_limit_from_bottom_to_top_selection() {
 			Event::from(StandardEvent::SwapSelectedDown),
 			Event::from(StandardEvent::SwapSelectedDown),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -146,7 +142,6 @@ fn visual_mode_swap_down_to_limit_from_top_to_bottom_selection() {
 			Event::from(StandardEvent::SwapSelectedDown),
 			Event::from(StandardEvent::SwapSelectedDown),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -172,7 +167,6 @@ fn normal_mode_change_swap_up() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::SwapSelectedUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -204,7 +198,6 @@ fn visual_mode_swap_up_from_top_to_bottom_selection() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::SwapSelectedUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -240,7 +233,6 @@ fn visual_mode_swap_up_from_bottom_to_top_selection() {
 			Event::from(StandardEvent::MoveCursorUp),
 			Event::from(StandardEvent::SwapSelectedUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -275,7 +267,6 @@ fn visual_mode_swap_up_to_limit_from_top_to_bottom_selection() {
 			Event::from(StandardEvent::SwapSelectedUp),
 			Event::from(StandardEvent::SwapSelectedUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -312,7 +303,6 @@ fn visual_mode_swap_up_to_limit_from_bottom_to_top_selection() {
 			Event::from(StandardEvent::SwapSelectedUp),
 			Event::from(StandardEvent::SwapSelectedUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);

@@ -18,7 +18,6 @@ fn start() {
 	testers::module(
 		&["pick aaa c1", "pick aaa c2", "pick aaa c3"],
 		&[Event::from(StandardEvent::ToggleVisualMode)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -41,7 +40,6 @@ fn start_cursor_down_one() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::MoveCursorDown),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -70,7 +68,6 @@ fn start_cursor_page_down() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::MoveCursorPageDown),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			module.height = 4;
@@ -106,7 +103,6 @@ fn start_cursor_from_bottom_move_up() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::MoveCursorUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -144,7 +140,6 @@ fn start_cursor_from_bottom_to_top() {
 			Event::from(StandardEvent::MoveCursorUp),
 			Event::from(StandardEvent::MoveCursorUp),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -171,7 +166,6 @@ fn action_change_top_bottom() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionReword),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -198,7 +192,6 @@ fn action_change_bottom_top() {
 			Event::from(StandardEvent::MoveCursorUp),
 			Event::from(StandardEvent::ActionReword),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -221,7 +214,6 @@ fn toggle_visual_mode() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::ToggleVisualMode),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);
@@ -240,7 +232,6 @@ fn other_event() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(KeyCode::Null)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(

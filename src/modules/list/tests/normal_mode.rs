@@ -3,12 +3,12 @@ use crate::{action_line, assert_rendered_output, assert_results, input::KeyCode,
 
 #[test]
 fn change_auto_select_next_with_next_line() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.auto_select_next = true;
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa c1", "pick aaa c2"],
 		&[Event::from(StandardEvent::ActionSquash)],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -27,7 +27,6 @@ fn toggle_visual_mode() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ToggleVisualMode)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -45,7 +44,6 @@ fn other_event() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(KeyCode::Null)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(

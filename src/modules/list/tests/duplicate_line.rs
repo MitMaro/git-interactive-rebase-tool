@@ -6,7 +6,6 @@ fn duplicate_line_duplicatable() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::DuplicateLine)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -27,7 +26,6 @@ fn duplicate_line_not_duplicatable() {
 	testers::module(
 		&["break"],
 		&[Event::from(StandardEvent::DuplicateLine)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(

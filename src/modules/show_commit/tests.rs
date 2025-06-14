@@ -6,6 +6,7 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
+	config::Config,
 	diff::{Commit, Delta, DiffLine, FileMode, Origin, Status, User},
 	input::StandardEvent,
 	process::Artifact,
@@ -13,7 +14,6 @@ use crate::{
 	test_helpers::{
 		assertions::assert_rendered_output::AssertRenderOptions,
 		builders::{CommitBuilder, CommitDiffBuilder, FileStatusBuilder},
-		create_config,
 		testers,
 	},
 };
@@ -33,7 +33,7 @@ fn update_diff(module: &mut ShowCommit, builder: CommitDiffBuilder) {
 fn load_commit_during_activate() {
 	let hash = "abcde12345";
 	let line = format!("pick {hash} comment1");
-	testers::module(&[line.as_str()], &[], None, |test_context| {
+	testers::module(&[line.as_str()], &[], |test_context| {
 		let mut module = ShowCommit::new(&test_context.app_data());
 		assert_results!(
 			test_context.activate(&mut module, State::List),
@@ -46,7 +46,7 @@ fn load_commit_during_activate() {
 fn cached_commit_in_activate() {
 	let hash = "abcde12345";
 	let line = format!("pick {hash} comment1");
-	testers::module(&[line.as_str()], &[], None, |test_context| {
+	testers::module(&[line.as_str()], &[], |test_context| {
 		let mut module = ShowCommit::new(&test_context.app_data());
 		let diff = test_context.app_data().diff_state().diff();
 		// prefill cache
@@ -62,7 +62,7 @@ fn cached_commit_in_activate() {
 
 #[test]
 fn no_selected_line_in_activate() {
-	testers::module(&[], &[], None, |test_context| {
+	testers::module(&[], &[], |test_context| {
 		let mut module = ShowCommit::new(&test_context.app_data());
 		assert_results!(
 			test_context.activate(&mut module, State::List),
@@ -79,7 +79,6 @@ fn render_cancelled_diff_race() {
 			"pick abcdef0123456789abcdef0123456789 comment2",
 		],
 		&[],
-		None,
 		|test_context| {
 			{
 				let diff = test_context.app_data().diff_state().diff();
@@ -102,7 +101,6 @@ fn render_overview_minimal_commit() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let commit = CommitBuilder::new("0123456789abcdef0123456789abcdef").build();
 			let commit_date = commit.committed_date().format("%c %z").to_string();
@@ -130,7 +128,6 @@ fn render_overview_minimal_commit_compact() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let commit = CommitBuilder::new("0123456789abcdef0123456789abcdef").build();
@@ -158,7 +155,6 @@ fn render_overview_with_author() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -185,7 +181,6 @@ fn render_overview_with_author_compact() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut module = ShowCommit::new(&test_context.app_data());
@@ -213,7 +208,6 @@ fn render_overview_with_committer() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -240,7 +234,6 @@ fn render_overview_with_committer_compact() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
 
@@ -269,7 +262,6 @@ fn render_overview_with_commit_summary() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -296,7 +288,6 @@ fn render_overview_with_commit_body() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -323,7 +314,6 @@ fn render_overview_with_commit_summary_and_body() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -353,7 +343,6 @@ fn render_overview_with_file_stats() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -423,7 +412,6 @@ fn render_overview_with_file_stats_compact() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
 
@@ -494,7 +482,6 @@ fn render_overview_single_file_changed() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -519,7 +506,6 @@ fn render_overview_more_than_one_file_changed() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -545,7 +531,6 @@ fn render_overview_single_insertion() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -571,7 +556,6 @@ fn render_overview_more_than_one_insertion() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -597,7 +581,6 @@ fn render_overview_single_deletion() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -623,7 +606,6 @@ fn render_overview_more_than_one_deletion() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -646,12 +628,12 @@ fn render_overview_more_than_one_deletion() {
 
 #[test]
 fn render_diff_minimal_commit() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -677,12 +659,12 @@ fn render_diff_minimal_commit() {
 
 #[test]
 fn render_diff_minimal_commit_compact() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
 
@@ -712,7 +694,6 @@ fn render_diff_basic_file_stats() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -788,12 +769,12 @@ fn render_diff_basic_file_stats() {
 
 #[test]
 fn render_diff_end_new_line_missing() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
 			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
@@ -836,12 +817,12 @@ fn render_diff_end_new_line_missing() {
 
 #[test]
 fn render_diff_add_line() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
 			delta.add_line(DiffLine::new(Origin::Addition, "new line", None, Some(14), false));
@@ -882,12 +863,12 @@ fn render_diff_add_line() {
 
 #[test]
 fn render_diff_delete_line() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
 			delta.add_line(DiffLine::new(Origin::Deletion, "old line", Some(14), None, false));
@@ -928,12 +909,12 @@ fn render_diff_delete_line() {
 
 #[test]
 fn render_diff_context_add_remove_lines() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut delta = Delta::new("@@ -14,2 +13,3 @@ context", 14, 14, 0, 1);
 			delta.add_line(DiffLine::new(Origin::Context, "context 1", Some(13), Some(13), false));
@@ -1003,15 +984,15 @@ fn generate_white_space_delta() -> Delta {
 
 #[test]
 fn render_diff_show_both_whitespace() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 	config.diff_tab_symbol = String::from("#>");
 	config.diff_space_symbol = String::from("%");
 	config.diff_tab_width = 2;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1047,15 +1028,15 @@ fn render_diff_show_both_whitespace() {
 
 #[test]
 fn render_diff_show_leading_whitespace() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::Leading;
 	config.diff_tab_symbol = String::from("#>");
 	config.diff_space_symbol = String::from("%");
 	config.diff_tab_width = 2;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1091,15 +1072,15 @@ fn render_diff_show_leading_whitespace() {
 
 #[test]
 fn render_diff_show_no_whitespace() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::None;
 	config.diff_tab_symbol = String::from("#>");
 	config.diff_space_symbol = String::from("%");
 	config.diff_tab_width = 2;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1135,15 +1116,15 @@ fn render_diff_show_no_whitespace() {
 
 #[test]
 fn render_diff_show_whitespace_all_spaces() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.diff_show_whitespace = DiffShowWhitespaceSetting::Both;
 	config.diff_tab_symbol = String::from("#>");
 	config.diff_space_symbol = String::from("%");
 	config.diff_tab_width = 2;
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let mut delta = Delta::new("@@ -1,7 +1,7 @@ context", 1, 1, 7, 7);
 			delta.add_line(DiffLine::new(Origin::Addition, "    ", None, Some(1), false));
@@ -1176,10 +1157,10 @@ fn render_diff_show_whitespace_all_spaces() {
 
 #[test]
 fn render_loading_new() {
-	testers::module(
+	testers::module_with_config(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
+		Config::default(),
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1204,7 +1185,6 @@ fn render_loading_quick_diff_progress() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1232,7 +1212,6 @@ fn render_loading_quick_diff_complete() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1260,7 +1239,6 @@ fn render_loading_diff_progress() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1288,7 +1266,6 @@ fn render_loading_diff_error_not_found() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1319,7 +1296,6 @@ fn render_loading_diff_error_other() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef comment1"],
 		&[],
-		None,
 		|test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			update_diff(
@@ -1350,7 +1326,6 @@ fn handle_event_toggle_diff_to_overview() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from(StandardEvent::ShowDiff)],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			module
@@ -1371,7 +1346,6 @@ fn handle_event_toggle_overview_to_diff() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('d')],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			module
@@ -1392,7 +1366,6 @@ fn handle_event_resize() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::Resize(100, 100)],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			assert_results!(
@@ -1408,7 +1381,6 @@ fn render_help() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -1434,7 +1406,6 @@ fn handle_help_event_show() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help)],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -1447,7 +1418,6 @@ fn handle_help_event_hide() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Help), Event::from('?')],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -1461,7 +1431,6 @@ fn handle_event_other_key_from_diff() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('a')],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			module.state = ShowCommitState::Diff;
@@ -1479,7 +1448,6 @@ fn handle_event_other_key_from_overview() {
 	testers::module(
 		&["pick 0123456789abcdef0123456789abcdef c1"],
 		&[Event::from('a')],
-		None,
 		|mut test_context| {
 			let mut module = ShowCommit::new(&test_context.app_data());
 			module.state = ShowCommitState::Overview;
@@ -1501,7 +1469,7 @@ fn handle_event_other_key_from_overview() {
 #[case::scroll_jump_down(StandardEvent::ScrollJumpDown)]
 #[case::scroll_jump_up(StandardEvent::ScrollJumpUp)]
 fn scroll_events(#[case] event: StandardEvent) {
-	testers::module(&[], &[Event::from(event)], None, |mut test_context| {
+	testers::module_with_config(&[], &[Event::from(event)], Config::default(), |mut test_context| {
 		let mut module = ShowCommit::new(&test_context.app_data());
 		assert_results!(
 			test_context.handle_event(&mut module),

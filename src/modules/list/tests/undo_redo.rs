@@ -6,7 +6,6 @@ fn normal_mode_undo() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionDrop), Event::from(StandardEvent::Undo)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);
@@ -34,7 +33,6 @@ fn normal_mode_undo_visual_mode_change() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::Undo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -57,7 +55,6 @@ fn normal_mode_redo() {
 			Event::from(StandardEvent::Undo),
 			Event::from(StandardEvent::Redo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);
@@ -86,7 +83,6 @@ fn normal_mode_redo_visual_mode_change() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::Redo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -110,7 +106,6 @@ fn visual_mode_undo() {
 			Event::from(StandardEvent::ActionDrop),
 			Event::from(StandardEvent::Undo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 3);
@@ -137,7 +132,6 @@ fn visual_mode_undo_normal_mode_change() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::Undo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 3);
@@ -166,7 +160,6 @@ fn visual_mode_redo() {
 			Event::from(StandardEvent::Undo),
 			Event::from(StandardEvent::Redo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -190,7 +183,6 @@ fn visual_mode_redo_normal_mode_change() {
 			Event::from(StandardEvent::Undo),
 			Event::from(StandardEvent::Redo),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
