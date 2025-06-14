@@ -1,6 +1,5 @@
 use crate::{
-	input::{Event, EventHandler, State},
-	test_helpers::create_test_keybindings,
+	input::{Event, EventHandler, KeyBindings, State},
 };
 
 /// Context for a `EventHandler` based test.
@@ -18,7 +17,7 @@ pub(crate) struct EventHandlerTestContext {
 /// Provide an `EventHandler` instance for use within a test.
 pub(crate) fn with_event_handler<C>(events: &[Event], callback: C)
 where C: FnOnce(EventHandlerTestContext) {
-	let event_handler = EventHandler::new(create_test_keybindings());
+	let event_handler = EventHandler::new(KeyBindings::default());
 	let state = State::new();
 
 	for event in events {

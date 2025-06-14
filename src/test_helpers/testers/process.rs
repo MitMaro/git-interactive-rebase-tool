@@ -4,6 +4,7 @@ use parking_lot::{Mutex, lock_api::RwLock};
 
 use crate::{
 	application::AppData,
+	config::Config,
 	diff,
 	diff::CommitDiff,
 	display::Size,
@@ -13,7 +14,6 @@ use crate::{
 	runtime::ThreadStatuses,
 	test_helpers::{
 		ViewStateTestContext,
-		create_config,
 		with_event_handler,
 		with_search,
 		with_todo_file,
@@ -42,7 +42,7 @@ pub(crate) fn process<C, ModuleProvider: module::ModuleProvider + Send + 'static
 					let view_state = view_context.state.clone();
 					let input_state = event_handler_context.state.clone();
 					let app_data = AppData::new(
-						create_config(),
+						Config::default(),
 						State::WindowSizeError,
 						Arc::new(Mutex::new(todo_file)),
 						diff::thread::State::new(Arc::new(RwLock::new(commit_diff))),

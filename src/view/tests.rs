@@ -2,7 +2,7 @@ use super::*;
 use crate::{config::Theme, display::Size, test_helpers::mocks};
 
 fn assert_render_slice(width: usize, height: usize, render_slice: &RenderSlice, expected: &[&str]) {
-	let theme = Theme::new_with_config(None).unwrap();
+	let theme = Theme::default();
 	let mut crossterm = mocks::CrossTerm::new();
 	let readonly_tui = crossterm.clone();
 	crossterm.set_size(Size::new(width, height));

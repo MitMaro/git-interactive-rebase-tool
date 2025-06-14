@@ -2,11 +2,9 @@
 pub(crate) mod assertions;
 pub(crate) mod builders;
 mod create_commit;
-mod create_config;
 mod create_default_test_module_handler;
 mod create_event_reader;
 mod create_invalid_utf;
-mod create_test_keybindings;
 mod create_test_module_handler;
 pub(crate) mod mocks;
 mod shared;
@@ -25,11 +23,9 @@ pub(crate) static JAN_2021_EPOCH: i64 = 1_609_459_200;
 
 pub(crate) use self::{
 	create_commit::{CreateCommitOptions, create_commit},
-	create_config::create_config,
 	create_default_test_module_handler::{DefaultTestModule, create_default_test_module_handler},
 	create_event_reader::create_event_reader,
 	create_invalid_utf::invalid_utf,
-	create_test_keybindings::create_test_keybindings,
 	create_test_module_handler::create_test_module_handler,
 	shared::TestModuleProvider,
 	with_env_var::{EnvVarAction, with_env_var},

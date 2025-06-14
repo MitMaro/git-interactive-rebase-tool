@@ -14,7 +14,6 @@ use crate::{
 	test_helpers::{
 		EventHandlerTestContext,
 		ViewStateTestContext,
-		create_config,
 		with_event_handler,
 		with_todo_file,
 		with_view_state,
@@ -84,7 +83,7 @@ impl ModuleTestContext {
 	}
 }
 
-pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], config: Option<Config>, callback: C)
+pub(crate) fn module_test<C>(lines: &[&str], events: &[Event], config: Config, callback: C)
 where C: FnOnce(ModuleTestContext) {
 	with_event_handler(events, |event_handler_context| {
 		with_view_state(|view_context| {
@@ -93,7 +92,7 @@ where C: FnOnce(ModuleTestContext) {
 				let commit_diff = CommitDiff::new();
 				let (_git_todo_file, todo_file) = todo_file_context.to_owned();
 				let app_data = AppData::new(
-					config.unwrap_or_else(create_config),
+					config,
 					State::WindowSizeError,
 					Arc::new(Mutex::new(todo_file)),
 					diff::thread::State::new(Arc::new(RwLock::new(commit_diff))),

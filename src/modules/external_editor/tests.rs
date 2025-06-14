@@ -4,9 +4,10 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
+	config::Config,
 	input::KeyCode,
 	process::Artifact,
-	test_helpers::{create_config, testers, testers::ModuleTestContext},
+	test_helpers::{testers, testers::ModuleTestContext},
 };
 
 fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
