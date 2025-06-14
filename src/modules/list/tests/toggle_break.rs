@@ -6,7 +6,6 @@ fn change_toggle_break_add() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ActionBreak)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -28,7 +27,6 @@ fn change_toggle_break_remove() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::ActionBreak),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -46,7 +44,6 @@ fn change_toggle_break_above_existing() {
 	testers::module(
 		&["pick aaa c1", "break"],
 		&[Event::from(StandardEvent::ActionBreak)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);

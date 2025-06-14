@@ -3,7 +3,7 @@ use crate::{assert_rendered_output, assert_results, input::KeyCode, process::Art
 
 #[test]
 fn activate() {
-	testers::module(&[], &[], None, |test_context| {
+	testers::module(&[], &[], |test_context| {
 		let mut module = Insert::new(&test_context.app_data());
 		assert_results!(test_context.activate(&mut module, State::List));
 	});
@@ -11,7 +11,7 @@ fn activate() {
 
 #[test]
 fn render_prompt() {
-	testers::module(&[], &[], None, |test_context| {
+	testers::module(&[], &[], |test_context| {
 		let mut module = Insert::new(&test_context.app_data());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -36,7 +36,7 @@ fn render_prompt() {
 
 #[test]
 fn prompt_cancel() {
-	testers::module(&[], &[Event::from('q')], None, |mut test_context| {
+	testers::module(&[], &[Event::from('q')], |mut test_context| {
 		let mut module = Insert::new(&test_context.app_data());
 		assert_results!(
 			test_context.handle_event(&mut module),
@@ -57,7 +57,6 @@ fn edit_render_exec() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
@@ -94,7 +93,6 @@ fn edit_render_pick() {
 			Event::from('c'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
@@ -131,7 +129,6 @@ fn edit_render_label() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
@@ -168,7 +165,6 @@ fn edit_render_reset() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
@@ -205,7 +201,6 @@ fn edit_render_merge() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
@@ -242,7 +237,6 @@ fn update_ref_render_merge() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_n_events(&mut module, 4);
@@ -279,7 +273,6 @@ fn edit_select_next_index() {
 			Event::from('o'),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -293,7 +286,6 @@ fn cancel_edit() {
 	testers::module(
 		&[],
 		&[Event::from('e'), Event::from(KeyCode::Enter)],
-		None,
 		|mut test_context| {
 			let mut module = Insert::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);

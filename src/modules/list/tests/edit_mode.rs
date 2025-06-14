@@ -6,7 +6,6 @@ fn edit_with_edit_content() {
 	testers::module(
 		&["exec echo foo"],
 		&[Event::from(StandardEvent::Edit)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -23,7 +22,6 @@ fn edit_without_edit_content() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::Edit)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -37,7 +35,7 @@ fn edit_without_edit_content() {
 
 #[test]
 fn edit_without_selected_line() {
-	testers::module(&[], &[Event::from(StandardEvent::Edit)], None, |mut test_context| {
+	testers::module(&[], &[Event::from(StandardEvent::Edit)], |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		assert_results!(
 			test_context.handle_event(&mut module),
@@ -56,7 +54,6 @@ fn handle_event() {
 			Event::from(KeyCode::Backspace),
 			Event::from(KeyCode::Enter),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.build_view_data(&mut module);
@@ -72,7 +69,6 @@ fn render() {
 	testers::module(
 		&["exec foo"],
 		&[Event::from(StandardEvent::Edit)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);

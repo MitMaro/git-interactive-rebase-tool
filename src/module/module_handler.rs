@@ -115,7 +115,7 @@ mod tests {
 
 	#[test]
 	fn module_lifecycle() {
-		testers::module(&["pick aaa comment"], &[], None, |context| {
+		testers::module(&["pick aaa comment"], &[], |context| {
 			let test_module = TestModule::new();
 			let mut module_handler = ModuleHandler::new(
 				context.event_handler_context.event_handler,
@@ -132,7 +132,7 @@ mod tests {
 
 	#[test]
 	fn error() {
-		testers::module(&["pick aaa comment"], &[], None, |context| {
+		testers::module(&["pick aaa comment"], &[], |context| {
 			let test_module = TestModule::new();
 			let mut module_handler = ModuleHandler::new(
 				context.event_handler_context.event_handler,

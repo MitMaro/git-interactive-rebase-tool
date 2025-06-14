@@ -1,18 +1,17 @@
 use crate::{
-	config::{ConfigError, ConfigErrorCause, DiffShowWhitespaceSetting, get_string},
+	config::{ConfigError, ConfigErrorCause, DiffShowWhitespaceSetting, utils::get_optional_string},
 	git::Config,
 };
 
 pub(crate) fn get_diff_show_whitespace(
-	git_config: Option<&Config>,
+	git_config: &Config,
 	name: &str,
 ) -> Result<DiffShowWhitespaceSetting, ConfigError> {
-	match get_string(git_config, name, "both")?.to_lowercase().as_str() {
-		"true" | "on" | "both" => Ok(DiffShowWhitespaceSetting::Both),
-		"trailing" => Ok(DiffShowWhitespaceSetting::Trailing),
-		"leading" => Ok(DiffShowWhitespaceSetting::Leading),
-		"false" | "off" | "none" => Ok(DiffShowWhitespaceSetting::None),
-		input => Err(ConfigError::new(name, input, ConfigErrorCause::InvalidShowWhitespace)),
+	if let Some(config_value) = get_optional_string(git_config, name)? {
+		DiffShowWhitespaceSetting::parse(&config_value)
+			.ok_or_else(|| ConfigError::new(name, &config_value, ConfigErrorCause::InvalidShowWhitespace))
+	} else {
+		Ok(DiffShowWhitespaceSetting::Both)
 	}
 }
 
@@ -36,7 +35,7 @@ mod tests {
 	#[case::mixed_case("lEaDiNg", DiffShowWhitespaceSetting::Leading)]
 	fn read_ok(#[case] value: &str, #[case] expected: DiffShowWhitespaceSetting) {
 		with_git_config(&["[test]", format!("value = \"{value}\"").as_str()], |git_config| {
-			assert_ok_eq!(get_diff_show_whitespace(Some(&git_config), "test.value"), expected);
+			assert_ok_eq!(get_diff_show_whitespace(&git_config, "test.value"), expected);
 		});
 	}
 
@@ -44,7 +43,7 @@ mod tests {
 	fn read_default() {
 		with_git_config(&[], |git_config| {
 			assert_ok_eq!(
-				get_diff_show_whitespace(Some(&git_config), "test.value"),
+				get_diff_show_whitespace(&git_config, "test.value"),
 				DiffShowWhitespaceSetting::Both
 			);
 		});
@@ -54,7 +53,7 @@ mod tests {
 	fn read_invalid_value() {
 		with_git_config(&["[test]", "value = invalid"], |git_config| {
 			assert_err_eq!(
-				get_diff_show_whitespace(Some(&git_config), "test.value"),
+				get_diff_show_whitespace(&git_config, "test.value"),
 				ConfigError::new("test.value", "invalid", ConfigErrorCause::InvalidShowWhitespace)
 			);
 		});
@@ -66,7 +65,7 @@ mod tests {
 			&["[test]", format!("value = {}", invalid_utf()).as_str()],
 			|git_config| {
 				assert_err_eq!(
-					get_diff_show_whitespace(Some(&git_config), "test.value"),
+					get_diff_show_whitespace(&git_config, "test.value"),
 					ConfigError::new_read_error("test.value", ConfigErrorCause::InvalidUtf)
 				);
 			},

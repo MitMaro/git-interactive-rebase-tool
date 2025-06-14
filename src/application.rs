@@ -221,7 +221,6 @@ mod tests {
 		test_helpers::{
 			DefaultTestModule,
 			TestModuleProvider,
-			create_config,
 			create_event_reader,
 			mocks,
 			with_git_directory,
@@ -289,7 +288,7 @@ mod tests {
 
 	#[test]
 	fn todo_file_options_without_command() {
-		let mut config = create_config();
+		let mut config = Config::default();
 		config.undo_limit = 10;
 		config.git.comment_char = String::from("#");
 		config.post_modified_line_exec_command = None;
@@ -303,7 +302,7 @@ mod tests {
 
 	#[test]
 	fn todo_file_options_with_command() {
-		let mut config = create_config();
+		let mut config = Config::default();
 		config.undo_limit = 10;
 		config.git.comment_char = String::from("#");
 		config.post_modified_line_exec_command = Some(String::from("command"));

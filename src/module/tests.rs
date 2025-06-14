@@ -1,8 +1,9 @@
 use anyhow::anyhow;
 
 use crate::{
+	input::KeyBindings,
 	module::{Event, InputOptions, Module, State},
-	test_helpers::{create_test_keybindings, testers},
+	test_helpers::testers,
 };
 
 struct TestModule;
@@ -23,7 +24,7 @@ fn default_trait_method_deactivate() {
 
 #[test]
 fn default_trait_method_build_view_data() {
-	testers::module(&[], &[], None, |context| {
+	testers::module(&[], &[], |context| {
 		let mut module = TestModule {};
 		let view_data = module.build_view_data(&context.render_context);
 		assert!(!view_data.get_name().is_empty());
@@ -38,9 +39,8 @@ fn default_trait_method_input_options() {
 
 #[test]
 fn default_trait_method_read_event() {
-	let key_bindings = create_test_keybindings();
 	let module = TestModule {};
-	assert_eq!(module.read_event(Event::from('a'), &key_bindings), Event::from('a'));
+	assert_eq!(module.read_event(Event::from('a'), &KeyBindings::default()), Event::from('a'));
 }
 
 #[test]

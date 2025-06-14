@@ -65,7 +65,7 @@ mod tests {
 
 	#[test]
 	fn build_view_data() {
-		testers::module(&["pick aaa comment"], &[], None, |test_context| {
+		testers::module(&["pick aaa comment"], &[], |test_context| {
 			let mut module = ConfirmRebase::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
 			assert_rendered_output!(
@@ -82,9 +82,7 @@ mod tests {
 	fn handle_event_yes() {
 		testers::module(
 			&["pick aaa comment"],
-			&[Event::from(StandardEvent::Yes)],
-			None,
-			|mut test_context| {
+			&[Event::from(StandardEvent::Yes)],			|mut test_context| {
 				let mut module = ConfirmRebase::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
@@ -99,9 +97,7 @@ mod tests {
 	fn handle_event_no() {
 		testers::module(
 			&["pick aaa comment"],
-			&[Event::from(StandardEvent::No)],
-			None,
-			|mut test_context| {
+			&[Event::from(StandardEvent::No)],			|mut test_context| {
 				let mut module = ConfirmRebase::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),
@@ -116,9 +112,7 @@ mod tests {
 	fn handle_event_no_match_key() {
 		testers::module(
 			&["pick aaa comment"],
-			&[Event::from(KeyCode::Null)],
-			None,
-			|mut test_context| {
+			&[Event::from(KeyCode::Null)],			|mut test_context| {
 				let mut module = ConfirmRebase::new(&test_context.app_data());
 				assert_results!(
 					test_context.handle_event(&mut module),

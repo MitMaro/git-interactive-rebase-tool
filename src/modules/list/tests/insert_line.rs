@@ -6,7 +6,6 @@ fn insert_line() {
 	testers::module(
 		&[],
 		&[Event::from(StandardEvent::InsertLine)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(

@@ -4,9 +4,10 @@ use super::*;
 use crate::{
 	assert_rendered_output,
 	assert_results,
+	config::Config,
 	input::KeyCode,
 	process::Artifact,
-	test_helpers::{create_config, testers, testers::ModuleTestContext},
+	test_helpers::{testers, testers::ModuleTestContext},
 };
 
 fn assert_external_editor_state_eq(actual: &ExternalEditorState, expected: &ExternalEditorState) {
@@ -55,12 +56,12 @@ fn todo_file_path(test_context: &ModuleTestContext) -> String {
 
 #[test]
 fn activate() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment1", "drop bbb comment2"],
 		&[],
-		Some(config),
+		config,
 		|test_context| {
 			let todo_path = todo_file_path(&test_context);
 
@@ -82,7 +83,7 @@ fn activate() {
 
 #[test]
 fn activate_write_file_fail() {
-	testers::module(&["pick aaa comment"], &[], None, |test_context| {
+	testers::module(&["pick aaa comment"], &[], |test_context| {
 		let todo_path = todo_file_path(&test_context);
 		let file = File::open(todo_path.as_str()).unwrap();
 		let mut permissions = file.metadata().unwrap().permissions();
@@ -99,9 +100,9 @@ fn activate_write_file_fail() {
 
 #[test]
 fn activate_file_placement_marker() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor a % b");
-	testers::module(&[], &[], Some(config), |test_context| {
+	testers::module_with_config(&[], &[], config, |test_context| {
 		let todo_path = todo_file_path(&test_context);
 		let mut module = ExternalEditor::new(&test_context.app_data());
 		assert_results!(
@@ -117,12 +118,12 @@ fn activate_file_placement_marker() {
 
 #[test]
 fn deactivate() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment", "drop bbb comment2"],
 		&[],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 			_ = test_context.deactivate(&mut module);
@@ -133,12 +134,12 @@ fn deactivate() {
 
 #[test]
 fn edit_success() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from(StandardEvent::ExternalCommandSuccess)],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::List);
@@ -156,12 +157,12 @@ fn edit_success() {
 
 #[test]
 fn empty_edit_error() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('1'), Event::from(StandardEvent::ExternalCommandSuccess)],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::List);
@@ -195,12 +196,12 @@ fn empty_edit_error() {
 
 #[test]
 fn empty_edit_abort_rebase() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('1')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::List);
@@ -216,13 +217,13 @@ fn empty_edit_abort_rebase() {
 
 #[test]
 fn empty_edit_re_edit_rebase_file() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
 
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('2')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let todo_path = todo_file_path(&test_context);
 			let mut module = ExternalEditor::new(&test_context.app_data());
@@ -240,12 +241,12 @@ fn empty_edit_re_edit_rebase_file() {
 
 #[test]
 fn empty_edit_undo_and_edit() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment", "drop bbb comment"],
 		&[Event::from('3')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let todo_path = todo_file_path(&test_context);
 			let mut module = ExternalEditor::new(&test_context.app_data());
@@ -267,9 +268,9 @@ fn empty_edit_undo_and_edit() {
 
 #[test]
 fn empty_edit_noop() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(&["pick aaa comment"], &[], Some(config), |test_context| {
+	testers::module_with_config(&["pick aaa comment"], &[], config, |test_context| {
 		let mut module = ExternalEditor::new(&test_context.app_data());
 		_ = test_context.activate(&mut module, State::List);
 		module.todo_file.lock().set_lines(vec![]);
@@ -293,9 +294,9 @@ fn empty_edit_noop() {
 
 #[test]
 fn no_editor_set() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::new();
-	testers::module(&["pick aaa comment"], &[], Some(config), |test_context| {
+	testers::module_with_config(&["pick aaa comment"], &[], config, |test_context| {
 		let mut module = ExternalEditor::new(&test_context.app_data());
 		assert_results!(
 			test_context.activate(&mut module, State::List),
@@ -309,12 +310,12 @@ fn no_editor_set() {
 
 #[test]
 fn editor_non_zero_exit() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from(StandardEvent::ExternalCommandError)],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 
@@ -348,15 +349,15 @@ fn editor_non_zero_exit() {
 
 #[test]
 fn editor_reload_error() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[
 			Event::from(KeyCode::Up),
 			Event::from(StandardEvent::ExternalCommandSuccess),
 		],
-		Some(config),
+		config,
 		|mut test_context| {
 			let todo_path = todo_file_path(&test_context);
 			let path = Path::new(todo_path.as_str());
@@ -394,13 +395,13 @@ fn editor_reload_error() {
 
 #[test]
 fn error_abort_rebase() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
 
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('1')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::List);
@@ -417,12 +418,12 @@ fn error_abort_rebase() {
 
 #[test]
 fn error_edit_rebase() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('2')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let todo_path = todo_file_path(&test_context);
 			let mut module = ExternalEditor::new(&test_context.app_data());
@@ -440,12 +441,12 @@ fn error_edit_rebase() {
 
 #[test]
 fn error_restore_and_abort() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('3')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let mut module = ExternalEditor::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::List);
@@ -464,12 +465,12 @@ fn error_restore_and_abort() {
 
 #[test]
 fn error_undo_modifications_and_reedit() {
-	let mut config = create_config();
+	let mut config = Config::default();
 	config.git.editor = String::from("editor");
-	testers::module(
+	testers::module_with_config(
 		&["pick aaa comment"],
 		&[Event::from('4')],
-		Some(config),
+		config,
 		|mut test_context| {
 			let todo_path = todo_file_path(&test_context);
 			let mut module = ExternalEditor::new(&test_context.app_data());

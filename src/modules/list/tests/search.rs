@@ -11,7 +11,7 @@ use crate::{
 	modules::list::search::LineMatch,
 	process::Artifact,
 	search::Interrupter,
-	test_helpers::{assertions::AnyArtifact, create_test_keybindings, testers::ModuleTestContext},
+	test_helpers::{assertions::AnyArtifact, testers::ModuleTestContext},
 };
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -47,13 +47,13 @@ impl TestContext {
 
 fn search_test<C>(actions: &[Action<'_>], lines: &[&str], callback: C)
 where C: FnOnce(TestContext) {
-	testers::module(lines, &[], None, |test_context| {
+	testers::module(lines, &[], |test_context| {
 		let module = List::new(&test_context.app_data());
 		let mut search_context = TestContext {
 			module,
 			module_test_context: test_context,
 			results: vec![],
-			key_bindings: create_test_keybindings(),
+			key_bindings: KeyBindings::default(),
 		};
 
 		let mut finish_pushed = false;

@@ -90,7 +90,7 @@ mod tests {
 
 	#[test]
 	fn simple_error() {
-		testers::module(&[], &[], None, |test_context| {
+		testers::module(&[], &[], |test_context| {
 			let mut module = Error::new(&test_context.app_data());
 			_ = module.handle_error(&anyhow!("Test Error"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -107,7 +107,7 @@ mod tests {
 
 	#[test]
 	fn error_with_contest() {
-		testers::module(&[], &[], None, |test_context| {
+		testers::module(&[], &[], |test_context| {
 			let mut module = Error::new(&test_context.app_data());
 			_ = module.handle_error(&anyhow!("Test Error").context("Context"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -121,7 +121,7 @@ mod tests {
 
 	#[test]
 	fn error_with_newlines() {
-		testers::module(&[], &[], None, |test_context| {
+		testers::module(&[], &[], |test_context| {
 			let mut module = Error::new(&test_context.app_data());
 			_ = module.handle_error(&anyhow!("Test\nError").context("With\nContext"));
 			let view_data = test_context.build_view_data(&mut module);
@@ -137,7 +137,7 @@ mod tests {
 
 	#[test]
 	fn return_state() {
-		testers::module(&[], &[Event::from('a')], None, |mut test_context| {
+		testers::module(&[], &[Event::from('a')], |mut test_context| {
 			let mut module = Error::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			_ = module.handle_error(&anyhow!("Test Error"));
@@ -151,7 +151,7 @@ mod tests {
 
 	#[test]
 	fn resize() {
-		testers::module(&[], &[Event::Resize(100, 100)], None, |mut test_context| {
+		testers::module(&[], &[Event::Resize(100, 100)], |mut test_context| {
 			let mut module = Error::new(&test_context.app_data());
 			_ = test_context.activate(&mut module, State::ConfirmRebase);
 			_ = module.handle_error(&anyhow!("Test Error"));

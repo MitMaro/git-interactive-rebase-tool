@@ -12,7 +12,6 @@ fn normal_mode_remove_line_first() {
 			"pick eee c5",
 		],
 		&[Event::from(StandardEvent::Delete)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -44,7 +43,6 @@ fn normal_mode_remove_line_end() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::Delete),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -75,7 +73,6 @@ fn visual_mode_remove_lines_start_index_first() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::Delete),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -110,7 +107,6 @@ fn visual_mode_remove_lines_end_index_first() {
 			Event::from(StandardEvent::MoveCursorUp),
 			Event::from(StandardEvent::Delete),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -147,7 +143,6 @@ fn visual_mode_remove_lines_start_index_last() {
 			Event::from(StandardEvent::MoveCursorUp),
 			Event::from(StandardEvent::Delete),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -182,7 +177,6 @@ fn visual_mode_remove_lines_end_index_last() {
 			Event::from(StandardEvent::MoveCursorDown),
 			Event::from(StandardEvent::Delete),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);

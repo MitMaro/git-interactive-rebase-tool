@@ -20,14 +20,14 @@ mod undo_redo;
 mod visual_mode;
 
 use super::*;
-use crate::test_helpers::{create_config, testers};
+use crate::test_helpers::testers;
+use crate::config::Config;
 
 #[test]
 fn resize() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::Resize(100, 200)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);

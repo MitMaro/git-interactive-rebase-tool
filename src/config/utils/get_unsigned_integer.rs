@@ -3,37 +3,26 @@ use crate::{
 	git::{Config, ErrorCode},
 };
 
-pub(crate) fn get_unsigned_integer(config: Option<&Config>, name: &str, default: u32) -> Result<u32, ConfigError> {
-	if let Some(cfg) = config {
-		match cfg.get_i32(name) {
-			Ok(v) => {
-				v.try_into().map_err(|_| {
-					ConfigError::new_with_optional_input(
-						name,
-						get_optional_string(config, name).ok().flatten(),
-						ConfigErrorCause::InvalidUnsignedInteger,
-					)
-				})
-			},
-			Err(e) if e.code() == ErrorCode::NotFound => Ok(default),
-			Err(e) if e.message().contains("failed to parse") => {
-				Err(ConfigError::new_with_optional_input(
-					name,
-					get_optional_string(config, name).ok().flatten(),
-					ConfigErrorCause::InvalidUnsignedInteger,
-				))
-			},
-			Err(e) => {
-				Err(ConfigError::new_with_optional_input(
-					name,
-					get_optional_string(config, name).ok().flatten(),
-					ConfigErrorCause::UnknownError(String::from(e.message())),
-				))
-			},
-		}
-	}
-	else {
-		Ok(default)
+pub(crate) fn get_unsigned_integer(config: &Config, name: &str, default: u32) -> Result<u32, ConfigError> {
+	match config.get_i32(name) {
+		Ok(v) => v.try_into().map_err(|_| {
+			ConfigError::new_with_optional_input(
+				name,
+				get_optional_string(config, name).ok().flatten(),
+				ConfigErrorCause::InvalidUnsignedInteger,
+			)
+		}),
+		Err(e) if e.code() == ErrorCode::NotFound => Ok(default),
+		Err(e) if e.message().contains("failed to parse") => Err(ConfigError::new_with_optional_input(
+			name,
+			get_optional_string(config, name).ok().flatten(),
+			ConfigErrorCause::InvalidUnsignedInteger,
+		)),
+		Err(e) => Err(ConfigError::new_with_optional_input(
+			name,
+			get_optional_string(config, name).ok().flatten(),
+			ConfigErrorCause::UnknownError(String::from(e.message())),
+		)),
 	}
 }
 
@@ -47,14 +36,14 @@ mod tests {
 	#[test]
 	fn read_value() {
 		with_git_config(&["[test]", "value = 42"], |git_config| {
-			assert_ok_eq!(get_unsigned_integer(Some(&git_config), "test.value", 24), 42);
+			assert_ok_eq!(get_unsigned_integer(&git_config, "test.value", 24), 42);
 		});
 	}
 
 	#[test]
 	fn read_value_min() {
 		with_git_config(&["[test]", "value = 0"], |git_config| {
-			assert_ok_eq!(get_unsigned_integer(Some(&git_config), "test.value", 24), 0);
+			assert_ok_eq!(get_unsigned_integer(&git_config, "test.value", 24), 0);
 		});
 	}
 
@@ -62,7 +51,7 @@ mod tests {
 	fn read_value_max() {
 		with_git_config(&["[test]", format!("value = {}", i32::MAX).as_str()], |git_config| {
 			assert_ok_eq!(
-				get_unsigned_integer(Some(&git_config), "test.value", 24),
+				get_unsigned_integer(&git_config, "test.value", 24),
 				i32::MAX as u32 // git only supports i32s, so use i32 max
 			);
 		});
@@ -72,7 +61,7 @@ mod tests {
 	fn read_value_too_small() {
 		with_git_config(&["[test]", "value = -1"], |git_config| {
 			assert_err_eq!(
-				get_unsigned_integer(Some(&git_config), "test.value", 24),
+				get_unsigned_integer(&git_config, "test.value", 24),
 				ConfigError::new("test.value", "-1", ConfigErrorCause::InvalidUnsignedInteger)
 			);
 		});
@@ -82,7 +71,7 @@ mod tests {
 	fn read_value_too_small_i32() {
 		with_git_config(&["[test]", format!("value = {}", i64::MIN).as_str()], |git_config| {
 			assert_err_eq!(
-				get_unsigned_integer(Some(&git_config), "test.value", 24),
+				get_unsigned_integer(&git_config, "test.value", 24),
 				ConfigError::new(
 					"test.value",
 					i64::MIN.to_string().as_str(),
@@ -96,7 +85,7 @@ mod tests {
 	fn read_value_too_large() {
 		with_git_config(&["[test]", format!("value = {}", u64::MAX).as_str()], |git_config| {
 			assert_err_eq!(
-				get_unsigned_integer(Some(&git_config), "test.value", 24),
+				get_unsigned_integer(&git_config, "test.value", 24),
 				ConfigError::new(
 					"test.value",
 					u64::MAX.to_string().as_str(),
@@ -109,7 +98,7 @@ mod tests {
 	#[test]
 	fn read_default() {
 		with_git_config(&[], |git_config| {
-			assert_ok_eq!(get_unsigned_integer(Some(&git_config), "test.value", 24), 24);
+			assert_ok_eq!(get_unsigned_integer(&git_config, "test.value", 24), 24);
 		});
 	}
 
@@ -117,7 +106,7 @@ mod tests {
 	fn read_invalid() {
 		with_git_config(&["[test]", "value = invalid"], |git_config| {
 			assert_err_eq!(
-				get_unsigned_integer(Some(&git_config), "test.value", 24),
+				get_unsigned_integer(&git_config, "test.value", 24),
 				ConfigError::new("test.value", "invalid", ConfigErrorCause::InvalidUnsignedInteger)
 			);
 		});
@@ -127,7 +116,7 @@ mod tests {
 	fn read_unexpected_error() {
 		with_git_config(&["[test]", "value = invalid"], |git_config| {
 			assert_err_eq!(
-				get_unsigned_integer(Some(&git_config), "test", 24),
+				get_unsigned_integer(&git_config, "test", 24),
 				ConfigError::new_read_error(
 					"test",
 					ConfigErrorCause::UnknownError(String::from("invalid config item name 'test'"))
@@ -142,7 +131,7 @@ mod tests {
 			&["[test]", format!("value = {}", invalid_utf()).as_str()],
 			|git_config| {
 				assert_err_eq!(
-					get_unsigned_integer(Some(&git_config), "test.value", 24),
+					get_unsigned_integer(&git_config, "test.value", 24),
 					ConfigError::new_read_error("test.value", ConfigErrorCause::InvalidUnsignedInteger)
 				);
 			},

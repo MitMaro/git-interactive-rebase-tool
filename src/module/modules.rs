@@ -64,11 +64,12 @@ mod tests {
 
 	use super::*;
 	use crate::{
+		config::Config,
 		diff,
 		diff::CommitDiff,
 		input,
 		search,
-		test_helpers::{create_config, with_todo_file},
+		test_helpers::with_todo_file,
 		view,
 	};
 
@@ -77,7 +78,7 @@ mod tests {
 		with_todo_file(&[], |todo_file_context| {
 			let commit_diff = CommitDiff::new();
 			let (_todo_file_path, todo_file) = todo_file_context.to_owned();
-			let config = create_config();
+			let config = Config::default();
 			let app_data = AppData::new(
 				config,
 				State::WindowSizeError,

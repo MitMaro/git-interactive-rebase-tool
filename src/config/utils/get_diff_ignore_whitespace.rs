@@ -1,23 +1,20 @@
 use crate::{
-	config::{ConfigError, ConfigErrorCause, DiffIgnoreWhitespaceSetting, utils::get_string},
+	config::{ConfigError, ConfigErrorCause, DiffIgnoreWhitespaceSetting, utils::get_optional_string},
 	git::Config,
 };
 
 pub(crate) fn get_diff_ignore_whitespace(
-	git_config: Option<&Config>,
+	git_config: &Config,
 	name: &str,
 ) -> Result<DiffIgnoreWhitespaceSetting, ConfigError> {
-	match get_string(git_config, name, "none")?.to_lowercase().as_str() {
-		"true" | "on" | "all" => Ok(DiffIgnoreWhitespaceSetting::All),
-		"change" => Ok(DiffIgnoreWhitespaceSetting::Change),
-		"false" | "off" | "none" => Ok(DiffIgnoreWhitespaceSetting::None),
-		input => {
-			Err(ConfigError::new(
+	if let Some(config_value) = get_optional_string(git_config, name)? {
+		DiffIgnoreWhitespaceSetting::parse(&config_value).ok_or_else(|| ConfigError::new(
 				name,
-				input,
+				&config_value,
 				ConfigErrorCause::InvalidDiffIgnoreWhitespace,
 			))
-		},
+	} else {
+		Ok(DiffIgnoreWhitespaceSetting::None)
 	}
 }
 
@@ -40,7 +37,7 @@ mod tests {
 	#[case::mixed_case("ChAnGe", DiffIgnoreWhitespaceSetting::Change)]
 	fn read_ok(#[case] value: &str, #[case] expected: DiffIgnoreWhitespaceSetting) {
 		with_git_config(&["[test]", format!("value = \"{value}\"").as_str()], |git_config| {
-			assert_ok_eq!(get_diff_ignore_whitespace(Some(&git_config), "test.value"), expected);
+			assert_ok_eq!(get_diff_ignore_whitespace(&git_config, "test.value"), expected);
 		});
 	}
 
@@ -48,7 +45,7 @@ mod tests {
 	fn read_default() {
 		with_git_config(&[], |git_config| {
 			assert_ok_eq!(
-				get_diff_ignore_whitespace(Some(&git_config), "test.value"),
+				get_diff_ignore_whitespace(&git_config, "test.value"),
 				DiffIgnoreWhitespaceSetting::None
 			);
 		});
@@ -58,7 +55,7 @@ mod tests {
 	fn read_invalid_value() {
 		with_git_config(&["[test]", "value = invalid"], |git_config| {
 			assert_err_eq!(
-				get_diff_ignore_whitespace(Some(&git_config), "test.value"),
+				get_diff_ignore_whitespace(&git_config, "test.value"),
 				ConfigError::new("test.value", "invalid", ConfigErrorCause::InvalidDiffIgnoreWhitespace)
 			);
 		});
@@ -70,7 +67,7 @@ mod tests {
 			&["[test]", format!("value = {}", invalid_utf()).as_str()],
 			|git_config| {
 				assert_err_eq!(
-					get_diff_ignore_whitespace(Some(&git_config), "test.value"),
+					get_diff_ignore_whitespace(&git_config, "test.value"),
 					ConfigError::new_read_error("test.value", ConfigErrorCause::InvalidUtf)
 				);
 			},

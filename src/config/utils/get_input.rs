@@ -4,7 +4,7 @@ use crate::{
 };
 
 #[expect(clippy::string_slice, reason = "Slice usage is guarded.")]
-pub(crate) fn get_input(config: Option<&Config>, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
+pub(crate) fn get_input(config: &Config, name: &str, default: &str) -> Result<Vec<String>, ConfigError> {
 	let mut values = vec![];
 	let input = get_string(config, name, default)?;
 	for mut value in input.split_whitespace().map(String::from) {
@@ -124,7 +124,7 @@ mod tests {
 	fn read_value(#[case] binding: &str, #[case] expected: &str) {
 		with_git_config(&["[test]", format!("value = {binding}").as_str()], |git_config| {
 			assert_ok_eq!(
-				get_input(Some(&git_config), "test.value", "x"),
+				get_input(&git_config, "test.value", "x"),
 				expected.split(',').map(String::from).collect::<Vec<_>>()
 			);
 		});
@@ -133,7 +133,7 @@ mod tests {
 	#[test]
 	fn read_value_default() {
 		with_git_config(&[], |git_config| {
-			assert_ok_eq!(get_input(Some(&git_config), "test.value", "x"), vec![String::from("x")]);
+			assert_ok_eq!(get_input(&git_config, "test.value", "x"), vec![String::from("x")]);
 		});
 	}
 
@@ -144,7 +144,7 @@ mod tests {
 	fn read_value_invalid(#[case] binding: &str) {
 		with_git_config(&["[test]", format!("value = {binding}").as_str()], |git_config| {
 			assert_err_eq!(
-				get_input(Some(&git_config), "test.value", "x"),
+				get_input(&git_config, "test.value", "x"),
 				ConfigError::new("test.value", binding, ConfigErrorCause::InvalidKeyBinding)
 			);
 		});
@@ -156,7 +156,7 @@ mod tests {
 			&["[test]", format!("value = {}", invalid_utf()).as_str()],
 			|git_config| {
 				assert_err_eq!(
-					get_input(Some(&git_config), "test.value", "x"),
+					get_input(&git_config, "test.value", "x"),
 					ConfigError::new_read_error("test.value", ConfigErrorCause::InvalidUtf)
 				);
 			},

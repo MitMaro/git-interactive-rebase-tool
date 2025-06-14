@@ -162,7 +162,7 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
-	use crate::{input::map_keybindings, test_helpers::create_test_keybindings};
+	use crate::input::map_keybindings;
 
 	#[rstest]
 	#[case::standard(Event::Key(KeyEvent {
@@ -177,7 +177,7 @@ mod tests {
 	}), false)]
 	#[case::other(Event::from('a'), false)]
 	fn read_event_options_disabled(#[case] event: Event, #[case] handled: bool) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::empty(), |_, _| Event::from(KeyCode::Null));
 
 		if handled {
@@ -201,7 +201,7 @@ mod tests {
 	}), true)]
 	#[case::other(Event::from('a'), false)]
 	fn read_event_enabled(#[case] event: Event, #[case] handled: bool) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::all(), |_, _| Event::from(KeyCode::Null));
 
 		if handled {
@@ -214,7 +214,7 @@ mod tests {
 
 	#[test]
 	fn none_event() {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(Event::None, &InputOptions::empty(), |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, Event::None);
 	}
@@ -226,7 +226,7 @@ mod tests {
 	}), Event::from(StandardEvent::Kill))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn standard_inputs(#[case] event: Event, #[case] expected: Event) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::empty(), |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}
@@ -242,7 +242,7 @@ mod tests {
 	#[case::standard(Event::from(KeyCode::End), Event::from(StandardEvent::ScrollBottom))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn movement_inputs(#[case] event: Event, #[case] expected: Event) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::MOVEMENT, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}
@@ -258,7 +258,7 @@ mod tests {
 	#[case::standard(Event::from(KeyCode::End), Event::from(StandardEvent::ScrollBottom))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn default_movement_inputs(#[case] event: Event, #[case] expected: Event) {
-		let mut bindings = create_test_keybindings();
+		let mut bindings = KeyBindings::default();
 		bindings.scroll_down = map_keybindings(&[String::from("x")]);
 		bindings.scroll_end = map_keybindings(&[String::from("x")]);
 		bindings.scroll_home = map_keybindings(&[String::from("x")]);
@@ -280,7 +280,7 @@ mod tests {
 	#[case::enter(Event::from(KeyCode::Enter), Event::from(StandardEvent::SearchFinish))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn search_inputs(#[case] event: Event, #[case] expected: Event) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::SEARCH, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}
@@ -289,14 +289,14 @@ mod tests {
 	#[case::search_start(Event::from('/'), Event::from(StandardEvent::SearchStart))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn search_start(#[case] event: Event, #[case] expected: Event) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::SEARCH_START, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}
 
 	#[test]
 	fn help_event() {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(Event::from('?'), &InputOptions::HELP, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, Event::from(StandardEvent::Help));
 	}
@@ -312,7 +312,7 @@ mod tests {
 	}), Event::from(StandardEvent::Redo))]
 	#[case::other(Event::from('a'), Event::from(KeyCode::Null))]
 	fn undo_redo_inputs(#[case] event: Event, #[case] expected: Event) {
-		let event_handler = EventHandler::new(create_test_keybindings());
+		let event_handler = EventHandler::new(KeyBindings::default());
 		let result = event_handler.read_event(event, &InputOptions::UNDO_REDO, |_, _| Event::from(KeyCode::Null));
 		assert_eq!(result, expected);
 	}

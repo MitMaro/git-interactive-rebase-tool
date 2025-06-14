@@ -116,7 +116,7 @@ pub(crate) struct KeyBindings {
 }
 
 impl KeyBindings {
-	pub(super) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
+	pub(super) fn new_with_config(git_config: &Config) -> Result<Self, ConfigError> {
 		let confirm_no = get_input(git_config, "interactive-rebase-tool.inputConfirmNo", "n")?
 			.iter()
 			.map(|s| map_single_ascii_to_lower(s))
@@ -185,7 +185,62 @@ impl TryFrom<&Config> for KeyBindings {
 	type Error = ConfigError;
 
 	fn try_from(config: &Config) -> Result<Self, Self::Error> {
-		Self::new_with_config(Some(config))
+		Self::new_with_config(config)
+	}
+}
+
+impl Default for KeyBindings {
+	fn default() -> Self {
+		let to_owned = |s: &str| vec![s.to_owned()];
+		Self {
+			abort: to_owned("q"),
+			action_break: to_owned("b"),
+			action_drop: to_owned("d"),
+			action_edit: to_owned("e"),
+			action_fixup: to_owned("f"),
+			action_pick: to_owned("p"),
+			action_reword: to_owned("r"),
+			action_squash: to_owned("s"),
+			confirm_no: to_owned("n"),
+			confirm_yes: to_owned("y"),
+			edit: to_owned("E"),
+			force_abort: to_owned("Q"),
+			force_rebase: to_owned("W"),
+			help: to_owned("?"),
+			insert_line: to_owned("I"),
+			duplicate_line: to_owned("Controld"),
+			move_down: to_owned("Down"),
+			move_end: to_owned("End"),
+			move_home: to_owned("Home"),
+			move_left: to_owned("Left"),
+			move_right: to_owned("Right"),
+			move_down_step: to_owned("PageDown"),
+			move_up_step: to_owned("PageUp"),
+			move_up: to_owned("Up"),
+			move_selection_down: to_owned("j"),
+			move_selection_up: to_owned("k"),
+			scroll_down: to_owned("Down"),
+			scroll_end: to_owned("End"),
+			scroll_home: to_owned("Home"),
+			scroll_left: to_owned("Left"),
+			scroll_right: to_owned("Right"),
+			scroll_up: to_owned("Up"),
+			scroll_step_down: to_owned("PageDown"),
+			scroll_step_up: to_owned("PageUp"),
+			open_in_external_editor: to_owned("!"),
+			rebase: to_owned("w"),
+			redo: to_owned("Controly"),
+			remove_line: to_owned("Delete"),
+			search_start: to_owned("/"),
+			search_next: to_owned("n"),
+			search_previous: to_owned("N"),
+			show_commit: to_owned("c"),
+			show_diff: to_owned("d"),
+			toggle_visual_mode: to_owned("v"),
+			undo: to_owned("Controlz"),
+			fixup_keep_message_with_editor: to_owned("U"),
+			fixup_keep_message: to_owned("u"),
+		}
 	}
 }
 
@@ -198,7 +253,7 @@ mod tests {
 
 	macro_rules! config_test {
 		($key:ident, $config_name:literal, $default:literal) => {
-			let config = KeyBindings::new_with_config(None).unwrap();
+			let config = KeyBindings::default();
 			let value = config.$key[0].as_str();
 			assert_eq!(
 				value,
@@ -213,7 +268,7 @@ mod tests {
 			with_git_config(
 				&["[interactive-rebase-tool]", config_value.as_str()],
 				|git_config| {
-					let config = KeyBindings::new_with_config(Some(&git_config)).unwrap();
+					let config = KeyBindings::new_with_config(&git_config).unwrap();
 					assert_eq!(
 						config.$key[0].as_str(),
 						"F255",

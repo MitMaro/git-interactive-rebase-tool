@@ -8,7 +8,7 @@ use crate::{
 	git::Config,
 };
 
-fn get_color(config: Option<&Config>, name: &str, default: Color) -> Result<Color, ConfigError> {
+fn get_color(config: &Config, name: &str, default: Color) -> Result<Color, ConfigError> {
 	if let Some(value) = get_optional_string(config, name)? {
 		Color::try_from(value.to_lowercase().as_str()).map_err(|invalid_color_error| {
 			ConfigError::new(
@@ -75,7 +75,7 @@ pub(crate) struct Theme {
 
 impl Theme {
 	/// Create a new theme from a Git Config reference.
-	pub(crate) fn new_with_config(git_config: Option<&Config>) -> Result<Self, ConfigError> {
+	pub(crate) fn new_with_config(git_config: &Config) -> Result<Self, ConfigError> {
 		Ok(Self {
 			character_vertical_spacing: get_string(
 				git_config,
@@ -127,7 +127,36 @@ impl TryFrom<&Config> for Theme {
 	type Error = ConfigError;
 
 	fn try_from(config: &Config) -> Result<Self, Self::Error> {
-		Self::new_with_config(Some(config))
+		Self::new_with_config(config)
+	}
+}
+
+impl Default for Theme {
+	fn default() -> Self {
+		Self {
+			character_vertical_spacing: "~".to_owned(),
+			color_action_break: Color::LightWhite,
+			color_action_drop: Color::LightRed,
+			color_action_edit: Color::LightBlue,
+			color_action_exec: Color::LightWhite,
+			color_action_fixup: Color::LightMagenta,
+			color_action_pick: Color::LightGreen,
+			color_action_reword: Color::LightYellow,
+			color_action_squash: Color::LightCyan,
+			color_action_label: Color::DarkYellow,
+			color_action_reset: Color::DarkYellow,
+			color_action_merge: Color::DarkYellow,
+			color_action_update_ref: Color::DarkMagenta,
+			color_background: Color::Default,
+			color_diff_add: Color::LightGreen,
+			color_diff_change: Color::LightYellow,
+			color_diff_context: Color::LightWhite,
+			color_diff_remove: Color::LightRed,
+			color_diff_whitespace: Color::LightBlack,
+			color_foreground: Color::Default,
+			color_indicator: Color::LightCyan,
+			color_selected_background: Color::Index(237),
+		}
 	}
 }
 
@@ -144,7 +173,7 @@ mod tests {
 
 	macro_rules! config_test {
 		($key:ident, $config_name:literal, $default:expr) => {
-			let config = Theme::new_with_config(None).unwrap();
+			let config = Theme::default();
 			let value = config.$key;
 			assert_eq!(
 				value,
@@ -159,7 +188,7 @@ mod tests {
 			with_git_config(
 				&["[interactive-rebase-tool]", config_value.as_str()],
 				|git_config| {
-					let config = Theme::new_with_config(Some(&git_config)).unwrap();
+					let config = Theme::new_with_config(&git_config).unwrap();
 					assert_eq!(
 						config.$key,
 						Color::Index(42),
@@ -187,11 +216,11 @@ mod tests {
 
 	#[test]
 	fn character_vertical_spacing() {
-		assert_eq!(Theme::new_with_config(None).unwrap().character_vertical_spacing, "~");
+		assert_eq!(Theme::default().character_vertical_spacing, "~");
 		with_git_config(
 			&["[interactive-rebase-tool]", "verticalSpacingCharacter = \"X\""],
 			|config| {
-				let theme = Theme::new_with_config(Some(&config)).unwrap();
+				let theme = Theme::new_with_config(&config).unwrap();
 				assert_eq!(theme.character_vertical_spacing, "X");
 			},
 		);
@@ -226,7 +255,7 @@ mod tests {
 	fn value_parsing_invalid_color() {
 		with_git_config(&["[interactive-rebase-tool]", "breakColor = -2"], |git_config| {
 			assert_err_eq!(
-				Theme::new_with_config(Some(&git_config)),
+				Theme::new_with_config(&git_config),
 				ConfigError::new(
 					"interactive-rebase-tool.breakColor",
 					"-2",
@@ -247,7 +276,7 @@ mod tests {
 			],
 			|git_config| {
 				assert_err_eq!(
-					Theme::new_with_config(Some(&git_config)),
+					Theme::new_with_config(&git_config),
 					ConfigError::new_read_error(
 						format!("interactive-rebase-tool.{key}").as_str(),
 						ConfigErrorCause::InvalidUtf

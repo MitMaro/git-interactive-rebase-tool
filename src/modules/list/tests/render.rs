@@ -3,7 +3,7 @@ use crate::{assert_rendered_output, test_helpers::assertions::assert_rendered_ou
 
 #[test]
 fn empty_list() {
-	testers::module(&[], &[], None, |test_context| {
+	testers::module(&[], &[], |test_context| {
 		let mut module = List::new(&test_context.app_data());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(
@@ -35,7 +35,6 @@ fn full() {
 			"update-ref reference",
 		],
 		&[],
-		None,
 		|test_context| {
 			let mut module = List::new(&test_context.app_data());
 			let view_data = test_context.build_view_data(&mut module);
@@ -82,7 +81,6 @@ fn compact() {
 			"update-ref reference",
 		],
 		&[],
-		None,
 		|mut test_context| {
 			test_context.render_context.update(30, 300);
 			let mut module = List::new(&test_context.app_data());
@@ -113,7 +111,7 @@ fn compact() {
 // this can technically never happen, but it's worth testing, just in case of an invalid state
 #[test]
 fn noop_list() {
-	testers::module(&["break"], &[], None, |test_context| {
+	testers::module(&["break"], &[], |test_context| {
 		let mut module = List::new(&test_context.app_data());
 		let mut todo_file = module.todo_file.lock();
 		todo_file.remove_lines(0, 0);
@@ -147,7 +145,6 @@ fn pinned_segments() {
 			"merge command",
 		],
 		&[Event::from(StandardEvent::ActionDrop)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_all_events(&mut module);
@@ -175,7 +172,7 @@ fn pinned_segments() {
 
 #[test]
 fn full_with_short_actions() {
-	testers::module(&["pick aaaaaaaa comment 1"], &[], None, |test_context| {
+	testers::module(&["pick aaaaaaaa comment 1"], &[], |test_context| {
 		let mut module = List::new(&test_context.app_data());
 		let view_data = test_context.build_view_data(&mut module);
 		assert_rendered_output!(

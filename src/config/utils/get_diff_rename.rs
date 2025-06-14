@@ -3,7 +3,7 @@ use crate::{
 	git::Config,
 };
 
-pub(crate) fn git_diff_renames(git_config: Option<&Config>, name: &str) -> Result<(bool, bool), ConfigError> {
+pub(crate) fn git_diff_renames(git_config: &Config, name: &str) -> Result<(bool, bool), ConfigError> {
 	match get_string(git_config, name, "true")?.to_lowercase().as_str() {
 		"true" => Ok((true, false)),
 		"false" => Ok((false, false)),
@@ -28,14 +28,14 @@ mod tests {
 	#[case::mixed_case("CoPiEs", (true, true))]
 	fn read_ok(#[case] value: &str, #[case] expected: (bool, bool)) {
 		with_git_config(&["[test]", format!("value = \"{value}\"").as_str()], |git_config| {
-			assert_ok_eq!(git_diff_renames(Some(&git_config), "test.value"), expected);
+			assert_ok_eq!(git_diff_renames(&git_config, "test.value"), expected);
 		});
 	}
 
 	#[test]
 	fn read_default() {
 		with_git_config(&[], |git_config| {
-			assert_ok_eq!(git_diff_renames(Some(&git_config), "test.value"), (true, false));
+			assert_ok_eq!(git_diff_renames(&git_config, "test.value"), (true, false));
 		});
 	}
 
@@ -43,7 +43,7 @@ mod tests {
 	fn read_invalid_value() {
 		with_git_config(&["[test]", "value = invalid"], |git_config| {
 			assert_err_eq!(
-				git_diff_renames(Some(&git_config), "test.value"),
+				git_diff_renames(&git_config, "test.value"),
 				ConfigError::new("test.value", "invalid", ConfigErrorCause::InvalidDiffRenames)
 			);
 		});
@@ -55,7 +55,7 @@ mod tests {
 			&["[test]", format!("value = {}", invalid_utf()).as_str()],
 			|git_config| {
 				assert_err_eq!(
-					git_diff_renames(Some(&git_config), "test.value"),
+					git_diff_renames(&git_config, "test.value"),
 					ConfigError::new_read_error("test.value", ConfigErrorCause::InvalidUtf)
 				);
 			},

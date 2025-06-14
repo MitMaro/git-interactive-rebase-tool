@@ -6,7 +6,6 @@ fn normal_mode_open_external_editor() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::OpenInEditor)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -27,7 +26,6 @@ fn visual_mode_open_external_editor() {
 			Event::from(StandardEvent::ToggleVisualMode),
 			Event::from(StandardEvent::OpenInEditor),
 		],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			_ = test_context.handle_event(&mut module);

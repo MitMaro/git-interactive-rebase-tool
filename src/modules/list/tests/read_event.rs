@@ -5,7 +5,7 @@ use crate::input::{KeyCode, KeyModifiers, MouseEvent};
 
 #[test]
 fn edit_mode_passthrough_event() {
-	testers::read_event(Event::from('p'), None, |mut test_context| {
+	testers::read_event(Event::from('p'), |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		module.state = ListState::Edit;
 		assert_eq!(test_context.read_event(&module), Event::from('p'));
@@ -14,7 +14,7 @@ fn edit_mode_passthrough_event() {
 
 #[test]
 fn normal_mode_help() {
-	testers::read_event(Event::from('?'), None, |mut test_context| {
+	testers::read_event(Event::from('?'), |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		module.normal_mode_help.set_active();
 		assert_eq!(test_context.read_event(&module), Event::from(StandardEvent::Help));
@@ -23,7 +23,7 @@ fn normal_mode_help() {
 
 #[test]
 fn visual_mode_help() {
-	testers::read_event(Event::from('?'), None, |mut test_context| {
+	testers::read_event(Event::from('?'), |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		module.visual_mode_help.set_active();
 		assert_eq!(test_context.read_event(&module), Event::from(StandardEvent::Help));
@@ -32,7 +32,7 @@ fn visual_mode_help() {
 
 #[test]
 fn search() {
-	testers::read_event(Event::from('p'), None, |mut test_context| {
+	testers::read_event(Event::from('p'), |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		module.search_bar.start_search(Some(""));
 		assert_eq!(test_context.read_event(&module), Event::from('p'));
@@ -59,7 +59,7 @@ fn search() {
 #[case::showcommit('c', StandardEvent::ShowCommit)]
 #[case::togglevisualmode('v', StandardEvent::ToggleVisualMode)]
 fn default_events_single_char(#[case] binding: char, #[case] expected: StandardEvent) {
-	testers::read_event(Event::from(binding), None, |mut test_context| {
+	testers::read_event(Event::from(binding), |mut test_context| {
 		let module = List::new(&test_context.app_data());
 		assert_eq!(test_context.read_event(&module), Event::from(expected));
 	});
@@ -76,7 +76,7 @@ fn default_events_single_char(#[case] binding: char, #[case] expected: StandardE
 #[case::movecursorpageup(KeyCode::PageUp, StandardEvent::MoveCursorPageUp)]
 #[case::delete(KeyCode::Delete, StandardEvent::Delete)]
 fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent) {
-	testers::read_event(Event::from(code), None, |mut test_context| {
+	testers::read_event(Event::from(code), |mut test_context| {
 		let module = List::new(&test_context.app_data());
 		assert_eq!(test_context.read_event(&module), Event::from(expected));
 	});
@@ -87,7 +87,7 @@ fn default_events_special(#[case] code: KeyCode, #[case] expected: StandardEvent
 #[case::abort('U', StandardEvent::FixupKeepMessageWithEditor)]
 #[case::abort('p', StandardEvent::ActionPick)]
 fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
-	testers::read_event(Event::from(binding), None, |mut test_context| {
+	testers::read_event(Event::from(binding), |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		module.selected_line_action = Some(Action::Fixup);
 		assert_eq!(test_context.read_event(&module), Event::from(expected));
@@ -98,7 +98,7 @@ fn fixup_events(#[case] binding: char, #[case] expected: StandardEvent) {
 #[case::abort('u')]
 #[case::abort('U')]
 fn fixup_events_with_non_fixpo_event(#[case] binding: char) {
-	testers::read_event(Event::from(binding), None, |mut test_context| {
+	testers::read_event(Event::from(binding), |mut test_context| {
 		let mut module = List::new(&test_context.app_data());
 		module.selected_line_action = Some(Action::Pick);
 		assert_eq!(test_context.read_event(&module), Event::from(binding));
@@ -114,7 +114,6 @@ fn mouse_move_down() {
 			row: 0,
 			modifiers: KeyModifiers::empty(),
 		}),
-		None,
 		|mut test_context| {
 			let module = List::new(&test_context.app_data());
 			assert_eq!(
@@ -134,7 +133,6 @@ fn mouse_move_up() {
 			row: 0,
 			modifiers: KeyModifiers::empty(),
 		}),
-		None,
 		|mut test_context| {
 			let module = List::new(&test_context.app_data());
 			assert_eq!(
@@ -153,7 +151,7 @@ fn mouse_other() {
 		row: 0,
 		modifiers: KeyModifiers::empty(),
 	});
-	testers::read_event(mouse_event, None, |mut test_context| {
+	testers::read_event(mouse_event, |mut test_context| {
 		let module = List::new(&test_context.app_data());
 		assert_eq!(test_context.read_event(&module), mouse_event);
 	});
@@ -161,7 +159,7 @@ fn mouse_other() {
 
 #[test]
 fn event_other() {
-	testers::read_event(Event::None, None, |mut test_context| {
+	testers::read_event(Event::None, |mut test_context| {
 		let module = List::new(&test_context.app_data());
 		assert_eq!(test_context.read_event(&module), Event::None);
 	});

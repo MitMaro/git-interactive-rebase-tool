@@ -6,7 +6,6 @@ fn when_hash_available() {
 	testers::module(
 		&["pick aaa c1"],
 		&[Event::from(StandardEvent::ShowCommit)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -23,7 +22,6 @@ fn when_no_selected_line() {
 	testers::module(
 		&[],
 		&[Event::from(StandardEvent::ShowCommit)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
@@ -39,7 +37,6 @@ fn do_not_when_hash_not_available() {
 	testers::module(
 		&["exec echo foo"],
 		&[Event::from(StandardEvent::ShowCommit)],
-		None,
 		|mut test_context| {
 			let mut module = List::new(&test_context.app_data());
 			assert_results!(
