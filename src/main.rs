@@ -80,7 +80,7 @@ fn run(os_args: Vec<OsString>) -> Exit {
 				Mode::Help => help::run(),
 				Mode::Version => version::run(),
 				Mode::License => license::run(),
-				Mode::Editor => editor::run(&args),
+				Mode::Editor => editor::run(args),
 			}
 		},
 	}
