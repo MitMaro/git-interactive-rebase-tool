@@ -208,8 +208,6 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 #[cfg(all(unix, test))]
 mod tests {
-	use std::ffi::OsString;
-
 	use claims::assert_ok;
 
 	use super::*;
@@ -227,10 +225,6 @@ mod tests {
 			with_git_directory,
 		},
 	};
-
-	fn args(args: &[&str]) -> Args {
-		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()
-	}
 
 	fn create_mocked_crossterm() -> mocks::CrossTerm {
 		let mut crossterm = mocks::CrossTerm::new();
@@ -254,7 +248,7 @@ mod tests {
 	fn load_filepath_from_args_failure() {
 		let event_provider = create_event_reader(|| Ok(None));
 		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-			Application::new(args(&[]), event_provider, create_mocked_crossterm());
+			Application::new(Args::from_os_strings(Vec::new()).unwrap(), event_provider, create_mocked_crossterm());
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
 		assert!(
@@ -269,7 +263,7 @@ mod tests {
 		with_git_directory("fixtures/not-a-repository", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(args(&["todofile"]), event_provider, create_mocked_crossterm());
+				Application::new(Args::from_strs(["todofile"]).unwrap(), event_provider, create_mocked_crossterm());
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::StateError);
 			assert!(exit.get_message().unwrap().contains("Unable to load Git repository: "));
@@ -281,7 +275,7 @@ mod tests {
 		with_git_directory("fixtures/invalid-config", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
+				Application::new(Args::from_strs(["rebase-todo"]).unwrap(), event_provider, create_mocked_crossterm());
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
 		});
@@ -322,7 +316,7 @@ mod tests {
 		with_git_directory("fixtures/simple", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(args(&["does-not-exist"]), event_provider, create_mocked_crossterm());
+				Application::new(Args::from_strs(["does-not-exist"]).unwrap(), event_provider, create_mocked_crossterm());
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::FileReadError);
 		});
@@ -334,7 +328,7 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo-noop");
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
-				args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
 				event_provider,
 				create_mocked_crossterm(),
 			);
@@ -349,7 +343,7 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo-empty");
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
-				args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
 				event_provider,
 				create_mocked_crossterm(),
 			);
@@ -382,7 +376,7 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo");
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
-				args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -408,7 +402,7 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo");
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
-				args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -433,7 +427,7 @@ mod tests {
 				))))
 			});
 			let mut application: Application<Modules> = Application::new(
-				args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -449,7 +443,7 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo");
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
-				args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
 				event_provider,
 				create_mocked_crossterm(),
 			)

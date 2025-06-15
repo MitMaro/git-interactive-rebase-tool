@@ -25,21 +25,18 @@ pub(crate) fn run(args: Args) -> Exit {
 
 #[cfg(test)]
 mod tests {
-	use std::{ffi::OsString, path::Path};
+	use std::path::Path;
 
 	use super::*;
 	use crate::test_helpers::with_git_directory;
 
-	fn args(args: &[&str]) -> Args {
-		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()
-	}
-
 	#[test]
 	fn successful_run() {
 		with_git_directory("fixtures/simple", |path| {
-			let todo_file = Path::new(path).join("rebase-todo-empty");
+			let todo_file = Path::new(path).join("rebase-todo-empty").into_os_string();
+			let args = Args::from_os_strings(vec![todo_file]).unwrap();
 			assert_eq!(
-				run(args(&[todo_file.to_str().unwrap()])).get_status(),
+				run(args).get_status(),
 				&ExitStatus::Good
 			);
 		});
@@ -48,9 +45,10 @@ mod tests {
 	#[test]
 	fn error_on_application_create() {
 		with_git_directory("fixtures/simple", |path| {
-			let todo_file = Path::new(path).join("does-not-exist");
+			let todo_file = Path::new(path).join("does-not-exist").into_os_string();
+			let args = Args::from_os_strings(vec![todo_file]).unwrap();
 			assert_eq!(
-				run(args(&[todo_file.to_str().unwrap()])).get_status(),
+				run(args).get_status(),
 				&ExitStatus::FileReadError
 			);
 		});

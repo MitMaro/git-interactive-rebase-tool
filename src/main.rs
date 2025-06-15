@@ -73,7 +73,7 @@ use crate::{
 
 #[must_use]
 fn run(os_args: Vec<OsString>) -> Exit {
-	match Args::try_from(os_args) {
+	match Args::from_os_strings(os_args) {
 		Err(err) => err,
 		Ok(args) => {
 			match *args.mode() {

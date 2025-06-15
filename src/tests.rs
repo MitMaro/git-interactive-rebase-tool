@@ -3,14 +3,11 @@ use std::path::Path;
 use super::*;
 use crate::{module::ExitStatus, test_helpers::with_git_directory};
 
-fn args(args: &[&str]) -> Vec<OsString> {
-	args.iter().map(OsString::from).collect::<Vec<OsString>>()
-}
-
 #[test]
 #[serial_test::serial]
 fn successful_run_help() {
-	let exit = run(args(&["--help"]));
+	let args = ["--help"].into_iter().map(OsString::from).collect();
+	let exit = run(args);
 	assert!(exit.get_message().unwrap().contains("USAGE:"));
 	assert_eq!(exit.get_status(), &ExitStatus::Good);
 }
@@ -18,7 +15,8 @@ fn successful_run_help() {
 #[test]
 #[serial_test::serial]
 fn successful_run_version() {
-	let exit = run(args(&["--version"]));
+	let args = ["--version"].into_iter().map(OsString::from).collect();
+	let exit = run(args);
 	assert!(exit.get_message().unwrap().starts_with("interactive-rebase-tool"));
 	assert_eq!(exit.get_status(), &ExitStatus::Good);
 }
@@ -26,7 +24,8 @@ fn successful_run_version() {
 #[test]
 #[serial_test::serial]
 fn successful_run_license() {
-	let exit = run(args(&["--license"]));
+	let args = ["--license"].into_iter().map(OsString::from).collect();
+	let exit = run(args);
 	assert!(
 		exit.get_message()
 			.unwrap()
@@ -38,9 +37,10 @@ fn successful_run_license() {
 #[test]
 fn successful_run_editor() {
 	with_git_directory("fixtures/simple", |path| {
-		let todo_file = Path::new(path).join("rebase-todo-empty");
+		let todo_file = Path::new(path).join("rebase-todo-empty").into_os_string();
+		let args = vec![todo_file];
 		assert_eq!(
-			run(args(&[todo_file.to_str().unwrap()])).get_status(),
+			run(args).get_status(),
 			&ExitStatus::Good
 		);
 	});

@@ -26,12 +26,14 @@ impl Args {
 	pub(crate) fn todo_file_path(&self) -> Option<&str> {
 		self.todo_file_path.as_deref()
 	}
-}
 
-impl TryFrom<Vec<OsString>> for Args {
-	type Error = Exit;
+	#[cfg(test)]
+	pub(crate) fn from_strs(args: impl IntoIterator<Item: AsRef<str>>) -> Result<Self, Exit> {
+		let args = args.into_iter().map(|it| OsString::from(it.as_ref())).collect();
+		Self::from_os_strings(args)
+	}
 
-	fn try_from(args: Vec<OsString>) -> Result<Self, Self::Error> {
+	pub(crate) fn from_os_strings(args: Vec<OsString>) -> Result<Self, Exit> {
 		let mut pargs = Arguments::from_vec(args);
 
 		let mode = if pargs.contains(["-h", "--help"]) {
@@ -59,21 +61,17 @@ impl TryFrom<Vec<OsString>> for Args {
 mod tests {
 	use super::*;
 
-	fn create_args(args: &[&str]) -> Vec<OsString> {
-		args.iter().map(OsString::from).collect()
-	}
-
 	#[test]
 	fn mode_help() {
-		assert_eq!(Args::try_from(create_args(&["-h"])).unwrap().mode(), &Mode::Help);
-		assert_eq!(Args::try_from(create_args(&["--help"])).unwrap().mode(), &Mode::Help);
+		assert_eq!(Args::from_strs(["-h"]).unwrap().mode(), &Mode::Help);
+		assert_eq!(Args::from_strs(["--help"]).unwrap().mode(), &Mode::Help);
 	}
 
 	#[test]
 	fn mode_version() {
-		assert_eq!(Args::try_from(create_args(&["-v"])).unwrap().mode(), &Mode::Version);
+		assert_eq!(Args::from_strs(["-v"]).unwrap().mode(), &Mode::Version);
 		assert_eq!(
-			Args::try_from(create_args(&["--version"])).unwrap().mode(),
+			Args::from_strs(["--version"]).unwrap().mode(),
 			&Mode::Version
 		);
 	}
@@ -81,21 +79,21 @@ mod tests {
 	#[test]
 	fn mode_license() {
 		assert_eq!(
-			Args::try_from(create_args(&["--license"])).unwrap().mode(),
+			Args::from_strs(["--license"]).unwrap().mode(),
 			&Mode::License
 		);
 	}
 
 	#[test]
 	fn todo_file_ok() {
-		let args = Args::try_from(create_args(&["todofile"])).unwrap();
+		let args = Args::from_strs(["todofile"]).unwrap();
 		assert_eq!(args.mode(), &Mode::Editor);
 		assert_eq!(args.todo_file_path(), Some("todofile"));
 	}
 
 	#[test]
 	fn todo_file_missing() {
-		let args = Args::try_from(create_args(&[])).unwrap();
+		let args = Args::from_os_strings(Vec::new()).unwrap();
 		assert_eq!(args.mode(), &Mode::Editor);
 		assert!(args.todo_file_path().is_none());
 	}
@@ -105,6 +103,6 @@ mod tests {
 	#[expect(unsafe_code)]
 	fn todo_file_invalid() {
 		let args = unsafe { vec![OsString::from(String::from_utf8_unchecked(vec![0xC3, 0x28]))] };
-		_ = Args::try_from(args).unwrap_err();
+		_ = Args::from_os_strings(args).unwrap_err();
 	}
 }
