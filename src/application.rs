@@ -9,7 +9,7 @@ pub(crate) use crate::application::app_data::AppData;
 use crate::{
 	Args,
 	Exit,
-	config::{Config, ConfigLoader, DiffIgnoreWhitespaceSetting},
+	config::{Config, ConfigError, ConfigErrorCause, ConfigLoader, DiffIgnoreWhitespaceSetting},
 	diff::{self, CommitDiffLoader, CommitDiffLoaderOptions},
 	display::Display,
 	git::open_repository_from_env,
@@ -42,7 +42,8 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
 		let config_loader = ConfigLoader::from(repository);
-		let config = Self::load_config(&config_loader)?;
+		let config = Self::load_config(&config_loader)
+			.map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))?;
 		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
 
 		let display = Display::new(tui, &config.theme);
@@ -162,8 +163,11 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		})
 	}
 
-	fn load_config(config_loader: &ConfigLoader) -> Result<Config, Exit> {
-		Config::try_from(config_loader).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
+	fn load_config(config_loader: &ConfigLoader) -> Result<Config, ConfigError> {
+		let config = config_loader
+			.load_config()
+			.map_err(|e| ConfigError::new_read_error("", ConfigErrorCause::GitError(e)))?;
+		Config::new_with_config(Some(&config))
 	}
 
 	fn todo_file_options(config: &Config) -> TodoFileOptions {
