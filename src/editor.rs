@@ -11,8 +11,8 @@ use crate::{
 };
 
 #[cfg(not(tarpaulin_include))]
-pub(crate) fn run(args: &Args) -> Exit {
-	let mut application: Application<Modules> = match Application::new(args, read_event, CrossTerm::new()) {
+pub(crate) fn run(args: Args, git_config_parameters: Vec<(String, String)>) -> Exit {
+	let mut application: Application<Modules> = match Application::new(args, git_config_parameters, read_event, CrossTerm::new()) {
 		Ok(app) => app,
 		Err(exit) => return exit,
 	};
@@ -25,21 +25,19 @@ pub(crate) fn run(args: &Args) -> Exit {
 
 #[cfg(test)]
 mod tests {
-	use std::{ffi::OsString, path::Path};
+	use std::path::Path;
 
 	use super::*;
 	use crate::test_helpers::with_git_directory;
 
-	fn args(args: &[&str]) -> Args {
-		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()
-	}
-
 	#[test]
 	fn successful_run() {
 		with_git_directory("fixtures/simple", |path| {
-			let todo_file = Path::new(path).join("rebase-todo-empty");
+			let todo_file = Path::new(path).join("rebase-todo-empty").into_os_string();
+			let args = Args::from_os_strings(vec![todo_file]).unwrap();
+			let git_config_parameters = Vec::new();
 			assert_eq!(
-				run(&args(&[todo_file.to_str().unwrap()])).get_status(),
+				run(args, git_config_parameters).get_status(),
 				&ExitStatus::Good
 			);
 		});
@@ -48,9 +46,11 @@ mod tests {
 	#[test]
 	fn error_on_application_create() {
 		with_git_directory("fixtures/simple", |path| {
-			let todo_file = Path::new(path).join("does-not-exist");
+			let todo_file = Path::new(path).join("does-not-exist").into_os_string();
+			let args = Args::from_os_strings(vec![todo_file]).unwrap();
+			let git_config_parameters = Vec::new();
 			assert_eq!(
-				run(&args(&[todo_file.to_str().unwrap()])).get_status(),
+				run(args, git_config_parameters).get_status(),
 				&ExitStatus::FileReadError
 			);
 		});

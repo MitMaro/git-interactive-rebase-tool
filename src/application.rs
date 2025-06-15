@@ -9,7 +9,7 @@ pub(crate) use crate::application::app_data::AppData;
 use crate::{
 	Args,
 	Exit,
-	config::{Config, ConfigLoader, DiffIgnoreWhitespaceSetting},
+	config::{Config, ConfigError, ConfigErrorCause, ConfigLoader, DiffIgnoreWhitespaceSetting},
 	diff::{self, CommitDiffLoader, CommitDiffLoaderOptions},
 	display::Display,
 	git::open_repository_from_env,
@@ -34,15 +34,16 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 impl<ModuleProvider> Application<ModuleProvider>
 where ModuleProvider: module::ModuleProvider + Send + 'static
 {
-	pub(crate) fn new<EventProvider, Tui>(args: &Args, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit>
+	pub(crate) fn new<EventProvider, Tui>(args: Args, git_config_parameters: Vec<(String, String)>, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit>
 	where
 		EventProvider: EventReaderFn,
 		Tui: crate::display::Tui + Send + 'static,
 	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
-		let config_loader = ConfigLoader::from(repository);
-		let config = Self::load_config(&config_loader)?;
+		let config_loader = ConfigLoader::with_overrides(repository, git_config_parameters);
+		let config = Self::load_config(&config_loader)
+			.map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))?;
 		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
 
 		let display = Display::new(tui, &config.theme);
@@ -144,7 +145,7 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		Ok(())
 	}
 
-	fn filepath_from_args(args: &Args) -> Result<String, Exit> {
+	fn filepath_from_args(args: Args) -> Result<String, Exit> {
 		args.todo_file_path().map(String::from).ok_or_else(|| {
 			Exit::new(
 				ExitStatus::StateError,
@@ -162,8 +163,11 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 		})
 	}
 
-	fn load_config(config_loader: &ConfigLoader) -> Result<Config, Exit> {
-		Config::try_from(config_loader).map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))
+	fn load_config(config_loader: &ConfigLoader) -> Result<Config, ConfigError> {
+		let config = config_loader
+			.load_config()
+			.map_err(|e| ConfigError::new_read_error("", ConfigErrorCause::GitError(e)))?;
+		Config::new_with_config(Some(&config))
 	}
 
 	fn todo_file_options(config: &Config) -> TodoFileOptions {
@@ -208,8 +212,6 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 
 #[cfg(all(unix, test))]
 mod tests {
-	use std::ffi::OsString;
-
 	use claims::assert_ok;
 
 	use super::*;
@@ -219,18 +221,9 @@ mod tests {
 		module::Modules,
 		runtime::{Installer, RuntimeError},
 		test_helpers::{
-			DefaultTestModule,
-			TestModuleProvider,
-			create_config,
-			create_event_reader,
-			mocks,
-			with_git_directory,
+			DefaultTestModule, TestModuleProvider, create_config, create_event_reader, mocks, with_git_directory,
 		},
 	};
-
-	fn args(args: &[&str]) -> Args {
-		Args::try_from(args.iter().map(OsString::from).collect::<Vec<OsString>>()).unwrap()
-	}
 
 	fn create_mocked_crossterm() -> mocks::CrossTerm {
 		let mut crossterm = mocks::CrossTerm::new();
@@ -242,8 +235,7 @@ mod tests {
 		($app:expr) => {
 			if let Err(e) = $app {
 				e
-			}
-			else {
+			} else {
 				panic!("Application is not in an error state");
 			}
 		};
@@ -253,8 +245,12 @@ mod tests {
 	#[serial_test::serial]
 	fn load_filepath_from_args_failure() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-			Application::new(&args(&[]), event_provider, create_mocked_crossterm());
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+			Args::from_os_strings(Vec::new()).unwrap(),
+			Vec::new(),
+			event_provider,
+			create_mocked_crossterm(),
+		);
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
 		assert!(
@@ -268,8 +264,12 @@ mod tests {
 	fn load_repository_failure() {
 		with_git_directory("fixtures/not-a-repository", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
-			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(&args(&["todofile"]), event_provider, create_mocked_crossterm());
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				Args::from_strs(["todofile"]).unwrap(),
+				Vec::new(),
+				event_provider,
+				create_mocked_crossterm(),
+			);
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::StateError);
 			assert!(exit.get_message().unwrap().contains("Unable to load Git repository: "));
@@ -280,8 +280,12 @@ mod tests {
 	fn load_config_failure() {
 		with_git_directory("fixtures/invalid-config", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
-			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(&args(&["rebase-todo"]), event_provider, create_mocked_crossterm());
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				Args::from_strs(["rebase-todo"]).unwrap(),
+				Vec::new(),
+				event_provider,
+				create_mocked_crossterm(),
+			);
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
 		});
@@ -321,8 +325,12 @@ mod tests {
 	fn load_todo_file_load_error() {
 		with_git_directory("fixtures/simple", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
-			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(&args(&["does-not-exist"]), event_provider, create_mocked_crossterm());
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				Args::from_strs(["does-not-exist"]).unwrap(),
+				Vec::new(),
+				event_provider,
+				create_mocked_crossterm(),
+			);
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::FileReadError);
 		});
@@ -334,7 +342,8 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo-noop");
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
-				&args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			);
@@ -349,7 +358,8 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo-empty");
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
-				&args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			);
@@ -382,7 +392,8 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo");
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
-				&args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -408,7 +419,8 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo");
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
-				&args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -433,7 +445,8 @@ mod tests {
 				))))
 			});
 			let mut application: Application<Modules> = Application::new(
-				&args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -449,7 +462,8 @@ mod tests {
 			let rebase_todo = format!("{git_dir}/rebase-todo");
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
-				&args(&[rebase_todo.as_str()]),
+				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
