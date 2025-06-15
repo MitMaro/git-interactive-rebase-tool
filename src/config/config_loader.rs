@@ -6,25 +6,41 @@ use crate::git::{Config, GitError};
 
 pub(crate) struct ConfigLoader {
 	repository: Repository,
+	overrides: Vec<(String, String)>,
 }
 
 impl ConfigLoader {
-	/// Load the git configuration for the repository.
+	#[cfg(test)]
+	pub(crate) fn new(repository: Repository) -> Self {
+		let overrides = Vec::new();
+		Self { repository, overrides }
+	}
+
+	pub(crate) fn with_overrides(repository: Repository, overrides: Vec<(String, String)>) -> Self {
+		Self { repository, overrides }
+	}
+
+	/// Load the git configuration for the repository,
+	/// with any overrides taking priority over the values defined in the repositroy
 	///
 	/// # Errors
 	/// Will result in an error if the configuration is invalid.
 	pub(crate) fn load_config(&self) -> Result<Config, GitError> {
-		self.repository.config().map_err(|e| GitError::ConfigLoad { cause: e })
+		let into_git_error = |cause| GitError::ConfigLoad { cause };
+
+		let mut config = self.repository.config().map_err(into_git_error)?;
+		for (name, value) in &self.overrides {
+			if value.is_empty() {
+				config.set_bool(name, true).map_err(into_git_error)?;
+			} else {
+				config.set_str(name, value).map_err(into_git_error)?;
+			}
+		}
+		Ok(config)
 	}
 
 	pub(crate) fn eject_repository(self) -> Repository {
 		self.repository
-	}
-}
-
-impl From<Repository> for ConfigLoader {
-	fn from(repository: Repository) -> Self {
-		Self { repository }
 	}
 }
 
@@ -49,7 +65,7 @@ mod unix_tests {
 	#[test]
 	fn load_config() {
 		with_temp_bare_repository(|repository| {
-			let config = ConfigLoader::from(repository);
+			let config = ConfigLoader::new(repository);
 			assert_ok!(config.load_config());
 		});
 	}
@@ -58,7 +74,7 @@ mod unix_tests {
 	fn fmt() {
 		with_temp_repository(|repository| {
 			let path = repository.path().canonicalize().unwrap();
-			let loader = ConfigLoader::from(repository);
+			let loader = ConfigLoader::new(repository);
 			let formatted = format!("{loader:?}");
 			assert_eq!(
 				formatted,

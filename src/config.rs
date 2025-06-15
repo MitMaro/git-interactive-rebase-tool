@@ -113,7 +113,7 @@ mod tests {
 	#[test]
 	fn try_from_config_loader() {
 		with_temp_bare_repository(|repository| {
-			let loader = ConfigLoader::from(repository);
+			let loader = ConfigLoader::new(repository);
 			let config = assert_ok!(loader.load_config());
 			assert_ok!(Config::try_from(&config));
 		});

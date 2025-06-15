@@ -34,14 +34,14 @@ where ModuleProvider: module::ModuleProvider + Send + 'static
 impl<ModuleProvider> Application<ModuleProvider>
 where ModuleProvider: module::ModuleProvider + Send + 'static
 {
-	pub(crate) fn new<EventProvider, Tui>(args: Args, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit>
+	pub(crate) fn new<EventProvider, Tui>(args: Args, git_config_parameters: Vec<(String, String)>, event_provider: EventProvider, tui: Tui) -> Result<Self, Exit>
 	where
 		EventProvider: EventReaderFn,
 		Tui: crate::display::Tui + Send + 'static,
 	{
 		let filepath = Self::filepath_from_args(args)?;
 		let repository = Self::open_repository()?;
-		let config_loader = ConfigLoader::from(repository);
+		let config_loader = ConfigLoader::with_overrides(repository, git_config_parameters);
 		let config = Self::load_config(&config_loader)
 			.map_err(|err| Exit::new(ExitStatus::ConfigError, format!("{err:#}").as_str()))?;
 		let todo_file = Arc::new(Mutex::new(Self::load_todo_file(filepath.as_str(), &config)?));
@@ -221,12 +221,7 @@ mod tests {
 		module::Modules,
 		runtime::{Installer, RuntimeError},
 		test_helpers::{
-			DefaultTestModule,
-			TestModuleProvider,
-			create_config,
-			create_event_reader,
-			mocks,
-			with_git_directory,
+			DefaultTestModule, TestModuleProvider, create_config, create_event_reader, mocks, with_git_directory,
 		},
 	};
 
@@ -240,8 +235,7 @@ mod tests {
 		($app:expr) => {
 			if let Err(e) = $app {
 				e
-			}
-			else {
+			} else {
 				panic!("Application is not in an error state");
 			}
 		};
@@ -251,8 +245,12 @@ mod tests {
 	#[serial_test::serial]
 	fn load_filepath_from_args_failure() {
 		let event_provider = create_event_reader(|| Ok(None));
-		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-			Application::new(Args::from_os_strings(Vec::new()).unwrap(), event_provider, create_mocked_crossterm());
+		let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+			Args::from_os_strings(Vec::new()).unwrap(),
+			Vec::new(),
+			event_provider,
+			create_mocked_crossterm(),
+		);
 		let exit = application_error!(application);
 		assert_eq!(exit.get_status(), &ExitStatus::StateError);
 		assert!(
@@ -266,8 +264,12 @@ mod tests {
 	fn load_repository_failure() {
 		with_git_directory("fixtures/not-a-repository", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
-			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(Args::from_strs(["todofile"]).unwrap(), event_provider, create_mocked_crossterm());
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				Args::from_strs(["todofile"]).unwrap(),
+				Vec::new(),
+				event_provider,
+				create_mocked_crossterm(),
+			);
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::StateError);
 			assert!(exit.get_message().unwrap().contains("Unable to load Git repository: "));
@@ -278,8 +280,12 @@ mod tests {
 	fn load_config_failure() {
 		with_git_directory("fixtures/invalid-config", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
-			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(Args::from_strs(["rebase-todo"]).unwrap(), event_provider, create_mocked_crossterm());
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				Args::from_strs(["rebase-todo"]).unwrap(),
+				Vec::new(),
+				event_provider,
+				create_mocked_crossterm(),
+			);
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::ConfigError);
 		});
@@ -319,8 +325,12 @@ mod tests {
 	fn load_todo_file_load_error() {
 		with_git_directory("fixtures/simple", |_| {
 			let event_provider = create_event_reader(|| Ok(None));
-			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> =
-				Application::new(Args::from_strs(["does-not-exist"]).unwrap(), event_provider, create_mocked_crossterm());
+			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
+				Args::from_strs(["does-not-exist"]).unwrap(),
+				Vec::new(),
+				event_provider,
+				create_mocked_crossterm(),
+			);
 			let exit = application_error!(application);
 			assert_eq!(exit.get_status(), &ExitStatus::FileReadError);
 		});
@@ -333,6 +343,7 @@ mod tests {
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
 				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			);
@@ -348,6 +359,7 @@ mod tests {
 			let event_provider = create_event_reader(|| Ok(None));
 			let application: Result<Application<TestModuleProvider<DefaultTestModule>>, Exit> = Application::new(
 				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			);
@@ -381,6 +393,7 @@ mod tests {
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
 				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -407,6 +420,7 @@ mod tests {
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
 				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -432,6 +446,7 @@ mod tests {
 			});
 			let mut application: Application<Modules> = Application::new(
 				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
@@ -448,6 +463,7 @@ mod tests {
 			let event_provider = create_event_reader(|| Ok(Some(Event::Key(KeyEvent::from(KeyCode::Char('W'))))));
 			let mut application: Application<Modules> = Application::new(
 				Args::from_strs([rebase_todo]).unwrap(),
+				Vec::new(),
 				event_provider,
 				create_mocked_crossterm(),
 			)
