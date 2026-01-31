@@ -188,7 +188,7 @@ Most bindings can be prefixed with `Shift`, `Control` or `Alt`, followed by a `+
 
 ### Multiple Key Bindings
 
-A single action can have multiple bindings by providing a whitespace separate list of keys. For example the binding, `"u Control+z Control+Z"` would respond to a keypress of `a`, `Control z` and `Control Z`.
+A single action can have multiple bindings by providing a whitespace separate list of keys. For example the binding, `"u Control+z Control+Z"` would respond to a keypress of <kbd>u</kbd>, <kbd>Control</kbd>+<kbd>z</kbd> and <kbd>Control</kbd>+<kbd>Z</kbd>.
 
 ### Restricted Keys
 

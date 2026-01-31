@@ -167,52 +167,52 @@ interactive-rebase-tool --version
 
 ### Getting Help
 
-The tool has built-in help that can be accessed by using the `?` key.
+The tool has built-in help that can be accessed by using the <kbd>?</kbd> key.
 
 ### Common Default Key Bindings
 
 Key bindings can be customized, see [configuration](readme/customization.md#key-bindings) for all key bindings and information on configuring.
 
-| Key         | Mode        | Description                                |
-|-------------|-------------|--------------------------------------------|
-| `?`         | All         | Show help                                  |
-| Up          | Normal/Diff | Move selection up                          |
-| Down        | Normal/Diff | Move selection down                        |
-| Page Up     | Normal/Diff | Move selection up five lines               |
-| Page Down   | Normal/Diff | Move selection down five lines             |
-| Home        | Normal/Diff | Move selection to start of list            |
-| End         | Normal/Diff | Move selection to home of list             |
-| `q`         | Normal/Diff | Abort interactive rebase                   |
-| `Q`         | Normal/Diff | Immediately abort interactive rebase       |
-| `w`         | Normal/Diff | Write interactive rebase file              |
-| `W`         | Normal/Diff | Immediately write interactive rebase file  |
-| `j`         | Normal/Diff | Move selected commit(s) down               |
-| `k`         | Normal/Diff | Move selected commit(s) up                 |
-| `b`         | Normal      | Toggle break action                        |
-| `p`         | Normal/Diff | Set selected commit(s) to be picked        |
-| `r`         | Normal/Diff | Set selected commit(s) to be reworded      |
-| `e`         | Normal/Diff | Set selected commit(s) to be edited        |
-| `s`         | Normal/Diff | Set selected commit(s) to be squashed      |
-| `f`         | Normal/Diff | Set selected commit(s) to be fixed-up      |
-| `d`         | Normal      | Set selected commit(s) to be dropped       |
-| `d`         | Diff        | Show full commit diff                      |
-| `E`         | Normal      | Edit the command of an editable action     |
-| `v`         | Normal/Diff | Enter and exit visual mode (for selection) |
-| `I`         | Normal      | Insert a new line                          |
-| `Control+d` | Normal      | Duplicate the selected line                |
-| `Delete`    | Normal/Diff | Remove selected lines                      |
-| `!`         | Normal/Diff | Open todo file in external editor          |
-| `Control+z` | Normal/Diff | Undo the previous change                   |
-| `Control+y` | Normal/Diff | Redo the previously undone change          |
-| `c`         | Normal/Diff | Show commit information                    |
-| Down        | Diff        | Scroll view down                           |
-| Up          | Diff        | Scroll view up                             |
-| Left        | Diff        | Scroll view left                           |
-| Right       | Diff        | Scroll view right                          |
-| Home        | Diff        | Scroll view to the top                     |
-| End         | Diff        | Scroll view to the end                     |
-| PageUp      | Diff        | Scroll view a step up                      |
-| PageDown    | Diff        | Scroll view a step down                    |
+| Key                             | Mode        | Description                                |
+|---------------------------------|-------------|--------------------------------------------|
+| <kbd>?</kbd>                    | All         | Show help                                  |
+| <kbd>🠅</kbd> (Up)               | Normal/Diff | Move selection up                          |
+| <kbd>🠇</kbd> (Down)             | Normal/Diff | Move selection down                        |
+| <kbd>Pg🠅</kbd> (Page Up)        | Normal/Diff | Move selection up five lines               |
+| <kbd>Pg🠇</kbd> (Page Down)      | Normal/Diff | Move selection down five lines             |
+| <kbd>Home</kbd>                 | Normal/Diff | Move selection to start of list            |
+| <kbd>End</kbd>                  | Normal/Diff | Move selection to home of list             |
+| <kbd>q</kbd>                    | Normal/Diff | Abort interactive rebase                   |
+| <kbd>Q</kbd>                    | Normal/Diff | Immediately abort interactive rebase       |
+| <kbd>w</kbd>                    | Normal/Diff | Write interactive rebase file              |
+| <kbd>W</kbd>                    | Normal/Diff | Immediately write interactive rebase file  |
+| <kbd>j</kbd>                    | Normal/Diff | Move selected commit(s) down               |
+| <kbd>k</kbd>                    | Normal/Diff | Move selected commit(s) up                 |
+| <kbd>b</kbd>                    | Normal      | Toggle break action                        |
+| <kbd>p</kbd>                    | Normal/Diff | Set selected commit(s) to be picked        |
+| <kbd>r</kbd>                    | Normal/Diff | Set selected commit(s) to be reworded      |
+| <kbd>e</kbd>                    | Normal/Diff | Set selected commit(s) to be edited        |
+| <kbd>s</kbd>                    | Normal/Diff | Set selected commit(s) to be squashed      |
+| <kbd>f</kbd>                    | Normal/Diff | Set selected commit(s) to be fixed-up      |
+| <kbd>d</kbd>                    | Normal      | Set selected commit(s) to be dropped       |
+| <kbd>d</kbd>                    | Diff        | Show full commit diff                      |
+| <kbd>E</kbd>                    | Normal      | Edit the command of an editable action     |
+| <kbd>v</kbd>                    | Normal/Diff | Enter and exit visual mode (for selection) |
+| <kbd>I</kbd>                    | Normal      | Insert a new line                          |
+| <kbd>Control</kbd>+<kbd>d</kbd> | Normal      | Duplicate the selected line                |
+| <kbd>Delete</kbd>               | Normal/Diff | Remove selected lines                      |
+| <kbd>!</kbd>                    | Normal/Diff | Open todo file in external editor          |
+| <kbd>Control</kbd>+<kbd>z</kbd> | Normal/Diff | Undo the previous change                   |
+| <kbd>Control</kbd>+<kbd>y</kbd> | Normal/Diff | Redo the previously undone change          |
+| <kbd>c</kbd>                    | Normal/Diff | Show commit information                    |
+| <kbd>🠇</kbd> (Down)             | Diff        | Scroll view down                           |
+| <kbd>🠅</kbd> (Up)               | Diff        | Scroll view up                             |
+| <kbd>🠄</kbd> (Left)             | Diff        | Scroll view left                           |
+| <kbd>🠆</kbd> (Right)            | Diff        | Scroll view right                          |
+| <kbd>Home</kbd>                 | Diff        | Scroll view to the top                     |
+| <kbd>End</kbd>                  | Diff        | Scroll view to the end                     |
+| <kbd>Pg🠅</kbd> (Page Up)        | Diff        | Scroll view a step up                      |
+| <kbd>Pg🠇</kbd> (Page Down)      | Diff        | Scroll view a step down                    |
 
 ## Supported Platforms
 
